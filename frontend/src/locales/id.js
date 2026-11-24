@@ -1832,6 +1832,7 @@ export default {
   "Any workout": "Latihan apa pun",
   "The last time you did the exercise, whichever routine it was in.": "Terakhir kali kamu melakukan latihan, apa pun rutinitasnya.",
   "Plan changed, so starting from your new target.": "Rencana diubah, jadi mulailah dari target baru kamu.",
+  "Plan changed ({0}), so starting from your new target.": "Rencana diubah ({0}), jadi mulailah dari target baru kamu.",
   "First time in this routine, so starting from its own target.": "Pertama kali dalam rutinitas ini, jadi dimulai dari target sendiri.",
   "No weight logged last time. Enter what you lift and progression takes it from there.": "Belum ada catatan beban sebelumnya. Masukkan beban angkatanmu dan progresi otomatis akan menghitung dari sana.",
   "Plan: {0}": "Rencana: {0}",

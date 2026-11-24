@@ -1780,6 +1780,7 @@ export default {
   'Any workout': 'कोई भी वर्कआउट',
   'The last time you did the exercise, whichever routine it was in.': 'पिछली बार जब आपने यह एक्सरसाइज़ की, रूटीन चाहे जो हो।',
   'Plan changed, so starting from your new target.': 'प्लान बदला, इसलिए आपके नए लक्ष्य से शुरुआत।',
+  'Plan changed ({0}), so starting from your new target.': 'प्लान बदला ({0}), इसलिए आपके नए लक्ष्य से शुरुआत।',
   'First time in this routine, so starting from its own target.': 'इस रूटीन में पहली बार, इसलिए इसके अपने लक्ष्य से शुरुआत।',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'पिछली बार कोई वज़न दर्ज नहीं हुआ। जितना उठाते हैं उतना दर्ज करें, प्रगति वहीं से आगे बढ़ेगी।',
   'Plan: {0}': 'प्लान: {0}',

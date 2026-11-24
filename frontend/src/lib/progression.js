@@ -16,7 +16,7 @@
 //   · fewer sets than prescribed                       → miss
 // So a session that fell apart can never advance the load as though it had succeeded.
 
-import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines } from './history.js'
+import { modeOf, repStep, setsRepsOf, lastEntryFor, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines } from './history.js'
 import { EXIDX, isAssisted, isLoadedEq, defaultIncrement } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
@@ -263,12 +263,53 @@ export function plannedOf(cfg) {
 const climbsReps = cfg => isBw(cfg) || !isLoadedEq(cfg.id) || isAssisted(cfg)
 
 const PLAN_KEYS = ['sets', 'reps', 'repsMin', 'sec', 'm', 'setsMax']
+// Double and steady progression judge the reps reached at a weight, every set against the same
+// range (steady: every set together, against one aim that climbs). Neither reads the number of
+// sets: a set more or less leaves where the range stands where it was, so the sets of a routine
+// edited under these two are not part of its plan. Every other policy counts them: linear and
+// Greyskull grade the whole session against its rows, triple progression moves its own set count.
+const SETS_FREE = new Set(['double', 'steady'])
 // A carry's distance joined the plan in 1.4.5: a session stamped before that has no `m`, and is not
 // a changed plan for lacking it.
-const samePlan = (a, b) => PLAN_KEYS.every(k => (k === 'm' && (a.m == null || b.m == null)) || (a[k] ?? null) === (b[k] ?? null))
-/** Did the routine's sets or reps change since the session that stamped `planned`? */
-export function planChanged(planned, cfg) {
-  return !!planned && !samePlan(planned, plannedOf(cfg))
+const samePlan = (a, b, policy) => PLAN_KEYS.every(k => (k === 'm' && (a.m == null || b.m == null)) || (k === 'sets' && SETS_FREE.has(policy)) || (a[k] ?? null) === (b[k] ?? null))
+/** Did the routine's sets or reps change since the session that stamped `planned`? `policy`, when given, is the one the exercise progresses by: under double or steady progression a change of sets alone is not a change. */
+export function planChanged(planned, cfg, policy) {
+  return !!planned && !samePlan(planned, plannedOf(cfg), policy)
+}
+// A plan as the routine editor reads it ("3 × 8–12", "2 × 0:45"), for the line that says what changed.
+const planText = (p, mode) => setsRepsOf({ mode, sets: p.sets, reps: p.reps ?? '–', repsMin: p.repsMin, sec: p.sec, m: p.m, setsMax: p.setsMax })
+// Do two prescriptions ask for the same session? A field a policy leaves out (undefined) means the
+// plan's own: its sets, reps and seconds, and for `rest` the exercise's own rest, as the density
+// policy reads it (densityRestOf). Except the reps of a profile that starts from the last session
+// (`carried`, from carriedReps): there, left out means the rows keep last time's reps. A weight left
+// out is the one each row opens at (`weight`, from openWeights), not the plan's, which only an
+// edit of the plan's own weight names (`set` below).
+const PRESCRIBED = ['weight', 'reps', 'sets', 'sec', 'rest', 'rowReps']
+const sameTarget = (a, b, cfg, { weight, rest, carried }) => PRESCRIBED.every(k => {
+  const own = k === 'reps' ? (carried === undefined ? cfg.reps : carried) : k === 'weight' ? weight : k === 'rest' ? rest : k === 'sets' || k === 'sec' ? cfg[k] : null
+  return JSON.stringify(a[k] ?? own ?? null) === JSON.stringify(b[k] ?? own ?? null)
+})
+// The weight a session's rows open at when the prescription leaves it out: each row copies the
+// weight logged for its set last time (a row past that count, the last row's), and a row with no
+// usable one before it opens at the exercise's confirmed weight or the plan's (buildSets). One
+// number when the rows agree, 'mixed' when they do not, so it equals no single weight.
+const openWeights = (S, cfg, routine, mode) => {
+  const prevs = lastEntryFor(S, cfg.id, routine?.id)?.sets || []
+  const conf = (S.exWeights || {})[cfg.id]
+  const count = Math.max(1, cfg.sets || 1) * (mode === 'time' && isPerSide(cfg) ? 2 : 1)
+  const rows = Array.from({ length: count }, (_, i) => {
+    const prev = prevs[i] || prevs[prevs.length - 1]
+    if (prev && (mode === 'time' ? prev.sec > 0 : prev.r > 0)) return Number(prev.w) || 0
+    return mode === 'time' ? cfg.weight || 0 : conf && conf.w > 0 ? conf.w : cfg.weight
+  })
+  return rows.every(w => w === rows[0]) ? rows[0] : 'mixed'
+}
+// The reps a session that starts from the last one opens its rows at: each row keeps what was
+// logged for it, a row past the last session's count opens at the plan's reps (buildSets). One
+// number when they agree, 'mixed' when they do not, so it equals no single reps value.
+const carriedReps = (last, cfg) => {
+  const rows = Array.from({ length: Math.max(1, cfg.sets || 1) }, (_, i) => (i < last.reps.length ? last.reps[i] : cfg.reps))
+  return rows.every(r => r === rows[0]) ? rows[0] : 'mixed'
 }
 
 /**
@@ -437,7 +478,7 @@ export function stallCount(sessions, policy) {
       if (i < sessions.length -1 && sessions[i].weight !== sessions[i+1].weight) break
     // So does an edit of the plan (issue #275): misses against the old sets × reps say nothing
     // about the new ones. Only sessions that both carry their plan can show one.
-    if (i < sessions.length - 1 && sessions[i].planned && sessions[i + 1].planned && !samePlan(sessions[i].planned, sessions[i + 1].planned)) break
+    if (i < sessions.length - 1 && sessions[i].planned && sessions[i + 1].planned && !samePlan(sessions[i].planned, sessions[i + 1].planned, policy)) break
     // Next part limits policy to double. Why? Double is the only policy that deliberately asks for less than it grades against
     // (Since it is geared towards climbing through a rep range). 
     // Specifically, `aim` (see `const aim`) climbs from the bottom of the range while `ok` needs the top. 
@@ -527,7 +568,12 @@ export function densityRestOf(S, cfg) {
 export function nextPrescription(S, cfg, routine) {
   // An exercise kept per gym (#988, lib/gym-split.js) progresses from this gym's (or brand's)
   // sessions only: 15 kg on one cable stack says nothing about the next weight on another.
-  S = gymSplitView(S, cfg?.id)
+  return prescribe(gymSplitView(S, cfg?.id), cfg, routine, false)
+}
+
+// `plain`: the prescription the history alone gives, as if the plan had not been edited (the
+// restart below compares itself with it).
+function prescribe(S, cfg, routine, plain) {
   const mode = modeOf(cfg)
   const policy = policyFor(cfg, routine, mode, profileRule(S))
   const unit = S.unit || 'kg'
@@ -597,31 +643,51 @@ export function nextPrescription(S, cfg, routine) {
   const across = lastAcrossRoutines(S)
   const borrowed = !!routine?.id && !across && last.rid !== routine.id
   const ownPlan = !across || !routine?.id || last.rid === routine.id
-  if (last.planned && ownPlan ? planChanged(last.planned, cfg) : borrowed) {
-    const why = borrowed ? ['First time in this routine, so starting from its own target.'] : ['Plan changed, so starting from your new target.']
+  // Under double and steady progression the sets are not part of the plan (samePlan), except for a
+  // bodyweight climb: there the sets are what progression adds, so a count edited away from the
+  // one it reached has to start again.
+  const setsPolicy = mode === 'reps' && !(last.weight <= 0 && climbsReps(cfg)) ? policy : undefined
+  const edited = !!last.planned && ownPlan && planChanged(last.planned, cfg, setsPolicy)
+  if (!plain && (last.planned && ownPlan ? edited : borrowed)) {
+    // Say what the edit was. Two lines that read the same (the edit is in a field the line does not
+    // show) keep the plain wording.
+    const was = edited ? planText(last.planned, mode) : ''
+    const now = edited ? planText(plannedOf(cfg), mode) : ''
+    const why = borrowed ? ['First time in this routine, so starting from its own target.']
+      : was !== now ? ['Plan changed ({0}), so starting from your new target.', was + ' → ' + now]
+        : ['Plan changed, so starting from your new target.']
+    // An edit speaks only when it changes the session: if the history alone asks for the same one,
+    // that is the prescription, with its own line. A raise the old range had earned and the new one
+    // blocks is a different session, and keeps the restart.
+    const restart = r => {
+      if (borrowed) return r
+      const normal = prescribe(S, cfg, routine, true)
+      const open = { weight: openWeights(S, cfg, routine, mode), rest: densityRestOf(S, cfg).start, carried: S.startFrom === 'last' && mode === 'reps' ? carriedReps(last, cfg) : undefined }
+      return sameTarget(r, normal, cfg, open) ? normal : r
+    }
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,
     // and 102.5 × 10 is a load never lifted for those reps. A routine whose weight nobody
     // touched still carries the one it was created with, so there the history decides.
     const set = cfg.weight > 0 && last.planned && (last.planned.weight ?? null) !== cfg.weight ? { weight: cfg.weight } : null
-    if (mode === 'time') return { policy, kind: 'hold', ...set, sec: cfg.sec || last.goal || undefined, why }
-    if (!set && last.weight <= 0 && climbsReps(cfg)) return { policy, kind: 'hold', weight: 0, reps: cfg.reps || undefined, why }
+    if (mode === 'time') return restart({ policy, kind: 'hold', ...set, sec: cfg.sec || last.goal || undefined, why })
+    if (!set && last.weight <= 0 && climbsReps(cfg)) return restart({ policy, kind: 'hold', weight: 0, reps: cfg.reps || undefined, why })
     // A loaded lift logged at 0 had no weight typed in (see below): the plan's, if it has one.
     const held = set || (last.weight > 0 ? { weight: last.weight } : cfg.weight > 0 ? { weight: cfg.weight } : {})
     if (triple) {
       // The base sets, at the reps managed (as double progression aims), or the bottom with a
       // new weight. Sets added under the old plan say nothing about the new set range.
       const aim = set ? range3.repsMin : Math.min(range3.reps, Math.max(range3.repsMin, last.low + repStep(cfg)))
-      return { policy, kind: 'hold', ...held, reps: aim, sets: sets3.setsMin, rowReps: startRows(aim), why }
+      return restart({ policy, kind: 'hold', ...held, reps: aim, sets: sets3.setsMin, rowReps: startRows(aim), why })
     }
     if (policy === 'double' || steady) {
       const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
       // A new weight starts at the bottom of the range, the way a raise does: the reps managed
       // were managed at another load.
       const aim = set ? range.repsMin : Math.min(range.reps, Math.max(range.repsMin, last.low + repStep(cfg)))
-      return { policy, kind: 'hold', ...held, reps: aim, why }
+      return restart({ policy, kind: 'hold', ...held, reps: aim, why })
     }
-    return { policy, kind: 'hold', ...held, reps: cfg.reps || undefined, why }
+    return restart({ policy, kind: 'hold', ...held, reps: cfg.reps || undefined, why })
   }
 
   const stalls = stallCount(sessions, policy)

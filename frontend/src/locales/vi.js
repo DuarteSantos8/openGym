@@ -1779,6 +1779,7 @@ export default {
   'The routine’s sets and reps. Your history decides the weight.': 'Hiệp và reps của lịch tập. Lịch sử tập luyện sẽ quyết định mức tạ.',
   'Your last session': 'Buổi tập gần nhất của bạn',
   'Plan changed, so starting from your new target.': 'Kế hoạch đã thay đổi, bắt đầu từ mục tiêu mới của bạn.',
+  'Plan changed ({0}), so starting from your new target.': 'Kế hoạch đã thay đổi ({0}), bắt đầu từ mục tiêu mới của bạn.',
   'First time in this routine, so starting from its own target.': 'Lần đầu tập lịch này, bắt đầu từ mục tiêu định sẵn của lịch tập.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Chưa có mức tạ nào được ghi lần trước. Hãy nhập mức tạ bạn nâng và hệ thống sẽ tự tính tiến độ tiếp theo.',
   'Plan: {0}': 'Kế hoạch: {0}',

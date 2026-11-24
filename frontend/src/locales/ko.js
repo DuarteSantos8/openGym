@@ -1780,6 +1780,7 @@ export default {
   'Any workout': '모든 운동',
   'The last time you did the exercise, whichever routine it was in.': '루틴과 상관없이 이 운동을 마지막으로 한 때예요.',
   'Plan changed, so starting from your new target.': '계획이 바뀌어서 새 목표부터 시작해요.',
+  'Plan changed ({0}), so starting from your new target.': '계획이 바뀌어서({0}) 새 목표부터 시작해요.',
   'First time in this routine, so starting from its own target.': '이 루틴은 처음이라 루틴의 목표부터 시작해요.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': '지난번에 기록된 무게가 없어요. 드는 무게를 입력하면 거기서부터 진행해요.',
   'Plan: {0}': '계획: {0}',

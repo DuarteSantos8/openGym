@@ -1779,6 +1779,7 @@ export default {
   'The routine’s sets and reps. Your history decides the weight.': 'Série a opakování ze sestavy. Váhu určí tvoje historie.',
   'Your last session': 'Poslední trénink',
   'Plan changed, so starting from your new target.': 'Plán se změnil, takže začínáš od nového cíle.',
+  'Plan changed ({0}), so starting from your new target.': 'Plán se změnil ({0}), takže začínáš od nového cíle.',
   'First time in this routine, so starting from its own target.': 'Tuhle sestavu děláš poprvé, takže začínáš od jejího cíle.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Minule nebyla zapsaná žádná váha. Zadej, kolik zvedáš, a progrese na to naváže.',
   'Plan: {0}': 'Plán: {0}',

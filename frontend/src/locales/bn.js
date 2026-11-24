@@ -1839,6 +1839,7 @@ export default {
   'Any workout': 'যেকোনো ওয়ার্কআউট',
   'The last time you did the exercise, whichever routine it was in.': 'শেষবার আপনি এই ব্যায়ামটি যখন করেছেন, যে রুটিনেই হোক।',
   'Plan changed, so starting from your new target.': 'প্ল্যান বদলেছে, তাই আপনার নতুন লক্ষ্য থেকে শুরু।',
+  'Plan changed ({0}), so starting from your new target.': 'প্ল্যান বদলেছে ({0}), তাই আপনার নতুন লক্ষ্য থেকে শুরু।',
   'First time in this routine, so starting from its own target.': 'এই রুটিনে প্রথমবার, তাই এর নিজস্ব লক্ষ্য থেকে শুরু।',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'গতবার কোনো ওজন লগ হয়নি। আপনি যা তোলেন তা লিখুন, এরপর প্রগ্রেশন সেখান থেকে এগোবে।',
   'Plan: {0}': 'প্ল্যান: {0}',

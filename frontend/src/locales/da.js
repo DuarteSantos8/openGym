@@ -1829,6 +1829,7 @@ export default {
   "Any workout": "Enhver træning",
   "The last time you did the exercise, whichever routine it was in.": "Sidste gang du lavede øvelsen, uanset hvilken rutine den var i.",
   "Plan changed, so starting from your new target.": "Planen er ændret, så vi starter fra dit nye mål.",
+  "Plan changed ({0}), so starting from your new target.": "Planen er ændret ({0}), så vi starter fra dit nye mål.",
   "First time in this routine, so starting from its own target.": "Første gang i denne rutine, så vi starter fra dens eget mål.",
   "No weight logged last time. Enter what you lift and progression takes it from there.": "Ingen vægt logget sidst. Indtast hvad du løfter, så tager progressionen den derfra.",
   "Plan: {0}": "Plan: {0}",

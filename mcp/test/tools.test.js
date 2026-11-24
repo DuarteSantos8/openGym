@@ -1173,7 +1173,7 @@ describe('preview_session', () => {
     })
     const e = call('preview_session').exercises[0]
     expect(e.prescription.kind).toBe('hold')
-    expect(e.prescription.why).toBe('Plan changed, so starting from your new target.')
+    expect(e.prescription.why).toBe('Plan changed (2 × 15 → 2 × 10), so starting from your new target.')
     expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[60, 10], [60, 10]])
     expect(e.reps_source).toBe('routine_plan')
     expect(e.differs_from_plan).toBe(false)

@@ -1749,6 +1749,7 @@ export default {
   'Any workout': 'Любая тренировка',
   'The last time you did the exercise, whichever routine it was in.': 'Последний раз, когда ты делал это упражнение, в какой угодно программе.',
   'Plan changed, so starting from your new target.': 'План изменён, поэтому начинаем с новой цели.',
+  'Plan changed ({0}), so starting from your new target.': 'План изменён ({0}), поэтому начинаем с новой цели.',
   'First time in this routine, so starting from its own target.': 'Впервые в этой программе, поэтому начинаем с её собственной цели.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'В прошлый раз вес не был записан. Укажите, с каким весом работаете, и дальше прогрессия подхватит.',
   'Plan: {0}': 'План: {0}',

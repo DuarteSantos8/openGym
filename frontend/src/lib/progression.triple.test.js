@@ -157,7 +157,7 @@ describe('triple progression keeps the rules every policy follows', () => {
     for (let i = 0; i < 7; i++) st = train(st).st                // at 12, 12, 12, 9
     const edited = { ...cfg, setsMax: 4 }
     const p = nextPrescription(st, edited, { ...routine, ex: [edited] })
-    expect(p.why[0]).toBe('Plan changed, so starting from your new target.')
+    expect(p.why[0]).toBe('Plan changed ({0}), so starting from your new target.')
     expect(p.sets).toBe(3)
     expect(p.rowReps).toHaveLength(3)
   })

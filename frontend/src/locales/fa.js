@@ -1678,6 +1678,7 @@ export default {
   "Any workout": "هر تمرین",
   "The last time you did the exercise, whichever routine it was in.": "آخرین باری که تمرین را انجام دادید، هر روتینی که در آن بود.",
   "Plan changed, so starting from your new target.": "برنامه تغییر کرد، بنابراین از هدف جدید خود شروع کنید.",
+  "Plan changed ({0}), so starting from your new target.": "برنامه تغییر کرد ({0})، بنابراین از هدف جدید خود شروع کنید.",
   "First time in this routine, so starting from its own target.": "اولین بار در این روتین، بنابراین از هدف خود شروع می‌شود.",
   "No weight logged last time. Enter what you lift and progression takes it from there.": "آخرین بار وزنی ثبت نشده است. آنچه را که بلند می‌کنید وارد کنید و پیشرفت آن را از آنجا می‌برد.",
   "Plan: {0}": "برنامه: {0}",

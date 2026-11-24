@@ -1352,7 +1352,7 @@ describe('saving progression settings unchanged', () => {
     expect(after.target).toMatchObject({ weight: 42.5, reps: 8, repsMin: 8 })
     expect(container.querySelector('.planline')?.textContent).toBe('Plan: 3 × 8–12')
     const following = next(st)
-    expect(following.plan.why[0]).not.toBe('Plan changed, so starting from your new target.')
+    expect(following.plan.why[0]).not.toMatch(/^Plan changed/)
     expect(rows(following)).toEqual([[42.5, 9], [42.5, 9], [42.5, 9]])
   })
 
@@ -1388,7 +1388,7 @@ describe('saving progression settings unchanged', () => {
     await act(async () => { save({ ...unchanged(opened), reps: 10 }) })
     const after = mocks.S.active.entries[0]
     expect(after.planned).toEqual({ sets: 3, reps: 10, repsMin: 8, weight: 40 })
-    expect(after.plan.why[0]).toBe('Plan changed, so starting from your new target.')
+    expect(after.plan.why[0]).toBe('Plan changed ({0}), so starting from your new target.')
     expect(rows(after).map(r => r[0])).toEqual([40, 40, 40])
   })
 })
