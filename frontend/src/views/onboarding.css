@@ -1,0 +1,70 @@
+/* Find my plan (views/Onboarding.jsx), Learn (views/Learn.jsx) and the term chip
+   (components/Term.jsx). Scoped under iv- so nothing else in the app moves. */
+.iv-quiz.narrow,.iv-learn.narrow{max-width:640px;width:100%;margin:0 auto}
+.iv-quiz-bar{height:4px;border-radius:2px;background:var(--surface-3);overflow:hidden;margin:0 0 20px}
+.iv-quiz-bar>span{display:block;height:100%;border-radius:2px;background:var(--acc);transition:width var(--med) var(--ease)}
+.iv-quiz-q{font-size:var(--fs-title2);line-height:var(--lh-title);font-weight:700;margin:0 0 16px;outline:none;text-wrap:balance}
+/* A heading that takes the focus so a screen reader follows the question: it is not a control,
+   so it shows no ring (the global :focus-visible ring is for things you can press). */
+.iv-quiz .iv-quiz-q:focus-visible,.iv-quiz .iv-quiz-focus:focus-visible{outline:none}
+.iv-quiz-focus{outline:none}
+.iv-quiz-note{margin:-6px 0 14px}
+.iv-quiz-options{display:flex;flex-direction:column;gap:10px}
+.iv-quiz-option{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:10px 14px;border:var(--hair) solid var(--sep);border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;font-size:var(--fs-body);text-align:start;cursor:pointer}
+.iv-quiz-option:active{background:var(--press-fill)}
+.iv-quiz-option.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.iv-quiz-option-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.iv-quiz-option .chev{flex:none;color:var(--label-3)}
+.iv-quiz-option.on .chev{color:var(--acc-ink)}
+.iv-quiz-next{margin-top:16px}
+.iv-quiz-dose{margin:10px 0 0;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-quiz-ask{margin-top:12px}
+.iv-quiz-why{list-style:none;margin:0 0 4px;padding:0;display:flex;flex-direction:column;gap:10px}
+.iv-quiz-why li{display:flex;gap:10px;align-items:flex-start;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-quiz-why li>svg{flex:none;margin-top:3px;color:var(--green-ink)}
+.iv-quiz-week{margin-bottom:20px}
+.iv-quiz-day .ss{white-space:normal;overflow-wrap:anywhere}
+.iv-quiz-foot{margin:16px 0 0;text-align:center}
+.iv-term{display:inline;padding:0;border:0;background:none;font:inherit;color:var(--acc-ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;cursor:pointer}
+.iv-term-card{text-align:center;padding:4px 0}
+.iv-term-card h3{margin-bottom:8px}
+.iv-term-card p{margin:0 0 18px;line-height:1.5;text-align:start}
+.iv-learn-guides{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
+.iv-learn-guide{border:var(--hair) solid var(--sep);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.iv-learn-guide>button{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 14px;border:0;background:none;color:var(--label);font:inherit;text-align:start;cursor:pointer}
+.iv-learn-guide>button:active{background:var(--press-fill)}
+.iv-learn-guide-t{flex:1;min-width:0}
+.iv-learn-guide-t .tt{font-size:var(--fs-body);font-weight:600;overflow-wrap:anywhere}
+.iv-learn-guide-t .ss{color:var(--label-2);font-size:var(--fs-footnote);margin-top:2px}
+.iv-learn-body{padding:0 14px 14px;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-learn-body h3{font-size:var(--fs-body);font-weight:700;margin:14px 0 6px}
+.iv-learn-body p{margin:8px 0}
+.iv-learn-body ul{margin:6px 0;padding-inline-start:20px}
+.iv-learn-body li{margin:6px 0}
+.iv-learn-sources{margin-top:12px;padding-top:10px;border-top:var(--hair) solid var(--sep);color:var(--label-2);font-size:var(--fs-footnote)}
+.iv-learn-sources p{margin:4px 0}
+.iv-learn-terms{list-style:none;margin:10px 0 0;padding:0}
+.iv-learn-terms li{padding:12px 0;border-bottom:var(--hair) solid var(--sep)}
+.iv-learn-terms dt,.iv-learn-term-n{font-weight:600;font-size:var(--fs-body)}
+.iv-learn-term-d{color:var(--label-2);font-size:var(--fs-body);line-height:var(--lh-body);margin-top:2px}
+.iv-learn-note{margin:0 0 12px}
+.iv-wins ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.iv-wins li{display:flex;align-items:center;gap:10px;font-size:var(--fs-body)}
+.iv-wins li>svg{flex:none;color:var(--label-3)}
+.iv-wins li.done>svg{color:var(--green-ink)}
+.iv-wins li.done{color:var(--label)}
+.iv-wins li:not(.done){color:var(--label-2)}
+/* Form guidance on the exercise sheet (components/ExerciseGuide.jsx). */
+.iv-guide{margin-top:4px}
+.iv-guide-cues,.iv-guide-mistakes{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.iv-guide-cues li{position:relative;padding-inline-start:18px;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-guide-cues li::before{content:"";position:absolute;inset-inline-start:2px;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--green-ink)}
+.iv-guide-mistakes li{display:flex;flex-direction:column;gap:2px;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-guide-wrong{color:var(--label);font-weight:600}
+.iv-guide-fix{color:var(--label-2)}
+.iv-guide-facts{margin:14px 0 0}
+.iv-guide-facts dt{font-size:var(--fs-footnote);color:var(--label-2);margin-top:10px}
+.iv-guide-facts dd{margin:2px 0 0;font-size:var(--fs-body);line-height:var(--lh-body)}
+.iv-guide-ladder{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.iv-guide-rung{justify-content:flex-start;text-align:start;white-space:normal;height:auto;min-height:48px}
+.iv-guide-foot{margin:12px 0 0}

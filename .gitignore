@@ -11,6 +11,8 @@ data/
 
 # Build output / deps
 frontend/dist/
+# the Cloud edition's build, made by the E2E run (frontend/playwright.config.mjs)
+frontend/dist-cloud/
 node_modules/
 *.log
 .DS_Store
@@ -34,6 +36,7 @@ frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+.worktrees/
 
 # Python and Kotlin build leftovers (scripts/, the Android build)
 __pycache__/
@@ -56,3 +59,8 @@ frontend/ios/App/WatchCore/.build/
 /dist/
 .wrangler/
 .taste-skill/
+
+# Movement Lab runtime and pose model, staged at build time (frontend/scripts/stage-mediapipe.mjs)
+frontend/public/mediapipe/
+frontend/e2e-results/
+frontend/e2e-report/

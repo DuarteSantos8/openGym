@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => {
   state.confirmSheet = vi.fn()
   state.api = vi.fn(() => Promise.resolve({ ok: true }))
   state.toast = vi.fn()
+  state.forgetBody = vi.fn(async () => true)
   // Stable across renders: KeptChangesRows re-asks whenever the function changes, and sets a new
   // list each time.
   state.kept = []
@@ -58,6 +59,7 @@ vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
 vi.mock('../lib/mobile.js', () => ({ MOBILE: false, isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), shareExportBlob: vi.fn(), syncReminder: vi.fn() }))
 vi.mock('../lib/coach-api.js', () => ({ forgetCoach: vi.fn(() => Promise.resolve()) }))
+vi.mock('../lib/body-photo.js', () => ({ forgetBodyFocus: mocks.forgetBody }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: (...a) => mocks.confirmSheet(...a), importFromApp: vi.fn(),
@@ -244,5 +246,14 @@ describe('Settings — photos and videos', () => {
     await until(async () => !(await media.has(HASH)))
     expect(mocks.api).not.toHaveBeenCalled()
     expect(await media.has(HASH)).toBe(false)
+  })
+
+  // Ironvane: Today's body picker keeps a photo and the picks on this device, outside S. The reset
+  // promises "photos … on this device", so they go too.
+  it('Reset also forgets the body picker’s photos and picks on this device', async () => {
+    await mount()
+    act(() => { row('Reset everything').click() })
+    act(() => { mocks.confirmSheet.mock.calls[0][0].onConfirm() })
+    expect(mocks.forgetBody).toHaveBeenCalled()
   })
 })

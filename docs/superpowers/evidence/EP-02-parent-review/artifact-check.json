@@ -1,0 +1,35 @@
+{
+  "before": {
+    "count": 24,
+    "sha": "bd1ab806",
+    "bad": [],
+    "duplicateImages": [],
+    "unexpectedErrors": [],
+    "overflow": []
+  },
+  "after": {
+    "count": 30,
+    "sha": "49fa90cb",
+    "bad": [],
+    "duplicateImages": [],
+    "unexpectedErrors": [],
+    "overflow": []
+  },
+  "reviewedHead": "dbbecedf7ddd9a02c293400a7330e3f1d918b645",
+  "runtimeSha": "c0393641",
+  "runtimeSourceDeltaFromAcceptedCheckpoint": [],
+  "visualInspection": [
+    "after/stats-dark-390.png",
+    "after/settings-dark-390.png",
+    "after/bodyweight-light-320.png",
+    "after/rtl-ar-bodyweight-320.png",
+    "after/zoom200-bodyweight-320.png"
+  ],
+  "scriptReview": "Portable fixture present; native asserted workout/key events; media blocked before navigation; global cookie clear removed; exact origin matching verified statically. Latest cleanup-only script revisions were not re-executed.",
+  "independentReview": {
+    "reviewer": "thr_j2azi2kppd",
+    "at": "4a5ea009",
+    "verdict": "Conditional artifact acceptance; documentation conditions verified closed by parent at dbbecedf. Performance remains inconclusive."
+  },
+  "finalDocumentationCheck": "dbbecedf changes README and adds tracked probe-results/batch.txt only. Parent checked the 14 batch status lines, refusal wording, source identity and cumulative key-counter explanation."
+}

@@ -130,6 +130,9 @@ vi.mock('../components/WorkoutThumb.jsx', () => ({
   hasWorkoutMedia: () => true,
 }))
 vi.mock('../components/DurationWheel.jsx', () => ({ durationSheet: mocks.durationSheet }))
+// The load finder's own sheet is its own test's (components/LoadFinder.test.jsx).
+const finderMocks = vi.hoisted(() => ({ loadFinderSheet: vi.fn() }))
+vi.mock('../components/LoadFinder.jsx', () => ({ loadFinderSheet: finderMocks.loadFinderSheet }))
 vi.mock('../components/WorkoutSettingsSheet.jsx', () => ({ workoutSettingsSheet: mocks.workoutSettingsSheet }))
 // api.js reads navigator.userAgent at module scope. This file installs its own DOM inside the
 // tests rather than declaring a vitest environment, so it must not depend on an ambient one.
@@ -749,6 +752,49 @@ describe('active workout weight controls', () => {
     await mount([exercise('plain-bench', [false])])
     await press('Increase', '.setrow .stp.w')
     expect(mocks.S.active.entries[0].sets[0].w).toBe(62.5)
+  })
+
+  // The first-session load finder (EP22-T04): offered under the "First time?" line of an exercise
+  // never logged, and the weight it finds goes in like one typed into the first open set, so it
+  // carries down the work sets.
+  it('offers Find my weight on a never-logged exercise and fills the open sets with what it finds', async () => {
+    finderMocks.loadFinderSheet.mockClear()
+    await mount([exercise('plain-bench', [false, false, false], {
+      target: { mode: 'reps', reps: 8, weight: 0, bodyweight: false },
+    })])
+    const button = container.querySelector('[data-load-finder]')
+    expect(button).toBeTruthy()
+    expect(button.textContent).toContain('Find my weight')
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(finderMocks.loadFinderSheet).toHaveBeenCalledTimes(1)
+    const opts = finderMocks.loadFinderSheet.mock.calls[0][0]
+    expect(opts.unit).toBe('kg')
+    expect(opts.step).toBe(2.5)
+    expect(opts.ex.id).toBe('plain-bench')
+    expect(opts.floor).toBe(0)
+    expect(opts.label).toBe('Weight (kg)')
+    expect(opts.weights).toBeNull()
+    expect(opts.pair).toBe(false)
+    await act(async () => { opts.onUse(25) })
+    expect(mocks.S.active.entries[0].sets.map(x => x.w)).toEqual([25, 25, 25])
+    // A set logged while the finder was open (a watch can do that) is not written over: the
+    // weight goes to the first set still open at that moment.
+    await unmount()
+    finderMocks.loadFinderSheet.mockClear()
+    await mount([exercise('plain-bench', [false, false, false], { target: { mode: 'reps', reps: 8, weight: 0, bodyweight: false } })])
+    await act(async () => { container.querySelector('[data-load-finder]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const late = finderMocks.loadFinderSheet.mock.calls[0][0]
+    mocks.S.active.entries[0].sets[0] = { ...mocks.S.active.entries[0].sets[0], w: 17.5, done: true }
+    await act(async () => { late.onUse(25) })
+    expect(mocks.S.active.entries[0].sets.map(x => x.w)).toEqual([17.5, 25, 25])
+    // an assisted machine counts the other way round (more weight is easier), so it gets no finder
+    await unmount()
+    await mount([exercise('plain-bench', [false, false], { target: { mode: 'reps', reps: 8, weight: 0, bodyweight: false, assisted: true } })])
+    expect(container.querySelector('[data-load-finder]')).toBeNull()
+    // once a set is ticked the hint and its button are gone
+    await unmount()
+    await mount([exercise('plain-bench', [true, false])])
+    expect(container.querySelector('[data-load-finder]')).toBeNull()
   })
 
   // "Your last session" carries only the warm-ups you set up (#525): stepping a ramp rung makes it
@@ -2882,6 +2928,24 @@ describe('workout controls: the more menu and the set menu', () => {
     expect([...container.querySelectorAll('button')].some(b => b.textContent.trim() === 'Add set')).toBe(true)
   })
 
+  // EP23: a Beginner's first question about an exercise is how to do it, so it leads the menu.
+  // Everyone else finds it where it always was.
+  it('puts How to do it first in a Beginner\'s exercise menu, and leaves it under More for everyone else', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, { experience: 'beginner' })
+    await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const top = lastMenu().sections[0].items.filter(Boolean).map(it => it.label)
+    expect(top[0]).toBe('How to do it')
+    expect(menuItemsOf(lastMenu()).filter(it => it.label === 'How to do it')).toHaveLength(1)
+    await unmount()
+    for (const patch of [{}, { experience: 'intermediate' }]) {
+      await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, patch)
+      await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+      expect(lastMenu().sections[0].items.filter(Boolean).map(it => it.label)).not.toContain('How to do it')
+      expect(menuItemsOf(lastMenu()).filter(it => it.label === 'How to do it')).toHaveLength(1)
+      await unmount()
+    }
+  })
+
   it('routes swap, move, remove, warm-up and details through the More menu of that exercise', async () => {
     await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0)
     await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
@@ -3069,6 +3133,31 @@ describe('workout controls: the more menu and the set menu', () => {
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
     await act(async () => { item('Remove this set').onClick() })
     expect(mocks.S.active.entries[0].sets.length).toBe(1)
+  })
+
+  // EP21 (lib/experience.js): a Beginner's set menu keeps the rarer actions under More. Nothing is
+  // removed, and a profile that never chose a level keeps the menu above exactly.
+  it('keeps failure, drop set and burst under More for a Beginner', async () => {
+    await mount([exercise('plain-bench', [false, false])], 0, { experience: 'beginner' })
+    await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const sections = lastMenu().sections
+    const top = sections[0].items.filter(Boolean).map(it => it.label)
+    expect(top).toEqual(['Copy this set', 'Film this set', 'Note'])
+    const more = sections[1].more[0].items.filter(Boolean).map(it => it.label)
+    expect(more.slice(0, 3)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst'])
+    // still there, still working
+    expect(menuItemsOf(lastMenu()).map(it => it.label).sort()).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note', 'Make it a warm-up set', 'Tempo', 'Rest after this set', 'Colour tag', 'Remove this set'].sort())
+    await act(async () => { item('Drop set').onClick() })
+    expect(mocks.S.active.entries[0].sets[1].drops?.length).toBe(1)
+  })
+
+  it('leaves the set menu as it was for Intermediate and Experienced', async () => {
+    for (const experience of ['intermediate', 'advanced']) {
+      await mount([exercise('plain-bench', [false, false])], 0, { experience })
+      await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+      expect(lastMenu().sections[0].items.filter(Boolean).map(it => it.label).slice(0, 3)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst'])
+      await unmount()
+    }
   })
 
   // Cardio effort (Discord thehypetrainhobo): the third column stays the incline, so the rating

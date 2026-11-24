@@ -1,0 +1,43 @@
+{
+  "node": "v22.23.5",
+  "beforeSHA": "bd1ab806",
+  "afterSHA": "c0393641",
+  "counts": {
+    "before": 154,
+    "after": 154
+  },
+  "entryJS": {
+    "before": {
+      "name": "index-IvIi0JTe.js",
+      "raw": 586454,
+      "gzip": 183661
+    },
+    "after": {
+      "name": "index-BOMp_42d.js",
+      "raw": 587167,
+      "gzip": 183927
+    }
+  },
+  "entryCSS": {
+    "before": {
+      "name": "index-DG7O3Hwv.css",
+      "raw": 174378,
+      "gzip": 33681
+    },
+    "after": {
+      "name": "index-CdkOuIlO.css",
+      "raw": 175679,
+      "gzip": 34001
+    }
+  },
+  "totals": {
+    "before": {
+      "raw": 29240359,
+      "gzip": 5936580
+    },
+    "after": {
+      "raw": 29242416,
+      "gzip": 5937249
+    }
+  }
+}

@@ -63,6 +63,8 @@
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
   --pad:16px;
+  /* EP-02: --skel is the loading bar's base */
+  --skel:var(--surface-2);
   --icon-stroke:1.7;
 
   /* type scale (redesign 1.4.5, P1): the iPhone's text styles, in rem so a browser's text size
@@ -70,8 +72,8 @@
      and the views is one of these; what stays in px is a glyph (an icon's size) or a display
      figure inside a fixed box (the timer, a tile's number). Size, leading and tracking move as a
      set: tighter as the type grows, a hair looser as it shrinks (APPLE §15). */
-  --fs-caption2:.6875rem;  /* 11: tab labels, badges */
-  --fs-caption:.75rem;     /* 12: meta, axis text, small labels */
+  --fs-caption2:.75rem;    /* 12 (was 11, release pass: nothing under 12 px): tab labels, badges */
+  --fs-caption:.8125rem;   /* 13 (was 12, release pass): meta, axis text, small labels */
   --fs-footnote:.8125rem;  /* 13: subtitles, the small line over a title */
   --fs-subhead:.9375rem;   /* 15: secondary lines, values */
   --fs-callout:1rem;       /* 16: titles in dense lists, inputs */
@@ -1367,7 +1369,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .whdr.stick .wprog-row{margin-bottom:2px}
 .wvol{flex:none;font-size:var(--fs-caption);line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
-.exmedia img{width:100%;height:320px;object-fit:contain;display:block}
+/* 260 px, not 320: the catalogue's pictures are 180 px squares, and at 320 they were stretched
+   past 3x on a phone and read soft (release audit). */
+.exmedia img{width:100%;height:260px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
   position:absolute;bottom:9px;display:inline-flex;align-items:center;gap:4px;
   background:rgba(0,0,0,.45);color:#fff;border-radius:99px;padding:5px 11px;
@@ -1819,7 +1823,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 @keyframes swflashr{0%,35%{background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}100%{background:var(--surface)}}
 /* The first-use hint under the row it nudged. */
 .swhint{display:flex;justify-content:center;padding:4px 0 6px}
-.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc-ink);border-radius:99px;padding:7px 12px;font-size:var(--fs-footnote);font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
+.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);color:var(--label);border-radius:99px;padding:7px 12px;font-size:var(--fs-footnote);font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
 .swhint .icn{font-size:var(--fs-subhead);flex:none}
 .swhint .icn:last-child{opacity:.7}
 @keyframes swhintin{from{opacity:0;transform:translateY(-4px)}}
@@ -4661,3 +4665,175 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* ------------------------------------------------------------ Ironvane looks --
+   Settings → Look (lib/look.js). Bold is the default: tighter corners, and Space Grotesk (bundled
+   below, SIL OFL 1.1, assets/fonts/SpaceGrotesk-OFL.txt) for page titles, set in upper case, and
+   for the numbers you read at a glance: the logged weight and reps, the rest timer, a card's big
+   figure. Refined is the look from before, so nothing here applies to it. Only geometry and type
+   change: colours stay with the theme and the accent, and so does every contrast check. */
+@font-face{
+  font-family:'Space Grotesk';font-style:normal;font-display:swap;font-weight:300 700;
+  src:url('./assets/fonts/space-grotesk-latin-wght-normal.woff2') format('woff2-variations'),url('./assets/fonts/space-grotesk-latin-wght-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'Space Grotesk';font-style:normal;font-display:swap;font-weight:300 700;
+  src:url('./assets/fonts/space-grotesk-latin-ext-wght-normal.woff2') format('woff2-variations'),url('./assets/fonts/space-grotesk-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+:root[data-look="bold"]{
+  --r-sm:4px; --r:6px; --r-lg:8px; --r-xl:12px; --r-card:8px;
+  /* Latin only: other scripts fall through to the system face, glyph by glyph. */
+  --font-display:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+}
+:root[data-look="bold"] .hdr h1{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.01em;font-weight:700}
+:root[data-look="bold"] .stp{border-radius:var(--r)}
+:root[data-look="bold"] .stp .num,
+:root[data-look="bold"] #timer .t,
+:root[data-look="bold"] .card .big,
+:root[data-look="bold"] .stat-v{font-family:var(--font-display);font-variant-numeric:tabular-nums}
+:root[data-look="bold"] .sheet h3{font-family:var(--font-display);letter-spacing:0}
+
+/* ---------- Ironvane redesign, step 3: workout logging ---------- */
+/* How to do it: one card above the sets, opening the exercise sheet (video, steps, cues). */
+.howto{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;
+  margin-top:10px;padding:10px 12px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep);min-height:56px}
+.howto:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.howto:active{transform:scale(var(--press-scale-sm))}
+.howto-play{flex:none;width:52px;height:36px;border-radius:var(--r-sm, 8px);background:#000;color:#fff;
+  display:flex;align-items:center;justify-content:center}
+.howto-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.howto-t{font-weight:600;font-size:var(--fs-callout)}
+.howto-s{font-size:var(--fs-footnote);color:var(--label-2)}
+.howto-c{flex:none;color:var(--label-3)}
+/* Last time's set, lined up with the row it is for. The card measures itself: below 300 px of
+   row width the steppers need the room, so the column steps aside (the "Last time" line above
+   the card still says it). */
+.setcard.roomy{container-type:inline-size}
+.setrow .last,.sethead .last-sp{display:none;flex:none;width:44px;text-align:center;font-size:var(--fs-footnote);
+  color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sethead .last-sp{font-size:var(--fs-caption)}
+/* Shown only where the card reports its width: a WebView without container queries (iOS 15)
+   keeps the column hidden instead of squeezing the row. */
+@container (min-width: 300px){.setrow .last,.sethead .last-sp{display:block}}
+/* Done, on the Cards page: a square on the thumb side, filled when ticked; the tap area stays
+   44 px (::before). It grows to 36 px only in the plain two-column rows, where the room is: an
+   effort, per-side or timed row keeps the 30 px its tuned widths count on. */
+.setcard.roomy .setrow .chk{border-radius:var(--r-sm, 10px)}
+.setcard.roomy .setrow:not(.side):not(.eff3):not(.timed) .chk{width:36px;height:36px}
+.setcard.roomy .sethead:not(.per-side):not(.eff3):not(.timed) .ck-sp{width:36px}
+/* Add set: the whole width under the sets, dashed, so it reads as "one more row". */
+.wk-add.wk-add-wide{display:flex;width:100%;justify-content:center;margin-inline-start:0;margin-top:4px;
+  border-radius:var(--r, 12px);outline:1.5px dashed var(--sep);outline-offset:-1.5px}
+/* Note · Plates · Swap · More: one row of equal buttons under the card. */
+.wk-acts{display:grid;grid-template-columns:repeat(var(--n, 4), minmax(0, 1fr));gap:8px;margin-top:10px}
+.wk-acts button{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:6px 4px;
+  display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r, 12px);
+  background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep);
+  font-size:var(--fs-footnote);font-weight:600;color:var(--label)}
+.wk-acts button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-acts button:disabled{opacity:.45;cursor:default}
+.wk-acts button:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.wk-acts button:not(:disabled):active{transform:scale(var(--press-scale-sm))}
+/* Up next: the next page's exercise and its sets, one tap to it. */
+.upnext{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;
+  margin-bottom:10px;padding:12px 14px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.upnext:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.upnext-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.upnext-k{font-size:var(--fs-caption);color:var(--label-2)}
+.upnext-t{font-weight:600;font-size:var(--fs-callout);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upnext-c{flex:none;color:var(--label-3)}
+
+/* no overshoot: the sheet rises from the bottom edge, so a value past 1 would lift it off the edge */
+@supports (transition-timing-function:linear(0,1)){:root{--spring:linear(0,.6 12%,.88 26%,.97 40%,.995 56%,1 72%,1)}.sheet{animation-timing-function:var(--spring)}}
+/* EP-02 primitives (components/MetricCard, Skeleton, ErrorState). Existing tokens only. */
+.metric{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:start;animation:viewfade .16s var(--ease) both}
+button.metric{min-height:44px;width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.metric-l{font-size:var(--fs-footnote);color:var(--label-2)}
+.metric-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+.metric-v{font-size:var(--fs-large);font-weight:600;letter-spacing:-.026em;line-height:1.1;font-variant-numeric:tabular-nums}
+.metric-u{font-size:var(--fs-callout);color:var(--label-2)}
+.metric-d{font-size:var(--fs-footnote);color:var(--label-2)}
+.skel{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.skel-line{display:block;height:14px;width:100%;border-radius:var(--r-sm);background:linear-gradient(90deg,var(--skel) 0%,var(--surface-3) 50%,var(--skel) 100%);background-size:200% 100%;animation:skelshine 1.4s linear infinite}
+@keyframes skelshine{from{background-position:200% 0}to{background-position:-200% 0}}
+.err-state .btn{min-height:44px}
+@media (prefers-reduced-motion: reduce){.metric,.skel-line,.sheet{animation:none!important}}
+
+/* ---------- Ironvane redesign, step 4: the exercise sheet ---------- */
+/* Animation · Yours (and later Video · Steps): which picture shows, above it. */
+.ex-media-seg{margin-bottom:10px}
+/* Last · Best · estimated 1RM: one tile each, the number big. */
+.ex-nums{display:grid;grid-template-columns:repeat(var(--n, 3), minmax(0, 1fr));gap:8px;margin:12px 0 4px}
+.ex-num{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;min-width:0;min-height:56px;
+  padding:10px 12px;border-radius:var(--r, 12px);background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+button.ex-num{cursor:pointer}
+button.ex-num:disabled{cursor:default}
+button.ex-num:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+button.ex-num:not(:disabled):active{transform:scale(var(--press-scale-sm))}
+.ex-num.on{box-shadow:inset 0 0 0 1.5px var(--acc-ink)}
+.ex-num-l{display:flex;align-items:center;gap:2px;font-size:var(--fs-caption);color:var(--label-2)}
+.ex-num-l .icn{font-size:12px;color:var(--label-3)}
+.ex-num-v{font-weight:700;font-size:var(--fs-callout);font-variant-numeric:tabular-nums;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;text-align:start}
+.ex-calc{margin-top:4px}
+/* How to do it: the description, the steps and the YouTube search in one card. */
+.ex-learn{margin-top:14px;padding:4px 14px 10px;border-radius:var(--r-card, 14px);background:var(--surface);
+  box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.ex-learn h4.sec{margin-top:12px;padding:0}
+.ex-learn .exnote{margin-top:0;padding:0;background:none}
+.ex-learn .ex-yt{margin-top:6px}
+/* Add to this workout (wide) and Add to my plan. */
+/* Half and half rather than the mockup's 2:1: at a third of a phone, "Add to my plan" broke over
+   two or three lines. The filled button still reads as the main one. */
+.ex-acts{display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);gap:8px;margin:14px 0 4px}
+.ex-acts.one{grid-template-columns:minmax(0, 1fr)}
+.ex-acts .btn{margin:0;min-width:0}
+/* Setup for this exercise: folded, with what is inside named under the title. */
+.ex-setup{margin-top:14px;border-radius:var(--r-card, 14px);background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep)}
+.ex-setup-h{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;
+  min-height:56px;padding:8px 14px;border-radius:var(--r-card, 14px)}
+.ex-setup-h:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.ex-setup-h>.icn{flex:none;color:var(--label-3)}
+.ex-setup-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ex-setup-t{font-weight:600}
+.ex-setup-s{font-size:var(--fs-footnote);color:var(--label-2)}
+.ex-setup-b{padding:0 14px 12px;border-top:var(--hair) solid var(--sep)}
+
+
+/* ---------- Release pass (Nov 2026): readability, tap size, calmer colour ---------- */
+/* Today's Start reads as the button it is: the whole row starts the session, and the pill says so
+   at a size that can be read and aimed at (it was a 12 px tag). */
+.today-row .tag.acc{padding:8px 16px;border-radius:99px;background:var(--acc);color:var(--on-acc);
+  font-size:var(--fs-subhead);font-weight:600;text-transform:none;min-height:36px}
+/* An accent tag on its own soft tint: the accent's ink alone was 3.7:1 there in the light theme
+   and 3.9:1 at the largest text in the dark one. Leaning it toward the text colour clears 4.5:1. */
+.tag.acc{color:color-mix(in srgb, var(--acc-ink) 70%, var(--label))}
+@supports not (color: color-mix(in srgb, red, red)){.tag.acc{color:var(--label)}}
+/* The set number opens the set's menu: a 44 px target around the 24 px dot, as the tick has. */
+.setrow .n::before,.setrow-side>.n::before{content:'';position:absolute;inset:-10px}
+/* On the Cards page there is room: − and + get 40 px instead of 32 (they still give way first
+   when a long number needs the width). */
+.setcard.roomy .setrow .stp.w button,.setcard.roomy .setrow .stp.r button{width:40px}
+/* Larger text sizes: a title clamped to two lines gets four, and chip rows wrap instead of
+   sliding labels off the edge, so nothing a person chose to read bigger ends in "…". */
+.text-big .today-row .ttl,.text-big .item .tt{-webkit-line-clamp:4}
+.text-big .item .tt,.text-big .item .ss{white-space:normal}
+.text-big .chips:not(.wchips){flex-wrap:wrap;overflow:visible;touch-action:auto}
+/* Today on a wide screen (release pass): the cards flow into two columns instead of a 640 px
+   strip in the middle of a monitor. Columns, not a grid, so cards of different heights pack
+   without gaps; the DOM order (and what a screen reader reads) stays the phone's. */
+@media (min-width:1240px){
+  #app .narrow.iv-home{max-width:1040px;columns:2;column-gap:16px}
+  #app .narrow.iv-home>*{break-inside:avoid}
+  #app .narrow.iv-home>.hdr{column-span:all}
+}
+/* First time on an exercise (release pass): the hint sits where "Last time" would. */
+.firsttime{margin:0 0 6px;line-height:1.35;color:var(--label-2)}
+.firsttime-find{margin:0 0 8px}
+:root[data-theme="light"] .intg-pill.connected{color:#166a30}
+/* Light theme: an unselected segment's label on the grey track reaches 4.5:1 (it sat at 4.45). */
+:root[data-theme="light"] .seg button:not(.on){color:#5c5c63}

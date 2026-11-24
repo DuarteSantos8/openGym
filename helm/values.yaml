@@ -139,6 +139,8 @@ api:
     MEDIA_UPLOADS: ""        # "0" = off
     INTEGRATIONS: ""         # "webhook", "strava" (comma-separated) = Settings → Integrations (docs/INTEGRATIONS.md)
     INTEGRATIONS_ALLOW_LAN: ""  # "1" = webhooks may reach the home network
+    FOOD_LOOKUP: ""          # "1" = Open Food Facts preview API; Nutrition opt-in also required
+    FOOD_LOOKUP_CONTACT: ""  # optional operator email in outbound User-Agent
     STRAVA_CLIENT_ID: ""     # with "strava" in INTEGRATIONS; STRAVA_CLIENT_SECRET is in secretEnv
     TRAINERS: ""             # "on" = gyms, gym leads and trainers (docs/TRAINERS.md)
     LIBRARY: ""              # "on" = the community library (docs/SELF_HOSTING.md); data/shared on the same volume

@@ -45,6 +45,7 @@ jobs:
       images: ${{ steps.f.outputs.images == 'true' || github.event_name == 'workflow_dispatch' }}
       android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
       catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
+      nodered: ${{ steps.f.outputs.nodered == 'true' || github.event_name == 'workflow_dispatch' }}
       routines: ${{ steps.f.outputs.routines == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -124,6 +125,13 @@ jobs:
               - 'frontend/src/instr/**'
               - 'frontend/src/exercise-names/**'
               - 'frontend/src/exercise-desc/**'
+            # The Node-RED receiver example and the signing contract it verifies.
+            nodered:
+              - '.github/workflows/test.yml'
+              - 'contrib/node-red/**'
+              - 'api/integrations/crypto.js'
+              - 'api/integrations/events.js'
+              - 'api/integrations/providers/webhook.js'
             routines:
               - '.github/workflows/test.yml'
               - 'routines/**'
@@ -209,6 +217,94 @@ jobs:
             stats/frontend.json
             frontend/junit.xml
           retention-days: 30
+          if-no-files-found: ignore
+
+  # The layout in a real browser (scripts/ci/ui-layout.mjs): a demo build at phone and desktop
+  # size, with a rest timer running, fails when a floating action lands under the timer or the
+  # tab bar, or a screen logs an error. The screenshots stay as the `ui-layout` artifact.
+  # playwright-core is installed here only, pinned, outside the project: no new dependency.
+  ui-layout:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - name: Demo build
+        working-directory: frontend
+        run: npx vite build --outDir dist-demo
+        env:
+          VITE_DEMO: '1'
+      - name: Browser driver (pinned, not a project dependency)
+        run: npm install --prefix "$RUNNER_TEMP/pw" --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.65.1
+      - name: Layout check
+        run: node scripts/ci/ui-layout.mjs frontend/dist-demo ui-layout
+        env:
+          PLAYWRIGHT_DIR: ${{ runner.temp }}/pw
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: ui-layout
+          path: ui-layout
+          retention-days: 14
+
+  # openGym Next (EP16): the production build in real browsers (a phone-sized Chromium, an
+  # iPhone 13 profile on WebKit, a Pixel 7 profile on Chromium), as a guest, against a real API
+  # on a throwaway data folder (frontend/playwright.config.mjs). Fails on any request that leaves
+  # the machine, on an uncaught page error, and on a serious or critical axe (WCAG 2.1 AA)
+  # violation on the main screens.
+  e2e:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            api/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - run: npm ci --omit=optional --no-audit --no-fund
+        working-directory: api
+      - name: Web build
+        run: npm run build
+        working-directory: frontend
+      # The extra exercise pictures and demos (catalogue/photos, catalogue/demos), placed as the web
+      # image places them.
+      - name: Stage exercise pictures
+        run: node scripts/catalogue/stage-photos.mjs frontend/dist
+      # Chromium for the default and Pixel 7 projects, WebKit for the iPhone 13 project
+      # (Safari's engine: the iOS app is a WKWebView).
+      - name: Playwright Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+        working-directory: frontend
+      - name: End-to-end and accessibility tests
+        run: npm run test:e2e
+        working-directory: frontend
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: failure()
+        with:
+          name: e2e-report
+          path: |
+            frontend/e2e-report
+            frontend/e2e-results
+          retention-days: 7
           if-no-files-found: ignore
 
   api:
@@ -335,6 +431,10 @@ jobs:
         run: node scripts/catalogue/check-media.mjs
       - name: The community library blocks every catalogue file (licence, by checksum)
         run: node scripts/catalogue/media-hashes.mjs --check
+      - name: Everkinetic picture matcher (catalogue/photos)
+        run: node --test scripts/catalogue/everkinetic-pictures.test.mjs
+      - name: Exercise demos tables (catalogue/demos)
+        run: node --test scripts/catalogue/exercise-demos.test.mjs
 
   # The community routines (opengym.ch/routines): every file checked the way the submit service
   # checks a submission, the site built once, and the tests of the build, filters and service.
@@ -562,6 +662,35 @@ jobs:
               | grep -o '<testsuite [^>]*' | sed -E 's/.*name="([^"]*)".*tests="([0-9]+)".*failures="([0-9]+)".*/- JVM: \1: \2 tests, \3 failed/' || true
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # contrib/node-red: the importable webhook receiver. Its signature check against openGym's own
+  # signer, the flow JSON against verify.js, and the flow on a real Node-RED (pinned in
+  # contrib/node-red/e2e/package-lock.json) sent real signed, tampered, stale, replayed and
+  # oversized deliveries.
+  nodered:
+    needs: changes
+    if: needs.changes.outputs.nodered == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: contrib/node-red/e2e/package-lock.json
+      - name: Signature, replay and flow tests
+        run: npm test
+        working-directory: contrib/node-red
+      - name: Flow JSON is generated from verify.js
+        run: npm run check
+        working-directory: contrib/node-red
+      # npm ci from the lockfile, install scripts off (e2e script).
+      - name: Real Node-RED end to end
+        run: npm run e2e
+        working-directory: contrib/node-red
+
   # One summary of the numbers of every suite that ran.
   report:
     needs: [frontend, api, mcp]
@@ -593,7 +722,7 @@ jobs:
   # The single required check. Green when every job that ran passed and the others were
   # skipped because nothing they check changed.
   tests-ok:
-    needs: [changes, frontend, api, mcp, catalogue, routines, images, android]
+    needs: [changes, frontend, ui-layout, e2e, api, mcp, catalogue, routines, images, android, nodered]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

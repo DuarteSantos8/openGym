@@ -15,6 +15,7 @@ import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
+import MetricCard from '../components/MetricCard.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
@@ -24,6 +25,8 @@ import { RecapHomeCard } from '../components/Recap.jsx'
 import { scheduleModeOf } from '../lib/rotation.js'
 import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
+import FirstWins from '../components/FirstWins.jsx'
+import { experienceOf } from '../lib/experience.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
@@ -36,6 +39,7 @@ import { DeloadCard } from '../components/DeloadCard.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
 import { FastingLine } from '../components/SisterApps.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
+import BodyFocus from '../components/BodyFocus.jsx'
 import { isOn } from '../lib/modules.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
@@ -111,6 +115,8 @@ export default function Home() {
   const managedQueue = !!liveQ && !!S.rotation && liveQ.rotationId === S.rotation.id
   // On a rest day, saying when you train next beats leaving the row as a full stop.
   const next = !S.active && !todayRoutines.length && !(rotating && !plannerQueue) ? nextTrainingDay(S, todayISO()) : null
+  // A planned rest day for a Beginner: there is a plan, nothing is on it today, nothing was trained (EP25).
+  const restForBeginner = experienceOf(S) === 'beginner' && S.routines.length > 0 && !S.active && !routine && !doneToday && !!next
   // The streak card's fraction: this calendar week's workouts over the weekdays with a plan, or,
   // in a coach week, the queue's sessions and your own days together (lib/queue.js weekTally).
   const tally = weekTally(S, todayISO())
@@ -134,10 +140,13 @@ export default function Home() {
   const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
 
-  return <div className="narrow">
+  return <div className="narrow iv-home">
+    {isOn(S, 'nutrition') && <button className="card btn" style={{ width: '100%', minHeight: 44, textAlign: 'start' }} onClick={() => nav('/nutrition')}>{t('Nutrition diary')}</button>}
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
-      <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      {/* The page's own name, as the tab bar and the sidebar call it: the brand is already in the
+          sidebar and on the boot screen, and "IRONVANE" told a newcomer nothing about the page. */}
+      <div><h1>{user ? t('Hi {0}', user.name) : t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
     <TrainerNotice />
@@ -197,12 +206,17 @@ export default function Home() {
               : doneToday ? (doneToday.name ? t('{0} (done)', doneToday.name) : t('Workout done'))
               : routine ? todayName : t('Rest day')}{todayOvr && routine && !doneToday ? ' · ' + t('rescheduled') : ''}</div>
             {next && !doneToday && <div className="ss">{t('Next session: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
+            {/* A Beginner's rest day says why it is one (EP25): the plan is working, not paused. */}
+            {restForBeginner && <div className="ss">{t('Rest is when you get stronger. A walk today helps.')}</div>}
           </div>
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange-ink)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
           : routine ? <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={todayRoutines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>
           : <Icon name="plus" className="chev" />}
+      </div>}
+      {restForBeginner && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+        <Button size="sm" variant="ghost" icon="moon" data-learn="rest" onClick={() => nav('/learn?g=rest')}>{t('Why rest days matter')}</Button>
       </div>}
       {/* openNutrition's fasting window (lib/sister-nutrition.js), when this device is linked. */}
       <FastingLine />
@@ -219,6 +233,22 @@ export default function Home() {
       </div>}
       <SeasonDeco spot="home-hero" />
     </div>
+
+    {/* A profile with no plan yet meets the way to get one first, before anything else on Home (EP22). */}
+    {!S.routines.length && !S.active && (
+      <div className="card">
+        <CardHead icon="calendar" title={t('Welcome!')} sub={t('Answer six questions for a plan that fits you, or pick one yourself.')} />
+        {/* Find my plan (EP22, views/Onboarding.jsx): the way in for someone who does not know
+            what a split is. The starter plans and the empty plan stay one tap away. */}
+        <Button variant="primary" icon="sparkles" data-start="quiz" onClick={() => nav('/start')}>{t('Find my plan')}</Button>
+        <div style={{ height: 8 }} /><Button icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+        <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
+        <div style={{ height: 8 }} /><Button variant="ghost" icon="lightbulb" onClick={() => nav('/learn')}>{t('Learn the basics')}</Button>
+      </div>
+    )}
+
+    {/* Ironvane: tap your photo or the drawn body where you want to get stronger (Settings → Modules). */}
+    {on('bodyfocus') && <BodyFocus />}
 
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />
@@ -247,32 +277,24 @@ export default function Home() {
       </div>
     )}
 
-    {!S.routines.length && !S.active && (
-      <div className="card">
-        <CardHead icon="calendar" title={t('Welcome!')} sub={t('Set up your weekly routine to get going, or grab a ready-made starter plan.')} />
-        <Button variant="primary" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
-        <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
-      </div>
-    )}
 
-    {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
-        (components/StreakRule.jsx). */}
-    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
+    {/* A Beginner's first month (EP25, lib/wins.js): five wins about turning up, gone once all are in. */}
+    {on('motivation') && experienceOf(S) === 'beginner' && <FirstWins S={S} />}
 
-    {on('body') && S.showWeightCard !== false && <div className="card">
+    {/* A new profile picks how forgiving its streak is, once (components/StreakRule.jsx), but only
+        after its first logged workout: before that there is no streak to be forgiving about, and a
+        first visit already has the welcome card to read (release pass). */}
+    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && S.workouts.length > 0 && <StreakRuleWelcome />}
+
+    {on('body') && S.showWeightCard !== false && <div className="card iv-home-body">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
       <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
+          <MetricCard hideLabel label={t('Body weight')} value={fmtNum(bw.w)} unit={S.unit} delta={delta || 0}
+            deltaText={delta ? (delta > 0 ? '+' : '\u2212') + fmtNum(Math.abs(delta)) : undefined} deltaColor={delta ? bwDeltaColor(delta, bw.w, true) : undefined} />
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (
@@ -310,10 +332,10 @@ export default function Home() {
       <StreakParty S={S} info={streak} tally={tally} />
       {/* Settings → Look & Home → Weekly sets on Home (lib/muscle-targets.js): the muscle with
           the most room this week, one tap from the Stats card. */}
-      {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
-      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
+      {/* Straight to the logged-week muscle card under More, not Planned or Exercise progress. */}
+      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?focus=weekly-muscle')} />}
     </div>
       // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
-      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?focus=weekly-muscle')} /></div>}
   </div>
 }

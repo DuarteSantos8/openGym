@@ -1,0 +1,418 @@
+[
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": null,
+    "rows": [],
+    "chartSvgCount": 1,
+    "focusVisible": false,
+    "clippedRanges": false,
+    "media": [],
+    "case": "target-only",
+    "eligible": false,
+    "pickerOptions": [],
+    "screenshot": "round1-target-only.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650444024.687,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18417.295"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650444044.1,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18417.296"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": null,
+    "rows": [],
+    "chartSvgCount": 1,
+    "focusVisible": false,
+    "clippedRanges": false,
+    "media": [],
+    "case": "entry-only",
+    "eligible": false,
+    "pickerOptions": [],
+    "screenshot": "round1-entry-only.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650446276.365,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18485.294"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650446318.697,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18485.295"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": null,
+    "rows": [],
+    "chartSvgCount": 1,
+    "focusVisible": true,
+    "clippedRanges": false,
+    "media": [],
+    "case": "target-latest",
+    "eligible": false,
+    "pickerOptions": [
+      "Top set",
+      "Est. 1RM",
+      "Bodyweight"
+    ],
+    "screenshot": "round1-target-latest.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650448434.822,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18544.294"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650448435.225,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18544.295"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": null,
+    "rows": [],
+    "chartSvgCount": 1,
+    "focusVisible": true,
+    "clippedRanges": false,
+    "media": [],
+    "case": "entry-latest",
+    "eligible": false,
+    "pickerOptions": [
+      "Top set",
+      "Est. 1RM",
+      "Bodyweight"
+    ],
+    "screenshot": "round1-entry-latest.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650454898.413,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18669.294"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650454943.978,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18669.295"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": "ltr",
+    "caption": "Volume per session (kg)",
+    "rows": [
+      [
+        "Tue, 10 Nov 2026",
+        "1",
+        "250"
+      ],
+      [
+        "Sat, 14 Nov 2026",
+        "1",
+        "200"
+      ]
+    ],
+    "note": "Included 2 sessions; excluded 1: 0 timed/cardio, 1 without completed reps or positive volume, and 0 without exercise set details.",
+    "chartSvgCount": 1,
+    "focusVisible": true,
+    "clippedRanges": false,
+    "media": [],
+    "case": "mixed-return",
+    "eligible": true,
+    "pickerOptions": [
+      "Top set",
+      "Per set",
+      "Est. 1RM",
+      "Volume",
+      "Bodyweight"
+    ],
+    "tableRoles": [
+      {
+        "role": "table",
+        "name": "Volume per session (kg)"
+      },
+      {
+        "role": "rowheader",
+        "name": "Tue, 10 Nov 2026"
+      },
+      {
+        "role": "rowheader",
+        "name": "Sat, 14 Nov 2026"
+      },
+      {
+        "role": "columnheader",
+        "name": "Date"
+      },
+      {
+        "role": "columnheader",
+        "name": "Sets"
+      },
+      {
+        "role": "columnheader",
+        "name": "Volume (kg)"
+      }
+    ],
+    "screenshot": "round1-mixed-return.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650462452.578,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18797.294"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650462453.093,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18797.295"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  },
+  {
+    "lang": "ar",
+    "dir": "rtl",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": "rtl",
+    "caption": "حجم التدريب لكل جلسة (kg)",
+    "rows": [
+      [
+        "الثلاثاء، 10 نوفمبر 2026",
+        "1",
+        "250"
+      ],
+      [
+        "السبت، 14 نوفمبر 2026",
+        "1",
+        "200"
+      ]
+    ],
+    "note": "شمل الحساب 2 جلسات؛ واستُبعدت 1: 0 للتمارين الزمنية أو القلبية، و1 دون تكرارات مكتملة أو حجم موجب، و0 دون تفاصيل مجموعات التمرين.",
+    "chartSvgCount": 1,
+    "focusVisible": true,
+    "clippedRanges": false,
+    "media": [],
+    "case": "volume-ar-rtl-320",
+    "eligible": true,
+    "pickerOptions": [
+      "المجموعة الأثقل",
+      "لكل مجموعة",
+      "1RM تقديري",
+      "حجم التدريب",
+      "وزن الجسم"
+    ],
+    "tableRoles": [
+      {
+        "role": "table",
+        "name": "حجم التدريب لكل جلسة (kg)"
+      },
+      {
+        "role": "rowheader",
+        "name": "الثلاثاء، 10 نوفمبر 2026"
+      },
+      {
+        "role": "rowheader",
+        "name": "السبت، 14 نوفمبر 2026"
+      },
+      {
+        "role": "columnheader",
+        "name": "التاريخ"
+      },
+      {
+        "role": "columnheader",
+        "name": "المجموعات"
+      },
+      {
+        "role": "columnheader",
+        "name": "الحجم (kg)"
+      }
+    ],
+    "screenshot": "round1-volume-ar-rtl-320.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650470989.437,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18845.297"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794650471074.312,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "18845.298"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  }
+]

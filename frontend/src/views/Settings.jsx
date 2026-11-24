@@ -66,6 +66,7 @@ import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
+import { forgetBodyFocus } from '../lib/body-photo.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
@@ -101,6 +102,10 @@ import { libraryOn } from '../lib/shared-api.js'
 import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
+import { LEVELS, experienceOf, applyExperience } from '../lib/experience.js'
+import { isCloud } from '../lib/edition.js'
+import { useCloudAccount, whoIs, badgeCard } from '../lib/account-badge.js'
+import { levelName } from '../lib/experience-copy.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -119,6 +124,8 @@ import { offlineBuild } from '../lib/build-caps.js'
 import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
 import ReminderSounds from '../components/ReminderSounds.jsx'
 import DisplayRows from '../components/DisplayRows.jsx'
+import { APP_NAME, SOURCE_URL, UPSTREAM_URL } from '../lib/brand.js'
+import { lookOf } from '../lib/look.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, a row per page under four headings
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -169,6 +176,7 @@ const APPLE_UA = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Macintosh
 
 export default function Settings({ page = null, find = null, via = null, entryKey = null }) {
   const nav = useNavigate()
+  const cloudWho = useCloudAccount()     // Cloud edition: who is signed in to the hosted account, for its row
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
@@ -466,6 +474,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       resetAll()
       nav('/home'); toast(t('All data reset'))
       clearMediaAfterReset(!!user).catch(() => {})
+      forgetBodyFocus()   // Today's body picker: its photos and picks on this device
     },
   })
 
@@ -947,6 +956,20 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       </Section>
+      {/* The beginner's way in (EP21, EP22, EP24): the quiz that picks a plan, the level that decides
+          how much the workout screen shows (lib/experience.js), and the basics to read. */}
+      <Section footer={t('Beginner keeps the workout screen simple. Nothing is removed, and you can change this at any time.')}>
+        <Row icon="sparkles" iconTint="var(--green)" title={t('Find my plan')} subtitle={t('Six questions, then a plan that fits')} accessory="chevron" onClick={() => nav('/start')} />
+        <SelectRow icon="stairs" iconTint="var(--indigo)" title={t('Experience level')}
+          value={experienceOf(S) || ''}
+          options={[...(experienceOf(S) ? [] : [{ value: '', label: t('Not set') }]), ...LEVELS.map(l => ({ value: l, label: levelName(l) }))]}
+          onChange={v => { if (v) update(s => { applyExperience(s, v) }) }} />
+        <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
+      </Section>
+      {/* Cloud edition only (lib/edition.js): the hosted account. Nothing in a default build. */}
+      {isCloud() && <Section>
+        <Row icon="person" iconTint="var(--acc)" title={t('Account')} subtitle={cloudWho ? t('Signed in as {0}', whoIs(cloudWho)) : undefined} accessory="chevron" onClick={() => nav('/account')} />
+      </Section>}
     </>,
 
     units: () => <>
@@ -1068,6 +1091,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     look: () => <>
       <Section footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
+        {/* Ironvane's two looks (lib/look.js): Bold, the default, or Refined, the softer one. */}
+        <Row icon="sparkles" iconTint="var(--acc)" title={t('Look')} subtitle={lookOf(S) === 'bold' ? t('Sharp corners, bold titles and numbers.') : t('Soft corners, quieter type.')}>
+          <Segmented
+            className="seg-inline"
+            options={[
+              { value: 'bold', label: t('Bold') },
+              { value: 'refined', label: t('Refined') },
+            ]}
+            value={lookOf(S)}
+            onChange={v => update(s => { if (v === 'refined') s.look = 'refined'; else s.look = 'bold' })}
+          />
+        </Row>
         <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
           <Segmented
             className="seg-inline"
@@ -1091,7 +1126,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             emoji for those who like them (components/Glyph.jsx). Synced like the theme. */}
         <Row icon="sparkles" iconTint="var(--orange)" title={t('Icons')} subtitle={t('The flame, the medals and friends.')}>
           <Segmented className="seg-inline"
-            options={[{ value: 'opengym', label: 'openGym' }, { value: 'emoji', label: t('Emoji') }]}
+            options={[{ value: 'opengym', label: APP_NAME }, { value: 'emoji', label: t('Emoji') }]}
             value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
             onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
         </Row>
@@ -1347,8 +1382,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           build there is no address bar and no about box, so without this there is no way to tell
           which build you are running, or whether an update actually installed. */}
       <div className="dim small sp-version">
-        openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
+        {APP_NAME} v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
+        <a href={UPSTREAM_URL} target="_blank" rel="noopener"><span>{t('Based on openGym')}</span></a><br />
+        <a href={SOURCE_URL} target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
         {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated.
             The spans keep each link's words above its neighbours' 44 px tap targets (index.css). */}
         Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener"><span>Gym visual</span></a>, gymvisual.com.
@@ -1465,6 +1501,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   const [q, setQ] = useState(() => (key && lastQuery.key === key ? lastQuery.q : ''))
   const set = v => { lastQuery = { q: v, key }; setQ(v) }
   const hits = q.trim() ? searchSettings(q, ctx) : null
+  const cloudWho = useCloudAccount()
+  const cloudCard = isCloud() ? badgeCard(cloudWho, t) : null
   // The account card: who this is, and the one line that matters about it.
   const acct = DEMO ? { title: t('Demo'), sub: t('Example data, only in this browser.') }
     : user ? {
@@ -1472,9 +1510,10 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
       sub: sync && sync.status && sync.status !== 'ok' ? t('Sync needs a look') : MOBILE ? t('Synced with your server') : t('Account, devices and sync'),
     }
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
-    : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
+    // Cloud edition: signed in to the hosted account is not "Guest" (lib/account-badge.js).
+    : cloudCard || { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   // The face: one's own picture (components/Avatar.jsx), else the name's first letter, else the icon.
-  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : null
+  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : !DEMO && !MOBILE && cloudCard ? cloudCard.face : null
   const nav = useNavigate()
   // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
   // it the admin dashboard has no Coach card to land on.
@@ -1482,7 +1521,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
     <div className="sp-nav">
-      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
+      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Today')}><Icon name="chevronLeft" /><span>{t('Today')}</span></button>
     </div>
     <h1 className="sp-root-title">{t('Settings')}</h1>
     <div className="sp-search">
@@ -1518,7 +1557,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
-      <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
+      <div className="dim small sp-version">{APP_NAME} v{__APP_VERSION__}</div>
     </>}
   </div>
 }

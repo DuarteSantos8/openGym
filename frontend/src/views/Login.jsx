@@ -6,6 +6,7 @@ import { t } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import BrandLogo from '../components/BrandLogo.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
@@ -13,6 +14,8 @@ import { passwordOn, PasswordRegisterForm, openPasswordSignIn } from '../compone
 import { openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { openLostAccess } from '../components/LostAccess.jsx'
 import { oidcOn, oidcOnly, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText } from '../lib/oidc.js'
+import { isCloud } from '../lib/edition.js'
+import './first-screen.css'
 
 function RegisterSheet({ close }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
@@ -67,6 +70,18 @@ function RegisterSheet({ close }) {
   </>
 }
 
+/** A line of short sentences, one to a row: "A. B. C." becomes ["A.", "B.", "C."]. Any script's
+    full stop counts; a line with none stays whole. */
+export const sentences = line => String(line || '').match(/[^.!?。！？]+[.!?。！？]*/g)?.map(s => s.trim()).filter(Boolean) || []
+
+/** To the account, through the router: that numbers the step in this session's history, which is
+    how the account's Back can return here. Its own component so that only the Cloud edition's
+    first screen needs a router around it. */
+function AccountButton() {
+  const nav = useNavigate()
+  return <Button variant="primary" icon="person" onClick={() => nav('/account')}>{t('Sign in or create account')}</Button>
+}
+
 export default function Login() {
   const { setUser, adoptProfile, setGuest } = useStore()
   const config = useStore(s => s.config)
@@ -101,7 +116,8 @@ export default function Login() {
     {/* The official lockup (assets/logo), not an icon from the app's set. */}
     <h1 style={{ margin: '0 0 10px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={36} /></h1>
   </>
-  const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
+  // A sign-in column, not a full-width form: on a desktop the buttons stay a hand's width.
+  const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center', width: '100%', maxWidth: 440, marginInline: 'auto' }
 
   // Demo build: no backend to sign in against — the only way in is the local guest profile.
   if (DEMO) return (
@@ -118,13 +134,42 @@ export default function Login() {
     </div>
   )
 
+  // Cloud edition. No server of the app's own answered: a profile on one cannot be made or
+  // opened from here, so those buttons would only fail, and what works is the account and this
+  // device (ADR 0008, 0013). Or one answered and signs everyone in with that same account
+  // (OIDC_ONLY): the way in is still the account, whose Continue goes through the server's
+  // sign-in (lib/cloud/enter-app.js), and an admin keeps the passkey that server still takes
+  // from them. A server with other ways in beside the provider offers them all, below.
+  if (isCloud() && (!config || ssoOnly)) return (
+    <div className="narrow iv-first">
+      <div className="iv-first-mark"><BrandLogo size={30} /></div>
+      {/* The statement is the screen: one sentence a line, set large. */}
+      <h1 className="iv-first-say">{sentences(t('Your workouts. Your weights. Your profile.')).map((line, i) => <span key={i}>{line}</span>)}</h1>
+      <p className="iv-first-lead">{t('Answer six questions for a plan that fits you, or pick one yourself.')}</p>
+      {ssoNote}
+      <div className="iv-first-do">
+        <AccountButton />
+        {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+      </div>
+      <p className="iv-first-note">{ssoOnly
+        ? t('With an account your training follows you to your other devices. Without one it stays on this device.')
+        : t('Your training stays on this device. An account is for your plan and purchases.')}</p>
+      {/* The break-glass way, as on the provider-only screen below: an admin's passkey still
+          works on that server when the provider is down. */}
+      {ssoOnly && webauthnOK() && (adminWay
+        ? <Button icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button>
+        : <Button variant="ghost" className="dim" onClick={() => setAdminWay(true)}>{t('Admin? Use your passkey')}</Button>)}
+    </div>
+  )
+
   if (ssoOnly) return (
     <div className="narrow" style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
       {ssoNote}
       {ssoButton}
-      {canGuest && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+      {/* A real button, not grey small print: trying the app on this device is a full way in. */}
+      {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('This server signs everyone in with {0}. New here? Signing in makes your profile.', label)}</div>
       {/* The break-glass way: an admin's passkey still works when the provider is down. */}
       {webauthnOK() && (adminWay
@@ -166,7 +211,8 @@ export default function Login() {
         // Without passkeys and without the guest entrance there is no way in from this browser,
         // so say that plainly instead of offering a local profile that cannot be created.
         : t("This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.")}</div>}
-      {canGuest && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+      {/* A real button, not grey small print: trying the app on this device is a full way in. */}
+      {canGuest && <Button onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{pwOn ? t('Passkeys use {0}. A password works too, where passkeys do not.', bio()) : t('Passkeys use {0}. No passwords to remember.', bio())}<br />{t('Each profile keeps its own plan, workouts & body weight.')}</div>
     </div>
   )

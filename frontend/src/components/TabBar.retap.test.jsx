@@ -44,8 +44,8 @@ afterEach(() => {
 })
 
 describe('tapping the tab you are on', () => {
-  it.each(['Home', 'Plan', 'Stats', 'Exercises'])('%s scrolls its page to the top, smoothly', async label => {
-    const path = { Home: '/home', Plan: '/plan', Stats: '/stats', Exercises: '/library' }[label]
+  it.each(['Today', 'Plan', 'Progress', 'Library'])('%s scrolls its page to the top, smoothly', async label => {
+    const path = { Today: '/home', Plan: '/plan', Progress: '/stats', Library: '/library' }[label]
     await act(async () => router.navigate(path))
     const key = router.state.location.key
     at(3000)
@@ -57,12 +57,12 @@ describe('tapping the tab you are on', () => {
   it('jumps with Reduce Motion on', async () => {
     reduce = true
     at(3000)
-    await tap('Exercises')
+    await tap('Library')
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: 'auto' })
   })
 
   it('at the top of Exercises already, goes to the search field', async () => {
-    await tap('Exercises')
+    await tap('Library')
     expect(window.scrollTo).not.toHaveBeenCalled()
     expect(document.activeElement).toBe(page.querySelector('.search input'))
   })
@@ -77,14 +77,14 @@ describe('tapping the tab you are on', () => {
   it('leaves the page alone under an open sheet', async () => {
     at(3000)
     document.body.style.position = 'fixed'
-    await tap('Exercises')
+    await tap('Library')
     expect(window.scrollTo).not.toHaveBeenCalled()
   })
 })
 
 it('a tap on another tab switches as before and does not scroll', async () => {
   at(3000)
-  await tap('Stats')
+  await tap('Progress')
   expect(router.state.location.pathname).toBe('/stats')
   expect(window.scrollTo).not.toHaveBeenCalled()
 })
@@ -92,7 +92,7 @@ it('a tap on another tab switches as before and does not scroll', async () => {
 it('History lights Stats, and a tap there goes to Stats rather than up History', async () => {
   await act(async () => router.navigate('/history'))
   at(3000)
-  await tap('Stats')
+  await tap('Progress')
   expect(router.state.location.pathname).toBe('/stats')
   expect(window.scrollTo).not.toHaveBeenCalled()
 })

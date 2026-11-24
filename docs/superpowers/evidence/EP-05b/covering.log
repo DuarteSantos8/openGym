@@ -1,0 +1,7 @@
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+
+
+ Test Files  13 passed (13)
+      Tests  169 passed (169)
+   Start at  10:37:58
+   Duration  7.75s (transform 4.67s, setup 2.58s, import 7.56s, tests 1.34s, environment 1.77s)

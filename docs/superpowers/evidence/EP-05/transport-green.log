@@ -1,0 +1,274 @@
+TAP version 13
+# Subtest: operator/user gates require explicit booleans and never call transport
+ok 1 - operator/user gates require explicit booleans and never call transport
+  ---
+  duration_ms: 3.245834
+  type: 'test'
+  ...
+# Subtest: outbound request contains only fixed URL, headers and internal time bounds
+ok 2 - outbound request contains only fixed URL, headers and internal time bounds
+  ---
+  duration_ms: 6.091865
+  type: 'test'
+  ...
+# Subtest: operator contact cannot inject headers or arbitrary free text
+ok 3 - operator contact cannot inject headers or arbitrary free text
+  ---
+  duration_ms: 4.43704
+  type: 'test'
+  ...
+# Subtest: upstream 301 is one safe 502 with no retry or redirect
+ok 4 - upstream 301 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 0.654592
+  type: 'test'
+  ...
+# Subtest: upstream 302 is one safe 502 with no retry or redirect
+ok 5 - upstream 302 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 1.615936
+  type: 'test'
+  ...
+# Subtest: upstream 307 is one safe 502 with no retry or redirect
+ok 6 - upstream 307 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 0.440112
+  type: 'test'
+  ...
+# Subtest: upstream 400 is one safe 502 with no retry or redirect
+ok 7 - upstream 400 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 0.445712
+  type: 'test'
+  ...
+# Subtest: upstream 429 is one safe 502 with no retry or redirect
+ok 8 - upstream 429 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 0.879055
+  type: 'test'
+  ...
+# Subtest: upstream 500 is one safe 502 with no retry or redirect
+ok 9 - upstream 500 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 0.407732
+  type: 'test'
+  ...
+# Subtest: upstream 503 is one safe 502 with no retry or redirect
+ok 10 - upstream 503 is one safe 502 with no retry or redirect
+  ---
+  duration_ms: 0.570941
+  type: 'test'
+  ...
+# Subtest: truncated JSON, bad shapes and a misleading 404 cannot become a product or negative cache
+ok 11 - truncated JSON, bad shapes and a misleading 404 cannot become a product or negative cache
+  ---
+  duration_ms: 3.256994
+  type: 'test'
+  ...
+# Subtest: only an explicit not-found shape maps to 404 on HTTP 200 or 404
+ok 12 - only an explicit not-found shape maps to 404 on HTTP 200 or 404
+  ---
+  duration_ms: 1.415785
+  type: 'test'
+  ...
+# Subtest: stream byte limit is enforced before parsing regardless of content-length
+ok 13 - stream byte limit is enforced before parsing regardless of content-length
+  ---
+  duration_ms: 0.809864
+  type: 'test'
+  ...
+# Subtest: byte cap counts UTF-8 bytes; compressed responses are refused
+ok 14 - byte cap counts UTF-8 bytes; compressed responses are refused
+  ---
+  duration_ms: 0.885344
+  type: 'test'
+  ...
+# Subtest: total deadline includes waiting for headers and aborts the transport
+ok 15 - total deadline includes waiting for headers and aborts the transport
+  ---
+  duration_ms: 25.993932
+  type: 'test'
+  ...
+# Subtest: total deadline includes stalled body reads and destroys the stream
+ok 16 - total deadline includes stalled body reads and destroys the stream
+  ---
+  duration_ms: 26.068981
+  type: 'test'
+  ...
+# Subtest: cache hits keep original fetch time and recheck consent
+ok 17 - cache hits keep original fetch time and recheck consent
+  ---
+  duration_ms: 3.184704
+  type: 'test'
+  ...
+# Subtest: positive and shorter negative TTL expire; cache evicts at bounded size
+ok 18 - positive and shorter negative TTL expire; cache evicts at bounded size
+  ---
+  duration_ms: 3.643376
+  type: 'test'
+  ...
+# Subtest: upstream failures are not cached
+ok 19 - upstream failures are not cached
+  ---
+  duration_ms: 1.105215
+  type: 'test'
+  ...
+# Subtest: per-user limit counts cached reads and returns bounded Retry-After, other users are independent
+ok 20 - per-user limit counts cached reads and returns bounded Retry-After, other users are independent
+  ---
+  duration_ms: 1.059994
+  type: 'test'
+  ...
+# Subtest: instance budget is reserved before concurrent upstream calls and resets after 61 seconds
+ok 21 - instance budget is reserved before concurrent upstream calls and resets after 61 seconds
+  ---
+  duration_ms: 2.456621
+  type: 'test'
+  ...
+# Subtest: connection-time guarded DNS rejects private, mixed, empty, invalid and rebinding answers
+ok 22 - connection-time guarded DNS rejects private, mixed, empty, invalid and rebinding answers
+  ---
+  duration_ms: 9.360151
+  type: 'test'
+  ...
+# Subtest: push address overrides cannot open private DNS for food lookup
+ok 23 - push address overrides cannot open private DNS for food lookup
+  ---
+  duration_ms: 64.850585
+  type: 'test'
+  ...
+# Subtest: HTTPS transport has a finite DNS/TCP/TLS connect deadline and refuses other origins
+ok 24 - HTTPS transport has a finite DNS/TCP/TLS connect deadline and refuses other origins
+  ---
+  duration_ms: 22.131434
+  type: 'test'
+  ...
+# Subtest: GTIN accepts all four lengths and preserves leading zeros
+ok 25 - GTIN accepts all four lengths and preserves leading zeros
+  ---
+  duration_ms: 2.206939
+  type: 'test'
+  ...
+# Subtest: GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+ok 26 - GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+  ---
+  duration_ms: 0.279111
+  type: 'test'
+  ...
+# Subtest: normalization returns only bounded preview fields with attribution and fetch time
+ok 27 - normalization returns only bounded preview fields with attribution and fetch time
+  ---
+  duration_ms: 0.888043
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient null without converting it to zero
+ok 28 - omits invalid nutrient null without converting it to zero
+  ---
+  duration_ms: 0.306562
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient undefined without converting it to zero
+ok 29 - omits invalid nutrient undefined without converting it to zero
+  ---
+  duration_ms: 0.14645
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient -1 without converting it to zero
+ok 30 - omits invalid nutrient -1 without converting it to zero
+  ---
+  duration_ms: 0.208202
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient 5 without converting it to zero
+ok 31 - omits invalid nutrient 5 without converting it to zero
+  ---
+  duration_ms: 0.153901
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient  without converting it to zero
+ok 32 - omits invalid nutrient  without converting it to zero
+  ---
+  duration_ms: 0.169051
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient true without converting it to zero
+ok 33 - omits invalid nutrient true without converting it to zero
+  ---
+  duration_ms: 0.364813
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient NaN without converting it to zero
+ok 34 - omits invalid nutrient NaN without converting it to zero
+  ---
+  duration_ms: 0.368722
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient Infinity without converting it to zero
+ok 35 - omits invalid nutrient Infinity without converting it to zero
+  ---
+  duration_ms: 0.167611
+  type: 'test'
+  ...
+# Subtest: omits invalid nutrient 100000000000000000000 without converting it to zero
+ok 36 - omits invalid nutrient 100000000000000000000 without converting it to zero
+  ---
+  duration_ms: 0.08065
+  type: 'test'
+  ...
+# Subtest: missing nutrients remain absent; explicit numeric zero remains known
+ok 37 - missing nutrients remain absent; explicit numeric zero remains known
+  ---
+  duration_ms: 0.14613
+  type: 'test'
+  ...
+# Subtest: kJ alone converts with stated provenance, but valid kcal takes priority
+ok 38 - kJ alone converts with stated provenance, but valid kcal takes priority
+  ---
+  duration_ms: 0.175082
+  type: 'test'
+  ...
+# Subtest: explicit g/ml basis determines bounds, never package quantity
+ok 39 - explicit g/ml basis determines bounds, never package quantity
+  ---
+  duration_ms: 0.16222
+  type: 'test'
+  ...
+# Subtest: wrong units, qualifiers, estimates and computed-only nutrients remain unknown
+ok 40 - wrong units, qualifiers, estimates and computed-only nutrients remain unknown
+  ---
+  duration_ms: 0.119711
+  type: 'test'
+  ...
+# Subtest: hostile label fields become bounded control-free text and never objects
+ok 41 - hostile label fields become bounded control-free text and never objects
+  ---
+  duration_ms: 0.717832
+  type: 'test'
+  ...
+# Subtest: servings parse only explicit positive g or ml without density or household guesses
+ok 42 - servings parse only explicit positive g or ml without density or household guesses
+  ---
+  duration_ms: 0.258511
+  type: 'test'
+  ...
+# Subtest: unparseable shapes, absent basis, prepared values and wrong product fail safely
+ok 43 - unparseable shapes, absent basis, prepared values and wrong product fail safely
+  ---
+  duration_ms: 0.730493
+  type: 'test'
+  ...
+# Subtest: only the explicit v3 unknown-product shape is not found
+ok 44 - only the explicit v3 unknown-product shape is not found
+  ---
+  duration_ms: 0.176891
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 271.194719

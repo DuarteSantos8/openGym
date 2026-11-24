@@ -31,6 +31,8 @@ concurrency:
 
 jobs:
   build:
+    # Upstream's own publishing/bot job: forks skip it (same guard as mirror.yml).
+    if: github.repository == 'DuarteSantos8/openGym'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

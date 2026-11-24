@@ -1,0 +1,10 @@
+/* Brand colours stay fixed whatever the user's accent. The wordmark never splits; at enlarged
+   text sizes the complete name can wrap below the mark. Never mirror the lockup in RTL. */
+.ironvane-lockup{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;max-width:100%;font-weight:700;letter-spacing:-.036em;line-height:1.1;unicode-bidi:isolate;direction:ltr}
+.ironvane-lockup-name{white-space:nowrap}
+.ironvane-lockup-mark{display:inline-block;height:1.07em;width:calc(1.07em * 284 / 174);margin-inline-end:.2em}
+.ironvane-lockup-iron{color:#eef1f6}
+.ironvane-lockup-vane{color:#ff6b2c}
+:root[data-theme="light"] .ironvane-lockup-iron{color:#12151b}
+/* Light theme: the vane a shade deeper so the wordmark keeps 3:1 on the pale sidebar. */
+:root[data-theme="light"] .ironvane-lockup-vane{color:#e8590c}

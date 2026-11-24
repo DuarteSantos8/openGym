@@ -2,14 +2,14 @@
 "Start workout" = "开始训练";
 "Starts today’s planned workout, or opens the one already running." = "开始今天计划的训练，或打开正在进行的训练。";
 "Log weight" = "记录体重";
-"Logs your body weight without opening openGym." = "不打开 openGym 就记录你的体重。";
+"Logs your body weight without opening Ironvane." = "不打开 Ironvane 就记录你的体重。";
 "Weight" = "体重";
 "What’s your weight?" = "你的体重是多少？";
 "Today’s workout" = "今日训练";
 "Tells you what’s planned for today." = "告诉你今天的计划。";
 "Week streak" = "每周连续纪录";
 "Tells you how many weeks in a row you trained." = "告诉你连续训练了几周。";
-"Open openGym once, then ask me again." = "先打开一次 openGym，再来问我。";
+"Open Ironvane once, then ask me again." = "先打开一次 Ironvane，再来问我。";
 "You’re in the middle of %@." = "你正在进行 %@。";
 "You’re in the middle of a workout." = "你正在训练中。";
 "Your workout" = "你的训练";

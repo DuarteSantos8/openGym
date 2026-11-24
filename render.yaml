@@ -1,0 +1,58 @@
+# Ironvane Cloud: the app's own server on Render (docs/next/CLOUD-SERVER.md).
+#
+# Self-hosters: this file is not for you. Nothing reads it but Render, and docker-compose.yml
+# stays the way to run openGym on your own machine.
+#
+# One container, one disk. The server keeps everything in files under DATA_DIR, so the disk is
+# the data: Render pins a service with a disk to a single instance, which is what this server
+# expects anyway. api/test/render-blueprint.test.js holds this file to the server it deploys.
+services:
+  - type: web
+    name: ironvane-api
+    runtime: docker
+    plan: starter
+    region: virginia
+    branch: main
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: ./api
+    healthCheckPath: /api/health
+    # Deploy a commit only once its checks are green, and only when the server itself changed.
+    autoDeployTrigger: checksPass
+    buildFilter:
+      paths:
+        - api/**
+        - render.yaml
+    disk:
+      name: ironvane-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: DATA_DIR
+        value: /data
+      # The hosted account is the one way to get a profile here: no passkey or password sign-up
+      # straight on the server (docs/next/adr/0013-cloud-sign-in-through-oidc.md).
+      - key: OIDC_ONLY
+        value: "1"
+      - key: OIDC_LABEL
+        value: Ironvane
+      # The project's own addresses and ids. Typed into Render's dashboard when the blueprint is
+      # created and kept there: this repository is public.
+      #   ORIGIN          the app's public address, e.g. https://app.example (no trailing slash)
+      #   RP_ID           its host name alone, e.g. app.example
+      #   OIDC_ISSUER     https://<project-ref>.supabase.co/auth/v1
+      #   OIDC_CLIENT_ID  the public client registered in the project's OAuth server
+      #   ADMIN_UIDS      the owner's Account ID on this server (Settings, Account), once they
+      #                   have signed in. Empty until then. Anyone can make a hosted account, so
+      #                   FIRST_USER_ADMIN ("whoever signs in first") is deliberately not used.
+      - key: ORIGIN
+        sync: false
+      - key: RP_ID
+        sync: false
+      - key: OIDC_ISSUER
+        sync: false
+      - key: OIDC_CLIENT_ID
+        sync: false
+      - key: ADMIN_UIDS
+        sync: false

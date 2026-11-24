@@ -102,12 +102,14 @@ test('GET /api/config: signed_in says what GET /api/me would answer, and /api/me
 });
 
 test('a session always gets the key, so the client can tell "no Coach" from "not signed in"', async t => {
-  const h = await startServer(t, { COACH_DISABLED: '1' });
+  const h = await startServer(t, { COACH_DISABLED: '1', FOOD_LOOKUP: '' });
   const config = headers => fetch(`${h.api}/api/config`, headers ? { headers } : undefined).then(r => r.json());
 
   // The client caches this answer for the page load. Without the key it cannot tell an instance
   // with no Coach from an answer made for nobody, and re-asks on every sign-in forever.
-  assert.deepEqual(await config({ Cookie: `gymsid=${mint(UID)}` }), { invite_only: true, allow_guest: false, signed_in: true, api_tokens: true, coach: null },
+  assert.deepEqual(await config({ Cookie: `gymsid=${mint(UID)}` }), {
+    invite_only: true, allow_guest: false, signed_in: true, api_tokens: true, coach: null, foodLookup: { status: 'disabled' }
+  },
     'signed in, no Coach configured: the key is there and it is null');
   assert.deepEqual(await config(), { invite_only: true, allow_guest: false, signed_in: false }, 'and a stranger gets no key at all');
 });
