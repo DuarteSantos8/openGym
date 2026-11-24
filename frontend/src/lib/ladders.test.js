@@ -70,4 +70,25 @@ describe('the Skill ladder rule', () => {
     expect(second.sets.map(x => x.r)).toEqual([6, 6, 6])
     expect(second.target.rowReps).toBeUndefined()
   })
+
+  it('steps a per-side rung by two, so no side is asked for half a rep', () => {
+    const side = { ...cfg, id: '1759', side: true }
+    expect(nextPrescription({ workouts: [] }, side)).toMatchObject({ kind: 'first', reps: 6 })
+    expect(nextPrescription({ workouts: [done('2026-11-01', '1759', 6)] }, side)).toMatchObject({ kind: 'up', reps: 8 })
+    // an odd goal an earlier session stamped is rounded down to a pair, for a climb and a hold
+    expect(nextPrescription({ workouts: [done('2026-11-01', '1759', 7)] }, side)).toMatchObject({ kind: 'up', reps: 8 })
+    const miss = done('2026-11-01', '1759', 7)
+    miss.entries[0].sets[2].r = 4
+    expect(nextPrescription({ workouts: [miss] }, side)).toMatchObject({ kind: 'hold', reps: 6 })
+    // a plain range still climbs a rep at a time
+    expect(nextPrescription({ workouts: [done('2026-11-01', '0662', 6)] }, cfg)).toMatchObject({ kind: 'up', reps: 7 })
+  })
+
+  it('writes whole reps into each side of the next session', () => {
+    const side = { ...cfg, id: '1759', side: true }
+    const S = { workouts: [done('2026-11-01', '1759', 6)] }
+    const plan = buildPlannedEntry(S, side, null)
+    expect(plan.sets).toHaveLength(3)
+    for (const s of plan.sets) for (const k of ['L', 'R']) expect(s.sides[k].r).toBe(4)
+  })
 })
