@@ -2149,7 +2149,7 @@ function ActiveWorkout() {
         else delete activeEntry.carried
         activeEntry.sets = [...doneWarm, ...freshWarm.slice(doneWarm.length), ...doneWork, ...freshWork.slice(doneWork.length)]
       })
-    }, null, routine, null, null, undefined, { freestyle: routine ? false : 'edit' })
+    }, null, routine, null, null, undefined, { freestyle: routine ? false : 'edit', keepOnClose: true })
   }
 
   // Remove a whole exercise from the session. The confirmation always asks first; in a

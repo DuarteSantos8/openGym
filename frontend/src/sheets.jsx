@@ -2631,7 +2631,7 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
 // anyway (lib/log-workout.js LOG_LIMITS). Typing more settles on the limit when the field is left.
 const PLAN_MAX_SETS = 50
 const PLAN_MAX_REPS = 1000
-function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
+function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle, keepOnClose }) {
   // Shown and typed in the exercise's own weight unit when it has one (#657, lib/ex-unit.js); the
   // config it opened with and the one it saves are in the profile's.
   const live = useStore(s => s.S)
@@ -2653,7 +2653,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const seedStored = existing || initial || pickedExerciseConfig(ex.id, undefined, live)
   const seed = viewTarget(live, ex.id, seedStored)
   const cardioEx = isCardio(ex.id) || modeOf({ ...seed, id: ex.id }) === 'cardio'
-  const [c, setC] = useState(() => {
+  const [c, setDraft] = useState(() => {
     const cfg = { ...seed }
     // A session's target carries the meaning of its dumbbell weight as a stamp (lib/dumbbells.js);
     // one that only repeats the exercise's own default is not the slot's choice, so it is not kept.
@@ -2668,6 +2668,17 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // in its `mode` (modeOf reads it before the body part).
   const mode = modeOf({ ...c, id: ex.id })
   const cardio = cardioEx && mode === 'cardio'
+  // Any change made on the sheet marks it changed (#1079). In a live workout (`keepOnClose`) a
+  // changed sheet is saved however it closes: swiped away, Back, the backdrop, not only with the
+  // button, so a rest time or a per-side switch set mid-set is not lost. Nothing changed, nothing
+  // saved; the buttons that leave for something else (edit the exercise) do not save either.
+  // (Thanks @lodepav, whose #1213 had the idea.)
+  const dirty = useRef(false)
+  const done = useRef(false)
+  const setC = v => { dirty.current = true; setDraft(v) }
+  // What it opened with, so a change undone by hand (or a control that only re-set a value) is no change.
+  const opened = useRef(null)
+  if (opened.current == null) opened.current = JSON.stringify(c)
   const [showOther, setShowOther] = useState(false)
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
@@ -2705,7 +2716,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const saveAs = out => onSave(storedTarget(useStore.getState().S, ex.id, out, seedStored))
   const save = () => {
     if (progressionStepInvalid) return
+    done.current = true
     close()
+    commitDraft()
+  }
+  const commitDraft = () => {
     const sets = Math.min(PLAN_MAX_SETS, Math.max(1, Math.round(c.sets) || (cardio ? 1 : 3)))
     // Only carry progression settings that differ from the inherited default, so a plan file
     // stays readable and "follow the routine" keeps meaning exactly that.
@@ -2819,6 +2834,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       saveAs(out)
     }
   }
+  // The latest draft's save, for the close below to run after the sheet has gone.
+  const keep = useRef(null)
+  keep.current = () => { if (keepOnClose && dirty.current && !done.current && !progressionStepInvalid && JSON.stringify(c) !== opened.current) { done.current = true; commitDraft() } }
+  useEffect(() => () => keep.current?.(), [])
   return <>
     {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
       : <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
@@ -3224,17 +3243,18 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {/* What saving does, when it is neither of the two usual things: the routine editor's
         Replace (#110) seeds this sheet with the slot it replaces, and saving puts the exercise
         into that slot. */}
-    <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
-    {isCustomEx(ex) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
+    <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (keepOnClose ? t('Done') : existing ? t('Save') : t('Add to routine'))}</Button>
+    {isCustomEx(ex) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { done.current = true; close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
     {/* The routine editor's counterpart to a workout's Swap (#110): another exercise in this
         slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
         changed on this sheet and not saved is left behind, as closing it would. */}
-    {onReplace && <><div style={{ height: 8 }} /><Button icon="swap" onClick={() => { close(); onReplace() }}>{t('Replace exercise')}</Button></>}
-    {onDelete && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { close(); onDelete() }}>{t('Remove from routine')}</Button></>}
+    {onReplace && <><div style={{ height: 8 }} /><Button icon="swap" onClick={() => { done.current = true; close(); onReplace() }}>{t('Replace exercise')}</Button></>}
+    {onDelete && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { done.current = true; close(); onDelete() }}>{t('Remove from routine')}</Button></>}
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
+// `opts.keepOnClose`: the live workout's, which saves a changed draft however it is closed (#1079).
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} keepOnClose={!!opts.keepOnClose} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan
