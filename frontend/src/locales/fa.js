@@ -5969,4 +5969,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "روی ساعت هم بپرس",
   "Starting from your wrist? Three quick taps there first, once a day.": "از مچت شروع می‌کنی؟ اول سه ضربهٔ سریع همان‌جا، روزی یک بار.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "گرم‌کردن را هم امتیاز بده",
+  "Off keeps RIR or RPE for the sets that count.": "خاموش: RIR یا RPE فقط برای ست‌هایی که حساب می‌شوند.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "یک وزنه اضافه کن:",
+  "Or fill in a whole run, lightest to heaviest:": "یا یک ردیف کامل، از سبک‌ترین تا سنگین‌ترین:",
+  "Up to ({0})": "تا ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "روشن‌کردن صفحه در پایان استراحت",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "خاموش: گوشی قفل‌شده تاریک می‌ماند. لرزش و صدا همچنان می‌آیند.",
 }

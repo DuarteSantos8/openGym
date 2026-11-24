@@ -4,7 +4,8 @@ import { EXDB } from './exercises-data.js'
 import V13_IDS from './catalogue-v13-ids.json' with { type: 'json' }
 import { checkName, stagedExercises } from '../../../scripts/de-name-rules.mjs'
 import {
-  EXERCISE_NAME_LANGS, RTL_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText
+  EXERCISE_NAME_LANGS, RTL_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText,
+  SENTENCE_CASE_LANGS,
 } from './i18n-core.js'
 
 // Every translated-name pack, checked the same way. The packs are generated from
@@ -291,12 +292,13 @@ for (const lang of EXERCISE_NAME_LANGS) {
     test('shows the translation first with the English title in parentheses, and can hide or replace it', () => {
       // One whose name differs from the English, or the loanword rule below takes over.
       const exercise = EXDB.find(e => pack[e.id] && pack[e.id].toLocaleLowerCase(lang) !== e.n.toLocaleLowerCase('en'))
-      const name = pack[exercise.id]
+      // Russian and Ukrainian show a capital first letter only (#1247, i18n-core SENTENCE_CASE_LANGS).
+      const name = SENTENCE_CASE_LANGS.includes(lang) ? pack[exercise.id][0].toLocaleUpperCase(lang) + pack[exercise.id].slice(1) : pack[exercise.id]
       _setLangState(lang, {}, null, pack)
       // A right-to-left language isolates the English part, brackets included (i18n-core exerciseNameFor).
       const english = RTL_LANGS.has(lang) ? `\u2068(${exercise.n})\u2069` : `(${exercise.n})`
       expect(exerciseNameFor(exercise)).toBe(`${name} ${english}`)
-      expect(exerciseNameSearchText(exercise)).toContain(name)
+      expect(exerciseNameSearchText(exercise)).toContain(pack[exercise.id])
       expect(exerciseNameSearchText(exercise)).toContain(exercise.n)
       _setLangState(lang, {}, null, pack, false)
       expect(exerciseNameFor(exercise)).toBe(name)

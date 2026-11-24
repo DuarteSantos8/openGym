@@ -6003,4 +6003,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Saatte de sor",
   "Starting from your wrist? Three quick taps there first, once a day.": "Bilekten mi başlıyorsun? Önce orada üç hızlı dokunuş, günde bir kez.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Isınmaları da puanla",
+  "Off keeps RIR or RPE for the sets that count.": "Kapalıyken RIR veya RPE yalnızca sayılan setlerde kalır.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Tek bir ağırlık ekle:",
+  "Or fill in a whole run, lightest to heaviest:": "Ya da hafiften ağıra bütün bir sırayı doldur:",
+  "Up to ({0})": "En fazla ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Dinlenme bitince ekranı aç",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Kapalıyken kilitli telefon karanlık kalır. Titreşim ve ses yine gelir.",
 }

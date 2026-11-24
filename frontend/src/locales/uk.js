@@ -6000,4 +6000,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Питати й на годиннику",
   "Starting from your wrist? Three quick taps there first, once a day.": "Починаєш із зап’ястя? Спершу там три швидкі дотики, раз на день.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Оцінювати й розминку",
+  "Off keeps RIR or RPE for the sets that count.": "Вимк.: RIR або RPE лише для робочих підходів.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Додати одну вагу:",
+  "Or fill in a whole run, lightest to heaviest:": "Або заповни весь ряд, від легкого до важкого:",
+  "Up to ({0})": "До ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Вмикати екран наприкінці відпочинку",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Вимк.: заблокований телефон лишається темним. Вібрація і звук усе одно будуть.",
 }

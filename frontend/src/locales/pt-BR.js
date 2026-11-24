@@ -4423,6 +4423,11 @@ export const PT_BR_OVERRIDES = {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Perguntar também no relógio",
   "Starting from your wrist? Three quick taps there first, once a day.": "Começando pelo pulso? Primeiro três toques rápidos lá, uma vez por dia.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Or fill in a whole run, lightest to heaviest:": "Ou preencha uma série inteira, do mais leve ao mais pesado:",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Acender a tela no fim do descanso",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Desligado, um celular bloqueado fica no escuro. A vibração e o som continuam.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

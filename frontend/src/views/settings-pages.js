@@ -161,6 +161,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
   { page: 'workout', title: 'Rest before the next exercise', icon: 'timer', tint: 'var(--teal)', kw: 'rest break next exercise transition machine walk switch change longer between exercises timer' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', mod: 'effort', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },
+  { page: 'workout', title: 'Rate warm-ups too', icon: 'sunrise', tint: 'var(--orange)', mod: 'effort', kw: 'warm-up warmup effort rir rpe rate unrated skip', when: c => c.effortScale },
   { page: 'workout', title: 'Shown under each exercise', icon: 'history', tint: 'var(--blue)', kw: 'last time best set reference previous', opts: ['Last time', 'Best set'] },
   { page: 'workout', title: 'Compare sets with last time', icon: 'arrowUp', tint: 'var(--green)', kw: 'arrow trend last time previous better worse same set compare up down' },
   { page: 'workout', title: 'Record trophies', icon: 'trophy', tint: 'var(--yellow)', kw: 'record pr personal best trophy heaviest e1rm volume' },
@@ -210,6 +211,7 @@ export const SEARCH = [
   { page: 'alerts', title: 'Vibrate', icon: 'vibrate', tint: 'var(--indigo)', kw: 'vibrate vibration haptic haptics buzz' },
   { page: 'alerts', title: 'Vibrate on silent too', icon: 'vibrate', tint: 'var(--indigo)', kw: 'alarm silent vibrate android', when: c => c.mobile && c.android && c.canVibrate && c.vibrate },
   { page: 'alerts', title: 'Flash the screen', icon: 'sun', tint: 'var(--yellow)', kw: 'flash light blink screen' },
+  { page: 'alerts', title: 'Light up the screen at rest end', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake screen lock locked light up display dark pocket battery rest end', when: c => c.android },
   { page: 'alerts', title: 'Spoken cues', icon: 'chat', tint: 'var(--teal)', kw: 'voice speak speech talk tts announce next set countdown read aloud audio' },
   { page: 'alerts', title: 'Voice', icon: 'chat', tint: 'var(--teal)', kw: 'voice voices speech style lines clips', when: c => c.spokenCues },
   // Timer alerts → Voice

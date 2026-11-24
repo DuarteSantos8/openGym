@@ -6003,4 +6003,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "在手表上也问一下",
   "Starting from your wrist? Three quick taps there first, once a day.": "从手腕上开始？先在那里快速点三下，每天一次。",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "热身组也评分",
+  "Off keeps RIR or RPE for the sets that count.": "关闭后，RIR 或 RPE 只用于正式组。",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "添加一个重量：",
+  "Or fill in a whole run, lightest to heaviest:": "或一次填入一整串，从轻到重：",
+  "Up to ({0})": "最重 ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "休息结束时点亮屏幕",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "关闭后，锁屏的手机保持黑屏，震动和声音照常。",
 }

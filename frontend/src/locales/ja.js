@@ -5935,4 +5935,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "ウォッチでも聞く",
   "Starting from your wrist? Three quick taps there first, once a day.": "手首から始める？まずそこでさっと3タップ、1日1回だけ。",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "ウォームアップも評価する",
+  "Off keeps RIR or RPE for the sets that count.": "オフにすると、RIRやRPEは本番セットだけになります。",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "重量を1つ追加:",
+  "Or fill in a whole run, lightest to heaviest:": "または軽い順に一括入力:",
+  "Up to ({0})": "最大 ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "休憩の終わりに画面を点灯",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "オフにするとロック中の画面は暗いまま。振動と音はそのまま鳴ります。",
 }

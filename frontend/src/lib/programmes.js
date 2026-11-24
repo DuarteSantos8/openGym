@@ -29,7 +29,7 @@
 // "Your last session" would have opened with, and the reps are the routine's. An RPE target is
 // shown with it and leaves the weight to the policy. A deload week without a %1RM takes the policy's
 // weight down by the usual deload factor, and none of its sessions count for progression.
-import { isoOf, todayISO, uid, weekKey, MONDAY, SUNDAY } from './format.js'
+import { isoOf, todayISO, uid, weekKey, weekStartOf } from './format.js'
 import { queueOf } from './queue.js'
 import { REST, saveRotation, startPass, stopPass, chooseFixedWeek } from './rotation.js'
 import { best1RM } from './onerm.js'
@@ -182,7 +182,7 @@ export function stepWeek(week, step = REPEAT_BUMP) {
 
 /* ------------------------------- the running programme ------------------------------- */
 
-const wsOf = S => (S?.weekStart === SUNDAY ? SUNDAY : MONDAY)
+const wsOf = weekStartOf
 const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000)
 const weeksBetween = (a, b, ws) => Math.round(daysBetween(weekKey(a, ws), weekKey(b, ws)) / 7)
 const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }

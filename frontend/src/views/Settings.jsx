@@ -14,12 +14,12 @@ import { copyText } from '../lib/clipboard.js'
 import { useUI } from '../store/useUI.js'
 import { activeGym, gymLabel, switchGym } from '../lib/gym-inventory.js'
 import { startTour, TUTORIALS, TUTORIAL_COPY, tutorialDone } from '../lib/tour.js'
-import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
+import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, SATURDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { activeProfile as activeEquipment, benchKindOf, withBench, profileEquipment, ACC_V } from '../lib/equipment.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, warmupEffortOn } from '../lib/history.js'
 import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.jsx'
 import WarmupRampSheet, { rampLine } from '../components/WarmupRampSheet.jsx'
 import { languageOptions } from '../components/LanguageChip.jsx'
@@ -479,7 +479,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const ctx = {
     user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
-    recordHints: recordHintsOn(S),
+    recordHints: recordHintsOn(S), effortScale: effortOf(S) !== 'none',
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     nfc: nfcOK, gymReminder,
@@ -504,7 +504,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     workout: () => (S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer')) + ' · ' + layoutLabel,
     alerts: () => [S.sound ? t('Sound') : null, canVibrate && S.vibrate !== false ? t('Vibrate') : null, S.timerFlash ? t('Flash') : null].filter(Boolean).join(' · ') || t('Silent'),
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
-    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
+    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S)),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
@@ -635,6 +635,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Segmented className="seg-inline"
             options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
             value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
+        </Row>}
+        {/* Off: warm-up rows lose their effort cell, in every layout and Focus (#1374). */}
+        {effortOf(S) !== 'none' && <Row icon="sunrise" iconTint="var(--orange)" title={t('Rate warm-ups too')}
+          subtitle={t('Off keeps RIR or RPE for the sets that count.')}>
+          <Switch aria-label={t('Rate warm-ups too')} checked={warmupEffortOn(S)} onChange={v => update(s => { s.warmupEffort = v })} />
         </Row>}
         {/* The line under each exercise that the rows are held against (#173). Tapping the line in
             a workout switches it too; this is where the choice can be found without knowing that. */}
@@ -902,6 +907,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="sun" iconTint="var(--yellow)" title={t('Flash the screen')}>
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
+          {/* Android app (#1475): the end of a rest wakes a locked phone. On, as it always was;
+              off for a phone in a pocket that should stay dark through a long workout. */}
+          {MOBILE && android && <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Light up the screen at rest end')}
+            subtitle={t('Off keeps a locked phone dark. The buzz and the sound still come.')}>
+            <Switch aria-label={t('Light up the screen at rest end')} checked={S.restLightScreen !== false} onChange={v => update(s => { s.restLightScreen = v })} />
+          </Row>}
         </Section>
         {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
             workout begins and each superset member the focus moves to without a rest (#1210),
@@ -951,11 +962,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           value={weekTargetOf(S) || 0} onChange={v => update(s => { s.weekTarget = v || null })}
           options={[{ value: 0, label: t('Off'), subtitle: t('No weekly countdown on Home.') },
             ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ value: n, label: String(n) }))]} />}
-        {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
+        {/* Monday, Sunday or Saturday (#1216): the Plan list, the Home strip, the calendar grid and every "this
             week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>
           <Segmented className="seg-inline"
-            options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }]}
+            options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }, { value: SATURDAY, label: t('Saturday') }]}
             value={weekStartOf(S)} onChange={v => update(s => { s.weekStart = v })} />
         </Row>
       </Section>

@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest'
 import {
   readActivity, activitiesOf, withActivity, activityTotals, activityStimuli, activityFromHealth, mergeHealthActivities,
   sportOfName, activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities, isOwnRecord, hkSportName, activityLine,
+  activitiesFromStravaExport, isStravaExport, stravaStart,
 } from './activities.js'
 import { streakInfo } from './streak.js'
 import { fatigueOf } from './recovery.js'
-import { parseImport, mergeImport } from './import-csv.js'
+import { parseImport, mergeImport, parseCSV } from './import-csv.js'
 
 const at = (iso, h = 18) => new Date(`${iso}T${String(h).padStart(2, '0')}:00:00`).getTime()
 
@@ -146,3 +147,65 @@ describe('activities: imports', () => {
   })
 })
 
+
+// Strava's account archive, activities.csv (#1313, idea by @christophercuongkim).
+describe('activities: a Strava archive', () => {
+  const HEAD = 'Activity ID,Activity Date,Activity Name,Activity Type,Activity Description,Elapsed Time,Distance,Max Heart Rate,Elapsed Time,Distance'
+  const rows = text => parseCSV(text)
+  const file = (...lines) => rows([HEAD, ...lines].join('\n'))
+
+  it('reads the header, the UTC date and the exact seconds and metres', () => {
+    expect(isStravaExport(rows(HEAD)[0])).toBe(true)
+    expect(isStravaExport(['Date', 'Exercise'])).toBe(false)
+    expect(stravaStart('Nov 14, 2026, 12:39:54 AM')).toBe(Date.UTC(2026, 10, 14, 0, 39, 54))
+    expect(stravaStart('Mar 3, 2025, 6:05:00 PM')).toBe(Date.UTC(2025, 2, 3, 18, 5, 0))
+    expect(stravaStart('14.11.2026 00:39')).toBeNaN()
+    const [a] = activitiesFromStravaExport(file('1,"Nov 14, 2026, 7:00:00 AM",Morning Run,Run,,"45:00",10.02,170,2712,10021.5'))
+    expect(a).toMatchObject({ sport: 'run', min: 45, at: Date.UTC(2026, 10, 14, 7), src: 'import', title: 'Morning Run' })
+    expect(a.km).toBeCloseTo(10.02, 2)
+    expect(a.id).toMatch(/^i/)
+  })
+
+  it('keeps sport, leaves gym sessions, walks, short ones and our own uploads out', () => {
+    const got = activitiesFromStravaExport(file(
+      '1,"Nov 1, 2026, 7:00:00 AM",Ride,Ride,,1,1,1,3600,30000',
+      '2,"Nov 2, 2026, 7:00:00 AM",Legs,Weight Training,,1,1,1,3600,0',
+      '3,"Nov 3, 2026, 7:00:00 AM",Stroll,Walk,,1,1,1,3600,3000',
+      '4,"Nov 4, 2026, 7:00:00 AM",Zwift,Virtual Ride,,1,1,1,3600,30000',
+      '5,"Nov 5, 2026, 7:00:00 AM",Padel with Tom,Workout,,1,1,1,3600,0',
+      '6,"Nov 6, 2026, 7:00:00 AM",Jog,Run,,1,1,1,120,400',
+      '7,"Nov 7, 2026, 7:00:00 AM",Push,Run,Logged with openGym,1,1,1,3600,0',
+      '8,"Nov 8, 2026, 7:00:00 AM",Crag day,Rock Climbing,,1,1,1,7200,0',
+    ))
+    expect(got.map(a => a.sport)).toEqual(['ride', 'racket', 'climb'])
+  })
+
+  it('comes in once, and not again when the health store already has the run', () => {
+    const at = Date.UTC(2026, 10, 14, 7)
+    const list = activitiesFromStravaExport(file('1,"Nov 14, 2026, 7:00:00 AM",Run,Run,,1,1,1,2700,10000'))
+    const S = { workouts: [], activities: {} }
+    expect(mergeImportedActivities(S, list)).toBe(1)
+    expect(mergeImportedActivities(S, list)).toBe(0)
+    // the same run read from Health Connect, two minutes off: not a second one
+    expect(mergeHealthActivities(S, [{ id: 'hc1', sport: 'run', start: at + 120e3, end: at + 47 * 60e3 }], { src: 'hc', now: at + 864e5 })).toEqual([])
+    // and the other way round
+    const H = { workouts: [], activities: {} }
+    mergeHealthActivities(H, [{ id: 'hc1', sport: 'run', start: at + 120e3, end: at + 47 * 60e3 }], { src: 'hc', now: at + 864e5 })
+    expect(mergeImportedActivities(H, list)).toBe(0)
+  })
+
+  it('skips a session over a workout logged here', () => {
+    const at = Date.UTC(2026, 10, 14, 7)
+    const list = activitiesFromStravaExport(file('1,"Nov 14, 2026, 7:00:00 AM",Run,Run,,1,1,1,2700,10000'))
+    expect(mergeImportedActivities({ workouts: [{ d: '2026-11-14', start: at - 60e3, end: at + 30 * 60e3 }], activities: {} }, list)).toBe(0)
+  })
+
+  it('parseImport tells the file by its header and brings activities only', () => {
+    const csv = [HEAD, '1,"Nov 14, 2026, 7:00:00 AM",Run,Run,,1,1,1,2700,10000'].join('\n')
+    const p = parseImport(csv, { unit: 'kg' })
+    expect(p).toMatchObject({ kind: 'bodyweight', source: 'Strava', bodyweight: [] })
+    expect(p.activities).toHaveLength(1)
+    expect(parseImport([HEAD, '2,"Nov 2, 2026, 7:00:00 AM",Legs,Weight Training,,1,1,1,3600,0'].join('\n'), { unit: 'kg' }))
+      .toEqual({ kind: 'bodyweight', source: 'Strava', bodyweight: [] })
+  })
+})

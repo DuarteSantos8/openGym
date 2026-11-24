@@ -5968,4 +5968,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Tanya juga di jam tangan",
   "Starting from your wrist? Three quick taps there first, once a day.": "Mulai dari pergelangan? Tiga ketukan cepat di sana dulu, sekali sehari.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Nilai pemanasan juga",
+  "Off keeps RIR or RPE for the sets that count.": "Mati: RIR atau RPE hanya untuk set yang dihitung.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Tambah satu beban:",
+  "Or fill in a whole run, lightest to heaviest:": "Atau isi satu deret, dari yang teringan ke terberat:",
+  "Up to ({0})": "Sampai ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Nyalakan layar saat istirahat selesai",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Mati: ponsel terkunci tetap gelap. Getar dan suara tetap ada.",
 };

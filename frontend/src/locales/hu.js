@@ -6006,4 +6006,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Az órán is kérdezzen",
   "Starting from your wrist? Three quick taps there first, once a day.": "A csuklódról indítasz? Előbb ott három gyors koppintás, naponta egyszer.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Bemelegítést is értékeld",
+  "Off keeps RIR or RPE for the sets that count.": "Kikapcsolva RIR vagy RPE csak a számító sorozatoknál.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Egy súly hozzáadása:",
+  "Or fill in a whole run, lightest to heaviest:": "Vagy tölts ki egy teljes sort, a legkönnyebbtől a legnehezebbig:",
+  "Up to ({0})": "Eddig ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Kapcsold be a kijelzőt a pihenő végén",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Kikapcsolva a zárolt telefon sötét marad. A rezgés és a hang továbbra is jön.",
 }

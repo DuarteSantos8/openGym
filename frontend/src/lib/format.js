@@ -150,13 +150,13 @@ export function fmtDaysAgo(iso, dayIso = todayISO()) {
    "this week" total. It is now S.weekStart, a getDay() index, and every one of those
    places asks these helpers instead of writing the assumption down again.
 
-   Only 1 and 0 are offered in the UI, but the helpers work for any weekday, so a
-   Saturday start (parts of the Middle East) would need a locale string and nothing
-   else. */
+   Monday, Sunday and Saturday (much of the Middle East, #1216) are offered; the helpers
+   work for any weekday. */
 export const MONDAY = 1
 export const SUNDAY = 0
+export const SATURDAY = 6
 /** The profile's first weekday, defaulting to Monday for every state written before this. */
-export const weekStartOf = S => (S?.weekStart === SUNDAY ? SUNDAY : MONDAY)
+export const weekStartOf = S => (S?.weekStart === SUNDAY || S?.weekStart === SATURDAY ? S.weekStart : MONDAY)
 /** getDay() indices in display order — [1..6,0] for a Monday start, [0..6] for a Sunday one. */
 export const weekOrder = (ws = MONDAY) => Array.from({ length: 7 }, (_, i) => (ws + i) % 7)
 /** How many days a weekday sits past the start of its week. 0..6, so it doubles as a column. */

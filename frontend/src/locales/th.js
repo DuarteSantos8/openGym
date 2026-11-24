@@ -6014,4 +6014,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "ถามบนนาฬิกาด้วย",
   "Starting from your wrist? Three quick taps there first, once a day.": "เริ่มจากข้อมือใช่ไหม? แตะเร็วๆ สามครั้งที่นั่นก่อน วันละครั้ง",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "ให้คะแนนการวอร์มอัพด้วย",
+  "Off keeps RIR or RPE for the sets that count.": "ปิดไว้ RIR หรือ RPE จะมีแค่เซ็ตที่นับจริง",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "เพิ่มน้ำหนักทีละค่า:",
+  "Or fill in a whole run, lightest to heaviest:": "หรือกรอกทั้งชุด จากเบาสุดถึงหนักสุด:",
+  "Up to ({0})": "ถึง ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "เปิดหน้าจอเมื่อพักเสร็จ",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "ปิดไว้ โทรศัพท์ที่ล็อกจะมืดอยู่ ส่วนการสั่นและเสียงยังมาเหมือนเดิม",
 }

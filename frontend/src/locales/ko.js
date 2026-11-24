@@ -6003,4 +6003,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "워치에서도 묻기",
   "Starting from your wrist? Three quick taps there first, once a day.": "손목에서 시작하나요? 먼저 거기서 빠르게 세 번 탭, 하루 한 번만.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "워밍업도 평가",
+  "Off keeps RIR or RPE for the sets that count.": "끄면 RIR이나 RPE는 본 세트에만 남아요.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "무게 하나 추가:",
+  "Or fill in a whole run, lightest to heaviest:": "또는 가벼운 것부터 무거운 것까지 한 번에:",
+  "Up to ({0})": "최대 ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "휴식이 끝나면 화면 켜기",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "끄면 잠긴 폰은 어두운 채로 있어요. 진동과 소리는 그대로 와요.",
 }

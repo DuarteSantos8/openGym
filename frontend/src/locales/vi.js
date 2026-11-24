@@ -5969,4 +5969,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Hỏi cả trên đồng hồ",
   "Starting from your wrist? Three quick taps there first, once a day.": "Bắt đầu từ cổ tay? Chạm nhanh ba lần ở đó trước, mỗi ngày một lần.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Chấm cả hiệp khởi động",
+  "Off keeps RIR or RPE for the sets that count.": "Tắt: RIR hoặc RPE chỉ cho các hiệp chính.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Thêm một mức tạ:",
+  "Or fill in a whole run, lightest to heaviest:": "Hoặc điền cả dãy, từ nhẹ nhất đến nặng nhất:",
+  "Up to ({0})": "Đến ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Bật sáng màn hình khi hết nghỉ",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Tắt: điện thoại đang khóa vẫn tối. Rung và âm thanh vẫn có.",
 };

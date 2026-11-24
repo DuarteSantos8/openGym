@@ -165,6 +165,16 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.schedule.at(-1)).toMatchObject({ alarmBuzz: false })
   })
 
+  it('lights the screen at the end unless Settings says off (#1475)', async () => {
+    h.platform = 'android'
+    const calls = capture()
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
+    expect(calls.schedule.at(-1)).toMatchObject({ lightScreen: true })
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, lightScreen: false })
+    expect(calls.schedule.at(-1)).toMatchObject({ lightScreen: false })
+  })
+
   it('hands the plugin the end tone Settings → Sound picked', async () => {
     h.platform = 'android'
     const calls = capture()

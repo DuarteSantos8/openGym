@@ -6003,4 +6003,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Pytaj też na zegarku",
   "Starting from your wrist? Three quick taps there first, once a day.": "Zaczynasz z nadgarstka? Najpierw trzy szybkie stuknięcia, raz dziennie.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Oceniaj też rozgrzewkę",
+  "Off keeps RIR or RPE for the sets that count.": "Wyłączone: RIR lub RPE tylko dla serii, które się liczą.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Dodaj jeden ciężar:",
+  "Or fill in a whole run, lightest to heaviest:": "Albo uzupełnij cały ciąg, od najlżejszego do najcięższego:",
+  "Up to ({0})": "Do ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Włącz ekran na koniec przerwy",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Wyłączone: zablokowany telefon zostaje ciemny. Wibracja i dźwięk nadal przychodzą.",
 }

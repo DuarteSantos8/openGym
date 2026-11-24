@@ -5969,4 +5969,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Ptát se i na hodinkách",
   "Starting from your wrist? Three quick taps there first, once a day.": "Začínáš ze zápěstí? Nejdřív tam tři rychlá klepnutí, jednou denně.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Hodnotit i rozcvičky",
+  "Off keeps RIR or RPE for the sets that count.": "Vypnuto: RIR nebo RPE jen u sérií, které se počítají.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Přidat jednu váhu:",
+  "Or fill in a whole run, lightest to heaviest:": "Nebo vyplň celou řadu, od nejlehčí po nejtěžší:",
+  "Up to ({0})": "Až do ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Rozsvítit displej na konci pauzy",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Vypnuto: zamčený telefon zůstane zhasnutý. Vibrace a zvuk přijdou dál.",
 }

@@ -5999,4 +5999,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Klausti ir laikrodyje",
   "Starting from your wrist? Three quick taps there first, once a day.": "Pradedi nuo riešo? Pirma ten trys greiti bakstelėjimai, kartą per dieną.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Vertinti ir apšilimą",
+  "Off keeps RIR or RPE for the sets that count.": "Išjungus RIR ar RPE lieka tik tikriems serijoms.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Pridėti vieną svorį:",
+  "Or fill in a whole run, lightest to heaviest:": "Arba užpildyk visą eilę, nuo lengviausio iki sunkiausio:",
+  "Up to ({0})": "Iki ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Įjungti ekraną poilsio pabaigoje",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Išjungus užrakintas telefonas lieka tamsus. Vibracija ir garsas vis tiek ateina.",
 }

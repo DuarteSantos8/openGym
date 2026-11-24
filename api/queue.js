@@ -30,7 +30,7 @@
 // skips it. A pin on a past day is stale (the session floats again), and a pin on a done session
 // is fulfilled (`pinState === 'done'`) and reads as no override at all. A pin dated today or
 // later on a session already done is fulfilled only when that routine was trained in the pin's
-// own calendar week (Monday, or Sunday by `S.weekStart`), on or before its day; otherwise the day
+// own calendar week (Monday, or Sunday or Saturday by `S.weekStart`), on or before its day; otherwise the day
 // still trains it. Pins change which session is NEXT, never what counts as DONE, so the tally a
 // planner reads is untouched.
 //
@@ -152,7 +152,7 @@ export function pinState(S, id, today = dayIn(Date.now(), S.reminder?.tz), iso) 
   if (!q || !id || !q.ids.includes(id)) return null;
   if (!doneIds(S, q, today).has(id)) return 'open';
   if (!iso || iso < today) return 'done';
-  const from = weekStartOn(iso, S.weekStart === 0 ? 0 : 1);
+  const from = weekStartOn(iso, S.weekStart === 0 || S.weekStart === 6 ? S.weekStart : 1);
   for (const w of S.workouts || []) {
     const d = String(w?.d || '');
     if (d >= from && d <= iso && routineIdsOf(w).includes(id)) return 'done';

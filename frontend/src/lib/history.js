@@ -145,6 +145,9 @@ export const effortOf = S => {
   const e = S && S.effort
   return e === 'none' || EFFORT[e] ? e : (S && S.showRir ? 'rir' : 'none')
 }
+// Settings → Workout → Rate warm-ups too (#1374). On unless switched off: off leaves warm-up rows
+// without an effort cell, so the column asks only about the sets that count.
+export const warmupEffortOn = S => S?.warmupEffort !== false
 // The "(RIR 2)" / "(RPE 8)" tail on a set summary, empty when nothing was logged.
 const effortTail = s => {
   const k = s.rir != null ? 'rir' : s.rpe != null ? 'rpe' : null

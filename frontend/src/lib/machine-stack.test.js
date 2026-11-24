@@ -3,7 +3,7 @@
 // + and − buttons land on them, the same way the dumbbell inventory (#376) works for dumbbells.
 import { describe, expect, it } from 'vitest'
 import {
-  stackOf, withStack, canHaveStack, ownedWeightsFor, ownedKindFor, stackFromStep, cleanWeights,
+  stackOf, withStack, canHaveStack, ownedWeightsFor, ownedKindFor, stackFromStep, stackCountTo, cleanWeights,
 } from './dumbbells.js'
 import { nextPrescription } from './progression.js'
 import { buildPlannedEntry } from './session-start.js'
@@ -68,6 +68,16 @@ describe('the stack', () => {
     expect(stackFromStep(0, 5, 3)).toEqual([5, 10, 15])
     expect(stackFromStep(5, 0, 3)).toEqual([])
     expect(cleanWeights(stackFromStep(2.5, 2.5, 200)).length).toBe(100)
+  })
+
+  it('counts the run up to the heaviest plate (#1163)', () => {
+    expect(stackFromStep(10, 5, stackCountTo(10, 5, 30))).toEqual([10, 15, 20, 25, 30])
+    expect(stackCountTo(5, 6.8, 25.4)).toBe(4)          // float steps still land on the top
+    expect(stackCountTo(0, 5, 15)).toBe(3)              // no first weight: starts at the step
+    expect(stackCountTo(30, 5, 42)).toBe(3)             // a top between plates stops below it
+    expect(stackCountTo(30, 5, 20)).toBe(0)             // below the first: nothing
+    expect(stackCountTo(5, 0, 50)).toBe(0)
+    expect(stackCountTo(1, 1, 1e6)).toBe(100)
   })
 
   it('is what ownedWeightsFor answers for that exercise, and nothing else changes', () => {

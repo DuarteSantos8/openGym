@@ -6082,4 +6082,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "ঘড়িতেও জিজ্ঞেস করো",
   "Starting from your wrist? Three quick taps there first, once a day.": "কবজি থেকে শুরু করছ? আগে সেখানে তিনটি দ্রুত ট্যাপ, দিনে একবার।",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "ওয়ার্ম-আপেরও রেটিং দিন",
+  "Off keeps RIR or RPE for the sets that count.": "বন্ধ থাকলে RIR বা RPE শুধু আসল সেটগুলোর জন্য থাকে।",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "একটি ওজন যোগ করুন:",
+  "Or fill in a whole run, lightest to heaviest:": "অথবা হালকা থেকে ভারী পুরো সারি একবারে দিন:",
+  "Up to ({0})": "পর্যন্ত ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "বিশ্রাম শেষে স্ক্রিন জ্বালাও",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "বন্ধ থাকলে লক করা ফোন অন্ধকার থাকে। কম্পন আর শব্দ তবুও আসে।",
 }

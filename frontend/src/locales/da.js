@@ -5943,4 +5943,14 @@ export default {
   // --- Daily check-in on the watch (#1535) ---
   "Ask on the watch too": "Spørg også på uret",
   "Starting from your wrist? Three quick taps there first, once a day.": "Starter du fra håndleddet? Tre hurtige tryk der først, én gang om dagen.",
+  // --- Rate warm-ups too (#1374) ---
+  "Rate warm-ups too": "Bedøm også opvarmning",
+  "Off keeps RIR or RPE for the sets that count.": "Fra: RIR eller RPE kun på de sæt, der tæller.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Tilføj én vægt:",
+  "Or fill in a whole run, lightest to heaviest:": "Eller udfyld en hel række, fra letteste til tungeste:",
+  "Up to ({0})": "Op til ({0})",
+  // --- Android: light up the screen at rest end (#1475) ---
+  "Light up the screen at rest end": "Tænd skærmen når pausen slutter",
+  "Off keeps a locked phone dark. The buzz and the sound still come.": "Fra: en låst telefon forbliver mørk. Vibration og lyd kommer stadig.",
 }
