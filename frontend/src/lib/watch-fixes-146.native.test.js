@@ -56,3 +56,21 @@ describe('Apple Watch hold the phone logged first (SessionStore.swift, #1409 / #
     expect(between(store, 'func stopHold()', '\n    }')).toMatch(/stopHoldCount\(\)/)
   })
 })
+
+const WEAR = '../../android/wear/src/main/java/ch/duartesantos/opengym/wear/'
+
+describe('Wear OS hold the phone logged first (WearStore.kt, #1427 / #1428)', () => {
+  const store = code(WEAR + 'WearStore.kt')
+  it('remembers the set a hold or its 3-2-1 runs for', () => {
+    expect(code(WEAR + 'WatchLogic.kt')).toMatch(/data class HoldSet\(/)
+    expect(between(store, 'fun autoHoldIfDue()', '\n    fun ')).toMatch(/holdFor = HoldSet\(/)
+  })
+  it('ends a hold unlogged once a snapshot shows its set done', () => {
+    expect(store).toMatch(/if \(holdFor\?\.openIn\(after\) == false\) \{ stopHold\(\)/)
+  })
+  it('logs the hold on its own set and skips it when that set is gone', () => {
+    const end = between(store, 'fun endHold(early: Boolean)', 'fun stopHold()')
+    expect(end).toMatch(/holdFor\?\.placeIn\(_state\.value\)/)
+    expect(end).toMatch(/!gone\) completeSet\(heldFor = lasted, held = held/)
+  })
+})

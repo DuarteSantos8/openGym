@@ -125,6 +125,8 @@ object WearStore {
     private val homeLock = TouchLock()
     private var restJob: Job? = null
     private var holdJob: Job? = null
+    /** The set the running hold (or its 3-2-1) logs: if the phone logged it first, that is over (HoldSet). */
+    private var holdFor: HoldSet? = null
     private var countJob: Job? = null
     private var idleJob: Job? = null
     private var refreshJob: Job? = null
@@ -267,6 +269,9 @@ object WearStore {
             RestFollow.Legacy -> legacyRest(snap, after, phoneRest, echo)
         }
         commit(after)
+        // The phone logged the set a hold (or its 3-2-1) here runs for: this one ends with it, unlogged.
+        // Then the next timed set may be due its own 3-2-1, which the rest's end could not start before this.
+        if (holdFor?.openIn(after) == false) { stopHold(); stopHoldCount(); autoHoldIfDue() }
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
         ticks.lastOrNull()?.let { followPhoneTick(it) }
@@ -451,11 +456,13 @@ object WearStore {
     }
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
-    fun completeSet(heldFor: Double? = null) {
+    fun completeSet(heldFor: Double? = null, held: Pair<Int, Int>? = null, heldW: Double? = null) {
         val s0 = _state.value
         val w = s0.workout ?: return
-        val e = entry() ?: return
-        val si = setIndex() ?: return
+        // A hold logs the set it started for, where it is now (the phone may have removed an earlier one).
+        val ei = held?.first ?: entryIndex
+        val e = w.entries.getOrNull(ei) ?: return
+        val si = held?.second ?: setIndex(ei) ?: return
         val at = now()
         // A double tap on Done (a sweaty finger) is one set, not this one and the next; in a
         // superset the page flips to the partner, so a slower second tap waits too.
@@ -468,9 +475,8 @@ object WearStore {
         var tw: Double? = null; var tr: Double? = null; var tsec: Double? = null
         if (e.isTimed) {
             tsec = heldFor ?: d.sec
-            if ((e.sets[si].w ?: 0.0) > 0) tw = d.w        // a weighted hold keeps its weight
+            if ((e.sets[si].w ?: 0.0) > 0) tw = heldW ?: d.w        // a weighted hold keeps its weight
         } else if (!e.isCardio) { tw = d.w; tr = d.r }
-        val ei = entryIndex
         val (s1, event0) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from))
         event0 ?: return
         val (nextEi, rest) = SessionCore.next(s1, ei, si)
@@ -739,13 +745,15 @@ object WearStore {
         if (!auto && !touchAllowed()) return
         val e = entry() ?: return
         val seconds = draft.value.sec
-        if (!e.isTimed || setIndex() == null || seconds <= 0) return
+        val si = setIndex()
+        if (!e.isTimed || si == null || seconds <= 0) return
         stopHoldCount()
         stopRest()
         noteActivity()
         val start = now()
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
+        holdFor = HoldSet(entryIndex, si, e.sets[si].sideUp, e.sets[si].sid, draft.value.w)
         Awake.until(app, HOLD, end)
         Haptics.start(app)
         holdJob?.cancel()
@@ -764,11 +772,14 @@ object WearStore {
     fun endHold(early: Boolean) {
         val h = _hold.value ?: return
         val lasted = Math.round(((if (early) now() else h.endsAt) - h.startedAt) / 1000.0).toDouble()
+        val held = holdFor?.placeIn(_state.value)
+        val gone = holdFor != null && held == null
+        val heldW = holdFor?.w
         stopHold()
-        if (lasted >= 1) completeSet(heldFor = lasted)
+        if (lasted >= 1 && !gone) completeSet(heldFor = lasted, held = held, heldW = heldW)
     }
 
-    fun stopHold() { holdJob?.cancel(); _hold.value = null; if (::app.isInitialized) Awake.release(HOLD) }
+    fun stopHold() { holdJob?.cancel(); _hold.value = null; holdFor = null; if (::app.isInitialized) Awake.release(HOLD) }
 
     private const val REST = "rest"
     private const val REST_AGAIN = "restAgain"
@@ -777,10 +788,12 @@ object WearStore {
     /** With the phone's "timed holds start by themselves" on and a hold up next: 3-2-1, then the hold. */
     fun autoHoldIfDue() {
         val s = _state.value
-        if (s.settings.autoHolds != true || s.workout == null || entry()?.isTimed != true || setIndex() == null) return
+        val si = setIndex()
+        if (s.settings.autoHolds != true || s.workout == null || entry()?.isTimed != true || si == null) return
         if (_hold.value != null || _rest.value != null || _holdCountIn.value != null || draft.value.sec <= 0) return
         val from = now()
         _holdCountIn.value = from
+        holdFor = HoldSet(entryIndex, si, entry()?.sets?.get(si)?.sideUp, entry()?.sets?.get(si)?.sid)
         Haptics.count(app)
         countJob?.cancel()
         countJob = scope.launch {
@@ -798,7 +811,7 @@ object WearStore {
     }
 
     fun stopHoldCount() {
-        if (_holdCountIn.value != null) countJob?.cancel()
+        if (_holdCountIn.value != null) { countJob?.cancel(); holdFor = null }
         _holdCountIn.value = null
     }
 

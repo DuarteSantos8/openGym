@@ -657,4 +657,83 @@ class WatchLogicTest {
         // The sensor rests and comes back in B: B's count goes on.
         k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
     }
+
+    /* ---------- a hold the phone logged first (Discord Mircuz, Garmin #1403) ---------- */
+
+    @Test fun aHoldIsOverOnceThePhoneLoggedItsSet() {
+        val hold = HoldSet(0, 0, null, null)
+        assertTrue(hold.openIn(state(entry("plank", listOf(row(), row()), mode = "time"))))
+        val phoneLogged = state(entry("plank", listOf(row(done = true, at = 1.0), row()), mode = "time"))
+        assertFalse("a hold ending now would log set 2", hold.openIn(phoneLogged))
+        assertFalse("no workout, nothing to log", hold.openIn(SessionState()))
+    }
+
+    @Test fun aHoldOnOneSideIsOverWhenThePhoneLoggedThatSide() {
+        val both = Sides(SideRow(20.0, 10.0), SideRow(20.0, 10.0))
+        val hold = HoldSet(0, 0, "L", null)
+        assertTrue(hold.openIn(state(entry("sp", listOf(row(sides = both)), mode = "time"))))
+        val lDone = both.with("L", SideRow(20.0, 10.0, done = true))
+        val s = state(entry("sp", listOf(row(sides = lDone)), mode = "time"))
+        assertFalse(hold.openIn(s))
+        assertTrue("the other side's hold is a new one", HoldSet(0, 0, "R", null).openIn(s))
+    }
+
+    @Test fun aHoldFindsItsSetByIdAfterTheOnesBeforeItMove() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val hold = HoldSet(0, 1, null, "b")
+        assertTrue(hold.openIn(state(entry("plank", listOf(a, b), mode = "time"))))
+        assertTrue("still open, now at place 0", hold.openIn(state(entry("plank", listOf(b), mode = "time"))))
+        assertFalse(hold.openIn(state(entry("plank", listOf(b.copy(done = true, at = 3.0)), mode = "time"))))
+        assertFalse("its set was removed", hold.openIn(state(entry("plank", listOf(a), mode = "time"))))
+    }
+
+    @Test fun anEmptySetIdFindsTheSetByPlace() {
+        val hold = HoldSet(0, 1, null, "")
+        val s = state(entry("plank", listOf(row(done = true, at = 1.0).copy(sid = ""), row().copy(sid = "")), mode = "time"))
+        assertEquals(0 to 1, hold.placeIn(s))
+    }
+
+    // The 3-2-1 before a hold remembers its set as the hold does: if the phone logs it meanwhile, the set up
+    // next is another one, and a count-in running out must not start a hold for that one.
+    @Test fun aCountInForASetThePhoneLoggedMeanwhileIsOver() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val s = state(entry("plank", listOf(a, b), mode = "time"))
+        val counted = SessionCore.setIndex(s, 0)!!
+        val hold = HoldSet(0, counted, null, a.sid)
+        assertTrue(hold.openIn(s))
+        val phoneLogged = state(entry("plank", listOf(a.copy(done = true, at = 1.0), b), mode = "time"))
+        assertEquals("what a count-in ending now would hold for", 1, SessionCore.setIndex(phoneLogged, 0))
+        assertFalse(hold.openIn(phoneLogged))
+    }
+
+    // A hold ending logs the set it began on, found again: the phone removing an earlier set moves the selection, not the hold.
+    @Test fun aHoldLogsItsOwnSetNotTheOneNowSelected() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val c = row().copy(sid = "c")
+        val hold = HoldSet(0, 1, null, "b")
+        assertEquals(0 to 1, hold.placeIn(state(entry("plank", listOf(a, b, c), mode = "time"))))
+        val removed = state(entry("plank", listOf(b, c), mode = "time"))
+        assertEquals("b is now first, not the c a plain pick would give", 0 to 0, hold.placeIn(removed))
+        assertEquals("the pick the hold began on (place 1) is c now", 1, SessionCore.setIndex(removed, 0, picked = 1))
+        val (ei, si) = hold.placeIn(removed)!!
+        val logged = SessionCore.tick(removed, ei, si, null, null, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
+        assertTrue("b is logged", logged.first { it.sid == "b" }.done)
+        assertFalse("c is still to do", logged.first { it.sid == "c" }.done)
+        assertNull(hold.placeIn(state(entry("plank", listOf(a, c), mode = "time"))))
+        assertEquals("no id: by place", 0 to 1, HoldSet(0, 1, null, null).placeIn(state(entry("plank", listOf(a, b), mode = "time"))))
+    }
+
+    // A weighted hold keeps the weight it began with: the screen's numbers may have moved on to the set now picked.
+    @Test fun aWeightedHoldLogsTheWeightItBeganWith() {
+        val b = row(w = 10.0).copy(sid = "b")
+        val c = row(w = 30.0).copy(sid = "c")
+        val hold = HoldSet(0, 1, null, "b", w = 10.0)
+        val removed = state(entry("plank", listOf(b, c), mode = "time"))
+        val (ei, si) = hold.placeIn(removed)!!
+        val logged = SessionCore.tick(removed, ei, si, null, hold.w, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
+        assertEquals(10.0, logged.first { it.sid == "b" }.w!!, 0.0)
+    }
 }
