@@ -389,7 +389,7 @@ export function matchExercise(name) {
  * The same steps as matchExercise, which an import keeps using unchanged: there a near miss is
  * worth a custom exercise the user can fix later, and the first of two same-named entries is as
  * good as the other. Logging one session by name has no such fallback, so here an exact name the
- * catalogue spells twice ("lever chest press" is 0576 and 0577) is a question, not an answer.
+ * catalogue spells twice ("ez barbell spider curl" is 0454 and 1628) is a question, not an answer.
  * With nothing close, the entries sharing the most words are offered instead. `kind` says which
  * step answered: 'alias', 'exact', 'near', or 'none' (nothing close; the candidates only share a word).
  */

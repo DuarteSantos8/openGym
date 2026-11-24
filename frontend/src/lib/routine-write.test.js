@@ -31,7 +31,7 @@ describe('createRoutine', () => {
   test('every problem at once, and nothing changed', () => {
     const S = base()
     const before = JSON.stringify(S)
-    const r = createRoutine(S, { name: 'Push', exercises: [{ exercise: 'lever chest press' }, { exercise: 'squat', reps: 5, seconds: 30 }, { exercise: 'squat', sets: 99 }], weekdays: ['someday'] })
+    const r = createRoutine(S, { name: 'Push', exercises: [{ exercise: 'ez barbell spider curl' }, { exercise: 'squat', reps: 5, seconds: 30 }, { exercise: 'squat', sets: 99 }], weekdays: ['someday'] })
     expect(r.routine).toBeUndefined()
     expect(r.problems.map(p => p.field)).toEqual(['name', 'exercises[0].exercise', 'exercises[1]', 'exercises[2].sets', 'weekdays'])
     expect(r.problems[1].candidates.length).toBeGreaterThan(1)

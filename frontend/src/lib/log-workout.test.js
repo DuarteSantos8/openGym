@@ -48,10 +48,10 @@ describe('what the user said becomes the workout Finish would have saved', () =>
   })
 
   it('a name the catalogue spells twice is a question with both answers, not the first of them', () => {
-    const r = build(profile(), { date: TODAY, exercises: [{ exercise: 'lever chest press', sets: [{ reps: 10, weight: 40 }] }] })
+    const r = build(profile(), { date: TODAY, exercises: [{ exercise: 'ez barbell spider curl', sets: [{ reps: 10, weight: 40 }] }] })
     expect(r.workout).toBeUndefined()
-    expect(r.problems[0].candidates.map(c => c.id)).toEqual(['0576', '0577'])
-    expect(r.problems[0].candidates[0]).toMatchObject({ name: 'lever chest press', equipment: 'leverage machine' })
+    expect(r.problems[0].candidates.map(c => c.id)).toEqual(['0454', '1628'])
+    expect(r.problems[0].candidates[0]).toMatchObject({ name: 'ez barbell spider curl', equipment: 'ez barbell' })
   })
 
   it('a name nothing matches offers the closest entries instead of inventing an exercise', () => {
