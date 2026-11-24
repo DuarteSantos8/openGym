@@ -14,6 +14,7 @@ struct HomeView: View {
         NavigationStack {
             content
                 .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "")) // the logo says openGym, centred with the rest
+                .toolbar { ToolbarItem(placement: .topBarLeading) { PhoneMark().environmentObject(store) } }
         }
         // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
         .onLongPressGesture(minimumDuration: 2) { debug = true }
@@ -70,6 +71,27 @@ struct HomeView: View {
 }
 
 /// Today's routine: its name big, how big it is, and Start.
+/// The phone, beside the clock on the start screen, always: a green iPhone while it is in reach (grey
+/// would read as off),
+/// an amber crossed-out one and "Phone away" when not (shape and words, never colour alone). Nothing
+/// moves, so the watch still sleeps here. "In reach" is WatchConnectivity's isReachable: it is also false
+/// while a nearby iPhone is locked or its app is not running, and that is when sets wait, so "Phone away"
+/// stays the short word for "the watch cannot reach the phone now". The workout's own sign is SyncPill, shown only when sets wait.
+struct PhoneMark: View {
+    @EnvironmentObject var store: SessionStore
+
+    var body: some View {
+        let away = !store.reachable
+        HStack(spacing: 3) {
+            Image(systemName: away ? "iphone.slash" : "iphone").font(.system(size: 13, weight: .semibold))
+            if away { Text("Phone away").font(.system(.caption2, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8) }
+        }
+        .foregroundStyle(away ? Theme.orange : Theme.green)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(away ? Text("iPhone out of reach") : Text("iPhone in reach"))
+    }
+}
+
 struct TodayCard: View {
     @EnvironmentObject var store: SessionStore
     let session: ReadySession
