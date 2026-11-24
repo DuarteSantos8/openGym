@@ -6322,4 +6322,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "먼저 운동 기록을 삭제하세요. 앱에서 설정, 계정, 내 계정 삭제를 차례로 여세요. 그런 다음 여기로 돌아와 이 계정을 삭제하세요.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "이 브라우저는 로그인 상태를 유지하지 않습니다(시크릿 모드이거나 저장 공간이 가득 참). 여기서 기록한 내용도 보관되지 않을 수 있습니다.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "이 브라우저는 이 사이트의 데이터를 전혀 저장하지 않아 여기서는 앱을 열 수 없습니다. 저장 공간을 비우거나 시크릿 모드를 종료한 뒤 다시 시도해 주세요.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "이 서버에서는 {0}이(가) 이 프로필에 들어오는 유일한 방법이라 연결이 유지돼요.",
 }

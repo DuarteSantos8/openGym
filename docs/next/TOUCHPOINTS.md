@@ -68,3 +68,8 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Login.jsx` | `next/EP19-oidc-signin-followups` | +1 | Explains unavailable sign-in when guest use is off. |
 | `frontend/src/components/OidcAccount.jsx` | `next/EP19-oidc-signin-followups` | +2 -1 | Preserves the provider row on native builds. |
 | 25 files in `frontend/src/locales/` | `next/EP19-oidc-signin-followups` | +25 | Translates the browser sign-in explanation. |
+| `api/oidc/routes.js` | `next/EP19-oidc-review-fixes` | +6 -2 | Unlink counts no other way in for a member where the provider is the only way in. |
+| `frontend/src/components/OidcAccount.jsx` | `next/EP19-oidc-review-fixes` | +12 -2 | No Unlink for such a member, with why; the held profile is updated after an unlink. |
+| `frontend/src/views/Login.jsx` | `next/EP19-oidc-review-fixes` | +6 -3 | The Cloud first screen says when sign-in cannot work from this address. |
+| `api/test/server-oidc.test.js`, `frontend/src/components/OidcAccount.test.jsx` | `next/EP19-oidc-review-fixes` | Tests | The lockout, shown first; the sheet; the held profile. |
+| 25 files in `frontend/src/locales/` | `next/EP19-oidc-review-fixes` | +25 | One sentence for the sheet. |

@@ -1,6 +1,6 @@
 # ADR 0014 — Delete linked server profile before the hosted account
 
-Status: implementation under review. Activation is gated on hosted verification.
+Status: merged (#90) and live. One deletion was verified on the hosted service on 2026-11-24, see Hosted verification.
 
 The hosted account and its training profile live in separate stores. Remove the
 training profile first while the hosted identity can still prove ownership.
@@ -42,7 +42,22 @@ proof endpoint to delete training.
 
 Supabase Auth commit `10ef10789d1ee4fb422b448047e67e3e264c0482` passes
 `LastSignInAt` as `AuthTime` in its OAuth token handler. A locally simulated
-issuer verifies the flow in browser tests. The hosted issuer still needs a
-fresh password sign-in with a disposable account. Record only whether
-`auth_time` is present and its age. If it is unavailable, keep linked deletion
-disabled until explicit hosted reauthentication provides verifiable freshness.
+issuer verifies the flow in browser tests.
+
+**Verified on the hosted service, 2026-11-24** (the owner, a disposable account, a private
+window; read from the hosted project's request log and from both stores' counts):
+
+- The updated function and the API of #90 were deployed first.
+- Sign-up, confirmation and a first Continue made the account and a training profile
+  (`/api/health` went from one profile to two).
+- A fresh password sign-in, then Delete about 45 seconds later. The log shows the order this
+  ADR describes: eligibility check, the delete trip to the issuer, eligibility again, and the
+  account's removal answered 200. `/api/health` is back to one profile, the hosted project is
+  back to its earlier number of accounts, and the consent on record went with the account.
+- The API only issues the proof when the signed ID token carries a recent `auth_time`, so the
+  hosted issuer does put one there and it followed the fresh sign-in.
+
+Not tried on the hosted service: a deletion with an old sign-in (the API must refuse it as
+stale; the hosted issuer does not read `prompt`, so it will not ask again by itself, see ADR
+0013), signing up again with the deleted address, and a deletion in a browser that holds
+workouts of its own.

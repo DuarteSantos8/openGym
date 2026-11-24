@@ -6288,4 +6288,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Nejdřív smaž svůj trénink: v aplikaci otevři Nastavení, pak Účet a pak Smazat můj účet. Potom se vrať sem a smaž tento účet.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Tento prohlížeč tě nenechává přihlášeného (anonymní režim, nebo má plné úložiště). Ani to, co si tu zapíšeš, se nemusí uložit.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Tento prohlížeč pro tento web nic neukládá, takže se tu aplikace nemůže otevřít. Uvolni úložiště nebo opusť anonymní režim a zkus to znovu.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "{0} je na tomto serveru jediná cesta do tohoto profilu, proto zůstává propojený.",
 }

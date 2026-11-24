@@ -6325,4 +6325,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Először töröld az edzéseidet: az alkalmazásban nyisd meg a Beállítások, majd a Fiók, majd a Fiókom törlése pontot. Utána gyere vissza ide, és töröld ezt a fiókot.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Ez a böngésző nem tart bejelentkezve (privát böngészés, vagy megtelt a tárhelye). Lehet, hogy amit itt rögzítesz, az sem marad meg.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Ez a böngésző semmit sem tárol ehhez az oldalhoz, ezért az alkalmazás itt nem nyitható meg. Szabadíts fel tárhelyet, vagy lépj ki a privát böngészésből, majd próbáld újra.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "Ezen a szerveren a(z) {0} az egyetlen út ebbe a profilba, ezért összekapcsolva marad.",
 }

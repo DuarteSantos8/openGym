@@ -108,6 +108,15 @@ describe('Login in the Cloud edition', () => {
     expect(buttons(page)).toContain('Sign in with passkey')
   })
 
+  // Found in review of #88. Opened from an address that is not the server's own, with no use on
+  // this device allowed: the account button is all there is, and it cannot get anyone in. Say why.
+  it('from another address, with no device use: the screen says why sign-in will not work here', () => {
+    mocks.config = { allow_guest: false, oidc: { label: 'Ironvane', only: true, webOrigin: 'https://other.example' } }
+    const page = mount(<Login />)
+    expect(page.textContent).toContain('Sign-in is only available on the server’s configured website.')
+    expect(page.textContent).not.toContain('Your training stays on this device.')
+  })
+
   // A server that offers the provider beside its other ways in is not the hosted one: everything
   // it accepts stays on offer, as in the default edition.
   it('a server with other ways in beside the provider keeps offering them', () => {
