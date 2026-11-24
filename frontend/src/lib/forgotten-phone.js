@@ -12,7 +12,7 @@ import { t } from './i18n-core.js'
 import { fmtClock } from './format.js'
 import { withoutAlarmPrompt } from './exact-alarm.js'
 import {
-  decideForgotten, readForgottenPrefs, readForgottenState, writeForgottenState, keepGoingPatch, leaveGymOn,
+  decideForgotten, honestEnd, readForgottenPrefs, readForgottenState, writeForgottenState, keepGoingPatch, leaveGymOn,
 } from './forgotten-workout.js'
 
 export const ASK_NOTIFICATION_ID = 3100
@@ -21,7 +21,7 @@ export const ASK_ACTIONS = 'og-forgotten'
 export const LEFT_ACTIONS = 'og-left'
 const CHECK_MS = 30 * 1000
 
-let deps = null          // { useStore, useUI, finish, discard, openPrompt, closePrompt, gymOn }
+let deps = null          // { useStore, useUI, finish, discard, openPrompt, closePrompt, gymOn, sessionDeadline }
 let timer = null
 let shown = null         // the card on screen: { wid, state }
 let planned = ''         // the notification planned last ("wid|at")
@@ -64,6 +64,20 @@ async function registerActions(L) {
   } catch { /* an older shell: the notification still opens the app */ }
 }
 
+/**
+ * The phone's own workout session (HealthKit, AirPods heart rate) ends by itself when the question
+ * planned for `at` goes unanswered for the grace, saved as the page's finish would save it. Only
+ * while that notification is really planned: a workout nobody was asked about is never ended.
+ */
+function endSessionBy(wid, at) {
+  if (!deps?.sessionDeadline) return
+  const S = deps.useStore.getState().S
+  if (!wid || !at || S?.active?.id !== wid) { deps.sessionDeadline({}); return }
+  const endBy = at + readForgottenPrefs().graceMin * 60e3
+  // A minute after the page's own finish (checked every 30 s): an awake page ends it first and still reads its heart rate.
+  deps.sessionDeadline({ wid, endBy: endBy + 2 * CHECK_MS, at: honestEnd(S.active, { restSec: Number(S.restSec) || 0, now: endBy }), title: S.active.name })
+}
+
 /** The notification for "Still training?", planned for `at`; or none (`at` 0). Never asks for permission. */
 async function planNotification(wid, at) {
   const key = wid && at ? wid + '|' + at : ''
@@ -73,19 +87,33 @@ async function planNotification(wid, at) {
   planned = key
   try {
     await L.cancel({ notifications: [{ id: ASK_NOTIFICATION_ID }] }).catch(() => {})
-    if (!key) { writeForgottenState(wid, { notifyAt: 0 }); return }
-    if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); return }
+    if (planned !== key) return   // a newer plan owns the saved state and the deadline now
+    if (!key) { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
+    const granted = (await L.checkPermissions()).display === 'granted'
+    if (planned !== key) return
+    if (!granted) { writeForgottenState(wid, { notifyAt: 0 }); endSessionBy(); return }
     await registerActions(L)
     const c = forgottenCopy()
-    await L.schedule({ notifications: await withoutAlarmPrompt(L, [{
+    const notifications = await withoutAlarmPrompt(L, [{
       id: ASK_NOTIFICATION_ID, title: c.askTitle, body: c.askBody,
       schedule: { at: new Date(at), allowWhileIdle: true },
       actionTypeId: ASK_ACTIONS, extra: { forgotten: wid },
-    }]) })
+    }])
+    // A newer plan replaced this one while it waited: one id, so scheduling now would put back this older time.
+    if (planned !== key) return
+    await L.schedule({ notifications })
+    if (planned !== key) return   // a newer plan replaced this one while it waited
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
-  } catch { planned = '' }
+    endSessionBy(wid, at)
+  } catch {
+    // The old notification is cancelled already: its deadline goes too, unless a newer plan owns it.
+    if (planned === key) { planned = ''; endSessionBy() }
+  }
 }
+
+/** The rest and hold counting down now (a paused or finished one is not). */
+const counting = ui => [ui.timer && !ui.timer.ready && !ui.timer.paused && ui.timer, ui.work && !ui.work.paused && ui.work].filter(Boolean)
 
 /** When the question counts as asked: shown here, or its notification gone out. */
 function askedAtOf(st, now) {
@@ -102,11 +130,14 @@ export function checkForgotten(now = Date.now()) {
   if (!A || useStore.getState().tourSandbox) { hide(); if (planned) planNotification(null, 0); return null }
   const prefs = readForgottenPrefs()
   const st = readForgottenState(A.id)
-  const ui = useUI.getState()
-  const resting = !!(ui.timer && !ui.timer.ready && !ui.timer.paused) || !!(ui.work && !ui.work.paused)
+  // A rest or hold counting is the workout going on: idle counts from its end, so the question (and
+  // the phone session's deadline) waits past a long hold. One past its end (overtime): not asked.
+  const runs = counting(useUI.getState())
+  const busyUntil = Math.max(0, ...runs.map(r => Number(r.endsAt) || 0))
   const d = decideForgotten({
     A, now, prefs, leaveGym: leaveGymOn(prefs, deps.gymOn()), leftAt: st.leftAt, askedAt: askedAtOf(st, now),
-    snoozeAt: st.snoozeAt, activeAt: Number(A.reopenedAt) || 0, resting, restSec: Number(S.restSec) || 0,
+    snoozeAt: st.snoozeAt, activeAt: Math.max(Number(A.reopenedAt) || 0, busyUntil), resting: runs.length > 0 && busyUntil <= now,
+    restSec: Number(S.restSec) || 0,
   })
   if (d.state === 'end') {
     hide()
@@ -205,6 +236,9 @@ export function startForgotten({ useStore, useUI, ...rest }) {
     else if (!id) checkForgotten()
     tick()
   })
+  // A rest or hold started, ended or moved (not its every tick): the question moves with it.
+  const runKey = u => JSON.stringify(counting(u).map(r => r.endsAt || 0))
+  const offUI = useUI.subscribe((u, prev) => { if (runKey(u) !== runKey(prev)) checkForgotten() })
   const onVisible = () => { if (document.visibilityState === 'visible') { readLeft(); checkForgotten(); tick() } }
   document.addEventListener('visibilitychange', onVisible)
   let offLeft = () => {}
@@ -226,7 +260,7 @@ export function startForgotten({ useStore, useUI, ...rest }) {
   return () => {
     gone = true
     clearTimeout(timer)
-    offStore(); offLeft()
+    offStore(); offLeft(); offUI()
     document.removeEventListener('visibilitychange', onVisible)
     try { handle?.remove?.() } catch { /* gone */ }
     hide()

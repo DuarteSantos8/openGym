@@ -10,7 +10,7 @@ vi.mock('./health-sync.js', () => ({
   onHealthChange: cb => { health.listeners.add(cb); return () => health.listeners.delete(cb) },
 }))
 
-import { phoneSessionPlan, liveHrPatches, noteRest, isLiveWorkout, startPhoneWorkout, liveHeartRate, _setPhonePluginForTest, FRESH_START_MS, WATCH_GRACE_MS } from './phone-workout.js'
+import { phoneSessionPlan, setSessionDeadline, liveHrPatches, noteRest, isLiveWorkout, startPhoneWorkout, liveHeartRate, _setPhonePluginForTest, FRESH_START_MS, WATCH_GRACE_MS } from './phone-workout.js'
 import { applyEvents, watchClaimed, _resetWatchSync } from './watch-sync.js'
 import { writeWatchStatus } from './watch-settings.js'
 
@@ -193,6 +193,7 @@ function fakePlugin({ recovered = {} } = {}) {
     start: vi.fn(async ({ wid }) => ({ ok: true, wid, start: now })),
     samples: vi.fn(async () => ({ samples: readings(now, now + 120e3, () => 130) })),
     end: vi.fn(async () => {}),
+    deadline: vi.fn(async () => {}),
     addListener: vi.fn((name, fn) => { listeners[name] = fn; return { remove: () => {} } }),
   }
 }
@@ -237,6 +238,15 @@ describe('the session with the workout', () => {
     expect(p.end).toHaveBeenCalledWith({ wid: 'w1', save: true, at: now + 100e3, title: 'Push' })
     expect(liveHeartRate()).toBeNull()
     stop()
+  })
+
+  it('hands the native session its deadline, or takes it away; an older shell without the method is no error', async () => {
+    await setSessionDeadline({ wid: 'w1', endBy: now + 3e6, at: now + 1e6, title: 'Push' })
+    expect(p.deadline).toHaveBeenCalledWith({ wid: 'w1', endBy: now + 3e6, at: now + 1e6, title: 'Push' })
+    await setSessionDeadline({})
+    expect(p.deadline).toHaveBeenLastCalledWith({ wid: undefined, endBy: undefined, at: undefined, title: undefined })
+    delete p.deadline
+    await expect(setSessionDeadline({ wid: 'w1' })).resolves.toBeUndefined()
   })
 
   it('discarded: dropped, nothing saved', async () => {

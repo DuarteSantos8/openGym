@@ -29,7 +29,13 @@ function makeStores (active) {
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
     set (next) { const prev = { S }; S = next; for (const f of subs) f({ S }, prev) },
   }
-  const useUI = { getState: () => ({ timer: null, work: null }) }
+  let ui = { timer: null, work: null }
+  const uiSubs = new Set()
+  const useUI = {
+    getState: () => ui,
+    subscribe: fn => { uiSubs.add(fn); return () => uiSubs.delete(fn) },
+    setState (patch) { const prev = ui; ui = { ...ui, ...patch }; for (const f of uiSubs) f(ui, prev) },
+  }
   return { useStore, useUI }
 }
 const workout = () => ({ id: 'w1', start: T0, entries: [{ id: 'bench', target: { restSec: 120 }, sets: [
@@ -42,7 +48,7 @@ afterEach(() => { stop(); _resetForgottenPhone(); vi.useRealTimers() })
 
 function start (A = workout()) {
   const st = makeStores(A)
-  const calls = { finish: [], prompts: [], closed: 0, discard: 0, used: [] }
+  const calls = { finish: [], prompts: [], closed: 0, discard: 0, used: [], deadlines: [] }
   stop = startForgotten({
     ...st,
     finish: o => { calls.finish.push(o); st.useStore.set({ ...st.useStore.getState().S, active: null }) },
@@ -53,6 +59,7 @@ function start (A = workout()) {
     readLeft: async () => null,
     onLeft: () => () => {},
     notifications: fakeNotifications,
+    sessionDeadline: d => calls.deadlines.push(d),
   })
   return { st, calls }
 }
@@ -68,6 +75,123 @@ describe('forgotten workouts on the phone', () => {
     expect(readForgottenState('w1').notifyAt).toBe(last + 45 * MIN)
     // Android 14 without "Alarms & reminders": inexact, so the plugin opens no settings screen (QA66).
     expect(ln.scheduled[0].isExactNotification).toBe(false)
+  })
+
+  it('hands the phone session a deadline: the grace after the planned question, ending at the last set plus its rest', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{ wid: 'w1', endBy: last + 51 * MIN, at: last + 120e3, title: undefined }]))
+    // A set logged moves the question, so the deadline.
+    const A = { ...workout(), name: 'Push' }; A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+    st.useStore.set({ ...st.useStore.getState().S, active: A })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({ wid: 'w1', endBy: last + 56 * MIN, at: last + 5 * MIN + 120e3, title: 'Push' }))
+    // The workout over: no deadline left.
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+  })
+
+  it('an older plan that ends late leaves the newer plan its deadline', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.wid).toBe('w1'))
+    const cancel = fakeNotifications.cancel
+    let release = null
+    fakeNotifications.cancel = () => new Promise(r => { release = r })
+    try {
+      st.useStore.set({ ...st.useStore.getState().S, active: null })   // its plan waits on the cancel
+      await vi.waitFor(() => expect(release).not.toBeNull())
+      fakeNotifications.cancel = cancel
+      st.useStore.set({ ...st.useStore.getState().S, active: { ...workout(), id: 'w2' } })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.wid).toBe('w2'))
+      release()
+      for (let i = 0; i < 10; i++) await flush()
+      expect(calls.deadlines.at(-1)?.wid).toBe('w2')
+    } finally { fakeNotifications.cancel = cancel }
+  })
+
+  it('a long hold pushes the question and the deadline past its end; the hold over, they come back to the last set', async () => {
+    vi.setSystemTime(last + 40 * MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+    const endsAt = last + 55 * MIN   // a 15-minute hold, 40 minutes after the last set
+    st.useUI.setState({ work: { left: 900, total: 900, endsAt } })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(endsAt + 51 * MIN))
+    expect(ln.scheduled.at(-1).schedule.at.getTime()).toBe(endsAt + 45 * MIN)
+    // Its every tick changes nothing.
+    const n = calls.deadlines.length
+    st.useUI.setState({ work: { left: 899, total: 900, endsAt } })
+    await flush()
+    expect(calls.deadlines.length).toBe(n)
+    st.useUI.setState({ work: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+  })
+
+  it('a hold past its end (overtime) is still going on: no question, no deadline', async () => {
+    vi.setSystemTime(last + 40 * MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+    st.useUI.setState({ work: { left: -60, total: 60, endsAt: last + 39 * MIN, overtime: true } })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+  })
+
+  it('an older plan that finishes late does not put back its older deadline', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.schedule
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    fakeNotifications.schedule = async o => { if (first) { first = false; await gate } return real(o) }
+    try {
+      const { st, calls } = start()
+      await vi.waitFor(() => expect(first).toBe(false))
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 56 * MIN))
+      release()
+      await flush(); await flush()
+      expect(calls.deadlines.at(-1)?.endBy).toBe(last + 56 * MIN)
+      expect(readForgottenState('w1').notifyAt).toBe(last + 50 * MIN)
+    } finally { fakeNotifications.schedule = real }
+  })
+
+  // Both plans use the one notification id: an older plan that schedules last would put back its earlier time.
+  it('an older plan overtaken before it schedules plans no notification of its own', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.checkPermissions
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    fakeNotifications.checkPermissions = async () => { if (first) { first = false; await gate } return real() }
+    try {
+      const { st } = start()
+      await vi.waitFor(() => expect(first).toBe(false))
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(ln.scheduled).toHaveLength(1))
+      release()
+      await flush(); await flush()
+      expect(ln.scheduled.map(n => n.schedule.at.getTime())).toEqual([last + 50 * MIN])
+    } finally { fakeNotifications.checkPermissions = real }
+  })
+
+  it('a plan that fails after the old notification was cancelled takes the old deadline away too', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.schedule
+    try {
+      const { st, calls } = start()
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+      fakeNotifications.schedule = async () => { throw new Error('refused') }
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+    } finally { fakeNotifications.schedule = real }
+  })
+
+  it('no notification planned (no permission): no deadline, a workout nobody was asked about is not ended', async () => {
+    vi.setSystemTime(last + MIN)
+    ln.granted = false
+    const { calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{}]))
   })
 
   it('asks on screen, then ends at the last set plus its rest when nobody answers', () => {
