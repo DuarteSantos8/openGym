@@ -12,7 +12,7 @@
 // The labels are existing strings, translated where they are shown (t(label)). `needs` is the
 // module (Settings → Modules) a card belongs to: with it off the card is not offered at all.
 
-import { recapPeriod } from './recap-period.js'
+import { recapPeriod } from './recap-period.ts'
 
 export const PAGES = {
   home: [

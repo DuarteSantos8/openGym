@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run && npm run check:native-localizations",
     "test:watch": "vitest",
+    "typecheck": "tsc -p .",
     "test:fatigue-probe": "node scripts/fatigue-monotonic-probe.mjs",
     "pdf:check": "node scripts/pdf/render-samples.mjs --out pdf-samples --langs en,de,ar --paper A4,Letter --check",
     "check:native-localizations": "node scripts/check-native-localizations.mjs"
@@ -41,6 +42,7 @@
     "fast-check": "^4.10.2",
     "happy-dom": "^20.14.6",
     "linkedom": "^0.18.13",
+    "typescript": "7.0.2",
     "vite": "^8.3.4",
     "vitest": "^4.1.12"
   }

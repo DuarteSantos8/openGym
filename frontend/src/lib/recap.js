@@ -9,7 +9,7 @@
 // nobody needs a recap of a week off.
 import { reportData } from './report.js'
 import { todayISO } from './format.js'
-import { recapPeriod } from './recap-period.js'
+import { recapPeriod } from './recap-period.ts'
 import { streakWeeks } from './streak.js'
 import { isOn } from './modules.js'
 
