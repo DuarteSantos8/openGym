@@ -5966,4 +5966,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Anslutningen bröts medan openGym låg i bakgrunden. Coachen fortsatte där den slutade.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Dra i ett foto för att flytta det som syns, nyp för att zooma in.",
+  "Hidden until next month.": "Dold till nästa månad.",
+  "Body weight is out of your year.": "Kroppsvikten är borta från ditt år.",
+  "Body weight in my year": "Kroppsvikt i mitt år",
+  "Your first and last weigh-in of the year, on a card of its own.": "Din första och sista vägning för året, på ett eget kort.",
 }

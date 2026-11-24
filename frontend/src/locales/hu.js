@@ -5922,4 +5922,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "A kapcsolat megszakadt, amíg az openGym a háttérben volt. Az edző ott folytatta, ahol abbahagyta.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Húzd a fotót, hogy mozgasd a látható részt, és csippentéssel nagyíts rá.",
+  "Hidden until next month.": "Jövő hónapig elrejtve.",
+  "Body weight is out of your year.": "A testsúly kimarad az évedből.",
+  "Body weight in my year": "Testsúly az évemben",
+  "Your first and last weigh-in of the year, on a card of its own.": "Az év első és utolsó mérésed, külön kártyán.",
 }

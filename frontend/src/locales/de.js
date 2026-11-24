@@ -5939,4 +5939,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Die Verbindung ist abgerissen, während openGym im Hintergrund war. Der Coach hat dort weitergemacht, wo er aufgehört hat.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Zieh ein Foto, um den Ausschnitt zu verschieben, und zieh es mit zwei Fingern auf, um hineinzuzoomen.",
+  "Hidden until next month.": "Bis nächsten Monat ausgeblendet.",
+  "Body weight is out of your year.": "Körpergewicht ist raus aus deinem Jahr.",
+  "Body weight in my year": "Körpergewicht in meinem Jahr",
+  "Your first and last weigh-in of the year, on a card of its own.": "Dein erstes und letztes Wiegen des Jahres, auf einer eigenen Karte.",
 }

@@ -5930,4 +5930,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "การเชื่อมต่อหลุดระหว่างที่ openGym อยู่เบื้องหลัง โค้ชทำต่อจากจุดที่ค้างไว้แล้ว",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "ลากรูปเพื่อเลื่อนส่วนที่แสดง ถ่างสองนิ้วเพื่อซูมเข้า",
+  "Hidden until next month.": "ซ่อนไว้จนถึงเดือนหน้า",
+  "Body weight is out of your year.": "เอาน้ำหนักตัวออกจากปีของคุณแล้ว",
+  "Body weight in my year": "น้ำหนักตัวในปีของฉัน",
+  "Your first and last weigh-in of the year, on a card of its own.": "การชั่งน้ำหนักครั้งแรกและครั้งสุดท้ายของปี บนการ์ดของมันเอง",
 }

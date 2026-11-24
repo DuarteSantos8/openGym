@@ -8,6 +8,7 @@
     "sternocleidomastoid"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "Tilts the head back to stretch the muscles at the front of the neck.",
   "instructions": [
     "Sit or stand tall with your shoulders relaxed.",

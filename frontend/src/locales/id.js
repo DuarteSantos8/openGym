@@ -5884,4 +5884,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Koneksi terputus saat openGym berada di latar belakang. Coach melanjutkan dari titik terakhirnya.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Seret foto untuk menggeser bagian yang terlihat, cubit untuk memperbesar.",
+  "Hidden until next month.": "Disembunyikan sampai bulan depan.",
+  "Body weight is out of your year.": "Berat badan tidak masuk tahunmu.",
+  "Body weight in my year": "Berat badan di tahunku",
+  "Your first and last weigh-in of the year, on a card of its own.": "Timbangan pertama dan terakhirmu tahun ini, di kartu sendiri.",
 };

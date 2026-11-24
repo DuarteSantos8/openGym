@@ -21657,16 +21657,7 @@
     ]
   },
   "0316": {
-    "name": "súlyzós ferde pados mellnyújtás",
-    "instructions": [
-      "Állíts be egy ferde padot 45 fokos szögbe.",
-      "Ülj le a padra úgy, hogy a hátad a párnának támaszkodjon, a talpad pedig a földön legyen.",
-      "Fogj egy-egy súlyzót mindkét kezedbe felső fogással, tenyereid előre néznek.",
-      "Kezdd úgy, hogy a karjaid teljesen nyújtva, a talajra merőlegesen álljanak.",
-      "Lassan engedd le a súlyzókat a mellkasod oldalára, a könyököidet 90 fokos szögben tartva.",
-      "Állj meg egy pillanatra a mozdulat alján, majd nyomd vissza a súlyzókat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "súlyzós ferde pados tárogatás (tenyér előre)"
   },
   "0317": {
     "name": "súlyzós ferde pados hajlítás v2",

@@ -5919,4 +5919,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym이 백그라운드에 있는 동안 연결이 끊겼습니다. 코치가 멈춘 곳부터 다시 이어갔습니다.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "사진을 드래그해 보이는 부분을 옮기고, 두 손가락으로 벌려 확대하세요.",
+  "Hidden until next month.": "다음 달까지 숨겨져 있어요.",
+  "Body weight is out of your year.": "체중을 올해 이야기에서 뺐어요.",
+  "Body weight in my year": "올해 이야기에 체중 포함",
+  "Your first and last weigh-in of the year, on a card of its own.": "올해 첫 체중과 마지막 체중을 카드 한 장에.",
 }

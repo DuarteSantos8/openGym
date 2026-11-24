@@ -4344,6 +4344,10 @@ export const PT_BR_OVERRIDES = {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "A conexão caiu enquanto o openGym estava em segundo plano. O Treinador retomou de onde tinha parado.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Arraste uma foto para mudar o que aparece e afaste dois dedos para ampliar.",
+  "Hidden until next month.": "Oculto até o mês que vem.",
+  "Body weight is out of your year.": "O peso corporal ficou fora do seu ano.",
+  "Body weight in my year": "Peso corporal no meu ano",
+  "Your first and last weigh-in of the year, on a card of its own.": "Sua primeira e última pesagem do ano, num cartão só dela.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

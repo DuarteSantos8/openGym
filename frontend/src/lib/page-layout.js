@@ -110,7 +110,33 @@ function slot(s, page) {
   return l
 }
 
+// Two Home cards also have their own × that puts them away for a while: the challenges until next
+// month (S.challengesHidden = 'YYYY-MM'), the recovery tip for today (S.recoveryHintDay). Such a
+// card drew nothing, so the sheet left it out and nothing brought it back (Discord 2026-11-20).
+// The sheet now lists it as hidden, says until when, and Show clears the ×.
+const pad2 = n => String(n).padStart(2, '0')
+const monthOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`
+const dayOf = d => `${monthOf(d)}-${pad2(d.getDate())}`
+const DISMISS = {
+  home: {
+    challenges: { on: (S, now) => S.challengesHidden === monthOf(now), clear: s => { s.challengesHidden = null }, note: 'Hidden until next month.' },
+    recovery: { on: (S, now) => S.recoveryHintDay === dayOf(now), clear: s => { s.recoveryHintDay = null }, note: 'Hidden for today. Back tomorrow.' },
+  },
+}
+
+/** The note (an English string, t() it) for a card put away with its own ×, or null. */
+export function dismissedNote(S, page, id, now = new Date()) {
+  const d = DISMISS[page]?.[id]
+  return d && S && d.on(S, now) ? d.note : null
+}
+
+/** Brings back every card of the page that its own × put away. Mutates the draft `s`. */
+export function clearDismissed(s, page, id) {
+  for (const [k, d] of Object.entries(DISMISS[page] || {})) if (id == null || id === k) d.clear(s)
+}
+
 export function setCardState(s, page, id, state) {
+  if (state !== 'hidden') clearDismissed(s, page, id)
   const l = slot(s, page)
   l.hidden = l.hidden.filter(x => x !== id)
   l.folded = l.folded.filter(x => x !== id)
@@ -158,4 +184,5 @@ export function resetLayout(s, page) {
   const { [page]: _gone, ...rest } = s.layout
   s.layout = rest
   for (const c of PAGES[page] || []) if (c.legacy) s[c.legacy] = true
+  clearDismissed(s, page)
 }

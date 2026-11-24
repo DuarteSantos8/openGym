@@ -5915,4 +5915,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Ryšys nutrūko, kol openGym veikė fone. Treneris tęsė nuo ten, kur sustojo.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Vilkite nuotrauką, kad pakeistumėte matomą dalį, suimkite pirštais, kad priartintumėte.",
+  "Hidden until next month.": "Paslėpta iki kito mėnesio.",
+  "Body weight is out of your year.": "Kūno svoris išimtas iš tavo metų.",
+  "Body weight in my year": "Kūno svoris mano metuose",
+  "Your first and last weigh-in of the year, on a card of its own.": "Pirmasis ir paskutinis metų svėrimas, atskiroje kortelėje.",
 }

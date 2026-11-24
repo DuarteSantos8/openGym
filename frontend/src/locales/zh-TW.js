@@ -5912,4 +5912,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym 在背景時連線中斷了。教練已從中斷的地方繼續。",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "拖曳照片可移動顯示的部分，雙指張開可放大。",
+  "Hidden until next month.": "已隱藏到下個月。",
+  "Body weight is out of your year.": "體重已從你的年度回顧中移除。",
+  "Body weight in my year": "年度回顧中的體重",
+  "Your first and last weigh-in of the year, on a card of its own.": "你一年中第一次和最後一次量體重，單獨一張卡片。",
 }

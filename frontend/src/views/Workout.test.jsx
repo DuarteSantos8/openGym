@@ -66,6 +66,7 @@ const mocks = vi.hoisted(() => {
     addRest: state.addRest,
     startWork: state.startWork,
     toast: state.toast,
+    sheets: [],
   })
   return state
 })
@@ -1666,6 +1667,32 @@ describe('active workout whole-unit move controls', () => {
 
     expect(action('Move up')?.disabled).toBe(true)
     expect(action('Move down')?.disabled).toBe(true)
+  })
+})
+
+describe('moving an exercise in the list by hold-and-drag (Discord 2026-11-21)', () => {
+  const grips = () => [...container.querySelectorAll('.wl-unit [data-reorder-handle]')]
+  const key = async (el, k) => {
+    const e = new dom.Event('keydown', { bubbles: true })
+    Object.defineProperty(e, 'key', { value: k })
+    await act(async () => { el.dispatchEvent(e) })
+  }
+  it('every unit in the list is a reorder row with a grip named for it, and its arrow keys move it', async () => {
+    await mount([exercise('first', [true]), exercise('second', [false]), exercise('third', [false])], 1, { active: { workoutView: 'list' } })
+    const rows = [...container.querySelectorAll('.workout-list > [data-reorder-row]')]
+    expect(rows.length).toBe(3)
+    expect(grips().length).toBe(3)
+    expect(grips()[0].getAttribute('aria-label')).toMatch(/^Move /)
+    await key(grips()[0], 'ArrowDown')
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual(['second', 'first', 'third'])
+    // the marker stays on the exercise it was on
+    expect(mocks.S.active.entries[mocks.S.active.cur].id).toBe('second')
+    expect(mocks.stopWork).toHaveBeenCalled()
+  })
+  it('no grip while a timed set runs, since it writes by index', async () => {
+    mocks.work = { left: 5, total: 5, endsAt: Date.now() + 5000 }
+    await mount([exercise('first', [false]), exercise('second', [false])], 0, { active: { workoutView: 'list' } })
+    expect(grips()).toEqual([])
   })
 })
 

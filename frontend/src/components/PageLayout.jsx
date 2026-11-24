@@ -18,7 +18,7 @@ import { useListReorder } from '../lib/use-list-reorder.js'
 import { reportCard, cardLive, liveVersion, subscribeLive } from '../lib/card-live.js'
 import Icon from './Icon.jsx'
 import { Button, Segmented } from './ui.jsx'
-import { PAGES, GROUP_LABELS, arrange, cardState, orderedCards, setCardState, moveCard, placeCard, resetLayout, isCustom } from '../lib/page-layout.js'
+import { PAGES, GROUP_LABELS, arrange, cardState, orderedCards, setCardState, moveCard, placeCard, resetLayout, isCustom, dismissedNote } from '../lib/page-layout.js'
 
 const labelOf = (page, id) => t(PAGES[page].find(c => c.id === id).label)
 
@@ -82,7 +82,9 @@ function LayoutGroup({ page, group, cards, S, update }) {
     {group && <h4 className="sec">{t(GROUP_LABELS[group])}</h4>}
     <div className="sect-b lay-list" ref={r.listRef}>
       {cards.map((c, i) => {
-        const name = t(c.label), state = cardState(S, page, c.id)
+        // A card put away with its own × reads as hidden, with until when; Show brings it back.
+        const note = dismissedNote(S, page, c.id)
+        const name = t(c.label), state = note ? 'hidden' : cardState(S, page, c.id)
         const empty = state !== 'hidden' && cardLive(page, c.id) === false
         return <div key={c.id} data-reorder-row data-reorder-key={c.id} data-lay={c.id} style={r.rowStyle(i)} {...r.press(i)}
           className={'lay-row' + (state === 'hidden' ? ' off' : '') + (r.held(i) ? ' held' : '')}>
@@ -90,7 +92,7 @@ function LayoutGroup({ page, group, cards, S, update }) {
             {cards.length > 1 && <button type="button" className="lay-grip" aria-label={t('Move {0}', name)} title={t('Drag to reorder')} {...r.handle(i)}>
               <Icon name="grip" />
             </button>}
-            <span className="lay-name">{name}{empty && <span className="lay-hint">{t('Shows up when there is something to show')}</span>}</span>
+            <span className="lay-name">{name}{empty && <span className="lay-hint">{t('Shows up when there is something to show')}</span>}{note && <span className="lay-hint" data-dismissed>{t(note)}</span>}</span>
             <span className="lay-move">
               <button type="button" className="vh" aria-label={t('Move {0} up', name)} disabled={i === 0}
                 onClick={() => update(s => { moveCard(s, page, c.id, -1) })}><Icon name="chevronUp" /></button>
@@ -111,7 +113,7 @@ function LayoutSheet({ page, close }) {
   // Which cards to offer is decided once, as the sheet opens: what the page drew, plus the hidden
   // ones. A card turned on here that has nothing yet stays in the list, with a word on when.
   const [offered] = useState(() => new Set(orderedCards(S, page)
-    .filter(c => cardState(S, page, c.id) === 'hidden' || cardLive(page, c.id) !== false).map(c => c.id)))
+    .filter(c => cardState(S, page, c.id) === 'hidden' || dismissedNote(S, page, c.id) || cardLive(page, c.id) !== false).map(c => c.id)))
   const cards = orderedCards(S, page).filter(c => (!c.needs || isOn(S, c.needs)) && offered.has(c.id))
   const groups = [...new Set(cards.map(c => c.group))]
   return <>

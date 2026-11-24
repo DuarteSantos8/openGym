@@ -1176,6 +1176,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
           <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
         </Row>}
+        <WrappedBodyRow S={S} update={update} />
         {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Weekly sets on Home')}
           subtitle={t('The muscle with the most room left this week, under your streak.')}>
@@ -1183,7 +1184,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
         {on('motivation') && <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
-          <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />
+          <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v; if (v) s.challengesHidden = null })} />
         </Row>}
         {/* The bar at the top that says the app is offline, kept local, or not synced (#369, #330).
             Here and not under Server & sync, which a phone kept local never shows. Switching it on
@@ -1740,6 +1741,15 @@ function WrappedNotifyRow({ S, update }) {
   const on = S.wrappedNotify !== false
   return <Row icon="sparkles" iconTint="var(--acc)" title={t('Your year in openGym')} subtitle={t('One notification on 1 December when your year is ready.')}>
     <Switch checked={on} onChange={() => update(s => { s.wrappedNotify = !on })} aria-label={t('Your year in openGym')} />
+  </Row>
+}
+
+// The body-weight card of Your year (lib/wrapped.js bodyChange). "Leave body weight out of my year"
+// on that card switches it off; this is the way back (Discord 2026-11-21).
+function WrappedBodyRow({ S, update }) {
+  if (!isOn(S, 'motivation') || !isOn(S, 'body')) return null
+  return <Row icon="scale" iconTint="var(--acc)" title={t('Body weight in my year')} subtitle={t('Your first and last weigh-in of the year, on a card of its own.')}>
+    <Switch checked={S.wrappedBody !== false} onChange={v => update(s => { s.wrappedBody = !!v })} aria-label={t('Body weight in my year')} />
   </Row>
 }
 

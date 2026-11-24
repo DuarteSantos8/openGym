@@ -5919,4 +5919,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym arka plandayken bağlantı koptu. Koç kaldığı yerden devam etti.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Görünen kısmı kaydırmak için fotoğrafı sürükle, yakınlaştırmak için iki parmağınla aç.",
+  "Hidden until next month.": "Gelecek aya kadar gizli.",
+  "Body weight is out of your year.": "Vücut ağırlığı yılından çıkarıldı.",
+  "Body weight in my year": "Yılımda vücut ağırlığı",
+  "Your first and last weigh-in of the year, on a card of its own.": "Yılın ilk ve son tartın, kendi kartında.",
 }

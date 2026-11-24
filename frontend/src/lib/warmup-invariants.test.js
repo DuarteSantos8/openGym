@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { workoutVolume, insertWarmupRow, buildSets, applyIntensifierPlan } from './history.js'
 import { applyPrescription } from './progression.js'
-import { isSideSet } from './workout-model.js'
+import { isSideSet, isWarmupRow } from './workout-model.js'
 
 // The config sheet tells users warm-ups are "left out of volume, records and progression",
 // and history.js repeats that as an invariant in a comment. Volume was the one place it
@@ -142,19 +142,19 @@ describe('a unilateral warm-up is logged per side', () => {
 
 // Rest-pause builds its own two rows (one warm-up, one rest-pause work set). On a unilateral
 // exercise the warm-up is per side too, the same as the work set below it.
-describe('a unilateral rest-pause warm-up is per side', () => {
-  it('splits the activation warm-up across L and R', () => {
+describe('a unilateral rest-pause activation set is per side', () => {
+  // #1252: no longer a warm-up row, it is the start of each side's work row.
+  it('splits the activation set across L and R, in front of each side\'s bursts', () => {
     const sets = [{ w: 60, r: 8, done: false, sides: { L: { w: 60, r: 4, done: false }, R: { w: 60, r: 4, done: false } } }]
     const out = applyIntensifierPlan(sets, { reps: 8, side: true, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } })
-    expect(out).toHaveLength(2)
-    const warm = out[0]
-    expect(warm.phase).toBe('warmup')
-    expect(isSideSet(warm)).toBe(true)
-    expect(warm.sides.L.r + warm.sides.R.r).toBe(8)
-    expect(warm.sides.L.w).toBe(60)
-    expect(warm.sides.R.w).toBe(60)
-    // the work set stays per side with its bursts on each limb
-    expect(isSideSet(out[1])).toBe(true)
-    expect(out[1].type).toBe('restpause')
+    expect(out).toHaveLength(1)
+    const [work] = out
+    expect(isWarmupRow(work)).toBe(false)
+    expect(isSideSet(work)).toBe(true)
+    expect(work.type).toBe('restpause')
+    const actOf = s => s.r - s.clusters.reduce((n, c) => n + c.r, 0)
+    expect(actOf(work.sides.L) + actOf(work.sides.R)).toBe(8)
+    expect(work.sides.L.w).toBe(60)
+    expect(work.sides.R.w).toBe(60)
   })
 })

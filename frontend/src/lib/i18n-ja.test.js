@@ -45,7 +45,7 @@ describe('Japanese localization', () => {
     expect(jaExerciseNames['0977']).toBe('バンド・フロントレイズ')
     expect(jaExerciseNames['1321']).toContain('高いシート')
     expect(jaExerciseNames['0574']).toBe('バーベル・ベントオーバーローイング')
-    expect(jaExerciseNames['0316']).toContain('インクラインダンベルプレス')
+    expect(jaExerciseNames['0316']).toContain('インクラインフライ')   // #1302: a fly, not a press
   })
 
   it('translates common lifts using catalogue exercise IDs', () => {

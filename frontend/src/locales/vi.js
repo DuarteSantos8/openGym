@@ -5885,4 +5885,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Kết nối bị ngắt khi openGym đang chạy nền. Coach đã tiếp tục từ chỗ còn dở.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Kéo ảnh để dời phần hiển thị, chụm hai ngón để phóng to.",
+  "Hidden until next month.": "Đã ẩn đến tháng sau.",
+  "Body weight is out of your year.": "Đã bỏ cân nặng khỏi năm của bạn.",
+  "Body weight in my year": "Cân nặng trong năm của tôi",
+  "Your first and last weigh-in of the year, on a card of its own.": "Lần cân đầu và cuối năm của bạn, trên một thẻ riêng.",
 };

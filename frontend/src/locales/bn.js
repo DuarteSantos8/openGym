@@ -5998,4 +5998,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym ব্যাকগ্রাউন্ডে থাকার সময় সংযোগ বিচ্ছিন্ন হয়ে গিয়েছিল। কোচ যেখানে থেমেছিল সেখান থেকে আবার শুরু করেছে।",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "কোন অংশ দেখা যাবে তা সরাতে ছবিটি টেনে নিন, জুম করতে দুই আঙুলে ছড়িয়ে দিন।",
+  "Hidden until next month.": "আগামী মাস পর্যন্ত লুকানো।",
+  "Body weight is out of your year.": "শরীরের ওজন এখন তোমার বছরের বাইরে।",
+  "Body weight in my year": "আমার বছরে শরীরের ওজন",
+  "Your first and last weigh-in of the year, on a card of its own.": "বছরের প্রথম ও শেষ ওজন, আলাদা একটি কার্ডে।",
 }

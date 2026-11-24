@@ -5916,4 +5916,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "З’єднання обірвалося, поки openGym був у фоні. Тренер продовжив з того місця, де зупинився.",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "Перетягніть фото, щоб зсунути видиму частину, розведіть пальці, щоб наблизити.",
+  "Hidden until next month.": "Приховано до наступного місяця.",
+  "Body weight is out of your year.": "Вагу тіла прибрано з твого року.",
+  "Body weight in my year": "Вага тіла в моєму році",
+  "Your first and last weigh-in of the year, on a card of its own.": "Твоє перше й останнє зважування за рік, на окремій картці.",
 }

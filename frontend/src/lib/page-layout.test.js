@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PAGES, arrange, cardState, groupHidden, isCustom, layoutOf, moveCard, orderedCards, placeCard, resetLayout, setCardState } from './page-layout.js'
+import { PAGES, arrange, cardState, groupHidden, isCustom, layoutOf, moveCard, orderedCards, placeCard, resetLayout, setCardState, dismissedNote } from './page-layout.js'
 
 const ids = page => PAGES[page].map(c => c.id)
 
@@ -91,5 +91,28 @@ describe('placeCard (a drag in the Customize sheet)', () => {
     expect(orderedCards(s, 'home').map(c => c.id)[0]).toBe('streak')
     expect(placeCard(s, 'home', 'streak', 'streak')).toBe(false)
     expect(placeCard(s, 'home', 'nope', 'streak')).toBe(false)
+  })
+})
+
+describe('cards put away with their own × (Discord 2026-11-20)', () => {
+  const now = new Date(2026, 10, 24, 12)
+  it('says until when, and Show brings the challenges and the recovery tip back', () => {
+    const s = { challengesHidden: '2026-11', recoveryHintDay: '2026-11-24' }
+    expect(dismissedNote(s, 'home', 'challenges', now)).toBe('Hidden until next month.')
+    expect(dismissedNote(s, 'home', 'recovery', now)).toBe('Hidden for today. Back tomorrow.')
+    setCardState(s, 'home', 'challenges', 'shown')
+    expect(dismissedNote(s, 'home', 'challenges', now)).toBe(null)
+    expect(s.recoveryHintDay).toBe('2026-11-24')
+    setCardState(s, 'home', 'recovery', 'folded')
+    expect(dismissedNote(s, 'home', 'recovery', now)).toBe(null)
+  })
+  it('an old dismissal is no note, Hide keeps it, and Reset clears it', () => {
+    expect(dismissedNote({ challengesHidden: '2026-10' }, 'home', 'challenges', now)).toBe(null)
+    const s = { challengesHidden: '2026-11' }
+    setCardState(s, 'home', 'challenges', 'hidden')
+    expect(s.challengesHidden).toBe('2026-11')
+    resetLayout(s, 'home')
+    expect(s.challengesHidden).toBe(null)
+    expect(dismissedNote({ challengesHidden: '2026-11' }, 'stats', 'challenges', now)).toBe(null)
   })
 })

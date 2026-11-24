@@ -195,6 +195,9 @@ describe('editing a weight mid-session', () => {
   it('keeps the old flat cascade when the session has no back-off', () => {
     expect(cascadeWeight(rows(), 0, 28).map(r => r.w)).toEqual([26, 28, 28])
   })
+  it('with the old weight given, back-off rows still step down from the edited one', () => {
+    expect(cascadeWeight(rows(), 0, 28, undefined, 2, { prev: 26 }).map(r => r.w)).toEqual([26, 26, 24])
+  })
   it('a logged set in between keeps its place in the sequence', () => {
     const r = rows(); r[1] = { ...r[1], done: true }
     expect(cascadeWeight(r, 0, 30, undefined, 2).map(x => x.w)).toEqual([26, 24, 26])

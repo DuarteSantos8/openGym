@@ -5852,4 +5852,8 @@ export default {
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym がバックグラウンドにある間に接続が切れました。コーチは中断したところから再開しました。",
   // --- Progress photos: pinch to zoom (#1315) ---
   "Drag a photo to move what shows, pinch to zoom in.": "写真をドラッグして表示部分を動かし、ピンチで拡大できます。",
+  "Hidden until next month.": "来月まで非表示です。",
+  "Body weight is out of your year.": "体重をあなたの1年から外しました。",
+  "Body weight in my year": "1年のまとめに体重を入れる",
+  "Your first and last weigh-in of the year, on a card of its own.": "1年の最初と最後の体重を、専用のカードで。",
 }

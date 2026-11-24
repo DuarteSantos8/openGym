@@ -16,9 +16,9 @@
 //   · fewer sets than prescribed                       → miss
 // So a session that fell apart can never advance the load as though it had succeeded.
 
-import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines } from './history.js'
+import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines, restPauseGoal } from './history.js'
 import { EXIDX, isAssisted, isLoadedEq, defaultIncrement } from './exercises.js'
-import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
+import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet, isRestPauseSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
 import { nextRung } from './ladders.js'
 import { gymSplitView } from './gym-split.js'
@@ -336,6 +336,27 @@ export function readSession(entry, fallback) {
       weight: loadOf(entry, sets),
       best: Math.max(0, ...held),
       ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal)
+    }
+  }
+  // Rest-pause (#1252) is one work row however many sets the plan names: its activation set
+  // and its bursts. It used to be held to `sets` rows of `reps` and could never be done, so a
+  // planned rest-pause never moved. The row is done when it is ticked at the reps it asks for.
+  if (mode === 'reps' && entry && entry.target && target.intensifier?.type === 'restpause') {
+    // `reps` is the activation set as done (what the bursts leave over), so a policy that climbs
+    // reps climbs that one, not the total; an older row without one is its bursts alone.
+    const rows = logged.filter(isRestPauseSet).slice(0, 1)
+    const act = rows.length ? (rows[0].act === true || rows[0].sides?.L?.act === true) : true
+    const asked = restPauseGoal(target, rows.length ? rows[0] : { act: true })
+    const burstsOf = s => (isSideSet(s) ? [s.sides.L, s.sides.R] : [s])
+      .reduce((n, x) => n + (Array.isArray(x?.clusters) ? x.clusters.reduce((m, c) => m + (Number(c?.r) || 0), 0) : 0), 0)
+    const reps = rows.map(s => (s.done ? Math.max(0, (s.r || 0) - (act ? burstsOf(s) : 0)) : 0))
+    return {
+      mode, target, goal: act ? Math.max(1, Math.round(target.reps) || 1) : asked, reps,
+      weight: loadOf(entry, rows),
+      count: reps.length,
+      low: reps.length ? Math.min(...reps) : 0,
+      amrap: reps.length ? reps[reps.length - 1] : 0,
+      ok: rows.length > 0 && rows[0].done === true && (rows[0].r || 0) >= asked
     }
   }
   const goal = rowGoals ? Math.max(...rowGoals) : (target.reps || 0)
