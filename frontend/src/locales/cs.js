@@ -5925,4 +5925,10 @@ export default {
   "Not set up": "Nenastaveno",
   "Update watch app": "Aktualizujte aplikaci v hodinkách",
   "Last heard {0}": "Poslední spojení: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Odškrtnout všechny série?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Zbývající otevřené série ({0}) se odškrtnou podle plánu. Žádný odpočinek se nespustí.",
+  "Tick them all": "Odškrtnout vše",
+  "Every set ticked": "Všechny série odškrtnuty",
+  "Logging after training? Ticks the rest in one go": "Zapisuješ až po tréninku? Odškrtne zbytek najednou",
 }

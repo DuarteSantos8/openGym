@@ -5959,4 +5959,10 @@ export default {
   "Not set up": "설정 안 됨",
   "Update watch app": "워치 앱 업데이트",
   "Last heard {0}": "마지막 연결: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "모든 세트를 체크할까요?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "남은 {0}개 세트가 계획대로 체크됩니다. 휴식 타이머는 시작되지 않아요.",
+  "Tick them all": "모두 체크",
+  "Every set ticked": "모든 세트 체크됨",
+  "Logging after training? Ticks the rest in one go": "운동 후에 기록하나요? 나머지를 한 번에 체크",
 }

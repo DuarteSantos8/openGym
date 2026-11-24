@@ -5924,4 +5924,10 @@ export default {
   "Not set up": "Belum disiapkan",
   "Update watch app": "Perbarui aplikasi jam",
   "Last heard {0}": "Terakhir terdengar: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Centang semua set?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "{0} set yang tersisa dicentang sesuai rencana. Tidak ada timer istirahat yang berjalan.",
+  "Tick them all": "Centang semua",
+  "Every set ticked": "Semua set dicentang",
+  "Logging after training? Ticks the rest in one go": "Mencatat setelah latihan? Centang sisanya sekaligus",
 };

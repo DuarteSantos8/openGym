@@ -6006,4 +6006,10 @@ export default {
   "Not set up": "Inte konfigurerad",
   "Update watch app": "Uppdatera klockappen",
   "Last heard {0}": "Senast hörd: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Bocka av alla set?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "De {0} set som är kvar bockas av enligt plan. Ingen vilotimer startar.",
+  "Tick them all": "Bocka av alla",
+  "Every set ticked": "Alla set avbockade",
+  "Logging after training? Ticks the rest in one go": "Loggar du efter passet? Bockar av resten på en gång",
 }

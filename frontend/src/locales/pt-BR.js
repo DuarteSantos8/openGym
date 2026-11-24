@@ -4379,6 +4379,12 @@ export const PT_BR_OVERRIDES = {
   "Your first and last weigh-in of the year, on a card of its own.": "Sua primeira e última pesagem do ano, num cartão só dela.",
   // --- routines on the watch, in Settings → Apple Watch ---
   "Keep openGym open on the watch for a moment.": "Deixe o openGym aberto no relógio por um momento.",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Marcar todas as séries?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "As {0} séries que faltam são marcadas como planejado. Nenhum descanso começa.",
+  "Tick them all": "Marcar todas",
+  "Every set ticked": "Todas as séries marcadas",
+  "Logging after training? Ticks the rest in one go": "Registrando depois do treino? Marca o resto de uma vez",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

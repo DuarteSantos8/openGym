@@ -2533,11 +2533,11 @@ describe('workout view header menu', () => {
     expect(menu.sections.map(g => g.more ? 'more' : g.items.filter(Boolean).map(it => it.label))).toEqual([
       ['Workout settings'], ['Pause workout', 'Add exercise', 'Add session note', 'Layout'], 'more',
     ])
-    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Don’t count for progression'])
+    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Mark all sets done', 'Don’t count for progression'])
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Don’t count for progression',
+      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Mark all sets done', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')
@@ -3685,8 +3685,29 @@ describe('mark all sets done while logging a past workout', () => {
     expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
   })
 
-  it('is only there for a past workout', async () => {
-    await mount([exercise('plain-bench', [false])], 0, { active: { routineIds: [] } })
+  it('sits under More in a live workout, asks first and starts no rest', async () => {
+    await mount([exercise('plain-bench', [false, true]), exercise('plain-row', [false])], 0, { active: { routineIds: [] } })
+    const menu = await openMenu()
+    // Not among the rows on show: one stray tap there would tick a whole session.
+    expect(menu.sections[1].items.filter(Boolean).map(it => it.label)).not.toContain('Mark all sets done')
+    const item = menuItemsOf(menu).find(it => it.label === 'Mark all sets done')
+    expect(item).toBeTruthy()
+    await act(async () => { item.onClick() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(false)
+    const ask = mocks.confirmSheet.mock.calls.at(-1)[0]
+    expect(ask.message).toContain('2 sets')
+    await act(async () => { ask.onConfirm() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(true)
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
+    // The toast puts the sets back the way they were.
+    const [, opts] = mocks.toast.mock.calls.at(-1)
+    await act(async () => { opts.onAction() })
+    expect(mocks.S.active.entries.map(e => e.sets.map(s => s.done))).toEqual([[false, true], [false]])
+  })
+
+  it('is not offered once every set is ticked', async () => {
+    await mount([exercise('plain-bench', [true])], 0, { active: { routineIds: [] } })
     expect(labels(await openMenu())).not.toContain('Mark all sets done')
   })
 })

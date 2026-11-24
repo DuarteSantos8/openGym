@@ -6014,4 +6014,10 @@ export default {
   "Not set up": "غير مُعدّة",
   "Update watch app": "حدّث تطبيق الساعة",
   "Last heard {0}": "آخر اتصال: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "تحديد كل المجموعات؟",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "ستُحدَّد المجموعات المفتوحة المتبقية ({0}) كما خُطط لها. لن يبدأ أي مؤقت راحة.",
+  "Tick them all": "حدّدها كلها",
+  "Every set ticked": "حُدّدت كل المجموعات",
+  "Logging after training? Ticks the rest in one go": "تسجّل بعد التمرين؟ يحدّد الباقي دفعة واحدة",
 }

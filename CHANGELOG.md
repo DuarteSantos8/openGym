@@ -112,6 +112,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: with a rotation and Workouts per week set, Planned sets in Stats follow your week instead of one turn of the loop. A loop of six sessions at four a week plans four sixths of its sets, and a routine the loop names twice counts twice (#1249, thanks @avikl).
 - Fixed: on an exercise's page, "Your photo or video" and the description under it no longer touch. There is a gap between the two cards now (#1260, thanks @unabomberlive).
 - Garmin: the watch app now runs on the fēnix 9 line (fēnix 9, 9 Pro and 9 Pro Solar, every size), the Forerunner 70 and 170, Enduro 4, MARQ (Gen 3), Approach S50 and S72 and the D2 Air X10. Some older watches it had skipped are in too: fēnix 5 Plus, Forerunner 645 Music, the first MARQ, Descent G1, D2 Air, Venu Sq Music and the Legacy Hero and Legacy Saga watches. That is 36 more models, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
+- Logging a workout after you trained? Mark all sets done is now in a live workout too, under ⋯ More. It asks first, starts no rest timers and the toast has Undo (thanks Discord, #1345).
 
 ## v1.4.5 (2026-11-14)
 

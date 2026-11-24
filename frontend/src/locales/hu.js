@@ -5962,4 +5962,10 @@ export default {
   "Not set up": "Nincs beállítva",
   "Update watch app": "Frissítsd az óra appját",
   "Last heard {0}": "Utoljára jelentkezett: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Minden sorozatot kipipálsz?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "A még nyitott {0} sorozat a terv szerint kipipálódik. Pihenőidő nem indul.",
+  "Tick them all": "Mindet kipipálom",
+  "Every set ticked": "Minden sorozat kipipálva",
+  "Logging after training? Ticks the rest in one go": "Edzés után rögzítesz? A maradékot egyszerre pipálja ki",
 }

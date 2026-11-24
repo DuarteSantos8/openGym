@@ -5955,4 +5955,10 @@ export default {
   "Not set up": "Nenustatyta",
   "Update watch app": "Atnaujink laikrodžio programėlę",
   "Last heard {0}": "Paskutinį kartą: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Pažymėti visas serijas?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Likusios {0} serijos pažymimos pagal planą. Poilsio laikmatis nepasileis.",
+  "Tick them all": "Pažymėti visas",
+  "Every set ticked": "Visos serijos pažymėtos",
+  "Logging after training? Ticks the rest in one go": "Žymi po treniruotės? Pažymi likusias iš karto",
 }

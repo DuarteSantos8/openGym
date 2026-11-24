@@ -5963,4 +5963,10 @@ export default {
   "Not set up": "Не настроено",
   "Update watch app": "Обновите приложение на часах",
   "Last heard {0}": "Последняя связь: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Отметить все подходы?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Оставшиеся подходы ({0}) отметятся по плану. Таймер отдыха не запустится.",
+  "Tick them all": "Отметить все",
+  "Every set ticked": "Все подходы отмечены",
+  "Logging after training? Ticks the rest in one go": "Записываете после тренировки? Отметит остальное разом",
 }

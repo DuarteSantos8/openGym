@@ -5952,4 +5952,10 @@ export default {
   "Not set up": "尚未設定",
   "Update watch app": "更新手錶 App",
   "Last heard {0}": "上次聯繫：{0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "勾選所有組數？",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "剩下的 {0} 組依計畫勾選，不會啟動休息計時。",
+  "Tick them all": "全部勾選",
+  "Every set ticked": "所有組數已勾選",
+  "Logging after training? Ticks the rest in one go": "練完再記錄？一次勾選剩下的",
 }

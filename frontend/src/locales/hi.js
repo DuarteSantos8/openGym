@@ -5959,4 +5959,10 @@ export default {
   "Not set up": "सेट अप नहीं है",
   "Update watch app": "घड़ी का ऐप अपडेट करें",
   "Last heard {0}": "आख़िरी संपर्क: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "सभी सेट पर टिक करें?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "बाकी {0} सेट योजना के अनुसार टिक हो जाएँगे। कोई आराम टाइमर शुरू नहीं होगा।",
+  "Tick them all": "सब पर टिक करें",
+  "Every set ticked": "सभी सेट पर टिक हो गया",
+  "Logging after training? Ticks the rest in one go": "ट्रेनिंग के बाद लिख रहे हैं? बाकी सब एक साथ टिक",
 }

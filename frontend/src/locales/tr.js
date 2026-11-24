@@ -5959,4 +5959,10 @@ export default {
   "Not set up": "Kurulmadı",
   "Update watch app": "Saat uygulamasını güncelle",
   "Last heard {0}": "Son haber: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Tüm setler işaretlensin mi?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Kalan {0} set planlandığı gibi işaretlenir. Dinlenme sayacı başlamaz.",
+  "Tick them all": "Hepsini işaretle",
+  "Every set ticked": "Tüm setler işaretlendi",
+  "Logging after training? Ticks the rest in one go": "Antrenmandan sonra mı kaydediyorsun? Kalanı tek seferde işaretler",
 }

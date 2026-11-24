@@ -5925,4 +5925,10 @@ export default {
   "Not set up": "راه‌اندازی نشده",
   "Update watch app": "برنامهٔ ساعت را به‌روز کنید",
   "Last heard {0}": "آخرین تماس: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "همهٔ ست‌ها علامت بخورند؟",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "{0} ست باقی‌مانده طبق برنامه علامت می‌خورند. هیچ تایمر استراحتی شروع نمی‌شود.",
+  "Tick them all": "همه را علامت بزن",
+  "Every set ticked": "همهٔ ست‌ها علامت خوردند",
+  "Logging after training? Ticks the rest in one go": "بعد از تمرین ثبت می‌کنی؟ بقیه را یکجا علامت می‌زند",
 }

@@ -5970,4 +5970,10 @@ export default {
   "Not set up": "ยังไม่ได้ตั้งค่า",
   "Update watch app": "อัปเดตแอปบนนาฬิกา",
   "Last heard {0}": "ติดต่อล่าสุด: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "ติ๊กทุกเซ็ตเลยไหม?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "อีก {0} เซ็ตที่เหลือจะถูกติ๊กตามแผน ไม่มีตัวจับเวลาพักเริ่ม",
+  "Tick them all": "ติ๊กทั้งหมด",
+  "Every set ticked": "ติ๊กครบทุกเซ็ตแล้ว",
+  "Logging after training? Ticks the rest in one go": "บันทึกหลังซ้อม? ติ๊กที่เหลือทีเดียว",
 }

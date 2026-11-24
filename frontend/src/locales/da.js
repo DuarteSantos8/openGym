@@ -5899,4 +5899,10 @@ export default {
   "Not set up": "Ikke sat op",
   "Update watch app": "Opdater appen på uret",
   "Last heard {0}": "Sidst hørt: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Markér alle sæt?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "De {0} åbne sæt markeres som planlagt. Ingen pausetimer starter.",
+  "Tick them all": "Markér dem alle",
+  "Every set ticked": "Alle sæt markeret",
+  "Logging after training? Ticks the rest in one go": "Logger du efter træningen? Markerer resten på én gang",
 }

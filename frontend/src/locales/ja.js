@@ -5891,4 +5891,10 @@ export default {
   "No devices connected": "接続されたデバイスはありません",
   "Add a watch or connect a server in Settings": "設定でウォッチを追加するか、サーバーに接続してください",
   "Open Settings": "設定を開く",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "すべてのセットにチェックしますか？",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "残りの{0}セットを予定どおりチェックします。休憩タイマーは始まりません。",
+  "Tick them all": "すべてチェック",
+  "Every set ticked": "すべてのセットをチェックしました",
+  "Logging after training? Ticks the rest in one go": "トレーニング後に記録？残りをまとめてチェック",
 }

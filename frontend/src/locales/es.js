@@ -5959,4 +5959,10 @@ export default {
   "Not set up": "Sin configurar",
   "Update watch app": "Actualiza la app del reloj",
   "Last heard {0}": "Última noticia: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "¿Marcar todas las series?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Las {0} series pendientes se marcan tal como estaban planeadas. No arranca ningún descanso.",
+  "Tick them all": "Marcarlas todas",
+  "Every set ticked": "Todas las series marcadas",
+  "Logging after training? Ticks the rest in one go": "¿Lo apuntas después de entrenar? Marca el resto de una vez",
 }

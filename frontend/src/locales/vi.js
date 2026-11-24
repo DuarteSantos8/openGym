@@ -5925,4 +5925,10 @@ export default {
   "Not set up": "Chưa thiết lập",
   "Update watch app": "Cập nhật ứng dụng đồng hồ",
   "Last heard {0}": "Lần cuối: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Đánh dấu tất cả hiệp?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "{0} hiệp còn lại được đánh dấu theo kế hoạch. Không bắt đầu đồng hồ nghỉ nào.",
+  "Tick them all": "Đánh dấu hết",
+  "Every set ticked": "Đã đánh dấu tất cả hiệp",
+  "Logging after training? Ticks the rest in one go": "Ghi sau buổi tập? Đánh dấu phần còn lại một lần",
 };

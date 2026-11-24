@@ -1901,6 +1901,26 @@ function ActiveWorkout() {
     if (fresh) progressHighWater.current = fresh.entries.map(e => e.sets.filter(s => s.done).length)
     workoutCompleteSheet()
   }
+  // The same tick in a live session, for whoever logs after training (Discord "Tick a whole
+  // day's training in one go"). It asks first, since one stray tap would otherwise tick a whole
+  // workout, and the toast can put the sets back the way they were. No rest timer starts: the
+  // sets are ticked in the state, not one by one through the row's tick.
+  const setsLeft = A.entries.reduce((n, e) => n + (e.sets || []).filter(s => !s.done).length, 0)
+  const askMarkAllDone = () => confirmSheet({
+    title: t('Tick every set?'),
+    message: t('The {0} sets still open get ticked as planned. No rest timers start.', setsLeft),
+    confirmText: t('Tick them all'),
+    onConfirm: () => {
+      const before = useStore.getState().S.active
+      const id = before?.id
+      const entries = before?.entries
+      markAllDone()
+      useUI.getState().toast(t('Every set ticked'), { action: t('Undo'), onAction: () => {
+        update(s => { if (s.active && s.active.id === id) s.active.entries = entries })
+        progressHighWater.current = entries.map(e => e.sets.filter(x => x.done).length)
+      } })
+    },
+  })
   // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
   const addExercise = () => exercisePicker((ex, quick) => {
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
@@ -2013,6 +2033,7 @@ function ActiveWorkout() {
       { more: [{ items: [
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
+        !A.backfill && !editing && setsLeft > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), sub: t('Logging after training? Ticks the rest in one go'), onClick: askMarkAllDone },
         gymSwitchable && { icon: 'house', label: t('Gym'), sub: gymNow ? gymLabel(gymNow) : t('Pick a gym'), onClick: openGymMenu },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
       ] }] },

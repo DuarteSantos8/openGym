@@ -5979,4 +5979,10 @@ export default {
   "Not set up": "Nicht eingerichtet",
   "Update watch app": "Watch-App aktualisieren",
   "Last heard {0}": "Zuletzt gehört: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Alle Sätze abhaken?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Die {0} offenen Sätze werden wie geplant abgehakt. Es startet keine Pause.",
+  "Tick them all": "Alle abhaken",
+  "Every set ticked": "Alle Sätze abgehakt",
+  "Logging after training? Ticks the rest in one go": "Erst nach dem Training eintragen? Hakt den Rest auf einmal ab",
 }
