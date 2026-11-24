@@ -148,6 +148,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest running after a set, for that rest's heart rate once it is over.
     private var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date, sid: String?)?
     private var restTimer: Timer?
+    /// Counts each arming of a rest: the 3-2-1 taps of one armed before stay quiet, even at the same end (+15 then −15).
+    private var restArm = 0
     private var holdTimer: Timer?
     /// The rest-over taps again once if nobody reacts to the first ones within a few seconds.
     private var restOverRepeat: DispatchWorkItem?
@@ -1344,6 +1346,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             // The set page comes back under the finger: a tap meant for the rest is not a Done.
             DispatchQueue.main.async { self?.restRanOutIfDue() }
         }
+        // The last three seconds, one tap each, as a timed hold's: the wrist knows without a look
+        // (the workout session keeps the app running with the wrist down). Each tap is for this
+        // rest only: one paused, skipped or moved since stays quiet.
+        let left = end.timeIntervalSinceNow
+        restArm += 1
+        let arm = restArm
+        for s in [3.0, 2.0, 1.0] where left > s + 1 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + left - s) { [weak self] in
+                guard let self = self, self.restArm == arm, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo, Date() < end else { return }   // late (app held back): the rest-over alarm speaks now
+                Haptics.restCount()
+            }
+        }
         guard notify, !isDemo else { return }
         let content = UNMutableNotificationContent()
         content.title = L("Rest’s over. Next set!")
@@ -1735,7 +1749,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // CI: "-OpenGymWatchRestSeconds 6" is a rest that ends within a test's wait.
+            let restSeconds = SessionStore.argument("-OpenGymWatchRestSeconds").flatMap(Double.init) ?? 83
+            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(restSeconds), notify: false) }
             // CI: the rest as it stands while the phone has it paused (protocol 2, restPaused).
             if screen == "rest", ProcessInfo.processInfo.arguments.contains("-OpenGymWatchRestPaused") {
                 self.pauseRest(left: 47)
@@ -1807,6 +1823,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   finished   stop, then two successes: the workout is saved
  *   skip       a soft one going down
  *   count      a click each second of the 3-2-1 before a workout
+ *   restCount  a firm tap at 3, 2 and 1 seconds of rest left
  *   ask        two taps: "All done?", nothing logged for 20 minutes
  *   discarded  stop alone: the workout is gone, nothing saved
  */
@@ -1824,6 +1841,8 @@ enum Haptics {
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
+    // A click is lost with the wrist down (owner, test build): the rest's last seconds take the firm tap.
+    static func restCount() { play([(0, .notification)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
 }
