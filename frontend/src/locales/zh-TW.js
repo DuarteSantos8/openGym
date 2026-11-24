@@ -1,4 +1,19 @@
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "用文字記錄訓練",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "每行一個動作，就像你在筆記裡寫的那樣。檢查每一行被辨識成什麼，然後儲存。",
+  "Bench press 60x8, 60x8, 62.5x6": "臥推 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "深蹲 100kg 5x5",
+  "Plank 3x60s": "棒式 3x60s",
+  "No exercise found for this name.": "找不到這個名稱的動作。",
+  "No sets found. Write them like 60x8, 60x8.": "沒有辨識到組。可以這樣寫：60x8, 60x8。",
+  "How many reps? Write them like 60x8.": "做了幾次？可以這樣寫：60x8。",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "有氧以分鐘記錄，例如 20 min 或 20 min 3 km。",
+  "Use either reps or a time on one exercise, not both.": "一個動作只用次數或時間，不要兩者混用。",
+  "Check the numbers on this line.": "請檢查這一行的數字。",
+  "Not read: {0}": "未辨識：{0}",
+  "That workout is already in your history.": "這次訓練已經在你的歷史紀錄裡了。",
+  "Workout saved": "訓練已儲存",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手錶",
   "Set once": "設定一次",

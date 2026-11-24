@@ -1,5 +1,20 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "用文字记录训练",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "每行一个动作，就像你在备忘录里写的那样。检查每一行被识别成了什么，然后保存。",
+  "Bench press 60x8, 60x8, 62.5x6": "卧推 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "深蹲 100kg 5x5",
+  "Plank 3x60s": "平板支撑 3x60s",
+  "No exercise found for this name.": "没有找到这个名字的动作。",
+  "No sets found. Write them like 60x8, 60x8.": "没有识别到组。可以这样写：60x8, 60x8。",
+  "How many reps? Write them like 60x8.": "做了几次？可以这样写：60x8。",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "有氧按分钟记录，例如 20 min 或 20 min 3 km。",
+  "Use either reps or a time on one exercise, not both.": "一个动作只用次数或时间，不要两者混用。",
+  "Check the numbers on this line.": "请检查这一行的数字。",
+  "Not read: {0}": "未识别：{0}",
+  "That workout is already in your history.": "这次训练已经在你的历史里了。",
+  "Workout saved": "训练已保存",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "手表",
   "Set once": "设置一次",

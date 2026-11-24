@@ -4,6 +4,21 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Digitar um treino",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Um exercício por linha, do jeito que você escreveria nas suas anotações. Confira como cada linha foi lida e depois salve.",
+  "Bench press 60x8, 60x8, 62.5x6": "Supino reto 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Agachamento 100kg 5x5",
+  "Plank 3x60s": "Prancha 3x60s",
+  "No exercise found for this name.": "Nenhum exercício encontrado com este nome.",
+  "No sets found. Write them like 60x8, 60x8.": "Nenhuma série encontrada. Escreva assim: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Quantas repetições? Escreva assim: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "O cardio é registrado em minutos, por exemplo 20 min ou 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Em um exercício, use repetições ou um tempo, não os dois.",
+  "Check the numbers on this line.": "Confira os números desta linha.",
+  "Not read: {0}": "Não lido: {0}",
+  "That workout is already in your history.": "Esse treino já está no seu histórico.",
+  "Workout saved": "Treino salvo",
   // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
   "Set once": "Configurar uma vez",
   "Connections": "Conexões",

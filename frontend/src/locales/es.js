@@ -1,5 +1,20 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Escribir un entreno",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Un ejercicio por línea, como lo apuntarías en tus notas. Revisa cómo se leyó cada línea y guarda.",
+  "Bench press 60x8, 60x8, 62.5x6": "Press banca 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Sentadilla 100kg 5x5",
+  "Plank 3x60s": "Plancha 3x60s",
+  "No exercise found for this name.": "No se encontró ningún ejercicio con este nombre.",
+  "No sets found. Write them like 60x8, 60x8.": "No se encontraron series. Escríbelas así: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "¿Cuántas repeticiones? Escríbelas así: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "El cardio se registra en minutos, por ejemplo 20 min o 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Usa repeticiones o un tiempo en cada ejercicio, no ambos.",
+  "Check the numbers on this line.": "Revisa los números de esta línea.",
+  "Not read: {0}": "Sin leer: {0}",
+  "That workout is already in your history.": "Ese entreno ya está en tu historial.",
+  "Workout saved": "Entreno guardado",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Relojes",
   "Set once": "Una sola vez",

@@ -1,5 +1,20 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Ввести тренировку текстом",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Одно упражнение на строку, как вы записали бы его в заметках. Проверьте, как прочитана каждая строка, и сохраните.",
+  "Bench press 60x8, 60x8, 62.5x6": "Жим лёжа 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Присед 100kg 5x5",
+  "Plank 3x60s": "Планка 3x60s",
+  "No exercise found for this name.": "Упражнение с таким названием не найдено.",
+  "No sets found. Write them like 60x8, 60x8.": "Подходы не найдены. Запишите их так: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Сколько повторений? Запишите так: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Кардио записывается в минутах, например 20 min или 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "В одном упражнении либо повторения, либо время, не всё сразу.",
+  "Check the numbers on this line.": "Проверьте числа в этой строке.",
+  "Not read: {0}": "Не прочитано: {0}",
+  "That workout is already in your history.": "Эта тренировка уже есть в истории.",
+  "Workout saved": "Тренировка сохранена",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Часы",
   "Set once": "Настраивается один раз",

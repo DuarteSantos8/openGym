@@ -1,5 +1,20 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Antrenman yaz",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Her satıra bir egzersiz, notlarına yazdığın gibi. Her satırın nasıl okunduğunu kontrol et, sonra kaydet.",
+  "Bench press 60x8, 60x8, 62.5x6": "Bench press 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Squat 100kg 5x5",
+  "Plank 3x60s": "Plank 3x60s",
+  "No exercise found for this name.": "Bu adla bir egzersiz bulunamadı.",
+  "No sets found. Write them like 60x8, 60x8.": "Set bulunamadı. Şöyle yaz: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Kaç tekrar? Şöyle yaz: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Kardiyo dakika olarak kaydedilir, örneğin 20 min veya 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "Bir egzersizde ya tekrar ya süre kullan, ikisini birden değil.",
+  "Check the numbers on this line.": "Bu satırdaki sayıları kontrol et.",
+  "Not read: {0}": "Okunamadı: {0}",
+  "That workout is already in your history.": "Bu antrenman zaten geçmişinde var.",
+  "Workout saved": "Antrenman kaydedildi",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Saatler",
   "Set once": "Bir kez ayarla",

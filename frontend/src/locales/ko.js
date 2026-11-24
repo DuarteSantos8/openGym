@@ -1,5 +1,20 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "텍스트로 운동 기록",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "메모에 적듯이 한 줄에 운동 하나씩 적으세요. 각 줄이 어떻게 읽혔는지 확인한 뒤 저장하세요.",
+  "Bench press 60x8, 60x8, 62.5x6": "벤치프레스 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "스쿼트 100kg 5x5",
+  "Plank 3x60s": "플랭크 3x60s",
+  "No exercise found for this name.": "이 이름의 운동을 찾지 못했어요.",
+  "No sets found. Write them like 60x8, 60x8.": "세트를 찾지 못했어요. 60x8, 60x8처럼 적어 주세요.",
+  "How many reps? Write them like 60x8.": "몇 회 했나요? 60x8처럼 적어 주세요.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "유산소는 분 단위로 기록해요. 예: 20 min 또는 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "한 운동에는 횟수나 시간 중 하나만 쓰세요.",
+  "Check the numbers on this line.": "이 줄의 숫자를 확인해 주세요.",
+  "Not read: {0}": "읽지 못함: {0}",
+  "That workout is already in your history.": "이 운동은 이미 기록에 있어요.",
+  "Workout saved": "운동 저장됨",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "워치",
   "Set once": "한 번만 설정",

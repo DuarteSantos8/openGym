@@ -1,5 +1,20 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "ওয়ার্কআউট টাইপ করুন",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "প্রতি লাইনে একটি ব্যায়াম, যেভাবে আপনি নোটে লিখতেন। প্রতিটি লাইন কীভাবে পড়া হয়েছে দেখে নিন, তারপর সেভ করুন।",
+  "Bench press 60x8, 60x8, 62.5x6": "বেঞ্চ প্রেস 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "স্কোয়াট 100kg 5x5",
+  "Plank 3x60s": "প্ল্যাঙ্ক 3x60s",
+  "No exercise found for this name.": "এই নামে কোনো ব্যায়াম পাওয়া যায়নি।",
+  "No sets found. Write them like 60x8, 60x8.": "কোনো সেট পাওয়া যায়নি। এভাবে লিখুন: 60x8, 60x8।",
+  "How many reps? Write them like 60x8.": "কতটি রেপ? এভাবে লিখুন: 60x8।",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "কার্ডিও মিনিটে লগ হয়, যেমন 20 min বা 20 min 3 km।",
+  "Use either reps or a time on one exercise, not both.": "একটি ব্যায়ামে রেপ বা সময়, দুটো একসাথে নয়।",
+  "Check the numbers on this line.": "এই লাইনের সংখ্যাগুলো দেখে নিন।",
+  "Not read: {0}": "পড়া যায়নি: {0}",
+  "That workout is already in your history.": "এই ওয়ার্কআউটটি আগেই আপনার ইতিহাসে আছে।",
+  "Workout saved": "ওয়ার্কআউট সেভ হয়েছে",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ঘড়ি",
   "Set once": "একবার সেট করুন",

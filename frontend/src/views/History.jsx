@@ -12,6 +12,7 @@ import { recoverySessionsOf } from '../lib/recovery-sessions.js'
 import { recoverySheet, RecoveryRow } from '../components/RecoverySheet.jsx'
 import { activitiesOf } from '../lib/activities.js'
 import { ActivityRow } from '../components/ActivitySheet.jsx'
+import { quickLogSheet } from '../components/QuickLogSheet.jsx'
 
 // Newest first: every workout, and in between them the days off you left a note on (#261) and the
 // recovery sessions (sauna, ice bath, lib/recovery-sessions.js). A note on a day that has a workout
@@ -55,7 +56,9 @@ export default function History() {
       {/* A sauna, an ice bath (components/RecoverySheet.jsx): logged from here, listed below with the workouts. */}
       {rows.length > 0 && <button className="iconbtn" onClick={() => recoverySheet()} aria-label={t('Log recovery')} title={t('Log recovery')} style={{ marginInlineEnd: 8 }}><Icon name="sparkles" /></button>}
       {S.workouts.length > 0 && <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>}</div>
-    {rows.length > 0 && <Button icon="plus" data-tour="history-add" onClick={logPastWorkoutSheet} style={{ marginBottom: 12 }}>{t('Log a past workout')}</Button>}
+    {rows.length > 0 && <Button icon="plus" data-tour="history-add" onClick={logPastWorkoutSheet} style={{ marginBottom: 8 }}>{t('Log a past workout')}</Button>}
+    {/* The same, written out as text: components/QuickLogSheet.jsx */}
+    {rows.length > 0 && <Button variant="ghost" icon="pencil" data-quick-log-open onClick={quickLogSheet} style={{ marginBottom: 12 }}>{t('Type a workout')}</Button>}
     {rows.length ? <><div className="list">{(more ? rows.slice(0, shown) : rows).map((r, i) => r.w
       ? <WorkoutRow key={r.w.id} w={r.w} tour={i === 0 ? 'history-row' : undefined} onClick={() => workoutDetailSheet(r.w)} />
       : r.rec ? <RecoveryRow key={'rec-' + r.rec.id} r={r.rec} />
@@ -64,6 +67,8 @@ export default function History() {
       {more && <div ref={end} aria-hidden="true" style={{ height: 1 }} />}</>
       : <EmptyState icon="history" text={t('No workouts yet. Your first one will land here.')}>
         <Button variant="tinted" icon="plus" data-tour="history-add" onClick={logPastWorkoutSheet}>{t('Log a past workout')}</Button>
+        <div style={{ height: 8 }} />
+        <Button variant="ghost" icon="pencil" data-quick-log-open onClick={quickLogSheet}>{t('Type a workout')}</Button>
         <div style={{ height: 8 }} />
         <Button variant="ghost" icon="sparkles" onClick={() => recoverySheet()}>{t('Log recovery')}</Button>
       </EmptyState>}

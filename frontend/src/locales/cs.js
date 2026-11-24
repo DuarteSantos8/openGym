@@ -1,5 +1,20 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "Napsat trénink",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "Jeden cvik na řádek, tak jak by sis ho zapsal do poznámek. Zkontroluj, jak byl každý řádek přečten, a ulož.",
+  "Bench press 60x8, 60x8, 62.5x6": "Bench press 60x8, 60x8, 62,5x6",
+  "Squat 100kg 5x5": "Dřep 100kg 5x5",
+  "Plank 3x60s": "Plank 3x60s",
+  "No exercise found for this name.": "Cvik s tímto názvem nebyl nalezen.",
+  "No sets found. Write them like 60x8, 60x8.": "Žádné série. Napiš je třeba takto: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "Kolik opakování? Napiš je třeba takto: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "Kardio se zapisuje v minutách, třeba 20 min nebo 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "U jednoho cviku buď opakování, nebo čas, ne obojí.",
+  "Check the numbers on this line.": "Zkontroluj čísla na tomto řádku.",
+  "Not read: {0}": "Nepřečteno: {0}",
+  "That workout is already in your history.": "Tento trénink už v historii je.",
+  "Workout saved": "Trénink uložen",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Hodinky",
   "Set once": "Nastavit jednou",

@@ -1,5 +1,20 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "اكتب تمرينًا",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "تمرين واحد في كل سطر، كما تكتبه في ملاحظاتك. تحقّق مما قُرئ كل سطر عليه، ثم احفظ.",
+  "Bench press 60x8, 60x8, 62.5x6": "ضغط البنش 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "سكوات 100kg 5x5",
+  "Plank 3x60s": "بلانك 3x60s",
+  "No exercise found for this name.": "لم يُعثر على تمرين بهذا الاسم.",
+  "No sets found. Write them like 60x8, 60x8.": "لم يُعثر على مجموعات. اكتبها هكذا: 60x8, 60x8.",
+  "How many reps? Write them like 60x8.": "كم تكرارًا؟ اكتبها هكذا: 60x8.",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "يُسجَّل الكارديو بالدقائق، مثل 20 min أو 20 min 3 km.",
+  "Use either reps or a time on one exercise, not both.": "استخدم التكرارات أو الوقت في التمرين الواحد، لا كليهما.",
+  "Check the numbers on this line.": "تحقّق من الأرقام في هذا السطر.",
+  "Not read: {0}": "لم يُقرأ: {0}",
+  "That workout is already in your history.": "هذا التمرين موجود في سجلك بالفعل.",
+  "Workout saved": "تم حفظ التمرين",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "الساعات",
   "Set once": "تُضبط مرة واحدة",

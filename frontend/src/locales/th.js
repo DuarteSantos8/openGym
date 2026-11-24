@@ -1,5 +1,20 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Type a workout (History, components/QuickLogSheet.jsx) ---
+  "Type a workout": "พิมพ์การฝึก",
+  "One exercise per line, the way you would write it in your notes. Check what each line was read as, then save.": "หนึ่งท่าต่อหนึ่งบรรทัด แบบที่คุณจดในโน้ต ตรวจดูว่าแต่ละบรรทัดถูกอ่านเป็นอะไร แล้วบันทึก",
+  "Bench press 60x8, 60x8, 62.5x6": "เบนช์เพรส 60x8, 60x8, 62.5x6",
+  "Squat 100kg 5x5": "สควอท 100kg 5x5",
+  "Plank 3x60s": "แพลงก์ 3x60s",
+  "No exercise found for this name.": "ไม่พบท่าที่ชื่อนี้",
+  "No sets found. Write them like 60x8, 60x8.": "ไม่พบเซ็ต เขียนแบบนี้: 60x8, 60x8",
+  "How many reps? Write them like 60x8.": "กี่ครั้ง? เขียนแบบนี้: 60x8",
+  "Cardio is logged in minutes, like 20 min or 20 min 3 km.": "คาร์ดิโอบันทึกเป็นนาที เช่น 20 min หรือ 20 min 3 km",
+  "Use either reps or a time on one exercise, not both.": "ท่าเดียวใช้จำนวนครั้งหรือเวลาอย่างใดอย่างหนึ่ง ไม่ใช่ทั้งสองอย่าง",
+  "Check the numbers on this line.": "ตรวจตัวเลขในบรรทัดนี้",
+  "Not read: {0}": "อ่านไม่ได้: {0}",
+  "That workout is already in your history.": "การฝึกนี้มีอยู่ในประวัติแล้ว",
+  "Workout saved": "บันทึกการฝึกแล้ว",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "นาฬิกา",
   "Set once": "ตั้งครั้งเดียว",
