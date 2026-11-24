@@ -5922,4 +5922,12 @@ export default {
   "Shows up when there is something to show": "จะแสดงเมื่อมีข้อมูลให้ดู",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "ติดอยู่ {0} ครั้งแล้ว คงน้ำหนัก {1} {2} และทำ {3} ครั้ง",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "ติดอยู่ {0} ครั้งแล้ว ลดน้ำหนักตามสูตร Epley เป็น {1} {2} ทำ {3} ครั้ง",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access ปฏิเสธคำขอ",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access ที่อยู่หน้าเซิร์ฟเวอร์ของคุณปฏิเสธโทรศัพท์เครื่องนี้ ตรวจสอบโทเค็นบริการในส่วน Cloudflare Access การเปลี่ยนแปลงของคุณยังเก็บไว้ที่นี่",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access ที่อยู่หน้าเซิร์ฟเวอร์ของคุณปฏิเสธเบราว์เซอร์นี้ โหลดหน้าใหม่เพื่อลงชื่อเข้าใช้อีกครั้ง การเปลี่ยนแปลงของคุณยังเก็บไว้ที่นี่",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "การเชื่อมต่อหลุดระหว่างที่ openGym อยู่เบื้องหลัง โค้ชทำต่อจากจุดที่ค้างไว้แล้ว",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "ลากรูปเพื่อเลื่อนส่วนที่แสดง ถ่างสองนิ้วเพื่อซูมเข้า",
 }

@@ -5911,4 +5911,12 @@ export default {
   "Shows up when there is something to show": "Aparece cuando hay algo que mostrar",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Llevas {0} sesiones sin avanzar. Mantén {1} {2} y haz {3} repeticiones.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Llevas {0} sesiones sin avanzar. Descarga según Epley a {1} {2} para {3} repeticiones.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access rechazó la solicitud",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access, delante de tu servidor, rechazó este teléfono. Revisa el token de servicio en Cloudflare Access. Tus cambios se guardan aquí.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access, delante de tu servidor, rechazó este navegador. Recarga la página para volver a iniciar sesión. Tus cambios se guardan aquí.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "La conexión se cortó mientras openGym estaba en segundo plano. El Entrenador siguió donde lo había dejado.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Arrastra una foto para mover lo que se ve y pellizca para acercar.",
 }

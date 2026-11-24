@@ -45,12 +45,29 @@ export async function secureGet(key) {
   }
   return memory.get(key) || null
 }
-export async function secureSet(key, value) {
+// The same read, except that a platform store which is there and fails (a timeout, the iOS
+// Keychain refusing a whenUnlocked item while the phone is locked and the app was started in the
+// background) throws instead of answering "nothing saved". A caller that would otherwise forget a
+// secret it holds (lib/cf-access.js, #1529) can tell the two apart.
+export class SecureReadError extends Error {}
+export async function secureRead(key) {
+  const { store: p } = await plugin()
+  if (!p) return memory.get(key) || null
+  try { const v = await withTimeout(p.get(key)); if (typeof v === 'string' && v) return v } catch (e) {
+    if (memory.has(key)) return memory.get(key)
+    throw new SecureReadError((e && e.message) || 'secure storage unreadable')
+  }
+  return memory.get(key) || null
+}
+// iOS only, ignored elsewhere: the Keychain's accessibility for an item. AFTER_FIRST_UNLOCK can be
+// read while the phone is locked, once it has been unlocked since the restart.
+export const AFTER_FIRST_UNLOCK = 2
+export async function secureSet(key, value, { access } = {}) {
   const v = String(value || '').trim()
   if (!v) return secureRemove(key)
   const { store: p } = await plugin()
   if (p) {
-    try { await withTimeout(p.set(key, v)); memory.delete(key); return } catch { /* fall through */ }
+    try { await withTimeout(access != null ? p.set(key, v, false, undefined, access) : p.set(key, v)); memory.delete(key); return } catch { /* fall through */ }
   }
   memory.set(key, v)
 }

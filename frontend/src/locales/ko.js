@@ -5911,4 +5911,12 @@ export default {
   "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0}회 동안 정체 중이에요. {1} {2}을(를) 유지하고 {3}회로 하세요.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0}회 동안 정체 중이에요. Epley 기준으로 {1} {2}까지 디로드, {3}회.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access가 요청을 거부했습니다",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "서버 앞의 Cloudflare Access가 이 휴대폰을 거부했습니다. Cloudflare Access에서 서비스 토큰을 확인하세요. 변경 사항은 여기에 보관됩니다.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "서버 앞의 Cloudflare Access가 이 브라우저를 거부했습니다. 페이지를 새로고침해 다시 로그인하세요. 변경 사항은 여기에 보관됩니다.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym이 백그라운드에 있는 동안 연결이 끊겼습니다. 코치가 멈춘 곳부터 다시 이어갔습니다.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "사진을 드래그해 보이는 부분을 옮기고, 두 손가락으로 벌려 확대하세요.",
 }

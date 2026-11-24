@@ -5904,4 +5904,12 @@ export default {
   "Shows up when there is something to show": "有內容時才會顯示",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "已停滯 {0} 次訓練。維持 {1} {2}，做 {3} 下。",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "已停滯 {0} 次訓練。依 Epley 減量到 {1} {2}，做 {3} 下。",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access 拒絕了這個請求",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "伺服器前面的 Cloudflare Access 拒絕了這支手機。請檢查 Cloudflare Access 下的服務權杖。你的變更保存在這裡。",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "伺服器前面的 Cloudflare Access 拒絕了這個瀏覽器。請重新載入頁面再次登入。你的變更保存在這裡。",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym 在背景時連線中斷了。教練已從中斷的地方繼續。",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "拖曳照片可移動顯示的部分，雙指張開可放大。",
 }

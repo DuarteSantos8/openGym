@@ -5914,4 +5914,12 @@ export default {
   "Shows up when there is something to show": "Akkor jelenik meg, ha van mit mutatnia",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} edzés óta elakadtál. Maradj {1} {2}-nál, és csinálj {3} ismétlést.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} edzés óta elakadtál. Epley szerinti tehermentesítés {1} {2}-ra, {3} ismétléssel.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "A Cloudflare Access elutasította a kérést",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "A szervered előtti Cloudflare Access elutasította ezt a telefont. Ellenőrizd a szolgáltatási tokent a Cloudflare Access alatt. A változtatásaid itt megmaradnak.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "A szervered előtti Cloudflare Access elutasította ezt a böngészőt. Töltsd újra az oldalt, hogy újra bejelentkezz. A változtatásaid itt megmaradnak.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "A kapcsolat megszakadt, amíg az openGym a háttérben volt. Az edző ott folytatta, ahol abbahagyta.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Húzd a fotót, hogy mozgasd a látható részt, és csippentéssel nagyíts rá.",
 }

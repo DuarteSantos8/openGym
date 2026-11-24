@@ -167,6 +167,33 @@ describe('the Coach on a phone with its own key', () => {
     expect((await loadCoachDevice()).compat).toBeNull()
   })
 
+  it('a connection the background cut off is asked again once back in the app, with one reply (#1290)', async () => {
+    const events = []
+    local.setNotifier(ev => events.push(ev.kind))
+    wire.answer = n => { if (n === 1) throw new Error('Software caused connection abort'); return chat(JSON.stringify(review)) }
+    const S = state()
+    local._appState(false)   // backgrounded right after the tap
+    await local.localReview(S, '')
+    await new Promise(r => setTimeout(r, 20))
+    expect((await local.localStatus()).job).toBeTruthy()   // still thinking, waiting for the app
+    expect(wire.calls).toHaveLength(1)
+    local._appState(true)
+    const s = await settle()
+    expect(wire.calls).toHaveLength(2)
+    expect(s.lastError).toBe(null)
+    expect(s.pending.kind).toBe('review')
+    expect(events).toEqual(['resumed', 'ready'])
+    local.setNotifier(null)
+  })
+
+  it('a connection that drops with the app on screen is still an error, and not asked twice', async () => {
+    wire.answer = () => { throw new Error('Software caused connection abort') }
+    await local.localReview(state(), '')
+    const s = await settle()
+    expect(wire.calls).toHaveLength(1)
+    expect(['cutoff', 'unreachable']).toContain(s.lastError.errorClass)
+  })
+
   it('a 401 is an auth failure, and never a proposal', async () => {
     wire.answer = { status: 401, body: { error: { message: 'bad key' } } }
     await local.localReview(state())

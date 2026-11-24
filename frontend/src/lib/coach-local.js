@@ -188,6 +188,31 @@ export async function localModels(settings, key) {
 
 const hostOf = url => { try { return new URL(url).host } catch { return url || '' } }
 
+/* ---------- the app going to the background (#1290) ----------
+   The request runs inside the app, and Android and iOS cut its socket a little after the app
+   leaves the screen ("Software caused connection abort" after a minute). The web app never saw
+   it; on a phone it ended every longer answer the person did not watch. A job whose connection
+   dropped after the app went to the background is now asked again, once, when the app is back:
+   the same job, so the chat gets one reply, not two. */
+let inBackground = false
+let wentBackground = false
+const foregroundWaiters = []
+export function _appState(isActive) {
+  if (!isActive) { inBackground = true; if (job) wentBackground = true; return }
+  inBackground = false
+  foregroundWaiters.splice(0).forEach(f => f())
+}
+let appWatched = false
+function watchApp() {
+  if (appWatched) return
+  appWatched = true
+  import('@capacitor/app').then(({ App }) => App.addListener('appStateChange', ({ isActive }) => _appState(isActive))).catch(() => {})
+  try { document.addEventListener('visibilitychange', () => _appState(document.visibilityState !== 'hidden')) } catch { /* no document */ }
+}
+const backInForeground = () => (inBackground ? new Promise(r => foregroundWaiters.push(r)) : Promise.resolve())
+// The connection failures a backgrounded app causes; a refusal or a bad answer is not one of them.
+const DROPPED = new Set(['cutoff', 'unreachable'])
+
 /* ---------- running a job ---------- */
 
 async function start(S, kind, opts) {
@@ -201,6 +226,8 @@ async function start(S, kind, opts) {
   if (cap.limit > 0 && cap.used >= cap.limit) throw Object.assign(new Error(t('The Coach is taking a breather. You’ve used today’s {0} runs on this phone.', cap.limit)), { status: 429, code: 'cap' })
 
   await bumpDaily()
+  watchApp()
+  wentBackground = inBackground
   job = { id: 'local-' + Date.now().toString(36), kind, state: 'running', startedAt: Date.now(), ...(opts.scheduled ? { trigger: 'scheduled' } : {}) }
   lastError = null
   // Not awaited: the screens poll, exactly as they do against a server.
@@ -222,11 +249,20 @@ async function run(S, kind, opts, d, adapter) {
   // simpler request is asked that way first instead of paying for the same 400s every launch.
   const base = baseUrlFor(d.provider, cfgOf(d))
   if (d.compat && d.compat.provider === d.provider && d.compat.base === base && d.compat.model === model) rememberCompatProfile(d.provider, cfgOf(d), model, d.compat.steps)
-  const attempt = await runPipeline({
+  const ask = () => runPipeline({
     adapter, cfg: cfgOf(d), kind, payload,
     model, timeoutMs: timeoutFor(d.provider),
     invokeOpts: { env: envOf(d, key), fetch: guardedFetch, maxTokens: coachLimits(d).maxOutputTokens, ...(useWeb ? { web: true } : {}) }
   })
+  let attempt = await ask()
+  // Cut off because the app was in the background (#1290): once more, when it is back.
+  if (!attempt.ok && DROPPED.has(attempt.errorClass) && (wentBackground || inBackground)) {
+    await backInForeground()
+    wentBackground = false
+    if (job) job.resumed = true
+    if (notify && !opts.scheduled) notify({ kind: 'resumed' })
+    attempt = await ask()
+  }
   // The saved model was refused and another one answered (#758): keep that one, so the next
   // launch does not pay for the same 404 again. The setup screen shows the new name.
   const swapped = model && modelSubstitute(d.provider, cfgOf(d), model)
@@ -286,4 +322,4 @@ function workoutMetaOf(S, workoutId) {
 }
 
 // Test seam.
-export function _resetLocal() { job = null; lastError = null; last = null }
+export function _resetLocal() { job = null; lastError = null; last = null; inBackground = false; wentBackground = false; foregroundWaiters.length = 0 }

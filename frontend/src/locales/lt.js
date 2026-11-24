@@ -5907,4 +5907,12 @@ export default {
   "Shows up when there is something to show": "Atsiras, kai bus ką rodyti",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Jau {0} treniruotes be pažangos. Likite ties {1} {2} ir darykite {3} pakartojimus.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Jau {0} treniruotes be pažangos. Iškrova pagal Epley iki {1} {2}, {3} pakartojimai.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access atmetė užklausą",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access prieš jūsų serverį atmetė šį telefoną. Patikrinkite paslaugos raktą skiltyje Cloudflare Access. Jūsų pakeitimai išsaugoti čia.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access prieš jūsų serverį atmetė šią naršyklę. Įkelkite puslapį iš naujo ir vėl prisijunkite. Jūsų pakeitimai išsaugoti čia.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Ryšys nutrūko, kol openGym veikė fone. Treneris tęsė nuo ten, kur sustojo.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Vilkite nuotrauką, kad pakeistumėte matomą dalį, suimkite pirštais, kad priartintumėte.",
 }

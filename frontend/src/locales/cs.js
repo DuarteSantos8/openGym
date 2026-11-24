@@ -5877,4 +5877,12 @@ export default {
   "Shows up when there is something to show": "Objeví se, až bude co ukázat",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} tréninků bez posunu. Zůstaň na {1} {2} a dělej {3} opakování.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} tréninků bez posunu. Odlehčení podle Epleyho na {1} {2} na {3} opakování.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access požadavek odmítl",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access před vaším serverem tento telefon odmítl. Zkontrolujte servisní token v části Cloudflare Access. Vaše změny zůstávají zde.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access před vaším serverem tento prohlížeč odmítl. Načtěte stránku znovu a znovu se přihlaste. Vaše změny zůstávají zde.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Spojení se přerušilo, když byl openGym na pozadí. Trenér pokračoval tam, kde skončil.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Tažením fotky posunete, co je vidět, roztažením prstů ji přiblížíte.",
 }

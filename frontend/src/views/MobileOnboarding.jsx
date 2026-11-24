@@ -67,7 +67,7 @@ export function CfAccessSheet({ close, server = '' }) {
   const onFocus = useSheetKeyboard(addrRef, true, { reveal: true })
   const origin = normalizeServerUrl(addr)
   useEffect(() => {
-    loadCfAccess().then(c => { if (c) { setClientId(c.clientId); setClientSecret(c.clientSecret); setHad(true); if (c.origin) setAddr(c.origin) } })
+    loadCfAccess().then(c => { if (c && !c.unreadable) { setClientId(c.clientId); setClientSecret(c.clientSecret); setHad(true); if (c.origin) setAddr(c.origin) } })
   }, [])
   const save = async (id, secret) => {
     if (!!id.trim() !== !!secret.trim()) { useUI.getState().toast(t('Enter both the Client ID and the Client Secret')); return }

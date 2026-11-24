@@ -5990,4 +5990,12 @@ export default {
   "Shows up when there is something to show": "দেখানোর মতো কিছু থাকলে দেখা যাবে",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} সেশন ধরে আটকে আছেন। {1} {2} রাখুন আর {3}টি রেপ করুন।",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} সেশন ধরে আটকে আছেন। এপলি অনুযায়ী {1} {2}-এ নামিয়ে {3}টি রেপ।",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access অনুরোধটি প্রত্যাখ্যান করেছে",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "আপনার সার্ভারের সামনে থাকা Cloudflare Access এই ফোনটি প্রত্যাখ্যান করেছে। Cloudflare Access-এর অধীনে সার্ভিস টোকেনটি দেখুন। আপনার পরিবর্তনগুলো এখানে রাখা আছে।",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "আপনার সার্ভারের সামনে থাকা Cloudflare Access এই ব্রাউজারটি প্রত্যাখ্যান করেছে। আবার সাইন ইন করতে পেজটি রিলোড করুন। আপনার পরিবর্তনগুলো এখানে রাখা আছে।",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym ব্যাকগ্রাউন্ডে থাকার সময় সংযোগ বিচ্ছিন্ন হয়ে গিয়েছিল। কোচ যেখানে থেমেছিল সেখান থেকে আবার শুরু করেছে।",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "কোন অংশ দেখা যাবে তা সরাতে ছবিটি টেনে নিন, জুম করতে দুই আঙুলে ছড়িয়ে দিন।",
 }

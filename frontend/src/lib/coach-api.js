@@ -45,6 +45,7 @@ const local = async () => {
       // (api/coach/cadence.js): a skip, a failure or "nothing to change" nobody asked for is noise.
       if (ev.scheduled) { if (ev.kind === 'ready') announceProposal(ev.pending); return }
       if (ev.kind === 'failed') toast(jobErrorText(ev.errorClass, ev.detail))
+      else if (ev.kind === 'resumed') toast(t('The connection dropped while openGym was in the background. The Coach picked up where it left off.'))
       else if (ev.kind === 'nochange') toast(t('Nothing to change right now: {0}', String(ev.reading || '').slice(0, 140)))
     })
   }

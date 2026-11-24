@@ -5958,4 +5958,12 @@ export default {
   "Shows up when there is something to show": "Visas när det finns något att visa",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Stått still i {0} pass. Stanna på {1} {2} och kör {3} reps.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Stått still i {0} pass. Deload enligt Epley till {1} {2} för {3} reps.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access nekade begäran",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access framför din server nekade den här telefonen. Kontrollera tjänsttoken under Cloudflare Access. Dina ändringar sparas här.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access framför din server nekade den här webbläsaren. Ladda om sidan för att logga in igen. Dina ändringar sparas här.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Anslutningen bröts medan openGym låg i bakgrunden. Coachen fortsatte där den slutade.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Dra i ett foto för att flytta det som syns, nyp för att zooma in.",
 }

@@ -5911,4 +5911,12 @@ export default {
   "Shows up when there is something to show": "Gösterecek bir şey olduğunda görünür",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} antrenmandır yerinde sayıyorsun. {1} {2} ile kal ve {3} tekrar yap.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} antrenmandır yerinde sayıyorsun. Epley’e göre {1} {2}’ye deload, {3} tekrar.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access isteği reddetti",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Sunucunun önündeki Cloudflare Access bu telefonu reddetti. Cloudflare Access altındaki hizmet belirtecini kontrol et. Değişikliklerin burada saklanıyor.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Sunucunun önündeki Cloudflare Access bu tarayıcıyı reddetti. Yeniden giriş yapmak için sayfayı yenile. Değişikliklerin burada saklanıyor.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym arka plandayken bağlantı koptu. Koç kaldığı yerden devam etti.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Görünen kısmı kaydırmak için fotoğrafı sürükle, yakınlaştırmak için iki parmağınla aç.",
 }

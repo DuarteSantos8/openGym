@@ -5877,4 +5877,12 @@ export default {
   "Shows up when there is something to show": "وقتی چیزی برای نشان دادن باشد ظاهر می\u200cشود",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} جلسه درجا زده‌اید. روی {1} {2} بمانید و {3} تکرار بزنید.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} جلسه درجا زده‌اید. کاهش بار به روش اپلی تا {1} {2} برای {3} تکرار.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access درخواست را رد کرد",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access که جلوی سرور شماست این گوشی را رد کرد. توکن سرویس را در بخش Cloudflare Access بررسی کنید. تغییرات شما اینجا نگه داشته می‌شود.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access که جلوی سرور شماست این مرورگر را رد کرد. برای ورود دوباره صفحه را بارگذاری مجدد کنید. تغییرات شما اینجا نگه داشته می‌شود.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "وقتی openGym در پس‌زمینه بود اتصال قطع شد. مربی از همان جایی که مانده بود ادامه داد.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "عکس را بکشید تا بخش دیده‌شده جابه‌جا شود، و با دو انگشت باز کنید تا بزرگ‌نمایی شود.",
 }

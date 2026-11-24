@@ -5908,4 +5908,12 @@ export default {
   "Shows up when there is something to show": "З’явиться, коли буде що показати",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Застій уже {0} тренувань. Залиште {1} {2} і робіть {3} повторень.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Застій уже {0} тренувань. Розвантаження за Еплі до {1} {2} на {3} повторень.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access відхилив запит",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access перед вашим сервером відхилив цей телефон. Перевірте сервісний токен у розділі Cloudflare Access. Ваші зміни збережено тут.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access перед вашим сервером відхилив цей браузер. Перезавантажте сторінку, щоб увійти знову. Ваші зміни збережено тут.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "З’єднання обірвалося, поки openGym був у фоні. Тренер продовжив з того місця, де зупинився.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Перетягніть фото, щоб зсунути видиму частину, розведіть пальці, щоб наблизити.",
 }

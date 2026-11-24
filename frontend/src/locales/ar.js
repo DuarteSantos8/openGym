@@ -5966,4 +5966,12 @@ export default {
   "Shows up when there is something to show": "تظهر عندما يكون فيها ما تعرضه",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "متوقف منذ {0} جلسات. ابقَ على {1} {2} وأدِّ {3} تكرارات.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "متوقف منذ {0} جلسات. تخفيف حسب إيبلي إلى {1} {2} لـ {3} تكرارات.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "رفض Cloudflare Access الطلب",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "رفض Cloudflare Access الموجود أمام خادمك هذا الهاتف. تحقّق من رمز الخدمة ضمن Cloudflare Access. تغييراتك محفوظة هنا.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "رفض Cloudflare Access الموجود أمام خادمك هذا المتصفح. أعد تحميل الصفحة لتسجيل الدخول من جديد. تغييراتك محفوظة هنا.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "انقطع الاتصال بينما كان openGym في الخلفية. تابع المدرب من حيث توقف.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "اسحب صورة لتحريك ما يظهر منها، وقرّب بإصبعين للتكبير.",
 }

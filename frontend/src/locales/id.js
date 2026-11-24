@@ -5876,4 +5876,12 @@ export default {
   "Shows up when there is something to show": "Muncul saat ada yang bisa ditampilkan",
   "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Mandek selama {0} sesi. Tetap di {1} {2} dan lakukan {3} repetisi.",
   "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Mandek selama {0} sesi. Deload Epley ke {1} {2} untuk {3} repetisi.",
+  // --- Cloudflare Access refusals (#1529) ---
+  "Cloudflare Access refused the request": "Cloudflare Access menolak permintaan",
+  "Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.": "Cloudflare Access di depan server Anda menolak ponsel ini. Periksa token layanan di bagian Cloudflare Access. Perubahan Anda tetap tersimpan di sini.",
+  "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access di depan server Anda menolak browser ini. Muat ulang halaman untuk masuk lagi. Perubahan Anda tetap tersimpan di sini.",
+  // --- Coach picks up after the background (#1290) ---
+  "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Koneksi terputus saat openGym berada di latar belakang. Coach melanjutkan dari titik terakhirnya.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Seret foto untuk menggeser bagian yang terlihat, cubit untuk memperbesar.",
 };
