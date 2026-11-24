@@ -60,3 +60,6 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Login.jsx` | `next/EP19-link-safety` | +11 −5 | The Cloud first screen stands only on a provider-only server and keeps the admin's passkey there; still behind `isCloud()`. |
 | `frontend/src/App.jsx` | `next/EP19-link-safety` | +16 −2 | Cloud edition only (`CLOUD`): starts `lib/cloud/link-watch.js` by dynamic import, and says a refused server sign-in to someone who stays in the app. Imports three readers from `lib/oidc.js`, which both builds have. |
 | `frontend/vercel.json` | `next/EP19-render-rewrite` | +1 -1 | Routes the existing API rewrite to the hosted Render service. |
+| `api/oidc/routes.js` | `next/EP19-delete-linked` | +25 | Resolves a linked profile after fresh OIDC confirmation without creating one. |
+| `api/server.js` | `next/EP19-delete-linked` | +3 | Binds hosted deletion to the expected provider subject. |
+| `api/openapi.yaml` | `next/EP19-delete-linked` | +21 | Documents deletion proof and its refusal states. |

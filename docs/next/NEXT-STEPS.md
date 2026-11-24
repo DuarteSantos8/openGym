@@ -53,6 +53,7 @@ Epic status:
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
 
 - **Hosted API (2026-11-23):** The Render Blueprint is live with one Starter API service and a 1 GB disk. Direct health returns HTTP 200 with a writable data directory, and API config offers OIDC. The Vercel rewrite needs to reach the preview before the live sign-in and admin checks.
+- **Linked account deletion:** ADR 0014 proposes fresh OIDC confirmation and server training deletion before hosted identity deletion. Check it with a disposable hosted account after deployment.
 
 ## 2. Merging (only the owner merges)
 
