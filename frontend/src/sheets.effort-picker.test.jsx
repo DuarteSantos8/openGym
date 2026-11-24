@@ -80,7 +80,7 @@ describe('the effort picker commits once', () => {
   it('one tap of + logs nothing', () => {
     const onPick = vi.fn()
     const p = openPicker('rir', null, onPick)
-    tap(p.host.querySelector('[aria-label="Increase"]'))
+    tap(p.host.querySelector('[aria-label="RIR: Increase"]'))
     expect(onPick).not.toHaveBeenCalled()
     expect(field(p.host).value).not.toBe('')     // the number moved on screen, though
   })
@@ -124,6 +124,15 @@ describe('the effort picker commits once', () => {
     type(p.host, '')
     p.dismiss()
     expect(onPick).not.toHaveBeenCalled()
+  })
+})
+
+// A screen reader hears what − and + change, on the scale the picker is in.
+describe('the effort picker steppers', () => {
+  it('name the scale they step', () => {
+    const names = kind => [...openPicker(kind, null, vi.fn()).host.querySelectorAll('.effpick-free button')].map(b => b.getAttribute('aria-label'))
+    expect(names('rir')).toEqual(['RIR: Decrease', 'RIR: Increase'])
+    expect(names('rpe')).toEqual(['RPE: Decrease', 'RPE: Increase'])
   })
 })
 
