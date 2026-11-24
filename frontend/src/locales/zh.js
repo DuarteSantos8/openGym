@@ -5904,4 +5904,21 @@ export default {
   "Totals": "总计",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "显示常用的，折叠很少打开的，隐藏其余的。长按卡片即可移动。",
   "Shows up when there is something to show": "有内容时才会显示",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "请让手表上的 openGym 保持打开片刻。",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "正在连接。请稍后再试。",
+  "Pair a watch in the Watch app.": "在 Watch App 中配对手表。",
+  "Install openGym from the Watch app.": "通过 Watch App 安装 openGym。",
+  "Open openGym on the watch once.": "在手表上打开一次 openGym。",
+  "Open openGym on the watch, or bring it closer.": "在手表上打开 openGym，或把手表拿近一些。",
+  "Update openGym on the watch.": "在手表上更新 openGym。",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "此版本无法连接手表。请从 Google Play 或 opengym.ch 获取 openGym。",
+  "Pair your watch in its own app, like Galaxy Wearable.": "在手表自己的应用中配对，例如 Galaxy Wearable。",
+  "On the watch, install openGym from the Play Store.": "在手表上从 Play 商店安装 openGym。",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "安装此版本的 Wear OS APK。Play 商店的版本无法配对。",
+  "Syncing": "同步中",
+  "Not set up": "尚未设置",
+  "Update watch app": "更新手表应用",
+  "Last heard {0}": "上次联系：{0}",
 }

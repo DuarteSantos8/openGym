@@ -55,6 +55,8 @@ struct PendingTick: Codable, Equatable {
 struct SessionState: Codable, Equatable {
     var workout: ActiveWorkout?
     var ready: Ready?
+    /// The hash of the routines file the newest snapshot goes with.
+    var routinesHash: String?
     var settings = WatchSettings()
     var unit = "kg"
     var restSec: Double = 90
@@ -122,6 +124,7 @@ enum SessionCore {
     static func applySnapshot(_ s0: SessionState, _ snap: Snapshot) -> SessionState {
         var s = s0
         s.ready = snap.ready
+        s.routinesHash = snap.routinesHash
         if let u = snap.unit { s.unit = u }
         if let r = snap.restSec, r > 0 { s.restSec = r }
         if let st = snap.settings { s.settings = st }

@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Watches: every routine now travels to the watch as its own file, so none drop off however many you have, and Settings → Apple Watch and → Wear OS watch show one status pill that says whether the watch has them all and what to do when it doesn't (thanks @cubetes for #1329).
 - Watches: your routines show under their folders like on the phone's Plan, and archived ones stay on the phone (thanks @cubetes for #1276).
 - Wear OS: the same medal for your workout summary, turned with the crown or a swipe (thanks @cubetes for #1328).
 - Apple Watch: the workout summary is a medal now. Your time on the front, turn it with the crown or a swipe for sets, volume, records, heart rate and calories (thanks @cubetes for #1314).

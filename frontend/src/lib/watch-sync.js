@@ -49,7 +49,7 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, noteRoutinesSent, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
@@ -57,6 +57,7 @@ import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedW
 import { streakInfo } from './streak.js'
 import { accentValue, accentPair, customAccentVars } from './accent.js'
 import { circuitClock } from './circuit.js'
+import { routinesFile } from './watch-routines-file.js'
 
 // A circuit's clock (lib/circuit.js, store/useCircuit.js), when one runs: its rests and its get
 // ready go to the watch as the rest it already counts down; the station on now is the current
@@ -269,6 +270,8 @@ export const ACKED_MAX = 80
 // How long an event of a watch-started workout waits for that workout's start to arrive.
 export const DEFER_MAX_MS = 48 * 3600e3
 const SEND_DEBOUNCE_MS = 400
+// A watch report this long after the routines file went that still names another file: it was lost.
+const ROUTINES_GRACE_MS = 2 * 60e3
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 // A body weight from the watch that holds up (kg or lb, whatever the profile uses).
@@ -1218,6 +1221,9 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   uiRef = useUI
   // `sentAt`: when the last snapshot went, for the next change to go at once (sendSoon).
   let lastSent = null, lastClips = null, tm = null, sentAt = 0
+  // The routines file: made once per ready list, sent once per change (lastRoutines).
+  // `routinesAt`: when it went; `retriedAt`: the watch's report that last had it sent again.
+  let fileOf = null, file = null, lastRoutines = null, routinesAt = 0, retriedAt = null
   // The ready sessions only change with the plan, the log or the day: built again only then.
   let readyKey = null, ready = null
   const readyFor = S => {
@@ -1251,7 +1257,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     if (withGarmin) writeGarminLink(garmin)
     // A watch that is new here (the app just installed on it, or reinstalled): it has nothing yet,
     // so the snapshot goes again even when it is the same as the last one sent.
-    if (linked && !was) lastSent = null
+    if (linked && !was) { lastSent = null; lastRoutines = null }
     return linked
   }
   await checkLink()
@@ -1277,6 +1283,12 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // The phone's clock as it made this: each watch works out how far off its own clock is.
       snap.now = Date.now()
+      // Every routine goes as a file; the snapshot's own (fitted) list stays for a watch that has no file yet.
+      if (snap.ready !== fileOf) { fileOf = snap.ready; file = routinesFile(snap.ready) }
+      if (file) snap.routinesHash = file.hash
+      // What Settings → Apple Watch compares with the watch's report: today's routines and the others.
+      const count = file ? (snap.ready.today?.routineIds?.length || 0) + snap.ready.others.length : 0
+      noteRoutinesSent(file ? { hash: file.hash, count } : null)
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
       snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
@@ -1316,6 +1328,18 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         // The next list of ids goes with the next snapshot (the newest ones are in every one).
         unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
         if (unnamed.length) schedule()
+      }
+      // The watch reports another file than the one sent, minutes after it went: lost on the way (a
+      // transfer the system gave up on) or not kept there. It goes again, once per report, so a
+      // watch that cannot keep it is not sent it with every set.
+      const ws = readWatchStatus()
+      if (lastRoutines && typeof ws?.routinesHash === 'string' && ws.routinesHash !== lastRoutines &&
+        ws.at > routinesAt + ROUTINES_GRACE_MS && ws.at !== retriedAt) { retriedAt = ws.at; lastRoutines = null }
+      // Held here: a send that overlaps this one may replace `file` while this upload is on its way.
+      const f = file
+      if (f && f.hash !== lastRoutines) {
+        // An older or F-Droid build has no such call: the snapshot's list is all it gets.
+        try { const r = await p.WatchBridge.sendRoutines?.({ json: f.json, hash: f.hash }); if (r?.sent) { lastRoutines = f.hash; routinesAt = Date.now() } } catch { /* tried again with the next snapshot */ }
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       // Not with the watch's Animation switch off: nothing on the watch would draw them (Wear OS hides them too).

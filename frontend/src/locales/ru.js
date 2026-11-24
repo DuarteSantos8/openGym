@@ -5908,4 +5908,21 @@ export default {
   "Totals": "Итоги",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Удерживайте карточку, чтобы переместить её.",
   "Shows up when there is something to show": "Появится, когда будет что показать",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Оставьте openGym открытым на часах на минуту.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Подключение. Попробуйте чуть позже.",
+  "Pair a watch in the Watch app.": "Создайте пару с часами в приложении Watch.",
+  "Install openGym from the Watch app.": "Установите openGym через приложение Watch.",
+  "Open openGym on the watch once.": "Откройте openGym на часах хотя бы раз.",
+  "Open openGym on the watch, or bring it closer.": "Откройте openGym на часах или поднесите их ближе.",
+  "Update openGym on the watch.": "Обновите openGym на часах.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Эта версия не связывается с часами. Скачайте openGym в Google Play или на opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Создайте пару с часами в их приложении, например Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "На часах установите openGym из Play Маркета.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Установите APK Wear OS этого выпуска. Версия из Play Маркета не подключится.",
+  "Syncing": "Синхронизация",
+  "Not set up": "Не настроено",
+  "Update watch app": "Обновите приложение на часах",
+  "Last heard {0}": "Последняя связь: {0}",
 }

@@ -5914,4 +5914,21 @@ export default {
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Tieni premuta una scheda per spostarla.",
   "Shows up when there is something to show": "Compare quando c’è qualcosa da mostrare",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Tieni openGym aperto sull'orologio per un momento.",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Connessione in corso. Riprova tra un attimo.",
+  "Pair a watch in the Watch app.": "Abbina un orologio nell’app Watch.",
+  "Install openGym from the Watch app.": "Installa openGym dall’app Watch.",
+  "Open openGym on the watch once.": "Apri openGym sull’orologio una volta.",
+  "Open openGym on the watch, or bring it closer.": "Apri openGym sull’orologio o avvicinalo.",
+  "Update openGym on the watch.": "Aggiorna openGym sull’orologio.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Questa versione non raggiunge l’orologio. Scarica openGym da Google Play o da opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Abbina l’orologio nella sua app, come Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Sull’orologio, installa openGym dal Play Store.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Installa l’APK Wear OS di questa versione. Quello del Play Store non si abbinerà.",
+  "Syncing": "Sincronizzazione",
+  "Not set up": "Non configurato",
+  "Update watch app": "Aggiorna l’app dell’orologio",
+  "Last heard {0}": "Ultime notizie: {0}",
 }

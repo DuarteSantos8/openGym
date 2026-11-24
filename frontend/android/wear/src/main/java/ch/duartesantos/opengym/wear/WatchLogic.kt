@@ -22,6 +22,17 @@ object Plan {
         return real.size to real.sumOf { e -> e.sets.count { !it.warmup } }
     }
 
+    /** What is ready, with every routine when the file on the watch is the one the snapshot names; else the snapshot's own list (an older phone, a first launch before the file arrives, an out-of-date file). */
+    fun merged(ready: Ready?, hash: String?, file: RoutinesFile?): Ready? =
+        if (ready == null || hash == null || file == null || file.h != hash) ready else ready.copy(others = file.others)
+
+    /** What the watch tells the phone about its routines: the hash of the file it shows ("" for the snapshot's own list) and how many it lists, today's included. */
+    fun routinesReport(ready: Ready?, hash: String?, file: RoutinesFile?): Pair<String, Int> {
+        val shown = merged(ready, hash, file)
+        val used = hash != null && file?.h == hash && ready != null
+        return (if (used) hash!! else "") to ((shown?.today?.routineIds?.size ?: 0) + (shown?.others?.size ?: 0))
+    }
+
     /** The folder name to draw above the routine at `index`: where it differs from the one before (the phone sends them grouped), else null. */
     fun folderHeader(index: Int, others: List<ReadySession>): String? {
         val f = others.getOrNull(index)?.folder?.trim()
@@ -664,8 +675,10 @@ object CheckIn {
     fun due(lastAt: Long, lastVersion: String?, version: String, now: Long) =
         lastVersion != version || now - lastAt >= EVERY_MS || now < lastAt
 
-    fun event(version: String, at: Long, id: String): Event = buildJsonObject {
+    /** `routines`: the report of Plan.routinesReport; an older watch app sends none. */
+    fun event(version: String, at: Long, id: String, routines: Pair<String, Int>? = null): Event = buildJsonObject {
         put("id", id); put("type", "watchStatus"); put("version", version); put("platform", "wear"); put("at", at)
+        routines?.let { put("routinesHash", it.first); put("routinesCount", it.second) }
     }
 }
 
