@@ -54,6 +54,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let sound: Bool
         let tone: String
         var cues: [Cue] = []
+        /// When this end was set (ms): a watch's change older than it is left alone (PhoneRestAlarm).
+        var since: Double = Date().timeIntervalSince1970 * 1000
     }
     private var pending: Pending?
     /// The tones playing now, by their CueAudioLedger id (an end tone, an own clip, a hype clip).
@@ -82,6 +84,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
         // The Live Activity's Stop auto: the chain's alerts after this one are not rung.
         nc.addObserver(self, selector: #selector(autoStopped), name: LiveActivityQueue.autoStopped, object: nil)
+        // The Lock Screen's +15 or a set logged there booked the alert itself: that is the newest change of the rest.
+        nc.addObserver(self, selector: #selector(restBooked(_:)), name: LiveActivityQueue.restBooked, object: nil)
+        // The watch's +15, −15, Skip or a set's rest, with the page asleep: this alert moves with it.
+        nc.addObserver(self, selector: #selector(watchRest(_:)), name: WatchLink.eventStored, object: nil)
         nc.addObserver(self, selector: #selector(audioInterrupted(_:)), name: AVAudioSession.interruptionNotification, object: nil)
         // Written ahead, off the main thread: the first rest then finds its sound file there.
         DispatchQueue.global(qos: .utility).async { RestTone.kinds.forEach { _ = RestTone.soundFile($0) } }
@@ -396,15 +402,55 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         }
     }
 
+    /// The Lock Screen booked the rest's alert (already posted): the end and the ordering mark follow it.
+    @objc private func restBooked(_ note: Notification) {
+        guard let end = note.userInfo?["end"] as? Double, end.isFinite else { return }
+        // When it was booked, not when this block runs: a watch change stored in between still counts.
+        let at = (note.userInfo?["at"] as? Double) ?? Date().timeIntervalSince1970 * 1000
+        DispatchQueue.main.async {
+            guard let p = self.pending else { return }
+            self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: at)
+        }
+    }
+
     /// Stop auto on the Lock Screen: the alert booked now stays (a hold running still ends), the
-    /// chain's alerts after it go.
+    /// chain's alerts after it go. Only those go, never the rest's own id: a set logged during a hold
+    /// has just booked the next rest's alarm under it (tick), and this block runs after that.
     @objc private func autoStopped() {
         DispatchQueue.main.async {
             guard var p = self.pending else { return }
             p.cues = []
             self.pending = p
+            self.withdraw(RestAlertPlugin.cueIds)
+        }
+    }
+
+    /// The rest changed on the watch while the page sleeps (the phone locked in a pocket): the alert
+    /// rings when the watch's rest ends, or not at all after a Skip there, instead of at the old end.
+    /// The page books its own again when it wakes and applies the same event. In front, the page does it.
+    @objc private func watchRest(_ note: Notification) {
+        guard let ev = note.userInfo?["event"] as? [String: Any] else { return }
+        DispatchQueue.main.async {
+            guard UIApplication.shared.applicationState != .active, let p = self.pending else { return }
+            let wid = UserDefaults.standard.string(forKey: WatchBridgePlugin.idleWidKey)
+            guard let c = PhoneRestAlarm.change(ev, wid: wid, since: p.since, now: Date().timeIntervalSince1970 * 1000) else { return }
             self.withdraw()
-            if UIApplication.shared.applicationState != .active { self.post() }
+            if c.sameRest, let over = c.over {
+                // The watch's end passed already (an event that came late): the chain keeps its phases from it, and only what is still ahead rings.
+                self.pending = Pending(at: Date(timeIntervalSince1970: over / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.post()
+            } else if c.sameRest, let end = c.end {
+                self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.post()
+            } else if c.sameRest, !p.cues.isEmpty {
+                // Skip before a hold that starts by itself: its count-in now, the chain after it (as restSkipped).
+                self.pending = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.post()
+            } else {
+                // A Skip, or a set ticked at the wrist: that set's new rest is the page's to book when it wakes, named for the next set.
+                self.pending = nil
+            }
+            if #available(iOS 17.0, *), let wid = wid { Task { await LiveActivityTick.followWatchRest(wid: wid, end: c.end) } }
         }
     }
 
@@ -429,9 +475,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         }
     }
 
-    private func withdraw() {
+    private func withdraw(_ ids: [String] = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds) {
         let center = UNUserNotificationCenter.current()
-        let ids = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds
         center.removePendingNotificationRequests(withIdentifiers: ids)
         center.removeDeliveredNotifications(withIdentifiers: ids)
     }

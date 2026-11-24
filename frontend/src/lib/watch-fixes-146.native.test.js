@@ -90,3 +90,20 @@ describe('Watch keypad check with nothing typed (#1282 / #1283)', () => {
     expect(pad).toMatch(/pad\.value\?\.let\(onSave\) \?: onClose\(\)/)
   })
 })
+
+describe('iPhone rest alarm follows the watch while locked (RestAlertPlugin.swift, #1405 / #1406)', () => {
+  const plugin = code('../../ios/App/App/RestAlertPlugin.swift')
+  const link = code('../../ios/App/App/WatchBridgePlugin.swift')
+  it('the watch link announces each newly stored event', () => {
+    expect(link).toMatch(/if added \{ NotificationCenter\.default\.post\(name: WatchLink\.eventStored/)
+  })
+  it('the rest alert listens and moves its alarm by PhoneRestAlarm, only with the page asleep', () => {
+    expect(plugin).toMatch(/selector: #selector\(watchRest\(_:\)\), name: WatchLink\.eventStored/)
+    const body = between(plugin, '@objc private func watchRest', '\n    }\n')
+    expect(body).toMatch(/applicationState != \.active/)
+    expect(body).toMatch(/PhoneRestAlarm\.change\(ev,/)
+  })
+  it('PhoneRestAlarm is compiled into the iPhone app', () => {
+    expect(read('../../ios/App/App.xcodeproj/project.pbxproj')).toMatch(/PhoneRestAlarm\.swift in Sources/)
+  })
+})
