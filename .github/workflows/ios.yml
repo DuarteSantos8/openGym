@@ -247,7 +247,7 @@ jobs:
                 || xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
             if [ "$size" = s40 ] || [ "$size" = s42 ]; then
-              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-end ended"
+              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go gesture-test summary summary-end ended"
               AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort metrics-muscles prompt summary summary-end"
             else
               SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary"

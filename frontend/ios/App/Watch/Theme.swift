@@ -205,6 +205,8 @@ struct EdgeButton: View {
     let systemImage: String
     let label: Text
     var size: CGFloat = Theme.tap
+    /// What Double Tap makes this button do, when it is the one it presses.
+    var target: GestureEffect? = nil
     let action: () -> Void
     @Environment(\.isLuminanceReduced) private var dimmed
 
@@ -220,6 +222,7 @@ struct EdgeButton: View {
         }
         .buttonStyle(PressStyle())
         .accessibilityLabel(label)
+        .doubleTapTarget(target)
     }
 }
 

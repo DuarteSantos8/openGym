@@ -27,6 +27,8 @@ export const PAGES = {
   // The phones' watch pages under one row (#1105); the web has Zepp only, so its row stays on the root.
   watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
+  // What Double Tap and the Action Button do in a workout (views/WatchGestures.jsx), opened from the Apple Watch page.
+  'watch-gestures': { title: 'Gestures', icon: 'pinch', tint: 'var(--indigo)', parent: 'watch', mod: 'watch' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
   // The Garmin link (docs/GARMIN.md, views/GarminSettings.jsx): the phone apps only.
@@ -97,7 +99,7 @@ export function pageVisible(page, ctx) {
   // The phone apps' watch pages, together: there whenever one of them is.
   if (page === 'watches') return !!ctx.mobile && WATCH_PAGES.some(p => pageVisible(p, ctx))
   // The iPhone app only: the watch app ships inside it.
-  if (page === 'watch') return !!ctx.ios
+  if (page === 'watch' || page === 'watch-gestures') return !!ctx.ios
   // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
   if (page === 'wear') return !!ctx.mobile && !!ctx.android && !ctx.demo
   // The Garmin link lives in the phone apps (Connect IQ Mobile SDK); the page says when a build has none.
