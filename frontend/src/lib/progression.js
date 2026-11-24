@@ -279,14 +279,21 @@ export function planChanged(planned, cfg, policy) {
 // A plan as the routine editor reads it ("3 × 8–12", "2 × 0:45"), for the line that says what changed.
 const planText = (p, mode) => setsRepsOf({ mode, sets: p.sets, reps: p.reps ?? '–', repsMin: p.repsMin, sec: p.sec, m: p.m, setsMax: p.setsMax })
 // Do two prescriptions ask for the same session? A field a policy leaves out (undefined) means the
-// plan's own, which is what the caller keeps. Except the reps of a profile that starts from the
-// last session: there, left out means the rows keep last time's reps, and naming the plan's is a
-// different session (startsFromLast in session-start.js).
+// plan's own: its sets, reps and seconds, and for `rest` the exercise's own rest, as the density
+// policy reads it (densityRestOf). Except the reps of a profile that starts from the last session
+// (`carried`, from carriedReps): there, left out means the rows keep last time's reps.
 const PRESCRIBED = ['weight', 'reps', 'sets', 'sec', 'rest', 'rowReps']
-const sameTarget = (a, b, cfg, fromLast) => PRESCRIBED.every(k => {
-  const own = (k === 'reps' && !fromLast) || k === 'sets' || k === 'sec' ? cfg[k] : null
+const sameTarget = (a, b, cfg, rest, carried) => PRESCRIBED.every(k => {
+  const own = k === 'reps' ? (carried === undefined ? cfg.reps : carried) : k === 'rest' ? rest : k === 'sets' || k === 'sec' ? cfg[k] : null
   return JSON.stringify(a[k] ?? own ?? null) === JSON.stringify(b[k] ?? own ?? null)
 })
+// The reps a session that starts from the last one opens its rows at: each row keeps what was
+// logged for it, a row past the last session's count opens at the plan's reps (buildSets). One
+// number when they agree, 'mixed' when they do not, so it equals no single reps value.
+const carriedReps = (last, cfg) => {
+  const rows = Array.from({ length: Math.max(1, cfg.sets || 1) }, (_, i) => (i < last.reps.length ? last.reps[i] : cfg.reps))
+  return rows.every(r => r === rows[0]) ? rows[0] : 'mixed'
+}
 
 /**
  * Reduce one finished workout entry to what a policy needs to judge it.
@@ -638,7 +645,7 @@ function prescribe(S, cfg, routine, plain) {
     const restart = r => {
       if (borrowed) return r
       const normal = prescribe(S, cfg, routine, true)
-      return sameTarget(r, normal, cfg, S.startFrom === 'last') ? normal : r
+      return sameTarget(r, normal, cfg, densityRestOf(S, cfg).start, S.startFrom === 'last' && mode === 'reps' ? carriedReps(last, cfg) : undefined) ? normal : r
     }
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,

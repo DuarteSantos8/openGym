@@ -897,6 +897,29 @@ describe('an edited plan restarts progression (#275)', () => {
       expect(p.why).toEqual(['Plan changed ({0}), so starting from your new target.', '2 × 1:00 → 3 × 0:30'])
     })
 
+    // "Your last session" opens the rows at what was logged: the restart naming the plan's reps is
+    // the same session when every row was logged at them, and a different one when they differ.
+    it('starting from the last session, compares the plan\'s reps with the rows it would open at', () => {
+      const was = { sets: 2, reps: 12, weight: 40 }
+      const cfg = { id: LIFT, sets: 2, reps: 10, weight: 40, prog: 'linear' }
+      const at = reps => ({ unit: 'kg', startFrom: 'last', workouts: [logged(LIFT, was, { ...was }, 40, reps)] })
+      // Both rows at 10: the rows open at 10 either way, so the missed session just repeats.
+      const same = nextPrescription(at([10, 10]), cfg, R)
+      expect(same.why[0]).toMatch(/^Missed reps last time/)
+      // Rows at 10 and 9, or at 8: the plan's 10 is a new target for them.
+      expect(nextPrescription(at([10, 9]), cfg, R).why[0]).toBe('Plan changed ({0}), so starting from your new target.')
+      expect(nextPrescription(at([8, 8]), cfg, R).why[0]).toBe('Plan changed ({0}), so starting from your new target.')
+    })
+
+    // The density policy names its rest; the restart leaves it out, which means the exercise's own.
+    it('reads an omitted rest as the exercise\'s own under density progression', () => {
+      const was = { sets: 2, reps: 10, weight: 40 }
+      const S = { unit: 'kg', workouts: [logged(LIFT, was, { ...was }, 40, [10, 9])] }
+      const p = nextPrescription(S, { id: LIFT, sets: 3, reps: 10, weight: 40, restSec: 120, prog: 'density' }, R)
+      expect(p).toMatchObject({ kind: 'hold', weight: 40, rest: 120 })
+      expect(p.why[0]).toMatch(/^Missed reps last time/)
+    })
+
     it('keeps the plain wording when the edit is in a field the line does not show', () => {
       const was = { sets: 2, reps: 10, weight: 40 }
       const S = { unit: 'kg', workouts: [logged(LIFT, was, { ...was }, 40, [10, 10])] }

@@ -1780,7 +1780,7 @@ export default {
   "The routine’s sets and reps. Your history decides the weight.": "Programos serijos ir pakartojimai. Jūsų istorija nusako svorį.",
   "Your last session": "Jūsų paskutinė sesija",
   "Plan changed, so starting from your new target.": "Planas pakeistas, todėl pradedama nuo naujo tikslinio svorio.",
-  "Plan changed ({0}), so starting from your new target.": "Planas pakeistas ({0}), todėl pradedama nuo naujo tikslinio svorio.",
+  "Plan changed ({0}), so starting from your new target.": "Planas pakeistas ({0}), todėl pradedama nuo naujo tikslo.",
   "First time in this routine, so starting from its own target.": "Tai pirmas kartas šioje programoje, todėl pradedama nuo jos tikslinio svorio.",
   "No weight logged last time. Enter what you lift and progression takes it from there.": "Paskutinį kartą svoris neužregistruotas. Įveskite, kiek keliate, ir progresija tęs nuo ten.",
   "Plan: {0}": "Planas: {0}",
