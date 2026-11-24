@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Watches: the weight wheel moves 1.25 kg (2.5 lb) a notch at most, so a squat no longer jumps from 100 to 105 kg. A finer step you set for an exercise is kept, and a weighted hold gets the same wheel (#1284, thanks @cubetes for #1285).
 - Watches: the keypad's check mark closes it with nothing typed, keeping the number you had, instead of sitting there looking broken. Both its buttons take a tap anywhere on their shape (#1282, thanks @cubetes for #1283).
 - Wear OS: the same for timed holds. One that the phone logged first ends on the watch, unlogged, instead of logging the next set too (#1427, thanks @cubetes for #1428).
 - Apple Watch: with "Timed holds start by themselves" on, a hold that ends on the phone first now ends on the watch too, without logging the next set as well (#1409, thanks @cubetes for #1410).
