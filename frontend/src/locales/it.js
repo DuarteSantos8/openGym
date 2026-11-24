@@ -2,6 +2,11 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "All’avvio",
+  "Workout screen": "Schermata di allenamento",
+  "Training rules": "Regole di allenamento",
+  "Timed sets": "Serie a tempo",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Orologi",
   "Set once": "Da impostare una volta",
@@ -759,6 +764,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Lo schermo resta acceso mentre un allenamento è in corso, così non devi sbloccare il telefono tra una serie e l’altra.',
   'Weight unit': 'Unità di peso',
   'Speed unit': 'Unità di velocità',
+  'Units': 'Unità',
   'Week starts on': 'La settimana inizia il',
   'Weight decimals': 'Decimali del peso',
   'How precisely weights are shown.': 'Con quanta precisione vengono mostrati i pesi.',

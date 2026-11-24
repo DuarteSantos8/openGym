@@ -103,7 +103,7 @@ export const DEFAULT_SEC_INCREMENT = 5
 // an evening. Past this the honest advice is load or a harder variation (issue #33).
 export const MAX_BW_SETS = 6
 
-// The profile's rule for a reps exercise whose routine sets none (Settings → Fine-tuning,
+// The profile's rule for a reps exercise whose routine sets none (Settings → Plan & schedule → Training rules,
 // `S.progDefault`): linear, the way the app always behaved, unless the lifter picked another.
 // Someone who sets every weight by hand picks Off once instead of in every routine.
 export const profileRule = S => (POLICIES_FOR.reps.includes(S?.progDefault) ? S.progDefault : 'linear')
