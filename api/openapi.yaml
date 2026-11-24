@@ -488,6 +488,7 @@ paths:
                       label: { type: string, example: Authentik }
                       only: { type: boolean, const: true }
                       webOrigin: { type: string, format: uri, description: Browser origin of the registered callback }
+                      deleteProfile: { type: boolean, const: true, description: Supports removing a linked profile with a deletion-only proof }
                   default_lang:
                     type: string
                     example: pt-BR
@@ -829,24 +830,37 @@ paths:
     post:
       tags: [oidc]
       operationId: oidcDeleteProfile
-      summary: Resolve the existing profile after OIDC confirmation for hosted deletion
-      description: Consumes the short-lived browser proof from mode=delete for the matching provider subject. Signs in only an existing linked profile.
+      summary: Delete a linked profile with a hosted deletion proof
+      description: Consumes a one-use browser proof from mode=delete matching the provider subject. Removes the linked profile without opening a session.
+      security:
+        - oidcDeletionProof: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [subject]
+              required: [subject, confirm]
               properties:
                 subject: { type: string }
+                confirm: { type: string, const: delete }
       responses:
         '200':
-          description: The existing profile name or a null profile, with a fresh session cookie only for an existing profile.
+          description: The linked profile was deleted or verified absent.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deleted]
+                properties:
+                  deleted: { type: boolean, description: 'True when a linked profile existed and was removed.' }
+                  profileId: { type: string, description: 'The deleted profile ID. Present only when deleted is true.' }
+        '400':
+          description: Deletion was not explicitly confirmed.
         '403':
-          description: Proof absent, expired, already used, or for a different subject.
+          description: Proof absent, expired, already used, or for a different subject, or the profile is disabled.
         '409':
-          description: A different profile is signed in.
+          description: A different profile is signed in, or the last admin cannot leave while other profiles remain.
 
   /api/oidc/callback:
     get:
@@ -6221,6 +6235,11 @@ paths:
 
 components:
   securitySchemes:
+    oidcDeletionProof:
+      type: apiKey
+      in: cookie
+      name: gymoidc-delete
+      description: Short-lived, one-use, HttpOnly OIDC deletion proof. Uses `__Host-gymoidc-delete` on HTTPS deployments.
     cookieAuth:
       type: apiKey
       in: cookie

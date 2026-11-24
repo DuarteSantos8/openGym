@@ -119,19 +119,26 @@ export function oidcRoutes(d) {
 
   async function verifiedClaims(flow, code, meta) {
     const tok = await provider.exchange({ code, verifier: flow.verifier });
+    const checkedAt = now();
     const claims = await verifyIdToken(tok.id_token, {
       jwks: await provider.jwks(), refetch: () => provider.jwks({ force: true }),
-      issuer: meta.issuer, clientId: cfg.clientId, nonce: flow.nonce, now: now(),
+      issuer: meta.issuer, clientId: cfg.clientId, nonce: flow.nonce, now: checkedAt,
       algs: allowedAlgs(meta.id_token_signing_alg_values_supported),
-      maxAgeSec: ['reauth', 'delete'].includes(flow.mode) ? PROOF_WINDOW_MS / 1000 : null
+      maxAgeSec: flow.mode === 'reauth' ? PROOF_WINDOW_MS / 1000 : null
     });
+    if (flow.mode === 'delete') {
+      const age = checkedAt - claims.auth_time * 1000;
+      if (!Number.isFinite(claims.auth_time) || age < 0 || age > PROOF_WINDOW_MS) {
+        throw new OidcError('stale', 'the ID token does not confirm recent authentication');
+      }
+    }
     // Groups and the e-mail often live only in userinfo (Authelia, Keycloak without a mapper).
     // Its answer is used only when it is about the same person (OIDC Core 5.3.2).
     const needs = claims[cfg.groupsClaim] === undefined || claims.email === undefined;
     if (needs && tok.access_token) {
       const ui = await provider.userinfo(tok.access_token);
       if (ui && typeof ui === 'object' && ui.sub === claims.sub) {
-        const { iss, aud, exp, iat, nonce, azp, ...rest } = ui;
+        const { iss, aud, exp, iat, nonce, azp, auth_time, ...rest } = ui;
         return { ...rest, ...claims };
       }
     }
@@ -189,15 +196,23 @@ export function oidcRoutes(d) {
 
     'POST /api/oidc/delete-profile': async (req, res) => {
       const clear = { 'Set-Cookie': [deletionCookie('')] };
-      const { subject } = await readBody(req);
+      const { subject, confirm } = await readBody(req);
+      if (confirm !== 'delete') return json(res, 400, { error: 'confirm profile deletion' });
       const [cookie] = d.cookieValues(req, deleteCookie) || [];
       const proof = deletionProofs.take(cookie, now());
       if (!proof || proof.sub !== subject) return json(res, 403, { error: 'identity not confirmed' }, clear);
       const user = linkedTo(d.db(), proof.iss, proof.sub);
       const current = readSession(req);
       if (current && current !== user) return json(res, 409, { error: 'another profile is signed in' }, clear);
-      if (!user) return json(res, 200, { profile: null }, clear);
-      return json(res, 200, { profile: { name: user.name } }, { 'Set-Cookie': [...clear['Set-Cookie'], ...d.sessionCookie(user, proof.confirmedAt)] });
+      if (!user) return json(res, 200, { deleted: false }, clear);
+      if (user.disabled) return json(res, 403, { error: 'this account has been disabled', code: 'disabled' }, clear);
+      if (d.lastAdminLeaving(user)) {
+        return json(res, 409, { error: 'the last admin cannot leave while other profiles remain', code: 'last-admin' }, clear);
+      }
+      d.removeAccount(user);
+      audit(req, 'auth.account.delete', { user, msg: 'provider' });
+      if (current) clear['Set-Cookie'].push(...d.clearCookie);
+      return json(res, 200, { deleted: true, profileId: user.id }, clear);
     },
 
     'GET /api/oidc/callback': async (req, res) => {
@@ -232,10 +247,9 @@ export function oidcRoutes(d) {
       const at = now();
 
       if (flow.mode === 'delete') {
-        if (!Number.isFinite(claims.auth_time) || claims.auth_time * 1000 > at) return finishError(res, flow, 'token');
         if (!accessOf(claims, cfg).allowed) return finishError(res, flow, 'group');
         const proof = rand();
-        deletionProofs.put(proof, { iss: claims.iss, sub: claims.sub, confirmedAt: at }, TICKET_TTL_MS, at);
+        deletionProofs.put(proof, { iss: claims.iss, sub: claims.sub }, TICKET_TTL_MS, at);
         return redirect(res, deleteLanding('ready'), [clearFlowCookie, deletionCookie(proof, TICKET_TTL_MS / 1000)]);
       }
 

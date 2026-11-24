@@ -607,7 +607,7 @@ describe('Account', () => {
       expect($('.iv-acct-danger').textContent).not.toMatch(/Delete your training first/)
       await type('confirm', 'delete')
       await click('[data-delete]')
-      expect(c.fn).toHaveBeenCalledWith('delete-account', { confirm: 'delete' })
+      expect(c.fn).toHaveBeenCalledWith('delete-account', { confirm: 'delete', subject: 'u-1' })
       act(() => root.unmount()); container.remove(); root = container = null
     }
   })
@@ -632,7 +632,7 @@ describe('Account', () => {
     expect($('[data-delete]').disabled).toBe(true)
     await type('confirm', 'Delete')
     await click('[data-delete]')
-    expect(c.fn).toHaveBeenCalledWith('delete-account', { confirm: 'delete' })
+    expect(c.fn).toHaveBeenCalledWith('delete-account', { confirm: 'delete', subject: 'u-1' })
     expect(c.auth.signOut).toHaveBeenCalled()
     expect(mode()).toBe('signin')
   })
@@ -646,6 +646,26 @@ describe('Account', () => {
     expect($('[role="alert"]').textContent).toBe('Cancel your subscription first, then delete the account.')
     expect(c.auth.signOut).not.toHaveBeenCalled()
     expect(mode()).toBe('account')
+  })
+
+  it('deletes directly when the deployment explicitly has no training server', async () => {
+    const c = fakeClient({ session: me })
+    const config = vi.fn(async () => null)
+    await mount(c, { server: { ...noServer(), configured: false, config } })
+    await type('confirm', 'delete')
+    await click('[data-delete]')
+    expect(config).not.toHaveBeenCalled()
+    expect(c.fn).toHaveBeenCalledExactlyOnceWith('delete-account', { confirm: 'delete', subject: 'u-1' })
+  })
+
+  it.each([null, { allow_guest: true }])('refuses when the configured training server cannot confirm OIDC (%j)', async config => {
+    const c = fakeClient({ session: me })
+    const go = await mount(c, { server: { ...noServer(), configured: true, config: async () => config } })
+    await type('confirm', 'delete')
+    await click('[data-delete]')
+    expect($('[role="alert"]').textContent).toBe('Could not reach your server')
+    expect(c.fn).not.toHaveBeenCalled()
+    expect(go).not.toHaveBeenCalled()
   })
 
   it('approving a sign-in to the app\'s server names who asks and sends the browser on', async () => {

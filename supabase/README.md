@@ -42,7 +42,7 @@ cp -r supabase /tmp/sb && chmod -R a+rX /tmp/sb && runuser -u postgres -- /tmp/s
 | `create-portal-session` | the app, signed in | `POST` → `{ url }` of the Stripe Customer Portal for the caller's own customer |
 | `entitlement-token` | the app, signed in | `POST` → `{ token, features, exp }`: a signed note the app checks offline (`frontend/src/lib/cloud/entitlement.js`) |
 | `export-account` | the app, signed in | `POST` → the caller's own rows as one JSON document. Never anyone else's, never the payment provider's customer id |
-| `delete-account` | the app, signed in | `POST { confirm: "delete" }` → removes the caller's account and every row with it. Refused while a subscription is running |
+| `delete-account` | the app, signed in | `POST { confirm: "check" }` checks eligibility without deleting. `POST { confirm: "delete" }` checks again and removes the caller's account and every row with it. Both refuse while a subscription is running. An optional `subject` must match the caller or the function returns `403 subject_mismatch` |
 | `stripe-webhook` | Stripe | Verifies the signature, writes the event id down, re-reads the subscription from Stripe and makes the rows match |
 
 No SDK is used: `fetch` and Web Crypto only. That is on purpose. The code depends on no library
