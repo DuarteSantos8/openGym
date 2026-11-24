@@ -16,7 +16,7 @@ import { api, webauthnOK, passkeyAssertion, passwordLogin, passwordRegister, pas
 import { askAddDeviceData } from '../sheets.jsx'
 import { Row, Button } from './ui.jsx'
 import { MOBILE } from '../lib/mobile.js'
-import { oidcOn, oidcLabel, startWebSignIn } from '../lib/oidc.js'
+import { oidcWebOn, oidcLabel, startWebSignIn } from '../lib/oidc.js'
 
 // The server's floor (api/password.js MIN_LENGTH), checked here first so the common mistake is
 // answered without a round trip. The server still decides.
@@ -242,7 +242,7 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   // (api/oidc/routes.js providerProof). In a browser only: the phone's token is its own proof.
   const config = useStore(s => s.config)
   const linked = useStore(s => !!s.user?.oidc)
-  const withProvider = !MOBILE && linked && oidcOn(config)
+  const withProvider = !MOBILE && linked && oidcWebOn(config)
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)

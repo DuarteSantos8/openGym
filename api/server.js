@@ -2606,7 +2606,7 @@ const routes = {
       // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
       ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
-      ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
+      ...(oidcApi ? { oidc: { label: OIDC.label, webOrigin: OIDC.webOrigin, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
