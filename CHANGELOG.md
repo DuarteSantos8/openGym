@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Watches: the keypad's check mark closes it with nothing typed, keeping the number you had, instead of sitting there looking broken. Both its buttons take a tap anywhere on their shape (#1282, thanks @cubetes for #1283).
 - Wear OS: the same for timed holds. One that the phone logged first ends on the watch, unlogged, instead of logging the next set too (#1427, thanks @cubetes for #1428).
 - Apple Watch: with "Timed holds start by themselves" on, a hold that ends on the phone first now ends on the watch too, without logging the next set as well (#1409, thanks @cubetes for #1410).
 - Apple Watch and Garmin: a workout you paused on the phone is never ended as forgotten, and on the Apple Watch the heart-rate session rests with it. One sat paused for 50 minutes and was ended for you (#1449, #1467, thanks @cubetes for #1450).

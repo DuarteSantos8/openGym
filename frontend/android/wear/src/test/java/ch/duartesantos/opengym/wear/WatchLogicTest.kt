@@ -177,6 +177,9 @@ class WatchLogicTest {
         assertEquals("1234", reps.press("x").text)
         assertNull(Keypad(1).value)
         assertFalse("nothing typed is nothing to save", Keypad(1).fits(0.0..10.0))
+        assertTrue("✓ with nothing typed keeps the number shown", Keypad(1).confirms(0.0..10.0))
+        assertTrue(k.confirms(0.0..700.0))
+        assertFalse("out of range: ✓ waits for a number that fits", k.confirms(0.0..50.0))
         assertEquals("0.5", Keypad(1).press(".").press("5").text)
     }
 

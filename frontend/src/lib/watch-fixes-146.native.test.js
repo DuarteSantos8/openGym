@@ -74,3 +74,19 @@ describe('Wear OS hold the phone logged first (WearStore.kt, #1427 / #1428)', ()
     expect(end).toMatch(/!gone\) completeSet\(heldFor = lasted, held = held/)
   })
 })
+
+describe('Watch keypad check with nothing typed (#1282 / #1283)', () => {
+  it('Apple Watch: ✓ answers with nothing typed and keeps the number shown', () => {
+    expect(code(CORE + 'SetNav.swift')).toMatch(/func confirms\(_ range: ClosedRange<Double>\) -> Bool \{\s*text\.isEmpty \|\| fits\(range\)/)
+    const pad = between(code(WATCH + 'SetPage.swift'), 'struct KeypadView', '/// The number typed')
+    expect(pad).toMatch(/let ok = pad\.confirms\(range\)/)
+    expect(pad).toMatch(/\.disabled\(!ok\)/)
+    expect(pad).toMatch(/if let v = pad\.value \{ save\(v\) \}\s*dismiss\(\)/)
+  })
+  it('Wear OS: the same', () => {
+    expect(code(WEAR + 'WatchLogic.kt')).toMatch(/fun confirms\(range: ClosedFloatingPointRange<Double>\) = text\.isEmpty\(\) \|\| fits\(range\)/)
+    const pad = between(code(WEAR + 'ui/Screens.kt'), 'fun KeypadView(', '\n}\n')
+    expect(pad).toMatch(/val ok = pad\.confirms\(range\)/)
+    expect(pad).toMatch(/pad\.value\?\.let\(onSave\) \?: onClose\(\)/)
+  })
+})
