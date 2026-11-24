@@ -7,9 +7,11 @@
 // src/lib/garmin-contract.test.js fails when the constants and field names below stop matching
 // the Monkey C sources. Change one, change the other.
 //
-// Left out (they do not touch the link): per-side sets, holds, the rest's buzzes and ring, the
+// Left out (they do not touch the link): per-side sets, the rest's buzzes and ring, the
 // Instinct's 6-set outbox, drawing. The rest itself is in (protocol 2, docs/WATCH_SYNC.md "One
-// rest"): Core.tickRest, restEvent and followRest, Rest.add / skip and the rest running out.
+// rest"): Core.tickRest, restEvent and followRest, Rest.add / skip and the rest running out. So is
+// a hold (#1403): the set it is for (Core.holdFor / holdAt), its end, and its end when the phone
+// logged that set first (Actions.followTick).
 
 export const EV_KEYS = ['id', 'type', 'at', 'wid', 'exId', 'entryIdx', 'setIdx', 'w', 'r', 'sec', 'side', 'hr', 'rir', 'rpe', 'routineIds', 'sid', 'restEnd', 'endsAt', 'off']
 export const BATCH = 4            // Link.flush: events per message
@@ -116,6 +118,9 @@ export class GarminWatch {
     this.ended = null
     this.sentMessages = 0
     this.n = 0
+    // G.hold and G.hfor: a hold running, { end (ms), sec, rest }, and the set it is for
+    this.hold = null
+    this.hfor = null
   }
 
   /** OpenGymApp.onStart: "send me the latest". */
@@ -194,6 +199,44 @@ export class GarminWatch {
       if (row && !isTrue(row.done) && !this.s.sk.includes(e.id + '#' + si)) return si
     }
     return null
+  }
+
+  /* ---------- Core: a hold's set (#1403) ---------- */
+  /** Core.holdFor: the set's key (its id, else its place). */
+  holdFor (pos, si) { const e = this.entryAt(pos); return e && si != null ? [pkey(e, pos, si), null] : null }
+  /** Core.holdAt: where that set is now, [pos, si], or null when it is done or gone. */
+  holdAt (h) {
+    if (!h) return null
+    const es = this.entries()
+    for (let pos = 0; pos < es.length; pos++) {
+      const e = dictOf(es[pos])
+      if (!e) continue
+      const sets = arrOf(e.sets)
+      for (let si = 0; si < sets.length; si++) {
+        if (h[0] !== pkey(e, pos, si) && h[0] !== placeKey(e, pos, si)) continue
+        const row = dictOf(sets[si])
+        return !row || isTrue(row.done) ? null : [pos, si]
+      }
+    }
+    return null
+  }
+
+  /* ---------- Actions: a hold ---------- */
+  /** Actions.holdStart (after its 3-2-1): the hold of the set up now, `sec` long; its rest after. */
+  holdStart (sec, rest = 0) {
+    const pos = this.s.pos
+    this.hfor = this.holdFor(pos, this.setIndex(pos))
+    this.hold = { end: this.nowMs() + sec * 1000, sec, rest }
+  }
+  /** Actions.holdTick at zero (and holdStop): logged on the hold's own set, unless the phone has it. */
+  holdEnd () {
+    const h = this.hold
+    this.hold = null
+    const at = this.holdAt(this.hfor)
+    this.hfor = null
+    if (!h || !at) return null
+    const row = this.entryAt(at[0]).sets[at[1]]
+    return this.tick(at[0], at[1], isNum(row.w) && row.w > 0 ? row.w : null, null, { sec: h.sec, rest: h.rest })
   }
 
   /* ---------- Core: the clocks ---------- */
@@ -350,7 +393,7 @@ export class GarminWatch {
 
   /** Core.tickAt + Actions.tick: the set done here, its event stored and sent. */
   /** `rest`: the rest it starts in seconds (Actions.tick, Core.tickRest), 0 for none; null for a fix (no restEnd). */
-  tick (pos, si, w, r, { hr = null, at = this.nowMs(), eff = null, rest = null } = {}) {
+  tick (pos, si, w, r, { hr = null, at = this.nowMs(), eff = null, rest = null, sec = null } = {}) {
     const s = this.s
     const wk = dictOf(s.w)
     const e = this.entryAt(pos)
@@ -362,13 +405,15 @@ export class GarminWatch {
     row.done = true
     if (w != null) row.w = w
     if (r != null) row.r = r
+    if (sec != null) row.sec = sec
     row.at = pat
-    s.p[pkey(e, pos, si)] = [w, r, pat, null]
+    s.p[pkey(e, pos, si)] = [w, r, pat, sec]
     const ev = { id: this.newId(), type: 'setDone', wid: strOf(wk.id), exId: strOf(e.id), entryIdx: this.entryIdx(pos), setIdx: si, at }
     if (typeof row.sid === 'string') ev.sid = row.sid
     if (o !== 0) ev.off = o
     if (w != null) ev.w = w
     if (r != null) ev.r = r
+    if (sec != null) ev.sec = sec
     if (hr != null) ev.hr = { avg: hr[0], max: hr[1] }
     if (eff != null) ev[eff[0]] = eff[1]
     if (rest != null) {
@@ -474,6 +519,9 @@ export class GarminWatch {
     if (!w) return null
     const at = this.nowMs()
     const wid = strOf(w.id)
+    // (Actions.finish: a hold running is logged first; a discard drops it)
+    if (this.hold && !discard) this.holdEnd()
+    this.hold = null; this.hfor = null
     s.w = null; s.p = {}; s.sk = []; s.sh = null; s.rest = null; s.rh = null; s.ra = 0; s.pos = 0
     s.fh.push(wid)
     if (s.fh.length > 5) s.fh = s.fh.slice(-5)
@@ -534,6 +582,8 @@ export class GarminWatch {
   second () {
     // Rest.tick: the rest runs out by itself (nothing is sent)
     if (isNum(this.s.rest) && this.s.rest <= this.nowMs()) this.s.rest = null
+    // Actions.holdTick: the hold logs itself at zero
+    if (this.hold && this.hold.end <= this.nowMs()) this.holdEnd()
     const now = this.now()
     if (this.busy && now - this.began > GIVE_UP_MS) { this.busy = false; this.gen += 1 }
     if (this.busy) return
@@ -573,9 +623,11 @@ export class GarminWatch {
   onPhone (data) {
     if (!dictOf(data)) return
     const ended = this.applySnapshot(data)
-    if (ended) this.ended = ended
-    // Actions.followTick: the phone ticked a set, the watch moves on as its own Done would
-    else if (this.ptick && dictOf(this.s.w)) {
+    if (ended) { this.ended = ended; this.hold = null; this.hfor = null }
+    // Actions.followTick: a hold for a set the phone logged first ends here unlogged (#1403) …
+    if (this.hold && dictOf(this.s.w) && !this.holdAt(this.hfor)) { this.hold = null; this.hfor = null }
+    // … and the phone ticked a set, the watch moves on as its own Done would (not mid-hold)
+    if (!ended && !this.hold && this.ptick && dictOf(this.s.w)) {
       const to = this.next(this.ptick[0])
       if (!(to >= this.entries().length && this.hasMore()) && to !== this.s.pos) this.s.pos = to
     }

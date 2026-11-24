@@ -70,6 +70,11 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 - "Timed holds start by themselves" on the phone: after a rest (run out or skipped, here or on the
   phone) the hold's 3-2-1 comes up by itself. Not on the watches without a hold timer ((:small)):
   there Done logs the seconds, and an automatic one would have logged a set nobody did.
+  With it on, the phone and the watch each run the hold; a hold keeps the set it is for
+  (`Core.holdFor`: the set's id, else its place, and the side), so its end logs that set, and
+  when the phone's hold ends first and ticks it, the watch's hold (or its 3-2-1) ends unlogged
+  and the watch follows the phone's tick and rest (`Core.holdAt`, `Actions.followTick`, #1403):
+  one hold, one rest, one set, the rule the Apple Watch (#1409) and Wear OS (#1427) follow.
 - Cardio is logged on the phone (the watch says so and moves on).
 - No exercise media goes to the watch, text and numbers only (and the licence would not allow it).
 - Heart rate: the watch's optical sensor (`Toybox.Sensor` / `Activity.Info.currentHeartRate`)
@@ -467,7 +472,8 @@ You need the Connect IQ SDK and the device files:
    build without it so `long` measures the app alone): every 2 s the watch's new events go
    to its copy of the workout and the window comes back through the app's own path
    (`OpenGymApp.took`), as lib/garmin-snapshot.js makes it; `SIM_PHONE=start` waits for a start
-   from the watch instead (`SIM_AUTOHOLD=1`: "Timed holds start by themselves").
+   from the watch instead (`SIM_AUTOHOLD=1`: "Timed holds start by themselves"; `SIM_PHONEHOLD=1`:
+   the phone's own hold ends 4 s into the watch's and ticks the set there, #1403).
 
    What `setup` works around (paths in the script's variables): the simulator is built for Ubuntu
    22.04; on Debian 13 it lacks GTK 3 (taken from Debian's packages into a private folder),

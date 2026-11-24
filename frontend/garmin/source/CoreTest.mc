@@ -1288,4 +1288,47 @@ module CoreTest {
         Test.assert(Core.needsPhone(s));
         return true;
     }
+
+    //! A hold keeps the set it is for (#1403): by the set's id, so a set added before it on the
+    //! phone does not change which one it logs, and the phone logging it (its own hold ended
+    //! first) or removing it ends the hold here unlogged.
+    (:test, :big)
+    function holdKeepsItsSet(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["mode"] = "time";
+        sn["active"]["entries"][0]["sets"][0]["sid"] = "a0";
+        sn["active"]["entries"][0]["sets"][1]["sid"] = "a1";
+        Core.applySnapshot(s, sn);
+        var h = Core.holdFor(s, 0, 1, null);
+        Test.assert(Core.same(h[0], "s:a1"));
+        Test.assertEqual(Core.holdAt(s, h)[1], 1);
+        // a warm-up added in front on the phone: still that set, now the third row
+        var sn2 = coreSnap();
+        var rows = sn2["active"]["entries"][0]["sets"];
+        rows[0]["sid"] = "a0";
+        rows[1]["sid"] = "a1";
+        sn2["active"]["entries"][0]["sets"] = [{ "w" => 20, "r" => 5, "warmup" => true, "sid" => "w0" }, rows[0], rows[1]];
+        Core.applySnapshot(s, sn2);
+        Test.assertEqual(Core.holdAt(s, h)[1], 2);
+        // the phone logged it: over here, unlogged
+        rows[1]["done"] = true;
+        rows[1]["at"] = Core.nowMs();
+        Core.applySnapshot(s, sn2);
+        Test.assert(Core.holdAt(s, h) == null);
+        // removed on the phone: over too
+        var sn3 = coreSnap();
+        sn3["active"]["entries"][0]["sets"][0]["sid"] = "a0";
+        sn3["active"]["entries"][0]["sets"] = [sn3["active"]["entries"][0]["sets"][0]];
+        Core.applySnapshot(s, sn3);
+        Test.assert(Core.holdAt(s, h) == null);
+        // a hold begun before the phone gave its sets ids (kept by place) finds its set by id later
+        var t = Core.emptyState();
+        Core.applySnapshot(t, coreSnap());
+        var hp = Core.holdFor(t, 0, 1, null);
+        Test.assert(Core.same(hp[0], "e0:0025#1"));
+        Core.applySnapshot(t, sn);
+        Test.assertEqual(Core.holdAt(t, hp)[1], 1);
+        return true;
+    }
 }

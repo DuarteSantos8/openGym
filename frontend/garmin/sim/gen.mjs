@@ -97,6 +97,9 @@ module SimData {
     function phone() as Dictionary {
         return WatchUi.loadResource(Rez.JsonData.simPhone) as Dictionary;
     }
+    function phoneHold() as Boolean {
+        return ${process.env.SIM_PHONEHOLD ? 'true' : 'false'};
+    }
     function playsPhone() as Boolean {
         return ${process.env.SIM_PHONE ? 'true' : 'false'};
     }

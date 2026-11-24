@@ -724,6 +724,72 @@ describe('one rest, the two clocks, set ids (protocol 2, docs/WATCH_SYNC.md)', (
   // the phone's rest end against the watch's, both on the phone's clock
   const apart = w => Math.abs(w.timer.endsAt - (w.watch.s.rest - w.watch.off()))
 
+  // #1403 ("Timed holds start by themselves", Mircuz on Discord): the phone and the watch each
+  // count a hold in and run it; the phone's ended a moment earlier and ticked the set, then the
+  // watch's ended and logged the set up by then, the next one, which nobody held.
+  it('a hold on both that ends on the phone first: one hold, one rest, one set (#1403)', async () => {
+    const w = world()
+    w.restSec = 60
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    // both count the first set's hold in, the watch 0.7 s later ("Go!" stays up that long)
+    const holdAt0 = Date.now()
+    await vi.advanceTimersByTimeAsync(700)
+    w.watch.holdStart(30, 60)
+    await w.run(29)
+    // the phone's hold runs out first: its set is ticked there, and its rest starts
+    w.update(s => { Object.assign(s.active.entries[0].sets[0], { done: true, sec: 30, at: holdAt0 + 30000 }) })
+    w.ui.startRest(60)
+    await w.run(5)
+    // the watch's hold ended with it, unlogged: nothing went from the watch, one set in the log
+    expect(w.watch.hold).toBe(null)
+    expect(w.transmits.flatMap(m => m.events).filter(e => e.type === 'setDone')).toEqual([])
+    expect(w.done()).toEqual(['0025'])
+    // the watch is on the next set, resting with the phone, one rest
+    expect(w.watch.setIndex(w.watch.s.pos)).toBe(1)
+    expect(w.watch.restLeft()).toBeGreaterThan(50)
+    expect(apart(w)).toBeLessThan(1000)
+    await w.run(60)
+    expect(w.done()).toEqual(['0025'])
+  })
+
+  it('a hold that ends on the watch first is logged once, on its own set, and the phone takes it', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.holdStart(30, 60)
+    await w.run(32)
+    expect(w.watch.hold).toBe(null)
+    expect(w.done()).toEqual(['0025'])
+    expect(w.transmits.flatMap(m => m.events).filter(e => e.type === 'setDone').map(e => [e.exId, e.setIdx, e.sec])).toEqual([['0025', 0, 30]])
+    expect(w.setDone).toEqual(['0025/0'])
+  })
+
+  it('a set added on the phone before the hold\'s: the hold logs its own; its set removed there: the hold ends unlogged', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.holdStart(30, 60)
+    await w.run(5)
+    // the phone adds a warm-up in front: the hold's set is now the second row, still open
+    w.update(s => { s.active.entries[0].sets.unshift({ w: 20, r: 10, warmup: true, done: false }) })
+    await w.run(30)
+    // the hold logged its own set (by its id), not the warm-up that is up first now
+    expect(w.S().active.entries[0].sets.map(x => !!x.done)).toEqual([false, true, false, false])
+    // and a set removed on the phone mid-hold: the hold ends unlogged
+    w.watch.holdStart(30, 60)
+    await w.run(3)
+    const held = w.watch.hfor
+    expect(held[0]).toMatch(/^s:/)
+    w.update(s => { s.active.entries[0].sets.splice(0, 1) })
+    await w.run(30)
+    expect(w.watch.hold).toBe(null)
+    expect(w.done()).toEqual(['0025'])
+  })
+
   it('a rest started on the watch is the phone\'s: +15 and -15 there move it, Skip there ends it', async () => {
     const w = world()
     w.restSec = 120   // the phone's own rule would start a longer one

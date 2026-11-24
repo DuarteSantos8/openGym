@@ -57,7 +57,7 @@ module Actions {
 
     //! Nothing of the last workout's screens stays: the page, a fix, a hold, "All done?".
     function reset() {
-        G.page = :set; G.fix = null; G.hold = null; G.hcd = null; G.last = null; G.rated = null;
+        G.page = :set; G.fix = null; G.hold = null; G.hcd = null; G.hfor = null; G.last = null; G.rated = null;
         G.ask = false; G.snooze = null;
     }
 
@@ -155,6 +155,12 @@ module Actions {
         var t = Core.ptick;
         Core.ptick = null;
         var s = G.state;
+        // A hold (or its 3-2-1) for a set the phone has logged since: its own hold ended first
+        // ("Timed holds start by themselves" runs one on each). This one ends unlogged, and the
+        // watch follows the phone's tick and rest as for any other (#1403).
+        if ((G.hold != null || G.hcd != null) && G.hfor != null && Core.holdAt(s, G.hfor) == null) {
+            holdCancel();
+        }
         var e = t == null ? null : Core.entryAt(s, t[0]);
         if (e == null) {
             return;
@@ -209,8 +215,22 @@ module Actions {
     function holdCount() {
         G.hcd = System.getTimer();
         G.hold = null;
+        G.hfor = holdUp();
         Motion.run();
         WatchUi.requestUpdate();
+    }
+
+    //! The set up now, as the hold that starts for it keeps it (Core.holdFor).
+    (:big)
+    function holdUp() {
+        var s = G.state;
+        var pos = s["pos"];
+        var e = Core.entryAt(s, pos);
+        var si = Core.setIndex(s, pos);
+        if (e == null || si == null) {
+            return null;
+        }
+        return Core.holdFor(s, pos, si, Core.sideUp(Core.dictOf(Core.arrOf(e["sets"])[si])));
     }
 
     (:small)
@@ -221,6 +241,9 @@ module Actions {
     function holdStart() {
         G.hcd = null;
         Motion.stop();
+        if (G.hfor == null) {
+            G.hfor = holdUp();
+        }
         var sec = Ed.target();
         G.hold = [System.getTimer(), sec == null || sec < 1 ? 30 : sec];
         Workout.newSet();
@@ -234,6 +257,7 @@ module Actions {
     function holdCancel() {
         G.hcd = null;
         G.hold = null;
+        G.hfor = null;
         Motion.stop();
         WatchUi.requestUpdate();
     }
@@ -263,17 +287,38 @@ module Actions {
         logHold(sec < 1 ? 1 : (sec > h[1] ? h[1] : sec));
     }
 
+    //! A hold's seconds logged: on the set the hold is for (#1403), or on the set up now on the
+    //! watches without a hold timer (Done logs the seconds there). Nothing when the phone logged
+    //! that set already.
     function logHold(sec) {
+        var s = G.state;
+        var at = held4();
+        G.hfor = null;
+        if (at == null) {
+            return;
+        }
+        var pos = at[0];
+        var si = at[1];
+        var e = Core.entryAt(s, pos);
+        var row = Core.dictOf(Core.arrOf(e["sets"])[si]);
+        var w = Core.toF(row["w"]);
+        tick(pos, si, at[2], w != null && w > 0 ? w : null, null, sec.toFloat(), Core.toF(e["restSec"]));
+    }
+
+    //! Where the set a hold is logged on is, as [pos, si, side], or null.
+    (:small)
+    function held4() {
         var s = G.state;
         var pos = s["pos"];
         var e = Core.entryAt(s, pos);
         var si = Core.setIndex(s, pos);
-        if (e == null || si == null) {
-            return;
-        }
-        var row = Core.dictOf(Core.arrOf(e["sets"])[si]);
-        var w = Core.toF(row["w"]);
-        tick(pos, si, Core.sideUp(row), w != null && w > 0 ? w : null, null, sec.toFloat(), Core.toF(e["restSec"]));
+        return (e == null || si == null) ? null : [pos, si, Core.sideUp(Core.dictOf(Core.arrOf(e["sets"])[si]))];
+    }
+    (:big)
+    function held4() {
+        var h = G.hfor;
+        var at = Core.holdAt(G.state, h);
+        return at == null ? null : [at[0], at[1], h[1]];
     }
 
     (:small)

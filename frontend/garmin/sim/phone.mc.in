@@ -34,8 +34,47 @@ module SimPhone {
 
     //! Every 2 s (Sim.mem).
     function turn() as Void {
+        phoneHold();
         phoneTurn();
     }
+
+    //! SIM_PHONEHOLD=1: the phone runs the hold too and its hold ends first, 4 s into the watch's
+    //! (#1403): it ticks the set and starts its rest, and the watch's hold has to end unlogged.
+    var holdSeen = null;
+    (:small)
+    function phoneHold() as Void {
+    }
+    (:big)
+    function phoneHold() as Void {
+        if (!SimData.phoneHold() || phone == null || G.hold == null) {
+            holdSeen = null;
+            return;
+        }
+        if (holdSeen == null) {
+            holdSeen = System.getTimer();
+            return;
+        }
+        if (System.getTimer() - holdSeen < 4000) {
+            return;
+        }
+        holdSeen = null;
+        var at = Core.holdAt(G.state, G.hfor);
+        if (at == null) {
+            return;
+        }
+        var e = Core.entryAt(G.state, at[0]);
+        var row = phone["entries"][Core.toI(e["i"], at[0])]["sets"][at[1]];
+        var now = Core.nowMs();
+        row["done"] = true;
+        row["sec"] = 30;
+        row["at"] = now;
+        rest = now + 60000l;
+        restAt = now;
+        System.println("phone: its hold ended first, set " + at[1] + " ticked there");
+        (Application.getApp() as OpenGymApp).took(snapshot());
+    }
+    var paused = false;
+
 
     //! The watch's events the phone has not applied yet, applied; and its snapshot back when any were.
     function phoneTurn() as Void {

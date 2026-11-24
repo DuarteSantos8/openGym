@@ -157,6 +157,18 @@ describe('phone → watch: the snapshot', () => {
 
 describe('protocol 2 (docs/WATCH_SYNC.md): the clocks, one rest, set ids', () => {
   const actions = mc('Actions.mc')
+  it('a hold keeps its set, logs that one, and ends unlogged when the phone logged it first (#1403), as the model does', () => {
+    // the 3-2-1 (and a hold begun without one) remembers the set up then
+    expect(has(actions, /G\.hcd = System\.getTimer\(\);\s*G\.hold = null;\s*G\.hfor = holdUp\(\);/)).toBe(true)
+    expect(has(actions, /if \(G\.hfor == null\) \{\s*G\.hfor = holdUp\(\);\s*\}\s*var sec = Ed\.target\(\);/)).toBe(true)
+    // every snapshot: a hold or its 3-2-1 whose set is done or gone is cancelled, before the phone's tick is followed
+    expect(has(actions, /if \(\(G\.hold != null \|\| G\.hcd != null\) && G\.hfor != null && Core\.holdAt\(s, G\.hfor\) == null\) \{\s*holdCancel\(\);/)).toBe(true)
+    // its end logs its own set, by the key the model uses (the set's id, else its place)
+    expect(has(actions, /var at = Core\.holdAt\(G\.state, h\);\s*return at == null \? null : \[at\[0\], at\[1\], h\[1\]\];/)).toBe(true)
+    expect(has(core, /return \(e == null \|\| si == null\) \? null : \[pkey\(e, pos, si, side\), side\];/)).toBe(true)
+    expect(has(core, /!key\.equals\(pkey\(e, pos, si, side\)\) && !key\.equals\(placeKey\(e, pos, si, side\)\)/)).toBe(true)
+  })
+
   it('the clock offset is the model\'s: 8 samples, the last five minutes, the smallest', async () => {
     const { CLOCK_SAMPLES, CLOCK_WINDOW_MS, REST_SLACK_MS } = await import('../../garmin/test/watch-model.mjs')
     expect(has(core, new RegExp(`ck\\.size\\(\\) > ${CLOCK_SAMPLES}\\) \\{ ck = ck\\.slice\\(ck\\.size\\(\\) - ${CLOCK_SAMPLES}, null\\)`))).toBe(true)

@@ -32,6 +32,9 @@ module G {
     //! A hold running: [System.getTimer() at its start, seconds to hold]; its 3-2-1 began at hcd.
     var hold = null;
     var hcd = null;
+    //! The set the hold (or its 3-2-1) is for, Core.holdFor's [key, side]: its end logs that set,
+    //! and the phone logging it first ends the hold here unlogged (#1403).
+    var hfor = null;
     //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
     var cd = null;
     //! "Still training?": up, because the phone left the gym (askLeft), and when the lifter last

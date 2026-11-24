@@ -724,6 +724,41 @@ module Core {
         return big && st != null && isTrue(st["autoHolds"]) && isTimed(entryAt(s, pos)) && setIndex(s, pos) != null;
     }
 
+    //! The set a hold is for, as [its key, its side]: the key is the set's id, else its place
+    //! (pkey), so the hold's end logs that set and not whichever is up by then (#1403). Null for
+    //! no set. Only the watches with a hold timer ((:big)) have holds.
+    (:big)
+    function holdFor(s, pos, si, side) {
+        var e = entryAt(s, pos);
+        return (e == null || si == null) ? null : [pkey(e, pos, si, side), side];
+    }
+
+    //! Where the hold's set (holdFor) is now, as [pos, si], or null when it is done (the phone
+    //! logged it: its own hold ended first) or gone (removed on the phone). The hold then ends
+    //! here unlogged: one hold, one set, as on the Apple Watch (#1409) and Wear OS (#1427).
+    (:big)
+    function holdAt(s, h) {
+        if (h == null) { return null; }
+        var key = h[0];
+        var side = h[1];
+        var es = entries(s);
+        for (var pos = 0; pos < es.size(); pos += 1) {
+            var e = dictOf(es[pos]);
+            if (e == null) { continue; }
+            var sets = arrOf(e["sets"]);
+            for (var si = 0; si < sets.size(); si += 1) {
+                // (a hold begun before the phone gave the set its id was kept by its place)
+                if (!key.equals(pkey(e, pos, si, side)) && !key.equals(placeKey(e, pos, si, side))) { continue; }
+                var row = dictOf(sets[si]);
+                var sd = (row == null || side == null) ? null : dictOf(row["sides"]);
+                var one = sd == null ? null : dictOf(sd[side]);
+                var done = row == null || (one != null ? isTrue(one["done"]) : isTrue(row["done"]));
+                return done ? null : [pos, si];
+            }
+        }
+        return null;
+    }
+
     //! Whether the workout has exercises after the window (the phone sends them later).
     function hasMore(s) {
         var w = dictOf(s["w"]);
