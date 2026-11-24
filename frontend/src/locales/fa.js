@@ -6288,4 +6288,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "ابتدا تمرین‌هایتان را حذف کنید: در برنامه «تنظیمات»، سپس «حساب» و بعد «حذف حساب من» را باز کنید. پس از آن برای حذف این حساب به اینجا برگردید.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "این مرورگر شما را واردشده نگه نمی‌دارد (مرور خصوصی، یا فضای ذخیره‌سازی آن پر است). آنچه اینجا ثبت می‌کنید هم ممکن است نگه داشته نشود.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "این مرورگر چیزی برای این سایت ذخیره نمی‌کند، بنابراین برنامه اینجا باز نمی‌شود. فضای ذخیره‌سازی را خالی کنید یا از مرور خصوصی خارج شوید و دوباره تلاش کنید.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "{0} در این سرور تنها راه ورود به این نمایه است، پس پیوند می‌ماند.",
 }

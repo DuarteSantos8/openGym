@@ -6322,4 +6322,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "पहले अपनी ट्रेनिंग हटाएँ: ऐप में «सेटिंग्स», फिर «खाता», फिर «मेरा खाता हटाएँ» खोलें। उसके बाद यह खाता हटाने के लिए यहाँ वापस आएँ।",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "यह ब्राउज़र आपको साइन इन नहीं रख रहा है (प्राइवेट ब्राउज़िंग, या इसका स्टोरेज भरा हुआ है)। यहाँ आप जो दर्ज करेंगे, वह भी शायद सहेजा न जाए।",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "यह ब्राउज़र इस साइट के लिए कुछ भी सहेज नहीं रहा है, इसलिए ऐप यहाँ नहीं खुल सकता। स्टोरेज खाली करें या प्राइवेट ब्राउज़िंग से बाहर आएँ, फिर दोबारा कोशिश करें।",
+  "{0} is the only way into this profile on this server, so it stays linked.": "इस सर्वर पर {0} इस प्रोफ़ाइल में आने का अकेला रास्ता है, इसलिए यह लिंक रहेगा।",
 }

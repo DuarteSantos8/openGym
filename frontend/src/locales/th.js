@@ -6333,4 +6333,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "ลบการฝึกของคุณก่อน: ในแอป ให้เปิด «ตั้งค่า» จากนั้น «บัญชี» แล้วเลือก «ลบบัญชีของฉัน» หลังจากนั้นกลับมาที่นี่เพื่อลบบัญชีนี้",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "เบราว์เซอร์นี้ไม่ได้คงสถานะเข้าสู่ระบบของคุณไว้ (โหมดส่วนตัว หรือพื้นที่จัดเก็บเต็ม) สิ่งที่คุณบันทึกที่นี่ก็อาจไม่ถูกเก็บไว้เช่นกัน",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "เบราว์เซอร์นี้ไม่จัดเก็บข้อมูลใด ๆ ของเว็บไซต์นี้ จึงเปิดแอปที่นี่ไม่ได้ โปรดเพิ่มพื้นที่ว่างหรือออกจากโหมดส่วนตัว แล้วลองอีกครั้ง",
+  "{0} is the only way into this profile on this server, so it stays linked.": "บนเซิร์ฟเวอร์นี้ {0} เป็นทางเดียวที่เข้าโปรไฟล์นี้ได้ จึงยังเชื่อมโยงไว้",
 }

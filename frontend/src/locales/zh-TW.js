@@ -6315,4 +6315,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "請先刪除你的訓練紀錄：在 App 中依序開啟「設定」、「帳號」、「刪除我的帳號」。完成後再回到這裡刪除此帳號。",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "這個瀏覽器不會保留你的登入狀態（私密瀏覽，或儲存空間已滿）。你在這裡記錄的內容也可能無法保留。",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "這個瀏覽器不會為此網站儲存任何資料，因此無法在這裡開啟 App。請釋出儲存空間或離開私密瀏覽後再試一次。",
+  "{0} is the only way into this profile on this server, so it stays linked.": "在這台伺服器上，{0} 是進入此個人檔案的唯一方式，所以保持連結。",
 }

@@ -25,7 +25,8 @@ async function setup(t, { env = {}, users = [], creds = [], mock: mockOpts = {} 
   const mock = await startMockOidc(mockOpts);
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-oidc-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
-  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users, creds, subs: [], invites: [] }));
+  // `users` may be a function of the mock provider, for profiles that start out linked to it.
+  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: typeof users === 'function' ? users(mock) : users, creds, subs: [], invites: [] }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: {
@@ -405,6 +406,35 @@ test('unlink: the provider is never removed when it is the last way in', async t
   const un = await h.post('/api/oidc/unlink', { provider: true }, { cookie: r.session });
   assert.equal(un.status, 409);
   assert.equal(un.body.code, 'last-way-in');
+});
+
+// Found in review of #88. Where the provider is the only way in for members, a passkey does not
+// sign a member in (the test above), so it is not another way in: unlinking with one left a
+// profile nothing could open. An admin's passkey does sign them in, so they may unlink.
+test('OIDC_ONLY: a member keeps the provider link, since nothing else would sign them in; an admin may drop it', async t => {
+  const member = softPasskey(ORIGIN), admin = softPasskey(ORIGIN);
+  const created = new Date().toISOString();
+  const h = await setup(t, {
+    env: { OIDC_ONLY: '1' }, creds: [member.row('u_m'), admin.row('u_a')],
+    users: mock => [
+      { id: 'u_m', name: 'Mo', created, oidc: { iss: mock.issuer, sub: 'mo' } },
+      { id: 'u_a', name: 'Al', created, admin: true, owner: true, oidc: { iss: mock.issuer, sub: 'al' } }]
+  });
+  h.mock.next = { sub: 'mo', name: 'Mo' };
+  const mo = await roundTrip(h);
+  assert.equal((await (await h.get('/api/me', { cookie: mo.session })).json()).user.id, 'u_m');
+  const s1 = await h.post('/api/login/options', {});
+  const refused = await h.post('/api/oidc/unlink', { cid: s1.body.cid, credential: member.assertion(s1.body.options.challenge) }, { cookie: mo.session });
+  assert.equal(refused.status, 409);
+  assert.equal(refused.body.code, 'last-way-in');
+  assert.equal(h.db().users.find(u => u.id === 'u_m').oidc.sub, 'mo');
+
+  h.mock.next = { sub: 'al', name: 'Al' };
+  const al = await roundTrip(h);
+  const s2 = await h.post('/api/login/options', {});
+  const done = await h.post('/api/oidc/unlink', { cid: s2.body.cid, credential: admin.assertion(s2.body.options.challenge) }, { cookie: al.session });
+  assert.equal(done.status, 200);
+  assert.equal(h.db().users.find(u => u.id === 'u_a').oidc, undefined);
 });
 
 test('provider proof: fresh after a provider sign-in, refused on a session without one', async t => {

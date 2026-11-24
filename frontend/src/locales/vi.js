@@ -6288,4 +6288,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Hãy xóa dữ liệu tập luyện trước: trong ứng dụng, mở Cài đặt, rồi Tài khoản, rồi Xóa tài khoản của tôi. Sau đó quay lại đây để xóa tài khoản này.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Trình duyệt này không giữ bạn ở trạng thái đăng nhập (duyệt web riêng tư, hoặc bộ nhớ của nó đã đầy). Những gì bạn ghi lại ở đây cũng có thể không được lưu.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Trình duyệt này không lưu gì cho trang web này nên không thể mở ứng dụng ở đây. Hãy giải phóng bộ nhớ hoặc thoát chế độ duyệt web riêng tư rồi thử lại.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "{0} là cách duy nhất để vào hồ sơ này trên máy chủ này, nên vẫn giữ liên kết.",
 };

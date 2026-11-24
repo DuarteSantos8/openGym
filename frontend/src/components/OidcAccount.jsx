@@ -43,24 +43,34 @@ export function OidcRow({ state, changed }) {
 }
 
 export function OidcSheet({ close, linked, label, state, unlinked }) {
+  const config = useStore(s => s.config)
+  const user = useStore(s => s.user)
   const passkeys = state?.passkeys?.length || 0
   const password = !!state?.password
+  // Where the server signs members in with the provider only, a passkey or password would not
+  // sign this profile in, so the link is the one way in whatever else the profile has. An
+  // admin's passkey still works there (the server refuses the rest: api/oidc/routes.js).
+  const providerOnly = !!config?.oidc?.only && !user?.admin
   const link = async body => {
     const r = await api('/api/oidc/link', { method: 'POST', body: JSON.stringify(body) })
     startWebSignIn(r.url)
   }
   const unlink = async body => {
     await api('/api/oidc/unlink', { method: 'POST', body: JSON.stringify(body) })
+    // The profile the rest of the app reads says so too, or the row shows it linked again.
+    useStore.setState(s => (s.user ? { user: { ...s.user, oidc: false } } : {}))
     close(); unlinked?.()
     ui().toast(t('Unlinked. {0} no longer signs you in here.', label))
   }
   if (linked) {
-    const last = passkeys === 0 && !password
+    const last = providerOnly || (passkeys === 0 && !password)
     return <>
       <h3>{t('Sign in with {0}', label)}</h3>
       <div className="muted small" style={{ marginBottom: 14 }}>{t('This profile is linked to your {0} account, so signing in there signs you in here.', label)}</div>
       {last
-        ? <div className="dim small">{t('{0} is the only way into this profile, so it stays linked. Add a passkey first.', label)}</div>
+        ? <div className="dim small">{providerOnly
+          ? t('{0} is the only way into this profile on this server, so it stays linked.', label)
+          : t('{0} is the only way into this profile, so it stays linked. Add a passkey first.', label)}</div>
         : <ProveOwner passkey={passkeys > 0} password={password} danger submitText={t('Unlink')} onProof={unlink} explain={e => oidcError(e, label)} />}
     </>
   }

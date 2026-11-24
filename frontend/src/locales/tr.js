@@ -6322,4 +6322,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Önce antrenmanlarını sil: uygulamada Ayarlar, ardından Hesap, ardından Hesabımı sil bölümünü aç. Sonra bu hesabı silmek için buraya dön.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Bu tarayıcı oturumunu açık tutmuyor (gizli gezinme veya depolaması dolu). Burada kaydettiklerin de saklanmayabilir.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Bu tarayıcı bu site için hiçbir şey saklamıyor, bu yüzden uygulama burada açılamıyor. Depolama alanı aç veya gizli gezinmeden çık, sonra tekrar dene.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "{0} bu sunucuda bu profile girmenin tek yolu, bu yüzden bağlı kalıyor.",
 }

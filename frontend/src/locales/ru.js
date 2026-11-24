@@ -6326,4 +6326,5 @@ export default {
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Сначала удалите тренировки: в приложении откройте «Настройки», затем «Аккаунт», затем «Удалить мой аккаунт». После этого вернитесь сюда, чтобы удалить этот аккаунт.",
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Этот браузер не сохраняет вход в аккаунт (приватный режим или его хранилище заполнено). То, что вы здесь запишете, тоже может не сохраниться.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Этот браузер ничего не сохраняет для этого сайта, поэтому приложение здесь открыть нельзя. Освободите место или выйдите из приватного режима и повторите попытку.",
+  "{0} is the only way into this profile on this server, so it stays linked.": "На этом сервере {0} единственный способ войти в этот профиль, поэтому привязка остаётся.",
 }

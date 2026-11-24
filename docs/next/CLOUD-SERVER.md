@@ -132,13 +132,16 @@ launch, not for the beta.
 
 Not needed for the owner's own bring-up, required before anyone else is let in.
 
-- **Verify linked deletion before activation.** [ADR 0014](adr/0014-hosted-account-deletion.md)
-  describes the single-use training deletion proof and hosted eligibility check.
-  Deploy the updated hosted function and API first. Verify fresh authentication
-  with a disposable hosted account. Cloud builds without a training server must
-  explicitly set `VITE_CLOUD_SERVER=off`.
-- **The two sessions end together** (`frontend/src/lib/cloud/server-link.js`). Check it once on
-  the real service: sign out of the account, and `/api/me` no longer answers. And once with two
+- **Linked deletion: verified once on the hosted service (2026-11-24).**
+  [ADR 0014](adr/0014-hosted-account-deletion.md) has what was seen and what was not tried: a
+  deletion after an old sign-in, signing up again with the deleted address, and a browser
+  with workouts of its own. Cloud builds without a training server must explicitly set
+  `VITE_CLOUD_SERVER=off`.
+- **Signing in a second time** works on the hosted service since #91 (three sign-ins on
+  2026-11-24 went through with no consent step, as the hosted project's log shows).
+- **The two sessions end together** (`frontend/src/lib/cloud/server-link.js`). Still to be seen
+  on the real service, by a person: the API does not log requests, so it cannot be read from
+  outside. Sign out of the account, and `/api/me` no longer answers. And once with two
   tabs: one left open signed out, the other signing in; the first must not end the profile.
   Known wart: an admin who opened their own profile through the account, signed out, and within
   two minutes uses their passkey on that same profile is signed out once and has to try again.

@@ -344,11 +344,16 @@ export function oidcRoutes(d) {
       const body = await readBody(req);
       if (!user.oidc) return json(res, 200, { ok: true });
       const last = () => json(res, 409, { error: 'the provider is the only way into this profile', code: 'last-way-in' });
-      if (d.otherWaysIn(user) < 1) return last();
+      // Where the provider is the only way in for members (OIDC_ONLY), a passkey or password
+      // does not sign a member in, so neither counts: without the link nothing would open the
+      // profile again. An admin's do sign them in, unless it is the provider's groups that make
+      // them admin, which go with the link.
+      const waysLeft = () => cfg.only && !(d.isAdmin(user) && user.adminFrom !== 'oidc') ? 0 : d.otherWaysIn(user);
+      if (waysLeft() < 1) return last();
       const proof = await d.proveOwner(req, res, user, body, 'oidc-unlink');
       if (!proof) return;
       if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
-      if (d.otherWaysIn(user) < 1) return last();
+      if (waysLeft() < 1) return last();
       delete user.oidc;
       applyRoles(user, { access: false, admin: false, freeTrainer: false, staff: [], memberOf: [] });
       saveDb();
