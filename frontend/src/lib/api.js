@@ -102,11 +102,12 @@ async function request(url, init, ms) {
 // any kind, or an abort, stands.
 const viaNative = new Set()
 export const _viaNativeForTests = viaNative
-async function transport(url, init) {
+async function transport(url, opts) {
+  const { gzip, ...init } = opts || {}
   const origin = /^https?:\/\//i.test(url) ? originOf(url) : ''
   if (origin && viaNative.has(origin)) return nativeFetch(url, init)
   try {
-    return await fetch(url, init)
+    return await fetch(url, gzip ? await gzipInit(init) : init)
   } catch (e) {
     if (!origin || e?.name === 'AbortError' || init?.signal?.aborted || !(await inAndroidApp())) throw e
     let r
@@ -114,6 +115,19 @@ async function transport(url, init) {
     viaNative.add(origin)
     return r
   }
+}
+
+// `gzip: true` is the sync push to a server whose /api/config says `gzip_body` (#1489): the whole
+// profile goes up after every set, and gzipped it is about a tenth of the bytes. A WebView or
+// browser without CompressionStream sends it plain, and so does the native retry above, whose
+// transport only takes a string body. The server caps what the body unzips to, same 5 MiB.
+export async function gzipInit(init) {
+  if (typeof CompressionStream !== 'function' || typeof init.body !== 'string') return init
+  try {
+    const stream = new Blob([init.body]).stream().pipeThrough(new CompressionStream('gzip'))
+    const body = new Uint8Array(await new Response(stream).arrayBuffer())
+    return { ...init, body, headers: { ...init.headers, 'Content-Encoding': 'gzip' } }
+  } catch { return init }
 }
 
 // An answer from Cloudflare Access rather than from openGym: a 401/403 whose body is not openGym's

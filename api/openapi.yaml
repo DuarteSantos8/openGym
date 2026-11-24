@@ -314,6 +314,12 @@ paths:
                       or Bearer). The cookie is HttpOnly, so this is how the app learns that
                       nobody is signed in without asking `GET /api/me` and logging its 401.
                       Since v1.4.5; absent on an older server, where the app asks as before.
+                  gzip_body:
+                    type: boolean
+                    description: >-
+                      True when `PUT /api/data` takes a gzipped body (`Content-Encoding: gzip`).
+                      Sent to a signed-in caller only. Since v1.4.6; absent on an older server,
+                      where the app sends the body plain.
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -2324,6 +2330,17 @@ paths:
         Every accepted write also starts the grace period of each stored file (tag `media`)
         the new state no longer references, and stops it for each one it references again.
         That bookkeeping never changes the answer.
+
+        The body may be gzipped, sent with `Content-Encoding: gzip` (`GET /api/config`
+        says so with `gzip_body`; since v1.4.6). The 5 MiB limit then applies to the
+        unzipped body as well. A plain body works as it always did. Only this route
+        unzips: anywhere else a gzipped body is `invalid json`.
+      parameters:
+        - name: Content-Encoding
+          in: header
+          required: false
+          description: '`gzip` when the body is gzipped. Leave it out (or send `identity`) for a plain body.'
+          schema: { type: string, enum: [gzip, identity] }
       requestBody:
         required: true
         content:
@@ -2394,13 +2411,28 @@ paths:
             `workouts`/`routines` set to anything other than an array or null. Entries inside
             those two arrays that are not objects (`null`, numbers, nested arrays) are dropped
             before the write rather than refused, so a client with a damaged copy still syncs.
+            Also a body sent with `Content-Encoding: gzip` that is not gzip (`invalid gzip`).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               examples:
                 missing: { value: { error: "state required" } }
                 invalid: { value: { error: "invalid state" } }
+                gzip: { value: { error: "invalid gzip" } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '413':
+          description: The body, unzipped when it came gzipped, is over 5 MiB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "body too large" }
+        '415':
+          description: >-
+            Not sent as `application/json`, or with a `Content-Encoding` other than `gzip`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "content-encoding must be gzip or none" }
 
   /api/data/rev:
     get:

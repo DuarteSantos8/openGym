@@ -869,6 +869,7 @@ export const useStore = create((set, get) => {
   // Take the server's copy as this device's own, timestamp and all (see persist).
   const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts, next._wid); markOwed(false) }
 
+  let noGzip = false   // a gzipped push was refused this run: send plain from now on
   const doPush = async (tok, attempt = 0) => {
     const S = get().S
     const { base } = metaOf()
@@ -888,7 +889,20 @@ export const useStore = create((set, get) => {
     if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
     else if (!force && base) { body.baseRev = base.rev; if (base.wid) body.baseWid = base.wid }
     try {
-      const r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
+      // Gzipped only to a server that said it takes it (#1489). One that refuses the gzipped body
+      // anyway (a proxy that mangles it, a config read from a server this phone has since left)
+      // gets the same push plain right away, and plain for the rest of the run.
+      const gzip = !noGzip && !!get().config?.gzip_body
+      let r
+      try { r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body), gzip }) }
+      catch (e) {
+        // An older server reads the gzip bytes as JSON and says `invalid json`; a proxy that
+        // broke them on the way gets `invalid gzip`; 415 is an encoding it does not take.
+        const refusedGzip = e?.status === 415 || (e?.status === 400 && /^invalid (json|gzip)$/.test(e?.data?.error || ''))
+        if (!gzip || !refusedGzip) throw e
+        noGzip = true
+        r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
+      }
       // Answered for an account or a server this device has left: none of it is this copy's.
       if (!isCurrent(tok)) return
       // A server from before revisions answers without one — then there is nothing to hold the
