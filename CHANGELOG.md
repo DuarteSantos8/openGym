@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Self-hosting docs: how to run both containers without root, capabilities or a writable filesystem, and the three things that break if you get them wrong (thanks @jtravesi for #1540).
 - Home: two workouts on one day both show. Each gets its own row under the week, in the order you did them, and opens its own details; the row used to name only the last one (#1538, thanks @kusk).
 - Fixed: the week and month recap comes back too. Its × used to keep it away even after switching Week and month recap off and on; now the switch brings it back, and Customize Home lists it as hidden until the next recap with Show (thanks Discord).
 - Fixed: moving things around a superset by press and hold. In the routine editor a row that slid past a superset could not be taken back, and the rows jumped; in a running workout an exercise could not get below a superset at the end, a superset not above a short exercise at the top, and a card you had opened could fold up after the move. They all follow your finger now.
