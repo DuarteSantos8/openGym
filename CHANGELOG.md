@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Log a past workout: Type it out instead. Write the session the way it sits in your notes, one exercise per line ("Bench press 60x8, 60x8, 62,5x6", "Squat 100kg 5x5", "Plank 3x60s", "Treadmill 20 min 3 km"), and each line shows what it was read as while you type. A line it cannot read says why, a tap picks another exercise, and nothing is saved until every line makes sense. Kilos, pounds, body weight and decimal commas all welcome (thanks @mtahle, whose #1541 had the idea).
 - Self-hosting docs: how to run both containers without root, capabilities or a writable filesystem, and the three things that break if you get them wrong (thanks @jtravesi for #1540).
 - Home: two workouts on one day both show. Each gets its own row under the week, in the order you did them, and opens its own details; the row used to name only the last one (#1538, thanks @kusk).
 - Fixed: the week and month recap comes back too. Its × used to keep it away even after switching Week and month recap off and on; now the switch brings it back, and Customize Home lists it as hidden until the next recap with Show (thanks Discord).

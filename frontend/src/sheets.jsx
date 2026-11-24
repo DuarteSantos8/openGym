@@ -38,6 +38,7 @@ import { syncMedia } from './lib/media-sync.js'
 import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import DateField from './components/DateField.jsx'
+import { TypedWorkout } from './components/TypedWorkoutSheet.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
 import { cleanBackups, cleanBackupConfigs, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
 import { replaceSlotExercise } from './lib/routines.js'
@@ -4249,6 +4250,9 @@ function LogPastWorkout({ initial, close }) {
     <SelectRow icon="dumbbell" title={t('Routine')} value={routineId} options={options} onChange={setRoutineId} />
     <div style={{ height: 18 }} />
     <Button variant="primary" onClick={submit}>{t('Continue')}</Button>
+    {/* The same day written out as text instead (components/TypedWorkoutSheet.jsx). */}
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" icon="pencil" data-typed-open onClick={() => { close(); typedWorkoutSheet({ date, time, dur }) }}>{t('Type it out instead')}</Button>
   </>
 }
 // Three ways out when the day already has a workout. Replacing with several on that day means
@@ -4276,6 +4280,12 @@ export function logPastWorkoutSheet(initial) {
   if (S().active) { toast(t('Finish the current workout first.')); return }
   const from = typeof initial?.iso === 'string' ? initial : null
   ui().openSheet(close => <LogPastWorkout initial={from} close={close} />)
+}
+// The same sheet's "Type it out instead": one exercise per line, filed through lib/log-workout.js.
+export function typedWorkoutSheet(initial) {
+  if (S().active) { toast(t('Finish the current workout first.')); return }
+  const pickExercise = (onPick, opts) => { const picker = exercisePicker(ex => { picker.close(); onPick(ex) }, opts) }
+  ui().openSheet(close => <TypedWorkout initial={initial} close={close} pickExercise={pickExercise} />)
 }
 // A backfilled session is built the way a live one is (buildCombinedEntries → buildPlannedEntry),
 // so its entries carry the same stamps: the routine list, per-entry rid and the plan, no

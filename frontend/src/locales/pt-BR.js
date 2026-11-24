@@ -4405,6 +4405,19 @@ export const PT_BR_OVERRIDES = {
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de bugs no GitHub com a versão do app e o dispositivo já preenchidos. O app não envia nada sozinho.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Oculto até o próximo resumo.",
+  // --- typed workout, one exercise per line (idea from #1541) ---
+  "One exercise per line, the way you’d jot it in your notes. Nothing is saved until every line reads.": "Um exercício por linha, como você anotaria nas suas notas. Nada é salvo até todas as linhas serem lidas.",
+  "Start the line with the exercise, then the sets.": "Comece a linha com o exercício e depois as séries.",
+  "No exercise by that name. Tap to pick one.": "Nenhum exercício com esse nome. Toque para escolher um.",
+  "Lost me at {0}. Try 60x8 or 3x10.": "Me perdi em {0}. Tente 60x8 ou 3x10.",
+  "Reps or time on one exercise, not both.": "Repetições ou tempo em um exercício, não os dois.",
+  "That’s more than a workout holds. Check the numbers.": "Isso é mais do que cabe em um treino. Confira os números.",
+  "The timed sets alone run longer than that. Make the duration longer.": "Só as séries de tempo já duram mais. Aumente a duração.",
+  "That workout is already in your history.": "Esse treino já está no seu histórico.",
+  "Workout saved": "Treino salvo",
+  "{0} line still needs a look.": "{0} linha ainda precisa de uma olhada.",
+  "{0} lines still need a look.": "{0} linhas ainda precisam de uma olhada.",
+  "Save workout": "Salvar treino",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
