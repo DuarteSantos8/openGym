@@ -28,6 +28,15 @@ describe('display prefs', () => {
     expect(document.documentElement.style.fontSize).toBe('')
   })
 
+  it('tells the page after every change, so what measures the root size measures again', () => {
+    const seen = []
+    const on = () => seen.push(1)
+    window.addEventListener('opengym:display', on)
+    applyDisplay({ motion: 'system', text: 'larger' }, { save: true })
+    window.removeEventListener('opengym:display', on)
+    expect(seen.length).toBe(1)
+  })
+
   it('ignores what it does not know', () => {
     localStorage.setItem('gym_display', JSON.stringify({ motion: 'wild', text: 'huge' }))
     expect(readDisplay()).toEqual({ motion: 'system', text: 'default' })
