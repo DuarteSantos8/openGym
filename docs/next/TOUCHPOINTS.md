@@ -60,3 +60,5 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Login.jsx` | `next/EP19-link-safety` | +11 −5 | The Cloud first screen stands only on a provider-only server and keeps the admin's passkey there; still behind `isCloud()`. |
 | `frontend/src/App.jsx` | `next/EP19-link-safety` | +16 −2 | Cloud edition only (`CLOUD`): starts `lib/cloud/link-watch.js` by dynamic import, and says a refused server sign-in to someone who stays in the app. Imports three readers from `lib/oidc.js`, which both builds have. |
 | `frontend/vercel.json` | `next/EP19-render-rewrite` | +1 -1 | Routes the existing API rewrite to the hosted Render service. |
+| `frontend/vercel.ts`, `frontend/scripts/vercel.test.mjs` | `next/EP19-hosted-mcp` | Routing | Adds optional MCP transport and discovery routes and preserves the existing API rewrite and headers. |
+| `docs/MCP_REMOTE.md` | `next/EP19-hosted-mcp` | Docs | Explains hosted activation, verification and rollback. |

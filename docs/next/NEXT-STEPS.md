@@ -54,6 +54,8 @@ Epic status:
 
 - **Hosted API (2026-11-23):** The Render Blueprint is live with one Starter API service and a 1 GB disk. Direct health returns HTTP 200 with a writable data directory, and API config offers OIDC. The Vercel rewrite needs to reach the preview before the live sign-in and admin checks.
 
+- **In review: `next/EP19-hosted-mcp`.** The optional hosted MCP service and preview routing are prepared. Provisioning needs owner approval and external connectors need a reachable HTTPS address.
+
 ## 2. Merging (only the owner merges)
 
 - **Target:** every PR targets `main`.
