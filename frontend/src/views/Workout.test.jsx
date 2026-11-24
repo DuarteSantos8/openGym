@@ -4063,3 +4063,35 @@ describe('a set\'s own form video (v1.4.4)', () => {
   })
 })
 
+
+// #1347: the Start screen's other routines sit under their folders, as on Plan.
+describe('Start workout: other routines by folder', () => {
+  const start = async routines => {
+    mocks.S = { ...workout([], 0, { routines }), active: null, week: {}, dayPlan: {} }
+    installDom()
+    await act(async () => { root.render(React.createElement(Workout)) })
+  }
+  const r = (id, name, folder) => ({ id, name, ex: [], ...(folder ? { folder } : {}) })
+
+  it('lists loose routines first, then each folder with its own header', async () => {
+    try { localStorage.clear() } catch (e) { /* none in this env */ }
+    await start([r('a', 'Leg Day', 'Block 1'), r('b', 'Cardio'), r('c', 'Leg Day', 'Block 2'), r('d', 'Old', 'Archive')])
+    const heads = [...container.querySelectorAll('.plan-folder')].map(b => b.querySelector('.grow').textContent)
+    expect(heads).toEqual(['Block 1', 'Block 2', 'Archive'])
+    const names = sel => [...container.querySelectorAll(sel + ' .tt')].map(x => x.textContent)
+    expect(names('[data-folder="Block 1"]')).toEqual(['Leg Day'])
+    expect(names('[data-folder="Block 2"]')).toEqual(['Leg Day'])
+    // The archive starts folded, the way Plan shows it.
+    expect(names('[data-folder="Archive"]')).toEqual([])
+    expect(container.querySelector('.list .tt').textContent).toBe('Cardio')
+    const blk = container.querySelector('[data-folder="Block 1"] .plan-folder')
+    await act(async () => { blk.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(names('[data-folder="Block 1"]')).toEqual([])
+  })
+
+  it('shows no folder headers when no routine has a folder', async () => {
+    await start([r('a', 'Push'), r('b', 'Pull')])
+    expect(container.querySelectorAll('.plan-folder').length).toBe(0)
+    expect([...container.querySelectorAll('.list .tt')].map(x => x.textContent)).toEqual(['Push', 'Pull'])
+  })
+})
