@@ -667,24 +667,40 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             // What the phone has applied leaves the outbox; what it lacks goes again.
             if !self.isDemo { self.phoneApplied(snap.acked) }
             self.removeDeletedFromHealth(snap.healthGone)
-            self.loadTargets()
+            // A snapshot comes every few seconds: the numbers turned on the wrist stay unless the set
+            // up next or its target changed (a Done that logged the target instead, or that did
+            // nothing when the redraw landed under the finger; #1414).
+            self.loadTargets(keepEdits: true)
         }
     }
 
+    /// The set the numbers were last loaded for, with its target: a snapshot that brings the same
+    /// one again leaves what the crown or the keypad set.
+    private var targetsKey: String?
+
     /// The weight and reps the crown starts from: the set's own target.
-    func loadTargets() {
+    /// `keepEdits`: only when the set up next (or its target) is not the one already loaded.
+    func loadTargets(keepEdits: Bool = false) {
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         if let v = viewing, fixRow(v) == nil { viewing = nil }
-        guard let e = entry else { return }
+        guard let e = entry else { targetsKey = nil; return }
         let s = setIndex.map { e.sets[$0] } ?? e.sets.last
+        let w: Double, r: Double
         if let row = s, let side = row.sideUp, let one = row.sides?[side] {
-            weight = one.w ?? row.w ?? 0
-            reps = one.r ?? 0
+            w = one.w ?? row.w ?? 0
+            r = one.r ?? 0
         } else {
-            weight = s?.w ?? 0
-            reps = s?.r ?? 0
+            w = s?.w ?? 0
+            r = s?.r ?? 0
         }
-        seconds = s?.sec ?? 30
+        let sec = s?.sec ?? 30
+        let key = "\(workout?.id ?? "")|\(entryIndex)|\(e.id)|\(setIndex.map(String.init) ?? "-")|\(s?.sideUp ?? "")|\(w)|\(r)|\(sec)"
+        if keepEdits, key == targetsKey { return }
+        targetsKey = key
+        // Only what changed: every write redraws the set page.
+        if weight != w { weight = w }
+        if reps != r { reps = r }
+        if seconds != sec { seconds = sec }
     }
 
     /* ---------- what the lifter does here ---------- */
