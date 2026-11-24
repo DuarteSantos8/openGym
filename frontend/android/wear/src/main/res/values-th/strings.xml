@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, th. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">เพิ่มปีเกิดในแอปบนโทรศัพท์</string>
+    <string name="add_session_note">เพิ่มบันทึกประจำรอบ</string>
     <string name="added_weight">น้ำหนักเพิ่ม</string>
     <string name="all_done_q">เสร็จแล้วหรือยัง</string>
     <string name="all_sets_done">ครบทุกเซ็ตแล้ว</string>
     <string name="all_synced">ซิงค์ครบแล้ว</string>
     <string name="allow">อนุญาต</string>
+    <string name="archived_stay_on_phone">รูทีนที่เก็บถาวรจะอยู่บนโทรศัพท์ของคุณ</string>
     <string name="avg">เฉลี่ย</string>
     <string name="band_over">%1$d ขึ้นไป</string>
     <string name="band_to">%1$d ถึง %2$d</string>
     <string name="band_under">ต่ำกว่า %1$d</string>
     <string name="body_weight">น้ำหนักตัว</string>
     <string name="bodyweight">น้ำหนักตัว</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">แคลอรี</string>
     <string name="cancel">ยกเลิก</string>
     <string name="complication_desc">เซ็ตที่ทำแล้ว หรือสถิติต่อเนื่องของคุณ</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">ทิ้งการออกกำลังกายนี้?</string>
     <string name="done">เสร็จแล้ว</string>
     <string name="edit">แก้ไข</string>
+    <string name="edit_session_note">แก้ไขบันทึกประจำรอบ</string>
     <string name="effort">ความหนัก</string>
     <string name="ended_on_phone">จบบนโทรศัพท์แล้ว</string>
     <string name="exercises">ท่าออกกำลังกาย</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">ชีพจร</string>
     <string name="hold">ค้างไว้</string>
     <string name="hold_to_finish">กดค้างเพื่อจบ</string>
+    <string name="hours">ชั่วโมง</string>
     <string name="how_hard">เซ็ตนั้นหนักแค่ไหน?</string>
     <string name="hr_avg_max">เฉลี่ย %1$d · สูงสุด %2$d</string>
     <string name="hr_why">อนุญาตอัตราการเต้นของหัวใจเพื่อดูชีพจรทุกเซ็ต</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">เบาลง</string>
     <string name="media_title">เพลง</string>
     <string name="min">ต่ำสุด</string>
+    <string name="min_minutes">นาที</string>
     <string name="more">มาก</string>
     <string name="muscles">กล้ามเนื้อ</string>
     <string name="n_more">+%1$d อื่นๆ</string>
     <string name="n_sets">%1$s เซ็ต</string>
+    <string name="new_record">สถิติใหม่</string>
     <string name="next_set_btn">เซ็ตถัดไป</string>
     <string name="no_age_set">ยังไม่ได้ตั้งอายุ</string>
     <string name="no_effort_yet">ยังไม่ได้ให้คะแนนความหนัก</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">ยังไม่มีเซ็ต</string>
     <string name="no_workout">ไม่มีการฝึกที่กำลังทำอยู่</string>
     <string name="none">ไม่มี</string>
+    <string name="not_a_watch_body">แอปนี้ใช้ได้บนนาฬิกา Wear OS เท่านั้น อย่าเพิ่งถอนการติดตั้ง เพราะจะลบการออกกำลังกายในโทรศัพท์เครื่องนี้ วิธีเอาแอปโทรศัพท์กลับมา: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">นี่คือแอปสำหรับนาฬิกา</string>
     <string name="not_now">ไม่ใช่ตอนนี้</string>
     <string name="not_synced">ยังไม่ได้ซิงค์</string>
     <string name="notif_running">กำลังฝึกอยู่ แตะเพื่อกลับไป</string>
@@ -74,11 +83,14 @@
     <string name="overview">ภาพรวม</string>
     <string name="personal_records">สถิติใหม่</string>
     <string name="phone_away">โทรศัพท์อยู่นอกระยะ เซ็ตของคุณรออยู่ที่นี่</string>
+    <string name="phone_connected">เชื่อมต่อโทรศัพท์แล้ว</string>
+    <string name="phone_gone">โทรศัพท์ไม่อยู่</string>
     <string name="phone_out_of_reach">โทรศัพท์อยู่นอกระยะ</string>
     <string name="previous_set">เซ็ตก่อนหน้า</string>
     <string name="prs">สถิติใหม่</string>
     <string name="quick_checkin">เช็คอินด่วน</string>
     <string name="quick_start">เริ่มด่วน</string>
+    <string name="records">สถิติสูงสุด</string>
     <string name="reps">ครั้ง</string>
     <string name="rest">พัก</string>
     <string name="rest_day">ไม่มีแผน คุณเลือกเอง</string>
@@ -87,6 +99,7 @@
     <string name="routines">รูทีน</string>
     <string name="save">บันทึก</string>
     <string name="save_and_start">บันทึกแล้วเริ่มออกกำลังกาย</string>
+    <string name="saved">บันทึกแล้ว</string>
     <string name="set_of">เซ็ต %1$d จาก %2$d</string>
     <string name="sets">เซ็ต</string>
     <string name="sets_of">%1$d จาก %2$d เซ็ต</string>
@@ -106,7 +119,7 @@
     <string name="time">เวลา</string>
     <string name="today">วันนี้</string>
     <string name="up_next">ถัดไป</string>
-    <string name="up_next_set">%1$s เซ็ต %2$d</string>
+    <string name="up_next_set">%1$s เซ็ต %2$d/%3$d</string>
     <string name="volume">ปริมาณงาน</string>
     <string name="waiting_sync">รอซิงค์</string>
     <string name="warmup">วอร์มอัพ</string>

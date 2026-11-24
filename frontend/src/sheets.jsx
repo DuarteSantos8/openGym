@@ -4777,7 +4777,7 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 // `end` and `auto` (lib/forgotten-workout.js): a workout that ended by itself is saved ending at
 // its last set plus the usual rest, marked as such, and can be reopened for 24 hours.
 export const finishWorkoutNow = (opts) => doFinishWorkout(opts && typeof opts === 'object' && !opts.nativeEvent ? opts : undefined)
-function doFinishWorkout({ end: endAt, auto } = {}) {
+function doFinishWorkout({ end: endAt, auto, kcal } = {}) {
   // A circuit's clock still running (store/useCircuit.js) stops first, so its result is saved too.
   useCircuit.getState().wrapUp()
   const st = S()
@@ -4807,6 +4807,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
   // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
+  // The calories a Wear OS watch measured (lib/watch-sync.js): Health Connect gets them, not the estimate.
+  if (Number(kcal) > 0) w.kcal = Math.round(Number(kcal))
   // Read before the session is gone: the summary offers these to their routines (#592).
   const additions = past ? [] : routineAdditions(A, st.routines)
   let shown = w
@@ -4845,6 +4847,9 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // into s.active, which is gone. What it held is not logged, like any set left unchecked.
   useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
+  // The workout is saved: a sheet still open about it (the watch's Finish lands while "That's the
+  // whole workout!" shows) would ask to finish it again once the summary closes.
+  useUI.getState().closeAll()
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} close={close} />, { kind: 'center', locked: true, wide: true })
 }
 

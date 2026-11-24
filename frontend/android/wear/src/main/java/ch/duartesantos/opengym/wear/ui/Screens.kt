@@ -1,6 +1,10 @@
 package ch.duartesantos.opengym.wear.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.scaleIn
 import ch.duartesantos.opengym.wear.RestMath
 import ch.duartesantos.opengym.wear.Stills
 import androidx.compose.foundation.layout.offset
@@ -59,6 +63,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.wear.compose.foundation.pager.PagerDefaults
 import androidx.wear.compose.foundation.pager.VerticalPager
 import androidx.wear.compose.material3.VerticalPageIndicator
 import androidx.wear.compose.material3.VerticalPagerScaffold
@@ -68,15 +73,21 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -93,6 +104,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
+import androidx.wear.compose.foundation.CurvedDirection
+import androidx.wear.compose.foundation.CurvedLayout
 import androidx.wear.compose.foundation.curvedComposable
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
@@ -190,8 +203,11 @@ fun OgTimeText() {
     val summary by WearStore.summary.collectAsState()
     val hr by WearStore.heartRate.collectAsState()
     val sync = rememberSync()
+    val accent = LocalAccent.current
+    val ambient = LocalAmbient.current
     val today = stringResource(R.string.today)
     val checkIn = stringResource(R.string.quick_checkin)
+    val saved = stringResource(R.string.saved)
     // "Still training?" has a title of two lines right under the clock: the clock alone there.
     val asking by WearStore.askDone.collectAsState()
     val running = s.workout != null && summary == null && weighIn == null && !asking
@@ -201,6 +217,8 @@ fun OgTimeText() {
         tight -> null
         weighIn != null -> checkIn
         s.workout == null && summary == null && s.ready?.today != null -> today
+        // The medal's status, as the Apple Watch has it beside the clock; "Ended on your phone" is too long, the summary says it itself.
+        summary?.endedOnPhone == false -> saved
         else -> null
     }?.takeIf { TopLine.leadFits(it, LocalConfiguration.current.screenWidthDp) }
     val showHr = running && hr != null && s.settings.show?.showHr != false
@@ -214,7 +232,15 @@ fun OgTimeText() {
     val d = LocalDensity.current
     androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
     TimeText { time ->
-        if (lead != null) { curvedText(lead, color = Og.Label2); timeTextSeparator() }
+        // A word too long for the arc leaves the check alone.
+        if (summary != null) curvedComposable {
+            // A workout ended on the phone gets a phone, as on the Apple Watch.
+            val badge = if (summary?.endedOnPhone == true) G.PHONE else G.CHECK
+            // Always On: a ring and a check, no lit fill.
+            if (ambient) Box(Modifier.size(18.dp).border(1.5.dp, accent.accent.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) { Glyph(badge, accent.accent.copy(alpha = 0.6f), 10.dp) }
+            else Box(Modifier.size(18.dp).clip(CircleShape).background(accent.accent), contentAlignment = Alignment.Center) { Glyph(badge, accent.on, 11.dp) }
+        }
+        if (lead != null) { curvedText(lead, color = if (summary != null) Og.Text else Og.Label2); timeTextSeparator() }
         timeTextCurvedText(time)
         val pill = running && sync.count > 0
         if (pill) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
@@ -245,13 +271,19 @@ fun rememberSync(): SyncState {
 @Composable
 fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
     val list = rememberTransformingLazyColumnState()
-    val ready = s.ready
+    val file by WearStore.routines.collectAsState()
+    val ready = Plan.merged(s.ready, s.routinesHash, file)
     val today = ready?.today
     val others = ready?.others.orEmpty()
     val sync = rememberSync()
     // The first snapshot swaps "Not synced yet" for the routines: start at the top, not mid-list.
     val empty = today == null && others.isEmpty()
     LaunchedEffect(empty) { if (!empty) list.scrollToItem(0) }
+    val ctx = LocalContext.current
+    // Idle, nothing else looks at the link: check it every 30 s while this screen is up (stops when it leaves).
+    LaunchedEffect(Unit) { while (true) { kotlinx.coroutines.delay(30_000); PhoneLink.refreshNear(ctx) } }
+    val near by WearStore.phoneNear.collectAsState()
+    Box(Modifier.fillMaxSize()) {
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp + 16.dp * (LocalDensity.current.fontScale - 1f).coerceIn(0f, 0.5f), bottom = 40.dp),
@@ -264,6 +296,8 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
                     fontSize = 16.sp, textAlign = TextAlign.Center)
             }
             item { Quiet(stringResource(if (!s.synced) R.string.open_phone_once else R.string.start_on_phone), 12.sp, lines = 4) }
+            // Every routine archived: say where they went.
+            if (s.synced) item { Quiet(stringResource(R.string.archived_stay_on_phone), 12.sp, lines = 3) }
             item { VersionLine() }
             return@TransformingLazyColumn
         }
@@ -275,12 +309,40 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
                 item { PrimaryButton(stringResource(R.string.quick_start), Modifier.fillMaxWidth(), icon = G.PLAY) { WearStore.start(first) } }
             }
         }
-        items(others) { r ->
-            RowButton(r.name, Modifier.fillMaxWidth(), center = false, icon = G.PLAY, tint = Og.Text) { WearStore.start(r) }
+        // A header is its own list item: two views in one item are drawn on top of each other here.
+        others.forEachIndexed { i, r ->
+            Plan.folderHeader(i, others)?.let { h ->
+                item { Quiet(h, 12.sp, Modifier.fillMaxWidth().padding(start = 8.dp, top = 6.dp).semantics { heading() }, lines = 1, align = TextAlign.Start) }
+            }
+            item { RowButton(r.name, Modifier.fillMaxWidth(), center = false, icon = G.PLAY, tint = Og.Text) { WearStore.start(r) } }
         }
+        item { Quiet(stringResource(R.string.archived_stay_on_phone), 12.sp, lines = 3) }
         // A workout finished here with the phone away: its sets are still on their way.
         item { SyncLine(sync, showSynced = false) }
         item { VersionLine() }
+    }
+    PhoneArc(near)
+    }
+}
+
+/**
+ * The phone along the bottom edge of the start screen, always: a green phone and "Phone connected"
+ * while it is in reach, an amber crossed-out one and "Phone away" when not (words and shape, never
+ * colour alone). Nothing moves. The workout's own sign is the sync pill by the clock, shown only when
+ * sets wait. It sits in the list's 40 dp bottom padding.
+ */
+@Composable
+fun PhoneArc(near: Boolean) {
+    val color = if (near) Og.Green else Og.Orange // grey would read as off
+    val word = stringResource(if (near) R.string.phone_connected else R.string.phone_gone)
+    // The rows scroll under it: they fade into the black edge first, so the words never sit on a row.
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+        Box(Modifier.fillMaxWidth().height(40.dp).background(Brush.verticalGradient(0f to Color.Transparent, 0.35f to Color.Black, 1f to Color.Black)))
+    }
+    CurvedLayout(Modifier.fillMaxSize(), anchor = 90f, angularDirection = CurvedDirection.Angular.Reversed) {
+        curvedComposable { Glyph(if (near) G.PHONE else G.PHONE_OFF, color, 10.dp) }
+        curvedComposable { Spacer(Modifier.width(3.dp)) }
+        curvedText(word, maxSweepAngle = 100f, color = color, fontSize = 11.sp)
     }
 }
 
@@ -794,12 +856,13 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
                 }
             }
             // Save, a wide bar under the keys: outlined until the number is one it takes, then filled (and only then a tap saves).
-            val ok = pad.fits(range)
+            // With nothing typed it closes, keeping the number shown (it was dead there, and read as broken).
+            val ok = pad.confirms(range)
             val fill = ok && !LocalAmbient.current
             Box(
                 Modifier.widthIn(max = barW).fillMaxWidth().height(barH.dp).clip(CircleShape)
                     .background(if (fill) a.accent else Color.Transparent).border(1.5.dp, a.accent, CircleShape)
-                    .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
+                    .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) ?: onClose() }
                     .semantics { contentDescription = said },
                 contentAlignment = Alignment.Center,
             ) { Glyph(G.CHECK, if (fill) a.on else a.accent, 17.dp) }
@@ -820,15 +883,6 @@ fun RestView(rest: Rest) {
     // Paused on the phone, the countdown stands (Rest.pausedLeft).
     val left = (rest.leftMs(now) / 1000.0).coerceAtLeast(0.0)
     val round = LocalRound.current
-    // The ±15 pill adds up quick taps for a moment; a rest's own first end is not a change.
-    var sum by remember(rest.startedAt) { mutableIntStateOf(0) }
-    var lastEnd by remember(rest.startedAt) { mutableLongStateOf(rest.endsAt) }
-    LaunchedEffect(rest.endsAt) {
-        if (rest.pausedLeft == null) sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
-        lastEnd = rest.endsAt
-        kotlinx.coroutines.delay(1_100)
-        sum = 0
-    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Round watches lose their corners: the bottom row sits higher, the extra lines go first.
         val roomy = maxHeight.value >= (if (round) 260 else 200)
@@ -859,15 +913,9 @@ fun RestView(rest: Rest) {
                         // Always On: grey, not a big lit accent (burn-in, battery), as everywhere else (#1174 review)
                         color = if (dim) Og.Text.copy(alpha = 0.75f) else tint,
                         modifier = Modifier.semantics { contentDescription = text })
-                    RestMath.pillText(sum)?.takeIf { !dim }?.let { pill ->
-                        val c = if (sum > 0) a.accent else Og.Orange
-                        Box(Modifier.align(Alignment.TopCenter).heightIn(min = 20.dp).clip(CircleShape).background(Color.Black).background(c.copy(alpha = 0.18f))
-                            .padding(horizontal = 8.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
-                            Text(pill, color = c, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
-                        }
-                    }
                 }
-                Spacer(Modifier.width(32.dp + inset))
+                // The slot that balances ‹ holds the ±15 circle: right of the digits, taking no room from them.
+                Box(Modifier.width(32.dp + inset), contentAlignment = Alignment.CenterStart) { RestShiftCircle(rest.shift) }
             }
             if (s.settings.show?.rest != "plain") {
                 val p = rest.pausedLeft
@@ -891,7 +939,34 @@ fun RestView(rest: Rest) {
     }
 }
 
-/** "Up next: Bench Press, set 3 · Left", and under it what to load (#911). */
+/** The net change made with −15 and +15 in this rest, in seconds ("+30", "−15"), a circle right of the countdown. */
+@Composable
+private fun RestShiftCircle(shift: Int) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val reduce = LocalReduceMotion.current
+    val shown = RestMath.shiftText(shift)
+    var last by remember { mutableStateOf("") }
+    if (shown != null) last = shown // the circle fades out with its last words, not empty
+    val add = shift > 0
+    val c = if (add) a.accent else Og.Text
+    Box {
+        AnimatedVisibility(shown != null,
+            enter = if (dim) EnterTransition.None else fadeIn(tween(if (reduce) 150 else 220)) + (if (reduce) EnterTransition.None else scaleIn(tween(220), 0.8f)),
+            exit = if (dim) ExitTransition.None else fadeOut(tween(if (reduce) 150 else 200))) {
+            Box(Modifier.size(32.dp).clip(CircleShape)
+                .background(if (dim) Color.Transparent else if (add) c.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.14f))
+                .border(1.5.dp, if (dim) Color.White.copy(alpha = 0.55f) else if (add) c.copy(alpha = 0.85f) else Color.White.copy(alpha = 0.4f), CircleShape)
+                .semantics { contentDescription = "$last s" }, contentAlignment = Alignment.Center) {
+                AnimatedContent(last, transitionSpec = { fadeIn(tween(if (dim) 0 else 250)) togetherWith fadeOut(tween(if (dim) 0 else 250)) }, label = "shift") { t ->
+                    Text(t, color = Color.White.copy(alpha = if (dim) 0.88f else 1f), fontSize = if (t.length > 3) 10.sp else 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
+                }
+            }
+        }
+    }
+}
+
+/** "Up next: Bench Press, set 3/4 · Left", and under it what to load (#911). */
 @Composable
 private fun UpNext(roomy: Boolean) {
     val s by WearStore.state.collectAsState()
@@ -901,8 +976,11 @@ private fun UpNext(roomy: Boolean) {
     val side = e.sets[si].sideUp
     val a = LocalAccent.current
     val dim = LocalAmbient.current
-    val set = stringResource(R.string.up_next_set, e.name, SetNav.place(e, si).first) +
+    val (n, of) = SetNav.place(e, si) // the same count as the set pill: "set 2/4"
+    // The text after the name (", set 2/4 · Left"): the name is the string's first argument in every language.
+    val tail = stringResource(R.string.up_next_set, "", n, of) +
         (side?.let { " · " + stringResource(if (it == "L") R.string.left else R.string.right) } ?: "")
+    val set = e.name + tail
     val numbers = nextSetNumbers(e, si, w.unit)
     // The workout's time (#1100), standing still while the phone has the workout paused.
     val time: @Composable () -> Unit = {
@@ -924,7 +1002,15 @@ private fun UpNext(roomy: Boolean) {
         numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number) }
     } else {
         // A 40/41 mm watch has two lines for it (measured on the emulator): "Up next: the set", then what to load and the time.
-        Quiet(stringResource(R.string.up_next) + ": " + set, 12.sp, lines = 1)
+        // A long name gives way with "…"; the count after it stays in view (seen on a 40 mm watch: "set 1/3" was cut off).
+        // Where "Up next: " leaves the name no room, the label goes first: "Bench Press, set 2/3" says it alone.
+        val lead = stringResource(R.string.up_next) + ": "
+        var tight by remember(lead, e.name, tail) { mutableStateOf(false) }
+        Row(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = lead + set }, horizontalArrangement = Arrangement.Center) {
+            Text((if (tight) "" else lead) + e.name, color = Og.Label2, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                onTextLayout = { if (it.hasVisualOverflow) tight = true }, modifier = Modifier.weight(1f, fill = false))
+            Text(tail, color = Og.Label2, fontSize = 12.sp, maxLines = 1)
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, style = Og.Number, modifier = Modifier.weight(1f, fill = false)); Spacer(Modifier.width(8.dp)) }
             time()
@@ -1017,6 +1103,7 @@ fun OverviewPage(onScreen: Boolean) {
     val list = rememberTransformingLazyColumnState()
     val (done, total) = SessionCore.progress(s)
     val rows = Overview.rows(w, s.entryIndex)
+    val ambient = LocalAmbient.current
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = if (LocalRound.current) ListTop else 30.dp, bottom = 40.dp),
@@ -1035,7 +1122,44 @@ fun OverviewPage(onScreen: Boolean) {
         }
         item { SyncLine(sync, heard = s.synced, modifier = Modifier.padding(top = 6.dp)) }
         item { HoldToFinish(Modifier.padding(top = 4.dp)) { WearStore.finish() } }
+        if (SessionCore.canNote(s) && !ambient) item { NoteButton(SessionCore.shownNote(s)) }
         item { RowButton(stringResource(R.string.discard_workout), Modifier.fillMaxWidth(), tint = Og.Red) { confirmDiscard = true } }
+    }
+}
+
+private const val NOTE_KEY = "workout_note"
+
+/**
+ * The workout's own note, under Finish: "Add session note" to dictate one, or the note itself (two lines) to
+ * say it again. The system's input opens (voice, handwriting or keyboard, no microphone permission here);
+ * backing out changes nothing, an emptied text clears the note.
+ */
+@Composable
+private fun NoteButton(shown: String) {
+    val a = LocalAccent.current
+    val label = stringResource(if (shown.isEmpty()) R.string.add_session_note else R.string.edit_session_note)
+    val launch = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        if (r.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
+        val text = r.data?.let { android.app.RemoteInput.getResultsFromIntent(it) }?.getCharSequence(NOTE_KEY)?.toString() ?: return@rememberLauncherForActivityResult
+        WearStore.saveNote(text)
+    }
+    val shape = RoundedCornerShape(Og.Radius)
+    Row(
+        Modifier.fillMaxWidth().padding(top = 4.dp).heightIn(min = Og.Tap).clip(shape).background(Og.Surface)
+            .combinedClickable(role = Role.Button, onClickLabel = label) {
+                val input = android.app.RemoteInput.Builder(NOTE_KEY).setLabel(label).build()
+                // The watch's own input screen, asked for by hand: wear-input's helper is these two strings, not worth a dependency.
+                val intent = Intent("android.support.wearable.input.action.REMOTE_INPUT")
+                    .putExtra("android.support.wearable.input.extra.REMOTE_INPUTS", arrayOf(input))
+                launch.launch(intent)
+            }
+            .semantics(mergeDescendants = true) { contentDescription = if (shown.isEmpty()) label else "$label: $shown" }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Glyph(G.NOTE, a.accent, 16.dp)
+        Spacer(Modifier.width(8.dp))
+        Text(shown.ifEmpty { label }, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
     }
 }
 
@@ -1123,7 +1247,10 @@ fun MetricsStack(onScreen: Boolean) {
     // Pulse comes or goes under you: back to the numbers, as on the Apple Watch, not onto another page.
     LaunchedEffect(hasPulse, hasZones) { if (pager.currentPage != 0) pager.scrollToPage(0) }
     VerticalPagerScaffold(pagerState = pager, pageIndicator = { VerticalPageIndicator(pagerState = pager) }) {
+        // A quarter of the screen turns the page, as on the Apple Watch: at the default half, an
+        // unhurried swipe on a small watch sprang back to the numbers every time.
         VerticalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null,
+            flingBehavior = PagerDefaults.snapFlingBehavior(state = pager, snapPositionalThreshold = 0.25f),
             modifier = Modifier.crown(focus) { d -> scope.launch { pager.animateScrollToPage((pager.targetPage + d).coerceIn(0, parts - 1)) } },
         ) { i ->
             when {
@@ -1549,102 +1676,7 @@ fun IdlePrompt() {
     }
 }
 
-/* ---------- the summary ---------- */
-
-/** "Workout saved", the time big, sets and volume, the records, then the heart rate and calories. Done ignores its first second. */
-@Composable
-fun SummaryScreen(sum: WorkoutSummary) {
-    val a = LocalAccent.current
-    val sync = rememberSync()
-    val st by WearStore.state.collectAsState()
-    val heard = st.synced
-    val shownAt = remember { System.currentTimeMillis() }
-    val locale = LocalConfiguration.current.locales[0]
-    val list = rememberTransformingLazyColumnState()
-    TransformingLazyColumn(
-        state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = if (LocalRound.current) ListTop else 32.dp, bottom = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(18.dp).clip(CircleShape).background(a.accent), contentAlignment = Alignment.Center) { Glyph(G.CHECK, a.on, 11.dp) }
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(if (sum.endedOnPhone) R.string.ended_on_phone else R.string.workout_saved), fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold, maxLines = 2)
-            }
-        }
-        item { Quiet(sum.name, 12.sp) }
-        sum.duration?.let { d ->
-            item {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Quiet(stringResource(R.string.time), 12.sp)
-                    Text(duration(d, locale), style = Og.Number, fontSize = 30.sp, color = Og.Yellow, maxLines = 1)
-                }
-            }
-        }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                SumStat(stringResource(R.string.sets), "${sum.sets}")
-                if (sum.volume > 0) SumStat(stringResource(R.string.volume), java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)) + " " + sum.unit)
-            }
-        }
-        if (sum.prs.isNotEmpty()) {
-            item { Quiet(stringResource(R.string.personal_records), 12.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
-            items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
-        }
-        if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
-        if (sum.kcal != null && st.settings.show?.showKcal != false)
-            item { SumStat(stringResource(R.string.calories), java.text.NumberFormat.getIntegerInstance(locale).format(sum.kcal) + " kcal") }
-        item { SyncLine(sync, heard = heard) }
-        item {
-            PrimaryButton(stringResource(R.string.done), Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                if (System.currentTimeMillis() - shownAt >= 1000) WearStore.dismissSummary()
-            }
-        }
-    }
-}
-
-@Composable
-private fun SumStat(label: String, value: String, color: Color = Og.Text) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-        Quiet(label, 12.sp, lines = 1)
-        Text(value, style = Og.Number, fontSize = 18.sp, color = color, maxLines = 1)
-    }
-}
-
-/**
- * The heart rate near the foot of the summary, where a round screen is at its narrowest: "128 avg ·
- * 164 max" in one 18 sp line ran into the edge ("164 max" cut off). The average stays big, the max
- * goes on a smaller line under it, both inside a round-safe inset, and each line shrinks to fit at
- * the largest font scale instead of clipping.
- */
-@Composable
-private fun HrStat(label: String, value: String) {
-    val parts = splitStat(value)
-    val inset = if (LocalConfiguration.current.isScreenRound) 0.12f else 0.04f
-    val width = LocalConfiguration.current.screenWidthDp.dp * (1 - 2 * inset)
-    Column(horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.widthIn(max = width).semantics(mergeDescendants = true) {}) {
-        Quiet(label, 12.sp, lines = 1)
-        FitText(parts.first, 18.sp, Og.Red, style = Og.Number)
-        parts.second?.let { FitText(it, 13.sp, Og.Label2, style = Og.Number) }
-    }
-}
-
-/** "128 avg · 164 max" → ("128 avg", "164 max"); a line without the dot stays whole. */
-fun splitStat(s: String): Pair<String, String?> {
-    val i = s.indexOf(" · ")
-    return if (i < 0) s to null else s.substring(0, i).trim() to s.substring(i + 3).trim()
-}
-
-/** One line that shrinks (down to 70 %, never under 12 sp) rather than clip or wrap. */
-@Composable
-fun FitText(text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, style: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default) {
-    var scale by remember(text) { mutableStateOf(1f) }
-    Text(text, style = style, fontSize = size * scale, color = color, maxLines = 1, softWrap = false, textAlign = TextAlign.Center,
-        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f && size.value * (scale - 0.08f) >= 12f) scale -= 0.08f })
-}
+/* ---------- the summary: SummaryMedal.kt ---------- */
 
 /** "52 min", "1 hr 5 min", in the app's language. */
 fun duration(seconds: Double, locale: java.util.Locale): String {

@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, it. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Aggiungi l’anno di nascita nell’app sul telefono</string>
+    <string name="add_session_note">Aggiungi nota della sessione</string>
     <string name="added_weight">Peso aggiunto</string>
     <string name="all_done_q">Hai finito?</string>
     <string name="all_sets_done">Tutte le serie fatte</string>
     <string name="all_synced">Tutto sincronizzato</string>
     <string name="allow">Consenti</string>
+    <string name="archived_stay_on_phone">Le routine archiviate restano sul tuo telefono.</string>
     <string name="avg">media</string>
     <string name="band_over">da %1$d in su</string>
     <string name="band_to">da %1$d a %2$d</string>
     <string name="band_under">sotto %1$d</string>
     <string name="body_weight">Peso corporeo</string>
     <string name="bodyweight">Corpo libero</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Calorie</string>
     <string name="cancel">Annulla</string>
     <string name="complication_desc">Le serie fatte finora, o la tua costanza.</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">Scartare allenamento?</string>
     <string name="done">Fatto</string>
     <string name="edit">Modifica</string>
+    <string name="edit_session_note">Modifica nota della sessione</string>
     <string name="effort">Sforzo</string>
     <string name="ended_on_phone">Terminato sul telefono</string>
     <string name="exercises">Esercizi</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">Battito</string>
     <string name="hold">Tenuta</string>
     <string name="hold_to_finish">Tieni premuto per finire</string>
+    <string name="hours">Ore</string>
     <string name="how_hard">Quanto è stata dura la serie?</string>
     <string name="hr_avg_max">media %1$d · max %2$d</string>
     <string name="hr_why">Consenti il battito per vederlo a ogni serie.</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">Più piano</string>
     <string name="media_title">Musica</string>
     <string name="min">min</string>
+    <string name="min_minutes">min</string>
     <string name="more">Più</string>
     <string name="muscles">Muscoli</string>
     <string name="n_more">+%1$d altri</string>
     <string name="n_sets">%1$s serie</string>
+    <string name="new_record">Nuovo record</string>
     <string name="next_set_btn">Serie successiva</string>
     <string name="no_age_set">Età non impostata</string>
     <string name="no_effort_yet">Nessuno sforzo valutato</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">Ancora nessuna serie</string>
     <string name="no_workout">Nessun allenamento in corso</string>
     <string name="none">Nessuno</string>
+    <string name="not_a_watch_body">Funziona solo su un orologio Wear OS. Per ora lasciala installata: disinstallarla cancella gli allenamenti su questo telefono. Come riavere l’app per telefono: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Questa è l’app per orologio</string>
     <string name="not_now">Non ora</string>
     <string name="not_synced">Non ancora sincronizzato</string>
     <string name="notif_running">Allenamento in corso. Tocca per tornarci.</string>
@@ -74,11 +83,14 @@
     <string name="overview">Panoramica</string>
     <string name="personal_records">Record</string>
     <string name="phone_away">Telefono fuori portata. Le tue serie aspettano qui.</string>
+    <string name="phone_connected">Telefono connesso</string>
+    <string name="phone_gone">Telefono lontano</string>
     <string name="phone_out_of_reach">Telefono fuori portata</string>
     <string name="previous_set">Serie precedente</string>
     <string name="prs">Record</string>
     <string name="quick_checkin">Check-in veloce</string>
     <string name="quick_start">Avvio rapido</string>
+    <string name="records">Record</string>
     <string name="reps">Rip.</string>
     <string name="rest">Riposo</string>
     <string name="rest_day">Niente in programma. Decidi tu.</string>
@@ -87,6 +99,7 @@
     <string name="routines">Routine</string>
     <string name="save">Salva</string>
     <string name="save_and_start">Salva e inizia</string>
+    <string name="saved">Salvato</string>
     <string name="set_of">Serie %1$d di %2$d</string>
     <string name="sets">Serie</string>
     <string name="sets_of">%1$d serie su %2$d</string>
@@ -106,7 +119,7 @@
     <string name="time">Tempo</string>
     <string name="today">Oggi</string>
     <string name="up_next">Prossima</string>
-    <string name="up_next_set">%1$s, serie %2$d</string>
+    <string name="up_next_set">%1$s, serie %2$d/%3$d</string>
     <string name="volume">Volume</string>
     <string name="waiting_sync">In attesa di sincronizzazione</string>
     <string name="warmup">Riscaldamento</string>

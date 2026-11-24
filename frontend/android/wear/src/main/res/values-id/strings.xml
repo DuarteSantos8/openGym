@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, id. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Tambahkan tahun lahirmu di aplikasi ponsel</string>
+    <string name="add_session_note">Tambahkan catatan sesi</string>
     <string name="added_weight">Beban tambahan</string>
     <string name="all_done_q">Sudah selesai?</string>
     <string name="all_sets_done">Semua set selesai</string>
     <string name="all_synced">Semua disinkronkan</string>
     <string name="allow">Izinkan</string>
+    <string name="archived_stay_on_phone">Rutinitas yang diarsipkan tetap ada di ponselmu.</string>
     <string name="avg">rata-rata</string>
     <string name="band_over">%1$d ke atas</string>
     <string name="band_to">%1$d sampai %2$d</string>
     <string name="band_under">di bawah %1$d</string>
     <string name="body_weight">Berat badan</string>
     <string name="bodyweight">Berat badan</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Kalori</string>
     <string name="cancel">Batal</string>
     <string name="complication_desc">Set kamu sejauh ini, atau streak-mu.</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">Buang sesi latihan?</string>
     <string name="done">Selesai</string>
     <string name="edit">Ubah</string>
+    <string name="edit_session_note">Edit catatan sesi</string>
     <string name="effort">Tingkat usaha</string>
     <string name="ended_on_phone">Diakhiri di ponsel</string>
     <string name="exercises">Daftar Latihan</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">Detak jantung</string>
     <string name="hold">Tahan</string>
     <string name="hold_to_finish">Tahan untuk selesai</string>
+    <string name="hours">Jam</string>
     <string name="how_hard">Seberapa berat set tersebut?</string>
     <string name="hr_avg_max">rata-rata %1$d · maks %2$d</string>
     <string name="hr_why">Izinkan detak jantung untuk melihat denyutmu di tiap set.</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">Lebih pelan</string>
     <string name="media_title">Musik</string>
     <string name="min">min</string>
+    <string name="min_minutes">menit</string>
     <string name="more">Lebih banyak</string>
     <string name="muscles">Otot</string>
     <string name="n_more">+%1$d lagi</string>
     <string name="n_sets">%1$s set</string>
+    <string name="new_record">Rekor baru</string>
     <string name="next_set_btn">Set berikutnya</string>
     <string name="no_age_set">Usia belum diatur</string>
     <string name="no_effort_yet">Belum ada usaha yang dinilai</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">Belum ada set</string>
     <string name="no_workout">Tidak ada latihan berjalan</string>
     <string name="none">Tidak ada</string>
+    <string name="not_a_watch_body">Aplikasi ini hanya berjalan di jam tangan Wear OS. Jangan dicopot dulu: mencopotnya menghapus latihan di ponsel ini. Cara mendapatkan kembali aplikasi ponsel: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Ini aplikasi untuk jam tangan</string>
     <string name="not_now">Tidak sekarang</string>
     <string name="not_synced">Belum disinkronkan</string>
     <string name="notif_running">Latihan berjalan. Ketuk untuk kembali.</string>
@@ -74,11 +83,14 @@
     <string name="overview">Ringkasan</string>
     <string name="personal_records">PR</string>
     <string name="phone_away">Ponsel di luar jangkauan. Set kamu menunggu di sini.</string>
+    <string name="phone_connected">Ponsel terhubung</string>
+    <string name="phone_gone">Ponsel jauh</string>
     <string name="phone_out_of_reach">Ponsel di luar jangkauan</string>
     <string name="previous_set">Set sebelumnya</string>
     <string name="prs">PR</string>
     <string name="quick_checkin">Check-in cepat</string>
     <string name="quick_start">Mulai cepat</string>
+    <string name="records">Rekor</string>
     <string name="reps">Rep</string>
     <string name="rest">Istirahat</string>
     <string name="rest_day">Tidak ada rencana. Terserah kamu.</string>
@@ -87,6 +99,7 @@
     <string name="routines">Rutinitas</string>
     <string name="save">Simpan</string>
     <string name="save_and_start">Simpan &amp; mulai latihan</string>
+    <string name="saved">Disimpan</string>
     <string name="set_of">Set %1$d dari %2$d</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d dari %2$d set</string>
@@ -106,7 +119,7 @@
     <string name="time">Waktu</string>
     <string name="today">Hari ini</string>
     <string name="up_next">Berikutnya</string>
-    <string name="up_next_set">%1$s, set %2$d</string>
+    <string name="up_next_set">%1$s, set %2$d/%3$d</string>
     <string name="volume">Volume</string>
     <string name="waiting_sync">Menunggu untuk disinkronkan</string>
     <string name="warmup">Pemanasan</string>

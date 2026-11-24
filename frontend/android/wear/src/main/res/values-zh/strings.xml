@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, zh. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">在手机应用中添加出生年份</string>
+    <string name="add_session_note">添加训练备注</string>
     <string name="added_weight">附加重量</string>
     <string name="all_done_q">练完了吗？</string>
     <string name="all_sets_done">所有组已完成</string>
     <string name="all_synced">已全部同步</string>
     <string name="allow">允许</string>
+    <string name="archived_stay_on_phone">已归档的训练计划会保留在你的手机上。</string>
     <string name="avg">平均</string>
     <string name="band_over">%1$d 及以上</string>
     <string name="band_to">%1$d 到 %2$d</string>
     <string name="band_under">低于 %1$d</string>
     <string name="body_weight">体重</string>
     <string name="bodyweight">徒手动作</string>
+    <string name="bpm">%1$s 次/分</string>
     <string name="calories">卡路里</string>
     <string name="cancel">取消</string>
     <string name="complication_desc">目前完成的组数，或你的连续周数。</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">放弃训练？</string>
     <string name="done">完成</string>
     <string name="edit">编辑</string>
+    <string name="edit_session_note">编辑训练备注</string>
     <string name="effort">强度</string>
     <string name="ended_on_phone">已在手机上结束</string>
     <string name="exercises">动作库</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">心率</string>
     <string name="hold">保持</string>
     <string name="hold_to_finish">按住以结束</string>
+    <string name="hours">小时</string>
     <string name="how_hard">这组有多吃力？</string>
     <string name="hr_avg_max">平均 %1$d · 最高 %2$d</string>
     <string name="hr_why">允许读取心率，每组都能看到脉搏。</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">调低音量</string>
     <string name="media_title">音乐</string>
     <string name="min">最低</string>
+    <string name="min_minutes">分钟</string>
     <string name="more">更多</string>
     <string name="muscles">肌肉</string>
     <string name="n_more">还有 %1$d 个</string>
     <string name="n_sets">%1$s 组</string>
+    <string name="new_record">新纪录</string>
     <string name="next_set_btn">下一组</string>
     <string name="no_age_set">未设置年龄</string>
     <string name="no_effort_yet">尚未评定强度</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">还没有组</string>
     <string name="no_workout">没有进行中的训练</string>
     <string name="none">无</string>
+    <string name="not_a_watch_body">它只能在 Wear OS 手表上运行。先别卸载：卸载会删除这部手机上的训练记录。找回手机应用的方法：github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">这是手表应用</string>
     <string name="not_now">暂不</string>
     <string name="not_synced">尚未同步</string>
     <string name="notif_running">训练进行中。点按返回。</string>
@@ -74,11 +83,14 @@
     <string name="overview">概览</string>
     <string name="personal_records">纪录</string>
     <string name="phone_away">手机不在范围内。你的组数先存在这里。</string>
+    <string name="phone_connected">手机已连接</string>
+    <string name="phone_gone">手机不在</string>
     <string name="phone_out_of_reach">手机不在范围内</string>
     <string name="previous_set">上一组</string>
     <string name="prs">纪录</string>
     <string name="quick_checkin">快速称重</string>
     <string name="quick_start">快速开始</string>
+    <string name="records">纪录</string>
     <string name="reps">次数</string>
     <string name="rest">休息</string>
     <string name="rest_day">今天没计划。你说了算。</string>
@@ -87,6 +99,7 @@
     <string name="routines">训练计划</string>
     <string name="save">保存</string>
     <string name="save_and_start">保存并开始训练</string>
+    <string name="saved">已保存</string>
     <string name="set_of">第 %1$d 组，共 %2$d 组</string>
     <string name="sets">组数</string>
     <string name="sets_of">%1$d / %2$d 组</string>
@@ -106,7 +119,7 @@
     <string name="time">时间</string>
     <string name="today">今天</string>
     <string name="up_next">下一个</string>
-    <string name="up_next_set">%1$s，第 %2$d 组</string>
+    <string name="up_next_set">%1$s，第 %2$d/%3$d 组</string>
     <string name="volume">总量</string>
     <string name="waiting_sync">等待同步</string>
     <string name="warmup">热身</string>

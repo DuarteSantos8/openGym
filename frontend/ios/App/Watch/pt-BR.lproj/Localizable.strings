@@ -34,6 +34,8 @@
 "Next set" = "Próxima série";
 "Edit" = "Editar";
 "Overview" = "Visão geral";
+"Add session note" = "Adicionar nota da sessão";
+"Edit session note" = "Editar nota da sessão";
 "Discard workout?" = "Descartar treino?";
 "Up next" = "Próximo";
 "How hard was that set?" = "Quão pesada foi a série?";
@@ -45,9 +47,15 @@
 "Keep going" = "Continuar";
 "Finish now" = "Terminar agora";
 "Back" = "Voltar";
+"Saved" = "Salvo";
+"Hours" = "Horas";
+"min (minutes)" = "min";
+"Records" = "Recordes";
+"New record" = "Novo recorde";
 "Last time: %@" = "Da última vez: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nada anotado faz um tempo. Se já terminou, ele termina sozinho às %@, salvo na sua última série.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Terminar o treino agora? Senão ele termina sozinho às %@.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Nenhum treino em andamento";
 "Not synced yet" = "Ainda não sincronizado";
 "Open openGym on your iPhone once and your routines show up here." = "Abra o openGym uma vez no iPhone e suas rotinas aparecem aqui.";
@@ -55,6 +63,7 @@
 "All sets done" = "Todas as séries feitas";
 "measuring" = "medindo …";
 "%@, set %lld" = "%@, série %lld";
+"%@, set %lld/%lld" = "%@, série %lld/%lld";
 "Calories" = "Calorias";
 "Heart rate" = "Frequência cardíaca";
 "Hold" = "Segure";
@@ -76,6 +85,8 @@
 "Opens openGym." = "Abre o openGym.";
 "Hold to finish" = "Segure para terminar";
 "iPhone out of reach" = "iPhone fora de alcance";
+"Phone away" = "Sem iPhone";
+"iPhone in reach" = "iPhone ao alcance";
 "No set for %lld min. Still at it?" = "Nenhuma série há %lld min. Ainda aí?";
 "A skipped set is still waiting." = "Uma série pulada ainda está esperando.";
 "Active\nkcal" = "Kcal\nativas";
@@ -88,4 +99,6 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Ative o Apple Saúde no iPhone e o openGym fica na tela durante descansos e isometrias.";
 "No sets yet" = "Nenhuma série ainda";
 "+%lld more" = "+%lld mais";
+"On iPhone" = "No iPhone";
 "%@ sets" = "%@ séries";
+"Archived routines stay on your iPhone." = "Rotinas arquivadas ficam no seu iPhone.";

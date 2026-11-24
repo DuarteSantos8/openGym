@@ -34,6 +34,8 @@
 "Next set" = "Série suivante";
 "Edit" = "Modifier";
 "Overview" = "Aperçu";
+"Add session note" = "Ajouter une note de séance";
+"Edit session note" = "Modifier la note de séance";
 "Discard workout?" = "Abandonner la séance ?";
 "Up next" = "À suivre";
 "How hard was that set?" = "Cette série, c’était dur comment ?";
@@ -45,9 +47,15 @@
 "Keep going" = "Continuer";
 "Finish now" = "Terminer maintenant";
 "Back" = "Retour";
+"Saved" = "Enregistré";
+"Hours" = "Heures";
+"min (minutes)" = "min";
+"Records" = "Records";
+"New record" = "Nouveau record";
 "Last time: %@" = "La dernière fois: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Rien de noté depuis un moment. Si tu as fini, elle se termine toute seule à %@, enregistrée à ta dernière série.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Terminer la séance maintenant ? Sinon elle se termine toute seule à %@.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Aucune séance en cours";
 "Not synced yet" = "Pas encore synchronisé";
 "Open openGym on your iPhone once and your routines show up here." = "Ouvre openGym une fois sur ton iPhone et tes routines apparaissent ici.";
@@ -55,6 +63,7 @@
 "All sets done" = "Toutes les séries faites";
 "measuring" = "mesure …";
 "%@, set %lld" = "%@, série %lld";
+"%@, set %lld/%lld" = "%@, série %lld/%lld";
 "Calories" = "Calories";
 "Heart rate" = "Pouls";
 "Hold" = "Tenue";
@@ -76,6 +85,8 @@
 "Opens openGym." = "Ouvre openGym.";
 "Hold to finish" = "Maintiens pour terminer";
 "iPhone out of reach" = "iPhone hors de portée";
+"Phone away" = "iPhone absent";
+"iPhone in reach" = "iPhone à portée";
 "No set for %lld min. Still at it?" = "Aucune série depuis %lld min. Toujours là ?";
 "A skipped set is still waiting." = "Une série passée attend encore.";
 "Active\nkcal" = "Kcal\nactives";
@@ -88,4 +99,6 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Active Apple Santé sur ton iPhone et openGym reste à l’écran pendant les repos et les gainages.";
 "No sets yet" = "Aucune série";
 "+%lld more" = "+%lld autres";
+"On iPhone" = "Sur l’iPhone";
 "%@ sets" = "%@ séries";
+"Archived routines stay on your iPhone." = "Les routines archivées restent sur ton iPhone.";

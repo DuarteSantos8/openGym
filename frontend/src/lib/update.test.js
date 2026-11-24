@@ -272,6 +272,15 @@ describe('pickApk: Standard and HD APKs', () => {
     expect(pickApk(['openGym-1.5.0-hd.apk', 'openGym-1.5.0.apk'].map(a), 'standard').apk.name).toBe('openGym-1.5.0.apk')
   })
 
+  // #1359: the watch APK has the phone's applicationId and a higher versionCode, so a phone that
+  // installed it lost the phone app. Listed first, it must still never be the phone's update.
+  it('the Wear OS, Offline and F-Droid APKs are never a phone\'s update, whatever the order', () => {
+    const others = ['openGym-Wear-1.4.6.apk', 'openGym-WearOS-watch-only-1.4.6.apk', 'openGym-Offline-1.4.6.apk', 'openGym-FDroid-1.4.6.apk']
+    const list = [...others, 'openGym-1.4.6.apk', 'openGym-1.4.6.apk.sha256'].map(a)
+    expect(pickApk(list, 'standard').apk.name).toBe('openGym-1.4.6.apk')
+    expect(pickApk(others.map(a), 'standard').apk).toBe(null)
+  })
+
   it('an HD build is not moved to Standard when a release has no HD APK', () => {
     const { apk, hash } = pickApk(['openGym-1.3.10.apk', 'openGym-1.3.10.apk.sha256'].map(a), 'hd')
     expect(apk).toBe(null)

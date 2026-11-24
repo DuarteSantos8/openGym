@@ -34,6 +34,8 @@
 "Next set" = "เซ็ตถัดไป";
 "Edit" = "แก้ไข";
 "Overview" = "ภาพรวม";
+"Add session note" = "เพิ่มบันทึกประจำรอบ";
+"Edit session note" = "แก้ไขบันทึกประจำรอบ";
 "Discard workout?" = "ทิ้งการออกกำลังกายนี้?";
 "Up next" = "ถัดไป";
 "How hard was that set?" = "เซ็ตนั้นหนักแค่ไหน?";
@@ -45,9 +47,15 @@
 "Keep going" = "ทำต่อ";
 "Finish now" = "จบตอนนี้";
 "Back" = "กลับ";
+"Saved" = "บันทึกแล้ว";
+"Hours" = "ชั่วโมง";
+"min (minutes)" = "นาที";
+"Records" = "สถิติสูงสุด";
+"New record" = "สถิติใหม่";
 "Last time: %@" = "ครั้งก่อน: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "ไม่มีการบันทึกมาสักพัก ถ้าเสร็จแล้ว จะจบเองเวลา %@ บันทึกที่เซ็ตสุดท้าย";
 "Finish the workout now? Otherwise it ends by itself at %@." = "จบการฝึกตอนนี้เลยไหม? ไม่งั้นจะจบเองเวลา %@";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
 "Open openGym on your iPhone once and your routines show up here." = "เปิด openGym บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่";
@@ -55,6 +63,7 @@
 "All sets done" = "ครบทุกเซ็ตแล้ว";
 "measuring" = "กำลังวัด …";
 "%@, set %lld" = "%@ เซ็ต %lld";
+"%@, set %lld/%lld" = "%@ เซ็ต %lld/%lld";
 "Calories" = "แคลอรี";
 "Heart rate" = "ชีพจร";
 "Hold" = "ค้างไว้";
@@ -76,6 +85,8 @@
 "Opens openGym." = "เปิด openGym";
 "Hold to finish" = "กดค้างเพื่อจบ";
 "iPhone out of reach" = "iPhone อยู่นอกระยะ";
+"Phone away" = "iPhone ไม่อยู่";
+"iPhone in reach" = "iPhone อยู่ในระยะ";
 "No set for %lld min. Still at it?" = "ไม่มีเซ็ตมา %lld นาทีแล้ว ยังฝึกอยู่ไหม";
 "A skipped set is still waiting." = "ยังมีเซ็ตที่ข้ามไว้รออยู่";
 "Active\nkcal" = "แคลอรี\nที่ใช้งาน";
@@ -88,4 +99,6 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "เปิด Apple Health บน iPhone แล้ว openGym จะอยู่บนหน้าจอตลอดช่วงพักและท่าค้าง";
 "No sets yet" = "ยังไม่มีเซ็ต";
 "+%lld more" = "+%lld อื่นๆ";
+"On iPhone" = "บน iPhone";
 "%@ sets" = "%@ เซ็ต";
+"Archived routines stay on your iPhone." = "รูทีนที่เก็บถาวรจะอยู่บน iPhone ของคุณ";

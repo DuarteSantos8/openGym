@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, pt-BR. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Ano de nascimento no celular</string>
+    <string name="add_session_note">Adicionar nota da sessão</string>
     <string name="added_weight">Peso adicional</string>
     <string name="all_done_q">Terminou?</string>
     <string name="all_sets_done">Todas as séries feitas</string>
     <string name="all_synced">Tudo sincronizado</string>
     <string name="allow">Permitir</string>
+    <string name="archived_stay_on_phone">Rotinas arquivadas ficam no seu celular.</string>
     <string name="avg">média</string>
     <string name="band_over">%1$d ou mais</string>
     <string name="band_to">%1$d a %2$d</string>
     <string name="band_under">abaixo de %1$d</string>
     <string name="body_weight">Peso corporal</string>
-    <string name="bodyweight">Peso do corpo</string>
+    <string name="bodyweight">Peso corporal</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Calorias</string>
     <string name="cancel">Cancelar</string>
     <string name="complication_desc">Suas séries até agora, ou sua sequência.</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">Descartar treino?</string>
     <string name="done">Concluído</string>
     <string name="edit">Editar</string>
+    <string name="edit_session_note">Editar nota da sessão</string>
     <string name="effort">Esforço</string>
     <string name="ended_on_phone">Encerrado no celular</string>
     <string name="exercises">Exercícios</string>
@@ -29,11 +33,12 @@
     <string name="finish_now">Terminar agora</string>
     <string name="finish_workout">Terminar treino</string>
     <string name="finish_workout_q">Terminar o treino?</string>
-    <string name="go">Já!</string>
+    <string name="go">Vai!</string>
     <string name="heart_rate">Frequência cardíaca</string>
     <string name="hold">Segure</string>
     <string name="hold_to_finish">Segure para terminar</string>
-    <string name="how_hard">Quão dura foi a série?</string>
+    <string name="hours">Horas</string>
+    <string name="how_hard">Quão pesada foi a série?</string>
     <string name="hr_avg_max">média %1$d · máx. %2$d</string>
     <string name="hr_why">Permita a frequência cardíaca para ver seu pulso em cada série.</string>
     <string name="idle_ends_at">Nada anotado faz um tempo. Se já terminou, ele termina sozinho às %1$s, salvo na sua última série.</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">Mais baixo</string>
     <string name="media_title">Música</string>
     <string name="min">mín.</string>
+    <string name="min_minutes">min</string>
     <string name="more">Mais</string>
     <string name="muscles">Músculos</string>
     <string name="n_more">+%1$d mais</string>
     <string name="n_sets">%1$s séries</string>
+    <string name="new_record">Novo recorde</string>
     <string name="next_set_btn">Próxima série</string>
     <string name="no_age_set">Sem idade</string>
     <string name="no_effort_yet">Nenhum esforço avaliado</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">Nenhuma série ainda</string>
     <string name="no_workout">Nenhum treino em andamento</string>
     <string name="none">Nenhum</string>
+    <string name="not_a_watch_body">Ele só funciona em um relógio Wear OS. Deixe instalado por enquanto: desinstalar apaga os treinos deste celular. Como recuperar o app do celular: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Este é o app do relógio</string>
     <string name="not_now">Agora não</string>
     <string name="not_synced">Ainda não sincronizado</string>
     <string name="notif_running">Treino em andamento. Toque para voltar.</string>
@@ -74,11 +83,14 @@
     <string name="overview">Visão geral</string>
     <string name="personal_records">Recordes</string>
     <string name="phone_away">Celular fora de alcance. Suas séries esperam aqui.</string>
+    <string name="phone_connected">Celular conectado</string>
+    <string name="phone_gone">Celular longe</string>
     <string name="phone_out_of_reach">Celular fora de alcance</string>
     <string name="previous_set">Série anterior</string>
     <string name="prs">Recordes</string>
     <string name="quick_checkin">Check-in rápido</string>
     <string name="quick_start">Início rápido</string>
+    <string name="records">Recordes</string>
     <string name="reps">Reps</string>
     <string name="rest">Descanso</string>
     <string name="rest_day">Nada planejado. Você decide.</string>
@@ -87,6 +99,7 @@
     <string name="routines">Rotinas</string>
     <string name="save">Salvar</string>
     <string name="save_and_start">Salvar e iniciar treino</string>
+    <string name="saved">Salvo</string>
     <string name="set_of">Série %1$d de %2$d</string>
     <string name="sets">Séries</string>
     <string name="sets_of">%1$d de %2$d séries</string>
@@ -106,7 +119,7 @@
     <string name="time">Tempo</string>
     <string name="today">Hoje</string>
     <string name="up_next">Próximo</string>
-    <string name="up_next_set">%1$s, série %2$d</string>
+    <string name="up_next_set">%1$s, série %2$d/%3$d</string>
     <string name="volume">Volume</string>
     <string name="waiting_sync">Aguardando sincronização</string>
     <string name="warmup">Aquecimento</string>

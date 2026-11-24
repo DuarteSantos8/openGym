@@ -34,6 +34,8 @@
 "Next set" = "Sonraki set";
 "Edit" = "Düzenle";
 "Overview" = "Genel bakış";
+"Add session note" = "Antrenman notu ekle";
+"Edit session note" = "Antrenman notunu düzenle";
 "Discard workout?" = "Antrenman iptal edilsin mi?";
 "Up next" = "Sıradaki";
 "How hard was that set?" = "O set ne kadar zordu?";
@@ -45,9 +47,15 @@
 "Keep going" = "Devam et";
 "Finish now" = "Şimdi bitir";
 "Back" = "Geri";
+"Saved" = "Kaydedildi";
+"Hours" = "Saat";
+"min (minutes)" = "dk";
+"Records" = "Rekorlar";
+"New record" = "Yeni rekor";
 "Last time: %@" = "Geçen sefer: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Bir süredir kayıt yok. Bitirdiysen %@ saatinde kendiliğinden biter, son setinde kaydedilir.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Antrenman şimdi bitsin mi? Yoksa %@ saatinde kendiliğinden biter.";
+"%@ bpm" = "%@ bpm";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";
 "Open openGym on your iPhone once and your routines show up here." = "openGym’i iPhone’unda bir kez aç, rutinlerin burada görünür.";
@@ -55,6 +63,7 @@
 "All sets done" = "Tüm setler tamam";
 "measuring" = "ölçülüyor …";
 "%@, set %lld" = "%@, set %lld";
+"%@, set %lld/%lld" = "%@, set %lld/%lld";
 "Calories" = "Kalori";
 "Heart rate" = "Nabız";
 "Hold" = "Tut";
@@ -76,6 +85,8 @@
 "Opens openGym." = "openGym’i açar.";
 "Hold to finish" = "Bitirmek için basılı tut";
 "iPhone out of reach" = "iPhone menzil dışında";
+"Phone away" = "iPhone yok";
+"iPhone in reach" = "iPhone menzilde";
 "No set for %lld min. Still at it?" = "%lld dakikadır set yok. Hâlâ orada mısın?";
 "A skipped set is still waiting." = "Atlanan bir set hâlâ bekliyor.";
 "Active\nkcal" = "Aktif\nkcal";
@@ -88,4 +99,6 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone’da Apple Sağlık’ı aç, openGym dinlenmelerde ve tutuşlarda ekranda kalsın.";
 "No sets yet" = "Henüz set yok";
 "+%lld more" = "+%lld daha";
+"On iPhone" = "iPhone’da";
 "%@ sets" = "%@ set";
+"Archived routines stay on your iPhone." = "Arşivlenen rutinler iPhone'unda kalır.";

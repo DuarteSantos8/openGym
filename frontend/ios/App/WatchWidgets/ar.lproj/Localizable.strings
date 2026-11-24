@@ -34,6 +34,8 @@
 "Next set" = "المجموعة التالية";
 "Edit" = "تعديل";
 "Overview" = "نظرة عامة";
+"Add session note" = "إضافة ملاحظة جلسة";
+"Edit session note" = "تعديل ملاحظة الجلسة";
 "Discard workout?" = "تجاهل التمرين؟";
 "Up next" = "التالي";
 "How hard was that set?" = "ما مدى صعوبة تلك المجموعة؟";
@@ -45,9 +47,15 @@
 "Keep going" = "استمر";
 "Finish now" = "إنهاء الآن";
 "Back" = "رجوع";
+"Saved" = "تم الحفظ";
+"Hours" = "الساعات";
+"min (minutes)" = "دقيقة";
+"Records" = "الأرقام القياسية";
+"New record" = "رقم قياسي جديد";
 "Last time: %@" = "المرة السابقة: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";
+"%@ bpm" = "%@ ن/د";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";
 "Open openGym on your iPhone once and your routines show up here." = "افتح openGym على iPhone مرة واحدة وستظهر تمارينك الروتينية هنا.";
@@ -55,6 +63,7 @@
 "All sets done" = "اكتملت كل المجموعات";
 "measuring" = "جارٍ القياس …";
 "%@, set %lld" = "%@، المجموعة %lld";
+"%@, set %lld/%lld" = "%@، المجموعة %lld/%lld";
 "Calories" = "السعرات";
 "Heart rate" = "النبض";
 "Hold" = "ثبات";
@@ -76,6 +85,8 @@
 "Opens openGym." = "يفتح openGym.";
 "Hold to finish" = "اضغط مطولًا للإنهاء";
 "iPhone out of reach" = "iPhone خارج النطاق";
+"Phone away" = "iPhone بعيد";
+"iPhone in reach" = "iPhone ضمن النطاق";
 "No set for %lld min. Still at it?" = "لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟";
 "A skipped set is still waiting." = "مجموعة متخطاة ما زالت تنتظر.";
 "Active\nkcal" = "سعرات\nنشطة";
@@ -88,4 +99,6 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "فعّل Apple صحتي على iPhone ليبقى openGym على الشاشة خلال الراحة والثبات.";
 "No sets yet" = "لا مجموعات بعد";
 "+%lld more" = "+%lld أخرى";
+"On iPhone" = "على iPhone";
 "%@ sets" = "%@ مجموعات";
+"Archived routines stay on your iPhone." = "تبقى الروتينات المؤرشفة على iPhone.";

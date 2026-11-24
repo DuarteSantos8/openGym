@@ -45,6 +45,7 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `finish` | `wid`, `at`, `idle?`, `left?` | Finish and save, ending at `at`; an idle finish is checked against the phone's own log first |
 | `discard` | `wid`, `at` | the workout screen's Discard |
 | `stillHere` | `wid`, `at` | "Keep going" on the forgotten-workout question |
+| `workoutNote` | `wid`, `note`, `was`, `at` | the Overview's "Add note": the running workout's own note (`A.note`, the session note). Applied only when the phone's note is still `was` ("" for none): the phone wins a clash, and a phone note longer than 280 characters never matches, so the wrist cannot cut it. `note` is cut at 280, an emptied one clears the note. Needs `settings.workoutNote` |
 | `weighIn` | `w`, `at` | a body weight entry |
 | `healthDeleted` | `ids` | the phone's own Apple Health removal runs again |
 | `watchStatus` | `health`, `version`, `at` | Settings → Apple Watch; an older one never replaces a newer one |
@@ -129,12 +130,17 @@ clock stands at that moment. On resume the field goes and `start` moves on by th
 watch needs nothing else. The rest screen's "Next" shows the next set's weight and reps from the
 set rows the snapshot already holds (#911); nothing new is sent for it.
 
+`ready.others` are the phone's routines in its folder order (no folder first), each with `folder` (its name, spelled as the first routine of that folder; absent for none) and none archived (the Archive folder or `archived: true`); the watches draw a header where `folder` changes. An older phone sends no `folder` and the list stays flat.
+
+`routinesHash` and the routines file (every routine always reaches the watch): the snapshot is size-limited (about 48 KB, `fitSnapshot` drops routines from the end of `ready.others`), so the phone also sends `ready.others` whole as a file `{"h": hash, "others": [...]}` (`lib/watch-routines-file.js`) and the snapshot names it with `routinesHash` (equal to `h`). iPhone: `WCSession.transferFile`, metadata `kind: routines`; a newer file cancels one still queued, and the watch keeps one file (Application Support). Wear OS: the data item `/opengym/routines` (the JSON an Asset), one item, also read at launch. The watch shows the file's list while its `h` equals the snapshot's `routinesHash`; else the snapshot's own `ready.others` (an older phone, the first launch before the file arrives, an out-of-date file). An older watch ignores both the hash and the file. Archived routines are in neither.
+The watch's `watchStatus` event adds `routinesHash` (the file it shows, `""` for the snapshot's own list) and `routinesCount` (routines listed, today's included), and is sent again when a new file is applied; an older watch sends neither. A report made more than 2 minutes after the file went that still names another file means it was lost (a transfer the system gave up on, or one the watch could not keep): the link sends it again, once per report. Settings → Apple Watch and → Wear OS watch compare them with what the phone last sent (`routinesSync`), and show the answer in the status pill on top of the page (`watchPill`, `components/WatchPill.jsx`): paired, openGym on the watch, in reach, every routine there. On trouble it turns orange and the next step shows under it; with "Send workouts to the watch" off it is not shown.
+
 Display-only fields for the Metrics pages (1.4.5, #1187, #1188): each entry of `active` and of
 `ready.today`/`ready.others` may carry `muscles` (muscle slug to the phone's weight for one set:
 main 1, helper 0.4, only the muscles the phone's map draws), and `active.muscleNames` and
 `ready.*.muscleNames` give those slugs' names in the app's language; the watch adds up its done
 working sets into the Muscles page (a workout started on the watch takes the names of the
-`ready` session it came from). `settings.birthYear` (ages 10 to 100 only, and only while
+`ready` session it came from). `active.note` (the session note, cut at 280) and `settings.workoutNote` (true) drive the Overview's note button: a phone that does not send the flag gets no button. `settings.birthYear` (ages 10 to 100 only, and only while
 the Zones page is on) and `settings.show.zones` drive the Zones page. Nothing about a set, a rest
 or an event depends on them: a watch that does not know them ignores them (Codable, Wear's
 `ignoreUnknownKeys`), `fitSnapshot` drops the muscle fields first when a snapshot is too big (the
@@ -172,6 +178,15 @@ So a late snapshot, a late event, the watch app relaunched with an old context, 
 coming to the front or being cold-launched (its restored rest has the stamp it had) never restart
 a rest; a Skip on the phone ends the watch's (#1149); +15 and Skip from the watch reach the phone;
 a tick from a watch that was away does not take away a rest started on the phone since.
+
+**The iPhone locked:** its page sleeps, so the watch's events wait in the queue file until it
+wakes. The rest alarm the page booked (and the Live Activity's countdown) would ring at the old
+end meanwhile, so the native side moves them itself: a new `rest` event newer than when the alarm
+was booked moves it to the watch's end (on the phone's clock, `off` taken off) or takes it away (a
+Skip before an automatic hold rings its count-in now, as the Lock Screen's Skip does). A tick's
+`restEnd` moves the countdown and takes the old alarm away: that alarm names the set just done, so
+the new rest's is left to the page (`WatchCore/PhoneRestAlarm.swift`, `RestAlertPlugin.watchRest`).
+The page applies the same event by the rules above when it wakes and books its own.
 
 **Protocol 1** (and a phone without `restAt`): a rest end in a snapshot is followed once
 (`RestMath.phoneRest`); the first snapshot that acks the watch's own latest tick carries the

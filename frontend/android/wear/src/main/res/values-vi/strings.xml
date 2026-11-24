@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, vi. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Thêm năm sinh trong ứng dụng trên điện thoại</string>
+    <string name="add_session_note">Thêm ghi chú buổi tập</string>
     <string name="added_weight">Tạ thêm</string>
     <string name="all_done_q">Xong chưa?</string>
     <string name="all_sets_done">Đã xong tất cả hiệp</string>
     <string name="all_synced">Đã đồng bộ tất cả</string>
     <string name="allow">Cho phép</string>
+    <string name="archived_stay_on_phone">Lịch tập đã lưu trữ vẫn ở trên điện thoại của bạn.</string>
     <string name="avg">TB</string>
     <string name="band_over">từ %1$d trở lên</string>
     <string name="band_to">%1$d đến %2$d</string>
     <string name="band_under">dưới %1$d</string>
     <string name="body_weight">Thể trọng</string>
     <string name="bodyweight">Thể trọng</string>
+    <string name="bpm">%1$s nhịp/phút</string>
     <string name="calories">Calo</string>
     <string name="cancel">Hủy</string>
     <string name="complication_desc">Số hiệp đến giờ, hoặc chuỗi tuần của bạn.</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">Hủy buổi tập?</string>
     <string name="done">Xong</string>
     <string name="edit">Chỉnh sửa</string>
+    <string name="edit_session_note">Sửa ghi chú buổi tập</string>
     <string name="effort">Độ gắng sức</string>
     <string name="ended_on_phone">Đã kết thúc trên điện thoại</string>
     <string name="exercises">Bài tập</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">Nhịp tim</string>
     <string name="hold">Giữ</string>
     <string name="hold_to_finish">Giữ để kết thúc</string>
+    <string name="hours">Giờ</string>
     <string name="how_hard">Hiệp đó nặng đến mức nào?</string>
     <string name="hr_avg_max">TB %1$d · tối đa %2$d</string>
     <string name="hr_why">Cho phép nhịp tim để xem mạch ở mỗi hiệp.</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">Nhỏ hơn</string>
     <string name="media_title">Nhạc</string>
     <string name="min">tối thiểu</string>
+    <string name="min_minutes">phút</string>
     <string name="more">Nhiều</string>
     <string name="muscles">Nhóm cơ</string>
     <string name="n_more">+%1$d nữa</string>
     <string name="n_sets">%1$s hiệp</string>
+    <string name="new_record">Kỷ lục mới</string>
     <string name="next_set_btn">Hiệp tiếp theo</string>
     <string name="no_age_set">Chưa đặt tuổi</string>
     <string name="no_effort_yet">Chưa đánh giá mức nỗ lực</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">Chưa có hiệp nào</string>
     <string name="no_workout">Không có buổi tập nào đang chạy</string>
     <string name="none">Không</string>
+    <string name="not_a_watch_body">Ứng dụng này chỉ chạy trên đồng hồ Wear OS. Đừng gỡ vội: gỡ sẽ xóa các buổi tập trên điện thoại này. Cách lấy lại ứng dụng cho điện thoại: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Đây là ứng dụng cho đồng hồ</string>
     <string name="not_now">Để sau</string>
     <string name="not_synced">Chưa đồng bộ</string>
     <string name="notif_running">Đang tập. Chạm để quay lại.</string>
@@ -74,11 +83,14 @@
     <string name="overview">Tổng quan</string>
     <string name="personal_records">PR</string>
     <string name="phone_away">Điện thoại ngoài tầm. Các hiệp của bạn chờ ở đây.</string>
+    <string name="phone_connected">Đã kết nối điện thoại</string>
+    <string name="phone_gone">Xa điện thoại</string>
     <string name="phone_out_of_reach">Điện thoại ngoài tầm</string>
     <string name="previous_set">Hiệp trước</string>
     <string name="prs">PR</string>
     <string name="quick_checkin">Ghi nhận nhanh</string>
     <string name="quick_start">Bắt đầu nhanh</string>
+    <string name="records">Kỷ lục</string>
     <string name="reps">Reps</string>
     <string name="rest">Nghỉ</string>
     <string name="rest_day">Không có kế hoạch. Tùy bạn.</string>
@@ -87,6 +99,7 @@
     <string name="routines">Lịch tập</string>
     <string name="save">Lưu</string>
     <string name="save_and_start">Lưu &amp; bắt đầu buổi tập</string>
+    <string name="saved">Đã lưu</string>
     <string name="set_of">Hiệp %1$d / %2$d</string>
     <string name="sets">Hiệp</string>
     <string name="sets_of">%1$d / %2$d hiệp</string>
@@ -106,7 +119,7 @@
     <string name="time">Thời gian</string>
     <string name="today">Hôm nay</string>
     <string name="up_next">Tiếp theo</string>
-    <string name="up_next_set">%1$s, hiệp %2$d</string>
+    <string name="up_next_set">%1$s, hiệp %2$d/%3$d</string>
     <string name="volume">Tổng khối lượng</string>
     <string name="waiting_sync">Đang chờ đồng bộ</string>
     <string name="warmup">Khởi động</string>

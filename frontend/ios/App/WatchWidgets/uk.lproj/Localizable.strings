@@ -34,6 +34,8 @@
 "Next set" = "Наступний підхід";
 "Edit" = "Змінити";
 "Overview" = "Огляд";
+"Add session note" = "Додати нотатку";
+"Edit session note" = "Змінити нотатку";
 "Discard workout?" = "Скасувати тренування?";
 "Up next" = "Далі";
 "How hard was that set?" = "Наскільки важким був підхід?";
@@ -45,9 +47,15 @@
 "Keep going" = "Продовжити";
 "Finish now" = "Завершити зараз";
 "Back" = "Назад";
+"Saved" = "Збережено";
+"Hours" = "Години";
+"min (minutes)" = "хв";
+"Records" = "Рекорди";
+"New record" = "Новий рекорд";
 "Last time: %@" = "Минулого разу: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Давно нічого не записано. Якщо закінчив, воно завершиться саме о %@, збережене на останньому підході.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Завершити тренування зараз? Інакше воно завершиться саме о %@.";
+"%@ bpm" = "%@ уд/хв";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";
 "Open openGym on your iPhone once and your routines show up here." = "Відкрий openGym на iPhone один раз, і твої програми з’являться тут.";
@@ -55,6 +63,7 @@
 "All sets done" = "Усі підходи зроблено";
 "measuring" = "вимірюю …";
 "%@, set %lld" = "%@, підхід %lld";
+"%@, set %lld/%lld" = "%@, підхід %lld/%lld";
 "Calories" = "Калорії";
 "Heart rate" = "Пульс";
 "Hold" = "Утримання";
@@ -76,6 +85,8 @@
 "Opens openGym." = "Відкриває openGym.";
 "Hold to finish" = "Утримуй, щоб завершити";
 "iPhone out of reach" = "iPhone поза зоною";
+"Phone away" = "Немає iPhone";
+"iPhone in reach" = "iPhone поруч";
 "No set for %lld min. Still at it?" = "Жодного підходу %lld хв. Ще тренуєшся?";
 "A skipped set is still waiting." = "Пропущений підхід ще чекає.";
 "Active\nkcal" = "Активні\nккал";
@@ -88,4 +99,6 @@
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Увімкни Apple Здоров’я на iPhone, і openGym залишатиметься на екрані під час відпочинку та утримань.";
 "No sets yet" = "Підходів ще немає";
 "+%lld more" = "ще %lld";
+"On iPhone" = "На iPhone";
 "%@ sets" = "Підходів: %@";
+"Archived routines stay on your iPhone." = "Архівні тренування залишаються на iPhone.";

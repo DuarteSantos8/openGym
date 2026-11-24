@@ -185,6 +185,15 @@ describe('what survives a shared plan', () => {
     expect('restSec' in parsePlan(withRest('abc')).routines[0].ex[0]).toBe(false)
   })
 
+  // A step as a string passed "> 0" and then reached the weight sums and the watch's wheel as one.
+  it('reads a hand-edited step as a number, or drops it', () => {
+    const withInc = inc => ({ opengym_plan: 1, name: 'x', routines: [{ id: 'r', name: 'R', ex: [{ id: '0025', sets: 3, reps: 5, inc }] }], week: {}, customEx: [] })
+    expect(parsePlan(withInc('0.5')).routines[0].ex[0].inc).toBe(0.5)
+    expect(parsePlan(withInc(2.5)).routines[0].ex[0].inc).toBe(2.5)
+    expect('inc' in parsePlan(withInc('abc')).routines[0].ex[0]).toBe(false)
+    expect('inc' in parsePlan(withInc(-1)).routines[0].ex[0]).toBe(false)
+  })
+
   // The floors are the config sheet's own (count >= 1, pct >= 5); a value that is present but
   // out of range is pulled up to the floor, while a missing one falls back to the default.
   it('clamps out-of-range intensifier numbers to the floors the app enforces', () => {

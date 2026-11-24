@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, uk. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Вкажи рік народження в застосунку на телефоні</string>
+    <string name="add_session_note">Додати нотатку</string>
     <string name="added_weight">Додаткова вага</string>
     <string name="all_done_q">Тренування завершено?</string>
     <string name="all_sets_done">Усі підходи зроблено</string>
     <string name="all_synced">Усе синхронізовано</string>
     <string name="allow">Дозволити</string>
+    <string name="archived_stay_on_phone">Архівні тренування залишаються на телефоні.</string>
     <string name="avg">сер.</string>
     <string name="band_over">%1$d і вище</string>
     <string name="band_to">від %1$d до %2$d</string>
     <string name="band_under">нижче %1$d</string>
     <string name="body_weight">Вага тіла</string>
     <string name="bodyweight">Власна вага</string>
+    <string name="bpm">%1$s уд/хв</string>
     <string name="calories">Калорії</string>
     <string name="cancel">Скасувати</string>
     <string name="complication_desc">Твої підходи досі або серія тижнів.</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">Скасувати тренування?</string>
     <string name="done">Готово</string>
     <string name="edit">Змінити</string>
+    <string name="edit_session_note">Змінити нотатку</string>
     <string name="effort">Зусилля</string>
     <string name="ended_on_phone">Завершено на телефоні</string>
     <string name="exercises">Вправи</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">Пульс</string>
     <string name="hold">Утримання</string>
     <string name="hold_to_finish">Утримуй, щоб завершити</string>
+    <string name="hours">Години</string>
     <string name="how_hard">Наскільки важким був підхід?</string>
     <string name="hr_avg_max">сер. %1$d · макс. %2$d</string>
     <string name="hr_why">Дозволь пульс, щоб бачити його в кожному підході.</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">Тихіше</string>
     <string name="media_title">Музика</string>
     <string name="min">мін.</string>
+    <string name="min_minutes">хв</string>
     <string name="more">Більше</string>
     <string name="muscles">М’язи</string>
     <string name="n_more">ще %1$d</string>
     <string name="n_sets">Підходів: %1$s</string>
+    <string name="new_record">Новий рекорд</string>
     <string name="next_set_btn">Наступний підхід</string>
     <string name="no_age_set">Вік не вказано</string>
     <string name="no_effort_yet">Зусилля ще не оцінено</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">Підходів ще немає</string>
     <string name="no_workout">Тренування не триває</string>
     <string name="none">Немає</string>
+    <string name="not_a_watch_body">Він працює лише на годиннику з Wear OS. Поки не видаляй його: видалення зітре тренування на цьому телефоні. Як повернути застосунок для телефона: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Це застосунок для годинника</string>
     <string name="not_now">Не зараз</string>
     <string name="not_synced">Ще не синхронізовано</string>
     <string name="notif_running">Тренування триває. Торкнись, щоб повернутися.</string>
@@ -74,11 +83,14 @@
     <string name="overview">Огляд</string>
     <string name="personal_records">Рекорди</string>
     <string name="phone_away">Телефон поза зоною. Твої підходи чекають тут.</string>
+    <string name="phone_connected">Телефон підключено</string>
+    <string name="phone_gone">Немає телефона</string>
     <string name="phone_out_of_reach">Телефон поза зоною</string>
     <string name="previous_set">Попередній підхід</string>
     <string name="prs">Рекорди</string>
     <string name="quick_checkin">Швидке зважування</string>
     <string name="quick_start">Швидкий старт</string>
+    <string name="records">Рекорди</string>
     <string name="reps">Повт.</string>
     <string name="rest">Відпочинок</string>
     <string name="rest_day">Нічого не заплановано. Тобі вирішувати.</string>
@@ -87,6 +99,7 @@
     <string name="routines">Програми</string>
     <string name="save">Зберегти</string>
     <string name="save_and_start">Зберегти й почати тренування</string>
+    <string name="saved">Збережено</string>
     <string name="set_of">Підхід %1$d з %2$d</string>
     <string name="sets">Підходи</string>
     <string name="sets_of">%1$d з %2$d підходів</string>
@@ -106,7 +119,7 @@
     <string name="time">Час</string>
     <string name="today">Сьогодні</string>
     <string name="up_next">Далі</string>
-    <string name="up_next_set">%1$s, підхід %2$d</string>
+    <string name="up_next_set">%1$s, підхід %2$d/%3$d</string>
     <string name="volume">Обсяг</string>
     <string name="waiting_sync">Очікує синхронізації</string>
     <string name="warmup">Розминка</string>

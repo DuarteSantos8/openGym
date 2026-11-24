@@ -2,17 +2,20 @@
 <!-- openGym on Wear OS, da. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Tilføj dit fødselsår i telefonappen</string>
+    <string name="add_session_note">Tilføj træningsnote</string>
     <string name="added_weight">Ekstra vægt</string>
     <string name="all_done_q">Færdig?</string>
     <string name="all_sets_done">Alle sæt klaret</string>
     <string name="all_synced">Alt synkroniseret</string>
     <string name="allow">Tillad</string>
+    <string name="archived_stay_on_phone">Arkiverede rutiner bliver på din telefon.</string>
     <string name="avg">gns.</string>
     <string name="band_over">%1$d og op</string>
     <string name="band_to">%1$d til %2$d</string>
     <string name="band_under">under %1$d</string>
     <string name="body_weight">Kropsvægt</string>
     <string name="bodyweight">Kropsvægt</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Kalorier</string>
     <string name="cancel">Annuller</string>
     <string name="complication_desc">Dine sæt indtil nu, eller din streak.</string>
@@ -22,6 +25,7 @@
     <string name="discard_workout_q">Kasser passet?</string>
     <string name="done">Færdig</string>
     <string name="edit">Rediger</string>
+    <string name="edit_session_note">Rediger træningsnote</string>
     <string name="effort">Indsats</string>
     <string name="ended_on_phone">Afsluttet på telefonen</string>
     <string name="exercises">Øvelser</string>
@@ -33,6 +37,7 @@
     <string name="heart_rate">Puls</string>
     <string name="hold">Hold</string>
     <string name="hold_to_finish">Hold inde for at afslutte</string>
+    <string name="hours">Timer</string>
     <string name="how_hard">Hvor hårdt var det sæt?</string>
     <string name="hr_avg_max">snit %1$d · maks %2$d</string>
     <string name="hr_why">Tillad puls for at se den ved hvert sæt.</string>
@@ -56,10 +61,12 @@
     <string name="media_quieter">Lavere</string>
     <string name="media_title">Musik</string>
     <string name="min">min.</string>
+    <string name="min_minutes">min</string>
     <string name="more">Mere</string>
     <string name="muscles">Muskler</string>
     <string name="n_more">+%1$d mere</string>
     <string name="n_sets">%1$s sæt</string>
+    <string name="new_record">Ny rekord</string>
     <string name="next_set_btn">Næste sæt</string>
     <string name="no_age_set">Ingen alder angivet</string>
     <string name="no_effort_yet">Ingen anstrengelse vurderet endnu</string>
@@ -67,6 +74,8 @@
     <string name="no_sets_yet">Ingen sæt endnu</string>
     <string name="no_workout">Ingen træning i gang</string>
     <string name="none">Ingen</string>
+    <string name="not_a_watch_body">Den kører kun på et Wear OS-ur. Lad den blive installeret indtil videre: afinstallerer du den, slettes træningerne på denne telefon. Sådan får du telefonappen tilbage: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Det her er ur-appen</string>
     <string name="not_now">Ikke nu</string>
     <string name="not_synced">Ikke synkroniseret endnu</string>
     <string name="notif_running">Træning i gang. Tryk for at hoppe ind igen.</string>
@@ -74,11 +83,14 @@
     <string name="overview">Overblik</string>
     <string name="personal_records">PRs</string>
     <string name="phone_away">Telefonen er uden for rækkevidde. Dine sæt venter her.</string>
+    <string name="phone_connected">Telefonen er forbundet</string>
+    <string name="phone_gone">Telefonen væk</string>
     <string name="phone_out_of_reach">Telefonen uden for rækkevidde</string>
     <string name="previous_set">Forrige sæt</string>
     <string name="prs">PRs</string>
     <string name="quick_checkin">Hurtigt tjek-ind</string>
     <string name="quick_start">Hurtig start</string>
+    <string name="records">Rekorder</string>
     <string name="reps">Reps</string>
     <string name="rest">Pause</string>
     <string name="rest_day">Intet planlagt. Det er dit valg.</string>
@@ -87,6 +99,7 @@
     <string name="routines">Rutiner</string>
     <string name="save">Gem</string>
     <string name="save_and_start">Gem og start træning</string>
+    <string name="saved">Gemt</string>
     <string name="set_of">Sæt %1$d af %2$d</string>
     <string name="sets">Sæt</string>
     <string name="sets_of">%1$d af %2$d sæt</string>
@@ -106,7 +119,7 @@
     <string name="time">Tid</string>
     <string name="today">I dag</string>
     <string name="up_next">Næste</string>
-    <string name="up_next_set">%1$s, sæt %2$d</string>
+    <string name="up_next_set">%1$s, sæt %2$d/%3$d</string>
     <string name="volume">Volumen</string>
     <string name="waiting_sync">Venter på synkronisering</string>
     <string name="warmup">Opvarmning</string>
