@@ -568,7 +568,8 @@ struct KeypadView: View {
             // Full screen, from the clock's row down: close and the number beside the clock, the keys fill the rest.
             // The screen's round corners: ✕ moves in from the top left one, ✓ ends short of the bottom two
             // (on the whole screen both were cut, #1414 on an Ultra).
-            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 10 - Corner.top - Corner.bottom) / 4)
+            // 26 pt keys where they fit; on a 40 mm (197 pt) they give up the few points ✓ needs.
+            let keyH = max(22, (g.size.height - 36 - 34 - 5 * 4 - 10 - Corner.top - Corner.bottom) / 4)
             VStack(spacing: 4) {
                 HStack(spacing: 6) {
                     Button { dismiss() } label: {
