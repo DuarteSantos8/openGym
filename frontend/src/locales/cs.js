@@ -5876,4 +5876,6 @@ export default {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access před vaším serverem tento prohlížeč odmítl. Načtěte stránku znovu a znovu se přihlaste. Vaše změny zůstávají zde.",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Spojení se přerušilo, když byl openGym na pozadí. Trenér pokračoval tam, kde skončil.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Tažením fotky posunete, co je vidět, roztažením prstů ji přiblížíte.",
 }

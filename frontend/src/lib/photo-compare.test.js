@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareRows, cellAspect, coverCrop, panBy, daysApart, byDate, COMPARE_MAX } from './photo-compare.js'
+import { compareRows, cellAspect, coverCrop, panBy, zoomBy, zoomOf, ZOOM_MAX, daysApart, byDate, COMPARE_MAX } from './photo-compare.js'
 
 describe('compareRows', () => {
   it('rows of at most three, as even as they go, the fuller first', () => {
@@ -48,5 +48,30 @@ describe('daysApart and byDate', () => {
     expect(daysApart('x', '2026-01-01')).toBe(0)
     expect(byDate([{ d: '2026-02-01' }, { d: '2026-01-01', start: 2 }, { d: '2026-01-01', start: 1 }]).map(p => p.start || p.d))
       .toEqual([1, 2, '2026-02-01'])
+  })
+})
+
+/* #1315: pinch to zoom in a comparison; the shared picture crops the same part the screen shows. */
+describe('zoom', () => {
+  it('is held between 1 and ZOOM_MAX', () => {
+    expect(zoomOf(undefined)).toBe(1)
+    expect(zoomBy({ x: 0.2, y: 0.5 }, 2)).toEqual({ x: 0.2, y: 0.5, z: 2 })
+    expect(zoomBy({ z: 3 }, 10).z).toBe(ZOOM_MAX)
+    expect(zoomBy({ z: 2 }, 0.1).z).toBe(1)
+    expect(zoomBy({ z: 2 }, NaN).z).toBe(2)
+  })
+  it('crops a part z times smaller, placed by x and y, the part CSS scale(z) at that origin shows', () => {
+    expect(coverCrop(900, 1200, 0.75, { x: 0.5, y: 0.5, z: 2 })).toEqual({ sx: 225, sy: 300, sw: 450, sh: 600 })
+    expect(coverCrop(900, 1200, 0.75, { x: 0, y: 1, z: 3 })).toEqual({ sx: 0, sy: 800, sw: 300, sh: 400 })
+    // the screen: cover scale s, scale(z) around origin (x * cellW): visible start in source px
+    const cellW = 300, s = cellW / 900, z = 2, x = 0.25
+    const start = x * cellW * (1 - 1 / z) / s
+    expect(coverCrop(900, 1200, 0.75, { x, y: 0.5, z }).sx).toBeCloseTo(start, 6)
+  })
+  it('a pinched-in photo pans on both sides and keeps its zoom', () => {
+    const p = panBy({ x: 0.5, y: 0.5, z: 2 }, 100, 0, 900, 1200, 300, 400)
+    expect(p.z).toBe(2)
+    expect(p.x).toBeCloseTo(0.5 - 100 / 300, 6)   // overflow 900*(1/3)*2 - 300 = 300
+    expect(panBy({ x: 0.5, y: 0.5, z: 1 }, 100, 0, 900, 1200, 300, 400)).toEqual({ x: 0.5, y: 0.5 })
   })
 })

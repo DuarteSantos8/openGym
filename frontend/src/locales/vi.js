@@ -5876,4 +5876,6 @@ export default {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access phía trước máy chủ của bạn đã từ chối trình duyệt này. Hãy tải lại trang để đăng nhập lại. Thay đổi của bạn vẫn được giữ ở đây.",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "Kết nối bị ngắt khi openGym đang chạy nền. Coach đã tiếp tục từ chỗ còn dở.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Kéo ảnh để dời phần hiển thị, chụm hai ngón để phóng to.",
 };

@@ -5913,4 +5913,6 @@ export default {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "A szervered előtti Cloudflare Access elutasította ezt a böngészőt. Töltsd újra az oldalt, hogy újra bejelentkezz. A változtatásaid itt megmaradnak.",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "A kapcsolat megszakadt, amíg az openGym a háttérben volt. Az edző ott folytatta, ahol abbahagyta.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Húzd a fotót, hogy mozgasd a látható részt, és csippentéssel nagyíts rá.",
 }

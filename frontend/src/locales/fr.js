@@ -5910,4 +5910,6 @@ export default {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "Cloudflare Access, devant ton serveur, a refusé ce navigateur. Recharge la page pour te reconnecter. Tes modifications sont conservées ici.",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "La connexion a lâché pendant que openGym était en arrière-plan. Le Coach a repris là où il s’était arrêté.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Fais glisser une photo pour déplacer ce qui s’affiche, pince pour zoomer.",
 }

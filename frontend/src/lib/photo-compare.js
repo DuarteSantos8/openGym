@@ -3,6 +3,12 @@
 // (lib/compare-image.js), so what is shared is what was on the screen. Pure.
 
 export const COMPARE_MAX = 9
+/** How far a photo in a comparison can be pinched in (#1315): four times its cover size. */
+export const ZOOM_MAX = 4
+/** A position's zoom, from 1 (the photo just covers its cell) to ZOOM_MAX. */
+export const zoomOf = pos => { const z = Number(pos && pos.z); return Number.isFinite(z) ? Math.max(1, Math.min(ZOOM_MAX, z)) : 1 }
+/** The same position zoomed by `factor` (two fingers moving apart or together, the wheel), clamped. */
+export const zoomBy = (pos, factor) => ({ x: pos?.x ?? 0.5, y: pos?.y ?? 0.5, z: zoomOf({ z: zoomOf(pos) * (Number.isFinite(factor) && factor > 0 ? factor : 1) }) })
 
 /** Whole days between two ISO dates, never negative. */
 export function daysApart(a, b) {
@@ -44,20 +50,27 @@ export function coverCrop(srcW, srcH, aspect, pos = {}) {
   let sw = srcW, sh = srcH
   if (srcW / srcH > aspect) sw = srcH * aspect
   else sh = srcW / aspect
+  // Pinched in (pos.z): a part that many times smaller, still placed by x and y. On the screen that
+  // is CSS scale(z) with its origin at the same object-position, which shows exactly this part.
+  const z = zoomOf(pos)
+  sw /= z; sh /= z
   return { sx: (srcW - sw) * clamp01(pos.x ?? 0.5), sy: (srcH - sh) * clamp01(pos.y ?? 0.5), sw, sh }
 }
 
 /**
  * A drag of (dx, dy) screen pixels over a cell of cellW x cellH: the new position, so the photo
- * follows the finger. Only the side that overflows the cell moves.
+ * follows the finger. Only the side that overflows the cell moves; a pinched-in photo overflows
+ * on both, and keeps its zoom.
  */
 export function panBy(pos, dx, dy, srcW, srcH, cellW, cellH) {
-  const scale = Math.max(cellW / srcW, cellH / srcH)
+  const z = zoomOf(pos)
+  const scale = Math.max(cellW / srcW, cellH / srcH) * z
   const overX = srcW * scale - cellW, overY = srcH * scale - cellH
   const x = clamp01(pos?.x ?? 0.5), y = clamp01(pos?.y ?? 0.5)
   return {
     x: overX > 0.5 ? clamp01(x - dx / overX) : 0.5,
     y: overY > 0.5 ? clamp01(y - dy / overY) : 0.5,
+    ...(z > 1 ? { z } : {}),
   }
 }
 

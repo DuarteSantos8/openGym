@@ -5842,4 +5842,6 @@ export default {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "サーバーの前にある Cloudflare Access がこのブラウザを拒否しました。ページを再読み込みして、もう一度サインインしてください。変更はここに保存されています。",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym がバックグラウンドにある間に接続が切れました。コーチは中断したところから再開しました。",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "写真をドラッグして表示部分を動かし、ピンチで拡大できます。",
 }

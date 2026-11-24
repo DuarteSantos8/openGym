@@ -9,7 +9,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { t, tn } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
-import { compareRows, cellAspect, panBy, daysApart } from '../lib/photo-compare.js'
+import { compareRows, cellAspect, panBy, zoomBy, zoomOf, daysApart } from '../lib/photo-compare.js'
 import { useMediaUrl } from './CustomMedia.jsx'
 import { Segmented } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -26,20 +26,36 @@ export function fitCells(rows, aspect, w, h) {
   return { w: cw, h: cw / aspect }
 }
 
+// One finger drags the photo, two pinch it in or out (#1315), the wheel or a trackpad pinch does the
+// same with a mouse. Every finger on the cell is followed, so lifting one of two goes on as a drag.
 function Cell({ p, size, pos, onPos, urls }) {
   const { url } = useMediaUrl(p.m)
   urls.current[p.key] = url
-  const drag = useRef(null)
-  const down = e => { drag.current = { x: e.clientX, y: e.clientY, pos }; e.currentTarget.setPointerCapture?.(e.pointerId) }
-  const move = e => {
-    const d = drag.current
-    if (!d) return
-    onPos(panBy(d.pos, e.clientX - d.x, e.clientY - d.y, p.m.width || 1, p.m.height || 1, size.w, size.h))
+  const pts = useRef(new Map())
+  const start = useRef(null)
+  const sw = p.m.width || 1, sh = p.m.height || 1
+  const fit = v => panBy(v, 0, 0, sw, sh, size.w, size.h)
+  const apart = () => { const [a, b] = [...pts.current.values()]; return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0 }
+  const anchor = () => {
+    const [a] = [...pts.current.values()]
+    start.current = !a ? null : pts.current.size >= 2 ? { d: apart(), pos } : { x: a.x, y: a.y, pos }
   }
-  const up = () => { drag.current = null }
+  const down = e => { pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY }); e.currentTarget.setPointerCapture?.(e.pointerId); anchor() }
+  const move = e => {
+    if (!pts.current.has(e.pointerId)) return
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const s0 = start.current
+    if (!s0) return
+    if (s0.d) { const d = apart(); if (d > 0) onPos(fit(zoomBy(s0.pos, d / s0.d))) }
+    else onPos(panBy(s0.pos, e.clientX - s0.x, e.clientY - s0.y, sw, sh, size.w, size.h))
+  }
+  const up = e => { pts.current.delete(e.pointerId); anchor() }
+  const wheel = e => { if (e.deltaY) onPos(fit(zoomBy(pos, Math.exp(-e.deltaY / 300)))) }
+  const z = zoomOf(pos)
   return <div className="pcmp-cell" style={{ width: size.w, height: size.h }}
-    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-    {url && <img src={url} alt="" draggable={false} style={{ objectPosition: posCss(pos) }} />}
+    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
+    {url && <img src={url} alt="" draggable={false}
+      style={{ objectPosition: posCss(pos), ...(z > 1 ? { transform: `scale(${z})`, transformOrigin: posCss(pos) } : {}) }} />}
     <span className="pp-pill">{fmtDate(p.d, true)}</span>
   </div>
 }
@@ -107,7 +123,8 @@ export default function PhotoCompare({ photos, close, toast }) {
     setSharing(true)
     try {
       const [{ renderCompare }, { shareImage, saveImage }] = await Promise.all([import('../lib/compare-image.js'), import('../lib/share-image.js')])
-      const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: pos[p.key] }))
+      // The slider shows the photos without their zoom, so its picture does too: what is on the screen.
+      const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: slider && pos[p.key] ? { ...pos[p.key], z: 1 } : pos[p.key] }))
       if (items.some(it => !it.url)) { toast?.(t('Still loading the photos. Try again in a second.')); return }
       const blob = await renderCompare({ items, rows: slider ? [1] : rows, aspect, mode: slider ? 'slider' : 'side', pct, caption: span })
       if (!blob) { toast?.(t('This device could not draw the picture.')); return }
@@ -137,10 +154,9 @@ export default function PhotoCompare({ photos, close, toast }) {
           </div>)}
     </div>
     <div className="pcmp-foot">
-      {two
-        ? <Segmented value={mode} onChange={setMode}
-            options={[{ value: 'slider', label: t('Slider') }, { value: 'side', label: t('Side by side') }]} />
-        : <div className="small" style={{ opacity: 0.7, textAlign: 'center' }}>{t('Drag a photo to move what shows.')}</div>}
+      {two && <Segmented value={mode} onChange={setMode}
+        options={[{ value: 'slider', label: t('Slider') }, { value: 'side', label: t('Side by side') }]} />}
+      {!slider && <div className="small" style={{ opacity: 0.7, textAlign: 'center' }}>{t('Drag a photo to move what shows, pinch to zoom in.')}</div>}
     </div>
   </div>
 }

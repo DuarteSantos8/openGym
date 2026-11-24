@@ -5910,4 +5910,6 @@ export default {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "서버 앞의 Cloudflare Access가 이 브라우저를 거부했습니다. 페이지를 새로고침해 다시 로그인하세요. 변경 사항은 여기에 보관됩니다.",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "openGym이 백그라운드에 있는 동안 연결이 끊겼습니다. 코치가 멈춘 곳부터 다시 이어갔습니다.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "사진을 드래그해 보이는 부분을 옮기고, 두 손가락으로 벌려 확대하세요.",
 }

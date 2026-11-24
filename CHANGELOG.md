@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Progress photos: the camera fills the screen again instead of a square in the middle, comparing lets you pinch a photo to zoom in (the shared picture shows the same crop), and Compare moved under Take photo and Add photos, with its buttons pinned to the top while you pick (#1315, thanks @Borgna02, whose #1316 showed the way).
 - Android gym reminder: the arrival check is much easier on the battery. Far from the gym it uses cheap Wi-Fi and cell location and only turns to GPS for the last few hundred metres, and it stops after 5 minutes of not getting any closer, so living or working near your gym no longer costs up to 45 minutes of GPS a day (#1477, thanks @cubetes, whose #1478 had the idea).
 - Coach: exercises it creates for you keep their equipment, main and supporting muscles and other names, instead of arriving as a bare name. Give it a table of your own exercises and the muscle map and equipment filters get it right (#1250).
 - Coach with your own key: an answer cut off because you switched apps or locked the phone is no longer lost. The phone asks again, once, when you are back, and says it picked up where it left off; you still get one reply, not two (#1290).

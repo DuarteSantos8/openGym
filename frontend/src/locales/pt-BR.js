@@ -4335,6 +4335,8 @@ export const PT_BR_OVERRIDES = {
   "Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.": "O Cloudflare Access na frente do seu servidor recusou este navegador. Recarregue a página para entrar de novo. Suas alterações ficam salvas aqui.",
   // --- Coach picks up after the background (#1290) ---
   "The connection dropped while openGym was in the background. The Coach picked up where it left off.": "A conexão caiu enquanto o openGym estava em segundo plano. O Treinador retomou de onde tinha parado.",
+  // --- Progress photos: pinch to zoom (#1315) ---
+  "Drag a photo to move what shows, pinch to zoom in.": "Arraste uma foto para mudar o que aparece e afaste dois dedos para ampliar.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

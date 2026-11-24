@@ -300,17 +300,26 @@ export default function ProgressPhotos() {
     <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
         <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
-      {photos.length >= 2 && (comparing
-        ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
-        : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)}
     </div>
 
-    {!comparing && showAdd && <div className="pp-actions">
-      <Button variant="primary" icon="camera" disabled={!canAdd || busy} onClick={openCamera}>{t('Take photo')}</Button>
-      <Button variant="tinted" icon="image" disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
-        {busy ? t('Loading…') : t('Add photos')}
+    {/* Compare sits under Take photo and Add photos, not in the header, where it pushed the title
+        onto a second line (#1315). While picking, its row stays pinned under the top edge, so the
+        button that starts the comparison is in reach however far down the grid you are. */}
+    {!comparing && (showAdd || photos.length >= 2) && <div className="pp-actions">
+      {showAdd && <>
+        <Button variant="primary" icon="camera" disabled={!canAdd || busy} onClick={openCamera}>{t('Take photo')}</Button>
+        <Button variant="tinted" icon="image" disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
+          {busy ? t('Loading…') : t('Add photos')}
+        </Button>
+        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
+      </>}
+      {photos.length >= 2 && <Button variant="tinted" icon="sides" className="pp-wide" onClick={() => setComparing(true)}>{t('Compare')}</Button>}
+    </div>}
+    {comparing && <div className="pp-actions pp-stick">
+      <Button variant="primary" disabled={picked.length < 2} onClick={runCompare}>
+        {picked.length >= 2 ? tn('Compare {0} photo', 'Compare {0} photos', picked.length) : t('Compare')}
       </Button>
-      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
+      <Button variant="tinted" onClick={cancelCompare}>{t('Cancel')}</Button>
     </div>}
 
     {!comparing && nudge && <div className={'pp-nudge' + (nudge.kind === 'today' ? ' done' : '')}>
@@ -356,8 +365,5 @@ export default function ProgressPhotos() {
         </section>
       ))}</div>}
 
-    {comparing && picked.length >= 2 && <div className="pp-cta">
-      <Button variant="primary" onClick={runCompare}>{tn('Compare {0} photo', 'Compare {0} photos', picked.length)}</Button>
-    </div>}
   </>
 }
