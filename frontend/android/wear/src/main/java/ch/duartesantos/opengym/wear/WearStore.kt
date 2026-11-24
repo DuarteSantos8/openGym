@@ -614,7 +614,7 @@ object WearStore {
         _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = _calories.value)
         endAll()
         commit(s1)
-        Haptics.finished(app)
+        // No finish taps here: the summary's medal plays its own when it is seen (Medal.beats).
     }
 
     fun discard() {
@@ -1026,9 +1026,13 @@ object WearStore {
     /* ---------- the screenshot rig (debug builds only: adb ... --es demo <screen>) ---------- */
 
     /** Puts the store on one of the screens the docs and the store listing show. Debug builds only. */
+    /** The demo screen on show (debug builds): the summary opens at its back or its end for the shots. */
+    var demoScreen: String? = null
+
     fun demo(screen: String, snapshot: String) {
         if (!BuildConfig.DEBUG) return
         demoOn = true
+        demoScreen = screen
         _summary.value = null; stopRest(); stopHold(); closeFix(); weighInFor.value = null; cancelCountIn()
         askDone.value = false; idleLeft.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
         applySnapshotJson(snapshot)
@@ -1052,10 +1056,14 @@ object WearStore {
             "media" -> page.value = Page.MEDIA
             "fix" -> { completeSet(); stopRest(); fixLast() }
             "hold" -> { _state.value.workout?.entries?.indexOfFirst { it.isTimed }?.takeIf { it >= 0 }?.let { jump(it) }; startHold(auto = true) }
-            "summary" -> {
+            // summary: a records day (gold); summary-steel: none; -back, -records and -end open it at the back, at the first records and at Done.
+            "summary", "summary-steel", "summary-back", "summary-records", "summary-end" -> {
                 val w = _state.value.workout
                 if (w != null) {
-                    _summary.value = SessionCore.summary(w, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164, kcal = 312.0)
+                    // Every working set done, and bests just under the loads, so the records show: bench, incline press, pushdown.
+                    val bests = if (screen == "summary-steel") emptyMap() else mapOf("d1" to BestSet(60.0, 8.0), "d2" to BestSet(20.0, 10.0), "d4" to BestSet(27.5, 12.0))
+                    val done = w.copy(entries = w.entries.map { e -> e.copy(best = bests[e.id], sets = e.sets.map { if (it.warmup) it else it.copy(done = true) }) })
+                    _summary.value = SessionCore.summary(done, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164, kcal = 312.0)
                     commit(_state.value.copy(workout = null))
                 }
             }

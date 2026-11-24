@@ -13,6 +13,7 @@
     <string name="band_under">أقل من %1$d</string>
     <string name="body_weight">وزن الجسم</string>
     <string name="bodyweight">وزن الجسم</string>
+    <string name="bpm">%1$s ن/د</string>
     <string name="calories">السعرات</string>
     <string name="cancel">إلغاء</string>
     <string name="complication_desc">مجموعاتك حتى الآن، أو سلسلتك.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">النبض</string>
     <string name="hold">ثبات</string>
     <string name="hold_to_finish">اضغط مطولًا للإنهاء</string>
+    <string name="hours">الساعات</string>
     <string name="how_hard">ما مدى صعوبة تلك المجموعة؟</string>
     <string name="hr_avg_max">متوسط %1$d · أقصى %2$d</string>
     <string name="hr_why">اسمح بقراءة النبض لتراه في كل مجموعة.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">أخفض</string>
     <string name="media_title">الموسيقى</string>
     <string name="min">الأدنى</string>
+    <string name="min_minutes">دقيقة</string>
     <string name="more">أكثر</string>
     <string name="muscles">العضلات</string>
     <string name="n_more">+%1$d أخرى</string>
     <string name="n_sets">%1$s مجموعات</string>
+    <string name="new_record">رقم قياسي جديد</string>
     <string name="next_set_btn">المجموعة التالية</string>
     <string name="no_age_set">لم يُحدَّد العمر</string>
     <string name="no_effort_yet">لم يُقيَّم أي جهد بعد</string>
@@ -79,6 +83,7 @@
     <string name="prs">الأرقام القياسية</string>
     <string name="quick_checkin">تحديث سريع</string>
     <string name="quick_start">بدء سريع</string>
+    <string name="records">الأرقام القياسية</string>
     <string name="reps">التكرارات</string>
     <string name="rest">راحة</string>
     <string name="rest_day">لا شيء مخطط. القرار لك.</string>
@@ -87,6 +92,7 @@
     <string name="routines">الروتينات</string>
     <string name="save">حفظ</string>
     <string name="save_and_start">حفظ وبدء التمرين</string>
+    <string name="saved">تم الحفظ</string>
     <string name="set_of">المجموعة %1$d من %2$d</string>
     <string name="sets">المجموعات</string>
     <string name="sets_of">%1$d من %2$d مجموعات</string>

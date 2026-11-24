@@ -13,6 +13,7 @@
     <string name="band_under">menos de %1$d</string>
     <string name="body_weight">Peso corporal</string>
     <string name="bodyweight">Peso corporal</string>
+    <string name="bpm">%1$s lpm</string>
     <string name="calories">Calorías</string>
     <string name="cancel">Cancelar</string>
     <string name="complication_desc">Tus series hasta ahora, o tu racha.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">Pulso</string>
     <string name="hold">Aguanta</string>
     <string name="hold_to_finish">Mantén para terminar</string>
+    <string name="hours">Horas</string>
     <string name="how_hard">¿Cómo de dura fue la serie?</string>
     <string name="hr_avg_max">media %1$d · máx. %2$d</string>
     <string name="hr_why">Permite el pulso para verlo en cada serie.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">Más bajo</string>
     <string name="media_title">Música</string>
     <string name="min">mín.</string>
+    <string name="min_minutes">min</string>
     <string name="more">Más</string>
     <string name="muscles">Músculos</string>
     <string name="n_more">+%1$d más</string>
     <string name="n_sets">%1$s series</string>
+    <string name="new_record">Nuevo récord</string>
     <string name="next_set_btn">Serie siguiente</string>
     <string name="no_age_set">Sin edad</string>
     <string name="no_effort_yet">Aún sin esfuerzo valorado</string>
@@ -79,6 +83,7 @@
     <string name="prs">Récords</string>
     <string name="quick_checkin">Chequeo rápido</string>
     <string name="quick_start">Inicio rápido</string>
+    <string name="records">Récords</string>
     <string name="reps">Reps</string>
     <string name="rest">Descanso</string>
     <string name="rest_day">Nada planeado. Tú decides.</string>
@@ -87,6 +92,7 @@
     <string name="routines">Rutinas</string>
     <string name="save">Guardar</string>
     <string name="save_and_start">Guardar y empezar</string>
+    <string name="saved">Guardado</string>
     <string name="set_of">Serie %1$d de %2$d</string>
     <string name="sets">Series</string>
     <string name="sets_of">%1$d de %2$d series</string>

@@ -71,7 +71,21 @@ data class WorkoutSummary(
     val endedOnPhone: Boolean = false,
     /** The workout's calories (Health Services' total), rounded; none without a measurement. */
     val kcal: Int? = null,
+    /** Each record with the best it beat, for the medal's bars (`prs` are its names). A summary from an older build has none. */
+    val records: List<RecordLine> = emptyList(),
+    /** When it ended (ms since 1970), for the date on the medal's back. */
+    val endedAt: Double? = null,
 )
+
+/** A personal record set in this workout: the exercise, and the best before it and the new one. */
+@Serializable
+data class RecordLine(val name: String, val kind: Kind, val old: Double, val new: Double, val unit: String) {
+    @Serializable enum class Kind { weight, reps, hold }
+
+    /** The two bests as the record bar shows them: "100" and "105", "8" and "10", "1:00" and "1:15". */
+    fun texts(locale: java.util.Locale): Pair<String, String> =
+        if (kind == Kind.hold) Medal.clock(old) to Medal.clock(new) else Medal.number(old, locale) to Medal.number(new, locale)
+}
 
 typealias Event = JsonObject
 
@@ -391,6 +405,7 @@ object SessionCore {
         var sets = 0
         var volume = 0.0
         val prs = mutableListOf<String>()
+        val records = mutableListOf<RecordLine>()
         for (e in w.entries) {
             val work = e.sets.filter { !it.warmup }
             val f = e.factor(w.unit)
@@ -405,10 +420,27 @@ object SessionCore {
                 }
             }
             val best = e.best
-            if (best != null && beatsBest(e, work.filter { it.done }, best)) prs += e.name
+            val record = best?.let { record(e, work.filter { it.done }, it, w.unit) }
+            if (record != null) { prs += e.name; records += record }
         }
         return WorkoutSummary(w.name, w.unit, w.start?.let { max(0.0, (end - it) / 1000) }, sets, volume, prs,
-            hr?.first, hr?.second, endedOnPhone, kcal?.takeIf { it.isFinite() && it >= 0 }?.let { Math.round(it).toInt() })
+            hr?.first, hr?.second, endedOnPhone, kcal?.takeIf { it.isFinite() && it >= 0 }?.let { Math.round(it).toInt() }, records, end)
+    }
+
+    /**
+     * The record these done sets set, with the best they beat (beatsBest): the heaviest weight past
+     * it (the lightest when assisted), else the most reps at the best weight, or the longest hold.
+     */
+    fun record(e: Entry, done: List<SetRow>, best: BestSet, unit: String): RecordLine? {
+        if (!beatsBest(e, done, best)) return null
+        val u = e.weightUnit(unit)
+        if (e.isTimed) return RecordLine(e.name, RecordLine.Kind.hold, best.sec ?: 0.0, done.mapNotNull { it.sec }.maxOrNull() ?: 0.0, u)
+        val bw = best.w ?: 0.0; val br = best.r ?: 0.0
+        val assisted = e.assisted == true
+        val past = done.mapNotNull { it.w }.filter { it > 0 && (if (assisted) it < bw else it > bw) }
+        (if (assisted) past.minOrNull() else past.maxOrNull())?.let { return RecordLine(e.name, RecordLine.Kind.weight, bw, it, u) }
+        val reps = done.filter { (it.w ?: 0.0) == bw }.mapNotNull { it.r }.maxOrNull() ?: br
+        return RecordLine(e.name, RecordLine.Kind.reps, br, reps, u)
     }
 
     /** A heavier weight (lighter when assisted), or more reps at the same; a longer hold. */

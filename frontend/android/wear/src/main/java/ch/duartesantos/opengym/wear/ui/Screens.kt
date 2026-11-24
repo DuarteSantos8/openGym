@@ -190,8 +190,11 @@ fun OgTimeText() {
     val summary by WearStore.summary.collectAsState()
     val hr by WearStore.heartRate.collectAsState()
     val sync = rememberSync()
+    val accent = LocalAccent.current
+    val ambient = LocalAmbient.current
     val today = stringResource(R.string.today)
     val checkIn = stringResource(R.string.quick_checkin)
+    val saved = stringResource(R.string.saved)
     // "Still training?" has a title of two lines right under the clock: the clock alone there.
     val asking by WearStore.askDone.collectAsState()
     val running = s.workout != null && summary == null && weighIn == null && !asking
@@ -201,6 +204,8 @@ fun OgTimeText() {
         tight -> null
         weighIn != null -> checkIn
         s.workout == null && summary == null && s.ready?.today != null -> today
+        // The medal's status, as the Apple Watch has it beside the clock; "Ended on your phone" is too long, the summary says it itself.
+        summary?.endedOnPhone == false -> saved
         else -> null
     }?.takeIf { TopLine.leadFits(it, LocalConfiguration.current.screenWidthDp) }
     val showHr = running && hr != null && s.settings.show?.showHr != false
@@ -214,7 +219,15 @@ fun OgTimeText() {
     val d = LocalDensity.current
     androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
     TimeText { time ->
-        if (lead != null) { curvedText(lead, color = Og.Label2); timeTextSeparator() }
+        // A word too long for the arc leaves the check alone.
+        if (summary != null) curvedComposable {
+            // A workout ended on the phone gets a phone, as on the Apple Watch.
+            val badge = if (summary?.endedOnPhone == true) G.PHONE else G.CHECK
+            // Always On: a ring and a check, no lit fill.
+            if (ambient) Box(Modifier.size(18.dp).border(1.5.dp, accent.accent.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) { Glyph(badge, accent.accent.copy(alpha = 0.6f), 10.dp) }
+            else Box(Modifier.size(18.dp).clip(CircleShape).background(accent.accent), contentAlignment = Alignment.Center) { Glyph(badge, accent.on, 11.dp) }
+        }
+        if (lead != null) { curvedText(lead, color = if (summary != null) Og.Text else Og.Label2); timeTextSeparator() }
         timeTextCurvedText(time)
         val pill = running && sync.count > 0
         if (pill) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
@@ -1549,102 +1562,7 @@ fun IdlePrompt() {
     }
 }
 
-/* ---------- the summary ---------- */
-
-/** "Workout saved", the time big, sets and volume, the records, then the heart rate and calories. Done ignores its first second. */
-@Composable
-fun SummaryScreen(sum: WorkoutSummary) {
-    val a = LocalAccent.current
-    val sync = rememberSync()
-    val st by WearStore.state.collectAsState()
-    val heard = st.synced
-    val shownAt = remember { System.currentTimeMillis() }
-    val locale = LocalConfiguration.current.locales[0]
-    val list = rememberTransformingLazyColumnState()
-    TransformingLazyColumn(
-        state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = if (LocalRound.current) ListTop else 32.dp, bottom = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(18.dp).clip(CircleShape).background(a.accent), contentAlignment = Alignment.Center) { Glyph(G.CHECK, a.on, 11.dp) }
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(if (sum.endedOnPhone) R.string.ended_on_phone else R.string.workout_saved), fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold, maxLines = 2)
-            }
-        }
-        item { Quiet(sum.name, 12.sp) }
-        sum.duration?.let { d ->
-            item {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Quiet(stringResource(R.string.time), 12.sp)
-                    Text(duration(d, locale), style = Og.Number, fontSize = 30.sp, color = Og.Yellow, maxLines = 1)
-                }
-            }
-        }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                SumStat(stringResource(R.string.sets), "${sum.sets}")
-                if (sum.volume > 0) SumStat(stringResource(R.string.volume), java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)) + " " + sum.unit)
-            }
-        }
-        if (sum.prs.isNotEmpty()) {
-            item { Quiet(stringResource(R.string.personal_records), 12.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
-            items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
-        }
-        if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
-        if (sum.kcal != null && st.settings.show?.showKcal != false)
-            item { SumStat(stringResource(R.string.calories), java.text.NumberFormat.getIntegerInstance(locale).format(sum.kcal) + " kcal") }
-        item { SyncLine(sync, heard = heard) }
-        item {
-            PrimaryButton(stringResource(R.string.done), Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                if (System.currentTimeMillis() - shownAt >= 1000) WearStore.dismissSummary()
-            }
-        }
-    }
-}
-
-@Composable
-private fun SumStat(label: String, value: String, color: Color = Og.Text) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-        Quiet(label, 12.sp, lines = 1)
-        Text(value, style = Og.Number, fontSize = 18.sp, color = color, maxLines = 1)
-    }
-}
-
-/**
- * The heart rate near the foot of the summary, where a round screen is at its narrowest: "128 avg ·
- * 164 max" in one 18 sp line ran into the edge ("164 max" cut off). The average stays big, the max
- * goes on a smaller line under it, both inside a round-safe inset, and each line shrinks to fit at
- * the largest font scale instead of clipping.
- */
-@Composable
-private fun HrStat(label: String, value: String) {
-    val parts = splitStat(value)
-    val inset = if (LocalConfiguration.current.isScreenRound) 0.12f else 0.04f
-    val width = LocalConfiguration.current.screenWidthDp.dp * (1 - 2 * inset)
-    Column(horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.widthIn(max = width).semantics(mergeDescendants = true) {}) {
-        Quiet(label, 12.sp, lines = 1)
-        FitText(parts.first, 18.sp, Og.Red, style = Og.Number)
-        parts.second?.let { FitText(it, 13.sp, Og.Label2, style = Og.Number) }
-    }
-}
-
-/** "128 avg · 164 max" → ("128 avg", "164 max"); a line without the dot stays whole. */
-fun splitStat(s: String): Pair<String, String?> {
-    val i = s.indexOf(" · ")
-    return if (i < 0) s to null else s.substring(0, i).trim() to s.substring(i + 3).trim()
-}
-
-/** One line that shrinks (down to 70 %, never under 12 sp) rather than clip or wrap. */
-@Composable
-fun FitText(text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, style: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default) {
-    var scale by remember(text) { mutableStateOf(1f) }
-    Text(text, style = style, fontSize = size * scale, color = color, maxLines = 1, softWrap = false, textAlign = TextAlign.Center,
-        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f && size.value * (scale - 0.08f) >= 12f) scale -= 0.08f })
-}
+/* ---------- the summary: SummaryMedal.kt ---------- */
 
 /** "52 min", "1 hr 5 min", in the app's language. */
 fun duration(seconds: Double, locale: java.util.Locale): String {

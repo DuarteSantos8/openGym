@@ -13,6 +13,7 @@
     <string name="band_under">dưới %1$d</string>
     <string name="body_weight">Thể trọng</string>
     <string name="bodyweight">Thể trọng</string>
+    <string name="bpm">%1$s nhịp/phút</string>
     <string name="calories">Calo</string>
     <string name="cancel">Hủy</string>
     <string name="complication_desc">Số hiệp đến giờ, hoặc chuỗi tuần của bạn.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">Nhịp tim</string>
     <string name="hold">Giữ</string>
     <string name="hold_to_finish">Giữ để kết thúc</string>
+    <string name="hours">Giờ</string>
     <string name="how_hard">Hiệp đó nặng đến mức nào?</string>
     <string name="hr_avg_max">TB %1$d · tối đa %2$d</string>
     <string name="hr_why">Cho phép nhịp tim để xem mạch ở mỗi hiệp.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">Nhỏ hơn</string>
     <string name="media_title">Nhạc</string>
     <string name="min">tối thiểu</string>
+    <string name="min_minutes">phút</string>
     <string name="more">Nhiều</string>
     <string name="muscles">Nhóm cơ</string>
     <string name="n_more">+%1$d nữa</string>
     <string name="n_sets">%1$s hiệp</string>
+    <string name="new_record">Kỷ lục mới</string>
     <string name="next_set_btn">Hiệp tiếp theo</string>
     <string name="no_age_set">Chưa đặt tuổi</string>
     <string name="no_effort_yet">Chưa đánh giá mức nỗ lực</string>
@@ -79,6 +83,7 @@
     <string name="prs">PR</string>
     <string name="quick_checkin">Ghi nhận nhanh</string>
     <string name="quick_start">Bắt đầu nhanh</string>
+    <string name="records">Kỷ lục</string>
     <string name="reps">Reps</string>
     <string name="rest">Nghỉ</string>
     <string name="rest_day">Không có kế hoạch. Tùy bạn.</string>
@@ -87,6 +92,7 @@
     <string name="routines">Lịch tập</string>
     <string name="save">Lưu</string>
     <string name="save_and_start">Lưu &amp; bắt đầu buổi tập</string>
+    <string name="saved">Đã lưu</string>
     <string name="set_of">Hiệp %1$d / %2$d</string>
     <string name="sets">Hiệp</string>
     <string name="sets_of">%1$d / %2$d hiệp</string>

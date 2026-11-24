@@ -13,6 +13,7 @@
     <string name="band_under">žemiau %1$d</string>
     <string name="body_weight">Kūno svoris</string>
     <string name="bodyweight">Kūno svoris</string>
+    <string name="bpm">%1$s k./min</string>
     <string name="calories">Kalorijos</string>
     <string name="cancel">Atšaukti</string>
     <string name="complication_desc">Tavo atlikti priėjimai arba serija.</string>
@@ -33,6 +34,7 @@
     <string name="heart_rate">Širdies ritmas</string>
     <string name="hold">Išlaikymas</string>
     <string name="hold_to_finish">Palaikykite, kad baigtumėte</string>
+    <string name="hours">Valandos</string>
     <string name="how_hard">Kiek sunki buvo ta serija?</string>
     <string name="hr_avg_max">vid. %1$d · maks. %2$d</string>
     <string name="hr_why">Leisk pulsą ir matysi jį kiekviename priėjime.</string>
@@ -56,10 +58,12 @@
     <string name="media_quieter">Tyliau</string>
     <string name="media_title">Muzika</string>
     <string name="min">min.</string>
+    <string name="min_minutes">min.</string>
     <string name="more">Daugiau</string>
     <string name="muscles">Raumenys</string>
     <string name="n_more">+%1$d daugiau</string>
     <string name="n_sets">Serijų: %1$s</string>
+    <string name="new_record">Naujas rekordas</string>
     <string name="next_set_btn">Kita serija</string>
     <string name="no_age_set">Amžius nenustatytas</string>
     <string name="no_effort_yet">Dar neįvertinta jokio krūvio</string>
@@ -79,6 +83,7 @@
     <string name="prs">Rekordai</string>
     <string name="quick_checkin">Greitas pasisvėrimas</string>
     <string name="quick_start">Greitas startas</string>
+    <string name="records">Rekordai</string>
     <string name="reps">Kartojimai</string>
     <string name="rest">Poilsis</string>
     <string name="rest_day">Nieko nesuplanuota. Tu sprendi.</string>
@@ -87,6 +92,7 @@
     <string name="routines">Programos</string>
     <string name="save">Išsaugoti</string>
     <string name="save_and_start">Įrašyti ir pradėti treniruotę</string>
+    <string name="saved">Išsaugota</string>
     <string name="set_of">Serija %1$d iš %2$d</string>
     <string name="sets">Serijos</string>
     <string name="sets_of">%1$d iš %2$d serijų</string>
