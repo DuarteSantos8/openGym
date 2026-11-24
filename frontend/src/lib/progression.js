@@ -265,10 +265,17 @@ const climbsReps = cfg => isBw(cfg) || !isLoadedEq(cfg.id) || isAssisted(cfg)
 const PLAN_KEYS = ['sets', 'reps', 'repsMin', 'sec', 'm', 'setsMax']
 // A carry's distance joined the plan in 1.4.5: a session stamped before that has no `m`, and is not
 // a changed plan for lacking it.
-const samePlan = (a, b) => PLAN_KEYS.every(k => (k === 'm' && (a.m == null || b.m == null)) || (a[k] ?? null) === (b[k] ?? null))
-/** Did the routine's sets or reps change since the session that stamped `planned`? */
-export function planChanged(planned, cfg) {
-  return !!planned && !samePlan(planned, plannedOf(cfg))
+// Double and steady progression judge the reps reached at a weight, every set against the same
+// range (steady: every set together, against one aim that climbs). Neither reads the number of
+// sets: a set more or less leaves where the range stands where it was, so under these two a change
+// of sets alone is no change of plan (#1530, from @Brandon168's #1533). Every other policy counts
+// them: linear and Greyskull grade the whole session against its rows, triple progression moves
+// its own set count.
+const SETS_FREE = new Set(['double', 'steady'])
+const samePlan = (a, b, policy) => PLAN_KEYS.every(k => (k === 'm' && (a.m == null || b.m == null)) || (k === 'sets' && SETS_FREE.has(policy)) || (a[k] ?? null) === (b[k] ?? null))
+/** Did the routine's sets or reps change since the session that stamped `planned`? `policy`, when given, is the one the exercise progresses by: under double or steady progression a change of sets alone is not a change. */
+export function planChanged(planned, cfg, policy) {
+  return !!planned && !samePlan(planned, plannedOf(cfg), policy)
 }
 
 /**
@@ -437,7 +444,7 @@ export function stallCount(sessions, policy) {
       if (i < sessions.length -1 && sessions[i].weight !== sessions[i+1].weight) break
     // So does an edit of the plan (issue #275): misses against the old sets × reps say nothing
     // about the new ones. Only sessions that both carry their plan can show one.
-    if (i < sessions.length - 1 && sessions[i].planned && sessions[i + 1].planned && !samePlan(sessions[i].planned, sessions[i + 1].planned)) break
+    if (i < sessions.length - 1 && sessions[i].planned && sessions[i + 1].planned && !samePlan(sessions[i].planned, sessions[i + 1].planned, policy)) break
     // Next part limits policy to double. Why? Double is the only policy that deliberately asks for less than it grades against
     // (Since it is geared towards climbing through a rep range). 
     // Specifically, `aim` (see `const aim`) climbs from the bottom of the range while `ok` needs the top. 
@@ -597,7 +604,11 @@ export function nextPrescription(S, cfg, routine) {
   const across = lastAcrossRoutines(S)
   const borrowed = !!routine?.id && !across && last.rid !== routine.id
   const ownPlan = !across || !routine?.id || last.rid === routine.id
-  if (last.planned && ownPlan ? planChanged(last.planned, cfg) : borrowed) {
+  // Under double and steady progression the sets are not part of the plan (samePlan), except for a
+  // bodyweight climb: there the sets are what progression adds, so a count edited away from the
+  // one it reached has to start again.
+  const setsPolicy = mode === 'reps' && !(last.weight <= 0 && climbsReps(cfg)) ? policy : undefined
+  if (last.planned && ownPlan ? planChanged(last.planned, cfg, setsPolicy) : borrowed) {
     const why = borrowed ? ['First time in this routine, so starting from its own target.'] : ['Plan changed, so starting from your new target.']
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,
