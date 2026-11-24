@@ -5906,4 +5906,6 @@ export default {
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। खिसकाने के लिए किसी कार्ड को दबाकर रखें।",
   "Shows up when there is something to show": "जब दिखाने को कुछ होगा तब दिखेगा",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} सत्रों से अटके हैं। {1} {2} पर रहें और {3} रेप्स करें।",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} सत्रों से अटके हैं। एप्ली के अनुसार {1} {2} तक डीलोड, {3} रेप्स।",
 }

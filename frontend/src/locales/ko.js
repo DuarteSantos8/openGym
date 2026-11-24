@@ -5906,4 +5906,6 @@ export default {
   "Totals": "합계",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 카드를 길게 눌러 옮기세요.",
   "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0}회 동안 정체 중이에요. {1} {2}을(를) 유지하고 {3}회로 하세요.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0}회 동안 정체 중이에요. Epley 기준으로 {1} {2}까지 디로드, {3}회.",
 }

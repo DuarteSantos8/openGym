@@ -5838,4 +5838,7 @@ export default {
   "Totals": "合計",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "使うものは表示、あまり開かないものは折りたたみ、残りは非表示に。カードを長押しして移動できます。",
   "Shows up when there is something to show": "表示する内容があるときに現れます",
+  // progression reasons that reached t() as a variable (#1318)
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0}回のトレーニングで停滞しています。{1} {2}を維持して{3}回にします。",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0}回のトレーニングで停滞しています。Epleyの式で{1} {2}に下げ、{3}回にします。",
 }

@@ -5872,4 +5872,6 @@ export default {
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Nhấn giữ một thẻ để di chuyển.",
   "Shows up when there is something to show": "Sẽ hiện khi có nội dung để hiển thị",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Chững lại {0} buổi. Giữ {1} {2} và tập {3} lần.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Chững lại {0} buổi. Giảm tải theo Epley xuống {1} {2} với {3} lần.",
 };

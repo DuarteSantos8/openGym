@@ -5916,4 +5916,6 @@ export default {
   "Totals": "Totali",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra quello che usi, comprimi quello che apri di rado e nascondi il resto. Tieni premuta una scheda per spostarla.",
   "Shows up when there is something to show": "Compare quando c’è qualcosa da mostrare",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Fermo da {0} sedute. Resta a {1} {2} e fai {3} ripetizioni.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Fermo da {0} sedute. Scarico secondo Epley a {1} {2} per {3} ripetizioni.",
 }

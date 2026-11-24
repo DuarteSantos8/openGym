@@ -5953,4 +5953,6 @@ export default {
   "Totals": "Totalt",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Håll in ett kort för att flytta det.",
   "Shows up when there is something to show": "Visas när det finns något att visa",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Stått still i {0} pass. Stanna på {1} {2} och kör {3} reps.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Stått still i {0} pass. Deload enligt Epley till {1} {2} för {3} reps.",
 }

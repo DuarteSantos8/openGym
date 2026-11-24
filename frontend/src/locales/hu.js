@@ -5909,4 +5909,6 @@ export default {
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. Tarts lenyomva egy kártyát az áthelyezéshez.",
   "Shows up when there is something to show": "Akkor jelenik meg, ha van mit mutatnia",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} edzés óta elakadtál. Maradj {1} {2}-nál, és csinálj {3} ismétlést.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} edzés óta elakadtál. Epley szerinti tehermentesítés {1} {2}-ra, {3} ismétléssel.",
 }

@@ -5902,4 +5902,6 @@ export default {
   "Totals": "Sumos",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Palaikyk kortelę, kad ją perkeltum.",
   "Shows up when there is something to show": "Atsiras, kai bus ką rodyti",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Jau {0} treniruotes be pažangos. Likite ties {1} {2} ir darykite {3} pakartojimus.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Jau {0} treniruotes be pažangos. Iškrova pagal Epley iki {1} {2}, {3} pakartojimai.",
 }

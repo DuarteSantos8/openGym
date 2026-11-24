@@ -5961,4 +5961,6 @@ export default {
   "Totals": "الإجماليات",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. اضغط مطولاً على بطاقة لنقلها.",
   "Shows up when there is something to show": "تظهر عندما يكون فيها ما تعرضه",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "متوقف منذ {0} جلسات. ابقَ على {1} {2} وأدِّ {3} تكرارات.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "متوقف منذ {0} جلسات. تخفيف حسب إيبلي إلى {1} {2} لـ {3} تكرارات.",
 }

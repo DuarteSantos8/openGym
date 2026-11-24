@@ -5906,4 +5906,6 @@ export default {
   "Totals": "Totaux",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Maintiens une carte pour la déplacer.",
   "Shows up when there is something to show": "Apparaît quand il y a quelque chose à montrer",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Bloqué depuis {0} séances. Garde {1} {2} et fais {3} répétitions.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Bloqué depuis {0} séances. Décharge selon Epley à {1} {2} pour {3} répétitions.",
 }

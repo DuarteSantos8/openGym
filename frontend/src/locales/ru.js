@@ -5910,4 +5910,6 @@ export default {
   "Totals": "Итоги",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Удерживайте карточку, чтобы переместить её.",
   "Shows up when there is something to show": "Появится, когда будет что показать",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "Застой {0} тренировок. Оставьте {1} {2} и делайте {3} повторений.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "Застой {0} тренировок. Разгрузка по Эпли до {1} {2} на {3} повторений.",
 }

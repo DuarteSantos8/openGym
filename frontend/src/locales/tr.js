@@ -5906,4 +5906,6 @@ export default {
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Taşımak için bir karta basılı tut.",
   "Shows up when there is something to show": "Gösterecek bir şey olduğunda görünür",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} antrenmandır yerinde sayıyorsun. {1} {2} ile kal ve {3} tekrar yap.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} antrenmandır yerinde sayıyorsun. Epley’e göre {1} {2}’ye deload, {3} tekrar.",
 }

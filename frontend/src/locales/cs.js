@@ -5872,4 +5872,6 @@ export default {
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
   "Shows up when there is something to show": "Objeví se, až bude co ukázat",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "{0} tréninků bez posunu. Zůstaň na {1} {2} a dělej {3} opakování.",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "{0} tréninků bez posunu. Odlehčení podle Epleyho na {1} {2} na {3} opakování.",
 }

@@ -5917,4 +5917,6 @@ export default {
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ กดค้างที่การ์ดเพื่อย้าย",
   "Shows up when there is something to show": "จะแสดงเมื่อมีข้อมูลให้ดู",
+  "Stuck for {0} sessions. Hold {1} {2} and use {3} reps.": "ติดอยู่ {0} ครั้งแล้ว คงน้ำหนัก {1} {2} และทำ {3} ครั้ง",
+  "Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.": "ติดอยู่ {0} ครั้งแล้ว ลดน้ำหนักตามสูตร Epley เป็น {1} {2} ทำ {3} ครั้ง",
 }
