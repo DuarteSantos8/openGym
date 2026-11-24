@@ -333,3 +333,42 @@ describe('another tab signs in or out', () => {
     expect(lone.sync().user.id).toBe('u-9')
   })
 })
+
+// Found in review of #80: where storage will not keep the session (private mode, a full quota)
+// it lives in the page's memory, and following storage must not take it away again.
+describe('a session storage would not keep', () => {
+  const refusing = () => { const s = memory(); return { ...s, setItem: () => { throw new Error('QuotaExceededError') } } }
+  const unreadable = () => ({ getItem: () => { throw new Error('SecurityError') }, setItem: () => { throw new Error('SecurityError') }, removeItem: () => { throw new Error('SecurityError') } })
+  const make = storage => {
+    const a = setup({ 'POST /auth/v1/token': res(200, tokens()), 'POST /auth/v1/logout': res(204, {}) })
+    const fns = []
+    const auth = createAuth({ url: URL0, key: KEY, fetchImpl: a.fetchImpl, storage, now: () => 1_000_000_000_000, events: { addEventListener: (_t, fn) => fns.push(fn) } })
+    return { auth, tell: () => fns.forEach(fn => fn({ key: SESSION_KEY })) }
+  }
+
+  it('is not thrown away by reading storage: writes refused', async () => {
+    const t = make(refusing())
+    await t.auth.signIn('a@example.com', 'right-password')
+    expect(t.auth.sync().user.id).toBe('u-1')
+    t.tell()
+    expect(t.auth.session().user.id).toBe('u-1')
+  })
+
+  it('nor where storage cannot even be read', async () => {
+    const t = make(unreadable())
+    await t.auth.signIn('a@example.com', 'right-password')
+    expect(t.auth.sync().user.id).toBe('u-1')
+  })
+
+  it('signing out still signs out, and a session that was kept still follows another tab\'s sign-out', async () => {
+    const t = make(refusing())
+    await t.auth.signIn('a@example.com', 'right-password')
+    await t.auth.signOut()
+    expect(t.auth.sync()).toBeNull()
+    const s = memory()
+    const kept = make(s)
+    await kept.auth.signIn('a@example.com', 'right-password')
+    s.removeItem(SESSION_KEY)                         // another tab signs out
+    expect(kept.auth.sync()).toBeNull()
+  })
+})
