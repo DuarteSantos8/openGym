@@ -1783,6 +1783,7 @@ export default {
   'Any workout': 'Bármelyik edzés',
   'The last time you did the exercise, whichever routine it was in.': 'Amikor legutóbb csináltad a gyakorlatot, bármelyik rutinban.',
   'Plan changed, so starting from your new target.': 'A terv megváltozott, így az új célodtól indulsz.',
+  'Plan changed ({0}), so starting from your new target.': 'A terv megváltozott ({0}), így az új célodtól indulsz.',
   'First time in this routine, so starting from its own target.': 'Először ebben a rutinban, így a saját céljától indulsz.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Legutóbb nem volt súly rögzítve. Add meg, mennyit emelsz, és onnan a progresszió viszi tovább.',
   'Plan: {0}': 'Terv: {0}',

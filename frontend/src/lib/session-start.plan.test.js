@@ -167,7 +167,7 @@ describe('an edited routine starts again from its new plan', () => {
     cfgOf(st, 'A').reps = 10
     const [e] = start(st, ['A'])
     expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 10], [50, 10]])
-    expect(e.plan.why[0]).toBe('Plan changed, so starting from your new target.')
+    expect(e.plan.why[0]).toBe('Plan changed ({0}), so starting from your new target.')
     train(st, ['A'])
     expect(start(st, ['A'])[0].plan.kind).toBe('up')   // and progresses from there
   })
@@ -182,7 +182,7 @@ describe('an edited routine starts again from its new plan', () => {
     Object.assign(cfgOf(st, 'A'), { reps: 10, weight: 70 })
     const [e] = start(st, ['A'])
     expect(work(e).map(s => [s.w, s.r])).toEqual([[70, 10], [70, 10], [70, 10]])
-    expect(e.plan.why[0]).toBe('Plan changed, so starting from your new target.')
+    expect(e.plan.why[0]).toBe('Plan changed ({0}), so starting from your new target.')
     train(st, ['A'])
     expect(work(start(st, ['A'])[0]).map(s => [s.w, s.r])).toEqual([[72.5, 10], [72.5, 10], [72.5, 10]])
   })
@@ -194,6 +194,17 @@ describe('an edited routine starts again from its new plan', () => {
     const [e] = start(st, ['A'])
     expect(e.plan.kind).toBe('hold')
     expect(reps(e)).toEqual([10, 10])
+  })
+
+  // Adding a set under double progression is not a new plan: the rows grow to the new count and
+  // the reps carry on from what was managed, with no banner (nothing about the target changed).
+  it('adds a set under double progression without a restart', () => {
+    const st = state([{ id: 'A', name: 'A', ex: [{ id: BENCH, sets: 2, reps: 15, repsMin: 10, weight: 50, prog: 'double' }] }])
+    train(st, ['A'], { r: 11 })
+    cfgOf(st, 'A').sets = 3
+    const [e] = start(st, ['A'])
+    expect(e.plan.why[0]).not.toMatch(/^Plan changed/)
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 12], [50, 12], [50, 12]])
   })
 
   it('restarts a bodyweight rep goal from the new count, not from the old one plus a rep', () => {

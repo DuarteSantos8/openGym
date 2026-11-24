@@ -1791,6 +1791,7 @@ export default {
   'Any workout': 'การฝึกใดก็ได้',
   'The last time you did the exercise, whichever routine it was in.': 'ครั้งล่าสุดที่คุณเล่นท่านี้ ไม่ว่าจะอยู่ในรูทีนไหน',
   'Plan changed, so starting from your new target.': 'แผนเปลี่ยนแล้ว จึงเริ่มจากเป้าหมายใหม่ของคุณ',
+  'Plan changed ({0}), so starting from your new target.': 'แผนเปลี่ยนแล้ว ({0}) จึงเริ่มจากเป้าหมายใหม่ของคุณ',
   'First time in this routine, so starting from its own target.': 'ครั้งแรกในรูทีนนี้ จึงเริ่มจากเป้าหมายของรูทีนเอง',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'ครั้งก่อนไม่ได้บันทึกน้ำหนัก กรอกน้ำหนักที่คุณยก แล้วการเพิ่มน้ำหนักจะรับช่วงต่อจากตรงนั้น',
   'Plan: {0}': 'แผน: {0}',

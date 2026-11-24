@@ -1780,6 +1780,7 @@ export default {
   'Any workout': 'Herhangi bir antrenman',
   'The last time you did the exercise, whichever routine it was in.': 'Hareketi son yaptığın zaman, hangi rutinde olursa olsun.',
   'Plan changed, so starting from your new target.': 'Plan değişti, bu yüzden yeni hedefinden başlıyorsun.',
+  'Plan changed ({0}), so starting from your new target.': 'Plan değişti ({0}), bu yüzden yeni hedefinden başlıyorsun.',
   'First time in this routine, so starting from its own target.': 'Bu rutinde ilk kez, bu yüzden rutinin kendi hedefinden başlıyorsun.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Geçen sefer ağırlık kaydedilmedi. Kaldırdığın ağırlığı gir, ilerleme oradan devralsın.',
   'Plan: {0}': 'Plan: {0}',

@@ -1800,6 +1800,7 @@ export default {
   'Any workout': 'Jedes Training',
   'The last time you did the exercise, whichever routine it was in.': 'Das letzte Mal, als du die Übung gemacht hast, egal in welcher Routine.',
   'Plan changed, so starting from your new target.': 'Plan geändert, also geht es mit deiner neuen Vorgabe los.',
+  'Plan changed ({0}), so starting from your new target.': 'Plan geändert ({0}), also geht es mit deiner neuen Vorgabe los.',
   'First time in this routine, so starting from its own target.': 'Zum ersten Mal in dieser Routine, also geht es mit ihrer eigenen Vorgabe los.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Letztes Mal kein Gewicht eingetragen. Trag ein, was du bewegst, dann übernimmt die Progression.',
   'Plan: {0}': 'Plan: {0}',

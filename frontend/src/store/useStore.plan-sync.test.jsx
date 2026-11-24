@@ -22,7 +22,7 @@ import { convertWeight } from '../lib/units.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 
 const BENCH = '0025'   // barbell bench press — loaded, 2.5 kg step
-const PLAN_CHANGED = 'Plan changed, so starting from your new target.'
+const PLAN_CHANGED = 'Plan changed ({0}), so starting from your new target.'
 const clone = value => JSON.parse(JSON.stringify(value))
 const work = e => e.sets.filter(s => !isWarmupRow(s))
 const rows = e => work(e).map(s => [s.w, s.r])
@@ -153,7 +153,7 @@ describe('converting the numbers to lb', () => {
     expect(lb.workouts[0].entries[0].planned.weight).toBe(benchOf(lb).weight)
     expect(benchOf(lb).weight).toBe(convertWeight(100, 'kg', 'lb'))
     // Unedited, the plan is not read as changed by the conversion.
-    expect(start(lb)[0].plan.why[0]).not.toBe(PLAN_CHANGED)
+    expect(start(lb)[0].plan.why[0]).not.toMatch(/^Plan changed/)
 
     useStore.getState().update(s => { benchOf(s).reps = 8 })
     const [e] = start(useStore.getState().S)

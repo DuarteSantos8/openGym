@@ -1705,6 +1705,7 @@ export default {
   'Any workout': 'أي تمرين',
   'The last time you did the exercise, whichever routine it was in.': 'آخر مرة أدّيت فيها التمرين، أيًّا كان الروتين.',
   'Plan changed, so starting from your new target.': 'تغيّرت الخطة، لذا نبدأ من هدفك الجديد.',
+  'Plan changed ({0}), so starting from your new target.': 'تغيّرت الخطة ({0})، لذا نبدأ من هدفك الجديد.',
   'First time in this routine, so starting from its own target.': 'أول مرة في هذا الروتين، لذا نبدأ من هدفه الخاص.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'لم يُسجَّل وزن في المرة الماضية. أدخل الوزن الذي ترفعه وسيتابع التدرّج من هناك.',
   'Plan: {0}': 'الخطة: {0}',

@@ -1761,6 +1761,7 @@ export const PT_BR_OVERRIDES = {
   'Your last session of the exercise in the same routine. Heavy day and light day stay apart.': 'Sua última sessão do exercício na mesma rotina. Dia pesado e dia leve ficam separados.',
   'The last time you did the exercise, whichever routine it was in.': 'A última vez que você fez o exercício, em qualquer rotina.',
   'Plan changed, so starting from your new target.': 'O plano mudou, então você começa pela sua nova meta.',
+  'Plan changed ({0}), so starting from your new target.': 'O plano mudou ({0}), então você começa pela sua nova meta.',
   'First time in this routine, so starting from its own target.': 'Primeira vez nesta rotina, então você começa pela meta dela.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Nenhum peso registrado da última vez. Informe quanto você levanta e a progressão segue daí.',
   'reps from your last session': 'reps da sua última sessão',

@@ -1801,6 +1801,7 @@ export default {
   'Any workout': 'Vilket pass som helst',
   'The last time you did the exercise, whichever routine it was in.': 'Senaste gången du gjorde övningen, oavsett vilken rutin den låg i.',
   'Plan changed, so starting from your new target.': 'Planen har ändrats, så vi utgår från ditt nya mål.',
+  'Plan changed ({0}), so starting from your new target.': 'Planen har ändrats ({0}), så vi utgår från ditt nya mål.',
   'First time in this routine, so starting from its own target.': 'Första gången i den här rutinen, så vi utgår från dess eget mål.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Ingen vikt loggad förra gången. Ange vad du lyfter så tar progressionen det därifrån.',
   'Plan: {0}': 'Plan: {0}',

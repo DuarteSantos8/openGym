@@ -172,7 +172,7 @@ describe('a routine saved from a planned session', () => {
     expect(copy.ex[0]).toMatchObject({ sets: 3, reps: 12, repsMin: 8, weight: 60, prog: 'double' })
     // The copy picks up where the source stands: the same aim the source itself opens at next.
     const next = open(st, copy)
-    expect(next.plan.why[0]).not.toBe('Plan changed, so starting from your new target.')
+    expect(next.plan.why[0]).not.toMatch(/^Plan changed/)
     expect(work(next).map(s => [s.w, s.r])).toEqual(work(open(st, source)).map(s => [s.w, s.r]))
   })
 

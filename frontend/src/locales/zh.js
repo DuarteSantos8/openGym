@@ -1780,6 +1780,7 @@ export default {
   'Any workout': '任意训练',
   'The last time you did the exercise, whichever routine it was in.': '你上一次做这个动作的时候，不管是哪个训练日。',
   'Plan changed, so starting from your new target.': '计划已更改，所以从你的新目标开始。',
+  'Plan changed ({0}), so starting from your new target.': '计划已更改（{0}），所以从你的新目标开始。',
   'First time in this routine, so starting from its own target.': '第一次练这个训练日，所以从它自己的目标开始。',
   'No weight logged last time. Enter what you lift and progression takes it from there.': '上次没有记录重量。填上你实际举的重量，进阶就从那里接手。',
   'Plan: {0}': '计划：{0}',

@@ -65,7 +65,7 @@ describe('"Last time means"', () => {
     train(st, ['THU'])
     train(st, ['MON'])
     const [thu] = start(st, ['THU'])
-    expect(thu.plan.why[0]).not.toBe('Plan changed, so starting from your new target.')
+    expect(thu.plan.why[0]).not.toMatch(/^Plan changed/)
     expect(thu.plan.why[0]).not.toBe('First time in this routine, so starting from its own target.')
     expect(work(thu).map(s => s.r)).toEqual([8, 8])
   })
@@ -75,7 +75,7 @@ describe('"Last time means"', () => {
     train(st, ['THU'])
     st.routines[1].ex[0].reps = 8
     const [thu] = start(st, ['THU'])
-    expect(thu.plan.why[0]).toBe('Plan changed, so starting from your new target.')
+    expect(thu.plan.why[0]).toBe('Plan changed ({0}), so starting from your new target.')
   })
 
   it('with progression off and "Your last session", the rows copy the newest session anywhere', () => {

@@ -1764,6 +1764,7 @@ export default {
   'Any workout': '任何訓練',
   'The last time you did the exercise, whichever routine it was in.': '你上一次做這個動作的時候，不管是哪份課表。',
   'Plan changed, so starting from your new target.': '課表已變更，所以從你的新目標開始。',
+  'Plan changed ({0}), so starting from your new target.': '課表已變更（{0}），所以從你的新目標開始。',
   'First time in this routine, so starting from its own target.': '第一次練這份課表，所以從它自己的目標開始。',
   'No weight logged last time. Enter what you lift and progression takes it from there.': '上次沒有記錄重量。填上你實際舉的重量，漸進就會從那裡接手。',
   'Plan: {0}': '課表：{0}',
