@@ -449,7 +449,13 @@ You need the Connect IQ SDK and the device files:
    routine ready, two more by name, a streak), fresh on every load. It also prints the memory in
    use every 2 s (`mem <used> <peak> <total>` in `bin/sim/logs/monkeydo-<dev>.log`). The real
    builds leave `(:sim)` out (`monkey.jungle`). `SIM_NONE=1 sim/run.sh build <dev>` builds a watch
-   that has never heard from the phone (the "Not synced yet" screen).
+   that has never heard from the phone (the "Not synced yet" screen). `SIM_PHONE=1` builds one
+   whose phone started a workout (a superset, a per-side set, a hold, warm-ups, numbers as the
+   Android bridge hands them over) and then plays that phone (`sim/phone.mc.in`, left out of the
+   build without it so `long` measures the app alone): every 2 s the watch's new events go
+   to its copy of the workout and the window comes back through the app's own path
+   (`OpenGymApp.took`), as lib/garmin-snapshot.js makes it; `SIM_PHONE=start` waits for a start
+   from the watch instead (`SIM_AUTOHOLD=1`: "Timed holds start by themselves").
 
    What `setup` works around (paths in the script's variables): the simulator is built for Ubuntu
    22.04; on Debian 13 it lacks GTK 3 (taken from Debian's packages into a private folder),

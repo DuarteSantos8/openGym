@@ -394,7 +394,9 @@ module Actions {
             return false;
         }
         var e = Core.entryAt(s, pos);
-        var row = Core.dictOf(Core.arrOf(e["sets"])[l[1]]);
+        var sets = Core.arrOf(e["sets"]);
+        // (the window moved since: that exercise may now have fewer rows, or be another of the same)
+        var row = l[1] < sets.size() ? Core.dictOf(sets[l[1]]) : null;
         return !Core.isCardio(e) && row != null && !Core.isTrue(row["warmup"]);
     }
 

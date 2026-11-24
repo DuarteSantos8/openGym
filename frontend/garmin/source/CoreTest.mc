@@ -1219,4 +1219,27 @@ module CoreTest {
         Test.assertEqual(coreSetsOut(s), 2);
         return true;
     }
+
+    /* ---------- 1.4.6: no crash, the lean snapshot, waiting for the phone, a hold's own set ---------- */
+
+    //! The effort for the set just done (#1294): the phone took a set out of that exercise since
+    //! (or the window holds another of the same exercise with fewer sets): no effort offered, and
+    //! no crash reaching past the end of its sets.
+    (:test, :big)
+    function effortAfterTheSetIsGone(logger as Test.Logger) as Boolean {
+        var keep = G.state;
+        var last = G.last;
+        G.state = Core.emptyState();
+        var sn = coreSnap();
+        sn["settings"]["effort"] = "rir";
+        Core.applySnapshot(G.state, sn);
+        G.last = ["0025", 1, null];
+        Test.assert(Actions.canRate());
+        G.last = ["0025", 5, null];
+        var ok = !Actions.canRate();
+        G.state = keep;
+        G.last = last;
+        Test.assert(ok);
+        return true;
+    }
 }

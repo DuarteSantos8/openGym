@@ -223,8 +223,11 @@ describe('the watch rests when there is no workout', () => {
   const body = (src, name) => src.match(new RegExp(`function ${name}\\([^)]*\\)[^{]*\\{([\\s\\S]*?)\\n    \\}`))[1]
 
   it('a workout discarded on the phone stops the recording and the sensor', () => {
-    // the branch of onPhone with no workout left and no summary: it ends what the watch had running
-    expect(has(body(app, 'onPhone'), /else if \(G\.state\["w"\] == null\) \{\s*if \(had != null\) \{\s*Workout\.end\(false\);\s*Workout\.hrTotals\(\);\s*\}\s*Actions\.reset\(\);/)).toBe(true)
+    // a name with no letters (a routine or workout without one) is set as it is: lines() has no
+    // line for it, and reaching for its last line crashed the summary and the start screen (#1294)
+    expect(has(mc('Ui.mc'), /function title\(dc, s, fonts, y, maxLines\) \{\s*if \(s\.length\(\) == 0\) \{\s*return \[fonts\[0\], \[s\]\];/)).toBe(true)
+    // the branch of onPhone (took) with no workout left and no summary: it ends what the watch had running
+    expect(has(body(app, 'took'), /else if \(G\.state\["w"\] == null\) \{\s*if \(had != null\) \{\s*Workout\.end\(false\);\s*Workout\.hrTotals\(\);\s*\}\s*Actions\.reset\(\);/)).toBe(true)
     // Workout.end turns the sensor off when no workout is left
     expect(has(body(app, 'end'), /G\.state\["w"\] == null && \(Sensor has :setEnabledSensors\)\) \{\s*Sensor\.setEnabledSensors\(\[\]\)/)).toBe(true)
   })
