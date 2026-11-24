@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- iPhone: a workout you forgot to finish no longer keeps the phone's own heart-rate session running all night. It ends and saves by itself once "Still training?" goes unanswered, even with the phone locked. A long hold also pushes that question back instead of asking mid-plank (#1464, thanks @cubetes for #1465).
 - Fixed: "Still training?" no longer turns up on the phone after you finished the workout on the watch (#1280, thanks @cubetes for #1281).
 - Apple Watch and Wear OS: every routine reaches the watch, not only the first eight besides today's. When the message gets too big, the last ones wait on the phone instead of all of them (#1273, thanks @cubetes for #1274).
 - Watches: the weight wheel moves 1.25 kg (2.5 lb) a notch at most, so a squat no longer jumps from 100 to 105 kg. A finer step you set for an exercise is kept, and a weighted hold gets the same wheel (#1284, thanks @cubetes for #1285).
