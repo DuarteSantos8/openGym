@@ -5917,4 +5917,7 @@ export default {
   "A row on those two pages that opens this sheet.": "その2ページに、このシートを開く行を表示します。",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "次の振り返りまで非表示です。",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "ウォッチでも聞く",
+  "Starting from your wrist? Three quick taps there first, once a day.": "手首から始める？まずそこでさっと3タップ、1日1回だけ。",
 }

@@ -47,6 +47,7 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `stillHere` | `wid`, `at` | "Keep going" on the forgotten-workout question |
 | `workoutNote` | `wid`, `note`, `was`, `at` | the Overview's "Add note": the running workout's own note (`A.note`, the session note). Applied only when the phone's note is still `was` ("" for none): the phone wins a clash, and a phone note longer than 280 characters never matches, so the wrist cannot cut it. `note` is cut at 280, an emptied one clears the note. Needs `settings.workoutNote` |
 | `weighIn` | `w`, `at` | a body weight entry |
+| `dailyForm` | `sleep?`, `energy?`, `sore?` (each 1 to 5), `at` | the daily check-in before a workout started at the wrist (#1535): stored in `S.dayForm` on the day of `at`, exactly like the phone's own, unless that day has answers already. Needs `settings.checkin` |
 | `healthDeleted` | `ids` | the phone's own Apple Health removal runs again |
 | `watchStatus` | `health`, `version`, `at` | Settings → Apple Watch; an older one never replaces a newer one |
 
@@ -141,7 +142,7 @@ main 1, helper 0.4, only the muscles the phone's map draws), and `active.muscleN
 `ready.*.muscleNames` give those slugs' names in the app's language; the watch adds up its done
 working sets into the Muscles page (a workout started on the watch takes the names of the
 `ready` session it came from). `active.note` (the session note, cut at 280) and `settings.workoutNote` (true) drive the Overview's note button: a phone that does not send the flag gets no button. `settings.birthYear` (ages 10 to 100 only, and only while
-the Zones page is on) and `settings.show.zones` drive the Zones page. Nothing about a set, a rest
+the Zones page is on) and `settings.show.zones` drive the Zones page. `settings.checkin` (true, only while Settings → Workout → Daily check-in and its "Ask on the watch too" are on) and `settings.checkinDay` (the newest day answered, YYYY-MM-DD) drive the check-in before a workout started on the watch: asked when today is not that day and the watch has not asked today itself. Nothing about a set, a rest
 or an event depends on them: a watch that does not know them ignores them (Codable, Wear's
 `ignoreUnknownKeys`), `fitSnapshot` drops the muscle fields first when a snapshot is too big (the
 other routines', then today's, the running workout's last), and

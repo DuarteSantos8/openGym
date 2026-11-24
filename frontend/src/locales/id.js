@@ -5950,4 +5950,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Baris di kedua halaman itu yang membuka lembar ini.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Disembunyikan sampai rangkuman berikutnya.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Tanya juga di jam tangan",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Mulai dari pergelangan? Tiga ketukan cepat di sana dulu, sekali sehari.",
 };

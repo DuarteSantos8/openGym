@@ -5982,4 +5982,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Рядок на цих двох сторінках, що відкриває цю панель.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Приховано до наступного підсумку.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Питати й на годиннику",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Починаєш із зап’ястя? Спершу там три швидкі дотики, раз на день.",
 }

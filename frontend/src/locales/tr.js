@@ -5985,4 +5985,7 @@ export default {
   "A row on those two pages that opens this sheet.": "O iki sayfada bu sayfayı açan bir satır.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Bir sonraki özete kadar gizli.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Saatte de sor",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Bilekten mi başlıyorsun? Önce orada üç hızlı dokunuş, günde bir kez.",
 }

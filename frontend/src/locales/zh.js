@@ -5985,4 +5985,7 @@ export default {
   "A row on those two pages that opens this sheet.": "在这两个页面显示一行，点开就是这里。",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "已隐藏，直到下一次回顾。",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "在手表上也问一下",
+  "Starting from your wrist? Three quick taps there first, once a day.": "从手腕上开始？先在那里快速点三下，每天一次。",
 }

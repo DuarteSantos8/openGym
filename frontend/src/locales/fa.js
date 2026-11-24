@@ -5951,4 +5951,7 @@ export default {
   "A row on those two pages that opens this sheet.": "ردیفی در آن دو صفحه که این برگه را باز می‌کند.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "تا خلاصهٔ بعدی پنهان است.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "روی ساعت هم بپرس",
+  "Starting from your wrist? Three quick taps there first, once a day.": "از مچت شروع می‌کنی؟ اول سه ضربهٔ سریع همان‌جا، روزی یک بار.",
 }

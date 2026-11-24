@@ -78,6 +78,19 @@ const FROM_APP = {
   // The app's "min" is minutes; the watch's own "min" is a heart-rate minimum (zh 最低), so its own key.
   'min (minutes)': 'min',
   'Records': 'Records',
+  // The daily check-in before a workout started on the watch (#1535), the phone's own words.
+  'How are you today?': 'How are you today?',
+  'Sleep': 'Sleep',
+  'Energy': 'Energy',
+  'Soreness': 'Soreness',
+  'Barely slept': 'Barely slept',
+  'Slept like a log': 'Slept like a log',
+  'Running on fumes': 'Running on fumes',
+  'Full of beans': 'Full of beans',
+  'Nothing aches': 'Nothing aches',
+  'Everything aches': 'Everything aches',
+  'Skip for today': 'Skip for today',
+  'Continue': 'Continue',
   'New record': 'New record',
 }
 // The watch's own word where the app's is too long for its buttons; every other language keeps the app's.

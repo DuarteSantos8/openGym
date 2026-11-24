@@ -46,6 +46,11 @@ const FROM_APP = {
   // The summary's medal (#1309): the status beside the clock, the time's unit, the records' legend. The app's "min" is minutes
   // (the watch's own `min` below is a heart-rate minimum), so its own name.
   saved: 'Saved', hours: 'Hours', min_minutes: 'min', records: 'Records', new_record: 'New record',
+  // The daily check-in before a workout started on the watch (#1535), the phone's own words.
+  checkin_title: 'How are you today?', checkin_sleep: 'Sleep', checkin_energy: 'Energy', checkin_sore: 'Soreness',
+  checkin_sleep_lo: 'Barely slept', checkin_sleep_hi: 'Slept like a log', checkin_energy_lo: 'Running on fumes',
+  checkin_energy_hi: 'Full of beans', checkin_sore_lo: 'Nothing aches', checkin_sore_hi: 'Everything aches',
+  checkin_skip: 'Skip for today', checkin_continue: 'Continue',
 }
 // Built from an app word.
 const COMPOSED = {

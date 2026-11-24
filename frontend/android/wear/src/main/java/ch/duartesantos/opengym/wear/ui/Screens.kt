@@ -139,6 +139,7 @@ import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
+import ch.duartesantos.opengym.wear.DailyForm
 import ch.duartesantos.opengym.wear.RoundEdge
 import ch.duartesantos.opengym.wear.TitleFit
 import ch.duartesantos.opengym.wear.WorkoutSummary
@@ -147,7 +148,7 @@ import ch.duartesantos.opengym.wear.nudge
 
 /* ---------- the app: one screen at a time, fading into each other ---------- */
 
-private enum class Screen { COUNT, WEIGH, SUMMARY, START, IDLE, SESSION }
+private enum class Screen { COUNT, CHECKIN, WEIGH, SUMMARY, START, IDLE, SESSION }
 
 /** On a round screen the clock and heart rate curve down the sides: a title at the top keeps this far in. */
 private val TitleInset = 20.dp
@@ -160,6 +161,7 @@ fun WearApp(onWorkoutShown: () -> Unit = {}) {
     val summary by WearStore.summary.collectAsState()
     val countIn by WearStore.countIn.collectAsState()
     val weighIn by WearStore.weighInFor.collectAsState()
+    val checkin by WearStore.checkinFor.collectAsState()
     val askDone by WearStore.askDone.collectAsState()
     val goAt by WearStore.goAt.collectAsState()
     val ambient = LocalAmbient.current
@@ -172,6 +174,7 @@ fun WearApp(onWorkoutShown: () -> Unit = {}) {
     }
     val screen = when {
         countIn != null -> Screen.COUNT
+        checkin != null -> Screen.CHECKIN
         weighIn != null -> Screen.WEIGH
         summary != null -> Screen.SUMMARY
         w == null -> Screen.START
@@ -184,6 +187,7 @@ fun WearApp(onWorkoutShown: () -> Unit = {}) {
                 Screen.COUNT -> countIn?.let { c ->
                     CountdownView(c.from, stringResource(R.string.start_workout), onTap = { WearStore.startNow() }, onCancel = { WearStore.cancelCountIn() })
                 }
+                Screen.CHECKIN -> CheckinScreen()
                 Screen.WEIGH -> WeighInScreen()
                 Screen.SUMMARY -> summary?.let { SummaryScreen(it) }
                 Screen.START -> StartScreen(s)
@@ -210,7 +214,8 @@ fun OgTimeText() {
     val saved = stringResource(R.string.saved)
     // "Still training?" has a title of two lines right under the clock: the clock alone there.
     val asking by WearStore.askDone.collectAsState()
-    val running = s.workout != null && summary == null && weighIn == null && !asking
+    val checkin by WearStore.checkinFor.collectAsState()
+    val running = s.workout != null && summary == null && weighIn == null && checkin == null && !asking
     // A 40/41 mm watch at a large text size has no arc left for a word before the clock.
     val tight = LocalConfiguration.current.screenWidthDp < 210 && LocalDensity.current.fontScale > 1.15f
     val lead = when {
@@ -390,6 +395,86 @@ fun LogoMark() {
 fun VersionLine() {
     Text("openGym ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", color = Og.Label3, fontSize = 12.sp,
         modifier = Modifier.padding(top = 6.dp).semantics { contentDescription = "" })
+}
+
+/* ---------- the daily check-in ---------- */
+
+/**
+ * The daily check-in before a workout started here (#1535, the Apple Watch's CheckinView): sleep,
+ * energy and soreness, one page each. A tap on 1 to 5 answers and goes on; the crown picks one too,
+ * and Continue takes it. "Skip for today" starts the workout as planned, Cancel starts nothing.
+ */
+@Composable
+fun CheckinScreen() {
+    val step by WearStore.checkinStep.collectAsState()
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val keys = DailyForm.keys
+    val i = step.coerceIn(0, keys.size - 1)
+    val words = when (keys[i]) {
+        "sleep" -> Triple(R.string.checkin_sleep, R.string.checkin_sleep_lo, R.string.checkin_sleep_hi)
+        "energy" -> Triple(R.string.checkin_energy, R.string.checkin_energy_lo, R.string.checkin_energy_hi)
+        else -> Triple(R.string.checkin_sore, R.string.checkin_sore_lo, R.string.checkin_sore_hi)
+    }
+    val label = stringResource(words.first)
+    val lo = stringResource(words.second)
+    val hi = stringResource(words.third)
+    // The next question starts untouched: the crown's first notch goes from the middle.
+    var picked by remember(step) { mutableStateOf<Int?>(null) }
+    val focus = remember { FocusRequester() }
+    val view = LocalView.current
+    LaunchedEffect(Unit) { try { focus.requestFocus() } catch (_: Exception) {} }
+    val list = rememberTransformingLazyColumnState()
+    TransformingLazyColumn(
+        state = list, modifier = Modifier.fillMaxSize().crown(focus) { d ->
+            picked = ((picked ?: 3) + d).coerceIn(1, 5)
+            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        },
+        rotaryScrollableBehavior = null,
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 40.dp, bottom = 36.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        item {
+            Text(stringResource(R.string.checkin_title), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
+                maxLines = 2, modifier = Modifier.semantics { heading() })
+        }
+        item {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = a.accent, maxLines = 1, modifier = Modifier.weight(1f))
+                Text("${i + 1}/${keys.size}", fontSize = 12.sp, color = Og.Label2, style = Og.Number)
+            }
+        }
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                for (n in 1..5) {
+                    val on = picked == n && !dim
+                    val said = when (n) { 1 -> "1, $lo"; 5 -> "5, $hi"; else -> "$n" }
+                    Box(
+                        Modifier.weight(1f).height(34.dp).clip(CircleShape)
+                            .background(if (on) a.accent else Color.Transparent)
+                            .border(1.5.dp, a.accent, CircleShape)
+                            .combinedClickable(role = Role.Button) { WearStore.answerCheckin(n) }
+                            .semantics { contentDescription = said },
+                        contentAlignment = Alignment.Center,
+                    ) { Text("$n", color = if (on) a.on else Og.Text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, style = Og.Number) }
+                }
+            }
+        }
+        item {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp).clearAndSetSemantics {}) {
+                Quiet(lo, 11.sp, Modifier.weight(1f), align = TextAlign.Start)
+                Spacer(Modifier.width(6.dp))
+                Quiet(hi, 11.sp, Modifier.weight(1f), align = TextAlign.End)
+            }
+        }
+        val p = picked
+        if (p != null) item { PrimaryButton(stringResource(R.string.checkin_continue), Modifier.fillMaxWidth()) { WearStore.answerCheckin(p) } }
+        item { RowButton(stringResource(R.string.checkin_skip), Modifier.fillMaxWidth()) { WearStore.finishCheckin(true) } }
+        item {
+            Text(stringResource(R.string.cancel), color = Og.Label2, fontSize = 13.sp,
+                modifier = Modifier.heightIn(min = 40.dp).padding(top = 10.dp).combinedClickable(role = Role.Button) { WearStore.cancelCheckin() })
+        }
+    }
 }
 
 /* ---------- the weigh-in ---------- */

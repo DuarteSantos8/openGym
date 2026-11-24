@@ -5988,4 +5988,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Egy sor azon a két oldalon, ami megnyitja ezt a lapot.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Rejtve a következő összefoglalóig.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Az órán is kérdezzen",
+  "Starting from your wrist? Three quick taps there first, once a day.": "A csuklódról indítasz? Előbb ott három gyors koppintás, naponta egyszer.",
 }

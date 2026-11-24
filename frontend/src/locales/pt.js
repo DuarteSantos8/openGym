@@ -5985,4 +5985,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Uma linha nessas duas páginas que abre esta folha.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Oculto até ao próximo resumo.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Perguntar também no relógio",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Começas pelo pulso? Primeiro três toques rápidos lá, uma vez por dia.",
 }

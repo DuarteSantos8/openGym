@@ -59,6 +59,7 @@ import { streakInfo } from './streak.js'
 import { accentValue, accentPair, customAccentVars } from './accent.js'
 import { circuitClock } from './circuit.js'
 import { routinesFile } from './watch-routines-file.js'
+import { watchCheckinOn, lastFormDay, FORM_KEYS } from './daily-form.js'
 
 // A circuit's clock (lib/circuit.js, store/useCircuit.js), when one runs: its rests and its get
 // ready go to the watch as the rest it already counts down; the station on now is the current
@@ -857,6 +858,14 @@ function applyEach (events, getState, now = Date.now()) {
           if (!appHandlers?.weighIn) break
           appHandlers.weighIn({ w: num(ev.w), at: num(ev.at) || Date.now() })
         }
+      } else if (ev.type === 'dailyForm') {
+        // The daily check-in the watch asks before a workout it starts (#1535): stored on its day as
+        // the phone's own check-in is, unless that day has one already. Nothing to store: done.
+        const form = formFromWatch(ev)
+        if (form) {
+          if (!appHandlers?.dailyForm) break
+          appHandlers.dailyForm({ form, at: num(ev.at) || now })
+        }
       } else if (ev.type === 'healthDeleted') {
         // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
         // (which kept retrying the ones it could not delete) runs again and now finds them gone.
@@ -912,6 +921,13 @@ function applyEach (events, getState, now = Date.now()) {
   }
   writeApplied(applied)
   return done
+}
+
+// The answers of a watch's dailyForm event, each 1 to 5 (anything else is left out), or null for none.
+export function formFromWatch (ev) {
+  const out = {}
+  for (const k of FORM_KEYS) { const v = ev?.[k]; if (Number.isInteger(v) && v >= 1 && v <= 5) out[k] = v }
+  return Object.keys(out).length ? out : null
 }
 
 /**
@@ -1148,7 +1164,8 @@ export function leftUnsaved (prev, next, { tour = false } = {}) {
 /**
  * What the watch takes from the app beyond its own settings: the app's language (the watch shows
  * its words in it, whatever the watch itself is set to), and whether a workout starts with the
- * weigh-in (Settings → During a workout) with the last body weight to start the crown from.
+ * weigh-in (Settings → During a workout) with the last body weight to start the crown from, and
+ * whether it asks the daily check-in first (#1535).
  */
 export function watchExtras (S, show = {}) {
   let lang = 'en'
@@ -1162,6 +1179,9 @@ export function watchExtras (S, show = {}) {
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
+    // Settings → Workout → Daily check-in → "Ask on the watch too" (#1535): a workout started at the
+    // wrist asks first, unless `checkinDay` (the newest day answered, the phone's date) is today.
+    ...(watchCheckinOn(S) ? { checkin: true, ...(lastFormDay(S) ? { checkinDay: lastFormDay(S) } : {}) } : {}),
     // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
     ...(S?.autoHolds === true ? { autoHolds: true } : {}),
     // The age for the watch's heart-rate zones (10 to 100 like live-tiles hrZone), only with zones on.

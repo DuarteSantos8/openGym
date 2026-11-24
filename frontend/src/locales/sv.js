@@ -6032,4 +6032,7 @@ export default {
   "A row on those two pages that opens this sheet.": "En rad på de två sidorna som öppnar det här bladet.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Dold till nästa sammanfattning.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Fråga på klockan också",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Startar du från handleden? Tre snabba tryck där först, en gång om dagen.",
 }

@@ -1051,10 +1051,57 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// is still on the glass, right where Start comes up. The complication's Start is never held back.
     private var homeLock = TouchLock()
 
-    /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
-    /// unless it is switched off there (Settings → During a workout).
+    /// The daily check-in before a workout started here (#1535), when the phone asks for it: the
+    /// question up (an index into DailyForm.keys) and the answers so far.
+    @Published private(set) var checkinFor: ReadySession?
+    @Published private(set) var checkinStep = 0
+    @Published private(set) var checkinAnswers: [String: Int] = [:]
+    /// The day this watch last asked (answered or skipped): never twice a day.
+    private static let checkinAskedKey = "checkinAsked"
+
+    /// Starts a ready session here, the phone asleep or not: first the daily check-in and the
+    /// weigh-in, as on the phone, unless they are switched off there (Settings → Workout).
     func start(_ session: ReadySession, fromLink: Bool = false) {
         guard fromLink || homeLock.allows(at: Date()) else { return }
+        let today = DailyForm.day(Date())
+        if !isDemo && DailyForm.due(on: state.settings.checkin, answeredDay: state.settings.checkinDay,
+                                    askedDay: UserDefaults.standard.string(forKey: SessionStore.checkinAskedKey), today: today) {
+            checkinAnswers = [:]
+            checkinStep = 0
+            checkinFor = session
+            return
+        }
+        weighInOrCountIn(session)
+    }
+
+    /// One question of the check-in answered (1 to 5) or passed over (nil): the next one comes up,
+    /// and after the last the workout goes on to the weigh-in or the 3-2-1.
+    func answerCheckin(_ value: Int?) {
+        guard checkinFor != nil else { return }
+        let keys = DailyForm.keys
+        if checkinStep < keys.count, let v = value { checkinAnswers[keys[checkinStep]] = v }
+        if checkinStep + 1 < keys.count { checkinStep += 1 } else { finishCheckin(skip: false) }
+    }
+
+    /// The check-in done (its answers go to the phone) or skipped for today; the workout starts either way.
+    func finishCheckin(skip: Bool) {
+        guard let session = checkinFor else { return }
+        checkinFor = nil
+        UserDefaults.standard.set(DailyForm.day(Date()), forKey: SessionStore.checkinAskedKey)
+        if !skip, let ev = DailyForm.event(checkinAnswers, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString) {
+            send(event: ev)
+        }
+        checkinAnswers = [:]
+        weighInOrCountIn(session)
+    }
+
+    /// Cancel: nothing starts, and the check-in is asked again next time.
+    func cancelCheckin() {
+        checkinFor = nil
+        checkinAnswers = [:]
+    }
+
+    private func weighInOrCountIn(_ session: ReadySession) {
         if state.settings.weighIn != false && !isDemo {
             bodyWeight = state.settings.lastBw ?? (unit == "lb" ? 160 : 70)
             weighInFor = session
@@ -1835,6 +1882,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
+            case "checkin":
+                self.checkinFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
             default: break
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).

@@ -87,6 +87,10 @@ object WearStore {
     val lastRated = MutableStateFlow<Double?>(null)
     /** Which way the set page last moved (‹ -1, › and Done +1): the set's lines come in from there. */
     val lastStep = MutableStateFlow(1)
+    /** The daily check-in before a workout started here (#1535): the question up (DailyForm.keys) and the answers so far. */
+    val checkinFor = MutableStateFlow<ReadySession?>(null)
+    val checkinStep = MutableStateFlow(0)
+    private val checkinAnswers = mutableMapOf<String, Int>()
     /** The weigh-in before a workout started here, and the body weight on its crown. */
     val weighInFor = MutableStateFlow<ReadySession?>(null)
     /** Every routine the phone sent as a file (kept in filesDir/routines.json across launches). */
@@ -548,9 +552,42 @@ object WearStore {
 
     /* ---------- starting: the weigh-in, the 3-2-1, Go! ---------- */
 
-    /** A routine started here: first the weigh-in, as on the phone, unless it is off there. */
+    /** A routine started here: first the daily check-in and the weigh-in, as on the phone, unless they are off there. */
     fun start(session: ReadySession) {
         if (!homeLock.allows(now())) return
+        val st = _state.value.settings
+        if (DailyForm.due(st.checkin, st.checkinDay, prefs.getString("checkinAsked", null), DailyForm.day(now()))) {
+            checkinAnswers.clear()
+            checkinStep.value = 0
+            checkinFor.value = session
+            return
+        }
+        weighInOrCountIn(session)
+    }
+
+    /** One question answered (1 to 5) or passed over (null): the next one, and after the last the weigh-in or the 3-2-1. */
+    fun answerCheckin(value: Int?) {
+        if (checkinFor.value == null) return
+        val keys = DailyForm.keys
+        val i = checkinStep.value
+        if (i < keys.size && value != null) checkinAnswers[keys[i]] = value
+        if (i + 1 < keys.size) checkinStep.value = i + 1 else finishCheckin(false)
+    }
+
+    /** The check-in done (its answers go to the phone) or skipped for today; the workout starts either way. */
+    fun finishCheckin(skip: Boolean) {
+        val session = checkinFor.value ?: return
+        checkinFor.value = null
+        prefs.edit().putString("checkinAsked", DailyForm.day(now())).apply()
+        if (!skip) DailyForm.event(checkinAnswers.toMap(), now().toDouble(), UUID.randomUUID().toString())?.let { PhoneLink.send(app, it) }
+        checkinAnswers.clear()
+        weighInOrCountIn(session)
+    }
+
+    /** Cancel: nothing starts, and the check-in is asked again next time. */
+    fun cancelCheckin() { checkinFor.value = null; checkinAnswers.clear() }
+
+    private fun weighInOrCountIn(session: ReadySession) {
         val st = _state.value.settings
         if (st.weighIn != false) {
             bodyWeight.value = st.lastBw ?: if (_state.value.unit == "lb") 160.0 else 70.0
@@ -1102,7 +1139,7 @@ object WearStore {
         if (!BuildConfig.DEBUG) return
         demoOn = true
         demoScreen = screen
-        _summary.value = null; stopRest(); stopHold(); closeFix(); weighInFor.value = null; cancelCountIn()
+        _summary.value = null; stopRest(); stopHold(); closeFix(); weighInFor.value = null; checkinFor.value = null; cancelCountIn()
         askDone.value = false; idleLeft.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
         applySnapshotJson(snapshot)
         when (screen) {
@@ -1144,6 +1181,7 @@ object WearStore {
                 }
             }
             "weighin" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); weighInFor.value = it; bodyWeight.value = 78.4 }
+            "checkin" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); checkinStep.value = 0; checkinFor.value = it }
             "countdown" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); _countIn.value = CountIn(now() - 1200, it) }
             "go" -> goAt.value = now() + 600_000
             "idle" -> { askDone.value = true; idleMinutes.value = 47; idleEndsAt.value = now() + 180_000 }

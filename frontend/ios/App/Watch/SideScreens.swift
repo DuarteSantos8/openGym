@@ -532,6 +532,126 @@ struct IdlePrompt: View {
     }
 }
 
+/* ---------- the daily check-in ---------- */
+
+/// The daily check-in before a workout started here (#1535), the phone's in short: sleep, energy
+/// and soreness, one page each. A tap on 1 to 5 answers and goes on; the crown picks one too, and
+/// Continue takes it. "Skip for today" starts the workout as planned, Cancel starts nothing.
+struct CheckinView: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.onAccent) private var onAccent
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @FocusState private var crownOn: Bool
+    @State private var crown: Double = 3
+    @State private var turned = false
+    /// The crown put back in the middle for the next question: that change is no answer.
+    @State private var resetting = false
+
+    /// Each question's icon, its words and the words at both ends of its scale (components/DailyCheckin.jsx).
+    private struct Question {
+        let icon: String
+        let label: LocalizedStringKey
+        let lo: LocalizedStringKey
+        let hi: LocalizedStringKey
+    }
+
+    private func question(_ key: String) -> Question {
+        switch key {
+        case "sleep": return Question(icon: "moon.zzz.fill", label: LocalizedStringKey("Sleep"), lo: LocalizedStringKey("Barely slept"), hi: LocalizedStringKey("Slept like a log"))
+        case "energy": return Question(icon: "bolt.fill", label: LocalizedStringKey("Energy"), lo: LocalizedStringKey("Running on fumes"), hi: LocalizedStringKey("Full of beans"))
+        default: return Question(icon: "figure.strengthtraining.traditional", label: LocalizedStringKey("Soreness"), lo: LocalizedStringKey("Nothing aches"), hi: LocalizedStringKey("Everything aches"))
+        }
+    }
+
+    /// What VoiceOver says for a number: its end of the scale with it at 1 and 5.
+    private func said(_ n: Int, _ q: Question) -> Text {
+        if n == 1 { return Text(verbatim: "1, ") + Text(q.lo) }
+        if n == 5 { return Text(verbatim: "5, ") + Text(q.hi) }
+        return Text(verbatim: String(n))
+    }
+
+    var body: some View {
+        let keys = DailyForm.keys
+        let step = min(max(store.checkinStep, 0), keys.count - 1)
+        let q = question(keys[step])
+        let picked: Int? = turned ? Int(crown.rounded()) : nil
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 6) {
+                    HStack(spacing: 6) {
+                        Image(systemName: q.icon).foregroundStyle(accent)
+                        Text(q.label)
+                        Spacer(minLength: 0)
+                        Text(verbatim: "\(step + 1)/\(keys.count)").monospacedDigit().foregroundStyle(Theme.label2)
+                    }
+                    .font(.system(.headline, design: .rounded))
+                    .padding(.horizontal, 4)
+                    .accessibilityElement(children: .combine)
+                    HStack(spacing: 4) {
+                        ForEach(1...5, id: \.self) { n in
+                            // Tapped, not a Button: inside the crown's focusable row, as the weigh-in's digits.
+                            Text(verbatim: "\(n)")
+                                .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
+                                .foregroundStyle(picked == n && !dimmed ? onAccent : Color.white)
+                                .frame(maxWidth: .infinity, minHeight: 38, maxHeight: 38)
+                                .background(Capsule().fill(picked == n && !dimmed ? accent : Color.clear))
+                                .overlay(Capsule().strokeBorder(accent, lineWidth: 1.5))
+                                .contentShape(Capsule())
+                                .onTapGesture { store.answerCheckin(n) }
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel(said(n, q))
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityAction { store.answerCheckin(n) }
+                        }
+                    }
+                    .focusable()
+                    .focused($crownOn)
+                    .digitalCrownRotation($crown, from: 1, through: 5, by: 1, sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+                    .onChange(of: crown) { _ in
+                        if resetting { resetting = false } else { turned = true }
+                    }
+                    HStack(alignment: .top) {
+                        Text(q.lo).multilineTextAlignment(.leading)
+                        Spacer(minLength: 6)
+                        Text(q.hi).multilineTextAlignment(.trailing)
+                    }
+                    .font(.system(.caption2, design: .rounded))
+                    .foregroundStyle(Theme.label2)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .padding(.horizontal, 4)
+                    .accessibilityHidden(true)
+                    if let v = picked {
+                        Button { store.answerCheckin(v) } label: { Text("Continue") }
+                            .buttonStyle(PrimaryButtonStyle())
+                    }
+                    Button { store.finishCheckin(skip: true) } label: {
+                        Text("Skip for today").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(RowButtonStyle())
+                    Button(role: .cancel) { store.cancelCheckin() } label: {
+                        Text("Cancel").font(.footnote).frame(maxWidth: .infinity, minHeight: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Theme.label2)
+                }
+                .padding(.horizontal, 2)
+            }
+            .navigationTitle(Text("How are you today?"))
+        }
+        .onAppear { crownOn = true }
+        // The next question starts untouched, the crown back in the middle.
+        .onChange(of: store.checkinStep) { _ in
+            turned = false
+            if crown != 3 {
+                resetting = true
+                crown = 3
+            }
+        }
+    }
+}
+
 /* ---------- the weigh-in ---------- */
 
 /// The weigh-in before a workout started here, as the phone asks for it: the body weight in one

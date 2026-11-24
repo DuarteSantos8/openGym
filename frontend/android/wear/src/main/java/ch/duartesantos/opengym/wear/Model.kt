@@ -182,6 +182,10 @@ data class WatchSettings(
     val workoutNote: Boolean? = null,
     /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
     val birthYear: Int? = null,
+    /** A workout started here asks the daily check-in first (#1535); null from an older phone, which never asks. */
+    val checkin: Boolean? = null,
+    /** The newest day answered on the phone (YYYY-MM-DD): today's answered, nothing to ask. */
+    val checkinDay: String? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */

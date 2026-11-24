@@ -5951,4 +5951,7 @@ export default {
   "A row on those two pages that opens this sheet.": "Řádek na těch dvou stránkách, který otevře tento panel.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Skryto do dalšího shrnutí.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "Ptát se i na hodinkách",
+  "Starting from your wrist? Three quick taps there first, once a day.": "Začínáš ze zápěstí? Nejdřív tam tři rychlá klepnutí, jednou denně.",
 }

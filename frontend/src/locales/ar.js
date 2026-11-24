@@ -6040,4 +6040,7 @@ export default {
   "A row on those two pages that opens this sheet.": "صف في هاتين الصفحتين يفتح هذه الورقة.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "مخفي حتى الملخص التالي.",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "اسأل على الساعة أيضًا",
+  "Starting from your wrist? Three quick taps there first, once a day.": "تبدأ من معصمك؟ ثلاث نقرات سريعة هناك أولًا، مرة في اليوم.",
 }

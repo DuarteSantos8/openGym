@@ -7,7 +7,8 @@ import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavig
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
-import { setWeightDecimals } from './lib/format.js'
+import { setWeightDecimals, isoOf } from './lib/format.js'
+import { withWatchForm } from './lib/daily-form.js'
 import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
@@ -536,6 +537,11 @@ export default function App() {
       start: (ids, { bw = null, ...opts } = {}) => beginWorkout(ids, bw, opts),
       // The watch's weigh-in: logged as the phone's check-in logs one (today's replaces today's).
       weighIn: ({ w, at }) => useStore.getState().update(s => { logWeighIn(s, w, at) }),
+      // The watch's daily check-in (#1535): stored on its day as the phone's own, unless that day has one.
+      dailyForm: ({ form, at }) => {
+        const d = isoOf(new Date(at))
+        if (withWatchForm(useStore.getState().S.dayForm, d, form)) useStore.getState().update(s => { s.dayForm = withWatchForm(s.dayForm, d, form) || s.dayForm })
+      },
       // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
       // runs again, finds them gone and stops retrying them.
       healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },

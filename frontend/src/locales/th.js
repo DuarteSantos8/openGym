@@ -5996,4 +5996,7 @@ export default {
   "A row on those two pages that opens this sheet.": "แถวในสองหน้านั้นที่เปิดแผ่นนี้",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "ซ่อนไว้จนถึงสรุปครั้งถัดไป",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "ถามบนนาฬิกาด้วย",
+  "Starting from your wrist? Three quick taps there first, once a day.": "เริ่มจากข้อมือใช่ไหม? แตะเร็วๆ สามครั้งที่นั่นก่อน วันละครั้ง",
 }

@@ -5985,4 +5985,7 @@ export default {
   "A row on those two pages that opens this sheet.": "उन दोनों पेजों पर एक पंक्ति जो यह शीट खोलती है।",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "अगले सारांश तक छिपा है।",
+  // --- Daily check-in on the watch (#1535) ---
+  "Ask on the watch too": "घड़ी पर भी पूछें",
+  "Starting from your wrist? Three quick taps there first, once a day.": "कलाई से शुरू कर रहे हैं? पहले वहाँ तीन झटपट टैप, दिन में एक बार।",
 }
