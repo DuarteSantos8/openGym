@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Russian and Ukrainian exercise names read in sentence case: "Подъём на носки с гирей" instead of every word in capitals, which nobody writes in those languages (#1247).
 - Settings → Plan & schedule: the week can start on Saturday too, not only Monday or Sunday. The Plan list, the Home strip, the calendar and every "this week" number follow it (#1216).
 - Self-hosting docs: how to run both containers without root, capabilities or a writable filesystem, and the three things that break if you get them wrong (thanks @jtravesi for #1540).
 - Home: two workouts on one day both show. Each gets its own row under the week, in the order you did them, and opens its own details; the row used to name only the last one (#1538, thanks @kusk).

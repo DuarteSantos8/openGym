@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Library from './Library.jsx'
 import { EXDB } from '../lib/exercises.js'
-import { CASED_NAME_LANGS, EXERCISE_NAME_LANGS, _setLangState } from '../lib/i18n-core.js'
+import { ownCasedNameLang, EXERCISE_NAME_LANGS, _setLangState } from '../lib/i18n-core.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -95,16 +95,17 @@ describe('Library exercise-name casing per language', () => {
   afterEach(() => _setLangState('en', {}, null, null))
 
   for (const lang of EXERCISE_NAME_LANGS) {
-    it(`${lang}: every translated row is ${CASED_NAME_LANGS.includes(lang) ? 'left in its own casing' : 'title-cased'}`, () => {
+    it(`${lang}: every translated row is ${ownCasedNameLang(lang) ? 'left in its own casing' : 'title-cased'}`, () => {
       const pack = packs[`../exercise-names/${lang}.js`]
       _setLangState(lang, {}, null, pack)
       // Starred so they render on the first page: a partial pack may not cover the first rows.
       mocks.S.favEx = Object.keys(pack).slice(0, 3)
       const rows = [...render().querySelectorAll('.item .tt')].slice(1)   // drop "Create your own"
       expect(rows.length).toBeGreaterThan(0)
-      const translated = rows.filter(el => Object.values(pack).some(n => el.textContent.startsWith(n)))
+      // ru and uk get a capital first letter in the text itself (#1247), so compare without case
+      const translated = rows.filter(el => Object.values(pack).some(n => el.textContent.toLocaleLowerCase(lang).startsWith(n.toLocaleLowerCase(lang))))
       expect(translated.length, lang).toBeGreaterThan(0)
-      for (const el of translated) expect(el.classList.contains('capitalize'), `${lang}: ${el.textContent}`).toBe(!CASED_NAME_LANGS.includes(lang))
+      for (const el of translated) expect(el.classList.contains('capitalize'), `${lang}: ${el.textContent}`).toBe(!ownCasedNameLang(lang))
     })
   }
 })

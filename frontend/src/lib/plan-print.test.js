@@ -6,7 +6,7 @@ import { EXIDX, registerCustom } from './exercises.js'
 import { printDocument } from './print-doc.js'
 
 vi.mock('./print-doc.js', async orig => ({ ...await orig(), printDocument: vi.fn(() => Promise.resolve()) }))
-import { CASED_NAME_LANGS, EXERCISE_NAME_LANGS, _setLangState } from './i18n-core.js'
+import { ownCasedNameLang, EXERCISE_NAME_LANGS, _setLangState } from './i18n-core.js'
 
 const S = {
   unit: 'kg',
@@ -69,10 +69,10 @@ describe('planPrintHTML exercise-name casing per language', () => {
   afterEach(() => _setLangState('en', {}, null, null))
 
   for (const lang of EXERCISE_NAME_LANGS) {
-    it(`${lang}: ${CASED_NAME_LANGS.includes(lang) ? 'no title-casing on the translated name' : 'the translated name is title-cased'}`, () => {
+    it(`${lang}: ${ownCasedNameLang(lang) ? 'no title-casing on the translated name' : 'the translated name is title-cased'}`, () => {
       _setLangState(lang, {}, null, packs[`../exercise-names/${lang}.js`])
       const html = planPrintHTML(S, 'Ana', { routineId: 'pull' })
-      expect(nameClass(html)).toBe(CASED_NAME_LANGS.includes(lang) ? '' : 'capitalize')
+      expect(nameClass(html)).toBe(ownCasedNameLang(lang) ? '' : 'capitalize')
       expect(html).toContain('.ex-n.capitalize { text-transform: capitalize; }')
     })
   }
