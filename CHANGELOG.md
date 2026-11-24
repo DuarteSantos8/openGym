@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Exercise videos: a tap pauses the built-in animation right where it is, so you can study the bottom of the squat, and a second tap carries on from there. Scrolling it out of view and back no longer starts a paused one again (thanks @m-ridha, #1271).
 - Settings → Workout: Rate warm-ups too. Switch it off and warm-up rows lose their RIR or RPE cell in every layout and in Focus, so you only rate the sets that count. Ratings you already logged stay (#1374, thanks @lodepav, whose PR had the idea).
 - Russian and Ukrainian exercise names read in sentence case: "Подъём на носки с гирей" instead of every word in capitals, which nobody writes in those languages (#1247).
 - Settings → Plan & schedule: the week can start on Saturday too, not only Monday or Sunday. The Plan list, the Home strip, the calendar and every "this week" number follow it (#1216).

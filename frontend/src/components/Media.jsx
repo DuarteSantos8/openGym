@@ -113,7 +113,7 @@ function BuiltinMedia({ ex, id, compact, minimizable, sayAs }) {
         : hasClip
           // No poster: Android's WebView went back to it at every loop and stalled there (the
           // still below stands in while the clip loads, so nothing is lost without it).
-          ? <video ref={videoRef} className="catvid" src={clipSrc} autoPlay muted loop playsInline disablePictureInPicture
+          ? <video ref={videoRef} className="catvid" src={clipSrc} autoPlay={playing} muted loop playsInline disablePictureInPicture
               aria-label={exerciseNameFor(ex)} onError={onError} />
           : showGif && clip
             // the phone app is still reading the clip into memory: the still holds its place
