@@ -39,34 +39,51 @@ export function readBlueprint(text) {
 }
 
 const file = path.join(ROOT, 'render.yaml');
+const service = (text, name) => readBlueprint(text.split(/(?=^  - type: )/m)
+  .find(part => part.split('\n').includes(`    name: ${name}`)) || '');
+const apiService = (text = read(file)) => service(text, 'ironvane-api');
+
+test('the hosted MCP service uses a private upstream and does not mount a disk', () => {
+  const { scalars, env } = service(read(file), 'ironvane-mcp');
+  assert.equal(scalars.name, 'ironvane-mcp');
+  assert.equal(scalars.runtime, 'docker');
+  assert.equal(scalars.dockerfilePath, './mcp/Dockerfile');
+  assert.equal(scalars.dockerContext, '.');
+  assert.equal(scalars.healthCheckPath, '/mcp/health');
+  assert.equal(scalars.region, 'virginia');
+  assert.equal(scalars.mountPath, undefined);
+  assert.equal(env.MCP_PORT.value, '3100');
+  assert.equal(env.OPENGYM_API_URL.sync, 'false');
+  assert.equal(env.ORIGIN.sync, 'false');
+});
 
 test('the blueprint builds the api image from the api directory', () => {
-  const { scalars } = readBlueprint(read(file));
+  const { scalars } = apiService();
   assert.equal(scalars.runtime, 'docker');
   assert.ok(fs.existsSync(path.join(ROOT, scalars.dockerfilePath)), 'dockerfilePath exists');
   assert.equal(path.resolve(ROOT, scalars.dockerContext), API);
 });
 
 test('it is health-checked on a route the server has', () => {
-  const { scalars } = readBlueprint(read(file));
+  const { scalars } = apiService();
   assert.ok(read(path.join(API, 'server.js')).includes(`'GET ${scalars.healthCheckPath}'`));
 });
 
 test('the disk is mounted where the server keeps its data, and the port is the one it is told', () => {
-  const { scalars, env } = readBlueprint(read(file));
+  const { scalars, env } = apiService();
   assert.equal(scalars.mountPath, env.DATA_DIR.value);
   assert.match(env.PORT.value, /^\d+$/);
 });
 
 test('every setting is one the server reads', () => {
-  const { env } = readBlueprint(read(file));
+  const { env } = apiService();
   const source = ['server.js', 'oidc/config.js'].map(f => read(path.join(API, f))).join('\n');
   for (const key of Object.keys(env)) assert.ok(new RegExp(`\\benv\\.${key}\\b`).test(source), `${key} is read by the server`);
 });
 
 test("the project's own addresses and ids are typed into the dashboard, never committed", () => {
   const text = read(file);
-  const { env } = readBlueprint(text);
+  const { env } = apiService(text);
   for (const key of ['ORIGIN', 'RP_ID', 'OIDC_ISSUER', 'OIDC_CLIENT_ID']) {
     assert.equal(env[key]?.sync, 'false', `${key} is asked for in the dashboard`);
     assert.equal(env[key].value, undefined, `${key} carries no value here`);
@@ -76,14 +93,14 @@ test("the project's own addresses and ids are typed into the dashboard, never co
 });
 
 test('sign-up is through the identity provider only', () => {
-  const { env } = readBlueprint(read(file));
+  const { env } = apiService();
   assert.equal(env.OIDC_ONLY.value, '1');
 });
 
 // Anyone can make a hosted account, so "the first profile is the admin" would hand the server to
 // whoever signs in first once the address is public. The admin is named by id instead.
 test('nobody becomes the admin by arriving first: the admin is named by id, in the dashboard', () => {
-  const { env } = readBlueprint(read(file));
+  const { env } = apiService();
   assert.equal(env.FIRST_USER_ADMIN, undefined);
   assert.equal(env.ADMIN_UIDS?.sync, 'false');
   assert.equal(env.ADMIN_UIDS.value, undefined);
