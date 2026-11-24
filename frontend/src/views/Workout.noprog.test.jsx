@@ -182,7 +182,7 @@ describe('don’t count this session for progression', () => {
       const settings = menuItem(openMenu(), 'Exercise settings')
       act(() => settings.click())
       const sheet = renderTopSheet()
-      const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
+      const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Done')
       act(() => save.click())
 
       const [bench] = active().entries
@@ -224,8 +224,9 @@ describe('don’t count this session for progression', () => {
     renderWorkout([{ ...entry(ROW, 'deload', 40, { noProg: true }), target: { sets: 1, reps: 8, weight: 40 }, sets: [{ w: 40, r: 8, done: false }] }], { withHistory: [...history, rowInMain] })
     const settings = menuItem(openMenu(), 'Exercise settings')
     act(() => settings.click())
-    const save = [...renderTopSheet().querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
-    act(() => save.click())
+    // The sheet saves only what changed (#1079), so the save is called as a change would call it.
+    const config = useUI.getState().sheets.at(-1)
+    act(() => config.render(config.close).props.onSave({ sets: 1, reps: 8, weight: 40 }))
     const [row] = active().entries
     expect(row.noProg).toBe(true)
     expect(row.plan.kind).toBe('off')
