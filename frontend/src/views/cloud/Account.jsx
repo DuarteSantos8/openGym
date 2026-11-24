@@ -147,7 +147,13 @@ export default function Account({ client = cloud(), go = url => { location.assig
   useEffect(() => {
     if (!client || !session || !authorizationId) { setRequest(null); return }
     let live = true
-    client.auth.authorization(authorizationId).then(r => { if (live) setRequest(r || {}) }).catch(e => { if (live) setError(wordFor(e?.code)) })
+    client.auth.authorization(authorizationId).then(r => {
+      if (!live) return
+      // Allowed before: the hosted server has approved it already and only says where to go.
+      // Asking again here could only fail, so the browser is sent on with nothing to press.
+      if (r?.redirectTo) { setLeaving(true); go(r.redirectTo); return }
+      setRequest(r || {})
+    }).catch(e => { if (live) setError(wordFor(e?.code)) })
     return () => { live = false }
   }, [client, session?.user?.id, authorizationId])
 
@@ -213,9 +219,15 @@ export default function Account({ client = cloud(), go = url => { location.assig
     {hint && <small>{t('At least 8 characters')}</small>}</label>
   const swap = (to, label) => <button type="button" className="btn ghost sm" data-go={to} onClick={() => { linkFailure = null; setMode(to); setError(''); setPassword('') }}>{label}</button>
 
+  // The hosted server's refusal of an answer ("no longer pending": answered already, or expired)
+  // carries the same code as a badly formed address on the forms. Here it is not about an address.
+  const answer = ok => run(async () => {
+    const { redirectTo } = await client.auth.consent(authorizationId, ok).catch(e => { throw e?.code === 'validation_failed' ? { code: 'approval_gone' } : e })
+    if (redirectTo) go(redirectTo)
+  })
   if (session && request) return frame(t('Allow {0} to sign you in?', request.client?.name || t('Account')), t('Signed in as {0}', session.user.email), <div className="iv-acct-actions">
-    <Button variant="primary" disabled={busy} type="button" data-allow="" onClick={() => run(async () => { const { redirectTo } = await client.auth.consent(authorizationId, true); if (redirectTo) go(redirectTo) })}>{t('Allow')}</Button>
-    <Button variant="ghost" disabled={busy} type="button" data-deny="" onClick={() => run(async () => { const { redirectTo } = await client.auth.consent(authorizationId, false); if (redirectTo) go(redirectTo) })}>{t('Cancel')}</Button>
+    <Button variant="primary" disabled={busy} type="button" data-allow="" onClick={() => answer(true)}>{t('Allow')}</Button>
+    <Button variant="ghost" disabled={busy} type="button" data-deny="" onClick={() => answer(false)}>{t('Cancel')}</Button>
   </div>)
 
   if (session && mode === 'newpass') return frame(t('New password'), null, <form className="iv-acct-form" onSubmit={e => { e.preventDefault(); run(async () => { await client.auth.updatePassword(password); setPassword(''); setMode('signin') }) }}>

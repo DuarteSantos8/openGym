@@ -64,8 +64,17 @@ Read from the project's own `/.well-known/openid-configuration` and its key set,
 | 3. A public client (PKCE, no secret) is possible | yes: `none` is among the token endpoint's auth methods |
 | 4. `email_verified` is a claim | yes |
 | `issuer` in discovery | `https://<ref>.supabase.co/auth/v1`, exactly the value `OIDC_ISSUER` is to be set to |
-| 1. `iss` in a real ID token equals that | **not yet**: no ID token can be had while the OAuth server is off (`feature_disabled`) |
-| 5. A full round trip through the API | **not yet**: same reason, and it needs a running API |
+| 1. `iss` in a real ID token equals that | yes (2026-11-24): a sign-in on the hosted server finished and made a profile, and the server only accepts an ID token whose `iss` is the discovered issuer exactly (`api/oidc/jwt.js`) |
+| 5. A full round trip through the API | yes on the web for a first sign-in (2026-11-24, preview deploy and the hosted server). The second sign-in failed, see below. A phone build has not been tried |
+
+**The hosted server asks once.** With consent on record it approves the request by the time the
+consent page reads it: `GET /auth/v1/oauth/authorizations/<id>` then answers `{ "redirect_url": … }`
+and no details, and a `POST …/consent` after that is refused as `validation_failed`
+("authorization request is no longer pending"). The page first treated that answer as a question
+and showed Allow, which could only fail, so every sign-in after the first stopped there (found by
+the owner, 2026-11-24). It now sends the browser on at once (`frontend/src/lib/cloud/auth.js`
+`authorization`, `frontend/src/views/cloud/Account.jsx`). The hosted server does not read
+`prompt`, so there is no way to make it ask again.
 
 The consent page ADR 0013 asked for is built: `#/account?authorization_id=…` in the cloud build (`frontend/src/views/cloud/Account.jsx`), calling `GET` and `POST /auth/v1/oauth/authorizations/<id>[/consent]`. Both paths exist on the project (they answer `feature_disabled`, not "not found"), but neither has run for real.
 

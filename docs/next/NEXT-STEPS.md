@@ -53,6 +53,7 @@ Epic status:
 - **Blocked:** EP15, which needs a named licensed PT reviewer.
 
 - **Hosted API (2026-11-23):** The Render Blueprint is live with one Starter API service and a 1 GB disk. Direct health returns HTTP 200 with a writable data directory, and API config offers OIDC. The Vercel rewrite needs to reach the preview before the live sign-in and admin checks.
+- **In review: `next/EP19-consent-already-given`.** Found by the owner on the hosted server: the first sign-in through the account worked, and every one after it stopped at "Allow" with "That email address is not accepted". The hosted OAuth server asks once; from then on it has approved the request by the time the consent page reads it and answers with where to go. The page showed Allow anyway, and the consent it then sent was refused as no longer pending, a refusal that carries the same code as a badly formed address. Now the browser is sent on at once, and a refused answer on that page gets the general line. Tests beside `cloud/auth.js` and `views/cloud/Account.jsx`, and one in `e2e/cloud/account.e2e.mjs` whose pretend project behaves as the hosted one does. ADR 0013's two open checks are filled in. Not checked on the hosted server until this is on the preview.
 - **Linked account deletion:** `next/EP19-delete-fixes` implements ADR 0014 with
   a deletion-only proof, local-workout preservation and hosted subscription
   preflight. Deploy the Edge Function and verify the hosted issuer's
