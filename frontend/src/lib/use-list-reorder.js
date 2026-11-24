@@ -107,7 +107,12 @@ export function useListReorder(count, onMove) {
   const place = g => {
     // Where the held row is in the list's own coordinates: the finger's travel plus how far the
     // page scrolled under it since the lift.
-    const top = g.rects[0].top - g.rects[g.from].top, bottom = g.rects[g.rects.length - 1].top - g.rects[g.from].top
+    // Far enough to pass the first and the last row's middle, whichever of their edges that
+    // takes: with rows of every height (an exercise below a tall superset, a superset above a
+    // short exercise) lining up the tops or the bottoms alone can leave it short.
+    const held0 = g.rects[g.from], first = g.rects[0], last = g.rects[g.rects.length - 1]
+    const top = Math.min(first.top - held0.top, first.bottom - held0.bottom)
+    const bottom = Math.max(last.top - held0.top, last.bottom - held0.bottom)
     const band = x => (x * 60) / (60 + Math.abs(x))
     let dy = g.y - g.y0 + (scrollOf(g.host) - g.scroll0)
     if (dy < top) dy = top + band(dy - top)

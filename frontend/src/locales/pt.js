@@ -5980,4 +5980,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Comunicar um problema",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de erros no GitHub com a versão da app e o dispositivo já preenchidos. A app não envia nada por si.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Atalho em Fotos e Medidas",
+  "A row on those two pages that opens this sheet.": "Uma linha nessas duas páginas que abre esta folha.",
 }

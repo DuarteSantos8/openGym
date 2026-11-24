@@ -5976,4 +5976,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Pranešti apie problemą",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Atveria GitHub klaidų formą su jau įrašyta programėlės versija ir įrenginiu. Pati programėlė nieko nesiunčia.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Nuoroda Nuotraukose ir Matavimuose",
+  "A row on those two pages that opens this sheet.": "Eilutė tuose dviejuose puslapiuose, atidaranti šį lapą.",
 }

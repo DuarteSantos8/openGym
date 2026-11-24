@@ -5980,4 +5980,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "문제 신고",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "앱 버전과 기기가 채워진 상태로 GitHub 버그 양식을 열어요. 앱이 직접 보내는 건 없어요.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "사진과 측정에 바로가기",
+  "A row on those two pages that opens this sheet.": "두 페이지에 이 시트를 여는 줄이 생겨요.",
 }

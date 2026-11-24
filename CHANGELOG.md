@@ -6,6 +6,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: moving things around a superset by press and hold. In the routine editor a row that slid past a superset could not be taken back, and the rows jumped; in a running workout an exercise could not get below a superset at the end, a superset not above a short exercise at the top, and a card you had opened could fold up after the move. They all follow your finger now.
+- Check-in reminders: the shortcut row on Photos and Measurements can be switched off in the reminder sheet ("Shortcut on Photos and Measurements"). Settings → Notifications keeps it either way.
 - Webhooks: a new Workout started event, sent once when you start a session, so your smart home can dim the lights or your status can say you are at the gym. The same id comes back when the workout finishes (#1152).
 - MCP: a new get_measurements tool reads your body measurements, with each field's change and unit, for a token allowed to see Measurements. muscle_balance takes any dates now, not only this week or month, so "what did I neglect in October" has an answer (#1205, thanks @aleixalonso, and #1099, thanks @danpetrv, whose PRs had the ideas).
 - MCP: create_routine and update_routine can set a progression rule (for the routine or one exercise), a rep range like 8 to 12, supersets of two, three or a whole circuit, and the bands a band exercise starts with. A weight on a band exercise is turned down with a reason now, instead of quietly stopping its bands from ever going up (#1258, #1257, #1371).

@@ -6059,4 +6059,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "সমস্যা জানান",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub-এ বাগ ফর্ম খোলে, অ্যাপের ভার্সন ও ডিভাইস আগে থেকেই ভরা থাকে। অ্যাপ নিজে কিছু পাঠায় না।",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "ছবি আর মাপে শর্টকাট",
+  "A row on those two pages that opens this sheet.": "ওই দুই পাতায় একটা সারি, যা এই শিট খোলে।",
 }

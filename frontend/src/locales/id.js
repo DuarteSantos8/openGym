@@ -5945,4 +5945,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Laporkan masalah",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Membuka formulir bug di GitHub dengan versi aplikasi dan perangkatmu sudah terisi. Aplikasi sendiri tidak mengirim apa pun.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Pintasan di Foto dan Ukuran",
+  "A row on those two pages that opens this sheet.": "Baris di kedua halaman itu yang membuka lembar ini.",
 };

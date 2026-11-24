@@ -327,7 +327,7 @@ export default function ProgressPhotos() {
     </div>}
 
     {/* A reminder for the next one (components/CheckinReminder.jsx), bundled with the measurements. */}
-    {!comparing && <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow /></div>}
+    {!comparing && S.checkinShortcut !== false && <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow page /></div>}
     {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
       {picked.length < 2 ? t('Pick two or more photos, up to {0}.', COMPARE_MAX) : tn('{0} photo picked.', '{0} photos picked.', picked.length)}
     </div>}

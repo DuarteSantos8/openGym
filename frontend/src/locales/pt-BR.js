@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Atalho em Fotos e Medidas",
+  "A row on those two pages that opens this sheet.": "Uma linha nessas duas páginas que abre esta tela.",
   // --- Settings → watch status pill (#1329) ---
   "Still connecting. Try again in a moment.": "Conectando. Tente de novo em instantes.",
   "Pair a watch in the Watch app.": "Pareie um relógio no app Watch.",

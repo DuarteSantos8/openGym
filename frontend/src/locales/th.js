@@ -5991,4 +5991,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "แจ้งปัญหา",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "เปิดแบบฟอร์มแจ้งบั๊กบน GitHub พร้อมกรอกเวอร์ชันแอปและอุปกรณ์ไว้ให้ แอปไม่ส่งอะไรเอง",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "ทางลัดในรูปภาพและการวัด",
+  "A row on those two pages that opens this sheet.": "แถวในสองหน้านั้นที่เปิดแผ่นนี้",
 }

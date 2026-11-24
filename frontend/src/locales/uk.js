@@ -5977,4 +5977,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Повідомити про проблему",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Відкриває форму помилки на GitHub із уже вписаними версією застосунку та пристроєм. Сам застосунок нічого не надсилає.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Ярлик у Фото та Вимірах",
+  "A row on those two pages that opens this sheet.": "Рядок на цих двох сторінках, що відкриває цю панель.",
 }

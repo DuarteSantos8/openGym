@@ -6027,4 +6027,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Rapportera ett problem",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Öppnar felformuläret på GitHub med appversion och enhet ifyllda. Appen skickar inget själv.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Genväg i Foton och Mått",
+  "A row on those two pages that opens this sheet.": "En rad på de två sidorna som öppnar det här bladet.",
 }

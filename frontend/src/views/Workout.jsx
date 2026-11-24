@@ -1389,12 +1389,17 @@ function ActiveWorkout() {
   const [openedState, setOpenedState] = useState(() => ({ len: A.entries.length, keys: new Set() }))
   const opened = openedState.len === A.entries.length ? openedState.keys : new Set()
   const finished = u => u.every(idx => A.entries[idx].sets.length > 0 && A.entries[idx].sets.every(s => s.done))
+  // A unit you opened stays open when it moves (hold-to-move): remembered by its exercises, not
+  // its place, so the open state does not jump to whatever lands where it was (owner 2026-11-24).
+  const keyOfUnit = new Map(units.map((u, k) => [u.join('-'), unitKeys[k]]))
+  const openedHas = key => opened.has(keyOfUnit.get(key) ?? key)
   const collapsed = new Set(collapseOn ? units.filter(u =>
-    !u.includes(cur) && !opened.has(u.join('-')) && finished(u),
+    !u.includes(cur) && !openedHas(u.join('-')) && finished(u),
   ).map(u => u.join('-')) : [])
   const setUnitOpen = (key, open) => setOpenedState(prev => {
     const keys = new Set(prev.len === A.entries.length ? prev.keys : [])
-    if (open) keys.add(key); else keys.delete(key)
+    const k = keyOfUnit.get(key) ?? key
+    if (open) keys.add(k); else keys.delete(k)
     return { len: A.entries.length, keys }
   })
   const wc = workoutControls(S)
@@ -2845,8 +2850,8 @@ function ActiveWorkout() {
           const isCur = u.includes(cur)
           const isCollapsed = collapsed.has(u.join('-'))
           // Finished and tapped open again: it says it can fold back, and does on a tap.
-          const reopened = collapseOn && !isCur && !isCollapsed && opened.has(u.join('-')) && finished(u)
-          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]} data-unit-key={u.join('-')}
+          const reopened = collapseOn && !isCur && !isCollapsed && openedHas(u.join('-')) && finished(u)
+          return <section key={unitKeys[ui]} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]} data-unit-key={u.join('-')}
             data-reorder-row data-reorder-key={unitKeys[ui]} style={unitReorder.rowStyle(ui)}>
             <div className="wl-hd" {...(working ? {} : unitReorder.press(ui))}>
               <span className="row" style={{ gap: 4 }}>

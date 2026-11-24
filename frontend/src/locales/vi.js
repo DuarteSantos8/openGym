@@ -5946,4 +5946,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Báo cáo sự cố",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Mở biểu mẫu báo lỗi trên GitHub với phiên bản ứng dụng và thiết bị đã điền sẵn. Ứng dụng không tự gửi gì.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Lối tắt ở Ảnh và Số đo",
+  "A row on those two pages that opens this sheet.": "Một dòng trên hai trang đó để mở bảng này.",
 };

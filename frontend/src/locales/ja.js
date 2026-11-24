@@ -5912,4 +5912,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "問題を報告",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub の不具合フォームを、アプリのバージョンと端末を入力した状態で開きます。アプリ自体は何も送信しません。",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "写真と計測にショートカット",
+  "A row on those two pages that opens this sheet.": "その2ページに、このシートを開く行を表示します。",
 }

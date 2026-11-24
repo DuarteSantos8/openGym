@@ -336,7 +336,7 @@ export default function Measurements() {
     <HealthBodyCard unit={S.unit} />
 
     {/* Check-in reminders (components/CheckinReminder.jsx): how often, bundled into one notification. */}
-    <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow /></div>
+    {S.checkinShortcut !== false && <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow page /></div>}
 
     {!available.length && <div className="card">
       <div className="muted small">{t('Choose the measurements you want to track, then log your first check-in.')}</div>

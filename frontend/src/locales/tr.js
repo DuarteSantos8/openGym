@@ -5980,4 +5980,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "Sorun bildir",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub’daki hata formunu uygulama sürümün ve cihazın doldurulmuş olarak açar. Uygulama kendisi hiçbir şey göndermez.",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "Fotoğraflar ve Ölçümlerde kısayol",
+  "A row on those two pages that opens this sheet.": "O iki sayfada bu sayfayı açan bir satır.",
 }

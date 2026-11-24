@@ -5980,4 +5980,7 @@ export default {
   // --- Settings: Report a problem (#1482) ---
   "Report a problem": "报告问题",
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "在 GitHub 打开问题表单，已填好应用版本和设备。应用本身不会发送任何内容。",
+  // --- Check-in reminder shortcut as a setting ---
+  "Shortcut on Photos and Measurements": "在照片和身体数据中显示快捷入口",
+  "A row on those two pages that opens this sheet.": "在这两个页面显示一行，点开就是这里。",
 }
