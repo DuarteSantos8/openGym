@@ -7,6 +7,7 @@
     <string name="all_sets_done">所有組已完成</string>
     <string name="all_synced">已全數同步</string>
     <string name="allow">允許</string>
+    <string name="archived_stay_on_phone">已封存的訓練計畫會保留在你的手機上。</string>
     <string name="avg">平均</string>
     <string name="band_over">%1$d 及以上</string>
     <string name="band_to">%1$d 到 %2$d</string>

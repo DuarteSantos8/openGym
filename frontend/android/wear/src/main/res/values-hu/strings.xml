@@ -7,6 +7,7 @@
     <string name="all_sets_done">Minden sorozat kész</string>
     <string name="all_synced">Minden szinkronizálva</string>
     <string name="allow">Engedélyezés</string>
+    <string name="archived_stay_on_phone">Az archivált rutinok a telefonodon maradnak.</string>
     <string name="avg">átl.</string>
     <string name="band_over">%1$d vagy több</string>
     <string name="band_to">%1$d és %2$d között</string>

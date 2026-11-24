@@ -56,6 +56,8 @@ data class ReadySession(
     val healthType: String? = null,
     /** Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it. */
     val muscleNames: Map<String, String>? = null,
+    /** The phone's folder for it; none from an older phone or for a routine in no folder. */
+    val folder: String? = null,
 )
 
 @Serializable
