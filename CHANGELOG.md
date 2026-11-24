@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Android gym reminder: the arrival check is much easier on the battery. Far from the gym it uses cheap Wi-Fi and cell location and only turns to GPS for the last few hundred metres, and it stops after 5 minutes of not getting any closer, so living or working near your gym no longer costs up to 45 minutes of GPS a day (#1477, thanks @cubetes, whose #1478 had the idea).
 - Coach: exercises it creates for you keep their equipment, main and supporting muscles and other names, instead of arriving as a bare name. Give it a table of your own exercises and the muscle map and equipment filters get it right (#1250).
 - Coach with your own key: an answer cut off because you switched apps or locked the phone is no longer lost. The phone asks again, once, when you are back, and says it picked up where it left off; you still get one reply, not two (#1290).
 - Cloudflare Access: a phone that could not read its service token at start (an iPhone opening the app in the background while locked, say) no longer quietly sends every request without it until you save it again. It keeps what it had, reads it again on its own, when you come back to the app and when you tap Try again, and the token is now readable once the phone has been unlocked after a restart. When Cloudflare Access itself says no, the app says so instead of "server unreachable" (#1529).
