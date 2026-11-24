@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: rest-pause's first set is a work set now, not a warm-up. It counts in your volume and records, the set reads like 60×8+4+2+1+1, and a planned rest-pause finally moves up when you get every rep (#1252, thanks @jclainezr for the report and #1253).
 - Fixed: changing one set's weight only carries on to the later sets that had the same weight. A pyramid of 70, 85, 100, 110 with set 2 made 95 stays 70, 95, 100, 110 instead of flattening to 95 (#1166).
 - Fixed: a workout you kept out of progression shows on Stats again, in the Activity heatmap, Recent workouts and the streak. It still stays out of volume, records and muscle balance, as promised (thanks Discord).
 - Workout in the List layout: hold an exercise's top line (or drag its grip with a mouse) to move it, a superset as one block, the same way as every other list. Move up and Move down stay in the exercise's ⋯ menu for the keyboard and screen readers, and the Cards layout keeps them too (thanks Discord).
