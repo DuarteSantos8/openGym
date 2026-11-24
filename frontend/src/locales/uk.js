@@ -6032,4 +6032,7 @@ export default {
   "{0} line still needs a look.": "{0} рядок потребує перевірки.",
   "{0} lines still need a look.": { one: "{0} рядок потребує перевірки.", few: "{0} рядки потребують перевірки.", many: "{0} рядків потребують перевірки." },
   "Save workout": "Зберегти тренування",
+  "Graded from {0} on {1}, at {2} body weight.": "Оцінено за {0} від {1}, при вазі тіла {2}.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Зважувань у межах місяця немає, тож береться найближче.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Оцінка за твоїми вагами: найкращий підхід за останні 90 днів вважається виконаним до відмови. Оціни кілька підходів, і картина стане справжньою.",
 }

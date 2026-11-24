@@ -6035,4 +6035,7 @@ export default {
   "{0} line still needs a look.": "{0} linia wymaga jeszcze sprawdzenia.",
   "{0} lines still need a look.": { one: "{0} linia wymaga jeszcze sprawdzenia.", few: "{0} linie wymagają jeszcze sprawdzenia.", many: "{0} linii wymaga jeszcze sprawdzenia." },
   "Save workout": "Zapisz trening",
+  "Graded from {0} on {1}, at {2} body weight.": "Oceniono na podstawie {0} z {1}, przy masie ciała {2}.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Brak ważenia w ciągu miesiąca, więc liczy się najbliższe.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Szacowane z twoich ciężarów, przy założeniu, że najlepsza seria z ostatnich 90 dni była do upadku. Oceń kilka serii, a zrobi się z tego prawdziwy obraz.",
 }

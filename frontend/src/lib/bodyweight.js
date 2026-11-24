@@ -43,6 +43,45 @@ export function weighInAt(b) {
   return t > 0 && isoOf(new Date(t)) === b.d ? t : new Date(b.d + 'T12:00:00').getTime()
 }
 
+// Body weight at a moment, from the weigh-in log: the one rule every screen uses (relative
+// strength, strength levels, volume with body weight counted, the calorie estimate), so they never
+// disagree about the same day.
+//   - weighed in at that moment: that reading
+//   - weigh-ins on both sides within `maxGapDays`: the straight line between the last one before
+//     and the next one after, by time (a Tuesday session between 80 on Monday and 79 on Thursday
+//     reads 79.7, nearer the closer one; an average would say 79.5 whichever day it was)
+//   - only one side within reach (none before the first weigh-in, none after the latest, or the
+//     other one too far away): the nearest reading on that side
+//   - nothing within `maxGapDays`: null. Pass Infinity to always get the nearest reading.
+// A day's time is its reading's own (several a day, lib/weigh-ins.js), else noon of that day.
+const sortedLog = new WeakMap()
+function weighInPoints(log) {
+  const hit = sortedLog.get(log)
+  if (hit && hit.n === log.length) return hit.pts
+  // A reading carries its day (d) and maybe its moment (t); one with only a moment is read by it.
+  const pts = log.filter(b => (b?.d || Number(b?.t) > 0) && Number(b.w) > 0)
+    .map(b => ({ t: b.d ? weighInAt(b) : Number(b.t), w: Number(b.w) }))
+    .filter(p => Number.isFinite(p.t))
+    .sort((a, b) => a.t - b.t)
+  sortedLog.set(log, { n: log.length, pts })
+  return pts
+}
+export function bodyweightAt(log, t, maxGapDays = 30) {
+  if (!Array.isArray(log) || !Number.isFinite(t)) return null
+  const pts = weighInPoints(log)
+  if (!pts.length) return null
+  // the first reading after t, by halving
+  let lo = 0, hi = pts.length
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (pts[mid].t <= t) lo = mid + 1; else hi = mid }
+  const before = pts[lo - 1] || null, after = pts[lo] || null
+  const limit = maxGapDays * 86400000
+  const nearB = before && t - before.t <= limit ? before : null
+  const nearA = after && after.t - t <= limit ? after : null
+  if (nearB && nearB.t === t) return nearB.w
+  if (nearB && nearA) return nearB.w + (nearA.w - nearB.w) * ((t - nearB.t) / (nearA.t - nearB.t))
+  return (nearB || nearA)?.w ?? null
+}
+
 /**
  * A weigh-in logged into the profile's list, the way the check-in before a workout does it: on the
  * day and at the time it was made, beside that day's others (#859), sorted. Used for the Apple

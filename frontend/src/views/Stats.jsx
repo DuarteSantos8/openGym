@@ -47,7 +47,7 @@ import { perSetSessions, perSetLines, dropOffSet } from '../lib/per-set.js'
 import { relativeSeries } from '../lib/relative-strength.js'
 import {
   hasEffort, hasEstimableEffort, displayScale, scaleName, toScale, avgRir, effortSummary, effortWeeks,
-  effortHistogram, isHardSet, HARD_RIR, rirOf
+  effortHistogram, isHardSet, HARD_RIR, rirOf, readsRatingsOnly
 } from '../lib/effort.js'
 import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.jsx'
@@ -442,10 +442,14 @@ function EffortCard({ S }) {
       return r
     }
   }, [anchors, opts])
-  const sum = effortSummary(S, win, resolve)
-  const weeks = effortWeeks(S, win, resolve)
-  const hist = effortHistogram(S, win, resolve)
-  const estimated = sum.est > 0
+  // With enough real ratings in the period the card is those ratings alone; the estimate only
+  // stands in for a history with too few, and says what it is (lib/effort.js readsRatingsOnly).
+  const enoughRated = readsRatingsOnly(S, win)
+  const read = enoughRated ? rirOf : resolve
+  const sum = effortSummary(S, win, read)
+  const weeks = effortWeeks(S, win, read)
+  const hist = effortHistogram(S, win, read)
+  const estimated = !enoughRated && sum.est > 0
   // The week's set count rides along in the tooltip, because the pair is the reading:
   // volume up with effort up is fatigue piling up, volume up with effort flat is adaptation.
   const pts = weeks.map(w => ({ t: w.t, y: toScale(kind, w.rir), note: t('{0} sets', w.sets) }))
@@ -472,6 +476,9 @@ function EffortCard({ S }) {
           ? t('{0} rated · {1} estimated of {2} sets', sum.rated, sum.est, sum.done)
           : t('{0} of {1} finished sets rated', sum.rated, sum.done)}</span>
       </div>
+      {estimated && <div className="small dim effort-est" data-effort-estimated>
+        {t('Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.')}
+      </div>}
       {effortOf(S) === 'none' && <div className="small effort-off">
         {t('Effort per set is off. Turn it on in Settings → Workout to keep rating.')}
       </div>}

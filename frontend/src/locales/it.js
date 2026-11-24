@@ -6045,4 +6045,7 @@ export default {
   "{0} line still needs a look.": "{0} riga ha ancora bisogno di un’occhiata.",
   "{0} lines still need a look.": "{0} righe hanno ancora bisogno di un’occhiata.",
   "Save workout": "Salva allenamento",
+  "Graded from {0} on {1}, at {2} body weight.": "Valutato da {0} il {1}, a {2} di peso corporeo.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Nessuna pesata entro un mese, quindi vale la più vicina.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Stimato dai tuoi carichi, contando la tua serie migliore degli ultimi 90 giorni come a esaurimento. Valuta qualche serie e diventa il dato vero.",
 }

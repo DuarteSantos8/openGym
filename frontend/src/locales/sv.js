@@ -6082,4 +6082,7 @@ export default {
   "{0} line still needs a look.": "{0} rad behöver en titt till.",
   "{0} lines still need a look.": "{0} rader behöver en titt till.",
   "Save workout": "Spara pass",
+  "Graded from {0} on {1}, at {2} body weight.": "Bedömt utifrån {0} den {1}, vid {2} kroppsvikt.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Ingen vägning inom en månad, så den närmaste får gälla.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Uppskattat från dina vikter, där ditt bästa set de senaste 90 dagarna räknas som helt ut. Skatta några set så blir det den riktiga bilden.",
 }

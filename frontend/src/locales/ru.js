@@ -6039,4 +6039,7 @@ export default {
   "{0} line still needs a look.": "{0} строка требует проверки.",
   "{0} lines still need a look.": { one: "{0} строка требует проверки.", few: "{0} строки требуют проверки.", many: "{0} строк требуют проверки." },
   "Save workout": "Сохранить тренировку",
+  "Graded from {0} on {1}, at {2} body weight.": "Оценено по {0} от {1}, при весе тела {2}.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Взвешиваний в пределах месяца нет, поэтому берётся ближайшее.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Оценка по твоим весам: лучший подход за последние 90 дней считается выполненным до отказа. Оцени несколько подходов, и картина станет настоящей.",
 }

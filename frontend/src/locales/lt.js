@@ -6031,4 +6031,7 @@ export default {
   "{0} line still needs a look.": "{0} eilutę dar verta peržiūrėti.",
   "{0} lines still need a look.": { one: "{0} eilutę dar verta peržiūrėti.", few: "{0} eilutes dar verta peržiūrėti.", many: "{0} eilutės dar verta peržiūrėti.", other: "{0} eilučių dar verta peržiūrėti." },
   "Save workout": "Išsaugoti treniruotę",
+  "Graded from {0} on {1}, at {2} body weight.": "Įvertinta pagal {0} {1}, esant {2} kūno svoriui.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Per mėnesį nėra svėrimo, todėl naudojamas artimiausias.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Įvertinta pagal tavo svorius, laikant geriausią paskutinių 90 dienų seriją atlikta iki galo. Įvertink kelias serijas ir tai taps tikru vaizdu.",
 }

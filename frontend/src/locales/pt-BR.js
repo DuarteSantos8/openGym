@@ -4,6 +4,10 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Stats: strength level source, estimated effort ---
+  "Graded from {0} on {1}, at {2} body weight.": "Avaliado a partir de {0} em {1}, com {2} de peso corporal.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Nenhuma pesagem dentro de um mês, então vale a mais próxima.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Estimado a partir dos seus pesos, contando sua melhor série dos últimos 90 dias como até a falha. Avalie algumas séries e isso vira o dado real.",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Como você quer ver seu treino?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Escolha o que parecer melhor. Dá para trocar a qualquer momento em ⋯ → Layout, ou de vez em Configurações → Treino.",

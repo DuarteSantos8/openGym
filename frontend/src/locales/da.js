@@ -5975,4 +5975,7 @@ export default {
   "{0} line still needs a look.": "{0} linje mangler stadig et kig.",
   "{0} lines still need a look.": "{0} linjer mangler stadig et kig.",
   "Save workout": "Gem træning",
+  "Graded from {0} on {1}, at {2} body weight.": "Vurderet ud fra {0} den {1}, ved {2} kropsvægt.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Ingen vejning inden for en måned, så den nærmeste træder til.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Anslået ud fra dine vægte, hvor dit bedste sæt de sidste 90 dage regnes som helt i bund. Vurder et par sæt, så bliver det den ægte vare.",
 }

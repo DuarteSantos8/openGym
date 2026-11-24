@@ -44,12 +44,21 @@ describe('bodyweightFor: the weigh-in a session was done at', () => {
   it('takes the check-in of the session first', () => {
     expect(bodyweightFor(session('2026-10-02', [], { bw: 79 }), S)).toBe(79)
   })
-  it('else the nearest weigh-in, before or after, whatever the stored order', () => {
-    expect(bodyweightFor(session('2026-10-04', []), S)).toBe(80)
-    expect(bodyweightFor(session('2026-10-07', []), S)).toBe(82)
+  it('else read off the log between the weigh-ins around it, whatever the stored order', () => {
+    // 10:00 on the 4th sits 70 of the 216 hours from noon on the 1st (80) to noon on the 10th (82)
+    expect(bodyweightFor(session('2026-10-04', []), S)).toBeCloseTo(80 + 2 * 70 / 216, 6)
+    expect(bodyweightFor(session('2026-10-07', []), S)).toBeCloseTo(80 + 2 * 142 / 216, 6)
+    // no start time: noon of its day, nine tenths of the way from the 10th (82) to the 20th (84)
+    expect(bodyweightFor({ d: '2026-10-19', entries: [] }, S)).toBeCloseTo(83.8, 6)
+  })
+  it('before the first weigh-in or after the latest: the nearest one, however far', () => {
     expect(bodyweightFor(session('2026-09-01', []), S)).toBe(80)
     expect(bodyweightFor(session('2026-12-01', []), S)).toBe(84)
-    expect(bodyweightFor({ d: '2026-10-19', entries: [] }, S)).toBe(84)
+    expect(bodyweightFor(session('2020-01-01', []), S)).toBe(80)
+  })
+  it('a weigh-in on the session’s own day at that moment is taken as it is', () => {
+    const at = { bodyweight: [{ d: '2026-10-04', w: 81, t: Date.parse('2026-10-04T10:00:00') }, { d: '2026-10-01', w: 80 }] }
+    expect(bodyweightFor(session('2026-10-04', []), at)).toBe(81)
   })
   it('0 with no weigh-ins at all', () => {
     expect(bodyweightFor(session('2026-10-04', []), { bodyweight: [] })).toBe(0)

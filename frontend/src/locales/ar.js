@@ -6090,4 +6090,7 @@ export default {
   "{0} line still needs a look.": "أسطر تحتاج إلى نظرة: {0}",
   "{0} lines still need a look.": "أسطر تحتاج إلى نظرة: {0}",
   "Save workout": "حفظ التمرين",
+  "Graded from {0} on {1}, at {2} body weight.": "مقيّم من {0} بتاريخ {1}، بوزن جسم {2}.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "لا يوجد وزن خلال شهر منه، لذا يُستخدم الأقرب.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "تقدير من أوزانك، مع اعتبار أفضل مجموعة في آخر 90 يومًا حتى الفشل. قيّم بعض المجموعات ليصبح هذا هو الحقيقي.",
 }

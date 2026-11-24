@@ -6038,4 +6038,7 @@ export default {
   "{0} line still needs a look.": "Átnézendő sorok: {0}.",
   "{0} lines still need a look.": "Átnézendő sorok: {0}.",
   "Save workout": "Edzés mentése",
+  "Graded from {0} on {1}, at {2} body weight.": "Értékelve ebből: {0}, {1}, {2} testsúlynál.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Egy hónapon belül nincs mérés, így a legközelebbi számít.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "A súlyaidból becsülve: az utolsó 90 nap legjobb sorozata teljes erőből ment. Értékelj pár sorozatot, és ebből lesz a valódi kép.",
 }

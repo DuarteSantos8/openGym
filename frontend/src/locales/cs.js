@@ -6001,4 +6001,7 @@ export default {
   "{0} line still needs a look.": "Řádky ke kontrole: {0}.",
   "{0} lines still need a look.": "Řádky ke kontrole: {0}.",
   "Save workout": "Uložit trénink",
+  "Graded from {0} on {1}, at {2} body weight.": "Hodnoceno podle {0} ze dne {1}, při tělesné hmotnosti {2}.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "Žádné vážení do měsíce, takže platí nejbližší.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Odhadnuto z tvých vah, nejlepší série za posledních 90 dní se bere jako do selhání. Ohodnoť pár sérií a bude z toho skutečný obraz.",
 }

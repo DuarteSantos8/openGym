@@ -6,6 +6,10 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Stats → Effort: with enough sets rated (five or more, and at least a quarter of your sets), the card now shows only your own ratings. The estimate for unrated sets assumes your best set of the last 90 days went to failure, so it read every set too hard: 1.5 RIR rated came out as 0.8 and "100% hard". With fewer ratings the estimate still stands in, and the card now says so. Cardio no longer counts as an unrated set.
+- Strength levels: graded by your body weight on the day of the lift, not today's. With no weigh-in that day, it takes the line between the last weigh-in before and the next one after, or the nearest one if there is only one side, up to a month away. The session with the best lift for its body weight sets the level, the next step is worked out for your weight today, and the exercise details say which lift and which day it was graded from.
+- Body weight on a given day now follows one rule everywhere (relative strength, strength levels, volume with body weight counted, the calorie estimate): the line between the weigh-ins before and after. Volume used to take only the nearest one.
+- Sets per muscle: a one-arm or one-leg set with only one side ticked counts as half a set instead of none, in Stats and on the live session map.
 - Stats → Customize: the More list (Journal, Tools, Body measurements and the rest) can be hidden as a whole, folded, or trimmed row by row with a switch each. Hide Body weight too and the Body part leaves the index.
 - Stats → Exercise progress: the Top set chart now includes old workouts that were saved with only a date and no start time. The Est. 1RM chart already counted them.
 - New here? Your first workout asks how it should look: one exercise per page, or the whole workout as a list with its ticks, each with a tiny picture. The app tour's ⋯ stop now says where the layouts live too (thanks Discord).

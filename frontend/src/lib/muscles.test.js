@@ -390,3 +390,15 @@ describe('remembered catalogue muscles', () => {
     expect(Object.keys(musclesOf(own))).toEqual(['biceps'])
   })
 })
+
+describe('one-sided sets in the muscle count (2026-11-24)', () => {
+  const side = (l, r) => ({ w: 10, r: 16, done: l && r, sides: { L: { w: 10, r: 8, done: l }, R: { w: 10, r: 8, done: r } } })
+  it('both sides: one set; one side: half a set; none: nothing', async () => {
+    const { loadOfWorkouts, sessionLoad } = await import('./muscles.js')
+    const w = { d: '2026-11-24', entries: [{ id: '0294', sets: [side(true, true), side(true, false), side(false, false)] }] }
+    const load = loadOfWorkouts([w])
+    expect(load.biceps).toBeCloseTo(1.5)
+    expect(sessionLoad(w.entries).done.biceps).toBeCloseTo(1.5)
+    expect(sessionLoad(w.entries).planned.biceps).toBeCloseTo(3)
+  })
+})

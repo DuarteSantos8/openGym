@@ -6001,4 +6001,7 @@ export default {
   "{0} line still needs a look.": "خط‌هایی که باید نگاه شوند: {0}",
   "{0} lines still need a look.": "خط‌هایی که باید نگاه شوند: {0}",
   "Save workout": "ذخیره تمرین",
+  "Graded from {0} on {1}, at {2} body weight.": "ارزیابی بر اساس {0} در {1}، با وزن بدن {2}.",
+  "No weigh-in within a month of it, so the nearest one stands in.": "در فاصله یک ماه وزن‌کشی‌ای نیست، پس نزدیک‌ترین به کار می‌رود.",
+  "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "تخمین از وزنه‌هایت، با این فرض که بهترین ستِ ۹۰ روز اخیر تا ناتوانی بوده. چند ست را امتیاز بده تا این واقعی شود.",
 }
