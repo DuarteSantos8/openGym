@@ -6374,4 +6374,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "مع حساب، تنتقل تمارينك معك إلى أجهزتك الأخرى. بدونه تبقى على هذا الجهاز.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "تعذّر تسجيل الخروج من تمارينك على الخادم، لذلك لم يتغيّر شيء. حاول مجددًا عندما تكون متصلًا بالإنترنت.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "احذف تمارينك أولًا: في التطبيق افتح «الإعدادات» ثم «الحساب» ثم «حذف حسابي». بعد ذلك عُد إلى هنا لحذف هذا الحساب.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "هذا المتصفح لا يُبقيك مسجّلًا للدخول (تصفّح خاص، أو أن مساحة تخزينه ممتلئة). تمارينك تبقى على هذا الجهاز هنا.",
 }
