@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status 2026-11-24. The origin guard, MCP Blueprint and linked deletion prototype are merged in #85–#87. Browser sign-in guidance is merged in #88. Linked deletion fixes are under review and hosted verification is pending. Read after `NEXT-STEPS.md`.
+Status 2026-11-24. The origin guard, MCP Blueprint, linked deletion (ADR 0014) and browser sign-in guidance are merged in #85–#90 and live on the hosted server. A first sign-in through the hosted server works; `next/EP19-consent-already-given` is in review and fixes every later one, which stopped at Allow. Hosted checks of deletion, sign-out and the admin are pending. Read after `NEXT-STEPS.md`.
 
 ## Why
 

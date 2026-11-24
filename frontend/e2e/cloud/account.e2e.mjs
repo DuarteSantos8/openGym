@@ -137,6 +137,19 @@ test('approving a sign-in to the app\'s own server: sign in first, see who asks,
   expect(state.consents).toEqual([{ id: 'az-1', action: 'approve' }])
 })
 
+// Found by the owner on the real project (2026-11-24): the first sign-in to the server worked and
+// every one after it stopped at Allow with "That email address is not accepted". The hosted
+// server asks once; after that it has already approved and only says where to go.
+test('someone who allowed it before is sent straight on, with nothing to press', async ({ page }) => {
+  const { state } = await pretendProject(page)
+  state.allowedBefore = true
+  await open(page, '#/account?authorization_id=az-2')
+  await signIn(page)
+  await expect(page.locator('#landed')).toBeVisible({ timeout: 15_000 })
+  expect(page.url()).toBe(`${PROJECT}/api/oidc/callback?code=c-2`)
+  expect(state.consents).toEqual([])
+})
+
 // Found by the owner on the real project: after signing in, Continue left them on the app's own
 // sign-in screen, whose "Create new profile" asks a server of the app's own that did not answer.
 test('the first screen offers the account and this device; signed in, Continue goes into the app', async ({ page }) => {

@@ -206,11 +206,17 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
       await call('PUT', '/user', { body: { password: String(password ?? '') }, token: await fresh() })
     },
 
-    /** What a pending sign-in to the app's own server is asking for (the hosted OAuth server, ADR 0013). */
+    /**
+     * What a pending sign-in to the app's own server is asking for (the hosted OAuth server, ADR 0013).
+     * The hosted server asks once. For someone who allowed it before it has approved the request
+     * by the time this is read, and answers with where the browser must go: `{ redirectTo }`,
+     * and no question. A consent sent after that is refused as no longer pending.
+     */
     async authorization(id) {
       signedIn()
       if (!safeId(id)) throw new CloudAuthError('validation_failed')
-      return call('GET', `/oauth/authorizations/${id}`, { token: await fresh() })
+      const out = await call('GET', `/oauth/authorizations/${id}`, { token: await fresh() })
+      return out && !out.authorization_id && typeof out.redirect_url === 'string' ? { redirectTo: out.redirect_url } : out
     },
 
     /** Approve or refuse it. `{ redirectTo }` is where the browser must go next. */

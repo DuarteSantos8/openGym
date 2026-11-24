@@ -678,6 +678,28 @@ describe('Account', () => {
     expect(go).toHaveBeenCalledWith('https://api.example/cb?code=1')
   })
 
+  // Found by the owner on the real project (2026-11-24): the second sign-in showed Allow, and
+  // pressing it said "That email address is not accepted". The hosted server had already
+  // approved it and only wanted the browser sent on.
+  it('allowed before: the browser is sent on at once, with nothing to press', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    c.auth.authorization = vi.fn(async () => ({ redirectTo: 'https://api.example/cb?code=2' }))
+    const go = await mount(c, { url: '/account?authorization_id=az-1' })
+    expect(go).toHaveBeenCalledWith('https://api.example/cb?code=2')
+    expect($('[data-allow]')).toBeNull()
+    expect(c.auth.consent).not.toHaveBeenCalled()
+  })
+
+  it('an approval the hosted server no longer wants is not blamed on the email address', async () => {
+    const c = fakeClient({ session: { user: { id: 'u-1', email: 'a@example.com' } } })
+    c.auth.consent = vi.fn(async () => { throw Object.assign(new Error('x'), { code: 'validation_failed' }) })
+    await mount(c, { url: '/account?authorization_id=az-1' })
+    await click('[data-allow]')
+    expect($('[role="alert"]').textContent).toBe('Something went wrong. Try again.')
+    // On the forms the same code still means the address (a badly formed one at sign-up).
+    expect(wordFor('validation_failed')).toBe('That email address is not accepted.')
+  })
+
   it('signed out with a pending approval: sign in first, then it asks', async () => {
     const c = fakeClient()
     await mount(c, { url: '/account?authorization_id=az-1' })

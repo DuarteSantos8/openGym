@@ -255,6 +255,17 @@ describe('sign out, reset, confirm', () => {
 })
 
 describe('approving a sign-in to the app\'s own server (ADR 0013)', () => {
+  // Found on the real project: the hosted server asks once. From the second sign-in on it answers
+  // "already allowed" with where to go, and a question put to the person then can only fail.
+  it('someone who allowed it before is told where to go, not asked again', async () => {
+    const { auth } = setup({
+      'POST /auth/v1/token?grant_type=password': res(200, tokens()),
+      'GET /auth/v1/oauth/authorizations/az-1': res(200, { redirect_url: 'https://api.example/api/oidc/callback?code=c2' }),
+    })
+    await auth.signIn('a@example.com', 'pw')
+    expect(await auth.authorization('az-1')).toEqual({ redirectTo: 'https://api.example/api/oidc/callback?code=c2' })
+  })
+
   it('reads what is being asked for and answers it, as the signed-in user', async () => {
     const { auth, calls } = setup({
       'POST /auth/v1/token?grant_type=password': res(200, tokens()),
