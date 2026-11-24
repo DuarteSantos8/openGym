@@ -16,7 +16,7 @@
 //   · fewer sets than prescribed                       → miss
 // So a session that fell apart can never advance the load as though it had succeeded.
 
-import { modeOf, repStep, setsRepsOf, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines } from './history.js'
+import { modeOf, repStep, setsRepsOf, lastEntryFor, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines } from './history.js'
 import { EXIDX, isAssisted, isLoadedEq, defaultIncrement } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
@@ -282,13 +282,28 @@ const planText = (p, mode) => setsRepsOf({ mode, sets: p.sets, reps: p.reps ?? '
 // plan's own: its sets, reps and seconds, and for `rest` the exercise's own rest, as the density
 // policy reads it (densityRestOf). Except the reps of a profile that starts from the last session
 // (`carried`, from carriedReps): there, left out means the rows keep last time's reps. A weight left
-// out is the one the rows open at: the last session's (buildSets copies it, a timed hold's
-// included), not the plan's, which only an edit of the plan's own weight names (`set` below).
+// out is the one each row opens at (`weight`, from openWeights), not the plan's, which only an
+// edit of the plan's own weight names (`set` below).
 const PRESCRIBED = ['weight', 'reps', 'sets', 'sec', 'rest', 'rowReps']
 const sameTarget = (a, b, cfg, { weight, rest, carried }) => PRESCRIBED.every(k => {
   const own = k === 'reps' ? (carried === undefined ? cfg.reps : carried) : k === 'weight' ? weight : k === 'rest' ? rest : k === 'sets' || k === 'sec' ? cfg[k] : null
   return JSON.stringify(a[k] ?? own ?? null) === JSON.stringify(b[k] ?? own ?? null)
 })
+// The weight a session's rows open at when the prescription leaves it out: each row copies the
+// weight logged for its set last time (a row past that count, the last row's), and a row with no
+// usable one before it opens at the exercise's confirmed weight or the plan's (buildSets). One
+// number when the rows agree, 'mixed' when they do not, so it equals no single weight.
+const openWeights = (S, cfg, routine, mode) => {
+  const prevs = lastEntryFor(S, cfg.id, routine?.id)?.sets || []
+  const conf = (S.exWeights || {})[cfg.id]
+  const count = Math.max(1, cfg.sets || 1) * (mode === 'time' && isPerSide(cfg) ? 2 : 1)
+  const rows = Array.from({ length: count }, (_, i) => {
+    const prev = prevs[i] || prevs[prevs.length - 1]
+    if (prev && (mode === 'time' ? prev.sec > 0 : prev.r > 0)) return Number(prev.w) || 0
+    return mode === 'time' ? cfg.weight || 0 : conf && conf.w > 0 ? conf.w : cfg.weight
+  })
+  return rows.every(w => w === rows[0]) ? rows[0] : 'mixed'
+}
 // The reps a session that starts from the last one opens its rows at: each row keeps what was
 // logged for it, a row past the last session's count opens at the plan's reps (buildSets). One
 // number when they agree, 'mixed' when they do not, so it equals no single reps value.
@@ -647,7 +662,7 @@ function prescribe(S, cfg, routine, plain) {
     const restart = r => {
       if (borrowed) return r
       const normal = prescribe(S, cfg, routine, true)
-      const open = { weight: last.weight, rest: densityRestOf(S, cfg).start, carried: S.startFrom === 'last' && mode === 'reps' ? carriedReps(last, cfg) : undefined }
+      const open = { weight: openWeights(S, cfg, routine, mode), rest: densityRestOf(S, cfg).start, carried: S.startFrom === 'last' && mode === 'reps' ? carriedReps(last, cfg) : undefined }
       return sameTarget(r, normal, cfg, open) ? normal : r
     }
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the

@@ -933,6 +933,21 @@ describe('an edited plan restarts progression (#275)', () => {
       expect(nextPrescription(hold(5), cfg, R).why[0]).toBe('Plan changed ({0}), so starting from your new target.')
     })
 
+    // Each row copies the weight logged for its own set: rows at 5 and 10 open at 5 and 10, so a
+    // restart at 10 differs from the history's for the first row.
+    it('compares the weight per row, not the heaviest', () => {
+      const was = { sets: 2, sec: 45, weight: 5 }
+      const rows = [{ sec: 40, w: 5, done: true }, { sec: 40, w: 10, done: true }]
+      const S = { unit: 'kg', workouts: [logged(LIFT, was, { mode: 'time', ...was, sec: 50 }, 10, [], { sets: rows })] }
+      const cfg = { id: LIFT, mode: 'time', sets: 2, sec: 50, weight: 10, prog: 'time' }
+      expect(nextPrescription(S, cfg, R).why[0]).toBe('Plan changed ({0}), so starting from your new target.')
+      // Both rows at 10 are the plan's 10.
+      const even = { unit: 'kg', workouts: [logged(LIFT, was, { mode: 'time', ...was, sec: 50 }, 10, [], { sets: rows.map(r => ({ ...r, w: 10 })) })] }
+      expect(nextPrescription(even, cfg, R).why[0]).toBe('Came up short last time. Same target again.')
+      // A third set opens at the last row's weight, 10 as well.
+      expect(nextPrescription(even, { ...cfg, sets: 3 }, R).why[0]).toBe('Came up short last time. Same target again.')
+    })
+
     it('keeps the plain wording when the edit is in a field the line does not show', () => {
       const was = { sets: 2, reps: 10, weight: 40 }
       const S = { unit: 'kg', workouts: [logged(LIFT, was, { ...was }, 40, [10, 10])] }
