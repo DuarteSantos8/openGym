@@ -3,12 +3,12 @@
 // answered, Keep going, a gym leave from the native side and its notification's answer.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const ln = vi.hoisted(() => ({ scheduled: [], cancelled: 0, listeners: {}, granted: true, types: null }))
+const ln = vi.hoisted(() => ({ scheduled: [], pending: [], cancelled: 0, listeners: {}, granted: true, types: null }))
 vi.mock('./mobile.js', () => ({ MOBILE: true }))
 const fakeNotifications = {
     checkPermissions: async () => ({ display: ln.granted ? 'granted' : 'denied' }),
-    schedule: async ({ notifications }) => { ln.scheduled.push(...notifications) },
-    cancel: async () => { ln.cancelled++ },
+    schedule: async ({ notifications }) => { ln.scheduled.push(...notifications); ln.pending = [...notifications] },
+    cancel: async () => { ln.cancelled++; ln.pending = [] },
     registerActionTypes: async ({ types }) => { ln.types = types },
     addListener: async (name, fn) => { ln.listeners[name] = fn; return { remove () {} } },
 }
@@ -37,7 +37,7 @@ const workout = () => ({ id: 'w1', start: T0, entries: [{ id: 'bench', target: {
 ] }] })
 
 let stop = () => {}
-beforeEach(() => { localStorage.clear(); ln.scheduled = []; ln.cancelled = 0; ln.listeners = {}; ln.granted = true; vi.useFakeTimers({ toFake: ['Date'] }) })
+beforeEach(() => { localStorage.clear(); ln.scheduled = []; ln.pending = []; ln.cancelled = 0; ln.listeners = {}; ln.granted = true; vi.useFakeTimers({ toFake: ['Date'] }) })
 afterEach(() => { stop(); _resetForgottenPhone(); vi.useRealTimers() })
 
 function start (A = workout()) {
@@ -157,5 +157,49 @@ describe('forgotten workouts on the phone', () => {
     expect(c.askBody).toContain('60')
     expect(c.askBody).toContain('10')
     expect(c.leftBody).toContain('10')
+  })
+
+  // The watch's last set and its Finish land back to back: the notification is not left planned
+  // for a workout already saved (the 45-minute "Still training?" after a finish).
+  it('a set and the finish right after it leave no notification planned', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st } = start()
+    await vi.waitFor(() => expect(ln.pending).toHaveLength(1))
+    const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + MIN }
+    st.useStore.set({ ...st.useStore.getState().S, active: A })
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    for (let i = 0; i < 20; i++) await flush()
+    expect(ln.pending).toEqual([])
+  })
+
+  // Reported 2026-11-16 (#1280): started on the watch, finished on the watch with the phone open,
+  // and "Still training?" still came. A finish that lands before the workout's own plan has run
+  // must not leave that plan to schedule a question for a workout already saved.
+  it('a workout finished before its plan ran leaves no notification planned', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st } = start(null)
+    await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+    st.useStore.set({ ...st.useStore.getState().S, active: workout() })
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    for (let i = 0; i < 20; i++) await flush()
+    expect(ln.pending).toEqual([])
+  })
+
+  it('no workout at launch: a notification the last run left planned is taken back', async () => {
+    start(null)
+    await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+  })
+
+  it('a cancel that fails is tried again on the next look', async () => {
+    const cancel = fakeNotifications.cancel
+    fakeNotifications.cancel = async () => { ln.cancelled++; throw new Error('busy') }
+    try {
+      start(null)
+      await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+      fakeNotifications.cancel = cancel
+      for (let i = 0; i < 5; i++) await flush()
+      checkForgotten()
+      await vi.waitFor(() => expect(ln.cancelled).toBe(2))
+    } finally { fakeNotifications.cancel = cancel }
   })
 })
