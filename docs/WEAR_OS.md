@@ -58,8 +58,14 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
 - **Calories**: Health Services' total for the workout (it includes the resting burn), on Metrics
   under the heart rate and on the summary, once it measures them: the physical-activity permission
   (asked with the heart rate) and the phone's Calories switch on.
-- **Summary**: the time big, sets, volume, PRs, heart rate, calories, the sync line; Done ignores its first
-  second.
+- **Summary**: the workout struck as a medal, as on the Apple Watch (`ui/SummaryMedal.kt`, rules in
+  `Medal.kt`, the twin of WatchCore's `Medal.swift`, tested in `MedalTest.kt`). A blank disc falls, the
+  strike stamps in the name and the time with one notch on the rim per set. A records day is gold with a
+  diamond per record, a day without is steel with the volume. The crown (or a swipe, or a tap) turns it
+  to its back (sets, volume, heart rate, calories, date), then to the record bars ("Bench Press 100 → 105
+  kg"), the sync line and Done, which ignores its first second. "Saved" sits beside the clock, only when it
+  fits (else the check alone). Haptics: a thud at the strike, then a success, or a rising tap per record
+  (3 at most). Always On: a line engraving, nothing moves. Remove animations: a cross-fade.
 - **Sync status**: sets the phone's side has not stored yet (`setDone` events in the outbox not
   delivered), as an orange pill beside the clock, in words on Start, the Overview and the summary,
   and on the Tile and the complication.
@@ -102,7 +108,7 @@ and numbers only):
 
 ```bash
 adb shell am start -n ch.duartesantos.opengym.test/ch.duartesantos.opengym.wear.MainActivity --es demo rest
-# start, rest, overview, metrics, media, fix, hold, summary, weighin, countdown, go, idle; --es ambient 1 for Always On
+# start, rest, overview, metrics, media, fix, hold, summary (also summary-steel, -back, -records, -end), weighin, countdown, go, idle; --es ambient 1 for Always On
 ```
 
 ## Installing

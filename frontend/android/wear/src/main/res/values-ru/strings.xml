@@ -14,6 +14,7 @@
     <string name="band_under">ниже %1$d</string>
     <string name="body_weight">Вес тела</string>
     <string name="bodyweight">Собственный вес</string>
+    <string name="bpm">%1$s уд/мин</string>
     <string name="calories">Калории</string>
     <string name="cancel">Отмена</string>
     <string name="complication_desc">Подходы на сейчас или ваша серия недель.</string>
@@ -35,6 +36,7 @@
     <string name="heart_rate">Пульс</string>
     <string name="hold">Удержание</string>
     <string name="hold_to_finish">Удерживайте, чтобы завершить</string>
+    <string name="hours">Часы</string>
     <string name="how_hard">Насколько тяжёлым был подход?</string>
     <string name="hr_avg_max">ср. %1$d · макс. %2$d</string>
     <string name="hr_why">Разрешите пульс, чтобы видеть его в каждом подходе.</string>
@@ -58,10 +60,12 @@
     <string name="media_quieter">Тише</string>
     <string name="media_title">Музыка</string>
     <string name="min">мин.</string>
+    <string name="min_minutes">мин</string>
     <string name="more">Больше</string>
     <string name="muscles">Мышцы</string>
     <string name="n_more">ещё %1$d</string>
     <string name="n_sets">Подходов: %1$s</string>
+    <string name="new_record">Новый рекорд</string>
     <string name="next_set_btn">Следующий подход</string>
     <string name="no_age_set">Возраст не указан</string>
     <string name="no_effort_yet">Усилие ещё не оценено</string>
@@ -83,6 +87,7 @@
     <string name="prs">Рекорды</string>
     <string name="quick_checkin">Быстрое взвешивание</string>
     <string name="quick_start">Быстрый старт</string>
+    <string name="records">Рекорды</string>
     <string name="reps">Повт.</string>
     <string name="rest">Отдых</string>
     <string name="rest_day">Ничего не запланировано. Решать вам.</string>
@@ -91,6 +96,7 @@
     <string name="routines">Программы</string>
     <string name="save">Сохранить</string>
     <string name="save_and_start">Сохранить и начать тренировку</string>
+    <string name="saved">Сохранено</string>
     <string name="set_of">Подход %1$d из %2$d</string>
     <string name="sets">Подходы</string>
     <string name="sets_of">%1$d из %2$d подходов</string>

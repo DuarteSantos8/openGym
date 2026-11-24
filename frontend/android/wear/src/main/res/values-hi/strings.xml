@@ -14,6 +14,7 @@
     <string name="band_under">%1$d से कम</string>
     <string name="body_weight">शरीर का वज़न</string>
     <string name="bodyweight">बॉडीवेट</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">कैलोरी</string>
     <string name="cancel">रद्द करें</string>
     <string name="complication_desc">अब तक के सेट, या आपकी स्ट्रीक।</string>
@@ -35,6 +36,7 @@
     <string name="heart_rate">धड़कन</string>
     <string name="hold">होल्ड</string>
     <string name="hold_to_finish">खत्म करने के लिए दबाए रखें</string>
+    <string name="hours">घंटे</string>
     <string name="how_hard">वह सेट कितना मुश्किल था?</string>
     <string name="hr_avg_max">औसत %1$d · अधिकतम %2$d</string>
     <string name="hr_why">हर सेट पर अपनी धड़कन देखने के लिए हार्ट रेट की अनुमति दें।</string>
@@ -58,10 +60,12 @@
     <string name="media_quieter">धीमा</string>
     <string name="media_title">संगीत</string>
     <string name="min">न्यूनतम</string>
+    <string name="min_minutes">मिनट</string>
     <string name="more">अधिक</string>
     <string name="muscles">मांसपेशियाँ</string>
     <string name="n_more">+%1$d और</string>
     <string name="n_sets">%1$s सेट</string>
+    <string name="new_record">नया रिकॉर्ड</string>
     <string name="next_set_btn">अगला सेट</string>
     <string name="no_age_set">उम्र सेट नहीं है</string>
     <string name="no_effort_yet">अभी कोई प्रयास रेट नहीं हुआ</string>
@@ -83,6 +87,7 @@
     <string name="prs">रिकॉर्ड</string>
     <string name="quick_checkin">झटपट वज़न चेक</string>
     <string name="quick_start">क्विक स्टार्ट</string>
+    <string name="records">रिकॉर्ड</string>
     <string name="reps">रेप्स</string>
     <string name="rest">आराम</string>
     <string name="rest_day">कुछ तय नहीं। आपकी मर्ज़ी।</string>
@@ -91,6 +96,7 @@
     <string name="routines">रूटीन</string>
     <string name="save">सहेजें</string>
     <string name="save_and_start">सहेजें और वर्कआउट शुरू करें</string>
+    <string name="saved">सहेजा गया</string>
     <string name="set_of">सेट %1$d / %2$d</string>
     <string name="sets">सेट</string>
     <string name="sets_of">%1$d / %2$d सेट</string>

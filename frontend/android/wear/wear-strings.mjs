@@ -43,6 +43,9 @@ const FROM_APP = {
   not_now: 'Not now', workout: 'Workout', muscles: 'Muscles', less: 'Less', more: 'More',
   // Forgotten workouts (1.4.5), the phone's own words.
   still_training: 'Still training?', left_gym: 'Looks like you left the gym', keep_going: 'Keep going', finish_now: 'Finish now',
+  // The summary's medal (#1309): the status beside the clock, the time's unit, the records' legend. The app's "min" is minutes
+  // (the watch's own `min` below is a heart-rate minimum), so its own name.
+  saved: 'Saved', hours: 'Hours', min_minutes: 'min', records: 'Records', new_record: 'New record',
 }
 // Built from an app word.
 const COMPOSED = {
@@ -69,6 +72,8 @@ const FROM_WATCH = {
   body_weight: 'Body weight', effort: 'Effort', hold_to_finish: 'Hold to finish', no_set_for: 'No set for %lld min. Still at it?',
   skipped_waiting: 'A skipped set is still waiting.', skip_set_q: 'Skip this set?', hr_avg_max: '%lld avg · %lld max',
   edit: 'Edit', tap_to_change: 'Tap to change it.', none: 'None', calories: 'Calories',
+  // The medal's back: "AVG BPM", "MAX 162 BPM", in the phone's unit word.
+  bpm: '%@ bpm',
 }
 
 // Only this watch says these ("phone", not "iPhone"; the crown is not a Digital Crown).

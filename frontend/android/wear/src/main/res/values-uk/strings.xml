@@ -14,6 +14,7 @@
     <string name="band_under">нижче %1$d</string>
     <string name="body_weight">Вага тіла</string>
     <string name="bodyweight">Власна вага</string>
+    <string name="bpm">%1$s уд/хв</string>
     <string name="calories">Калорії</string>
     <string name="cancel">Скасувати</string>
     <string name="complication_desc">Твої підходи досі або серія тижнів.</string>
@@ -35,6 +36,7 @@
     <string name="heart_rate">Пульс</string>
     <string name="hold">Утримання</string>
     <string name="hold_to_finish">Утримуй, щоб завершити</string>
+    <string name="hours">Години</string>
     <string name="how_hard">Наскільки важким був підхід?</string>
     <string name="hr_avg_max">сер. %1$d · макс. %2$d</string>
     <string name="hr_why">Дозволь пульс, щоб бачити його в кожному підході.</string>
@@ -58,10 +60,12 @@
     <string name="media_quieter">Тихіше</string>
     <string name="media_title">Музика</string>
     <string name="min">мін.</string>
+    <string name="min_minutes">хв</string>
     <string name="more">Більше</string>
     <string name="muscles">М’язи</string>
     <string name="n_more">ще %1$d</string>
     <string name="n_sets">Підходів: %1$s</string>
+    <string name="new_record">Новий рекорд</string>
     <string name="next_set_btn">Наступний підхід</string>
     <string name="no_age_set">Вік не вказано</string>
     <string name="no_effort_yet">Зусилля ще не оцінено</string>
@@ -83,6 +87,7 @@
     <string name="prs">Рекорди</string>
     <string name="quick_checkin">Швидке зважування</string>
     <string name="quick_start">Швидкий старт</string>
+    <string name="records">Рекорди</string>
     <string name="reps">Повт.</string>
     <string name="rest">Відпочинок</string>
     <string name="rest_day">Нічого не заплановано. Тобі вирішувати.</string>
@@ -91,6 +96,7 @@
     <string name="routines">Програми</string>
     <string name="save">Зберегти</string>
     <string name="save_and_start">Зберегти й почати тренування</string>
+    <string name="saved">Збережено</string>
     <string name="set_of">Підхід %1$d з %2$d</string>
     <string name="sets">Підходи</string>
     <string name="sets_of">%1$d з %2$d підходів</string>

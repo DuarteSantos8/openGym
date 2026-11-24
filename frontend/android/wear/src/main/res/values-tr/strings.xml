@@ -14,6 +14,7 @@
     <string name="band_under">%1$d altında</string>
     <string name="body_weight">Vücut ağırlığı</string>
     <string name="bodyweight">Vücut ağırlığı</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Kalori</string>
     <string name="cancel">İptal</string>
     <string name="complication_desc">Şimdiye kadarki setlerin ya da serin.</string>
@@ -35,6 +36,7 @@
     <string name="heart_rate">Nabız</string>
     <string name="hold">Tut</string>
     <string name="hold_to_finish">Bitirmek için basılı tut</string>
+    <string name="hours">Saat</string>
     <string name="how_hard">O set ne kadar zordu?</string>
     <string name="hr_avg_max">ort. %1$d · maks. %2$d</string>
     <string name="hr_why">Her sette nabzını görmek için kalp atış hızına izin ver.</string>
@@ -58,10 +60,12 @@
     <string name="media_quieter">Daha kısık</string>
     <string name="media_title">Müzik</string>
     <string name="min">min.</string>
+    <string name="min_minutes">dk</string>
     <string name="more">Çok</string>
     <string name="muscles">Kaslar</string>
     <string name="n_more">+%1$d daha</string>
     <string name="n_sets">%1$s set</string>
+    <string name="new_record">Yeni rekor</string>
     <string name="next_set_btn">Sonraki set</string>
     <string name="no_age_set">Yaş ayarlanmadı</string>
     <string name="no_effort_yet">Henüz çaba puanlanmadı</string>
@@ -83,6 +87,7 @@
     <string name="prs">Rekorlar</string>
     <string name="quick_checkin">Hızlı tartı</string>
     <string name="quick_start">Hızlı başlat</string>
+    <string name="records">Rekorlar</string>
     <string name="reps">Tekrar</string>
     <string name="rest">Dinlenme</string>
     <string name="rest_day">Plan yok. Karar senin.</string>
@@ -91,6 +96,7 @@
     <string name="routines">Rutinler</string>
     <string name="save">Kaydet</string>
     <string name="save_and_start">Kaydet ve antrenmana başla</string>
+    <string name="saved">Kaydedildi</string>
     <string name="set_of">Set %1$d / %2$d</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d / %2$d set</string>

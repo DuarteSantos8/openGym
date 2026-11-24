@@ -15,6 +15,7 @@
     <string name="band_under">under %1$d</string>
     <string name="body_weight">Body weight</string>
     <string name="bodyweight">Bodyweight</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Calories</string>
     <string name="cancel">Cancel</string>
     <string name="complication_desc">Your sets so far, or your streak.</string>
@@ -36,6 +37,7 @@
     <string name="heart_rate">Heart rate</string>
     <string name="hold">Hold</string>
     <string name="hold_to_finish">Hold to finish</string>
+    <string name="hours">Hours</string>
     <string name="how_hard">How hard was that set?</string>
     <string name="hr_avg_max">%1$d avg · %2$d max</string>
     <string name="hr_why">Allow heart rate to see your pulse on every set.</string>
@@ -59,10 +61,12 @@
     <string name="media_quieter">Quieter</string>
     <string name="media_title">Music</string>
     <string name="min">min</string>
+    <string name="min_minutes">min</string>
     <string name="more">More</string>
     <string name="muscles">Muscles</string>
     <string name="n_more">+%1$d more</string>
     <string name="n_sets">%1$s sets</string>
+    <string name="new_record">New record</string>
     <string name="next_set_btn">Next set</string>
     <string name="no_age_set">No age set</string>
     <string name="no_effort_yet">No effort rated yet</string>
@@ -84,6 +88,7 @@
     <string name="prs">PRs</string>
     <string name="quick_checkin">Quick check-in</string>
     <string name="quick_start">Quick start</string>
+    <string name="records">Records</string>
     <string name="reps">Reps</string>
     <string name="rest">Rest</string>
     <string name="rest_day">Nothing planned. Your call.</string>
@@ -92,6 +97,7 @@
     <string name="routines">Routines</string>
     <string name="save">Save</string>
     <string name="save_and_start">Save &amp; start workout</string>
+    <string name="saved">Saved</string>
     <string name="set_of">Set %1$d of %2$d</string>
     <string name="sets">Sets</string>
     <string name="sets_of">%1$d of %2$d sets</string>

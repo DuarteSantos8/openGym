@@ -14,6 +14,7 @@
     <string name="band_under">%1$d এর কম</string>
     <string name="body_weight">শরীরের ওজন</string>
     <string name="bodyweight">শরীরের ওজন</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">ক্যালোরি</string>
     <string name="cancel">বাতিল</string>
     <string name="complication_desc">এখন পর্যন্ত আপনার সেট, বা আপনার স্ট্রিক।</string>
@@ -35,6 +36,7 @@
     <string name="heart_rate">হার্ট রেট</string>
     <string name="hold">ধরে রাখুন</string>
     <string name="hold_to_finish">শেষ করতে চেপে ধরুন</string>
+    <string name="hours">ঘণ্টা</string>
     <string name="how_hard">সেটটি কতটা কঠিন ছিল?</string>
     <string name="hr_avg_max">গড় %1$d · সর্বোচ্চ %2$d</string>
     <string name="hr_why">প্রতিটি সেটে পালস দেখতে হার্ট রেটের অনুমতি দিন।</string>
@@ -58,10 +60,12 @@
     <string name="media_quieter">আস্তে</string>
     <string name="media_title">গান</string>
     <string name="min">সর্বনিম্ন</string>
+    <string name="min_minutes">মিনিট</string>
     <string name="more">বেশি</string>
     <string name="muscles">পেশি</string>
     <string name="n_more">+%1$d আরও</string>
     <string name="n_sets">%1$s সেট</string>
+    <string name="new_record">নতুন রেকর্ড</string>
     <string name="next_set_btn">পরের সেট</string>
     <string name="no_age_set">বয়স দেওয়া নেই</string>
     <string name="no_effort_yet">এখনো কোনো পরিশ্রম রেট করা হয়নি</string>
@@ -83,6 +87,7 @@
     <string name="prs">রেকর্ড</string>
     <string name="quick_checkin">দ্রুত চেক-ইন</string>
     <string name="quick_start">দ্রুত শুরু</string>
+    <string name="records">রেকর্ড</string>
     <string name="reps">রেপ</string>
     <string name="rest">বিশ্রাম</string>
     <string name="rest_day">কিছু পরিকল্পনা নেই। আপনার সিদ্ধান্ত।</string>
@@ -91,6 +96,7 @@
     <string name="routines">রুটিন</string>
     <string name="save">সেভ করুন</string>
     <string name="save_and_start">সেভ করে ওয়ার্কআউট শুরু করুন</string>
+    <string name="saved">সেভ হয়েছে</string>
     <string name="set_of">সেট %1$d / %2$d</string>
     <string name="sets">সেট</string>
     <string name="sets_of">%1$d / %2$d সেট</string>

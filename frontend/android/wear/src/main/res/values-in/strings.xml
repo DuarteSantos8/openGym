@@ -14,6 +14,7 @@
     <string name="band_under">di bawah %1$d</string>
     <string name="body_weight">Berat badan</string>
     <string name="bodyweight">Berat badan</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Kalori</string>
     <string name="cancel">Batal</string>
     <string name="complication_desc">Set kamu sejauh ini, atau streak-mu.</string>
@@ -35,6 +36,7 @@
     <string name="heart_rate">Detak jantung</string>
     <string name="hold">Tahan</string>
     <string name="hold_to_finish">Tahan untuk selesai</string>
+    <string name="hours">Jam</string>
     <string name="how_hard">Seberapa berat set tersebut?</string>
     <string name="hr_avg_max">rata-rata %1$d · maks %2$d</string>
     <string name="hr_why">Izinkan detak jantung untuk melihat denyutmu di tiap set.</string>
@@ -58,10 +60,12 @@
     <string name="media_quieter">Lebih pelan</string>
     <string name="media_title">Musik</string>
     <string name="min">min</string>
+    <string name="min_minutes">menit</string>
     <string name="more">Lebih banyak</string>
     <string name="muscles">Otot</string>
     <string name="n_more">+%1$d lagi</string>
     <string name="n_sets">%1$s set</string>
+    <string name="new_record">Rekor baru</string>
     <string name="next_set_btn">Set berikutnya</string>
     <string name="no_age_set">Usia belum diatur</string>
     <string name="no_effort_yet">Belum ada usaha yang dinilai</string>
@@ -83,6 +87,7 @@
     <string name="prs">PR</string>
     <string name="quick_checkin">Check-in cepat</string>
     <string name="quick_start">Mulai cepat</string>
+    <string name="records">Rekor</string>
     <string name="reps">Rep</string>
     <string name="rest">Istirahat</string>
     <string name="rest_day">Tidak ada rencana. Terserah kamu.</string>
@@ -91,6 +96,7 @@
     <string name="routines">Rutinitas</string>
     <string name="save">Simpan</string>
     <string name="save_and_start">Simpan &amp; mulai latihan</string>
+    <string name="saved">Disimpan</string>
     <string name="set_of">Set %1$d dari %2$d</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d dari %2$d set</string>

@@ -401,12 +401,6 @@ class WatchLogicTest {
         assertNull(WireJson.decodeFromString(WatchSettings.serializer(), "{}").forgotten)
     }
 
-    @Test fun theSummarysHeartRateSplitsIntoTwoLines() {
-        assertEquals("128 avg" to "164 max", ch.duartesantos.opengym.wear.ui.splitStat("128 avg · 164 max"))
-        assertEquals("Ø 128" to "max. 164", ch.duartesantos.opengym.wear.ui.splitStat("Ø 128 · max. 164"))
-        assertEquals("128" to null, ch.duartesantos.opengym.wear.ui.splitStat("128"))
-    }
-
     // #1182: the long-text slot shows the whole line, no title; the watch face must be told it may ask
     @Test fun testTheLongTextComplicationSaysTheWholeLine() {
         val setsOf = { d: Int, t: Int -> "$d of $t sets" }
