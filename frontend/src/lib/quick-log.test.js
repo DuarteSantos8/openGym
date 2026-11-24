@@ -88,11 +88,22 @@ describe('reading a typed line', () => {
     expect(sets('bench 3 sets')).toEqual([{}, {}, {}])
   })
 
-  it('what it cannot read is handed back, never dropped silently', () => {
+  it('words besides the sets are kept as words; numbers and signs it cannot place are unread', () => {
     const l = one('squat 3x5 felt heavy')
     expect(l.sets).toHaveLength(3)
-    expect(l.unread).toEqual(['felt', 'heavy'])
+    expect(l.words).toEqual(['felt', 'heavy'])
+    expect(l.unread).toEqual([])
     expect(one('stretching').sets).toEqual([])
+    // a rep range or a stray sign is never quietly read as something else
+    expect(one('bench 60x8-10').unread).toEqual(['-'])
+    expect(one('Bench press 60kg x-8').unread).toEqual(['x', '-'])
+    // punctuation that only separates is fine
+    expect(one('curl (12 kg): 12, 10.').unread).toEqual([])
+  })
+
+  it('a weight no reps took is kept as a set with its reps missing, never dropped', () => {
+    expect(sets('Bench press 60kg x 8, 80kg')).toEqual([{ weight: 60, unit: 'kg', reps: 8 }, { weight: 80, unit: 'kg' }])
+    expect(sets('bench 60kg, 70kg: 8, 8')).toEqual([{ weight: 60, unit: 'kg' }, { weight: 70, unit: 'kg', reps: 8 }, { weight: 70, unit: 'kg', reps: 8 }])
   })
 
   it('one exercise per line or per ";", blank lines skipped', () => {
@@ -160,11 +171,34 @@ describe('typed lines as the description log-workout saves', () => {
   it('says why a line cannot be saved yet', () => {
     const problem = text => input(text).rows[0].problem
     expect(problem('bench 60kg')).toBe('reps')
+    expect(problem('Bench press 60kg x 8, 80kg')).toBe('reps')
+    expect(problem('bench 60x8-10')).toBe('unread')
+    expect(problem('Bench press 60kg x-8')).toBe('unread')
     expect(problem('treadmill 3x10')).toBe('cardio')
     expect(problem('plank 60s, 12')).toBe('mixed')
     expect(problem('stretching')).toBe('sets')
     expect(problem('zercher frobnicate 3x5')).toBe('match')
     expect(input('bench 60kg\nsquat 5x5 100').ready).toBe(false)
+  })
+
+  it('more sets or exercises than a workout holds is a problem on the line, not a silent cut', () => {
+    const many = input('plank 60x30s')
+    expect(many.rows[0].problem).toBe('limit')
+    expect(many.ready).toBe(false)
+    const lines = Array.from({ length: 41 }, () => 'bench 60x8').join('\n')
+    const q = input(lines)
+    expect(q.rows).toHaveLength(41)
+    expect(q.rows[40].problem).toBe('limit')
+    expect(q.ready).toBe(false)
+  })
+
+  it('words besides the sets are saved as the exercise’s note', () => {
+    const q = input('Squat 3x5 100 felt heavy')
+    expect(q.ready).toBe(true)
+    expect(q.rows[0].note).toBe('felt heavy')
+    expect(q.input.exercises[0]).toMatchObject({ exercise: '0043', note: 'felt heavy' })
+    const built = buildLoggedWorkout(profile(), q.input, { now: NOW })
+    expect(built.workout.entries[0].note).toBe('felt heavy')
   })
 
   it('the exercise picked in the sheet replaces the matched one, and stays with its name', () => {

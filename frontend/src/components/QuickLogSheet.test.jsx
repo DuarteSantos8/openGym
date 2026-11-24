@@ -64,9 +64,17 @@ describe('QuickLog sheet', () => {
     expect(saveButton().disabled).toBe(true)
   })
 
-  it('what it could not read is shown on the line', () => {
-    type('Squat 3x5 felt heavy')
-    expect(rows()[0].textContent).toContain('Not read: felt heavy')
+  it('words besides the sets show as the note they will be saved as', () => {
+    type('Squat 3x5 100 felt heavy')
+    expect(rows()[0].dataset.quickLogRow).toBe('ok')
+    expect(rows()[0].textContent).toContain('Note: felt heavy')
+  })
+
+  it('a number or sign it could not place is shown, and Save waits for it', () => {
+    type('Bench press 60x8-10')
+    expect(rows()[0].dataset.quickLogRow).toBe('unread')
+    expect(rows()[0].textContent).toContain('Not read: -')
+    expect(saveButton().disabled).toBe(true)
   })
 
   it('Save files the workout, says so and closes', () => {

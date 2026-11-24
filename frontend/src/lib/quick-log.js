@@ -35,8 +35,11 @@ const UNIT_WORDS = {
   miles: 'mi', mile: 'mi', mi: 'mi',
 }
 const UNIT_RE = Object.keys(UNIT_WORDS).sort((a, b) => b.length - a.length).join('|')
-// A number, then maybe its unit. Not followed by a letter, except the "x" of "60x8".
-const TOKEN = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${UNIT_RE})?(?![a-wyz])|(x)(?![a-wyz])|(@)|([a-z\\u00c0-\\uffff]+)`, 'g')
+// A number, then maybe its unit. Not followed by a letter, except the "x" of "60x8". A word, and
+// last any other character, so nothing in the line goes by unseen ("60x8-10" is not 60x8 and 10).
+const TOKEN = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${UNIT_RE})?(?![a-wyz])|(x)(?![a-wyz])|(@)|(\\p{L}+)|(\\S)`, 'gu')
+// Punctuation that only sets numbers apart, as in "12 kg: 12, 12" or "(60x8)".
+const QUIET = new Set([':', '(', ')', '.', '!', '?', '"', "'"])
 // Words that join numbers without meaning anything themselves: "3 sets of 10", "8 and 6".
 const FILLER = new Set(['of', 'by', 'and', 'then', 'in', 'with', 'for', 'each', 'total'])
 const BODYWEIGHT = new Set(['bw', 'bodyweight'])
@@ -77,7 +80,8 @@ function tokens(group) {
     else if (m[4]) out.push({ kind: '@' })
     else if (m[5] === 'at') out.push({ kind: '@' })
     else if (BODYWEIGHT.has(m[5])) out.push({ kind: 'w', v: 0, u: null })
-    else if (!FILLER.has(m[5])) out.push({ kind: 'word', text: m[5] })
+    else if (m[5] != null) { if (!FILLER.has(m[5])) out.push({ kind: 'word', text: m[5] }) }
+    else if (!QUIET.has(m[6])) out.push({ kind: 'sym', text: m[6] })
   }
   return out
 }
@@ -85,7 +89,10 @@ function tokens(group) {
 const isWeight = t => t && (t.kind === 'w' || t.kind === 'n')
 const isCount = t => t && (t.kind === 'n' || t.kind === 's' || t.kind === 'r') && isInt(t.v)
 const weightOf = t => ({ weight: t.v, unit: t.u || null })
-const repeat = (n, set) => Array.from({ length: Math.min(n, LOG_LIMITS.maxSets) }, () => ({ ...set }))
+// One past the limit at most: enough for the line to say it is too many, never a silent cut.
+const repeat = (n, set) => Array.from({ length: Math.min(n, LOG_LIMITS.maxSets + 1) }, () => ({ ...set }))
+// The carried weight, marked as used by the set that takes it.
+const carried = ctx => { ctx.carryUsed = true; return ctx.weight || {} }
 
 // "AxB" with a weight already known for it: which number is the set count. Marked numbers say so
 // themselves ("3 sets x 10", "10 reps x 3"); unmarked ones follow the usual sets-x-reps order
@@ -133,7 +140,7 @@ function readAt(t, i, ctx) {
     // "3 sets x 10", "10 reps x 3", or bare "3x10" with a weight carried from earlier in the line
     if (isCount(a) && isCount(c) && (a.kind !== 'n' || c.kind !== 'n' || ctx.weight)) {
       const [n, reps] = setsAndReps(a, c)
-      return { len: 3, sets: repeat(n, { ...(ctx.weight || {}), reps }) }
+      return { len: 3, sets: repeat(n, { ...carried(ctx), reps }) }
     }
     // Bare "AxB": "3x12" and "5x5" are sets x reps (a body-weight exercise), "60x8" and "12.5x10"
     // are a weight x reps. A set count is a whole number of six or less.
@@ -149,7 +156,7 @@ function readAt(t, i, ctx) {
   if (a?.kind === '@' && isWeight(b)) return { len: 2, sets: [], fill: weightOf(b) }
   // "3 sets of 10"
   if (a?.kind === 's' && isInt(a.v) && b && (b.kind === 'n' || b.kind === 'r') && isInt(b.v)) {
-    return { len: 2, sets: repeat(a.v, { ...(ctx.weight || {}), reps: b.v }) }
+    return { len: 2, sets: repeat(a.v, { ...carried(ctx), reps: b.v }) }
   }
   // "20 min 3 km", "3 km 20 min": a stretch of cardio
   if (a?.kind === 'm' && b?.kind === 'd') return { len: 2, sets: [{ minutes: a.v, distance: b.v, distanceUnit: b.u }] }
@@ -159,55 +166,66 @@ function readAt(t, i, ctx) {
   // "60kg" on its own: the weight for the reps that follow
   if (a?.kind === 'w') return { len: 1, sets: [], carry: weightOf(a) }
   // "3 sets": that many, reps still to say
-  if (a?.kind === 's' && isInt(a.v)) return { len: 1, sets: repeat(a.v, { ...(ctx.weight || {}), reps: null }) }
+  if (a?.kind === 's' && isInt(a.v)) return { len: 1, sets: repeat(a.v, { ...carried(ctx), reps: null }) }
   // "12", "12 reps": one set, at the carried weight if there is one
-  if ((a?.kind === 'n' || a?.kind === 'r') && isInt(a.v)) return { len: 1, sets: [{ ...(ctx.weight || {}), reps: a.v }] }
+  if ((a?.kind === 'n' || a?.kind === 'r') && isInt(a.v)) return { len: 1, sets: [{ ...carried(ctx), reps: a.v }] }
   return null
 }
 
+// A weight given on its own that no reps took ("bench 60kg x 8, 80kg") is a set whose reps are
+// missing, so the sheet asks for them instead of the weight vanishing.
+function settleCarry(ctx, sets) {
+  if (ctx.weight && !ctx.carryUsed) sets.push({ ...ctx.weight, reps: null })
+  ctx.carryUsed = true
+}
+
+// Words left over are a note on the exercise ("squat 3x5 felt heavy"); a number or sign left over
+// ("60x8-10") is unread, and the line cannot be saved until it reads.
 function readGroup(group, ctx) {
   const t = tokens(group)
-  const sets = [], unread = []
+  const sets = [], words = [], unread = []
   // Two plain numbers and nothing else, "15 12", are a weight and its reps, unless a weight is
   // already carried: then "12 10" are two sets of reps at it.
   if (!ctx.weight && t.length === 2 && t[0].kind === 'n' && t[1].kind === 'n' && isInt(t[1].v)) {
-    return { sets: [{ weight: t[0].v, unit: null, reps: t[1].v }], unread }
+    return { sets: [{ weight: t[0].v, unit: null, reps: t[1].v }], words, unread }
   }
   for (let i = 0; i < t.length;) {
     const hit = readAt(t, i, ctx)
     if (!hit) {
-      unread.push(t[i].kind === 'word' ? t[i].text : t[i].kind === 'x' ? 'x' : t[i].kind === '@' ? '@' : String(t[i].v))
+      const tok = t[i]
+      if (tok.kind === 'word') words.push(tok.text)
+      else unread.push(tok.kind === 'sym' ? tok.text : tok.kind === 'x' ? 'x' : tok.kind === '@' ? '@' : String(tok.v))
       i++
       continue
     }
-    if (hit.carry) { ctx.weight = hit.carry; ctx.carryUsed = false }
+    if (hit.carry) { settleCarry(ctx, sets); ctx.weight = hit.carry; ctx.carryUsed = false }
     if (hit.fill) ctx.fill = hit.fill
-    if (ctx.weight && hit.sets.some(s => s.weight === ctx.weight.weight)) ctx.carryUsed = true
     sets.push(...hit.sets)
     i += hit.len
   }
-  return { sets, unread }
+  return { sets, words, unread }
 }
 
 /**
- * The lines of `text` as { label, sets, unread }. A set is
+ * The lines of `text` as { label, sets, words, unread }. A set is
  * { weight?, unit?, reps? } for lifting, { seconds? | minutes?, weight? } for a timed one,
  * { minutes, distance?, distanceUnit? } for cardio; `unit` is 'kg', 'lb' or null (the profile's).
  * Lines split on new lines and ";", groups of sets on "," and "/".
  */
 export function parseQuickLog(text) {
   const lines = String(text || '').slice(0, QUICK_LOG_MAX).split(/[\n;]+/).map(s => s.trim()).filter(Boolean)
-  return lines.slice(0, LOG_LIMITS.maxExercises).map(line => {
+  // One line past the limit at most, so the sheet can say there are too many.
+  return lines.slice(0, LOG_LIMITS.maxExercises + 1).map(line => {
     const { label, rest } = splitLine(line)
     const ctx = { weight: null, carryUsed: false, fill: null }
-    const sets = [], unread = []
+    const sets = [], words = [], unread = []
     for (const group of decimalCommas(rest.toLowerCase()).split(/[,/|]+/)) {
       const r = readGroup(group, ctx)
       sets.push(...r.sets)
+      words.push(...r.words)
       unread.push(...r.unread)
     }
-    // A weight given on its own and never used ("bench 60kg") is a set whose reps are missing.
-    if (ctx.weight && !ctx.carryUsed && !sets.some(s => s.weight != null)) sets.push({ ...ctx.weight, reps: null })
+    settleCarry(ctx, sets)
     // "8, 8, 6 @ 60": a weight given with "@" also covers the sets before it that have none.
     let at = ctx.fill
     for (let i = sets.length - 1; i >= 0; i--) {
@@ -215,7 +233,7 @@ export function parseQuickLog(text) {
       else if (sets[i].weight == null && at && sets[i].reps != null) Object.assign(sets[i], at)
       delete sets[i].at
     }
-    return { line, label, sets: sets.slice(0, LOG_LIMITS.maxSets), unread }
+    return { line, label, sets: sets.slice(0, LOG_LIMITS.maxSets + 1), words, unread }
   })
 }
 
@@ -261,21 +279,26 @@ const cardioOf = (S, id) => isCardio(id) || (S?.customEx || []).some(c => c?.id 
 /**
  * The parsed lines as the input of buildLoggedWorkout, against profile `S`. `picks` holds the
  * exercise the user chose for a typed name (by pickKey), over the matched one: keyed by the name,
- * not the line, so it stays with its line while lines above it are added or removed. Each row says what its line became
+ * not the line, so it stays with its line while lines above it are added or removed. Words the
+ * line had besides its sets become the exercise's note. Each row says what its line became
  * and, when it cannot be saved, why: 'match' (no exercise found), 'sets' (no sets read), 'reps'
- * (a set without its reps), 'cardio' (a cardio exercise given reps or weight instead of minutes)
- * or 'mixed' (timed sets and rep sets on one exercise). `ready` once every row can be saved.
+ * (a set without its reps), 'cardio' (a cardio exercise given reps or weight instead of minutes),
+ * 'mixed' (timed sets and rep sets on one exercise), 'unread' (a number or sign it could not
+ * place) or 'limit' (more sets or exercises than a workout holds). `ready` once every row can be saved.
  */
 export function quickLogInput(S, lines, { date, name, picks = {} } = {}) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   const speedUnit = speedUnitOf(S)
   const distUnit = speedUnit === 'mph' ? 'mi' : 'km'
   const toUnit = (w, u) => (u && u !== unit ? round1(u === 'lb' ? w * LB_TO_KG : w / LB_TO_KG) : w)
-  const rows = lines.map(l => {
+  const rows = lines.map((l, i) => {
     const picked = Object.hasOwn(picks, nameKey(l.label)) ? picks[nameKey(l.label)] : null
     const hit = picked ? { id: picked, options: [] } : matchExercise(S, l.label)
-    const row = { label: l.label, line: l.line, unread: l.unread, id: hit.id, options: hit.options, sets: null, problem: null }
+    const note = (l.words || []).join(' ').slice(0, 280)
+    const row = { label: l.label, line: l.line, unread: l.unread, note, id: hit.id, options: hit.options, sets: null, problem: null }
+    if (i >= LOG_LIMITS.maxExercises || l.sets.length > LOG_LIMITS.maxSets) return { ...row, problem: 'limit' }
     if (!hit.id) return { ...row, problem: 'match' }
+    if (l.unread.length) return { ...row, problem: 'unread' }
     if (!l.sets.length) return { ...row, problem: 'sets' }
     if (cardioOf(S, hit.id)) {
       if (l.sets.some(s => s.reps != null || s.weight != null || (s.minutes == null && s.seconds == null))) return { ...row, problem: 'cardio' }
@@ -304,7 +327,7 @@ export function quickLogInput(S, lines, { date, name, picks = {} } = {}) {
   const input = {
     date, unit, speedUnit,
     ...(name ? { name } : {}),
-    exercises: rows.filter(r => !r.problem).map(r => ({ exercise: r.id, sets: r.sets })),
+    exercises: rows.filter(r => !r.problem).map(r => ({ exercise: r.id, sets: r.sets, ...(r.note ? { note: r.note } : {}) })),
   }
   return { rows, ready, input }
 }

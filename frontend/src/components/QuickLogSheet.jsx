@@ -2,7 +2,7 @@
 // line ("Bench press 60x8, 60x8, 62.5x6"). lib/quick-log.js reads the lines and lib/log-workout.js
 // saves them, the same path as the MCP server's log_workout, so a typed workout gets its PR badges
 // and lands on its day like any other. Each line shows the exercise and the sets it was read as,
-// and nothing is saved until every line reads cleanly.
+// and nothing is saved until every line reads cleanly; words besides the sets become a note.
 import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -24,6 +24,7 @@ const PROBLEM = {
   reps: () => t('How many reps? Write them like 60x8.'),
   cardio: () => t('Cardio is logged in minutes, like 20 min or 20 min 3 km.'),
   mixed: () => t('Use either reps or a time on one exercise, not both.'),
+  unread: r => t('Not read: {0}', r.unread.join(' ')),
   limit: () => t('Check the numbers on this line.'),
 }
 
@@ -93,11 +94,12 @@ export function QuickLog({ close }) {
     {q.rows.length > 0 && <div className="sect-b" style={{ marginTop: 12 }} data-quick-log-rows>
       {q.rows.map((r, i) => {
         const problem = limits?.has(i) ? 'limit' : r.problem
-        const extra = [r.unread.length ? t('Not read: {0}', r.unread.join(' ')) : null].filter(Boolean)
+        // Words besides the sets are saved as the exercise's note, and shown as one here.
+        const extra = [r.note ? t('Note: {0}', r.note) : null].filter(Boolean)
         return <div key={i} data-quick-log-row={problem || 'ok'}>
           <Row icon={problem ? 'warning' : 'checkCircle'} iconTint={problem ? 'var(--orange)' : 'var(--green)'}
             title={r.id ? nameOf(r.id) : r.label}
-            subtitle={[problem ? PROBLEM[problem]() : setsText(r.sets, S), r.id && pickKey(r.label) !== pickKey(nameOf(r.id)) ? r.label : null, ...extra].filter(Boolean).join(' · ')}
+            subtitle={[problem ? PROBLEM[problem](r) : setsText(r.sets, S), r.id && pickKey(r.label) !== pickKey(nameOf(r.id)) ? r.label : null, ...extra].filter(Boolean).join(' · ')}
             accessory="chevron" onClick={() => change(r)} />
           {r.problem === 'match' && r.options.length > 0 && <div className="chips" style={{ flexWrap: 'wrap', margin: '4px 0 8px' }}>
             {r.options.map(id => <button key={id} type="button" className="chip nocap" onClick={() => pick(r.label, id)}>{nameOf(id)}</button>)}
