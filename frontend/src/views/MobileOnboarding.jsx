@@ -7,6 +7,7 @@ import { useUI } from '../store/useUI.js'
 import { openLostAccess } from '../components/LostAccess.jsx'
 import { t } from '../lib/i18n.js'
 import BrandLogo from '../components/BrandLogo.jsx'
+import LanguageChip from '../components/LanguageChip.jsx'
 import { Button } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { normalizeServerUrl } from '../lib/remote.js'
@@ -180,6 +181,8 @@ export default function MobileOnboarding() {
   // openGym Offline (lib/build-caps.js): there is no server to connect to, so one way in.
   const offline = useOfflineBuild()
   const head = <>
+    {/* #1037: the language before anything else, in the corner where it stays out of the way. */}
+    <LanguageChip />
     {/* The official lockup (assets/logo), not an icon from the app's set. */}
     <h1 style={{ margin: '0 0 10px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={36} /></h1>
   </>

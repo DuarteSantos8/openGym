@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- First launch: the language sits in the top corner of the very first screen (the welcome screen in the apps, sign-in on the web), already set to your phone's, one tap to pick another. Handy if your phone speaks the language you are learning and you would rather lift in your own (#1037).
 - Warm-ups: set your own warm-up ramp once in Settings → Workout (say bar × 10, 50% × 5, 75% × 3) and every automatic warm-up uses it instead of ours. An exercise switched to My own starts from it too, so no more typing the same rows into every exercise (#1423).
 - Share with a friend: on your own server the link now points to that server, so a friend on the same server lands straight in it. The phone apps keep the opengym.ch link, which opens the app and has a box for your own server. A hand-made yourserver/r#... link opens too (#1337).
 - Self-hosting docs: how to run both containers without root, capabilities or a writable filesystem, and the three things that break if you get them wrong (thanks @jtravesi for #1540).

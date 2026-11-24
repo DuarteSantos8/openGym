@@ -4850,3 +4850,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
   .exmedia .gifhint,.exmedia .giftoggle{background:rgba(0,0,0,.8)}
 }
+
+/* #1037: the language on the first screen (components/LanguageChip.jsx), top corner, clear of the
+   notch. The button's own ::before already widens the hit area; min-height keeps it at 44 px. */
+.lang-chip{position:fixed;top:calc(var(--sat) + 10px);inset-inline-end:16px;z-index:5;min-height:44px;max-width:calc(100vw - 32px)}
+.lang-chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
