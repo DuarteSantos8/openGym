@@ -197,6 +197,7 @@ final class IdleTests: XCTestCase {
         // The phone answers with the same workout and its old activeAt: still not ended.
         let reply = Idle.PhoneReply(wid: "w1", activeAt: 4 * min)
         XCTAssertEqual(Idle.verdict(since: 0, now: 600 * min, wid: "w1", reply: reply, rules: rules, paused: true), .active)
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 600 * min, reply: nil, rules: rules, paused: true), "a paused workout keeps its sensor as the pause left it")
         XCTAssertEqual(Idle.verdict(since: 0, now: 600 * min, wid: "w1", reply: reply, rules: rules), .end)
     }
 

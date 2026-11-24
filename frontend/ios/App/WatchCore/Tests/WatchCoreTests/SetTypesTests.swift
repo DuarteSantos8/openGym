@@ -268,7 +268,9 @@ final class HealthDeleteTests: XCTestCase {
     }
 
     func testASkipAndARatingSavedByTheLastReleaseStayOnTheFirstCopy() {
-        var s = state([entry("bench", "Bench", sets: [row(60, 8), row(60, 8)]), entry("bench", "Bench", sets: [row(50, 10), row(50, 10)])])
+        let heavy: Entry = self.entry("bench", "Bench", sets: [self.row(60, 8), self.row(60, 8)])
+        let light: Entry = self.entry("bench", "Bench", sets: [self.row(50, 10), self.row(50, 10)])
+        var s = state([heavy, light])
         s.skipped = ["bench#0"]; s.efforts = ["bench#1": 8]   // 1.4.5's keys: the watch updated mid-workout
         s = SessionCore.upgraded(s)
         XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)

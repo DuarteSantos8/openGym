@@ -774,8 +774,8 @@ enum Idle: Equatable {
     /// The Apple Health session rests (SensorPlan's pause, early) once the workout is past ending as
     /// forgotten but the phone could not be asked: `verdict` only asks then, so the sensor would
     /// stay at workout rate until SensorPlan's three hours. Not an end: the next activity resumes it.
-    static func sensorRests(since: Double, now: Double, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil) -> Bool {
-        reply == nil && state(since: since, now: now, rules: rules, leftAt: leftAt) == .end
+    static func sensorRests(since: Double, now: Double, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil, paused: Bool = false) -> Bool {
+        reply == nil && state(since: since, now: now, rules: rules, leftAt: leftAt, paused: paused) == .end
     }
 
     /// The watch's copy can be stale: in #904 no snapshot had reached it for 45 minutes while sets
