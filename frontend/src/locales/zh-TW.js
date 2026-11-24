@@ -6312,5 +6312,6 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "有了帳號，你的訓練紀錄會同步到你的其他裝置。沒有帳號，紀錄只會留在這台裝置上。",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "無法登出伺服器上的訓練紀錄，因此沒有任何變更。請在連上網路後再試一次。",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "請先刪除你的訓練紀錄：在 App 中依序開啟「設定」、「帳號」、「刪除我的帳號」。完成後再回到這裡刪除此帳號。",
-  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "這個瀏覽器不會保留你的登入狀態（私密瀏覽，或儲存空間已滿）。在這裡，你的訓練紀錄會留在這台裝置上。",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "這個瀏覽器不會保留你的登入狀態（私密瀏覽，或儲存空間已滿）。你在這裡記錄的內容也可能無法保留。",
+  "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "這個瀏覽器不會為此網站儲存任何資料，因此無法在這裡開啟 App。請釋出儲存空間或離開私密瀏覽後再試一次。",
 }
