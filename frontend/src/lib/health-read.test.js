@@ -2,7 +2,7 @@
 // fills what is missing (the Apple Watch's own reading is never replaced), weigh-ins typed into
 // openGym always win, openGym's own records are never read back, nothing imported is written back.
 import { describe, expect, it } from 'vitest'
-import { isOwnRecord, mergeHeartRate, mergeWeighIns, lacksHeartRate, hubReadingId, keepHeartCurve } from './health-read.js'
+import { isOwnRecord, mergeHeartRate, mergeWeighIns, lacksHeartRate, hubReadingId, keepHeartCurve, stillSpans } from './health-read.js'
 import { removeWeighIn } from './weigh-ins.js'
 import { healthRecords, planSync } from './health-connect.js'
 import { mergeBodyweight, mergeStates, stampChange } from './sync-merge.js'
@@ -207,6 +207,24 @@ describe('keepHeartCurve', () => {
     expect(s.workouts[0]._ts).toBe(99)
     expect(keepHeartCurve(s, 'w', read(20), 300)).toBe(true)
     expect(s.workouts[0].hrc.v).toHaveLength(20)
+  })
+
+  it('drops a read made for bounds the workout no longer has (moved while it ran)', () => {
+    const s = S()
+    const readFor = { start: T, end: T + 600000 }
+    expect(stillSpans(s, 'w', readFor)).toBe(true)
+    // moved an hour later while the hub was being read
+    s.workouts[0].start += 3600000; s.workouts[0].end += 3600000
+    expect(stillSpans(s, 'w', readFor)).toBe(false)
+    expect(keepHeartCurve(s, 'w', read(10), 99, readFor)).toBe(false)
+    expect(s.workouts[0].hrc).toBeUndefined()
+    expect(s.workouts[0]._ts).toBe(1)
+    // shortened: dropped too, the next read fills it in
+    const t = S(); t.workouts[0].end = T + 300000
+    expect(keepHeartCurve(t, 'w', read(10), 99, readFor)).toBe(false)
+    // unchanged bounds: kept as before
+    expect(keepHeartCurve(S(), 'w', read(10), 99, readFor)).toBe(true)
+    expect(stillSpans(S(), 'x', readFor)).toBe(false)
   })
 
   it('does nothing for an unknown or unfinished workout', () => {

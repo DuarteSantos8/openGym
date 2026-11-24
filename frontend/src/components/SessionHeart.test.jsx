@@ -3,8 +3,8 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const read = vi.hoisted(() => ({ samples: [] }))
-vi.mock('../lib/health-sync.js', async importOriginal => ({ ...(await importOriginal()), workoutSamples: async () => read.samples }))
+const read = vi.hoisted(() => ({ samples: [], next: null }))
+vi.mock('../lib/health-sync.js', async importOriginal => ({ ...(await importOriginal()), workoutSamples: async () => read.next ? read.next : read.samples }))
 
 import SessionHeart from './SessionHeart.jsx'
 
@@ -30,5 +30,18 @@ describe('SessionHeart', () => {
     read.samples = []
     await open()
     expect(host.textContent).toBe('')
+  })
+
+  it('draws no curve read for other bounds while the next read runs, or after it fails', async () => {
+    read.samples = [[1000, 100], [3000, 140]]
+    await open()
+    expect(host.textContent).toContain('Max 140')
+    let fail
+    read.next = new Promise((_, no) => { fail = no })
+    await act(async () => { root.render(<SessionHeart w={{ start: 1000, end: 9000 }} />) })
+    expect(host.textContent).toBe('')
+    await act(async () => { fail(new Error('no hub')) })
+    expect(host.textContent).toBe('')
+    read.next = null
   })
 })

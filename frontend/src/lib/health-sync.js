@@ -18,7 +18,7 @@
 // no background or history permission is asked for. What it decides is in lib/health-read.js.
 //
 // The web build never gets here (MOBILE is a build-time flag).
-import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp, keepHeartCurve } from './health-read.js'
+import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp, keepHeartCurve, stillSpans } from './health-read.js'
 import { curveCovers, curveReadings, mergeCurves, packCurve, unpackCurve } from './heart-history.js'
 import { mergeVitals } from './vitals.js'
 import { mergeHealthActivities } from './activities.js'
@@ -354,6 +354,7 @@ export function rememberCurve(w, samples, now = Date.now()) {
   const lacks = lacksHeartRate(w)
   if (!curve && !lacks) return false
   const apply = applyRef
+  const readFor = { start: w.start, end: w.end }
   nativePlatform().then(platform => {
     // Tried on a copy first: a set the readings cannot fill (one outside them, a warm-up) must not
     // rewrite the log. Every write is a new list of workouts, which a history view can read as a
@@ -361,8 +362,10 @@ export function rememberCurve(w, samples, now = Date.now()) {
     const sets = lacks && mergeHeartRate({ workouts: [JSON.parse(JSON.stringify(w))] }, w.id, samples, srcOf(platform), now)
     if (!curve && !sets) return
     apply(s => {
+      // Not into a workout moved meanwhile: its readings are for the old times.
+      if (!stillSpans(s, w.id, readFor)) return
       if (sets) mergeHeartRate(s, w.id, samples, srcOf(platform), now)
-      if (curve) keepHeartCurve(s, w.id, samples, now)
+      if (curve) keepHeartCurve(s, w.id, samples, now, readFor)
     })
   }).catch(() => {})
   return true
@@ -438,9 +441,11 @@ async function readOnce(getState, force, now, applyFn) {
         const res = await p.HC.readHeartRate({ from: start, to: end + 5 * 60e3 })
         tried[w.id] = now
         const samples = Array.isArray(res?.samples) ? res.samples : []
-        if (samples.length) apply(s => mergeHeartRate(s, w.id, samples, src, now))
+        // Not into a workout moved while the read ran (stillSpans): its readings are for the old times.
+        const readFor = { start, end }
+        if (samples.length) apply(s => stillSpans(s, w.id, readFor) && mergeHeartRate(s, w.id, samples, src, now))
         // The curve too, so the web app and the other devices can draw it (lib/heart-history.js).
-        if (samples.length) apply(s => keepHeartCurve(s, w.id, samples, now))
+        if (samples.length) apply(s => keepHeartCurve(s, w.id, samples, now, readFor))
       } catch (e) { fail(e); break }
     }
     h.hrTried = tried

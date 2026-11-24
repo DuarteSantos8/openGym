@@ -13,14 +13,19 @@ import HeartGraph from './HeartGraph.jsx'
 // packCurve, so the web app has it too), or the phone's health hub read then and kept. None: no card.
 export default function SessionHeart ({ w, nameOf = e => e?.id }) {
   const S = useStore(s => s.S)
-  const [curve, setCurve] = useState(null)
-  const [samples, setSamples] = useState(null)
+  // What was read, with the session it was read for: a curve read for other bounds (the workout
+  // moved or shortened, a new curve kept) is not drawn while the next read runs, or after it fails.
+  const key = [w.start, w.end, curveVersion(w.hrc), isOn(S, 'health')].join('|')
+  const [loaded, setLoaded] = useState(null)
   useEffect(() => {
     let open = true
-    workoutSamples(w, S).then(r => { if (open) { setSamples(r); setCurve(heartCurve(r, w.start, w.end)) } }, () => {})
+    workoutSamples(w, S).then(r => { if (open) setLoaded({ key, samples: r, curve: heartCurve(r, w.start, w.end) }) },
+      () => { if (open) setLoaded(null) })
     return () => { open = false }
   // Read again when the kept curve really changes (a sync copies it, the same) or Health is switched.
-  }, [w.start, w.end, curveVersion(w.hrc), isOn(S, 'health')])
+  }, [key])
+  const curve = loaded?.key === key ? loaded.curve : null
+  const samples = loaded?.samples
   if (!curve) return null
   const max = hrMaxOf(S) || DEFAULT_HR_MAX
   const steps = heartByExercise(w, samples, max)

@@ -65,13 +65,26 @@ export function mergeHeartRate(S, wid, samples, src, now = Date.now()) {
 }
 
 /**
+ * Whether workout `wid` in the log `S` still spans `readFor` ({ start, end }), the bounds a hub
+ * read was asked for. A workout moved or retimed while the read ran has its readings at the old
+ * times: they would land at the wrong offsets, so they are dropped and the next read fills it in.
+ */
+export function stillSpans(S, wid, readFor) {
+  const w = (S?.workouts || []).find(x => x && x.id === wid)
+  return !!w && Number(w.start) === Number(readFor?.start) && Number(w.end) === Number(readFor?.end)
+}
+
+/**
  * The session's curve (lib/heart-history.js packCurve) kept with workout `wid` in the log `S`
  * (mutated), so every device can draw it: set when the workout has none, or replaced by a fuller
  * one (a hub that synced late). Stamped as edited. Returns whether anything changed.
+ * `readFor`: the bounds the readings were read for; nothing is kept when the workout no longer
+ * has them (stillSpans).
  */
-export function keepHeartCurve(S, wid, samples, now = Date.now()) {
+export function keepHeartCurve(S, wid, samples, now = Date.now(), readFor = null) {
   const w = (S?.workouts || []).find(x => x && x.id === wid)
   if (!w || !(Number(w.start) > 0) || !(Number(w.end) > Number(w.start))) return false
+  if (readFor && !stillSpans(S, wid, readFor)) return false
   // Merged slot by slot with the one kept, so a fuller read that misses a slot keeps it.
   const c = mergeCurves(w.hrc, packCurve(samples, Number(w.start), Number(w.end)))
   if (!c || curveReadings(c) <= curveReadings(w.hrc)) return false
