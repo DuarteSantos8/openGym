@@ -24,6 +24,7 @@ import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/sess
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
+import { MEASUREMENT_FIELDS, MEASUREMENT_KEYS, builtinUnit, normalizeMeasurementsState, sameMeasurementKind } from '../../frontend/src/lib/measurements.js'
 import { t } from './i18n.js'
 
 /* ---------- helpers ---------- */
@@ -439,6 +440,81 @@ export const getBodyweight = {
   }
 }
 
+/** get_measurements — the body measurements (#1205), with each field's change over the window. */
+// What a custom field's stored value is in: storage is canonical (lib/measurements.js), so a field
+// shown in inches or pounds is still cm or kg here, and a field without a unit has none.
+const customUnitOf = u => (u === '%' ? '%' : u === 'kg' || u === 'lb' ? 'kg' : u === 'none' ? null : 'cm')
+const FIELD_LABEL = new Map(MEASUREMENT_FIELDS.map(f => [f.key, f.label]))
+export const getMeasurements = {
+  name: 'get_measurements',
+  description: t('tool_get_measurements', { keys: MEASUREMENT_KEYS.join(', ') }),
+  schema: {
+    from: isoDate().optional().describe(t('arg_from_bodyweight')),
+    to: isoDate().optional().describe(t('arg_to')),
+    fields: z.array(z.string().min(1).max(80)).max(60).optional().describe(t('arg_measurement_fields'))
+  },
+  handler: ({ from, to, fields }) => {
+    if (from && to && from > to) { const e = new Error(t('from_after_to', { from, to })); e.code = 'EINVAL'; throw e }
+    const S = getState()
+    if (!S) return noState()
+    const hi = to || todayIso()
+    // The pass the screen runs first: rows completed, readings checked and rounded, and two rows
+    // for one date folded into one, so a backup's duplicate day is not read as a change.
+    const state = normalizeMeasurementsState({
+      customMeasurements: S.customMeasurements, measurementEnabled: S.measurementEnabled, measurements: S.measurements
+    })
+    const defs = new Map(state.customMeasurements.map(c => [c.id, c]))
+    const want = fields?.length ? new Set(fields.map(f => f.trim().toLowerCase())) : null
+    const wanted = (key, label) => !want || want.has(key.toLowerCase()) || (!!label && want.has(label.toLowerCase()))
+    const units = {}, labels = {}
+    const entries = []
+    for (const e of state.measurements) {
+      if ((from && e.d < from) || e.d > hi) continue
+      const values = {}
+      for (const k of MEASUREMENT_KEYS) {
+        if (e[k] == null || !wanted(k, FIELD_LABEL.get(k))) continue
+        values[k] = e[k]
+        units[k] = builtinUnit(k) || 'cm'
+        labels[k] = FIELD_LABEL.get(k)
+      }
+      for (const o of e.other || []) {
+        // Keyed apart from the built-ins, so a custom "waist" never reads as the waist.
+        const key = `other:${o.id}`
+        const def = defs.get(o.id)
+        const name = def?.name || o.name || 'Other'
+        if (o.value == null || !wanted(key, name)) continue
+        const fieldUnit = def?.unit || o.unit
+        // A reading of another kind than its field now is (a length under a field made a
+        // percentage) cannot be put on one line with the others.
+        if (!sameMeasurementKind(o.unit || fieldUnit, fieldUnit)) continue
+        values[key] = o.value
+        units[key] = customUnitOf(fieldUnit)
+        labels[key] = name
+      }
+      if (Object.keys(values).length) entries.push({ date: e.d, values, ...(e.note ? { note: e.note } : {}) })
+    }
+    const keys = [...new Set(entries.flatMap(e => Object.keys(e.values)))]
+    const change = {}
+    for (const k of keys) {
+      const pts = entries.filter(e => k in e.values)
+      if (pts.length < 2) continue
+      const first = pts[0], last = pts[pts.length - 1]
+      change[k] = { from: { date: first.date, value: first.values[k] }, to: { date: last.date, value: last.values[k] }, delta: Math.round((last.values[k] - first.values[k]) * 10) / 10 }
+    }
+    const last = entries[entries.length - 1] || null
+    return {
+      count: entries.length,
+      fields: keys,
+      units: Object.fromEntries(keys.map(k => [k, units[k]])),
+      labels: Object.fromEntries(keys.map(k => [k, labels[k]])),
+      latest: last ? { date: last.date, values: last.values } : null,
+      change,
+      entries,
+      ...(entries.length ? {} : { note: t('no_measurements') })
+    }
+  }
+}
+
 /** estimate_1rm — best-ever 1RM for one exercise or a PR table across all reps-mode exercises. */
 export const estimate1rm = {
   name: 'estimate_1rm',
@@ -495,9 +571,17 @@ export const muscleBalance = {
   name: 'muscle_balance',
   description: t('tool_muscle_balance'),
   schema: {
-    period: z.enum(['week', 'month', 'all']).describe(t('arg_period'))
+    period: z.enum(['week', 'month', 'all']).optional().describe(t('arg_period')),
+    from: isoDate().optional().describe(t('arg_from_balance')),
+    to: isoDate().optional().describe(t('arg_to_balance'))
   },
-  handler: ({ period }) => {
+  handler: ({ period, from, to }) => {
+    // A window of dates (#1099) or a period ending today, one of the two.
+    const dated = from != null || to != null
+    const invalid = key => { const e = new Error(t(key, { from, to })); e.code = 'EINVAL'; throw e }
+    if (dated && period) invalid('balance_period_or_dates')
+    if (!dated && !period) invalid('balance_needs_window')
+    if (from && to && from > to) invalid('from_after_to')
     const S = getState()
     if (!S) return noState()
     // Whole local days, counting today: a week is the 7 dates ending today, a month the 30. The
@@ -506,10 +590,14 @@ export const muscleBalance = {
     // EIGHTH calendar date, the one 7 days ago. "Last 7 days" listing 8 of them.
     const now = new Date()
     const midnightDaysBack = n => new Date(now.getFullYear(), now.getMonth(), now.getDate() - n).getTime()
-    const cutoff = period === 'week' ? midnightDaysBack(6)
-      : period === 'month' ? midnightDaysBack(29)
-        : Number.NEGATIVE_INFINITY
-    const workouts = (S.workouts || []).filter(w => workoutAt(w) >= cutoff)
+    // A date window is the same whole local days: midnight of `from` up to the midnight after `to`.
+    const midnightOf = (iso, plus = 0) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d + plus).getTime() }
+    const cutoff = dated ? (from ? midnightOf(from) : Number.NEGATIVE_INFINITY)
+      : period === 'week' ? midnightDaysBack(6)
+        : period === 'month' ? midnightDaysBack(29)
+          : Number.NEGATIVE_INFINITY
+    const until = dated ? midnightOf(to || todayIso(), 1) : Number.POSITIVE_INFINITY
+    const workouts = (S.workouts || []).filter(w => { const at = workoutAt(w); return at >= cutoff && at < until })
     // loadOf() resolves each entry through EXIDX, which holds the catalogue only, so a
     // custom exercise's sets score zero here. Attaching the custom itself lets loadOf's own
     // `historical` branch resolve it. Only a *found* custom: exOr's miss placeholder carries
@@ -526,11 +614,11 @@ export const muscleBalance = {
     const { worked, missed } = rankOf(load)
     const levels = levelsOf(load)
     return {
-      period,
+      ...(dated ? { from: from || null, to: to || todayIso() } : { period }),
       // Local, like every other date this API reports (get_week_plan.today, every workout date).
       // toISOString() reads UTC, so late in the evening west of Greenwich the reported cutoff was
       // the day AFTER the one the filter used, and east of Greenwich the day before.
-      cutoff_iso: period === 'all' ? null : localIso(new Date(cutoff)),
+      cutoff_iso: cutoff === Number.NEGATIVE_INFINITY ? null : localIso(new Date(cutoff)),
       workouts_in_period: workouts.length,
       worked: worked.map(slug => ({ slug, name: muscleName(slug), level: levels[slug], effective_sets: Math.round((load[slug] || 0) * 10) / 10 })),
       neglected: missed.map(slug => ({ slug, name: muscleName(slug) })),
@@ -798,7 +886,7 @@ export const searchExercises = {
 }
 
 export const TOOLS = [
-  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme, searchExercises
+  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, getMeasurements, estimate1rm, muscleBalance, getProgramme, searchExercises
 ]
 
 function noState() {

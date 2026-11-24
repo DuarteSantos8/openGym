@@ -8,7 +8,7 @@ const EN = {
   tool_get_workout: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), and form_videos: how many sets the user filmed (a count only; the videos are never shared). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
   tool_get_bodyweight: 'Get the body-weight log: one entry per day, chronological, with the day\'s weight, current goal, deltas vs goal (signed positive = above goal), and a latest summary. A day can hold several weigh-ins: each entry lists them under `readings` with their local time (HH:MM, null when unknown), and the day\'s `weight` is the one the profile\'s daily-value setting picks (`daily_value`: first = morning, avg = average of the day, last). Useful for "am I trending toward my weight goal?" questions.',
   tool_estimate_1rm: 'Estimate one-rep max using Epley, Brzycki or Lombardi formulas. If an exercise_id is given, returns the all-time best estimate for that exercise with the source set (weight × reps + date) and the trend across history. If no exercise_id is given, returns a PR table across all reps-mode exercises (sorted highest first). Refuses to guess above {cap} reps — above that, formulas diverge past 10% and "work capacity" is read instead of "maximal strength".',
-  tool_muscle_balance: 'Show which muscles the user has trained in a period, ranked by "effective sets" (volume in kg is intentionally not used — 100 kg leg press vs 12 kg lateral raise say nothing about which muscle worked harder). Reports worked muscles with a 0-4 relative level (1 = some work, 4 = most worked) and the muscles trained zero times in that period — useful for "what am I neglecting?" questions.',
+  tool_muscle_balance: 'Show which muscles the user has trained in a period, ranked by "effective sets" (volume in kg is intentionally not used — 100 kg leg press vs 12 kg lateral raise say nothing about which muscle worked harder). Reports worked muscles with a 0-4 relative level (1 = some work, 4 = most worked) and the muscles trained zero times in that period — useful for "what am I neglecting?" questions. Give `period` for a window ending today, or `from` and/or `to` for any dates, e.g. last month or the week before a deload.',
   tool_preview_session: 'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy progressed or deloaded from that routine\'s last logged session. The reps are the routine\'s own unless a policy that moves reps moved them, or the profile starts planned sessions from the last session (starts_from). Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
   arg_from_workouts: 'Inclusive start date YYYY-MM-DD. Defaults to no lower bound (list most recent).',
   arg_from_bodyweight: 'Inclusive start date YYYY-MM-DD.',
@@ -18,7 +18,7 @@ const EN = {
   arg_workout_id: 'The id from list_workouts. Preferred: it names one session even on a day with two.',
   arg_estimate_exercise: 'An exercise id from list_routines or get_workout entries. If omitted, returns a full PR table.',
   arg_formula: 'Formula to use. Defaults to {formula}.',
-  arg_period: 'window: last 7 days, last 30 days, or all-time',
+  arg_period: 'window ending today: last 7 days, last 30 days, or all-time. Not with from/to.',
   arg_preview_routine: 'Routine to preview. Defaults to the routine scheduled for `date`.',
   arg_preview_date: 'Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.',
   date_format: 'must be YYYY-MM-DD',
@@ -43,7 +43,15 @@ const EN = {
   source_confirmed_weight: 'your confirmed working weight for this exercise',
   source_last_session: 'carried over from the last time this routine had this exercise (or any routine, if this one never has)',
   source_routine_plan: "the routine's own target",
-  muscle_names: {}
+  muscle_names: {},
+  tool_get_measurements: 'Get the body measurements logged on the Measurements screen: one entry per day, oldest first, with the fields measured that day (a field not measured is absent, never 0) and the day\'s note, plus `change` per field between its first and last reading in the window and the `latest` entry. Built-in fields use these keys: {keys}; `labels` names every field returned. A custom field is keyed `other:<id>`. `units` says what each value is in, always the stored unit: lengths in cm, masses in kg, body fat in %, blood pressure in mmHg, pulse in bpm, null for a custom field without a unit. Convert for the user if their profile shows inches or pounds.',
+  arg_measurement_fields: 'Only these fields, by key ("waist", "other:ab12") or by name ("Waist"). Defaults to every field with a reading in the window.',
+  arg_from_balance: 'Inclusive start date YYYY-MM-DD of a window of dates, instead of `period`. Omit with `to` for everything up to `to`.',
+  arg_to_balance: 'Inclusive end date YYYY-MM-DD of a window of dates, instead of `period`. Defaults to today when `from` is given.',
+  balance_period_or_dates: 'give period or from/to, not both',
+  balance_needs_window: 'muscle_balance needs period, or from and/or to',
+  from_after_to: 'from ({from}) is after to ({to})',
+  no_measurements: 'no measurements logged in this window',
 }
 
 const IT = {
@@ -54,7 +62,7 @@ const IT = {
   tool_get_workout: 'Mostra tutti i dettagli di un allenamento: esercizi, modalità, obiettivi, etichette delle serie e form_videos, il numero di serie filmate (solo un conteggio: i video non vengono condivisi). Identificalo con workout_id (da list_workouts) oppure con la data. Se non conosci l’identificativo, usa prima list_workouts.',
   tool_get_bodyweight: 'Mostra il registro del peso corporeo in ordine cronologico, con una voce per giorno, l’obiettivo attuale, la differenza dall’obiettivo (positiva se il peso è superiore) e l’ultimo dato. Ogni giorno può avere più pesate: readings le elenca con l’ora locale HH:MM (null se sconosciuta); weight è il valore scelto dall’impostazione daily_value del profilo: first per la prima pesata, avg per la media, last per l’ultima. Utile per capire l’andamento verso l’obiettivo.',
   tool_estimate_1rm: 'Stima il massimale per una ripetizione con le formule Epley, Brzycki o Lombardi. Con exercise_id restituisce la stima migliore, la serie di origine e l’andamento storico. Senza exercise_id restituisce la tabella dei record per tutti gli esercizi a ripetizioni. Oltre {cap} ripetizioni non stima il massimale, perché le formule divergono e misurano più la capacità di lavoro che la forza massimale.',
-  tool_muscle_balance: 'Mostra i muscoli allenati nel periodo, ordinati per serie efficaci. Il volume in kg non viene usato per confrontare il lavoro muscolare. Il livello relativo va da 0 a 4: 1 indica un po’ di lavoro, 4 il maggior lavoro. Include anche i muscoli mai allenati nel periodo.',
+  tool_muscle_balance: 'Mostra i muscoli allenati nel periodo, ordinati per serie efficaci. Il volume in kg non viene usato per confrontare il lavoro muscolare. Il livello relativo va da 0 a 4: 1 indica un po’ di lavoro, 4 il maggior lavoro. Include anche i muscoli mai allenati nel periodo. Usa `period` per un intervallo che finisce oggi, oppure `from` e/o `to` per date qualsiasi.',
   tool_preview_session: 'Prevede i valori con cui si aprirà una sessione, dopo gli effetti della progressione e dello storico di allenamento. È diverso da get_routine, che mostra i valori salvati nella scheda. Per ogni esercizio riporta obiettivo, decisione della progressione, serie iniziali e origine dei valori. Se non specifichi una scheda, usa quella prevista per oggi.',
   arg_from_workouts: 'Data iniziale inclusiva nel formato YYYY-MM-DD. Se omessa, non applica un limite iniziale.',
   arg_from_bodyweight: 'Data iniziale inclusiva nel formato YYYY-MM-DD.',
@@ -64,7 +72,7 @@ const IT = {
   arg_workout_id: 'Identificativo ottenuto da list_workouts. Consigliato perché individua una singola sessione anche quando ce ne sono più nella stessa data.',
   arg_estimate_exercise: 'Identificativo di un esercizio presente in list_routines o tra gli esercizi di get_workout. Se omesso, restituisce tutti i record personali.',
   arg_formula: 'Formula da usare. Il valore predefinito è {formula}.',
-  arg_period: 'Intervallo: ultimi 7 giorni, ultimi 30 giorni o tutto lo storico.',
+  arg_period: 'Intervallo che finisce oggi: ultimi 7 giorni, ultimi 30 giorni o tutto lo storico. Non insieme a from/to.',
   arg_preview_routine: 'Scheda da prevedere. Se omessa, usa quella prevista per `date`.',
   arg_preview_date: 'Data di avvio della sessione nel formato YYYY-MM-DD. Determina la scheda prevista e le eventuali modifiche per quel giorno. Se omessa, usa oggi.',
   date_format: 'il formato deve essere YYYY-MM-DD',
@@ -89,7 +97,15 @@ const IT = {
   source_last_session: 'ripreso dall’ultima sessione in cui era presente questo esercizio',
   source_routine_plan: 'l’obiettivo impostato nella scheda',
   policy_names: { steady: 'Doppia progressione costante', undulating: 'Giorni ondulati', density: 'Recuperi più brevi', ladder: 'Scala di abilità', off: 'Progressione automatica disattivata', linear: 'Progressione lineare', greyskull: 'Greyskull LP', double: 'Doppia progressione', triple: 'Tripla progressione', time: 'Aggiunta di tempo' },
-  muscle_names: { 'front-delts': 'Deltoidi anteriori', 'side-delts': 'Deltoidi laterali', 'rear-delts': 'Deltoidi posteriori', lats: 'Gran dorsale', 'cardiovascular system': 'Sistema cardiovascolare', trapezius: 'Trapezi', deltoids: 'Spalle', chest: 'Petto', 'upper-back': 'Parte alta della schiena', serratus: 'Dentato', biceps: 'Bicipiti', triceps: 'Tricipiti', forearm: 'Avambracci', abs: 'Addominali', obliques: 'Obliqui', 'lower-back': 'Parte bassa della schiena', gluteal: 'Glutei', quadriceps: 'Quadricipiti', hamstring: 'Ischiocrurali', adductors: 'Adduttori', 'hip-flexors': 'Flessori dell’anca', calves: 'Polpacci', tibialis: 'Tibiali' }
+  muscle_names: { 'front-delts': 'Deltoidi anteriori', 'side-delts': 'Deltoidi laterali', 'rear-delts': 'Deltoidi posteriori', lats: 'Gran dorsale', 'cardiovascular system': 'Sistema cardiovascolare', trapezius: 'Trapezi', deltoids: 'Spalle', chest: 'Petto', 'upper-back': 'Parte alta della schiena', serratus: 'Dentato', biceps: 'Bicipiti', triceps: 'Tricipiti', forearm: 'Avambracci', abs: 'Addominali', obliques: 'Obliqui', 'lower-back': 'Parte bassa della schiena', gluteal: 'Glutei', quadriceps: 'Quadricipiti', hamstring: 'Ischiocrurali', adductors: 'Adduttori', 'hip-flexors': 'Flessori dell’anca', calves: 'Polpacci', tibialis: 'Tibiali' },
+  tool_get_measurements: 'Mostra le misure corporee registrate nella schermata Misure: una voce per giorno, dalla più vecchia, con i campi misurati quel giorno (un campo non misurato manca, non vale 0) e la nota del giorno, più `change` per ogni campo tra la prima e l’ultima misura nell’intervallo e la voce `latest`. I campi predefiniti usano queste chiavi: {keys}; `labels` dà il nome di ogni campo restituito. Un campo personalizzato ha la chiave `other:<id>`. `units` indica l’unità di ogni valore, sempre quella salvata: lunghezze in cm, masse in kg, grasso corporeo in %, pressione in mmHg, polso in bpm, null per un campo personalizzato senza unità. Converti per l’utente se il profilo mostra pollici o libbre.',
+  arg_measurement_fields: 'Solo questi campi, per chiave ("waist", "other:ab12") o per nome ("Vita"). Se omesso, tutti i campi con una misura nell’intervallo.',
+  arg_from_balance: 'Data iniziale inclusiva YYYY-MM-DD di un intervallo di date, al posto di `period`. Omettila con `to` per tutto fino a `to`.',
+  arg_to_balance: 'Data finale inclusiva YYYY-MM-DD di un intervallo di date, al posto di `period`. Se c’è `from` e manca, usa oggi.',
+  balance_period_or_dates: 'indica period oppure from/to, non entrambi',
+  balance_needs_window: 'muscle_balance richiede period, oppure from e/o to',
+  from_after_to: 'from ({from}) è dopo to ({to})',
+  no_measurements: 'nessuna misura registrata in questo intervallo',
 }
 
 export function localeCode(locale = process.env.OPENGYM_LOCALE) {
