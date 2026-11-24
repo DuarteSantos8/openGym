@@ -12,7 +12,7 @@
 // this device's profile too: that profile is the one to attach, and the app asks what to do
 // with what is on the device once they are back (the store's adoptProfile).
 import { guestAllowed } from '../guest.js'
-import { oidcOn } from '../oidc.js'
+import { oidcWebOn } from '../oidc.js'
 
 //
 // A server profile already open counts as "already in" only for the account it was opened
@@ -29,8 +29,8 @@ import { oidcOn } from '../oidc.js'
  * @returns {'already'|'link'|'switch'|'device'|'server'|'refused'} nothing to do; go through the server's sign-in with the account; the same after signing out the server profile that is open; this device's profile opened; left to the server's own sign-in; this device's profile could not be opened because the browser stores nothing
  */
 export function enterApp(st, { hostedId = null, owner = null, lasting = true } = {}) {
-  if (st.user) return owner && owner !== hostedId && oidcOn(st.config) ? 'switch' : 'already'
-  if (oidcOn(st.config) && lasting) return 'link'
+  if (st.user) return owner && owner !== hostedId && oidcWebOn(st.config) ? 'switch' : 'already'
+  if (oidcWebOn(st.config) && lasting) return 'link'
   if (st.isGuest()) return 'already'
   if (!guestAllowed(st.config)) return 'server'
   // The store keeps this choice in the browser's storage. A browser that refuses to store
