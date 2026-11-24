@@ -79,9 +79,13 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
   const changed = () => { epoch++; refreshing = null }
   const listeners = new Set()
 
+  // The session lives in this page's memory only: storage would not keep it (private mode, a
+  // full quota). Then storage has nothing to say about who is signed in here.
+  let unsaved = false
   const keep = s => {
     current = s
-    try { if (s) storage.setItem(SESSION_KEY, JSON.stringify(s)); else storage.removeItem(SESSION_KEY) } catch { /* private mode: the session lasts as long as the page */ }
+    unsaved = false
+    try { if (s) storage.setItem(SESSION_KEY, JSON.stringify(s)); else storage.removeItem(SESSION_KEY) } catch { unsaved = !!s /* the session lasts as long as the page */ }
     for (const fn of listeners) { try { fn(s) } catch { /* a listener's fault is its own */ } }
     return s
   }
@@ -90,9 +94,12 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
   // the truth. Without this a tab left open went on believing what was true when it loaded, and
   // acted on it (found in review of #79). A refresh on its way here belongs to the past either
   // way: its refresh token may already be spent, and it must not write an old session back.
+  // Not where the session could not be written (found in review of #80: reading storage then
+  // signed the person straight back out), nor where storage cannot be read at all.
   const sync = () => {
-    let stored
-    try { stored = readStored(storage) } catch { return current }
+    if (unsaved) return current
+    try { storage.getItem(SESSION_KEY) } catch { return current }
+    const stored = readStored(storage)
     if (stored?.user.id === current?.user.id && stored?.access_token === current?.access_token && stored?.refresh_token === current?.refresh_token) return current
     changed()
     current = stored

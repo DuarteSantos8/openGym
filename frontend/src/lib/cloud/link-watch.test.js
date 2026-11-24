@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { watchLink, tellLinkFailure } from './link-watch.js'
 import { createServerLink } from './server-link.js'
+import { createAuth } from './auth.js'
 
 const box = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)) }, removeItem: k => { m.delete(k) } } }
 // `stored` is what the browser's storage says now; `session()` is what this tab last knew.
@@ -135,6 +136,21 @@ describe('the server profile ends with the account it was opened through', () =>
 
   it('without the cloud client there is nothing to watch', () => {
     expect(watchLink({ client: null, store: fakeStore({}), note: createServerLink(box()) })()).toBeUndefined()
+  })
+})
+
+// Found in review of #80, with the real auth client: where storage will not keep the session,
+// the watcher's look at storage must not sign the person straight back out.
+describe('with the real account client', () => {
+  it('a sign-in storage would not keep survives the watcher', async () => {
+    const storage = { getItem: () => null, setItem: () => { throw new Error('QuotaExceededError') }, removeItem: () => {} }
+    const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ access_token: 'at', refresh_token: 'rt', expires_in: 3600, user: { id: 'u-1', email: 'a@example.com' } }) })
+    const auth = createAuth({ url: 'https://proj.example', key: 'sb_publishable_test', fetchImpl, storage, events: null })
+    const store = fakeStore({ user: null })
+    watchLink({ client: { auth }, store, note: createServerLink(box()) })
+    await auth.signIn('a@example.com', 'right-password')
+    await tick()
+    expect(auth.session()?.user.id).toBe('u-1')
   })
 })
 
