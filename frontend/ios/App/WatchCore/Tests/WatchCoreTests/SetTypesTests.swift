@@ -238,8 +238,11 @@ final class HealthDeleteTests: XCTestCase {
         let snap = try JSONDecoder().decode(Snapshot.self, from: Data(#"{"v":1,"healthGone":["opengym-w-x"]}"#.utf8))
         XCTAssertEqual(snap.healthGone, ["opengym-w-x"])
     }
+}
 
-    /* #1455: the same exercise twice in a workout (from cubetes' #1139) */
+
+/// #1455: the same exercise twice in a workout (from cubetes' #1139).
+extension SetTypesTests {
 
     func testASkipAndARatingBelongToTheEntryNotToTheExercise() {
         // the same lift twice (back-off sets): set 0 skipped and set 1 rated on the first one only
@@ -268,8 +271,8 @@ final class HealthDeleteTests: XCTestCase {
     }
 
     func testASkipAndARatingSavedByTheLastReleaseStayOnTheFirstCopy() {
-        let heavy: Entry = self.entry("bench", "Bench", sets: [self.row(60, 8), self.row(60, 8)])
-        let light: Entry = self.entry("bench", "Bench", sets: [self.row(50, 10), self.row(50, 10)])
+        let heavy: Entry = entry("bench", "Bench", sets: [row(60, 8), row(60, 8)])
+        let light: Entry = entry("bench", "Bench", sets: [row(50, 10), row(50, 10)])
         var s = state([heavy, light])
         s.skipped = ["bench#0"]; s.efforts = ["bench#1": 8]   // 1.4.5's keys: the watch updated mid-workout
         s = SessionCore.upgraded(s)
