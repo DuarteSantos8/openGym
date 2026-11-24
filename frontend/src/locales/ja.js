@@ -5836,4 +5836,5 @@ export default {
   "Totals": "合計",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "使うものは表示、あまり開かないものは折りたたみ、残りは非表示に。カードを長押しして移動できます。",
   "Shows up when there is something to show": "表示する内容があるときに現れます",
+  "Hidden until next month.": "来月まで非表示です。",
 }

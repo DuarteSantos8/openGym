@@ -5904,4 +5904,5 @@ export default {
   "Totals": "합계",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 카드를 길게 눌러 옮기세요.",
   "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
+  "Hidden until next month.": "다음 달까지 숨겨져 있어요.",
 }

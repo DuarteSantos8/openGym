@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: Challenges and the recovery tip come back once you ask for them. After their × they used to stay away even with the switch back on; now Customize Home lists them as hidden until next month or for today, Show brings them back, and so does switching Monthly challenges on again (thanks Discord).
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).
 - Garmin: supersets no longer stall on "Next exercise is on its way from your phone". The watch gets the next superset before you reach it, and when it does have to wait, it asks the phone again within seconds instead of minutes (#1295).
 - Garmin: long circuits fit on the watch. Six exercises used to be too much for one message, and the exercise you were on could be the one left out (#1471).

@@ -5915,4 +5915,5 @@ export default {
   "Totals": "ยอดรวม",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ กดค้างที่การ์ดเพื่อย้าย",
   "Shows up when there is something to show": "จะแสดงเมื่อมีข้อมูลให้ดู",
+  "Hidden until next month.": "ซ่อนไว้จนถึงเดือนหน้า",
 }

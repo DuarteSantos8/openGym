@@ -5907,4 +5907,5 @@ export default {
   "Totals": "Összesítők",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. Tarts lenyomva egy kártyát az áthelyezéshez.",
   "Shows up when there is something to show": "Akkor jelenik meg, ha van mit mutatnia",
+  "Hidden until next month.": "Jövő hónapig elrejtve.",
 }

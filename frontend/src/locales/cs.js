@@ -5870,4 +5870,5 @@ export default {
   "Totals": "Součty",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
   "Shows up when there is something to show": "Objeví se, až bude co ukázat",
+  "Hidden until next month.": "Skryto do příštího měsíce.",
 }

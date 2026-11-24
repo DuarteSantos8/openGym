@@ -5983,4 +5983,5 @@ export default {
   "Totals": "মোট",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। সরাতে একটি কার্ড চেপে ধরুন।",
   "Shows up when there is something to show": "দেখানোর মতো কিছু থাকলে দেখা যাবে",
+  "Hidden until next month.": "আগামী মাস পর্যন্ত লুকানো।",
 }

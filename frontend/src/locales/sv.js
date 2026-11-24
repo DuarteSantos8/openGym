@@ -5951,4 +5951,5 @@ export default {
   "Totals": "Totalt",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Håll in ett kort för att flytta det.",
   "Shows up when there is something to show": "Visas när det finns något att visa",
+  "Hidden until next month.": "Dold till nästa månad.",
 }

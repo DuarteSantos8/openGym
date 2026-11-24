@@ -5870,4 +5870,5 @@ export default {
   "Totals": "مجموع‌ها",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. برای جابه‌جایی، یک کارت را نگه دار.",
   "Shows up when there is something to show": "وقتی چیزی برای نشان دادن باشد ظاهر می\u200cشود",
+  "Hidden until next month.": "تا ماه بعد پنهان است.",
 }

@@ -5904,4 +5904,5 @@ export default {
   "Totals": "Toplamlar",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Taşımak için bir karta basılı tut.",
   "Shows up when there is something to show": "Gösterecek bir şey olduğunda görünür",
+  "Hidden until next month.": "Gelecek aya kadar gizli.",
 }

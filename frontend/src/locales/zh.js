@@ -5904,4 +5904,5 @@ export default {
   "Totals": "总计",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "显示常用的，折叠很少打开的，隐藏其余的。长按卡片即可移动。",
   "Shows up when there is something to show": "有内容时才会显示",
+  "Hidden until next month.": "已隐藏到下个月。",
 }

@@ -4329,6 +4329,7 @@ export const PT_BR_OVERRIDES = {
   // Arrange your own Home and Stats (#1119)
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. Toque e segure um cartão para movê-lo.",
   "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
+  "Hidden until next month.": "Oculto até o mês que vem.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

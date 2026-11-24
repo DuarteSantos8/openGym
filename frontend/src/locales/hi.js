@@ -5904,4 +5904,5 @@ export default {
   "Totals": "कुल",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "जो इस्तेमाल करते हैं उसे दिखाएँ, जो कम खोलते हैं उसे समेटें और बाकी छिपाएँ। खिसकाने के लिए किसी कार्ड को दबाकर रखें।",
   "Shows up when there is something to show": "जब दिखाने को कुछ होगा तब दिखेगा",
+  "Hidden until next month.": "अगले महीने तक छिपा है।",
 }

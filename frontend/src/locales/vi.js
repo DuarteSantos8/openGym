@@ -5870,4 +5870,5 @@ export default {
   "Totals": "Tổng",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Nhấn giữ một thẻ để di chuyển.",
   "Shows up when there is something to show": "Sẽ hiện khi có nội dung để hiển thị",
+  "Hidden until next month.": "Đã ẩn đến tháng sau.",
 };

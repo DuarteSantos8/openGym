@@ -5904,4 +5904,5 @@ export default {
   "Totals": "Sumy",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Pokaż to, czego używasz, zwiń to, co otwierasz rzadko, a resztę ukryj. Przytrzymaj kartę, aby ją przenieść.",
   "Shows up when there is something to show": "Pojawi się, gdy będzie co pokazać",
+  "Hidden until next month.": "Ukryte do przyszłego miesiąca.",
 }
