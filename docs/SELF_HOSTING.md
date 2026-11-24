@@ -818,8 +818,9 @@ services:
 
 Three things to get right:
 
-**`data/` has to belong to that user before the first start.** Create it yourself (`mkdir data`).
-If Docker creates it, it is root's, and the API restarts in a loop with
+**`data/` has to belong to that user before the first start.** Create it yourself and give it to
+the uid in `user:`: `mkdir data && sudo chown 1000:1000 data` (no `chown` needed if you are that
+user; `id -u` tells you). If Docker creates it, it is root's, and the API restarts in a loop with
 `EACCES: permission denied, open '/data/secret'`. On an existing instance the files are root's
 too: `docker compose down`, `sudo chown -R 1000:1000 data`, then `docker compose up -d`. Profiles,
 passkeys and sessions carry over.
