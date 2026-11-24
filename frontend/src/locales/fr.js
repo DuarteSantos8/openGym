@@ -5897,11 +5897,28 @@ export default {
   "Preview on": "Aperçu sur",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Laisse openGym ouvert sur la montre un instant.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Personnaliser",
   "Collapsed": "Repliée",
   "Hide": "Masquer",
   "Totals": "Totaux",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Connexion en cours. Réessaie dans un instant.",
+  "Pair a watch in the Watch app.": "Jumelle une montre dans l’app Watch.",
+  "Install openGym from the Watch app.": "Installe openGym depuis l’app Watch.",
+  "Open openGym on the watch once.": "Ouvre openGym une fois sur la montre.",
+  "Open openGym on the watch, or bring it closer.": "Ouvre openGym sur la montre ou rapproche-la.",
+  "Update openGym on the watch.": "Mets openGym à jour sur la montre.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Cette version ne peut pas joindre de montre. Prends openGym sur Google Play ou opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Jumelle ta montre dans sa propre app, comme Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "Sur la montre, installe openGym depuis le Play Store.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Installe l’APK Wear OS de cette version. Celui du Play Store ne se jumellera pas.",
+  "Syncing": "Synchronisation",
+  "Not set up": "Pas configurée",
+  "Update watch app": "Mets à jour l’app de la montre",
+  "Last heard {0}": "Dernières nouvelles : {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Affiche ce que tu utilises, replie ce que tu ouvres rarement et masque le reste. Maintiens une carte pour la déplacer.",
   "Shows up when there is something to show": "Apparaît quand il y a quelque chose à montrer",
 }

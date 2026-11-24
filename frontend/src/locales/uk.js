@@ -5894,11 +5894,28 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Залиште openGym відкритим на годиннику на хвилинку.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Налаштувати",
   "Collapsed": "Згорнута",
   "Hide": "Сховати",
   "Totals": "Підсумки",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Підключення. Спробуйте за мить.",
+  "Pair a watch in the Watch app.": "Створіть пару з годинником у застосунку Watch.",
+  "Install openGym from the Watch app.": "Установіть openGym через застосунок Watch.",
+  "Open openGym on the watch once.": "Відкрийте openGym на годиннику хоча б раз.",
+  "Open openGym on the watch, or bring it closer.": "Відкрийте openGym на годиннику або піднесіть його ближче.",
+  "Update openGym on the watch.": "Оновіть openGym на годиннику.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Ця версія не зв’язується з годинником. Завантажте openGym з Google Play або opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Створіть пару з годинником у його застосунку, як-от Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "На годиннику встановіть openGym із Play Маркету.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Установіть APK Wear OS цього випуску. Версія з Play Маркету не під’єднається.",
+  "Syncing": "Синхронізація",
+  "Not set up": "Не налаштовано",
+  "Update watch app": "Оновіть застосунок на годиннику",
+  "Last heard {0}": "Остання звістка: {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Утримуйте картку, щоб перемістити її.",
   "Shows up when there is something to show": "З’явиться, коли буде що показати",
 }

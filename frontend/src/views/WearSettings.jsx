@@ -7,20 +7,20 @@
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, lastHeardAt } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, lastHeardAt, routinesSync, readRoutinesSent } from '../lib/watch-settings.js'
 import { wearStatus } from '../lib/watch-sync.js'
 import { getChannel } from '../lib/channel.js'
 import { wearView, wearWatchLine, WEAR_DOCS } from '../lib/wear-view.js'
-import { fmtAgo } from '../lib/format.js'
+import WatchPill from '../components/WatchPill.jsx'
 
+// The next step under the pill, on trouble: one short line. (F-Droid builds have no Google Play
+// services, the only way to a Wear OS watch; a watch app pairs only with the phone app from the same place.)
 const lineOf = key => ({
-  checking: t('Checking…'),
-  build: t('Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.'),
-  'no-watch': t('No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.'),
-  'get-app-play': t('Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.'),
-  'get-app-apk': t('Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.'),
-  'on-watch': t('openGym is on your watch and in reach. Sets you log on the wrist land here.'),
-  'on-watch-away': t('openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.'),
+  build: t('This version can’t reach a watch. Get openGym from Google Play or opengym.ch.'),
+  'no-watch': t('Pair your watch in its own app, like Galaxy Wearable.'),
+  'get-app-play': t('On the watch, install openGym from the Play Store.'),
+  'get-app-apk': t('Install the Wear OS APK of this release. The Play Store one won’t pair.'),
+  'on-watch-away': t('Open openGym on the watch, or bring it closer.'),
 }[key] || '')
 
 const watchLine = w => ({
@@ -52,15 +52,22 @@ export default function WearSettingsPage ({ api = { status: wearStatus, channel:
   const set = patch => setPrefs(writeWatchPrefs(patch))
   const view = wearView(wear, channel)
   const there = view.key === 'on-watch' || view.key === 'on-watch-away'
-  // With the app on the watch: when it last checked in, or that it has not yet.
-  // (its newest set, rest or status that reached this phone, #1151)
+  // The pill's words, as on the Apple Watch page. An F-Droid build has no watch link at all: "not set up", and why.
+  // (heardAt: its newest set, rest or status that reached this phone, #1151)
   const heardAt = lastHeardAt(heard)
-  const heardLine = !there ? '' : heardAt
-    ? t('Last heard from the watch: {0}', fmtAgo(heardAt))
-    : t('The watch hasn’t checked in yet. Open openGym on it once.')
+  // A watch that never checked in is "silent", as on the Apple Watch page: in reach says nothing about the app.
+  const link = !there ? { checking: 'checking', build: 'unpaired', 'no-watch': 'unpaired' }[view.key] || 'missing'
+    : !heardAt ? 'silent' : view.key === 'on-watch' ? 'live' : 'away'
+  // Whether the watch has every routine (it reports what it shows, each time it takes in a new file).
+  const sent = readRoutinesSent()
+  const rs = routinesSync({ link: there ? { paired: true, installed: true } : null, phone: sent, status: heard, enabled: prefs.enabled })
+  const todo = link === 'live'
+    ? { sending: t('Keep openGym open on the watch for a moment.'), unknown: t('Update openGym on the watch.') }[rs]
+    : link === 'silent' ? t('Open openGym on the watch once.') : lineOf(view.key)
 
   return <>
-    <Section footer={[lineOf(view.key), heardLine].filter(Boolean).join(' ')}>
+    {prefs.enabled && <WatchPill link={link} routines={rs} count={sent?.count} heardAt={heardAt} todo={todo} round />}
+    <Section>
       <Row icon="watch" iconTint="var(--grey)" title={t('Send workouts to the watch')}>
         <Switch checked={prefs.enabled} onChange={v => set({ enabled: v })} aria-label={t('Send workouts to the watch')} />
       </Row>

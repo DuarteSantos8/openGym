@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: one Apple Health story. The phone's Apple Health switch (Settings → Integrations)
 // is the one switch; this page says what the watch makes of it and leads there.
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { act } from 'react'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
@@ -12,7 +12,7 @@ vi.mock('../lib/watch-sync.js', () => ({ watchStatus: async () => mocks.link }))
 
 import WatchSettingsPage from './WatchSettings.jsx'
 import { useStore } from '../store/useStore.js'
-import { readWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchStatus, watchLinkState, noteRoutinesSent } from '../lib/watch-settings.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let where = null
@@ -29,6 +29,7 @@ async function mount() {
   })
   return el
 }
+const pill = el => el.querySelector('[data-watch-pill]')?.dataset.watchPill
 const row = (el, title) => [...el.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
 
 beforeEach(() => { localStorage.clear(); mocks.health = { on: false }; mocks.link = { paired: true, installed: true }; where = null })
@@ -69,11 +70,11 @@ describe('Settings → Apple Watch', () => {
   // (it does each time it starts), so "installed" alone no longer reads as "in touch".
   it('says whether the watch has checked in, and when it last did', async () => {
     let el = await mount()
-    expect(el.textContent).toContain('The watch hasn’t checked in yet. Open openGym on it once.')
+    expect(el.textContent).toContain('Open openGym on the watch once.')
     writeWatchStatus({ health: 'on', at: Date.now() - 5 * 60e3 })
     el = await mount()
-    expect(el.textContent).toContain('Last heard from the watch: 5 minutes ago')
-    expect(el.textContent).not.toContain('checked in yet')
+    expect(el.textContent).toContain('Last heard 5 minutes ago')
+    expect(el.textContent).not.toContain('Open openGym on the watch once.')
   })
 
   it('has the switch for opening on the watch, on to begin with', async () => {
@@ -111,29 +112,37 @@ describe('Settings → Apple Watch', () => {
     expect(radios().map(r => r.tabIndex)).toEqual([0, -1])
   })
 
-  // Every state of the link says what to do next (owner: "pairing should just work").
+  // Every state of the link says what to do next (owner: "pairing should just work"), in one pill on top.
   it('tells you what to do next, whatever state the watch is in', async () => {
-    const line = el => el.querySelector('[data-watch-link]')
+    const todo = el => el.querySelector('.wpill-todo')?.textContent
     mocks.link = { paired: false, installed: false }
     let el = await mount()
-    expect(line(el).dataset.watchLink).toBe('unpaired')
-    expect(line(el).textContent).toBe('No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.')
+    expect(pill(el)).toBe('setup')
+    expect(todo(el)).toBe('Pair a watch in the Watch app.')
     mocks.link = { paired: true, installed: false }
     el = await mount()
-    expect(line(el).dataset.watchLink).toBe('missing')
-    expect(line(el).textContent).toContain('find openGym under Available Apps and tap Install')
+    expect(pill(el)).toBe('setup')
+    expect(todo(el)).toBe('Install openGym from the Watch app.')
     mocks.link = { paired: true, installed: true, reachable: false }
     el = await mount()
-    expect(line(el).dataset.watchLink).toBe('silent')
-    expect(line(el).textContent).toContain('Open openGym on it once.')
+    expect(pill(el)).toBe('away')
+    expect(todo(el)).toBe('Open openGym on the watch once.')
     writeWatchStatus({ health: 'on', at: Date.now() - 5 * 60e3 })
     el = await mount()
-    expect(line(el).dataset.watchLink).toBe('away')
-    expect(line(el).textContent).toBe('openGym is on your Apple Watch. Last heard from the watch: 5 minutes ago. The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.')
+    expect(pill(el)).toBe('away')
+    expect(el.querySelector('.wpill').textContent).toBe('Not in reachLast heard 5 minutes ago')
+    expect(todo(el)).toBe('Open openGym on the watch, or bring it closer.')
     mocks.link = { paired: true, installed: true, reachable: true }
     el = await mount()
-    expect(line(el).dataset.watchLink).toBe('live')
-    expect(line(el).textContent).toBe('openGym is on your Apple Watch. Last heard from the watch: 5 minutes ago. Connected right now.')
+    expect(pill(el)).toBe('connected')
+    expect(todo(el)).toBeUndefined()   // all well: one calm line, no next step
+    expect(el.querySelector('.wpill-sign rect')).toBeTruthy()   // the Apple Watch's square face
+  })
+
+  it('has no pill with the switch off: the watch gets nothing', async () => {
+    const el = await mount()
+    await act(async () => { row(el, 'Send workouts to the watch').querySelector('[role="switch"]').click() })
+    expect(el.querySelector('[data-watch-pill]')).toBeNull()
   })
 
   it('follows the link while the page is open: the app installed on the watch shows without leaving the page', async () => {
@@ -142,10 +151,10 @@ describe('Settings → Apple Watch', () => {
       mocks.link = { paired: true, installed: false }
       const el = await mount()
       await act(async () => { await vi.advanceTimersByTimeAsync(10) })
-      expect(el.querySelector('[data-watch-link]').dataset.watchLink).toBe('missing')
+      expect(pill(el)).toBe('setup')
       mocks.link = { paired: true, installed: true, reachable: true }
       await act(async () => { await vi.advanceTimersByTimeAsync(4100) })
-      expect(el.querySelector('[data-watch-link]').dataset.watchLink).toBe('live')
+      expect(pill(el)).toBe('connected')
       await act(async () => { document.body.replaceChildren() })
     } finally { vi.useRealTimers() }
   })
@@ -158,5 +167,39 @@ describe('Settings → Apple Watch', () => {
     expect(watchLinkState({ paired: true, installed: true }, null)).toBe('silent')
     expect(watchLinkState({ paired: true, installed: true }, { at: 5 })).toBe('away')
     expect(watchLinkState({ paired: true, installed: true, reachable: true }, null)).toBe('live')
+  })
+})
+
+describe('Routines on the watch, in the pill', () => {
+  const at = Date.now() - 5 * 60e3
+  beforeEach(() => { mocks.link = { paired: true, installed: true, reachable: true } })
+  afterEach(() => noteRoutinesSent(null))
+  it('says all of them are there, with how many and when the watch was last heard', async () => {
+    noteRoutinesSent({ hash: 'h1', count: 24 })
+    writeWatchStatus({ health: 'off', version: '1.4.6', at, routinesHash: 'h1', routinesCount: 24 })
+    const el = await mount()
+    expect(pill(el)).toBe('connected')
+    expect(el.querySelector('.wpill').textContent).toContain('24 routines · Last heard 5 minutes ago')
+    expect(el.querySelector('[data-watch-pill]').getAttribute('aria-live')).toBe('polite')
+  })
+  it('says syncing while the watch shows another list', async () => {
+    noteRoutinesSent({ hash: 'h2', count: 24 })
+    writeWatchStatus({ health: 'off', version: '1.4.6', at, routinesHash: '', routinesCount: 16 })
+    const el = await mount()
+    expect(pill(el)).toBe('syncing')
+    expect(el.querySelector('.wpill-todo').textContent).toBe('Keep openGym open on the watch for a moment.')
+  })
+  it('asks for an update from a watch app that does not report it', async () => {
+    noteRoutinesSent({ hash: 'h2', count: 24 })
+    writeWatchStatus({ health: 'off', version: '1.4.5', at })
+    const el = await mount()
+    expect(pill(el)).toBe('update')
+    expect(el.querySelector('.wpill-todo').textContent).toBe('Update openGym on the watch.')
+  })
+  it('says nothing about routines with nothing sent', async () => {
+    writeWatchStatus({ health: 'off', version: '1.4.6', at, routinesHash: '', routinesCount: 0 })
+    const el = await mount()
+    expect(pill(el)).toBe('connected')
+    expect(el.querySelector('.wpill').textContent).not.toContain('routines')
   })
 })

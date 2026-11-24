@@ -5863,11 +5863,28 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Nechte na chvíli openGym v hodinkách otevřený.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Přizpůsobit",
   "Collapsed": "Sbalené",
   "Hide": "Skrýt",
   "Totals": "Součty",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "Připojuje se. Zkuste to za chvíli.",
+  "Pair a watch in the Watch app.": "Spárujte hodinky v aplikaci Watch.",
+  "Install openGym from the Watch app.": "Nainstalujte openGym z aplikace Watch.",
+  "Open openGym on the watch once.": "Jednou otevřete openGym v hodinkách.",
+  "Open openGym on the watch, or bring it closer.": "Otevřete openGym v hodinkách, nebo je dejte blíž.",
+  "Update openGym on the watch.": "Aktualizujte openGym v hodinkách.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Tato verze se k hodinkám nepřipojí. Stáhněte openGym z Google Play nebo z opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Spárujte hodinky v jejich aplikaci, třeba Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "V hodinkách nainstalujte openGym z Obchodu Play.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Nainstalujte APK pro Wear OS z tohoto vydání. To z Obchodu Play se nespáruje.",
+  "Syncing": "Synchronizuje se",
+  "Not set up": "Nenastaveno",
+  "Update watch app": "Aktualizujte aplikaci v hodinkách",
+  "Last heard {0}": "Poslední spojení: {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
   "Shows up when there is something to show": "Objeví se, až bude co ukázat",
 }

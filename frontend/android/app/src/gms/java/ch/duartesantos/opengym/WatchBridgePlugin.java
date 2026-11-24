@@ -66,6 +66,8 @@ import org.json.JSONObject;
  *   sendClips({wid, clips: [{exId, still}]})   each exercise's 180 px still from the app package,
  *                        as the data item /opengym/still/<exId> (its bytes an Asset, and the
  *                        workout's id), for the watch's Overview; no animations. { queued }
+ *   sendRoutines({json, hash}) every routine the watch can start (lib/watch-routines-file.js), as the data item
+ *                        /opengym/routines (the JSON an Asset); one item, the next replaces it { sent }
  *   dropClips()          the workout is over: the stills go from the Data Layer (the watch deletes its copies)
  *   garminStatus()       { supported, state, installed, reachable, store, devices: [{ id, name, connected, installed? }] }
  *   garminPick()         asks Garmin Connect for its watches again (Android has no picker: Garmin
@@ -79,6 +81,7 @@ public class WatchBridgePlugin extends Plugin {
     static final String EVENT_PREFIX = "/opengym/event/";
     static final String OPEN = "/opengym/open";
     static final String STILL_PREFIX = "/opengym/still/";
+    static final String ROUTINES = "/opengym/routines";
     static final String CAPABILITY_WEAR = "opengym_wear";
     private static final String QUEUE_FILE = "watch-events.json";
     private static final Object LOCK = new Object();
@@ -330,6 +333,28 @@ public class WatchBridgePlugin extends Plugin {
                     // Not in this build's package, or no Play services: the row keeps its plain mark.
                 }
             }
+        });
+    }
+
+    /** The snapshot is size-limited, this is not: the Data Layer keeps the item until the watch reads it. */
+    @PluginMethod
+    public void sendRoutines(PluginCall call) {
+        String json = call.getString("json");
+        String hash = call.getString("hash", "");
+        if (json == null) { call.resolve(new JSObject().put("sent", false)); return; }
+        io.execute(() -> {
+            boolean sent = false;
+            try {
+                PutDataMapRequest req = PutDataMapRequest.create(ROUTINES);
+                req.getDataMap().putAsset("json", Asset.createFromBytes(json.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+                req.getDataMap().putString("h", hash);
+                // Urgent, as the snapshot: else the Data Layer may hold it up to 30 minutes.
+                Tasks.await(Wearable.getDataClient(getContext()).putDataItem(req.asPutDataRequest().setUrgent()), 10, TimeUnit.SECONDS);
+                sent = true;
+            } catch (Exception ignored) {
+                // No Play services, or not now: the page sends it again with the next snapshot.
+            }
+            call.resolve(new JSObject().put("sent", sent));
         });
     }
 

@@ -5863,11 +5863,28 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "openGym را لحظه‌ای روی ساعت باز نگه دارید.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "سفارشی‌سازی",
   "Collapsed": "جمع‌شده",
   "Hide": "پنهان",
   "Totals": "مجموع‌ها",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "در حال اتصال. کمی بعد دوباره امتحان کنید.",
+  "Pair a watch in the Watch app.": "یک ساعت را در برنامهٔ Watch جفت کنید.",
+  "Install openGym from the Watch app.": "openGym را از برنامهٔ Watch نصب کنید.",
+  "Open openGym on the watch once.": "یک بار openGym را روی ساعت باز کنید.",
+  "Open openGym on the watch, or bring it closer.": "openGym را روی ساعت باز کنید یا ساعت را نزدیک‌تر بیاورید.",
+  "Update openGym on the watch.": "openGym را روی ساعت به‌روز کنید.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "این نسخه به ساعت دسترسی ندارد. openGym را از Google Play یا opengym.ch بگیرید.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "ساعتتان را در برنامهٔ خودش جفت کنید، مثل Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "روی ساعت، openGym را از Play Store نصب کنید.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "فایل APK مربوط به Wear OS همین نسخه را نصب کنید. نسخهٔ Play Store جفت نمی‌شود.",
+  "Syncing": "در حال همگام‌سازی",
+  "Not set up": "راه‌اندازی نشده",
+  "Update watch app": "برنامهٔ ساعت را به‌روز کنید",
+  "Last heard {0}": "آخرین تماس: {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "آنچه استفاده می‌کنی را نشان بده، آنچه کم باز می‌کنی را جمع کن و بقیه را پنهان کن. برای جابه‌جایی، یک کارت را نگه دار.",
   "Shows up when there is something to show": "وقتی چیزی برای نشان دادن باشد ظاهر می\u200cشود",
 }

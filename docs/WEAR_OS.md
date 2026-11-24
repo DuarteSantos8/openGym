@@ -21,7 +21,7 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   from watchExtras), green until the phone has said. Always On draws outlines, no lit fills, and
   nothing moves.
 - **Start**: "Today" beside the clock, the routine's name, its exercises and sets, one wide Start,
-  the other routines as rows, the build number at the bottom. Quick start on a day without a plan.
+  the other routines as rows under their phone folders (archived ones stay on the phone, and a note says so), the build number at the bottom. Quick start on a day without a plan.
   Before anything came from the phone it says so. Start waits a second after the summary's Done.
 - **Weigh-in** before a start on the watch (unless the phone's check-in is off), then a 3-2-1 ring
   that ends on Go! while the heart-rate sensor warms up.
@@ -156,7 +156,7 @@ Events are data items, so the Data Layer keeps them while the phone is asleep or
 was stored (`WearListener` listens on `/opengym/event/` for exactly that); until then the watch puts
 it again, each time waiting twice as long (20 s up to 10 min, `OutboxCore.wait`), and looks after
 the link every 30 s while a workout runs. The watch also checks in (`watchStatus`, at most every six
-hours and after an update), which is what "Last heard from the watch" in the phone's Settings shows. `WatchListenerService` on the phone writes each to a
+hours and after an update), which is what "Last heard" in the status pill of the phone's Settings shows. `WatchListenerService` on the phone writes each to a
 queue file (even with the app closed), then deletes the item; the page drains the queue, applies
 each event once by its id and acknowledges it (`WatchEventQueue.java`). Capabilities:
 `opengym_phone` (phone app) and `opengym_wear` (watch app) let each side find the other.

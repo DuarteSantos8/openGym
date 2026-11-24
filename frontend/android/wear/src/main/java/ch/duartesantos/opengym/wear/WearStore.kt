@@ -87,6 +87,8 @@ object WearStore {
     val lastStep = MutableStateFlow(1)
     /** The weigh-in before a workout started here, and the body weight on its crown. */
     val weighInFor = MutableStateFlow<ReadySession?>(null)
+    /** Every routine the phone sent as a file (kept in filesDir/routines.json across launches). */
+    val routines = MutableStateFlow<RoutinesFile?>(null)
     val bodyWeight = MutableStateFlow(70.0)
     /** "Still training?": no set for a while (forgotten workouts, WatchLogic Idle). */
     val askDone = MutableStateFlow(false)
@@ -136,6 +138,7 @@ object WearStore {
         prefs.getString("state", null)?.let { json ->
             try { _state.value = WireJson.decodeFromString(SessionState.serializer(), json) } catch (_: Exception) {}
         }
+        routinesFile().takeIf { it.exists() }?.let { f -> try { routines.value = WireJson.decodeFromString(RoutinesFile.serializer(), f.readText()) } catch (_: Exception) {} }
         kcal.lose(_state.value.workout?.id)
         // Events still waiting from the last run (sent then, never applied on the phone): out again.
         PhoneLink.flush(app)
@@ -169,7 +172,18 @@ object WearStore {
         val at = now()
         if (!CheckIn.due(prefs.getLong("checkInAt", 0), prefs.getString("checkInVersion", null), version, at)) return
         prefs.edit().putLong("checkInAt", at).putString("checkInVersion", version).apply()
-        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString()))
+        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString(), routinesReport()))
+        reportedRoutines = routinesReport()
+    }
+
+    private var reportedRoutines: Pair<String, Int>? = null
+    private fun routinesReport() = Plan.routinesReport(_state.value.ready, _state.value.routinesHash, routines.value)
+
+    /** A new routines file, or a snapshot that makes the file count: the phone's settings are told now, not at the next launch. */
+    fun reportRoutines() {
+        if (!::app.isInitialized || demoOn || routinesReport() == reportedRoutines) return
+        reportedRoutines = routinesReport()
+        PhoneLink.send(app, CheckIn.event(prefs.getString("checkInVersion", "") ?: "", now(), UUID.randomUUID().toString(), reportedRoutines))
     }
 
     /** Android's "Remove animations": only short fades then (ui/Motion.kt). */
@@ -267,6 +281,7 @@ object WearStore {
             RestFollow.Legacy -> legacyRest(snap, after, phoneRest, echo)
         }
         commit(after)
+        reportRoutines()
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
         ticks.lastOrNull()?.let { followPhoneTick(it) }
@@ -995,6 +1010,29 @@ object WearStore {
             tmp.writeBytes(bytes)
             if (tmp.renameTo(f)) stillsVersion.value++
         } catch (_: Exception) {}
+    }
+
+    private fun routinesFile() = java.io.File(app.filesDir, "routines.json")
+
+    // The listener (its own thread) and PhoneLink.pull (main) both save: one at a time, as they share the .tmp file.
+    private val routinesLock = Any()
+    private var routinesSaves = 0
+    /** How many routines files were kept so far: a pull hands it back, so a newer file that landed meanwhile stays. */
+    fun routinesSaved() = synchronized(routinesLock) { routinesSaves }
+
+    /** The phone's routines file, kept in place of the one before (one file, so nothing piles up). One that cannot be read leaves the old. */
+    fun saveRoutines(bytes: ByteArray, ifSaved: Int? = null) {
+        if (!::app.isInitialized) return
+        synchronized(routinesLock) {
+            if (ifSaved != null && ifSaved != routinesSaves) return
+            try {
+                val text = bytes.toString(Charsets.UTF_8)
+                val f = WireJson.decodeFromString(RoutinesFile.serializer(), text)
+                val tmp = java.io.File(routinesFile().path + ".tmp")
+                tmp.writeText(text)
+                if (tmp.renameTo(routinesFile())) { routinesSaves++; routines.value = f; reportRoutines() }
+            } catch (_: Exception) {}
+        }
     }
 
     /** Another workout runs, or none: the stills of every other go. */

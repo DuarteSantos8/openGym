@@ -5897,11 +5897,28 @@ export default {
   "Preview on": "Pré-visualizar em",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "um pouco mais curto",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "Deixa o openGym aberto no relógio por um momento.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "Personalizar",
   "Collapsed": "Recolhido",
   "Hide": "Ocultar",
   "Totals": "Totais",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "A ligar. Tenta de novo daqui a pouco.",
+  "Pair a watch in the Watch app.": "Emparelha um relógio na app Watch.",
+  "Install openGym from the Watch app.": "Instala o openGym a partir da app Watch.",
+  "Open openGym on the watch once.": "Abre o openGym no relógio uma vez.",
+  "Open openGym on the watch, or bring it closer.": "Abre o openGym no relógio ou aproxima-o.",
+  "Update openGym on the watch.": "Atualiza o openGym no relógio.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "Esta versão não chega a nenhum relógio. Obtém o openGym no Google Play ou em opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "Emparelha o teu relógio na app dele, como a Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "No relógio, instala o openGym a partir da Play Store.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "Instala o APK Wear OS desta versão. O da Play Store não emparelha.",
+  "Syncing": "A sincronizar",
+  "Not set up": "Não configurado",
+  "Update watch app": "Atualiza a app do relógio",
+  "Last heard {0}": "Último contacto: {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. Mantém um cartão premido para o mover.",
   "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
 }

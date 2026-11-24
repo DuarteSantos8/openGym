@@ -124,6 +124,29 @@ describe('a snapshot too big for the application context', () => {
     expect(snap.ready.others).toHaveLength(8)   // the original is not touched
   })
 
+  it('keeps as many of the other routines as fit, cutting from the end', async () => {
+    const { fitSnapshot } = await import('./watch-sync.js')
+    const snap = big()
+    snap.ready.others.forEach((o, i) => { o.name = 'R' + i })
+    const lean = JSON.parse(JSON.stringify(snap))
+    for (const o of lean.ready.others) for (const e of o.entries) { delete e.last; delete e.best }
+    const max = size({ ...lean, ready: { ...lean.ready, others: lean.ready.others.slice(0, 5) } }) + 10
+    expect(fitSnapshot(snap, max).ready.others.map(o => o.name)).toEqual(['R0', 'R1', 'R2', 'R3', 'R4'])
+  })
+
+  it('cuts the others to the byte, one by one: none more than needed', async () => {
+    const { fitSnapshot } = await import('./watch-sync.js')
+    const snap = big()
+    snap.ready.others.forEach((o, i) => { o.name = 'R' + i })
+    const lean = JSON.parse(JSON.stringify(snap))
+    for (const o of lean.ready.others) for (const e of o.entries) { delete e.last; delete e.best }
+    const at = n => size({ ...lean, ready: { ...lean.ready, others: lean.ready.others.slice(0, n) } })
+    expect(fitSnapshot(snap, at(5)).ready.others).toHaveLength(5)
+    expect(fitSnapshot(snap, at(5) - 1).ready.others).toHaveLength(4)
+    expect(fitSnapshot(snap, at(1)).ready.others).toHaveLength(1)
+    expect(fitSnapshot(snap, at(0)).ready.others).toHaveLength(0)
+  })
+
   it('keeps today\'s routine when cutting the others is enough', async () => {
     const { fitSnapshot } = await import('./watch-sync.js')
     const snap = big()

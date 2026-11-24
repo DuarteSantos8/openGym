@@ -5897,11 +5897,28 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "잠시 동안 워치에서 openGym을 열어 두세요.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "맞춤 설정",
   "Collapsed": "접힘",
   "Hide": "숨기기",
   "Totals": "합계",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "연결 중입니다. 잠시 후 다시 시도하세요.",
+  "Pair a watch in the Watch app.": "Watch 앱에서 워치를 페어링하세요.",
+  "Install openGym from the Watch app.": "Watch 앱에서 openGym을 설치하세요.",
+  "Open openGym on the watch once.": "워치에서 openGym을 한 번 여세요.",
+  "Open openGym on the watch, or bring it closer.": "워치에서 openGym을 열거나 워치를 가까이 가져오세요.",
+  "Update openGym on the watch.": "워치에서 openGym을 업데이트하세요.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "이 버전은 워치에 연결할 수 없습니다. Google Play나 opengym.ch에서 openGym을 받으세요.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "워치 전용 앱(예: Galaxy Wearable)에서 워치를 페어링하세요.",
+  "On the watch, install openGym from the Play Store.": "워치의 Play 스토어에서 openGym을 설치하세요.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "이 릴리스의 Wear OS APK를 설치하세요. Play 스토어 버전은 페어링되지 않습니다.",
+  "Syncing": "동기화 중",
+  "Not set up": "설정 안 됨",
+  "Update watch app": "워치 앱 업데이트",
+  "Last heard {0}": "마지막 연결: {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 카드를 길게 눌러 옮기세요.",
   "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
 }

@@ -5952,11 +5952,28 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // --- routines on the watch, in Settings → Apple Watch ---
+  "Keep openGym open on the watch for a moment.": "أبقِ openGym مفتوحًا على الساعة للحظة.",
   // Arrange your own Home and Stats (#1119)
   "Customize": "تخصيص",
   "Collapsed": "مطوية",
   "Hide": "إخفاء",
   "Totals": "الإجماليات",
+  // --- Settings → watch status pill (#1329) ---
+  "Still connecting. Try again in a moment.": "جارٍ الاتصال. حاول مرة أخرى بعد لحظة.",
+  "Pair a watch in the Watch app.": "اقرن ساعة في تطبيق Watch.",
+  "Install openGym from the Watch app.": "ثبّت openGym من تطبيق Watch.",
+  "Open openGym on the watch once.": "افتح openGym على الساعة مرة واحدة.",
+  "Open openGym on the watch, or bring it closer.": "افتح openGym على الساعة أو قرّبها.",
+  "Update openGym on the watch.": "حدّث openGym على الساعة.",
+  "This version can’t reach a watch. Get openGym from Google Play or opengym.ch.": "هذا الإصدار لا يصل إلى الساعة. احصل على openGym من Google Play أو opengym.ch.",
+  "Pair your watch in its own app, like Galaxy Wearable.": "اقرن ساعتك في تطبيقها الخاص، مثل Galaxy Wearable.",
+  "On the watch, install openGym from the Play Store.": "على الساعة، ثبّت openGym من Play Store.",
+  "Install the Wear OS APK of this release. The Play Store one won’t pair.": "ثبّت ملف APK الخاص بـ Wear OS من هذا الإصدار. نسخة Play Store لن تقترن.",
+  "Syncing": "مزامنة جارية",
+  "Not set up": "غير مُعدّة",
+  "Update watch app": "حدّث تطبيق الساعة",
+  "Last heard {0}": "آخر اتصال: {0}",
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. اضغط مطولاً على بطاقة لنقلها.",
   "Shows up when there is something to show": "تظهر عندما يكون فيها ما تعرضه",
 }
