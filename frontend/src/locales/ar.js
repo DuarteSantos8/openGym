@@ -1,5 +1,20 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "كيف تريد أن يبدو تمرينك؟",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "اختر ما يناسبك. يمكنك التبديل في أي وقت من ⋯ ← التخطيط، أو نهائيًا من الإعدادات ← التمرين.",
+  "One at a time": "واحد تلو الآخر",
+  "One exercise per page. Next takes you on.": "تمرين واحد في كل صفحة. «التالي» ينقلك.",
+  "All on one page": "الكل في صفحة واحدة",
+  "The whole workout as a list, ticks and all.": "التمرين كاملًا كقائمة، مع علامات الإنجاز.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "التخطيطات هنا: تمرين في كل صفحة، أو التمرين كاملًا كقائمة. وكذلك الملاحظات والتمارين الإضافية وإعدادات التمرين.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "تدرّج الإحماء الخاص بك",
+  "Built-in": "المدمج",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "اضبطه مرة واحدة وسيتبعه كل إحماء تلقائي، محسوبًا من وزن العمل. والتمرين المضبوط على «الخاص بي» يبدأ منه أيضًا.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "لا يوجد بار في التمرين؟ يُتخطّى ذلك الصف. والتمارين التي لها إحماؤها الخاص تحتفظ به.",
+  "Back to the built-in ramp": "العودة إلى التدرّج المدمج",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "تدرّج الإحماء الخاص بك من الإعدادات، محسوبًا من وزن العمل.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} سعرة",
   "≈ {0} kcal ({1})": "≈ {0} سعرة ({1})",

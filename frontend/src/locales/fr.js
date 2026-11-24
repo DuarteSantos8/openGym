@@ -1,5 +1,20 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Ta séance, tu la veux comment ?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Choisis ce qui te va. Tu peux changer à tout moment sous ⋯ → Disposition, ou pour de bon dans Réglages → Séance.",
+  "One at a time": "Un à la fois",
+  "One exercise per page. Next takes you on.": "Un exercice par page. Suivant t’emmène plus loin.",
+  "All on one page": "Tout sur une page",
+  "The whole workout as a list, ticks and all.": "Toute la séance en liste, coches comprises.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "La disposition se cache ici : un exercice par page, ou toute la séance en liste. Les notes, les exercices en plus et les réglages de séance aussi.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Ta montée d’échauffement",
+  "Built-in": "Intégrée",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Règle-la une fois et chaque échauffement automatique la suit, à l’échelle de la charge de travail. Un exercice réglé sur Les miens part aussi de là.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Pas de barre sur l’exercice ? Cette ligne saute. Les exercices qui ont leur propre échauffement le gardent.",
+  "Back to the built-in ramp": "Revenir à la montée intégrée",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Ta montée d’échauffement des Réglages, à l’échelle de la charge de travail.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

@@ -1,5 +1,20 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "¿Cómo quieres ver tu entreno?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Elige lo que te encaje. Puedes cambiarlo cuando quieras en ⋯ → Diseño, o para siempre en Ajustes → Entreno.",
+  "One at a time": "Uno a uno",
+  "One exercise per page. Next takes you on.": "Un ejercicio por página. Siguiente te lleva al próximo.",
+  "All on one page": "Todo en una página",
+  "The whole workout as a list, ticks and all.": "Todo el entreno en una lista, con sus ticks.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Aquí está el diseño: un ejercicio por página o todo el entreno en una lista. También notas, ejercicios extra y ajustes del entreno.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tu rampa de calentamiento",
+  "Built-in": "La de serie",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Ajústala una vez y cada calentamiento automático la sigue, escalada al peso de trabajo. Un ejercicio en Los míos también empieza desde ella.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "¿El ejercicio no lleva barra? Esa fila se salta. Los ejercicios con su propio calentamiento lo conservan.",
+  "Back to the built-in ramp": "Volver a la rampa de serie",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tu rampa de calentamiento de Ajustes, escalada al peso de trabajo.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

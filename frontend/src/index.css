@@ -4850,3 +4850,29 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
   .exmedia .gifhint,.exmedia .giftoggle{background:rgba(0,0,0,.8)}
 }
+
+/* #1037: the language on the first screen (components/LanguageChip.jsx), top corner, clear of the
+   notch. The button's own ::before already widens the hit area; min-height keeps it at 44 px. */
+.lang-chip{position:fixed;top:calc(var(--sat) + 10px);inset-inline-end:16px;z-index:5;min-height:44px;max-width:calc(100vw - 32px)}
+.lang-chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* The first workout's layout question (components/LayoutPick.jsx): two pictures of the screen. */
+.lp-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+.lp-opt{display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:start;padding:10px 10px 12px;border:1px solid var(--sep);border-radius:var(--r);background:var(--surface-2);color:var(--label);font:inherit;cursor:pointer;transition:transform 160ms cubic-bezier(.23,1,.32,1),border-color 160ms ease;touch-action:manipulation}
+.lp-opt:active{transform:scale(.97);border-color:var(--acc)}
+.lp-opt:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.lp-t{font-weight:600;font-size:var(--fs-subhead);margin-top:6px}
+.lp-s{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.35}
+.lp-prev{position:relative;height:92px;border-radius:8px;background:var(--bg);overflow:hidden;padding:8px;display:flex;flex-direction:column;gap:5px}
+.lp-card{display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:6px;background:var(--surface);border:1px solid var(--sep)}
+.lp-card s{display:block;height:5px;width:55%;border-radius:3px;background:var(--label-3);text-decoration:none}
+.lp-card i{display:block;height:7px;border-radius:3px;background:var(--surface-3);position:relative}
+.lp-card i.on{background:color-mix(in srgb,var(--green) 28%,var(--surface-3))}
+.lp-card i.on::after{content:'';position:absolute;inset-inline-end:3px;top:1.5px;width:4px;height:2px;border:solid var(--green);border-width:0 0 1.5px 1.5px;transform:rotate(-45deg)}
+.lp-cards .lp-card:first-child{flex:1;margin-inline-end:18px}
+.lp-cards .lp-card{gap:7px}
+.lp-cards .lp-card i{height:9px}
+.lp-peek{position:absolute;top:8px;bottom:8px;inset-inline-end:-22px;width:34px;opacity:.6}
+.lp-list .lp-card{padding:4px 6px;gap:3px}
+.lp-list .lp-card i{height:5px}
+@media (prefers-reduced-motion:reduce){.lp-opt:active{transform:none}}

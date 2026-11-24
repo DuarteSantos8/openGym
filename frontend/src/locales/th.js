@@ -1,5 +1,20 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "อยากให้หน้าการฝึกเป็นแบบไหน?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "เลือกแบบที่ถูกใจ เปลี่ยนได้ทุกเมื่อที่ ⋯ → เลย์เอาต์ หรือตั้งถาวรที่ ตั้งค่า → การฝึก",
+  "One at a time": "ทีละท่า",
+  "One exercise per page. Next takes you on.": "หน้าละหนึ่งท่า กด ‘ถัดไป’ เพื่อไปต่อ",
+  "All on one page": "ทั้งหมดในหน้าเดียว",
+  "The whole workout as a list, ticks and all.": "ทั้งการฝึกเป็นรายการ พร้อมเครื่องหมายติ๊ก",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "เลย์เอาต์อยู่ตรงนี้: หน้าละหนึ่งท่า หรือทั้งการฝึกเป็นรายการ โน้ต ท่าเพิ่มเติม และการตั้งค่าการฝึกก็อยู่ที่นี่",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "ขั้นวอร์มอัปของคุณ",
+  "Built-in": "ค่าเริ่มต้น",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "ตั้งครั้งเดียว วอร์มอัปอัตโนมัติทุกครั้งจะทำตาม ปรับตามน้ำหนักทำงาน ท่าที่ตั้งเป็น ‘ของฉันเอง’ ก็เริ่มจากตรงนี้",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "ท่านี้ไม่มีบาร์? แถวนั้นจะถูกข้าม ท่าที่มีวอร์มอัปของตัวเองจะใช้ของเดิม",
+  "Back to the built-in ramp": "กลับไปใช้ขั้นค่าเริ่มต้น",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "ขั้นวอร์มอัปของคุณจากการตั้งค่า ปรับตามน้ำหนักทำงาน",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

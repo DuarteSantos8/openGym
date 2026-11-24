@@ -1,5 +1,20 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Antrenmanın nasıl görünsün?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Sana uygun olanı seç. İstediğin an ⋯ → Düzen’den değiştirebilir, kalıcı olarak Ayarlar → Antrenman’dan ayarlayabilirsin.",
+  "One at a time": "Tek tek",
+  "One exercise per page. Next takes you on.": "Sayfa başına bir egzersiz. Sonraki seni ilerletir.",
+  "All on one page": "Hepsi tek sayfada",
+  "The whole workout as a list, ticks and all.": "Tüm antrenman bir liste halinde, tikleriyle birlikte.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Düzen burada: sayfa başına bir egzersiz ya da tüm antrenman bir liste halinde. Notlar, ek egzersizler ve antrenman ayarları da.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Kendi ısınma basamakların",
+  "Built-in": "Yerleşik",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Bir kez ayarla, her otomatik ısınma iş ağırlığına göre bunu izler. Kendi ısınmam olarak ayarlı bir egzersiz de buradan başlar.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Harekette bar yok mu? O satır atlanır. Kendi ısınması olan egzersizler onu korur.",
+  "Back to the built-in ramp": "Yerleşik basamaklara dön",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Ayarlar’daki ısınma basamakların, iş ağırlığına göre.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

@@ -1,5 +1,20 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Bạn muốn buổi tập hiển thị thế nào?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Chọn kiểu bạn thấy hợp. Có thể đổi bất cứ lúc nào ở ⋯ → Bố cục, hoặc cố định trong Cài đặt → Buổi tập.",
+  "One at a time": "Từng bài một",
+  "One exercise per page. Next takes you on.": "Mỗi trang một bài. Bấm Tiếp để đi tiếp.",
+  "All on one page": "Tất cả trên một trang",
+  "The whole workout as a list, ticks and all.": "Cả buổi tập thành một danh sách, có cả dấu tích.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Bố cục nằm ở đây: mỗi trang một bài, hoặc cả buổi tập thành danh sách. Ghi chú, thêm bài tập và cài đặt buổi tập cũng ở đây.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Bậc khởi động của bạn",
+  "Built-in": "Mặc định",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Đặt một lần, mọi bài khởi động tự động sẽ theo nó, tính theo mức tạ chính. Bài tập đặt là Của tôi cũng bắt đầu từ đây.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Bài tập không có thanh đòn? Hàng đó được bỏ qua. Bài tập có khởi động riêng vẫn giữ nguyên.",
+  "Back to the built-in ramp": "Quay lại bậc mặc định",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Bậc khởi động của bạn từ Cài đặt, tính theo mức tạ chính.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

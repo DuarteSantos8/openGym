@@ -1,6 +1,21 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Hvordan skal din træning se ud?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vælg det, der føles rigtigt. Du kan skifte når som helst under ⋯ → Layout, eller for altid i Indstillinger → Træning.",
+  "One at a time": "Én ad gangen",
+  "One exercise per page. Next takes you on.": "Én øvelse pr. side. Næste fører dig videre.",
+  "All on one page": "Alt på én side",
+  "The whole workout as a list, ticks and all.": "Hele træningen som en liste, flueben og det hele.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Her bor layoutet: én øvelse pr. side eller hele træningen som en liste. Noter, ekstra øvelser og træningsindstillinger også.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Din opvarmningsstige",
+  "Built-in": "Indbygget",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Sæt den én gang, så følger hver automatisk opvarmning den, skaleret til arbejdsvægten. En øvelse sat til Mine egne starter også herfra.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Ingen stang på øvelsen? Så springes den række over. Øvelser med deres egen opvarmning beholder den.",
+  "Back to the built-in ramp": "Tilbage til den indbyggede stige",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Din opvarmningsstige fra Indstillinger, skaleret til arbejdsvægten.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

@@ -1,5 +1,20 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Wie soll dein Training aussehen?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Nimm, was sich gut anfühlt. Umschalten geht jederzeit unter ⋯ → Layout, oder dauerhaft in Einstellungen → Training.",
+  "One at a time": "Eins nach dem anderen",
+  "One exercise per page. Next takes you on.": "Eine Übung pro Seite. Weiter bringt dich zur nächsten.",
+  "All on one page": "Alles auf einer Seite",
+  "The whole workout as a list, ticks and all.": "Das ganze Training als Liste, Häkchen inklusive.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Hier wohnt das Layout: eine Übung pro Seite oder das ganze Training als Liste. Dazu Notizen, weitere Übungen und Trainingseinstellungen.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Deine Aufwärmrampe",
+  "Built-in": "Eingebaut",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Einmal einstellen, und jedes automatische Aufwärmen folgt ihr, passend zum Arbeitsgewicht. Eine Übung auf Meine eigenen startet auch damit.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Keine Stange bei der Übung? Dann fällt die Zeile weg. Übungen mit eigenem Aufwärmen behalten es.",
+  "Back to the built-in ramp": "Zurück zur eingebauten Rampe",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Deine Aufwärmrampe aus den Einstellungen, passend zum Arbeitsgewicht.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

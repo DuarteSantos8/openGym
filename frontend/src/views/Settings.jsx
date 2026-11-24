@@ -21,6 +21,8 @@ import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { activeProfile as activeEquipment, benchKindOf, withBench, profileEquipment, ACC_V } from '../lib/equipment.js'
 import { effortOf } from '../lib/history.js'
 import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.jsx'
+import WarmupRampSheet, { rampLine } from '../components/WarmupRampSheet.jsx'
+import { languageOptions } from '../components/LanguageChip.jsx'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
@@ -48,7 +50,7 @@ import { aboutYouSheet } from '../components/StrengthLevel.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
-import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
+import { t, tn, LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
@@ -665,6 +667,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* QOL Q10: 2 × 8 instead of 3 × 10 for everything you add (lib/history.js newExDefaultsOf). */}
         <Row icon="plus" iconTint="var(--green)" title={t('New exercises start with')} value={newExLine(S)} accessory="chevron"
           onClick={() => useUI.getState().openSheet(close => <NewExDefaultsSheet close={close} />)} />
+        {/* #1423: one warm-up ramp of your own instead of the built-in one (lib/warmup-ramp.js rampOf). */}
+        {on('plates') && <Row icon="sunrise" iconTint="var(--orange)" title={t('Your warm-up ramp')} value={rampLine(S)} accessory="chevron"
+          onClick={() => useUI.getState().openSheet(close => <WarmupRampSheet close={close} />)} />}
         {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
             scrollable list, or that list stripped to just names and set rows (compact). Legacy or
             unknown values read as cards. The workout's ⋯ menu can override it for one session. */}
@@ -959,10 +964,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <SelectRow
           icon="globe" iconTint="var(--blue)" title={t('Language')}
           value={lang} onChange={v => update(s => { s.lang = v; s.langAuto = false })}
-          options={Object.entries(LANGS).map(([k, name]) => ({
-            value: k, label: name,
-            subtitle: INSTR_LANGS.includes(k) ? null : t("Exercise instructions aren't translated into this language yet, so they stay in English."),
-          }))}
+          options={languageOptions()}
         />
         {ctx.nameLang && <>
           <Row icon="globe" iconTint="var(--purple)" title={t('English exercise names')}

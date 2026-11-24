@@ -1,5 +1,20 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Jak má tvůj trénink vypadat?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vyber, co ti sedí. Přepnout můžeš kdykoli přes ⋯ → Rozložení, nebo natrvalo v Nastavení → Trénink.",
+  "One at a time": "Jeden po druhém",
+  "One exercise per page. Next takes you on.": "Jeden cvik na stránku. Dál tě posune Další.",
+  "All on one page": "Vše na jedné stránce",
+  "The whole workout as a list, ticks and all.": "Celý trénink jako seznam, i s fajfkami.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Tady je rozložení: jeden cvik na stránku, nebo celý trénink jako seznam. A taky poznámky, další cviky a nastavení tréninku.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tvoje rozcvičovací schody",
+  "Built-in": "Vestavěné",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Nastav jednou a každé automatické rozcvičení se jím řídí, přepočtené na pracovní váhu. Cvik nastavený na Moje vlastní z nich taky vychází.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Cvik bez osy? Ten řádek se přeskočí. Cviky s vlastním rozcvičením si ho nechají.",
+  "Back to the built-in ramp": "Zpět na vestavěné schody",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tvoje rozcvičovací schody z Nastavení, přepočtené na pracovní váhu.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

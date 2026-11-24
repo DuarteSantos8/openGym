@@ -1,5 +1,20 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Latihanmu mau tampil seperti apa?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Pilih yang terasa pas. Bisa diganti kapan saja di ⋯ → Tata letak, atau permanen di Pengaturan → Latihan.",
+  "One at a time": "Satu per satu",
+  "One exercise per page. Next takes you on.": "Satu latihan per halaman. Berikutnya membawamu lanjut.",
+  "All on one page": "Semua di satu halaman",
+  "The whole workout as a list, ticks and all.": "Seluruh latihan sebagai daftar, lengkap dengan centangnya.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Tata letak ada di sini: satu latihan per halaman, atau seluruh latihan sebagai daftar. Catatan, latihan tambahan, dan pengaturan latihan juga.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tangga pemanasanmu",
+  "Built-in": "Bawaan",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Atur sekali dan setiap pemanasan otomatis mengikutinya, disesuaikan dengan beban kerja. Latihan yang diatur ke Pemanasan sendiri juga mulai dari sini.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Latihan tanpa barbel? Baris itu dilewati. Latihan dengan pemanasan sendiri tetap memakainya.",
+  "Back to the built-in ramp": "Kembali ke tangga bawaan",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tangga pemanasanmu dari Pengaturan, disesuaikan dengan beban kerja.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kkal",
   "≈ {0} kcal ({1})": "≈ {0} kkal ({1})",

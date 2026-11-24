@@ -1,5 +1,20 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Як показувати тренування?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Обери, як зручніше. Перемкнути можна будь-коли через ⋯ → Вигляд, а назавжди в Налаштування → Тренування.",
+  "One at a time": "По одній",
+  "One exercise per page. Next takes you on.": "Одна вправа на сторінці. «Далі» веде до наступної.",
+  "All on one page": "Усе на одній сторінці",
+  "The whole workout as a list, ticks and all.": "Усе тренування списком, з галочками.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Тут живе вигляд: одна вправа на сторінці або все тренування списком. А ще нотатки, додаткові вправи й налаштування тренування.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Твоя розминкова драбинка",
+  "Built-in": "Вбудована",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Налаштуй раз, і кожна автоматична розминка йтиме за нею, під робочу вагу. Вправа з «Свої» теж починає з неї.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "У вправі немає грифа? Цей рядок пропускається. Вправи з власною розминкою її зберігають.",
+  "Back to the built-in ramp": "Повернути вбудовану драбинку",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Твоя розминкова драбинка з Налаштувань, під робочу вагу.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} ккал",
   "≈ {0} kcal ({1})": "≈ {0} ккал ({1})",

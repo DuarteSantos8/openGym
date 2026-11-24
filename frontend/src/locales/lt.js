@@ -1,5 +1,20 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Kaip turi atrodyti tavo treniruotė?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Rinkis, kas patinka. Perjungti gali bet kada per ⋯ → Išdėstymas, arba visam laikui Nustatymai → Treniruotė.",
+  "One at a time": "Po vieną",
+  "One exercise per page. Next takes you on.": "Vienas pratimas puslapyje. Toliau nuveda prie kito.",
+  "All on one page": "Viskas viename puslapyje",
+  "The whole workout as a list, ticks and all.": "Visa treniruotė sąraše, su varnelėmis.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Čia gyvena išdėstymas: vienas pratimas puslapyje arba visa treniruotė sąraše. Taip pat užrašai, papildomi pratimai ir treniruotės nustatymai.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Tavo apšilimo laiptai",
+  "Built-in": "Įtaisyti",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Nustatyk kartą ir kiekvienas automatinis apšilimas jų laikysis, pritaikytas darbiniam svoriui. Pratimas su Mano taip pat nuo jų pradeda.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Pratime nėra grifo? Ta eilutė praleidžiama. Pratimai su savo apšilimu jį pasilieka.",
+  "Back to the built-in ramp": "Grįžti prie įtaisytų laiptų",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Tavo apšilimo laiptai iš Nustatymų, pritaikyti darbiniam svoriui.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

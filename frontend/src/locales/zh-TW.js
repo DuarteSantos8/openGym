@@ -1,4 +1,19 @@
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "訓練要怎麼顯示？",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "選你順手的。隨時可以在 ⋯ → 畫面佈局 裡切換，或在 設定 → 訓練 裡固定下來。",
+  "One at a time": "一次一個",
+  "One exercise per page. Next takes you on.": "每頁一個動作，點「下一個」繼續。",
+  "All on one page": "全部在一頁",
+  "The whole workout as a list, ticks and all.": "整個訓練排成清單，打勾都在。",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "畫面佈局在這裡：每頁一個動作，或整個訓練排成清單。備註、加動作和訓練設定也在這兒。",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "你的熱身階梯",
+  "Built-in": "內建",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "設一次，之後每次自動熱身都照它來，依工作重量換算。設為「我自己的」的動作也從這裡開始。",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "動作沒有槓鈴桿？那一行會跳過。自帶熱身的動作維持不變。",
+  "Back to the built-in ramp": "恢復內建階梯",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "設定裡你的熱身階梯，依工作重量換算。",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} 大卡",
   "≈ {0} kcal ({1})": "≈ {0} 大卡 ({1})",

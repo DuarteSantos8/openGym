@@ -1,5 +1,20 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "Jak ma wyglądać twój trening?",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Wybierz, co ci pasuje. Zmienisz to w każdej chwili w ⋯ → Układ, a na stałe w Ustawienia → Trening.",
+  "One at a time": "Po jednym",
+  "One exercise per page. Next takes you on.": "Jedno ćwiczenie na stronę. Dalej prowadzi do następnego.",
+  "All on one page": "Wszystko na jednej stronie",
+  "The whole workout as a list, ticks and all.": "Cały trening jako lista, z ptaszkami.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "Tu mieszka układ: jedno ćwiczenie na stronę albo cały trening jako lista. Do tego notatki, dodatkowe ćwiczenia i ustawienia treningu.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "Twoja drabinka rozgrzewki",
+  "Built-in": "Wbudowana",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "Ustaw raz, a każda automatyczna rozgrzewka będzie jej trzymać, w skali ciężaru roboczego. Ćwiczenie ustawione na Własne też od niej zaczyna.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "Ćwiczenie bez sztangi? Ten wiersz jest pomijany. Ćwiczenia z własną rozgrzewką ją zachowują.",
+  "Back to the built-in ramp": "Wróć do wbudowanej drabinki",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "Twoja drabinka rozgrzewki z Ustawień, w skali ciężaru roboczego.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} kcal",
   "≈ {0} kcal ({1})": "≈ {0} kcal ({1})",

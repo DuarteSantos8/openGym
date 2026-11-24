@@ -4,6 +4,7 @@ import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { askLayout, shouldAskLayout } from '../components/LayoutPick.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
@@ -2737,6 +2738,12 @@ function ActiveWorkout() {
       document.removeEventListener('keyup', up)
       document.removeEventListener('pointerdown', pointer, true)
     }
+  }, [])
+
+  // A new profile's first workout asks once: one exercise per page, or the whole list.
+  useEffect(() => {
+    const st = useStore.getState()
+    if (shouldAskLayout(st.S, { sandbox: !!st.tourSandbox, editing: !!editing })) askLayout()
   }, [])
 
   // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —

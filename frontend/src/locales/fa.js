@@ -1,5 +1,20 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- First workout: layout question, tour's ⋯ stop ---
+  "How should your workout look?": "تمرینت چطور نمایش داده شود؟",
+  "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "هر کدام راحت‌تر است انتخاب کن. هر وقت خواستی از ⋯ → چیدمان عوضش کن، یا برای همیشه در تنظیمات → تمرین.",
+  "One at a time": "یکی‌یکی",
+  "One exercise per page. Next takes you on.": "هر صفحه یک حرکت. «بعدی» می‌بردت جلو.",
+  "All on one page": "همه در یک صفحه",
+  "The whole workout as a list, ticks and all.": "کل تمرین به شکل فهرست، با تیک‌هایش.",
+  "Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.": "چیدمان اینجاست: هر صفحه یک حرکت، یا کل تمرین به شکل فهرست. یادداشت‌ها، حرکت‌های اضافه و تنظیمات تمرین هم.",
+  // --- Settings → Workout → Your warm-up ramp (#1423) ---
+  "Your warm-up ramp": "پلکان گرم‌کردن شما",
+  "Built-in": "پیش‌فرض",
+  "Set it once and every automatic warm-up follows it, scaled to the work weight. An exercise set to My own starts from it too.": "یک بار تنظیمش کنید و هر گرم‌کردن خودکار از آن پیروی می‌کند، به نسبت وزن کاری. تمرینی که روی «مال خودم» است هم از همین شروع می‌شود.",
+  "No bar on the lift? That row is skipped. Exercises with their own warm-ups keep them.": "حرکت میله ندارد؟ آن ردیف رد می‌شود. تمرین‌هایی که گرم‌کردن خودشان را دارند، همان را نگه می‌دارند.",
+  "Back to the built-in ramp": "بازگشت به پلکان پیش‌فرض",
+  "Your warm-up ramp from Settings, scaled to the work weight.": "پلکان گرم‌کردن شما از تنظیمات، به نسبت وزن کاری.",
   // --- workout detail: estimated calories (#1368) ---
   "≈ {0} kcal": "≈ {0} کیلوکالری",
   "≈ {0} kcal ({1})": "≈ {0} کیلوکالری ({1})",

@@ -353,6 +353,9 @@ export function freshState() {
   // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
   // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
   s.streakRuleAsk = true
+  // The first workout asks once how it should look, one exercise per page or the whole list
+  // (components/LayoutPick.jsx). DEF has no mark: a profile from before never gets asked.
+  s.layoutAsk = true
   // The brand's green (1.4.5). DEF stays on the old green, so only a copy made here gets this.
   s.accent = NEW_ACCENT
   return s
