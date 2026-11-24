@@ -268,8 +268,6 @@ export const ACKED_MAX = 80
 // How long an event of a watch-started workout waits for that workout's start to arrive.
 export const DEFER_MAX_MS = 48 * 3600e3
 const SEND_DEBOUNCE_MS = 400
-// Routines the watch can start besides today's: enough to choose from, small enough to send.
-const READY_MAX = 8
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 // A body weight from the watch that holds up (kg or lb, whatever the profile uses).
@@ -402,7 +400,7 @@ export function buildReady (S, today = todayISO()) {
   let todayIds = []
   try { todayIds = effectiveRoutineIds({ ...S, routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {} }, today, today) || [] } catch { todayIds = [] }
   const planned = todayIds.length ? session(todayIds) : null
-  const others = (S.routines || []).filter(r => r && !todayIds.includes(r.id)).slice(0, READY_MAX).map(r => session([r.id])).filter(Boolean)
+  const others = (S.routines || []).filter(r => r && !todayIds.includes(r.id)).map(r => session([r.id])).filter(Boolean)
   return { today: planned, others }
 }
 
@@ -993,7 +991,7 @@ const bytesOf = v => new TextEncoder().encode(typeof v === 'string' ? v : JSON.s
 
 /**
  * The snapshot made small enough to send, dropping first what matters least: the "last time" lines
- * of the routines the watch could start, then those routines but today's, then today's own "last
+ * of the routines the watch could start, then those routines from the last one up, then today's own "last
  * time" lines and records, then the "last time" of the running workout, then what is ready
  * altogether. The running workout's sets are never cut: without them the watch has nothing to do.
  */
@@ -1009,8 +1007,7 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
     () => { const w = out.ready?.today; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
     () => { const w = out.active; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
     () => { for (const r of out.ready?.others || []) strip(r.entries, 'last', 'best') },
-    () => { if (out.ready) out.ready.others = (out.ready.others || []).slice(0, 3) },
-    () => { if (out.ready) out.ready.others = [] },
+    () => { const o = out.ready?.others || []; while (o.length && bytesOf(out) > max) o.pop() },
     () => { if (out.ready?.today) strip(out.ready.today.entries, 'last', 'best') },
     () => { if (out.active) strip(out.active.entries, 'last') },
     () => { out.ready = null },
