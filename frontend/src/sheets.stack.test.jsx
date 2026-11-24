@@ -47,7 +47,7 @@ describe('weight stack editor', () => {
     expect(host.textContent).toContain('No list yet')
     type(field(host, 'Weight stack: First (kg)'), '5')
     type(field(host, 'Weight stack: Step (kg)'), '6.8')
-    type(field(host, 'How many'), '4')
+    type(field(host, 'Weight stack: Up to (kg)'), '25.4')
     act(() => button(host, 'Fill in').click())
     expect(S().stackWeights[FLY]).toMatchObject({ unit: 'kg', weights: [5, 11.8, 18.6, 25.4], _ts: expect.any(Number) })
     type(field(host, 'Weight stack: Weight (kg)'), '11.3')
@@ -77,7 +77,7 @@ describe('weight stack editor', () => {
     expect(button(host, 'Fill in')).toBeUndefined()
     type(field(host, 'Weight stack: First (kg)'), '30')
     type(field(host, 'Weight stack: Step (kg)'), '5')
-    type(field(host, 'How many'), '3')
+    type(field(host, 'Weight stack: Up to (kg)'), '42')   // between two plates: stops at 40
     act(() => button(host, 'Add these').click())
     expect(S().stackWeights[FLY].weights).toEqual([5, 11.3, 18.1, 25, 30, 35, 40])
   })

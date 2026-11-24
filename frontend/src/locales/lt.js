@@ -5984,4 +5984,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Vertinti ir apšilimą",
   "Off keeps RIR or RPE for the sets that count.": "Išjungus RIR ar RPE lieka tik tikriems serijoms.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Pridėti vieną svorį:",
+  "Or fill in a whole run, lightest to heaviest:": "Arba užpildyk visą eilę, nuo lengviausio iki sunkiausio:",
+  "Up to ({0})": "Iki ({0})",
 }

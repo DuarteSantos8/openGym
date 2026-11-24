@@ -5928,4 +5928,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Bedøm også opvarmning",
   "Off keeps RIR or RPE for the sets that count.": "Fra: RIR eller RPE kun på de sæt, der tæller.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Tilføj én vægt:",
+  "Or fill in a whole run, lightest to heaviest:": "Eller udfyld en hel række, fra letteste til tungeste:",
+  "Up to ({0})": "Op til ({0})",
 }

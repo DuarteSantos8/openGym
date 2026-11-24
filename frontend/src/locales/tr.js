@@ -5988,4 +5988,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Isınmaları da puanla",
   "Off keeps RIR or RPE for the sets that count.": "Kapalıyken RIR veya RPE yalnızca sayılan setlerde kalır.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Tek bir ağırlık ekle:",
+  "Or fill in a whole run, lightest to heaviest:": "Ya da hafiften ağıra bütün bir sırayı doldur:",
+  "Up to ({0})": "En fazla ({0})",
 }

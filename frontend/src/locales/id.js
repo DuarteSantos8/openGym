@@ -5953,5 +5953,9 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Nilai pemanasan juga",
   "Off keeps RIR or RPE for the sets that count.": "Mati: RIR atau RPE hanya untuk set yang dihitung.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Tambah satu beban:",
+  "Or fill in a whole run, lightest to heaviest:": "Atau isi satu deret, dari yang teringan ke terberat:",
+  "Up to ({0})": "Sampai ({0})",
 }
 ;

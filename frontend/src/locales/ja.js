@@ -5920,4 +5920,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "ウォームアップも評価する",
   "Off keeps RIR or RPE for the sets that count.": "オフにすると、RIRやRPEは本番セットだけになります。",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "重量を1つ追加:",
+  "Or fill in a whole run, lightest to heaviest:": "または軽い順に一括入力:",
+  "Up to ({0})": "最大 ({0})",
 }

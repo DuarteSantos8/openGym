@@ -5981,4 +5981,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "熱身組也評分",
   "Off keeps RIR or RPE for the sets that count.": "關閉後，RIR 或 RPE 只用於正式組。",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "新增一個重量：",
+  "Or fill in a whole run, lightest to heaviest:": "或一次填入一整串，從輕到重：",
+  "Up to ({0})": "最重 ({0})",
 }

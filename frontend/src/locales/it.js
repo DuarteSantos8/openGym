@@ -5998,4 +5998,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Valuta anche il riscaldamento",
   "Off keeps RIR or RPE for the sets that count.": "Spento, RIR o RPE solo per le serie che contano.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Aggiungi un peso:",
+  "Or fill in a whole run, lightest to heaviest:": "Oppure riempi tutta una serie, dal più leggero al più pesante:",
+  "Up to ({0})": "Fino a ({0})",
 }

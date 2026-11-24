@@ -4405,6 +4405,8 @@ export const PT_BR_OVERRIDES = {
   "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de bugs no GitHub com a versão do app e o dispositivo já preenchidos. O app não envia nada sozinho.",
   // --- Recap card put away with its × ---
   "Hidden until the next recap.": "Oculto até o próximo resumo.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Or fill in a whole run, lightest to heaviest:": "Ou preencha uma série inteira, do mais leve ao mais pesado:",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

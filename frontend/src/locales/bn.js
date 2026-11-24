@@ -6067,4 +6067,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "ওয়ার্ম-আপেরও রেটিং দিন",
   "Off keeps RIR or RPE for the sets that count.": "বন্ধ থাকলে RIR বা RPE শুধু আসল সেটগুলোর জন্য থাকে।",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "একটি ওজন যোগ করুন:",
+  "Or fill in a whole run, lightest to heaviest:": "অথবা হালকা থেকে ভারী পুরো সারি একবারে দিন:",
+  "Up to ({0})": "পর্যন্ত ({0})",
 }

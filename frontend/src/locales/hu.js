@@ -5991,4 +5991,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Bemelegítést is értékeld",
   "Off keeps RIR or RPE for the sets that count.": "Kikapcsolva RIR vagy RPE csak a számító sorozatoknál.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Egy súly hozzáadása:",
+  "Or fill in a whole run, lightest to heaviest:": "Vagy tölts ki egy teljes sort, a legkönnyebbtől a legnehezebbig:",
+  "Up to ({0})": "Eddig ({0})",
 }

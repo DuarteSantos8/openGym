@@ -5954,5 +5954,9 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Chấm cả hiệp khởi động",
   "Off keeps RIR or RPE for the sets that count.": "Tắt: RIR hoặc RPE chỉ cho các hiệp chính.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Thêm một mức tạ:",
+  "Or fill in a whole run, lightest to heaviest:": "Hoặc điền cả dãy, từ nhẹ nhất đến nặng nhất:",
+  "Up to ({0})": "Đến ({0})",
 }
 ;

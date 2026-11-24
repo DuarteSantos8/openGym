@@ -5985,4 +5985,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Оцінювати й розминку",
   "Off keeps RIR or RPE for the sets that count.": "Вимк.: RIR або RPE лише для робочих підходів.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Додати одну вагу:",
+  "Or fill in a whole run, lightest to heaviest:": "Або заповни весь ряд, від легкого до важкого:",
+  "Up to ({0})": "До ({0})",
 }

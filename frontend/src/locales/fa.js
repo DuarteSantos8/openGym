@@ -5954,4 +5954,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "گرم‌کردن را هم امتیاز بده",
   "Off keeps RIR or RPE for the sets that count.": "خاموش: RIR یا RPE فقط برای ست‌هایی که حساب می‌شوند.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "یک وزنه اضافه کن:",
+  "Or fill in a whole run, lightest to heaviest:": "یا یک ردیف کامل، از سبک‌ترین تا سنگین‌ترین:",
+  "Up to ({0})": "تا ({0})",
 }

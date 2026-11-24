@@ -5988,4 +5988,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "워밍업도 평가",
   "Off keeps RIR or RPE for the sets that count.": "끄면 RIR이나 RPE는 본 세트에만 남아요.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "무게 하나 추가:",
+  "Or fill in a whole run, lightest to heaviest:": "또는 가벼운 것부터 무거운 것까지 한 번에:",
+  "Up to ({0})": "최대 ({0})",
 }

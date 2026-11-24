@@ -279,6 +279,18 @@ export function stackFromStep(first, step, count) {
 }
 
 /**
+ * How many weights an even run from `first` (or `step` when 0) by `step` takes to reach `top` (#1163):
+ * reading a stack's lightest plate, its heaviest and the gap is easier than counting its plates.
+ * 0 when the numbers cannot make a run; a top that falls between two plates stops below it.
+ */
+export function stackCountTo(first, step, top) {
+  const a = Number(first) || 0, d = Number(step) || 0, z = Number(top) || 0
+  const start = a > 0 ? a : d
+  if (!(d > 0) || !(z >= start)) return 0
+  return Math.min(100, Math.floor((z - start) / d + 1e-6) + 1)
+}
+
+/**
  * Several weights typed or pasted at once (#926): one per line, or separated by commas, semicolons
  * or spaces ("5, 11.3, 18.1" or a column copied from a sheet). `decimalComma` is whether this
  * language writes 2,5 for two and a half; then a comma between two digits is that decimal comma

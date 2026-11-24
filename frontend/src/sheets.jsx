@@ -84,7 +84,7 @@ import { setTagOf, setTagName } from './lib/set-tags.js'
 import { StrengthLevelBlock } from './components/StrengthLevel.jsx'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
-import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep, parseWeightList } from './lib/dumbbells.js'
+import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep, stackCountTo, parseWeightList } from './lib/dumbbells.js'
 import { nextStep } from './lib/weight-step.js'
 import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS, DENSITY_FLOOR, dupReps } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
@@ -1204,7 +1204,7 @@ function StackEditor({ ex }) {
   const [draft, setDraft] = useState(null)
   const [first, setFirst] = useState(null)
   const [step, setStep] = useState(null)
-  const [count, setCount] = useState(null)
+  const [top, setTop] = useState(null)
   const save = ws => update(s => { s.stackWeights = withStack({ unit, stackWeights: s.stackWeights }, ex.id, ws) })
   const add = () => {
     const w = cleanWeights([draft])[0]
@@ -1214,11 +1214,12 @@ function StackEditor({ ex }) {
   }
   // The quick fill stays after the first block (#926): a stack with a second, finer run on top
   // (LifeFitness and friends) is two fills, the second one added to the first.
+  // From, step and the heaviest plate (#1163); without a top it is ten plates, as it always was.
   const fill = () => {
-    const ws = stackFromStep(first, step, count || 10)
+    const ws = stackFromStep(first, step, top == null || top === '' ? 10 : stackCountTo(first, step, top))
     if (!ws.length) { toast(t('Enter a valid weight')); return }
     save(list.length ? [...list, ...ws] : ws)
-    if (list.length) { setFirst(null); setStep(null); setCount(null) }
+    if (list.length) { setFirst(null); setStep(null); setTop(null) }
   }
   return <>
     <GymOfList kind="stackWeights" exId={ex.id} />
@@ -1231,6 +1232,8 @@ function StackEditor({ ex }) {
           onClick={() => save(list.filter(x => x !== w))}>{fmtPlate(w)} <Icon name="xmark" /></button>)}
       </div>
       : <div className="small dim" style={{ marginBottom: 12 }}>{t('No list yet, so this exercise steps by its increment as usual.')}</div>}
+    {/* Two ways in, each with a line saying which (#1163): one weight, or a whole run at once. */}
+    <div className="small dim" style={{ margin: '0 0 6px' }}>{t('Add one weight:')}</div>
     <div className="row" style={{ gap: 8, marginBottom: 8 }}>
       {/* Named with their section for a screen reader (P4): the same sheet has a Weight and a
           Step field for progression and for the 1RM, and they would all be called the same. */}
@@ -1241,14 +1244,14 @@ function StackEditor({ ex }) {
     <WeightListPaste unit={unit} onAdd={ws => save([...list, ...ws])} />
     {/* An evenly spaced stack in three numbers, to fix the odd ones on after; with a list already
         there, the same three numbers add a run on top of it. */}
-    {list.length > 0 && <div className="small dim" style={{ margin: '6px 0 8px' }}>{t('Add an even run on top:')}</div>}
+    <div className="small dim" style={{ margin: '6px 0 8px' }}>{list.length > 0 ? t('Add an even run on top:') : t('Or fill in a whole run, lightest to heaviest:')}</div>
     <>
       <div className="row" style={{ gap: 8, marginBottom: 8 }}>
         <NumberField className="input" decimal value={first ?? ''} onChange={setFirst} aria-label={nameIn(t('Weight stack'), t('First ({0})', unit))} placeholder={t('First ({0})', unit)} />
         <NumberField className="input" decimal value={step ?? ''} onChange={setStep} aria-label={nameIn(t('Weight stack'), t('Step ({0})', unit))} placeholder={t('Step ({0})', unit)} />
       </div>
       <div className="row" style={{ gap: 8, marginBottom: 8 }}>
-        <NumberField className="input" value={count ?? ''} onChange={setCount} aria-label={t('How many')} placeholder={t('How many')} />
+        <NumberField className="input" decimal value={top ?? ''} onChange={setTop} aria-label={nameIn(t('Weight stack'), t('Up to ({0})', unit))} placeholder={t('Up to ({0})', unit)} />
         <Button onClick={fill} style={{ flex: '0 0 auto', width: 'auto' }}>{list.length ? t('Add these') : t('Fill in')}</Button>
       </div>
     </>

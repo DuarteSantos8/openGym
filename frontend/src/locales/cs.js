@@ -5954,4 +5954,8 @@ export default {
   // --- Rate warm-ups too (#1374) ---
   "Rate warm-ups too": "Hodnotit i rozcvičky",
   "Off keeps RIR or RPE for the sets that count.": "Vypnuto: RIR nebo RPE jen u sérií, které se počítají.",
+  // --- Weight stack: one weight or a run up to the top (#1163) ---
+  "Add one weight:": "Přidat jednu váhu:",
+  "Or fill in a whole run, lightest to heaviest:": "Nebo vyplň celou řadu, od nejlehčí po nejtěžší:",
+  "Up to ({0})": "Až do ({0})",
 }
