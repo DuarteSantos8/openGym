@@ -5905,4 +5905,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Kullandığını göster, nadiren açtığını daralt, gerisini gizle. Taşımak için bir karta basılı tut.",
   "Shows up when there is something to show": "Gösterecek bir şey olduğunda görünür",
   "Hidden until next month.": "Gelecek aya kadar gizli.",
+  "Body weight is out of your year.": "Vücut ağırlığı yılından çıkarıldı.",
+  "Body weight in my year": "Yılımda vücut ağırlığı",
+  "Your first and last weigh-in of the year, on a card of its own.": "Yılın ilk ve son tartın, kendi kartında.",
 }

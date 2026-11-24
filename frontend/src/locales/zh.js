@@ -5905,4 +5905,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "显示常用的，折叠很少打开的，隐藏其余的。长按卡片即可移动。",
   "Shows up when there is something to show": "有内容时才会显示",
   "Hidden until next month.": "已隐藏到下个月。",
+  "Body weight is out of your year.": "体重已从你的年度回顾中移除。",
+  "Body weight in my year": "年度回顾中的体重",
+  "Your first and last weigh-in of the year, on a card of its own.": "你一年中第一次和最后一次称重，单独一张卡片。",
 }

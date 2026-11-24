@@ -5837,4 +5837,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "使うものは表示、あまり開かないものは折りたたみ、残りは非表示に。カードを長押しして移動できます。",
   "Shows up when there is something to show": "表示する内容があるときに現れます",
   "Hidden until next month.": "来月まで非表示です。",
+  "Body weight is out of your year.": "体重をあなたの1年から外しました。",
+  "Body weight in my year": "1年のまとめに体重を入れる",
+  "Your first and last weigh-in of the year, on a card of its own.": "1年の最初と最後の体重を、専用のカードで。",
 }

@@ -4330,6 +4330,9 @@ export const PT_BR_OVERRIDES = {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostre o que você usa, recolha o que abre raramente e oculte o resto. Toque e segure um cartão para movê-lo.",
   "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
   "Hidden until next month.": "Oculto até o mês que vem.",
+  "Body weight is out of your year.": "O peso corporal ficou fora do seu ano.",
+  "Body weight in my year": "Peso corporal no meu ano",
+  "Your first and last weigh-in of the year, on a card of its own.": "Sua primeira e última pesagem do ano, num cartão só dela.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

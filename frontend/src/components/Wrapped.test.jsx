@@ -111,6 +111,17 @@ describe('the stories', () => {
     expect(S().wrappedBody).toBe(false)
     expect(host.querySelector('.wr-hide')).toBeNull()
   })
+  it('says so with an Undo that brings the body-weight card back (Discord 2026-11-21)', () => {
+    seed()
+    act(() => openWrapped(2026))
+    render(<Wrapped />)
+    for (let i = 0; i < 20 && !host.querySelector('.wr-body .wr-hide'); i++) act(() => button('Next card').click())
+    act(() => host.querySelector('.wr-hide').click())
+    expect(useUI.getState().toastMsg).toBe('Body weight is out of your year.')
+    expect(S().wrappedBody).toBe(false)
+    act(() => useUI.getState().runToastAction())
+    expect(S().wrappedBody).toBe(true)
+  })
 })
 
 // Review 1.4.6: Back closes the story like a sheet, and closing it with × leaves no stray entry.

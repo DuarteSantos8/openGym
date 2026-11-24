@@ -5905,4 +5905,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mostra o que usas, recolhe o que abres raramente e oculta o resto. Mantém um cartão premido para o mover.",
   "Shows up when there is something to show": "Aparece quando houver algo para mostrar",
   "Hidden until next month.": "Oculto até ao próximo mês.",
+  "Body weight is out of your year.": "O peso corporal ficou fora do teu ano.",
+  "Body weight in my year": "Peso corporal no meu ano",
+  "Your first and last weigh-in of the year, on a card of its own.": "A tua primeira e última pesagem do ano, num cartão só dela.",
 }

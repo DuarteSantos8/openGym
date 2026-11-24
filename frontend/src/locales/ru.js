@@ -5909,4 +5909,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажите то, чем пользуетесь, сверните то, что открываете редко, и скройте остальное. Удерживайте карточку, чтобы переместить её.",
   "Shows up when there is something to show": "Появится, когда будет что показать",
   "Hidden until next month.": "Скрыто до следующего месяца.",
+  "Body weight is out of your year.": "Вес тела убран из твоего года.",
+  "Body weight in my year": "Вес тела в моём году",
+  "Your first and last weigh-in of the year, on a card of its own.": "Первое и последнее взвешивание за год, на отдельной карточке.",
 }

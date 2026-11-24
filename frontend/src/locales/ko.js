@@ -5905,4 +5905,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "자주 쓰는 것은 보이고, 가끔 여는 것은 접고, 나머지는 숨기세요. 카드를 길게 눌러 옮기세요.",
   "Shows up when there is something to show": "보여줄 내용이 있을 때 나타납니다",
   "Hidden until next month.": "다음 달까지 숨겨져 있어요.",
+  "Body weight is out of your year.": "체중을 올해 이야기에서 뺐어요.",
+  "Body weight in my year": "올해 이야기에 체중 포함",
+  "Your first and last weigh-in of the year, on a card of its own.": "올해 첫 체중과 마지막 체중을 카드 한 장에.",
 }

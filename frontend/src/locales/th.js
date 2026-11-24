@@ -5916,4 +5916,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "แสดงสิ่งที่คุณใช้ ย่อสิ่งที่ไม่ค่อยเปิด และซ่อนที่เหลือ กดค้างที่การ์ดเพื่อย้าย",
   "Shows up when there is something to show": "จะแสดงเมื่อมีข้อมูลให้ดู",
   "Hidden until next month.": "ซ่อนไว้จนถึงเดือนหน้า",
+  "Body weight is out of your year.": "เอาน้ำหนักตัวออกจากปีของคุณแล้ว",
+  "Body weight in my year": "น้ำหนักตัวในปีของฉัน",
+  "Your first and last weigh-in of the year, on a card of its own.": "การชั่งน้ำหนักครั้งแรกและครั้งสุดท้ายของปี บนการ์ดของมันเอง",
 }

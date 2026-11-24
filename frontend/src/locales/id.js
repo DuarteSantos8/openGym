@@ -5870,4 +5870,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Tampilkan yang kamu pakai, ciutkan yang jarang kamu buka, dan sembunyikan sisanya. Tahan kartu untuk memindahkannya.",
   "Shows up when there is something to show": "Muncul saat ada yang bisa ditampilkan",
   "Hidden until next month.": "Disembunyikan sampai bulan depan.",
+  "Body weight is out of your year.": "Berat badan tidak masuk tahunmu.",
+  "Body weight in my year": "Berat badan di tahunku",
+  "Your first and last weigh-in of the year, on a card of its own.": "Timbangan pertama dan terakhirmu tahun ini, di kartu sendiri.",
 };

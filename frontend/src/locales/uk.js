@@ -5902,4 +5902,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Покажіть те, чим користуєтеся, згорніть те, що відкриваєте рідко, і сховайте решту. Утримуйте картку, щоб перемістити її.",
   "Shows up when there is something to show": "З’явиться, коли буде що показати",
   "Hidden until next month.": "Приховано до наступного місяця.",
+  "Body weight is out of your year.": "Вагу тіла прибрано з твого року.",
+  "Body weight in my year": "Вага тіла в моєму році",
+  "Your first and last weigh-in of the year, on a card of its own.": "Твоє перше й останнє зважування за рік, на окремій картці.",
 }

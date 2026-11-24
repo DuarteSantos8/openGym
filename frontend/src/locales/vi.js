@@ -5871,4 +5871,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Hiện những gì bạn dùng, thu gọn những gì ít mở và ẩn phần còn lại. Nhấn giữ một thẻ để di chuyển.",
   "Shows up when there is something to show": "Sẽ hiện khi có nội dung để hiển thị",
   "Hidden until next month.": "Đã ẩn đến tháng sau.",
+  "Body weight is out of your year.": "Đã bỏ cân nặng khỏi năm của bạn.",
+  "Body weight in my year": "Cân nặng trong năm của tôi",
+  "Your first and last weigh-in of the year, on a card of its own.": "Lần cân đầu và cuối năm của bạn, trên một thẻ riêng.",
 };

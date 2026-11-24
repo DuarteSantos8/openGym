@@ -5952,4 +5952,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Visa det du använder, fäll ihop det du sällan öppnar och dölj resten. Håll in ett kort för att flytta det.",
   "Shows up when there is something to show": "Visas när det finns något att visa",
   "Hidden until next month.": "Dold till nästa månad.",
+  "Body weight is out of your year.": "Kroppsvikten är borta från ditt år.",
+  "Body weight in my year": "Kroppsvikt i mitt år",
+  "Your first and last weigh-in of the year, on a card of its own.": "Din första och sista vägning för året, på ett eget kort.",
 }

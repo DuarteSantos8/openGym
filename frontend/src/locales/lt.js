@@ -5901,4 +5901,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Rodyk, ką naudoji, suskleisk, ką atidarai retai, o kitką paslėpk. Palaikyk kortelę, kad ją perkeltum.",
   "Shows up when there is something to show": "Atsiras, kai bus ką rodyti",
   "Hidden until next month.": "Paslėpta iki kito mėnesio.",
+  "Body weight is out of your year.": "Kūno svoris išimtas iš tavo metų.",
+  "Body weight in my year": "Kūno svoris mano metuose",
+  "Your first and last weigh-in of the year, on a card of its own.": "Pirmasis ir paskutinis metų svėrimas, atskiroje kortelėje.",
 }

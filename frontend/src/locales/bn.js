@@ -5984,4 +5984,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "যা ব্যবহার করেন তা দেখান, যা কম খোলেন তা গুটিয়ে রাখুন, বাকিটা লুকান। সরাতে একটি কার্ড চেপে ধরুন।",
   "Shows up when there is something to show": "দেখানোর মতো কিছু থাকলে দেখা যাবে",
   "Hidden until next month.": "আগামী মাস পর্যন্ত লুকানো।",
+  "Body weight is out of your year.": "শরীরের ওজন এখন তোমার বছরের বাইরে।",
+  "Body weight in my year": "আমার বছরে শরীরের ওজন",
+  "Your first and last weigh-in of the year, on a card of its own.": "বছরের প্রথম ও শেষ ওজন, আলাদা একটি কার্ডে।",
 }

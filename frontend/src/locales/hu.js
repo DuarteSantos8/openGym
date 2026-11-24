@@ -5908,4 +5908,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Mutasd, amit használsz, csukd össze, amit ritkán nyitsz meg, a többit rejtsd el. Tarts lenyomva egy kártyát az áthelyezéshez.",
   "Shows up when there is something to show": "Akkor jelenik meg, ha van mit mutatnia",
   "Hidden until next month.": "Jövő hónapig elrejtve.",
+  "Body weight is out of your year.": "A testsúly kimarad az évedből.",
+  "Body weight in my year": "Testsúly az évemben",
+  "Your first and last weigh-in of the year, on a card of its own.": "Az év első és utolsó mérésed, külön kártyán.",
 }

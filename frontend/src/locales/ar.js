@@ -5960,4 +5960,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "أظهر ما تستخدمه، واطوِ ما تفتحه نادراً، وأخفِ الباقي. اضغط مطولاً على بطاقة لنقلها.",
   "Shows up when there is something to show": "تظهر عندما يكون فيها ما تعرضه",
   "Hidden until next month.": "مخفية حتى الشهر القادم.",
+  "Body weight is out of your year.": "وزن الجسم خارج سنتك الآن.",
+  "Body weight in my year": "وزن الجسم في سنتي",
+  "Your first and last weigh-in of the year, on a card of its own.": "أول وآخر وزن لك في السنة، على بطاقة خاصة.",
 }

@@ -5871,4 +5871,7 @@ export default {
   "Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.": "Zobraz, co používáš, sbal, co otevíráš málokdy, a zbytek skryj. Podrž kartu a přesuň ji.",
   "Shows up when there is something to show": "Objeví se, až bude co ukázat",
   "Hidden until next month.": "Skryto do příštího měsíce.",
+  "Body weight is out of your year.": "Tělesná hmotnost je z tvého roku venku.",
+  "Body weight in my year": "Tělesná hmotnost v mém roce",
+  "Your first and last weigh-in of the year, on a card of its own.": "Tvé první a poslední vážení v roce, na vlastní kartě.",
 }
