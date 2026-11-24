@@ -2521,6 +2521,12 @@ export const PT_BR_OVERRIDES = {
   'Added to “{0}”': 'Adicionado a “{0}”',
   'Add it to “{1}”': 'Adicionar a “{1}”',
   'Add them to “{1}”': 'Adicionar todos a “{1}”',
+  'Changed in this workout': 'Alterado neste treino',
+  '{0} swapped': 'trocados: {0}',
+  'new order': 'nova ordem',
+  'Update “{0}”': 'Atualizar “{0}”',
+  'Updated “{0}”': 'Rotina “{0}” atualizada',
+  '“{0}” changed in the meantime, so it was left as it is.': '“{0}” mudou nesse meio-tempo, então ficou como está.',
   'Thinking about your question…': 'Pensando na sua pergunta…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Esta é a demo, então não há nenhum modelo de IA por trás de mim. No seu próprio servidor eu respondo perguntas como “{0}” com o seu plano, suas últimas sessões e o treino que você está fazendo agora.',
 

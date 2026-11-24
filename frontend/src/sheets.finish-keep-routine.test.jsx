@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { finishWorkoutNow } from './sheets.jsx'
+import { finishWorkoutNow, beginWorkout } from './sheets.jsx'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const S = () => useStore.getState().S
@@ -70,5 +70,88 @@ describe('finish summary: keep an added exercise in the routine', () => {
     renderTopSheet()
     await settle()
     expect(host.querySelector('[data-keep-in-routine]')).toBeNull()
+  })
+})
+
+describe('finish summary: update the routine with what the workout changed', () => {
+  const curl = { id: '0294', rid: 'r1', target: { sets: 1, reps: 10, weight: 12 }, sets: [{ w: 12, r: 10, done: true }] }
+  // A session started from all three slots (beginWorkout's start record), then changed.
+  const from = { '0025': 0, '0334': 1, '0294': 2 }
+  function installThree(entries) {
+    install(entries.map(e => ({ ...e, fromSlot: e.fromSlot ?? from[e.id] })))
+    useStore.setState({ S: { ...S(), active: { ...S().active, startEx: { r1: ['0025', '0334', '0294'] } }, routines: [{ id: 'r1', name: 'Push A', ex: [
+      { id: '0025', sets: 1, reps: 5, weight: 60 }, { id: '0334', sets: 2, reps: 12, weight: 8 }, { id: '0294', sets: 1, reps: 10, weight: 12 },
+    ] }] } })
+  }
+
+  it('shows what it would change, writes it on Update, and Undo puts the routine back', async () => {
+    // The raise was taken out and the curl done first.
+    installThree([clone(curl), clone(bench)])
+    const before = clone(S().routines[0].ex)
+    act(() => finishWorkoutNow())
+    renderTopSheet()
+    await settle()
+    expect(host.textContent).toContain('Changed in this workout')
+    expect(host.textContent).toContain('−1 · new order')
+    expect(S().routines[0].ex).toEqual(before)
+    act(() => button('Update “Push A”').click())
+    expect(S().routines[0].ex.map(x => x.id)).toEqual(['0294', '0025'])
+    // The prescription stays the routine's.
+    expect(S().routines[0].ex[1]).toEqual(before[0])
+    expect(host.textContent).toContain('Updated “Push A”')
+    expect(useUI.getState().toastMsg).toBe('Routine updated')
+    act(() => useUI.getState().runToastAction())
+    expect(S().routines[0].ex).toEqual(before)
+    // The offer is back, to be taken again.
+    expect(button('Update “Push A”')).toBeTruthy()
+  })
+
+  it('keeps the slot’s sets and reps on a swap, at the weight done today', async () => {
+    // The raise swapped for a curl at 14 kg, ticked.
+    installThree([clone(bench), { ...clone(curl), id: '0586', fromSlot: 1, target: { sets: 1, reps: 10, weight: 14 }, sets: [{ w: 14, r: 10, done: true }] }, clone(curl)])
+    act(() => finishWorkoutNow())
+    renderTopSheet()
+    await settle()
+    expect(host.textContent).toContain('1 swapped')
+    act(() => button('Update “Push A”').click())
+    expect(S().routines[0].ex.map(x => x.id)).toEqual(['0025', '0586', '0294'])
+    expect(S().routines[0].ex[1]).toMatchObject({ sets: 2, reps: 12, weight: 14 })
+  })
+
+  it('leaves a routine changed since the Update alone on Undo, and says so', async () => {
+    installThree([clone(curl), clone(bench)])
+    act(() => finishWorkoutNow())
+    renderTopSheet()
+    await settle()
+    act(() => button('Update “Push A”').click())
+    const undo = useUI.getState().toastAction
+    // Edited again (here, or on another device) before the Undo.
+    act(() => useStore.getState().update(s => { s.routines[0].ex.push({ id: '0586', sets: 1, reps: 10, weight: 20 }) }))
+    const edited = clone(S().routines[0].ex)
+    act(() => undo.run())
+    expect(S().routines[0].ex).toEqual(edited)
+    expect(useUI.getState().toastMsg).toBe('“Push A” changed in the meantime, so it was left as it is.')
+  })
+
+  it('leaves the routine as it was when the summary is closed without it', async () => {
+    installThree([clone(curl), clone(bench)])
+    const before = clone(S().routines)
+    act(() => finishWorkoutNow())
+    renderTopSheet()
+    await settle()
+    expect(button('Update “Push A”')).toBeTruthy()
+    act(() => host.querySelector('[aria-label="Close"]').click())
+    expect(S().routines).toEqual(before)
+  })
+})
+
+describe('starting a routine records the slots it started with', () => {
+  it('stamps each entry with its slot, for the finish to read back', () => {
+    const st = clone(DEF)
+    st.routines = [{ id: 'r1', name: 'Push A', ex: [{ id: '0025', sets: 1, reps: 5, weight: 60 }, { id: '0334', sets: 2, reps: 12, weight: 8 }] }]
+    useStore.setState({ S: st, user: null })
+    act(() => beginWorkout(['r1'], null))
+    expect(S().active.startEx).toEqual({ r1: ['0025', '0334'] })
+    expect(S().active.entries.map(e => e.fromSlot)).toEqual([0, 1])
   })
 })

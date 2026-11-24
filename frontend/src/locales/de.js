@@ -2886,6 +2886,12 @@ export default {
   'Added to “{0}”': 'Zu „{0}“ hinzugefügt',
   'Add it to “{1}”': 'Zu „{1}“ hinzufügen',
   'Add them to “{1}”': 'Alle zu „{1}“ hinzufügen',
+  'Changed in this workout': 'Geändert in diesem Workout',
+  '{0} swapped': '{0} getauscht',
+  'new order': 'neue Reihenfolge',
+  'Update “{0}”': '„{0}“ aktualisieren',
+  'Updated “{0}”': '„{0}“ aktualisiert',
+  '“{0}” changed in the meantime, so it was left as it is.': '„{0}“ wurde inzwischen geändert und bleibt deshalb, wie sie ist.',
   'Thinking about your question…': 'Ich denke über deine Frage nach…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Das ist die Demo, hinter mir steckt also kein KI-Modell. Auf deinem eigenen Server beantworte ich Fragen wie „{0}“ mit deinem Plan, deinen letzten Einheiten und dem Training, das du gerade machst.',
 

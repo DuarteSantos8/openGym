@@ -99,7 +99,7 @@ import { refillAfter, restartOnRedo } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork, isSideSet } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
-import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine } from './lib/session-routines.js'
+import { saveSessionAsRoutine, routineFromSession, routineChanges, noteRoutineStart } from './lib/session-routines.js'
 import { shareRoutineSheet } from './components/RoutineShare.jsx'
 import { youtubeSearchUrl } from './lib/youtube.js'
 import { openExternal } from './components/CustomMedia.jsx'
@@ -4062,6 +4062,8 @@ export function beginWorkout(routineIds, bw, { id = null, start = null, lead = n
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
     }
+    // The slots it starts with, so the finish can tell one taken out from one never here (#592).
+    noteRoutineStart(s.active)
   })
   // "Go lighter" from the check-in (lib/daily-form.js): today's numbers only, said so.
   if (lighter) {
@@ -4250,6 +4252,7 @@ function AddRoutineToSession({ close }) {
     const entries = buildSessionEntries(sessionHistory(st), r).map(e => ({ ...e, rid: r.id }))
     update(s => {
       if (!s.active) return
+      noteRoutineStart(s.active, entries)
       // A session kept out of progression as a whole (the header ⋮) keeps the routine's
       // exercises out too, the same as an exercise added on its own.
       s.active.entries.push(...entries.map(e => joinSessionNoProg(s.active, e)))
@@ -4675,29 +4678,66 @@ function CardioDone({ st, w }) {
   </div>
 }
 
-// Exercises added during a routine's session, offered to that routine for next time (#592). One
-// tap adds them with today's setup; leaving the summary without it changes nothing.
-function KeepInRoutine({ additions }) {
-  const [added, setAdded] = useState({})
-  if (!additions?.length) return null
-  const keep = a => {
-    let n = 0
-    update(s => { n = addToRoutine(s.routines.find(r => r.id === a.routineId), a.ex) })
-    setAdded(x => ({ ...x, [a.routineId]: true }))
-    if (n) ui().toast(t('Routine updated'))
+// What a routine's session changed in its exercise list, offered to that routine for next time:
+// exercises added (#592), taken out or swapped, and the order they were done in
+// (routineChanges). One tap writes it, with an Undo; leaving the summary without it changes
+// nothing. `session` is the workout as it stood at Save.
+function KeepInRoutine({ session }) {
+  const [done, setDone] = useState({})
+  // Read once, on the store the save left: the offer stays what it was after it is taken.
+  const [offers] = useState(() => (session ? routineChanges(session, S()) : []))
+  if (!offers.length) return null
+  const onlyAdded = c => !c.removed && !c.swapped && !c.moved
+  const keep = c => {
+    // On the store as it is now, read outside update(): the draft would copy every workout.
+    const now = routineChanges(session, S()).find(x => x.routineId === c.routineId)
+    let before = null
+    const wrote = JSON.stringify(now?.ex)
+    update(s => {
+      const r = now && s.routines.find(x => x.id === c.routineId)
+      if (!r) return
+      before = r.ex
+      r.ex = now.ex
+    })
+    setDone(x => ({ ...x, [c.routineId]: true }))
+    if (!before) return
+    ui().toast(t('Routine updated'), {
+      action: t('Undo'),
+      onAction: () => {
+        // Only over what Update wrote: an edit made since, here or on another device, stays.
+        let kept = false
+        update(s => {
+          const r = s.routines.find(x => x.id === c.routineId)
+          if (!r) return
+          if (JSON.stringify(r.ex) !== wrote) { kept = true; return }
+          r.ex = before
+        })
+        if (kept) { ui().toast(t('“{0}” changed in the meantime, so it was left as it is.', c.name)); return }
+        setDone(x => ({ ...x, [c.routineId]: false }))
+      },
+    })
   }
+  const names = ids => ids.map(id => EXIDX[id] ? exerciseNameText(EXIDX[id]) : id).join(', ')
+  const summary = c => [
+    c.added.length && isoRun('+' + c.added.length),
+    c.removed && isoRun('−' + c.removed),
+    c.swapped && tn('{0} swapped', '{0} swapped', c.swapped),
+    c.moved && t('new order'),
+  ].filter(Boolean).join(' · ')
   return <div style={{ textAlign: 'start', marginBottom: 14 }} data-keep-in-routine>
-    <h4 className="sec">{t('New in this workout')}</h4>
-    {additions.map(a => <div key={a.routineId} style={{ marginBottom: 8 }}>
-      <div className="small dim" style={{ marginBottom: 6 }}>{a.ex.map(cfg => EXIDX[cfg.id] ? exerciseNameText(EXIDX[cfg.id]) : cfg.id).join(', ')}</div>
-      {added[a.routineId]
-        ? <div className="small accent row" style={{ gap: 6 }}><Icon name="checkCircle" /><span>{t('Added to “{0}”', a.name)}</span></div>
-        : <Button icon="plusCircle" onClick={() => keep(a)}>{tn('Add it to “{1}”', 'Add them to “{1}”', a.ex.length, a.name)}</Button>}
+    <h4 className="sec">{offers.every(onlyAdded) ? t('New in this workout') : t('Changed in this workout')}</h4>
+    {offers.map(c => <div key={c.routineId} style={{ marginBottom: 8 }}>
+      <div className="small dim" style={{ marginBottom: 6 }}>{onlyAdded(c) ? names(c.added) : summary(c)}</div>
+      {done[c.routineId]
+        ? <div className="small accent row" style={{ gap: 6 }}><Icon name="checkCircle" /><span>{onlyAdded(c) ? t('Added to “{0}”', c.name) : t('Updated “{0}”', c.name)}</span></div>
+        : onlyAdded(c)
+          ? <Button icon="plusCircle" onClick={() => keep(c)}>{tn('Add it to “{1}”', 'Add them to “{1}”', c.added.length, c.name)}</Button>
+          : <Button icon="clipboard" onClick={() => keep(c)}>{t('Update “{0}”', c.name)}</Button>}
     </div>)}
   </div>
 }
 
-function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
+function FinishSummary({ w, prs, e1prs = [], session = null, close }) {
   const st = useStore(s => s.S)
   const trained = loadOfWorkouts([w])
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
@@ -4731,7 +4771,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
     <div style={{ height: 14 }} />
     <LastAndNext st={st} w={w} />
     <CardioDone st={st} w={w} />
-    <KeepInRoutine additions={additions} />
+    <KeepInRoutine session={session} />
     {/* The moment for a progress photo or the clip of a set: the workout is already saved, so
         what is added here goes straight onto its record. */}
     <div style={{ textAlign: 'start' }}><WorkoutMediaSection w={w} hint /></div>
@@ -4802,8 +4842,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
   // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
-  // Read before the session is gone: the summary offers these to their routines (#592).
-  const additions = past ? [] : routineAdditions(A, st.routines)
+  // The session as it stood at Save, for the summary to offer its changes to its routines (#592).
+  const session = past ? null : A
   let shown = w
   update(s => {
     if (past) {
@@ -4840,7 +4880,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // into s.active, which is gone. What it held is not logged, like any set left unchecked.
   useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
-  ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} close={close} />, { kind: 'center', locked: true, wide: true })
+  ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} session={session} close={close} />, { kind: 'center', locked: true, wide: true })
 }
 
 /**

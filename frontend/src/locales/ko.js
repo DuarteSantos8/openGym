@@ -2866,6 +2866,12 @@ export default {
   'Added to “{0}”': '“{0}”에 추가했어요',
   'Add it to “{1}”': '“{1}”에 추가',
   'Add them to “{1}”': '모두 “{1}”에 추가',
+  'Changed in this workout': '이번 운동에서 바뀜',
+  '{0} swapped': '{0}개 교체',
+  'new order': '새 순서',
+  'Update “{0}”': '“{0}” 업데이트',
+  'Updated “{0}”': '“{0}” 업데이트했어요',
+  '“{0}” changed in the meantime, so it was left as it is.': '그사이 “{0}”이(가) 바뀌어서 그대로 두었어요.',
   'Thinking about your question…': '질문을 생각하고 있어요…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': '이것은 데모라서 뒤에 AI 모델이 없습니다. 내 서버에서는 “{0}” 같은 질문에 계획, 최근 세션, 지금 하고 있는 운동을 바탕으로 답합니다.',
 

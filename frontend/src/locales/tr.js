@@ -2866,6 +2866,12 @@ export default {
   'Added to “{0}”': '“{0}” rutinine eklendi',
   'Add it to “{1}”': '“{1}” rutinine ekle',
   'Add them to “{1}”': 'Hepsini “{1}” rutinine ekle',
+  'Changed in this workout': 'Bu antrenmanda değişti',
+  '{0} swapped': '{0} değiştirildi',
+  'new order': 'yeni sıra',
+  'Update “{0}”': '“{0}” rutinini güncelle',
+  'Updated “{0}”': '“{0}” rutini güncellendi',
+  '“{0}” changed in the meantime, so it was left as it is.': '“{0}” bu arada değişti, bu yüzden olduğu gibi bırakıldı.',
   'Thinking about your question…': 'Sorunu düşünüyorum…',
   'This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.': 'Bu bir demo, yani arkamda bir yapay zekâ modeli yok. Kendi sunucunda “{0}” gibi sorulara planın, son antrenmanların ve şu anda yaptığın antrenmanla cevap veririm.',
 
