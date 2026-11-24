@@ -5963,4 +5963,24 @@ export default {
   "Not set up": "Nincs beállítva",
   "Update watch app": "Frissítsd az óra appját",
   "Last heard {0}": "Utoljára jelentkezett: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Minden sorozatot kipipálsz?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "A még nyitott {0} sorozat a terv szerint kipipálódik. Pihenőidő nem indul.",
+  "Tick them all": "Mindet kipipálom",
+  "Every set ticked": "Minden sorozat kipipálva",
+  "Logging after training? Ticks the rest in one go": "Edzés után rögzítesz? A maradékot egyszerre pipálja ki",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Újabb edzés indítása",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Válassz egy vagy több rutint. A sorozatok, ismétlések és a súly ezután jönnek.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} több mint 15%-kal tér el a legutóbbi mérésedtől ({1}).",
+  "Save as typed": "Mentés így",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Törlöd a(z) {0} számára megőrzött változásokat?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Végleg eltűnnek. Ez az eszköz akkor sem adja vissza őket, ha az a fiók újra csatlakozik. Ha még kellhetnek, előbb mentsd el őket biztonsági fájlba.",
+  "Kept changes removed": "A megőrzött változások törölve",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Hiba bejelentése",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Megnyitja a GitHub hibabejelentő űrlapját, kitöltve az app verziójával és az eszközzel. Az app maga nem küld semmit.",
 }

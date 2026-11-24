@@ -5926,4 +5926,24 @@ export default {
   "Not set up": "راه‌اندازی نشده",
   "Update watch app": "برنامهٔ ساعت را به‌روز کنید",
   "Last heard {0}": "آخرین تماس: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "همهٔ ست‌ها علامت بخورند؟",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "{0} ست باقی‌مانده طبق برنامه علامت می‌خورند. هیچ تایمر استراحتی شروع نمی‌شود.",
+  "Tick them all": "همه را علامت بزن",
+  "Every set ticked": "همهٔ ست‌ها علامت خوردند",
+  "Logging after training? Ticks the rest in one go": "بعد از تمرین ثبت می‌کنی؟ بقیه را یکجا علامت می‌زند",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "شروع یک جلسهٔ دیگر",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "یک یا چند روتین انتخاب کن. ست، تکرار و وزن بعدش می‌آید.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} بیش از ۱۵٪ با آخرین وزن‌کشی‌ات، {1}، فاصله دارد.",
+  "Save as typed": "همین را ذخیره کن",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "تغییرات نگه‌داشته‌شده برای {0} حذف شوند؟",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "برای همیشه از بین می‌روند. این دستگاه آن‌ها را برنمی‌گرداند، حتی اگر آن حساب دوباره وصل شود. اگر شاید لازمشان داشته باشی، اول به‌صورت فایل پشتیبان ذخیره‌شان کن.",
+  "Kept changes removed": "تغییرات نگه‌داشته‌شده حذف شدند",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "گزارش مشکل",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "فرم گزارش خطا را در GitHub با نسخهٔ برنامه و دستگاهت پرشده باز می‌کند. خود برنامه چیزی نمی‌فرستد.",
 }

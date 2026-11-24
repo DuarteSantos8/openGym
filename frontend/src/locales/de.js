@@ -5980,4 +5980,24 @@ export default {
   "Not set up": "Nicht eingerichtet",
   "Update watch app": "Watch-App aktualisieren",
   "Last heard {0}": "Zuletzt gehört: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Alle Sätze abhaken?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Die {0} offenen Sätze werden wie geplant abgehakt. Es startet keine Pause.",
+  "Tick them all": "Alle abhaken",
+  "Every set ticked": "Alle Sätze abgehakt",
+  "Logging after training? Ticks the rest in one go": "Erst nach dem Training eintragen? Hakt den Rest auf einmal ab",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Noch ein Training starten",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Wähle eine oder mehrere Routinen. Sätze, Wiederholungen und Gewicht kommen danach.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} liegt mehr als 15 % neben deiner letzten Messung, {1}.",
+  "Save as typed": "So speichern",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Die für {0} aufbewahrten Änderungen entfernen?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Sie sind dann endgültig weg. Dieses Gerät fügt sie nicht mehr hinzu, auch wenn sich das Konto wieder verbindet. Speichere sie vorher als Backup-Datei, falls du sie noch brauchen könntest.",
+  "Kept changes removed": "Aufbewahrte Änderungen entfernt",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Problem melden",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Öffnet das Fehlerformular auf GitHub, App-Version und Gerät schon eingetragen. Die App selbst sendet nichts.",
 }

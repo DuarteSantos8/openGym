@@ -5960,4 +5960,24 @@ export default {
   "Not set up": "尚未设置",
   "Update watch app": "更新手表应用",
   "Last heard {0}": "上次联系：{0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "勾选所有组？",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "剩下的 {0} 组按计划勾选，不会启动休息计时。",
+  "Tick them all": "全部勾选",
+  "Every set ticked": "所有组已勾选",
+  "Logging after training? Ticks the rest in one go": "练完再记录？一次勾选剩下的",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "再开始一次训练",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "选一个或多个训练日。组数、次数和重量随后设置。",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} 与上次称重 {1} 相差超过 15%。",
+  "Save as typed": "按输入保存",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "删除为 {0} 保留的更改？",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "它们会被永久删除。即使那个账户再次连接，此设备也不会加回来。如果之后可能还要，请先另存为备份文件。",
+  "Kept changes removed": "已删除保留的更改",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "报告问题",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "在 GitHub 打开问题表单，已填好应用版本和设备。应用本身不会发送任何内容。",
 }

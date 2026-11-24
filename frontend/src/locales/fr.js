@@ -5960,4 +5960,24 @@ export default {
   "Not set up": "Pas configurée",
   "Update watch app": "Mets à jour l’app de la montre",
   "Last heard {0}": "Dernières nouvelles : {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Cocher toutes les séries ?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Les {0} séries restantes sont cochées comme prévu. Aucun repos ne démarre.",
+  "Tick them all": "Tout cocher",
+  "Every set ticked": "Toutes les séries cochées",
+  "Logging after training? Ticks the rest in one go": "Tu notes après la séance ? Coche le reste d’un coup",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Démarrer une autre séance",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Choisis une ou plusieurs routines. Séries, répétitions et charge viennent ensuite.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}, c’est plus de 15 % d’écart avec ta dernière pesée, {1}.",
+  "Save as typed": "Enregistrer tel quel",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Supprimer les modifications gardées pour {0} ?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Elles disparaissent pour de bon. Cet appareil ne les rajoutera pas, même si ce compte se reconnecte. Enregistre-les d’abord en fichier de sauvegarde si tu pourrais en avoir besoin.",
+  "Kept changes removed": "Modifications gardées supprimées",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Signaler un problème",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Ouvre le formulaire de bug sur GitHub avec la version de l’app et ton appareil déjà remplis. L’app n’envoie rien elle-même.",
 }

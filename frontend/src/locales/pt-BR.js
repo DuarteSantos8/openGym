@@ -4380,6 +4380,26 @@ export const PT_BR_OVERRIDES = {
   "Your first and last weigh-in of the year, on a card of its own.": "Sua primeira e última pesagem do ano, num cartão só dela.",
   // --- routines on the watch, in Settings → Apple Watch ---
   "Keep openGym open on the watch for a moment.": "Deixe o openGym aberto no relógio por um momento.",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Marcar todas as séries?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "As {0} séries que faltam são marcadas como planejado. Nenhum descanso começa.",
+  "Tick them all": "Marcar todas",
+  "Every set ticked": "Todas as séries marcadas",
+  "Logging after training? Ticks the rest in one go": "Registrando depois do treino? Marca o resto de uma vez",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Começar outra sessão",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Escolha uma rotina ou mais. Séries, repetições e peso vêm depois.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} está mais de 15% longe da sua última pesagem, {1}.",
+  "Save as typed": "Salvar assim",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Remover as alterações mantidas para {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Elas somem de vez. Este dispositivo não vai adicioná-las de novo, mesmo que essa conta se conecte outra vez. Salve-as antes como arquivo de backup se puder precisar delas.",
+  "Kept changes removed": "Alterações mantidas removidas",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Relatar um problema",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre o formulário de bugs no GitHub com a versão do app e o dispositivo já preenchidos. O app não envia nada sozinho.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

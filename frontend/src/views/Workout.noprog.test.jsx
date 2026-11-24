@@ -182,7 +182,7 @@ describe('don’t count this session for progression', () => {
       const settings = menuItem(openMenu(), 'Exercise settings')
       act(() => settings.click())
       const sheet = renderTopSheet()
-      const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
+      const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Done')   // the live sheet's button (#1079)
       act(() => save.click())
 
       const [bench] = active().entries
@@ -224,7 +224,7 @@ describe('don’t count this session for progression', () => {
     renderWorkout([{ ...entry(ROW, 'deload', 40, { noProg: true }), target: { sets: 1, reps: 8, weight: 40 }, sets: [{ w: 40, r: 8, done: false }] }], { withHistory: [...history, rowInMain] })
     const settings = menuItem(openMenu(), 'Exercise settings')
     act(() => settings.click())
-    const save = [...renderTopSheet().querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
+    const save = [...renderTopSheet().querySelectorAll('button')].find(b => b.textContent.trim() === 'Done')
     act(() => save.click())
     const [row] = active().entries
     expect(row.noProg).toBe(true)

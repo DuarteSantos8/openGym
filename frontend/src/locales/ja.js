@@ -5892,4 +5892,24 @@ export default {
   "No devices connected": "接続されたデバイスはありません",
   "Add a watch or connect a server in Settings": "設定でウォッチを追加するか、サーバーに接続してください",
   "Open Settings": "設定を開く",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "すべてのセットにチェックしますか？",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "残りの{0}セットを予定どおりチェックします。休憩タイマーは始まりません。",
+  "Tick them all": "すべてチェック",
+  "Every set ticked": "すべてのセットをチェックしました",
+  "Logging after training? Ticks the rest in one go": "トレーニング後に記録？残りをまとめてチェック",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "もう1回トレーニングを始める",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "ルーティンを1つ以上選んでください。セット・回数・重量はこのあとです。",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}は前回の体重 {1} から15%以上離れています。",
+  "Save as typed": "このまま保存",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0} 用に保管している変更を削除しますか？",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "完全に消えます。そのアカウントが再び接続しても、このデバイスは戻しません。必要になりそうなら、先にバックアップファイルとして保存してください。",
+  "Kept changes removed": "保管していた変更を削除しました",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "問題を報告",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub の不具合フォームを、アプリのバージョンと端末を入力した状態で開きます。アプリ自体は何も送信しません。",
 }

@@ -5926,4 +5926,24 @@ export default {
   "Not set up": "Chưa thiết lập",
   "Update watch app": "Cập nhật ứng dụng đồng hồ",
   "Last heard {0}": "Lần cuối: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Đánh dấu tất cả hiệp?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "{0} hiệp còn lại được đánh dấu theo kế hoạch. Không bắt đầu đồng hồ nghỉ nào.",
+  "Tick them all": "Đánh dấu hết",
+  "Every set ticked": "Đã đánh dấu tất cả hiệp",
+  "Logging after training? Ticks the rest in one go": "Ghi sau buổi tập? Đánh dấu phần còn lại một lần",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Bắt đầu buổi tập khác",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Chọn một hoặc nhiều lịch tập. Hiệp, reps và mức tạ sẽ đến sau.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} lệch hơn 15% so với lần cân gần nhất, {1}.",
+  "Save as typed": "Lưu như đã nhập",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Xóa các thay đổi đã giữ cho {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Chúng sẽ mất hẳn. Thiết bị này sẽ không thêm lại, kể cả khi tài khoản đó kết nối lại. Hãy lưu thành tệp sao lưu trước nếu có thể bạn cần.",
+  "Kept changes removed": "Đã xóa các thay đổi đã giữ",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Báo cáo sự cố",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Mở biểu mẫu báo lỗi trên GitHub với phiên bản ứng dụng và thiết bị đã điền sẵn. Ứng dụng không tự gửi gì.",
 };

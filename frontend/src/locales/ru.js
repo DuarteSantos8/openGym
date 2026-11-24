@@ -5964,4 +5964,24 @@ export default {
   "Not set up": "Не настроено",
   "Update watch app": "Обновите приложение на часах",
   "Last heard {0}": "Последняя связь: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Отметить все подходы?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Оставшиеся подходы ({0}) отметятся по плану. Таймер отдыха не запустится.",
+  "Tick them all": "Отметить все",
+  "Every set ticked": "Все подходы отмечены",
+  "Logging after training? Ticks the rest in one go": "Записываете после тренировки? Отметит остальное разом",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Начать ещё одну тренировку",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Выберите одну программу или несколько. Подходы, повторы и вес будут дальше.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} отличается больше чем на 15% от прошлого взвешивания ({1}).",
+  "Save as typed": "Сохранить как есть",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Удалить изменения, сохранённые для {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Они исчезнут насовсем. Это устройство не вернёт их, даже если тот аккаунт снова подключится. Если они могут понадобиться, сначала сохраните их как файл резервной копии.",
+  "Kept changes removed": "Сохранённые изменения удалены",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Сообщить о проблеме",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Открывает форму ошибки на GitHub с уже указанными версией приложения и устройством. Само приложение ничего не отправляет.",
 }

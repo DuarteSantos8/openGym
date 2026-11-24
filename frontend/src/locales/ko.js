@@ -5960,4 +5960,24 @@ export default {
   "Not set up": "설정 안 됨",
   "Update watch app": "워치 앱 업데이트",
   "Last heard {0}": "마지막 연결: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "모든 세트를 체크할까요?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "남은 {0}개 세트가 계획대로 체크됩니다. 휴식 타이머는 시작되지 않아요.",
+  "Tick them all": "모두 체크",
+  "Every set ticked": "모든 세트 체크됨",
+  "Logging after training? Ticks the rest in one go": "운동 후에 기록하나요? 나머지를 한 번에 체크",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "한 세션 더 시작",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "루틴을 하나 이상 고르세요. 세트, 반복, 무게는 그다음이에요.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}은(는) 지난 체중 {1}보다 15% 넘게 차이 나요.",
+  "Save as typed": "입력한 대로 저장",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0}을(를) 위해 보관한 변경 사항을 지울까요?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "영구히 사라져요. 그 계정이 다시 연결돼도 이 기기는 되돌려 놓지 않아요. 필요할 수도 있다면 먼저 백업 파일로 저장하세요.",
+  "Kept changes removed": "보관한 변경 사항을 지웠어요",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "문제 신고",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "앱 버전과 기기가 채워진 상태로 GitHub 버그 양식을 열어요. 앱이 직접 보내는 건 없어요.",
 }

@@ -5956,4 +5956,24 @@ export default {
   "Not set up": "Nenustatyta",
   "Update watch app": "Atnaujink laikrodžio programėlę",
   "Last heard {0}": "Paskutinį kartą: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Pažymėti visas serijas?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Likusios {0} serijos pažymimos pagal planą. Poilsio laikmatis nepasileis.",
+  "Tick them all": "Pažymėti visas",
+  "Every set ticked": "Visos serijos pažymėtos",
+  "Logging after training? Ticks the rest in one go": "Žymi po treniruotės? Pažymi likusias iš karto",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Pradėti dar vieną treniruotę",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Pasirink vieną ar kelias programas. Serijos, kartojimai ir svoris bus po to.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} skiriasi daugiau nei 15 % nuo paskutinio svėrimo ({1}).",
+  "Save as typed": "Išsaugoti kaip įvesta",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Pašalinti pakeitimus, išsaugotus {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Jie dings visam laikui. Šis įrenginys jų nebegrąžins, net jei ta paskyra vėl prisijungs. Jei jų gali prireikti, pirma išsaugok kaip atsarginę kopiją.",
+  "Kept changes removed": "Išsaugoti pakeitimai pašalinti",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Pranešti apie problemą",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Atveria GitHub klaidų formą su jau įrašyta programėlės versija ir įrenginiu. Pati programėlė nieko nesiunčia.",
 }

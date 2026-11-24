@@ -6039,4 +6039,24 @@ export default {
   "Not set up": "সেট আপ করা নেই",
   "Update watch app": "ঘড়ির অ্যাপ আপডেট করুন",
   "Last heard {0}": "শেষ সাড়া: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "সব সেট টিক দেবেন?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "বাকি {0}টি সেট পরিকল্পনামতো টিক হবে। কোনো বিশ্রাম টাইমার শুরু হবে না।",
+  "Tick them all": "সব টিক দিন",
+  "Every set ticked": "সব সেট টিক হয়েছে",
+  "Logging after training? Ticks the rest in one go": "ট্রেনিংয়ের পরে লিখছেন? বাকিগুলো একবারে টিক দেয়",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "আরেকটি সেশন শুরু করুন",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "এক বা একাধিক রুটিন বেছে নিন। সেট, রেপ ও ওজন এর পরে।",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} আপনার শেষ ওজন {1} থেকে ১৫%-এর বেশি আলাদা।",
+  "Save as typed": "যেমন লেখা তেমন সেভ করুন",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0}-এর জন্য রাখা পরিবর্তনগুলো সরাবেন?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "এগুলো চিরতরে মুছে যাবে। ওই অ্যাকাউন্ট আবার যুক্ত হলেও এই ডিভাইস এগুলো ফিরিয়ে দেবে না। দরকার হতে পারে মনে হলে আগে ব্যাকআপ ফাইল হিসেবে সেভ করুন।",
+  "Kept changes removed": "রাখা পরিবর্তনগুলো সরানো হয়েছে",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "সমস্যা জানান",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub-এ বাগ ফর্ম খোলে, অ্যাপের ভার্সন ও ডিভাইস আগে থেকেই ভরা থাকে। অ্যাপ নিজে কিছু পাঠায় না।",
 }

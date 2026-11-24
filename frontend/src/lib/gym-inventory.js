@@ -261,6 +261,18 @@ export function reRoundOpenSets(S) {
 export const workoutGymName = w => (isMap(w?.gym) && String(w.gym.name || '').trim()) || null
 
 /**
+ * Where History says a saved workout was done (thanks @lodepav, whose #1097 had the idea):
+ * only with two gyms or more, since with one the line would say nothing. A gym renamed since goes
+ * by its name now; one deleted since by the name the workout kept. Null otherwise.
+ */
+export function workoutGymLabel(S, w) {
+  const gyms = gymsOf(S)
+  if (gyms.length < 2 || !isMap(w?.gym) || w.gym.id == null) return null
+  const now = gyms.find(g => g.id === w.gym.id)
+  return now ? gymLabel(now) : workoutGymName(w)
+}
+
+/**
  * The state the workout screen loads plates from: a saved workout being edited reads the gym it was
  * done at, so its plate lines say what was on the bar there; a live session reads the active gym.
  */

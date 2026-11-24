@@ -5960,4 +5960,24 @@ export default {
   "Not set up": "Sin configurar",
   "Update watch app": "Actualiza la app del reloj",
   "Last heard {0}": "Última noticia: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "¿Marcar todas las series?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Las {0} series pendientes se marcan tal como estaban planeadas. No arranca ningún descanso.",
+  "Tick them all": "Marcarlas todas",
+  "Every set ticked": "Todas las series marcadas",
+  "Logging after training? Ticks the rest in one go": "¿Lo apuntas después de entrenar? Marca el resto de una vez",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Empezar otra sesión",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Elige una rutina o varias. Series, repeticiones y peso vienen después.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} se aleja más de un 15 % de tu último pesaje, {1}.",
+  "Save as typed": "Guardar tal cual",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "¿Quitar los cambios guardados para {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Se pierden para siempre. Este dispositivo no los volverá a añadir, aunque esa cuenta se conecte de nuevo. Guárdalos antes como copia de seguridad si quizá los quieras.",
+  "Kept changes removed": "Cambios guardados eliminados",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Informar de un problema",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Abre el formulario de errores en GitHub con la versión de la app y tu dispositivo ya puestos. La app no envía nada por su cuenta.",
 }

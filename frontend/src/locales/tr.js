@@ -5960,4 +5960,24 @@ export default {
   "Not set up": "Kurulmadı",
   "Update watch app": "Saat uygulamasını güncelle",
   "Last heard {0}": "Son haber: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Tüm setler işaretlensin mi?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Kalan {0} set planlandığı gibi işaretlenir. Dinlenme sayacı başlamaz.",
+  "Tick them all": "Hepsini işaretle",
+  "Every set ticked": "Tüm setler işaretlendi",
+  "Logging after training? Ticks the rest in one go": "Antrenmandan sonra mı kaydediyorsun? Kalanı tek seferde işaretler",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Bir seans daha başlat",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Bir ya da daha fazla rutin seç. Setler, tekrarlar ve ağırlık sonra gelir.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}, son tartın olan {1} değerinden %15’ten fazla farklı.",
+  "Save as typed": "Yazıldığı gibi kaydet",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "{0} için saklanan değişiklikler kaldırılsın mı?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Tamamen silinirler. O hesap yeniden bağlansa bile bu cihaz onları geri eklemez. Lazım olabilirse önce yedek dosyası olarak kaydet.",
+  "Kept changes removed": "Saklanan değişiklikler kaldırıldı",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Sorun bildir",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "GitHub’daki hata formunu uygulama sürümün ve cihazın doldurulmuş olarak açar. Uygulama kendisi hiçbir şey göndermez.",
 }

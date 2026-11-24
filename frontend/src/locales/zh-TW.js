@@ -5953,4 +5953,24 @@ export default {
   "Not set up": "尚未設定",
   "Update watch app": "更新手錶 App",
   "Last heard {0}": "上次聯繫：{0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "勾選所有組數？",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "剩下的 {0} 組依計畫勾選，不會啟動休息計時。",
+  "Tick them all": "全部勾選",
+  "Every set ticked": "所有組數已勾選",
+  "Logging after training? Ticks the rest in one go": "練完再記錄？一次勾選剩下的",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "再開始一次訓練",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "選一個或多個課表。組數、次數和重量隨後設定。",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} 與上次量體重的 {1} 相差超過 15%。",
+  "Save as typed": "照輸入儲存",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "刪除為 {0} 保留的變更？",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "它們會被永久刪除。即使那個帳號再次連線，這台裝置也不會加回來。如果之後可能還要，請先另存為備份檔案。",
+  "Kept changes removed": "已刪除保留的變更",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "回報問題",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "在 GitHub 開啟問題表單，已填好 App 版本和裝置。App 本身不會傳送任何內容。",
 }

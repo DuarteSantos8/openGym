@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useId, useRef, useState } from 'react'
+import { groupRoutines, folderOpen, setFolderOpen } from '../lib/routine-folders.js'
 import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { useNavigate } from 'react-router-dom'
@@ -103,6 +104,31 @@ import { isoDir } from '../lib/bidi.js'
 const HOLD_KEY_GRACE_MS = 1500
 
 /* ---------- start chooser (no active workout) ---------- */
+// The routines not on today, under their folders the way Plan shows them (#1347): two "Leg Day"s
+// in different blocks are told apart, and a folder folds away here as it does on Plan (the same
+// remembered state, lib/routine-folders.js, so the Archive starts folded on both).
+function OtherRoutines({ routines }) {
+  const [openFolders, setOpenFolders] = useState({})
+  const toggle = (f, open) => { setFolderOpen(f, open); setOpenFolders(o => ({ ...o, [f.toLowerCase()]: open })) }
+  const rows = list => <div className="list">{list.map(r => <div key={r.id} className="item" onClick={() => startOrPreview([r.id])}>
+    <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+    <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
+    <span className="tag acc">{t('Start')}</span></div>)}</div>
+  return <><h4 className="sec">{t('Other routines')}</h4>
+    {groupRoutines(routines).map(g => {
+      if (!g.routines.length) return null
+      if (!g.folder) return <Fragment key="loose">{rows(g.routines)}</Fragment>
+      const open = openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder)
+      return <div key={'f' + g.folder} className="plan-folder-sect" data-folder={g.folder}>
+        <button type="button" className="plan-folder" aria-expanded={open} onClick={() => toggle(g.folder, !open)}>
+          <Icon name="folder" /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span>
+          <Icon name="chevronRight" className="chev" />
+        </button>
+        {open && rows(g.routines)}
+      </div>
+    })}</>
+}
+
 function StartChooser() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -122,11 +148,7 @@ function StartChooser() {
       </div>
       <Button variant="primary" icon="play" onClick={() => startOrPreview(todayIds)}>{t('Start {0}', todayName)}</Button>
     </div>}
-    {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
-      <div className="list">{others.map(r => <div key={r.id} className="item" onClick={() => startOrPreview([r.id])}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        <span className="tag acc">{t('Start')}</span></div>)}</div></>}
+    {others.length > 0 && <OtherRoutines routines={others} />}
     <div style={{ height: 14 }} />
     <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
     {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
@@ -1901,6 +1923,26 @@ function ActiveWorkout() {
     if (fresh) progressHighWater.current = fresh.entries.map(e => e.sets.filter(s => s.done).length)
     workoutCompleteSheet()
   }
+  // The same tick in a live session, for whoever logs after training (Discord "Tick a whole
+  // day's training in one go"). It asks first, since one stray tap would otherwise tick a whole
+  // workout, and the toast can put the sets back the way they were. No rest timer starts: the
+  // sets are ticked in the state, not one by one through the row's tick.
+  const setsLeft = A.entries.reduce((n, e) => n + (e.sets || []).filter(s => !s.done).length, 0)
+  const askMarkAllDone = () => confirmSheet({
+    title: t('Tick every set?'),
+    message: t('The {0} sets still open get ticked as planned. No rest timers start.', setsLeft),
+    confirmText: t('Tick them all'),
+    onConfirm: () => {
+      const before = useStore.getState().S.active
+      const id = before?.id
+      const entries = before?.entries
+      markAllDone()
+      useUI.getState().toast(t('Every set ticked'), { action: t('Undo'), onAction: () => {
+        update(s => { if (s.active && s.active.id === id) s.active.entries = entries })
+        progressHighWater.current = entries.map(e => e.sets.filter(x => x.done).length)
+      } })
+    },
+  })
   // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
   const addExercise = () => exercisePicker((ex, quick) => {
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
@@ -2013,6 +2055,7 @@ function ActiveWorkout() {
       { more: [{ items: [
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
+        !A.backfill && !editing && setsLeft > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), sub: t('Logging after training? Ticks the rest in one go'), onClick: askMarkAllDone },
         gymSwitchable && { icon: 'house', label: t('Gym'), sub: gymNow ? gymLabel(gymNow) : t('Pick a gym'), onClick: openGymMenu },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
       ] }] },
@@ -2106,7 +2149,7 @@ function ActiveWorkout() {
         else delete activeEntry.carried
         activeEntry.sets = [...doneWarm, ...freshWarm.slice(doneWarm.length), ...doneWork, ...freshWork.slice(doneWork.length)]
       })
-    }, null, routine, null, null, undefined, { freestyle: routine ? false : 'edit' })
+    }, null, routine, null, null, undefined, { freestyle: routine ? false : 'edit', keepOnClose: true })
   }
 
   // Remove a whole exercise from the session. The confirmation always asks first; in a

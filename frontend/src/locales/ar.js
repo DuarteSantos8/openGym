@@ -6015,4 +6015,24 @@ export default {
   "Not set up": "غير مُعدّة",
   "Update watch app": "حدّث تطبيق الساعة",
   "Last heard {0}": "آخر اتصال: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "تحديد كل المجموعات؟",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "ستُحدَّد المجموعات المفتوحة المتبقية ({0}) كما خُطط لها. لن يبدأ أي مؤقت راحة.",
+  "Tick them all": "حدّدها كلها",
+  "Every set ticked": "حُدّدت كل المجموعات",
+  "Logging after training? Ticks the rest in one go": "تسجّل بعد التمرين؟ يحدّد الباقي دفعة واحدة",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "ابدأ جلسة أخرى",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "اختر روتينًا واحدًا أو أكثر. المجموعات والتكرارات والوزن بعد ذلك.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} يبعد أكثر من 15% عن آخر وزن سجّلته، {1}.",
+  "Save as typed": "احفظ كما كُتب",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "إزالة التغييرات المحفوظة لـ {0}؟",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "ستُحذف نهائيًا. لن يعيدها هذا الجهاز حتى لو اتصل ذلك الحساب مجددًا. احفظها كملف نسخة احتياطية أولًا إن كنت قد تحتاجها.",
+  "Kept changes removed": "أُزيلت التغييرات المحفوظة",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "الإبلاغ عن مشكلة",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "يفتح نموذج الأخطاء على GitHub مع إصدار التطبيق وجهازك معبّأين. التطبيق نفسه لا يرسل شيئًا.",
 }

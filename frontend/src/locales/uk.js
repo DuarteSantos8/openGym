@@ -5957,4 +5957,24 @@ export default {
   "Not set up": "Не налаштовано",
   "Update watch app": "Оновіть застосунок на годиннику",
   "Last heard {0}": "Остання звістка: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Позначити всі підходи?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Решта підходів ({0}) позначаться за планом. Таймер відпочинку не запуститься.",
+  "Tick them all": "Позначити всі",
+  "Every set ticked": "Усі підходи позначено",
+  "Logging after training? Ticks the rest in one go": "Записуєте після тренування? Позначить решту разом",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Почати ще одне тренування",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Вибери одну програму або кілька. Підходи, повторення й вага будуть далі.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} відрізняється більш ніж на 15% від останнього зважування ({1}).",
+  "Save as typed": "Зберегти як є",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Видалити зміни, збережені для {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Вони зникнуть назавжди. Цей пристрій не поверне їх, навіть якщо той обліковий запис під’єднається знову. Якщо вони можуть знадобитися, спершу збережіть їх як файл резервної копії.",
+  "Kept changes removed": "Збережені зміни видалено",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Повідомити про проблему",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Відкриває форму помилки на GitHub із уже вписаними версією застосунку та пристроєм. Сам застосунок нічого не надсилає.",
 }

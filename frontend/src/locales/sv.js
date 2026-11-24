@@ -6007,4 +6007,24 @@ export default {
   "Not set up": "Inte konfigurerad",
   "Update watch app": "Uppdatera klockappen",
   "Last heard {0}": "Senast hörd: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Bocka av alla set?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "De {0} set som är kvar bockas av enligt plan. Ingen vilotimer startar.",
+  "Tick them all": "Bocka av alla",
+  "Every set ticked": "Alla set avbockade",
+  "Logging after training? Ticks the rest in one go": "Loggar du efter passet? Bockar av resten på en gång",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Starta ett pass till",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Välj en eller flera rutiner. Set, reps och vikt kommer sedan.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} skiljer sig mer än 15 % från din senaste vägning, {1}.",
+  "Save as typed": "Spara som det står",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Ta bort ändringarna som sparats för {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "De försvinner för gott. Enheten lägger inte tillbaka dem, inte ens om kontot ansluter igen. Spara dem som en säkerhetskopia först om du kanske vill ha dem.",
+  "Kept changes removed": "De sparade ändringarna har tagits bort",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Rapportera ett problem",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Öppnar felformuläret på GitHub med appversion och enhet ifyllda. Appen skickar inget själv.",
 }

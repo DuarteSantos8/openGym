@@ -116,6 +116,19 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: with a rotation and Workouts per week set, Planned sets in Stats follow your week instead of one turn of the loop. A loop of six sessions at four a week plans four sixths of its sets, and a routine the loop names twice counts twice (#1249, thanks @avikl).
 - Fixed: on an exercise's page, "Your photo or video" and the description under it no longer touch. There is a gap between the two cards now (#1260, thanks @unabomberlive).
 - Garmin: the watch app now runs on the fēnix 9 line (fēnix 9, 9 Pro and 9 Pro Solar, every size), the Forerunner 70 and 170, Enduro 4, MARQ (Gen 3), Approach S50 and S72 and the D2 Air X10. Some older watches it had skipped are in too: fēnix 5 Plus, Forerunner 645 Music, the first MARQ, Descent G1, D2 Air, Venu Sq Music and the Legacy Hero and Legacy Saga watches. That is 36 more models, checked in Garmin's simulator and not yet on a real wrist, so tell us if yours looks off.
+- Logging a workout after you trained? Mark all sets done is now in a live workout too, under ⋯ More. It asks first, starts no rest timers and the toast has Undo (thanks Discord, #1345).
+- Start workout: the other routines sit under their folders like on Plan, so two Leg Days from different blocks are no longer twins. A folder folds here too, and the Archive starts folded (#1347, thanks Discord).
+- Home: tapping today's row once the workout is done opens what you did, instead of starting the same routine again. Up for round two? Start another session is right there (thanks Discord).
+- Plan: Edit keeps your folders. Each one has its header while you delete or drag, and a drag moves a routine inside its folder. You don't need Edit to reorder any more, by the way: hold a routine to move it (#1534).
+- Add to my plan: tick as many routines as you like, set the sets and reps once, and the exercise lands in all of them (#1466, thanks @devcoons, whose #1134 had the idea).
+- Library and the exercise picker: pick more than one equipment or type. Cables and dumbbells together, say, and each pick gets its own chip to clear. The muscle map's list works the same (thanks Discord).
+- Your own exercise's photo: tap it to see it full screen, pinch to zoom in on the details and drag to look around. A tap or Back closes it (thanks Discord).
+- Body weight: a weigh-in more than 15% off your last one asks before it is saved, so 7.8 for 78 does not wreck your curve. Fix it goes back to the number, Save as typed keeps it, and editing a weigh-in never asks (thanks @lodepav, whose #1514 had the idea).
+- Exercise settings in a workout keep what you changed however you close them: swipe them away, tap outside or go Back, and the new rest time or per-side switch stays. Its button says Done now (#1079, thanks @lodepav, whose #1213 had the idea).
+- Changes kept for a server that is never coming back can go now: Settings, the Changes kept row, Remove. It warns first that they are gone for good, with Save as a backup file right above it (#1269).
+- Search: type a machine brand you set for an exercise at your gym, like Technogym or "life fit", and that exercise comes up first. Other words still narrow by name, so "life fitness press" keeps the presses (#1082, thanks @lodepav, whose #1211 had the idea).
+- History: with two gyms or more, each workout says which gym it was done at, on its row and in its details. A gym you renamed shows its new name (#1097, thanks @lodepav).
+- Settings → About: Report a problem opens the bug form on GitHub with your app version and device already filled in. It is only a link, the app itself sends nothing (#1482).
 
 ## v1.4.5 (2026-11-14)
 

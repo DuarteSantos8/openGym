@@ -5900,4 +5900,24 @@ export default {
   "Not set up": "Ikke sat op",
   "Update watch app": "Opdater appen på uret",
   "Last heard {0}": "Sidst hørt: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Markér alle sæt?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "De {0} åbne sæt markeres som planlagt. Ingen pausetimer starter.",
+  "Tick them all": "Markér dem alle",
+  "Every set ticked": "Alle sæt markeret",
+  "Logging after training? Ticks the rest in one go": "Logger du efter træningen? Markerer resten på én gang",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Start en træning mere",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Vælg én eller flere rutiner. Sæt, gentagelser og vægt kommer bagefter.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} er mere end 15 % fra din seneste vejning, {1}.",
+  "Save as typed": "Gem som skrevet",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Fjern de ændringer, der er gemt til {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "De forsvinder for altid. Enheden lægger dem ikke tilbage, heller ikke hvis kontoen forbinder igen. Gem dem som backupfil først, hvis du måske får brug for dem.",
+  "Kept changes removed": "De gemte ændringer er fjernet",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Rapportér et problem",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Åbner fejlformularen på GitHub med din appversion og enhed udfyldt. Appen sender ikke selv noget.",
 }

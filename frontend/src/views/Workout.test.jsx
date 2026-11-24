@@ -2533,11 +2533,11 @@ describe('workout view header menu', () => {
     expect(menu.sections.map(g => g.more ? 'more' : g.items.filter(Boolean).map(it => it.label))).toEqual([
       ['Workout settings'], ['Pause workout', 'Add exercise', 'Add session note', 'Layout'], 'more',
     ])
-    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Don’t count for progression'])
+    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Mark all sets done', 'Don’t count for progression'])
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Don’t count for progression',
+      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Mark all sets done', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')
@@ -3685,8 +3685,29 @@ describe('mark all sets done while logging a past workout', () => {
     expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
   })
 
-  it('is only there for a past workout', async () => {
-    await mount([exercise('plain-bench', [false])], 0, { active: { routineIds: [] } })
+  it('sits under More in a live workout, asks first and starts no rest', async () => {
+    await mount([exercise('plain-bench', [false, true]), exercise('plain-row', [false])], 0, { active: { routineIds: [] } })
+    const menu = await openMenu()
+    // Not among the rows on show: one stray tap there would tick a whole session.
+    expect(menu.sections[1].items.filter(Boolean).map(it => it.label)).not.toContain('Mark all sets done')
+    const item = menuItemsOf(menu).find(it => it.label === 'Mark all sets done')
+    expect(item).toBeTruthy()
+    await act(async () => { item.onClick() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(false)
+    const ask = mocks.confirmSheet.mock.calls.at(-1)[0]
+    expect(ask.message).toContain('2 sets')
+    await act(async () => { ask.onConfirm() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(true)
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
+    // The toast puts the sets back the way they were.
+    const [, opts] = mocks.toast.mock.calls.at(-1)
+    await act(async () => { opts.onAction() })
+    expect(mocks.S.active.entries.map(e => e.sets.map(s => s.done))).toEqual([[false, true], [false]])
+  })
+
+  it('is not offered once every set is ticked', async () => {
+    await mount([exercise('plain-bench', [true])], 0, { active: { routineIds: [] } })
     expect(labels(await openMenu())).not.toContain('Mark all sets done')
   })
 })
@@ -4042,3 +4063,35 @@ describe('a set\'s own form video (v1.4.4)', () => {
   })
 })
 
+
+// #1347: the Start screen's other routines sit under their folders, as on Plan.
+describe('Start workout: other routines by folder', () => {
+  const start = async routines => {
+    mocks.S = { ...workout([], 0, { routines }), active: null, week: {}, dayPlan: {} }
+    installDom()
+    await act(async () => { root.render(React.createElement(Workout)) })
+  }
+  const r = (id, name, folder) => ({ id, name, ex: [], ...(folder ? { folder } : {}) })
+
+  it('lists loose routines first, then each folder with its own header', async () => {
+    try { localStorage.clear() } catch (e) { /* none in this env */ }
+    await start([r('a', 'Leg Day', 'Block 1'), r('b', 'Cardio'), r('c', 'Leg Day', 'Block 2'), r('d', 'Old', 'Archive')])
+    const heads = [...container.querySelectorAll('.plan-folder')].map(b => b.querySelector('.grow').textContent)
+    expect(heads).toEqual(['Block 1', 'Block 2', 'Archive'])
+    const names = sel => [...container.querySelectorAll(sel + ' .tt')].map(x => x.textContent)
+    expect(names('[data-folder="Block 1"]')).toEqual(['Leg Day'])
+    expect(names('[data-folder="Block 2"]')).toEqual(['Leg Day'])
+    // The archive starts folded, the way Plan shows it.
+    expect(names('[data-folder="Archive"]')).toEqual([])
+    expect(container.querySelector('.list .tt').textContent).toBe('Cardio')
+    const blk = container.querySelector('[data-folder="Block 1"] .plan-folder')
+    await act(async () => { blk.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(names('[data-folder="Block 1"]')).toEqual([])
+  })
+
+  it('shows no folder headers when no routine has a folder', async () => {
+    await start([r('a', 'Push'), r('b', 'Pull')])
+    expect(container.querySelectorAll('.plan-folder').length).toBe(0)
+    expect([...container.querySelectorAll('.list .tt')].map(x => x.textContent)).toEqual(['Push', 'Pull'])
+  })
+})

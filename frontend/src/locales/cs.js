@@ -5926,4 +5926,24 @@ export default {
   "Not set up": "Nenastaveno",
   "Update watch app": "Aktualizujte aplikaci v hodinkách",
   "Last heard {0}": "Poslední spojení: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Odškrtnout všechny série?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Zbývající otevřené série ({0}) se odškrtnou podle plánu. Žádný odpočinek se nespustí.",
+  "Tick them all": "Odškrtnout vše",
+  "Every set ticked": "Všechny série odškrtnuty",
+  "Logging after training? Ticks the rest in one go": "Zapisuješ až po tréninku? Odškrtne zbytek najednou",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Začít další trénink",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Vyber jednu nebo víc rutin. Série, opakování a váha přijdou potom.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} se od posledního vážení ({1}) liší o víc než 15 %.",
+  "Save as typed": "Uložit, jak je",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Odstranit změny uložené pro {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Zmizí nadobro. Toto zařízení je zpět nepřidá, ani když se ten účet znovu připojí. Pokud by se ti mohly hodit, ulož je nejdřív jako zálohu.",
+  "Kept changes removed": "Uložené změny odstraněny",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Nahlásit problém",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Otevře formulář chyby na GitHubu s vyplněnou verzí aplikace a zařízením. Aplikace sama nic neodesílá.",
 }

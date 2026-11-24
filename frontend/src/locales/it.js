@@ -5970,4 +5970,24 @@ export default {
   "Not set up": "Non configurato",
   "Update watch app": "Aggiorna l’app dell’orologio",
   "Last heard {0}": "Ultime notizie: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Spuntare tutte le serie?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "Le {0} serie ancora aperte vengono spuntate come previsto. Nessun recupero parte.",
+  "Tick them all": "Spunta tutto",
+  "Every set ticked": "Tutte le serie spuntate",
+  "Logging after training? Ticks the rest in one go": "Registri dopo l’allenamento? Spunta il resto in un colpo",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Inizia un’altra sessione",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Scegli una o più routine. Serie, ripetizioni e peso vengono dopo.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} si scosta di oltre il 15% dall’ultima pesata, {1}.",
+  "Save as typed": "Salva così",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Rimuovere le modifiche tenute per {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Spariscono per sempre. Questo dispositivo non le riaggiungerà, anche se quell’account si ricollega. Salvale prima come file di backup se potrebbero servirti.",
+  "Kept changes removed": "Modifiche tenute rimosse",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Segnala un problema",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Apre il modulo dei bug su GitHub con versione dell’app e dispositivo già compilati. L’app da sola non invia nulla.",
 }

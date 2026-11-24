@@ -5925,4 +5925,24 @@ export default {
   "Not set up": "Belum disiapkan",
   "Update watch app": "Perbarui aplikasi jam",
   "Last heard {0}": "Terakhir terdengar: {0}",
+  // --- live workout: mark all sets done (Discord) ---
+  "Tick every set?": "Centang semua set?",
+  "The {0} sets still open get ticked as planned. No rest timers start.": "{0} set yang tersisa dicentang sesuai rencana. Tidak ada timer istirahat yang berjalan.",
+  "Tick them all": "Centang semua",
+  "Every set ticked": "Semua set dicentang",
+  "Logging after training? Ticks the rest in one go": "Mencatat setelah latihan? Centang sisanya sekaligus",
+  // --- Home: today's finished workout opens its details (Discord) ---
+  "Start another session": "Mulai sesi lain",
+  // --- Add to my plan: several routines at once (#1466) ---
+  "Pick one routine or more. Sets, reps and weight come next.": "Pilih satu rutinitas atau lebih. Set, repetisi, dan beban menyusul.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} berbeda lebih dari 15% dari timbangan terakhirmu, {1}.",
+  "Save as typed": "Simpan apa adanya",
+  // --- remove changes kept for a server that is gone (#1269) ---
+  "Remove the changes kept for {0}?": "Hapus perubahan yang disimpan untuk {0}?",
+  "They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.": "Perubahan ini hilang selamanya. Perangkat ini tidak akan menambahkannya lagi, meski akun itu tersambung kembali. Simpan dulu sebagai file cadangan jika mungkin masih perlu.",
+  "Kept changes removed": "Perubahan yang disimpan dihapus",
+  // --- Settings: Report a problem (#1482) ---
+  "Report a problem": "Laporkan masalah",
+  "Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.": "Membuka formulir bug di GitHub dengan versi aplikasi dan perangkatmu sudah terisi. Aplikasi sendiri tidak mengirim apa pun.",
 };
