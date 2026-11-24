@@ -18,3 +18,19 @@ describe('0316 is an incline fly with the palms forward (#1302)', () => {
     }
   })
 })
+
+describe('static stretches start as timed holds (#1537)', () => {
+  it('a held stretch opens as time, a moving one stays reps', async () => {
+    const { defaultConfig } = await import('./history.js')
+    const { isHold } = await import('./exercises.js')
+    for (const id of ['1909', '0945', '0789', '1059', '4557']) {
+      expect(isHold(id), id).toBe(true)
+      expect(defaultConfig(id).mode, id).toBe('time')
+    }
+    // dynamic drills are done for reps: toy soldiers, neck circles, a moving child pose, cat cow
+    for (const id of ['5978', '3994', '8130', '11095', '5404']) {
+      expect(isHold(id), id).toBe(false)
+      expect(defaultConfig(id).mode, id).not.toBe('time')
+    }
+  })
+})

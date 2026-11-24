@@ -9,6 +9,7 @@
     "chest"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "A tall standing stretch that opens the shoulders and chest.",
   "instructions": [
     "Stand tall with your feet hip-width apart.",

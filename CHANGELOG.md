@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Static stretches start as timed holds: picking a hamstring stretch, child's pose or one of 434 others now opens it as 3 × 30 seconds instead of 3 × 10 reps. Stretches you move through (toy soldiers, neck circles, cat cow) stay on reps, and routines you already have keep what they are (#1537).
 - Exercise list: "dumbbell incline breeding" (0316) is now the dumbbell incline fly (palms forward), with fly steps to match. Its name had turned into a press or even a curl in several languages (#1302, thanks @Ituking).
 - Fixed: the cable assisted inverse leg curl counts its weight as help, so progression asks for less of it, not more. The exercise list can now mark any exercise as assisted, not just the machines (#1220).
 - Fixed: rest-pause's first set is a work set now, not a warm-up. It counts in your volume and records, the set reads like 60×8+4+2+1+1, and a planned rest-pause finally moves up when you get every rep (#1252, thanks @jclainezr for the report and #1253).
