@@ -69,7 +69,8 @@ import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
-import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
+import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry, moveActiveWorkoutUnitTo } from '../lib/active-workout-order.js'
+import { useListReorder } from '../lib/use-list-reorder.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
@@ -1285,6 +1286,17 @@ function ActiveWorkout() {
   // timed sets stays, since counting a hold is how its duration gets entered.
   const startRest = (A.backfill || editing) ? () => {} : liveRest
   const units = supersetUnits(A.entries)
+  // A key per unit that survives a move (the list's reorder measures rows by it): its exercises'
+  // ids, and a count when the same ones come twice.
+  const unitKeys = (() => {
+    const seen = new Map()
+    return units.map(u => {
+      const k = u.map(i => A.entries[i].occurrenceId || A.entries[i].id).join('+')
+      const n = (seen.get(k) || 0) + 1
+      seen.set(k, n)
+      return n > 1 ? k + '#' + n : k
+    })
+  })()
   const cur = Number.isInteger(A.cur)
     ? Math.min(Math.max(A.cur, 0), Math.max(0, A.entries.length - 1))
     : 0
@@ -1667,19 +1679,33 @@ function ActiveWorkout() {
     // it belongs to an exercise (timer.forIdx), and that exercise only changes position.
     ui.stopWork()
     focusPointerEpoch.current++
-    update(s => {
-      const moved = (member ? moveActiveWorkoutEntry : moveActiveWorkoutUnit)(s.active, at, direction)
-      if (!moved) return
-      // The marker follows its unit: the superset card's scroll must not read that as a move.
-      lastCur.current = s.active.cur
-      progressHighWater.current = moved.indices.map(index => progressHighWater.current[index])
-      const rest = useUI.getState().timer
-      if (rest && rest.forIdx != null) {
-        const forIdx = moved.indices.indexOf(rest.forIdx)
-        if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
-      }
-    }, true)
+    update(s => { remapMoved(s, (member ? moveActiveWorkoutEntry : moveActiveWorkoutUnit)(s.active, at, direction)) }, true)
   }
+  // What every move does after the entries changed places: per-index state follows its entry.
+  const remapMoved = (s, moved) => {
+    if (!moved) return
+    // The marker follows its unit: the superset card's scroll must not read that as a move.
+    lastCur.current = s.active.cur
+    progressHighWater.current = moved.indices.map(index => progressHighWater.current[index])
+    const rest = useUI.getState().timer
+    if (rest && rest.forIdx != null) {
+      const forIdx = moved.indices.indexOf(rest.forIdx)
+      if (forIdx >= 0) useUI.setState({ timer: { ...rest, forIdx } })
+    }
+  }
+  // The list layout's hold-to-move (lib/use-list-reorder.js, the same gesture as Plan, the
+  // rotation and Customize): hold an exercise's header line, or press its grip, and drag the
+  // whole exercise or superset to its new place (Discord 2026-11-21). `to` is the unit's index
+  // after the move. Not while a timed set runs: it writes by index.
+  const moveUnitTo = (fromUnit, toUnit) => {
+    const ui = useUI.getState()
+    const at = units[fromUnit]?.[0]
+    if (ui.work || at == null) return
+    ui.stopWork()
+    focusPointerEpoch.current++
+    update(s => { remapMoved(s, moveActiveWorkoutUnitTo(s.active, at, toUnit)) }, true)
+  }
+  const unitReorder = useListReorder(units.length, moveUnitTo)
 
   const moveCurrentUnit = direction => moveUnitAt(cur, direction)
 
@@ -2762,16 +2788,23 @@ function ActiveWorkout() {
       <b>{sessionPin.gym.name || t('My gym')}:</b> {sessionPin.text}</div>}
 
     {A.entries.length ? (listMode ? (
-      <div className="workout-list" data-testid="workout-list" ref={listRef}>
+      <div className="workout-list" data-testid="workout-list" ref={el => { listRef.current = el; unitReorder.listRef.current = el }}>
         {units.map((u, ui) => {
           const multi = u.length > 1
+          const unitName = u.map(idx => exerciseNameText(exOr(A.entries[idx].id))).join(' + ')
           const isCur = u.includes(cur)
           const isCollapsed = collapsed.has(u.join('-'))
           // Finished and tapped open again: it says it can fold back, and does on a tap.
           const reopened = collapseOn && !isCur && !isCollapsed && opened.has(u.join('-')) && finished(u)
-          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]} data-unit-key={u.join('-')}>
-            <div className="wl-hd">
-              <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
+          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]} data-unit-key={u.join('-')}
+            data-reorder-row data-reorder-key={unitKeys[ui]} style={unitReorder.rowStyle(ui)}>
+            <div className="wl-hd" {...(working ? {} : unitReorder.press(ui))}>
+              <span className="row" style={{ gap: 4 }}>
+                {units.length > 1 && !working && <button type="button" className="reorder-grip" aria-label={t('Move {0}', unitName)} title={t('Drag to reorder')} {...unitReorder.handle(ui)}>
+                  <Icon name="grip" />
+                </button>}
+                <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
+              </span>
               <span className="row" style={{ gap: 6 }}>
                 {/* One of each per exercise down the list, so each says which (P4): "Exercise 2 / 5: Set current". */}
                 {reopened && <button className="chip" aria-expanded="true" aria-controls={'workout-unit-' + u.join('-')}

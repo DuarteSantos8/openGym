@@ -3303,6 +3303,9 @@ button.cal-wk:active{background:var(--press-fill)}
 .workout-list .ss-ex,.workout-list .setrow,.workout-list .setrow-side{scroll-margin-top:calc(var(--whdr-h, var(--sat) + var(--conn) + 80px) + 16px)}
 .wl-unit.cur{box-shadow:inset 0 0 0 1.5px var(--acc-line)}
 .wl-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+/* The header line is what a finger holds to move the exercise (lib/use-list-reorder.js). */
+.wl-hd{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.wl-hd .reorder-grip{width:28px;height:28px;margin-inline-start:-6px}
 .wl-summary{display:grid;gap:8px;padding-bottom:10px}
 /* the folded unit is a button (a tap opens it again): full width, text where it always sat */
 button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var(--r-sm)}
