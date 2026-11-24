@@ -4880,7 +4880,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .lp-card{display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:6px;background:var(--surface);border:1px solid var(--sep)}
 .lp-card s{display:block;height:5px;width:55%;border-radius:3px;background:var(--label-3);text-decoration:none}
 .lp-card i{display:block;height:7px;border-radius:3px;background:var(--surface-3);position:relative}
-.lp-card i.on{background:color-mix(in srgb,var(--green) 28%,var(--surface-3))}
+.lp-card i.on{background:rgba(48,209,88,.28);background:color-mix(in srgb,var(--green) 28%,var(--surface-3))}
 .lp-card i.on::after{content:'';position:absolute;inset-inline-end:3px;top:1.5px;width:4px;height:2px;border:solid var(--green);border-width:0 0 1.5px 1.5px;transform:rotate(-45deg)}
 .lp-cards .lp-card:first-child{flex:1;margin-inline-end:18px}
 .lp-cards .lp-card{gap:7px}
