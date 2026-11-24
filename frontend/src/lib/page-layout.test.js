@@ -41,7 +41,8 @@ describe('page layout (Home and Stats, #1119)', () => {
     expect(moveCard(s, 'stats', 'muscles', -1)).toBe(true)
     const lifts = orderedCards(s, 'stats').filter(c => c.group === 'lifts').map(c => c.id)
     expect(lifts).toEqual(['muscles', 'progress', 'strength'])
-    const groups = orderedCards(s, 'stats').map(c => c.group)
+    // The More list sits last on purpose: it is the end of Body, or of Lifts with Body off.
+    const groups = orderedCards(s, 'stats').filter(c => c.id !== 'links').map(c => c.group)
     expect(groups).toEqual([...groups].sort((a, b) => ['overview', 'body', 'lifts', 'effort'].indexOf(a) - ['overview', 'body', 'lifts', 'effort'].indexOf(b)))
   })
 

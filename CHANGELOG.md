@@ -6,6 +6,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Stats → Customize: the More list (Journal, Tools, Body measurements and the rest) can be hidden as a whole, folded, or trimmed row by row with a switch each. Hide Body weight too and the Body part leaves the index.
+- Stats → Exercise progress: the Top set chart now includes old workouts that were saved with only a date and no start time. The Est. 1RM chart already counted them.
 - New here? Your first workout asks how it should look: one exercise per page, or the whole workout as a list with its ticks, each with a tiny picture. The app tour's ⋯ stop now says where the layouts live too (thanks Discord).
 - First launch: the language sits in the top corner of the very first screen (the welcome screen in the apps, sign-in on the web), already set to your phone's, one tap to pick another. Handy if your phone speaks the language you are learning and you would rather lift in your own (#1037).
 - Warm-ups: set your own warm-up ramp once in Settings → Workout (say bar × 10, 50% × 5, 75% × 3) and every automatic warm-up uses it instead of ours. An exercise switched to My own starts from it too, so no more typing the same rows into every exercise (#1423).

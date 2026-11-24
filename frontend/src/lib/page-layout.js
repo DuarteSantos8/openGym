@@ -13,6 +13,7 @@
 // module (Settings → Modules) a card belongs to: with it off the card is not offered at all.
 
 import { recapPeriod } from './recap-period.ts'
+import { isOn } from './modules.js'
 
 export const PAGES = {
   home: [
@@ -39,7 +40,33 @@ export const PAGES = {
     { id: 'strength', label: 'Strength levels', group: 'lifts', needs: 'strength' },
     { id: 'effort', label: 'Effort', group: 'effort', needs: 'effort' },
     { id: 'time', label: 'Time per exercise', group: 'effort' },
+    // The list of pages behind Stats (Journal, Tools, …): under Body, or at the end of Lifts when
+    // the Body module is off. Its rows can be switched off one by one too (STATS_LINKS).
+    { id: 'links', label: 'More', group: S => (isOn(S, 'body') ? 'body' : 'lifts') },
   ],
+}
+
+/** The part of the page a card sits in; a few follow the profile (the More list follows Body). */
+export const groupOf = (c, S) => (typeof c?.group === 'function' ? c.group(S) : c?.group)
+
+// The rows of Stats' More list, each one yours to keep or drop (owner 2026-11-24). Stored as the
+// ids switched off, S.statsLinksOff, so a row new in a later version shows up on its own.
+export const STATS_LINKS = [
+  { id: 'measurements', label: 'Body measurements', needs: 'body' },
+  { id: 'photos', label: 'Progress photos', needs: 'body' },
+  { id: 'balance', label: 'Structural balance' },
+  { id: 'journal', label: 'Journal' },
+  { id: 'tools', label: 'Tools' },
+  { id: 'month', label: 'Your month', needs: 'motivation' },
+  { id: 'year', label: 'Your year', needs: 'motivation' },
+]
+const linksOff = S => list(S?.statsLinksOff)
+/** Whether a row of the More list is kept. */
+export const linkShown = (S, id) => !linksOff(S).includes(id)
+/** Keeps or drops a row of the More list. Mutates the draft `s`. */
+export function setLinkShown(s, id, on) {
+  const off = linksOff(s).filter(x => x !== id)
+  s.statsLinksOff = on ? off : [...off, id]
 }
 
 export const GROUP_LABELS = { overview: 'Overview', body: 'Body', lifts: 'Lifts', effort: 'Effort' }
@@ -95,14 +122,14 @@ export function arrange(S, page, ids) {
 /** True when every card of this part of the page is hidden: the part and its index entry go too. */
 export function groupHidden(S, page, group) {
   const { hidden } = layoutOf(S, page)
-  const mine = (PAGES[page] || []).filter(c => c.group === group)
+  const mine = (PAGES[page] || []).filter(c => groupOf(c, S) === group)
   return mine.length > 0 && mine.every(c => hidden.includes(c.id))
 }
 
 /** True when the person changed anything on this page. */
 export function isCustom(S, page) {
   const l = layoutOf(S, page)
-  return l.order.length > 0 || l.hidden.length > 0 || l.folded.length > 0
+  return l.order.length > 0 || l.hidden.length > 0 || l.folded.length > 0 || (page === 'stats' && linksOff(S).length > 0)
 }
 
 // The writers below change the draft `s` in place (useStore's update(s => …)).
@@ -158,7 +185,7 @@ export function moveCard(s, page, id, dir) {
   const all = orderedCards(s, page)
   const me = all.find(c => c.id === id)
   if (!me) return false
-  const peers = all.filter(c => c.group === me.group)
+  const peers = all.filter(c => groupOf(c, s) === groupOf(me, s))
   const i = peers.indexOf(me), other = peers[i + dir]
   if (!other) return false
   const ids = all.map(c => c.id)
@@ -184,6 +211,7 @@ export function placeCard(s, page, id, targetId) {
 }
 
 export function resetLayout(s, page) {
+  if (page === 'stats') delete s.statsLinksOff
   if (!s.layout || typeof s.layout !== 'object') return
   const { [page]: _gone, ...rest } = s.layout
   s.layout = rest

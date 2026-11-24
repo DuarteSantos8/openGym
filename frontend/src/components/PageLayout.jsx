@@ -17,8 +17,8 @@ import { isOn } from '../lib/modules.js'
 import { useListReorder } from '../lib/use-list-reorder.js'
 import { reportCard, cardLive, liveVersion, subscribeLive } from '../lib/card-live.js'
 import Icon from './Icon.jsx'
-import { Button, Segmented } from './ui.jsx'
-import { PAGES, GROUP_LABELS, arrange, cardState, orderedCards, setCardState, moveCard, placeCard, resetLayout, isCustom, dismissedNote } from '../lib/page-layout.js'
+import { Button, Segmented, Switch } from './ui.jsx'
+import { PAGES, GROUP_LABELS, STATS_LINKS, groupOf, linkShown, setLinkShown, arrange, cardState, orderedCards, setCardState, moveCard, placeCard, resetLayout, isCustom, dismissedNote } from '../lib/page-layout.js'
 
 const labelOf = (page, id) => t(PAGES[page].find(c => c.id === id).label)
 
@@ -101,9 +101,21 @@ function LayoutGroup({ page, group, cards, S, update }) {
             </span>
           </div>
           <Segmented of={name} value={state} options={STATES()} onChange={v => update(s => { setCardState(s, page, c.id, v) })} />
+          {page === 'stats' && c.id === 'links' && state !== 'hidden' && <LinkSwitches S={S} update={update} />}
         </div>
       })}
     </div>
+  </div>
+}
+
+/** The rows of Stats' More list, each with its own switch (owner 2026-11-24). */
+function LinkSwitches({ S, update }) {
+  const rows = STATS_LINKS.filter(l => !l.needs || isOn(S, l.needs))
+  return <div className="lay-subs" data-lay-links>
+    {rows.map(l => <label key={l.id} className="lay-sub" data-lay-link={l.id}>
+      <span>{t(l.label)}</span>
+      <Switch checked={linkShown(S, l.id)} aria-label={t(l.label)} onChange={v => update(s => { setLinkShown(s, l.id, v) })} />
+    </label>)}
   </div>
 }
 
@@ -115,11 +127,11 @@ function LayoutSheet({ page, close }) {
   const [offered] = useState(() => new Set(orderedCards(S, page)
     .filter(c => cardState(S, page, c.id) === 'hidden' || dismissedNote(S, page, c.id) || cardLive(page, c.id) !== false).map(c => c.id)))
   const cards = orderedCards(S, page).filter(c => (!c.needs || isOn(S, c.needs)) && offered.has(c.id))
-  const groups = [...new Set(cards.map(c => c.group))]
+  const groups = [...new Set(cards.map(c => groupOf(c, S)))]
   return <>
     <h3>{t('Customize')} · {t(page === 'home' ? 'Home' : 'Stats')}</h3>
     <div className="muted small">{t('Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.')}</div>
-    {groups.map(g => <LayoutGroup key={g || 'all'} page={page} group={g} cards={cards.filter(c => c.group === g)} S={S} update={update} />)}
+    {groups.map(g => <LayoutGroup key={g || 'all'} page={page} group={g} cards={cards.filter(c => groupOf(c, S) === g)} S={S} update={update} />)}
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
     {isCustom(S, page) && <><div style={{ height: 8 }} /><Button onClick={() => update(s => { resetLayout(s, page) })}>{t('Reset')}</Button></>}
