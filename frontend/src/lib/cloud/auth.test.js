@@ -275,3 +275,61 @@ describe('approving a sign-in to the app\'s own server (ADR 0013)', () => {
     await expect(auth.consent('a/b', true)).rejects.toMatchObject({ code: 'validation_failed' })
   })
 })
+
+// Found in review of #79: the session was read from storage once, when the page loaded. A tab
+// left open went on believing whatever was true then, and acted on it.
+describe('another tab signs in or out', () => {
+  const twoTabs = (routes = {}) => {
+    const a = setup(routes)
+    const heard = []
+    const tabs = { fns: [] }
+    const events = { addEventListener: (type, fn) => { if (type === 'storage') tabs.fns.push(fn) } }
+    const other = createAuth({ url: URL0, key: KEY, fetchImpl: a.fetchImpl, storage: a.storage, now: () => 1_000_000_000_000, events })
+    other.onChange(s => heard.push(s?.user.id ?? null))
+    const tell = (key = SESSION_KEY) => tabs.fns.forEach(fn => fn({ key }))
+    return { ...a, other, heard, tell }
+  }
+
+  it('this one follows: who is signed in, and its listeners hear it', async () => {
+    const t = twoTabs({ 'POST /auth/v1/token': res(200, tokens()), 'POST /auth/v1/logout': res(204, {}) })
+    expect(t.other.session()).toBeNull()
+    await t.auth.signIn('a@example.com', 'right-password')
+    t.tell()
+    expect(t.other.session().user.id).toBe('u-1')
+    await t.auth.signOut()
+    t.tell()
+    expect(t.other.session()).toBeNull()
+    expect(t.heard).toEqual(['u-1', null])
+  })
+
+  it('sync() reads the latest without waiting to be told, and says nothing when nothing changed', async () => {
+    const t = twoTabs({ 'POST /auth/v1/token': res(200, tokens()) })
+    await t.auth.signIn('a@example.com', 'right-password')
+    expect(t.other.sync().user.id).toBe('u-1')
+    expect(t.other.sync().user.id).toBe('u-1')
+    t.tell(); t.tell('something-else'); t.tell(null)
+    expect(t.heard).toEqual(['u-1'])
+  })
+
+  it('a refresh that was on its way here is thrown away: it must not write the old session back', async () => {
+    let answer
+    const t = twoTabs({ 'POST /auth/v1/token': () => new Promise(r => { answer = r }) })
+    t.storage.setItem(SESSION_KEY, JSON.stringify({ access_token: 'old', refresh_token: 'rt-old', expires_at: 1_000_000_000_000 + 1000, user: { id: 'u-1', email: 'a@example.com' } }))
+    t.other.sync()
+    const asked = t.other.fresh()                       // nearly expired: a refresh goes out
+    t.storage.removeItem(SESSION_KEY)                   // the other tab signs out
+    t.tell()
+    answer(res(200, tokens({ access_token: 'new' })))
+    expect(await asked).toBeNull()
+    expect(t.other.session()).toBeNull()
+    expect(t.storage.getItem(SESSION_KEY)).toBeNull()
+  })
+
+  it('without anything to listen on (tests, old browsers) it still works, and sync still reads', () => {
+    const a = setup({})
+    const lone = createAuth({ url: URL0, key: KEY, fetchImpl: a.fetchImpl, storage: a.storage, events: null })
+    a.storage.setItem(SESSION_KEY, JSON.stringify({ access_token: 'x', refresh_token: 'y', expires_at: 5, user: { id: 'u-9', email: '' } }))
+    expect(lone.session()).toBeNull()
+    expect(lone.sync().user.id).toBe('u-9')
+  })
+})

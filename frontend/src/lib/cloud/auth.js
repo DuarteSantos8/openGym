@@ -66,7 +66,9 @@ function readStored(storage) {
   } catch { return null }
 }
 
-export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(...a), storage = globalThis.localStorage, now = () => Date.now() }) {
+const pageEvents = () => (typeof window !== 'undefined' && typeof window.addEventListener === 'function' ? window : null)
+
+export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(...a), storage = globalThis.localStorage, now = () => Date.now(), events = pageEvents() }) {
   const base = String(url).replace(/\/+$/, '') + '/auth/v1'
   let current = readStored(storage)
   let refreshing = null
@@ -83,6 +85,21 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
     for (const fn of listeners) { try { fn(s) } catch { /* a listener's fault is its own */ } }
     return s
   }
+
+  // Another tab signed in or out, or renewed the session: storage is where that shows, and it is
+  // the truth. Without this a tab left open went on believing what was true when it loaded, and
+  // acted on it (found in review of #79). A refresh on its way here belongs to the past either
+  // way: its refresh token may already be spent, and it must not write an old session back.
+  const sync = () => {
+    let stored
+    try { stored = readStored(storage) } catch { return current }
+    if (stored?.user.id === current?.user.id && stored?.access_token === current?.access_token && stored?.refresh_token === current?.refresh_token) return current
+    changed()
+    current = stored
+    for (const fn of listeners) { try { fn(stored) } catch { /* a listener's fault is its own */ } }
+    return current
+  }
+  try { events?.addEventListener('storage', e => { if (e?.key === SESSION_KEY || e?.key === null) sync() }) } catch { /* nothing to listen on */ }
 
   /** One request. Resolves with the parsed answer, rejects with a CloudAuthError and nothing else. */
   async function call(method, path, { body, token } = {}) {
@@ -133,6 +150,8 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
   return {
     /** Who is signed in on this device, or null. Synchronous: from memory, loaded from storage. */
     session: () => current,
+    /** The same, after reading what this browser's storage says now: another tab may have signed in or out. */
+    sync,
     /** Calls `fn(session | null)` on every change. Returns the function that stops it. */
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn) },
     fresh,

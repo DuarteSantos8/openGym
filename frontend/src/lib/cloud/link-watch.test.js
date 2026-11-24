@@ -3,10 +3,12 @@ import { watchLink, tellLinkFailure } from './link-watch.js'
 import { createServerLink } from './server-link.js'
 
 const box = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)) }, removeItem: k => { m.delete(k) } } }
+// `stored` is what the browser's storage says now; `session()` is what this tab last knew.
 function fakeAuth(session) {
-  let current = session
+  let current = session, stored = session
   const fns = new Set()
-  return { auth: { session: () => current, onChange: fn => { fns.add(fn); return () => fns.delete(fn) } }, set: s => { current = s; fns.forEach(fn => fn(s)) } }
+  const auth = { session: () => current, sync: vi.fn(() => { current = stored; return current }), onChange: fn => { fns.add(fn); return () => fns.delete(fn) } }
+  return { auth, set: s => { current = stored = s; fns.forEach(fn => fn(s)) }, elsewhere: s => { stored = s } }
 }
 function fakeStore(state) {
   let st = { ready: true, user: null, ...state }
@@ -47,10 +49,58 @@ describe('the server profile ends with the account it was opened through', () =>
     watchLink({ client: c, store, note })
     await tick()
     expect(store.getState().signOut).not.toHaveBeenCalled()
-    expect(note.owner()).toBe('u-1')            // not forgotten on a guess
+    expect(note.ownerOf({ id: 7 })).toBe('u-1')   // not forgotten on a guess
     store.set({ ready: true, user: { id: 7 } })
     await tick()
     expect(store.getState().signOut).toHaveBeenCalledTimes(1)
+  })
+
+  // Found in review of #79: a tab left open signed out of the account acted on that, and signed
+  // out the server profile another tab had just opened through a fresh sign-in.
+  it('asks storage who is signed in before acting: a tab left open does not act on what was true when it loaded', async () => {
+    const c = fakeAuth(null), store = fakeStore({ user: null })
+    const note = linked('u-1')
+    watchLink({ client: c, store, note })
+    c.elsewhere({ user: { id: 'u-1' } })           // another tab signed in and linked
+    store.set({ user: { id: 7 } })                 // and this tab took the server profile over
+    await tick()
+    expect(c.auth.sync).toHaveBeenCalled()
+    expect(store.getState().signOut).not.toHaveBeenCalled()
+  })
+
+  it('once it has ended the profile itself, it says so for the other tabs', async () => {
+    const c = fakeAuth({ user: { id: 'u-1' } }), store = fakeStore({ user: { id: 7 } })
+    const note = linked('u-1')
+    watchLink({ client: c, store, note })
+    c.set(null)
+    await tick()
+    expect(store.getState().user).toBeNull()
+    expect(note.ownerOf({ id: 7 })).toBeNull()
+    expect(note.check({ hostedId: 'u-1', serverUser: { id: 7 } })).toBe('end')
+  })
+
+  // The tab that signed out on the account screen ended the profile and said so. This one hears
+  // of the sign-out and lets go as well, though for it the account id may not even differ.
+  it('a profile another tab ended is let go of here', async () => {
+    const c = fakeAuth({ user: { id: 'u-1' } }), store = fakeStore({ user: { id: 7 } })
+    const note = linked('u-1')
+    watchLink({ client: c, store, note })
+    await tick()
+    note.ended()
+    c.set(null)
+    await tick()
+    expect(store.getState().signOut).toHaveBeenCalledWith({ force: true })
+    expect(store.getState().user).toBeNull()
+  })
+
+  it('but not if the profile could not be ended: it is still known whose it is', async () => {
+    const c = fakeAuth({ user: { id: 'u-1' } }), store = fakeStore({ user: { id: 7 } })
+    store.getState().signOut = vi.fn(async () => ({ owed: true, count: 2, stashed: false }))
+    const note = linked('u-1')
+    watchLink({ client: c, store, note })
+    c.set(null)
+    await tick()
+    expect(note.ownerOf({ id: 7 })).toBe('u-1')
   })
 
   it('someone else signs in to the account: the same', async () => {
