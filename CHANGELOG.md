@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Apple Watch: the rest page's back button and the keypad's cross and check sit in from the rounded corners, where an Ultra cut them off, and the set count beside the heart rate shows "2/4" again instead of "..." (#1414).
 - Watches: the last three seconds of a rest tap your wrist once each, like a timed hold's count-in, so you know it is time without looking (thanks @cubetes for #1287).
 - Wear OS: a quarter of the screen is enough to swipe to the next metrics page. Half a screen on a small watch kept springing back to the numbers (#1288, thanks @cubetes for #1289).
 - Apple Watch: the workout summary scrolls with the crown straight away, no touch needed first (#1308, thanks @cubetes for #1310).

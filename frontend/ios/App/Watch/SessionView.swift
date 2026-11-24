@@ -68,7 +68,10 @@ struct SetPill: View {
             Text(verbatim: "\(place.n)/\(place.of)")
                 .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
-                .padding(.horizontal, 10).padding(.vertical, 3)
+                .lineLimit(1)
+                .padding(.horizontal, 7).padding(.vertical, 3)
+                // Its own size: squeezed beside the heart rate in one toolbar item, watchOS 26 cut it to "..." (#1414).
+                .fixedSize()
                 .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
                 .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
         }

@@ -563,7 +563,8 @@ struct KeypadView: View {
     var body: some View {
         GeometryReader { g in
             // Full screen, from the clock's row down: close and the number beside the clock, the keys fill the rest.
-            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 10) / 4)
+            // 18: the check bar stays clear of the rounded bottom edge (#1414: it sat under it on an Ultra).
+            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 18) / 4)
             VStack(spacing: 4) {
                 HStack(spacing: 6) {
                     Button { dismiss() } label: {
@@ -574,6 +575,7 @@ struct KeypadView: View {
                     }
                     .buttonStyle(PressStyle())
                     .accessibilityLabel(Text("Cancel"))
+                    .padding(.leading, 8)   // in from the rounded top corner, where the screen cut it (#1414)
                     display
                 }
                 .frame(height: 36)
@@ -599,6 +601,7 @@ struct KeypadView: View {
                 }
                 .buttonStyle(PressStyle())
                 .disabled(!ok)
+                .padding(.horizontal, 10)   // the capsule's ends clear of the rounded bottom corners (#1414)
                 .accessibilityLabel(Text("Save"))
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .top)

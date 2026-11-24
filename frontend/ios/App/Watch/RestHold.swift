@@ -45,6 +45,9 @@ struct RestView: View {
                         .buttonStyle(PressStyle())
                         .opacity(dimmed ? 0 : 1)
                         .accessibilityLabel(Text("Back"))
+                        // In from the rounded corner: the row ignores the top safe area, and at the
+                        // leading edge an Ultra's corner cut the circle (#1414).
+                        .padding(.leading, roomy ? 12 : 8)
                     }
                     Spacer(minLength: 0)
                     RestHeart(health: store.health)

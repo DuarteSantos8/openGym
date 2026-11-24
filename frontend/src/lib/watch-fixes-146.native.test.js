@@ -134,3 +134,21 @@ describe('Watch rest: a tap at 3, 2 and 1 s left (#1287)', () => {
     expect(code(WEAR + 'WearStore.kt')).toMatch(/for \(left in listOf\(3, 2, 1\)\)[\s\S]{0,200}Haptics\.restCount\(app\)/)
   })
 })
+
+describe('Apple Watch corners and the set count (#1414)', () => {
+  it('the rest page\'s back button sits in from the rounded corner', () => {
+    const top = between(code(WATCH + 'RestHold.swift'), 'Image(systemName: "chevron.left")', 'Spacer(minLength: 0)')
+    expect(top).toMatch(/\.padding\(\.leading, roomy \? 12 : 8\)/)
+  })
+  it('the keypad keeps its cross and its check inside the rounded corners', () => {
+    const pad = between(code(WATCH + 'SetPage.swift'), 'struct KeypadView', '/// The number typed')
+    expect(pad).toMatch(/- 5 \* 4 - 18\) \/ 4/)
+    expect(pad).toMatch(/accessibilityLabel\(Text\("Cancel"\)\)\s*\.padding\(\.leading, 8\)/)
+    expect(pad).toMatch(/\.disabled\(!ok\)\s*\.padding\(\.horizontal, 10\)/)
+  })
+  it('the set count beside the heart rate takes its own size, never "..."', () => {
+    const pill = between(code(WATCH + 'SessionView.swift'), 'struct SetPill', '\n}\n')
+    expect(pill).toMatch(/\.lineLimit\(1\)/)
+    expect(pill).toMatch(/\.fixedSize\(\)/)
+  })
+})
