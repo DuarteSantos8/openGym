@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Fixed: a workout you kept out of progression shows on Stats again, in the Activity heatmap, Recent workouts and the streak. It still stays out of volume, records and muscle balance, as promised (thanks Discord).
 - Workout in the List layout: hold an exercise's top line (or drag its grip with a mouse) to move it, a superset as one block, the same way as every other list. Move up and Move down stay in the exercise's ⋯ menu for the keyboard and screen readers, and the Cards layout keeps them too (thanks Discord).
 - Fixed: Challenges and the recovery tip come back once you ask for them. After their × they used to stay away even with the switch back on; now Customize Home lists them as hidden until next month or for today, Show brings them back, and so does switching Monthly challenges on again (thanks Discord).
 - Garmin: two ways the watch app could quit in the middle of a workout are gone: the effort screen after the phone changed that exercise's sets, and a workout or routine without a name at its summary or on the start screen. If your Forerunner 255 still closes on you, tell us which button you pressed (#1294).

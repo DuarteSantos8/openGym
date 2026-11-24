@@ -581,7 +581,12 @@ export function StatsIndex({ sections }) {
 export default function Stats() {
   const nav = useNavigate()
   // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
-  const S = countedS(useStore(s => s.S))
+  // What only says you trained that day, the Activity heatmap by time and Recent workouts, reads
+  // the log as it is, like History and the calendar: a workout kept out of progression was still
+  // a workout (Discord 2026-11-22: it vanished from both).
+  const logS = useStore(s => s.S)
+  const S = countedS(logS)
+  const logged = logS.workouts || []
   const photoUser = useStore(s => s.user)
   const photoConfig = useStore(s => s.config)
   const [range, setRange] = useState(90)
@@ -620,7 +625,7 @@ export default function Stats() {
   const totals = useMemo(() => lifetimeTotals(S), [S.workouts]) // eslint-disable-line react-hooks/exhaustive-deps
   const likeness = likenessOf(S.unit === 'lb' ? lifetime * LB_KG : lifetime)
   // The streak with its best run, freezes and badges (lib/streak.js).
-  const streak = streakInfo(S)
+  const streak = streakInfo(logS)
 
   // Dumbbell weights are read in each exercise's current meaning (lib/dumbbells.js), so the
   // chart and its best compare like with like across a switch between per bell and total.
@@ -890,7 +895,7 @@ export default function Stats() {
     { value: 'lifts', label: t('Lifts') },
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
   ]
-  const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
+  const recent = [...logged].reverse().slice(0, RECENT_ROWS)
   const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
   // Your month (v1.4.5): last month's story once it is over, this month's so far before that.
   const storyMonth = motivationOn ? offeredMonth(S, todayISO()) : null
@@ -951,7 +956,7 @@ export default function Stats() {
         {likeness && <div className="small lifetime-like">{likeness}</div>}
       </div>}
     </div> },
-      { id: 'streak', node: workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} /> },
+      { id: 'streak', node: logged.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} /> },
       // The month's challenges and the trophy shelf (lib/challenges.js), folded to one line.
       { id: 'challenges', node: workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} /> },
       // Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say.
@@ -962,16 +967,16 @@ export default function Stats() {
       <SeasonDeco spot="stats-heatmap" />
       <h2>{t('Activity (last 12 months)')}</h2>
       <Heatmap
-        S={S}
+        S={S.heatmapMetric === 'vol' ? S : logS}
         metric={S.heatmapMetric === 'vol' ? 'vol' : 'time'}
         onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
-        onDay={iso => { const ws = workouts.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso); else dayOverrideSheet(iso) }}
+        onDay={iso => { const ws = logged.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso); else dayOverrideSheet(iso) }}
       />
     </div> },
-      { id: 'recent', node: workouts.length > 0 && <div>
+      { id: 'recent', node: logged.length > 0 && <div>
       <div className="row between stats-list-h">
         <h4 className="sec" style={{ margin: 0 }}>{t('Recent workouts')}</h4>
-        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {workouts.length}</Button>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {logged.length}</Button>
       </div>
       <div className="list">{recent.map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
     </div> },
