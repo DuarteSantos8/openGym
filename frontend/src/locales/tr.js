@@ -3275,6 +3275,7 @@ export default {
   "Workout finished": "Antrenman bitti",
   "New personal record": "Yeni kişisel rekor",
   "Weigh-in logged": "Tartı kaydedildi",
+  "Workout started": "Antrenman başladı",
   "Paste the URL your tool gave you.": "Aracının verdiği URL'yi yapıştır.",
   "That does not look like a URL.": "Bu bir URL'ye benzemiyor.",
   "It has to start with https://.": "https:// ile başlamalı.",

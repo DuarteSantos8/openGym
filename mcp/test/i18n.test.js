@@ -29,6 +29,8 @@ describe('MCP localization', () => {
     }
     expect(TOOLS.find(tool => tool.name === 'get_workout').description).toContain('form_videos')
     expect(TOOLS.find(tool => tool.name === 'get_bodyweight').description).toContain('daily_value')
+    expect(TOOLS.find(tool => tool.name === 'get_measurements').description).toContain('misure corporee')
+    expect(TOOLS.find(tool => tool.name === 'muscle_balance').schema.from.description).toContain('Data iniziale')
     expect(t('source_programme')).toContain('%1RM')
     expect(t('weekday_names')).toEqual(['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'])
     expect(policyName('linear')).toBe('Progressione lineare')
@@ -61,7 +63,7 @@ describe('MCP localization', () => {
     expect(localeCode()).toBe('en')
     expect(TOOLS.map(tool => tool.name)).toEqual([
       'list_routines', 'get_routine', 'preview_session', 'get_week_plan', 'list_workouts',
-      'get_workout', 'get_bodyweight', 'estimate_1rm', 'muscle_balance', 'get_programme', 'search_exercises'
+      'get_workout', 'get_bodyweight', 'get_measurements', 'estimate_1rm', 'muscle_balance', 'get_programme', 'search_exercises'
     ])
     expect(TOOLS.find(tool => tool.name === 'list_routines').description).toBe(
       "List the workout routines saved in the user's openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today's workout."

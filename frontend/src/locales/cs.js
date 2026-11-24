@@ -3253,6 +3253,7 @@ export default {
   'Workout finished': 'Trénink dokončen',
   'New personal record': 'Nový osobní rekord',
   'Weigh-in logged': 'Vážení zapsáno',
+  'Workout started': 'Trénink zahájen',
   'Paste the URL your tool gave you.': "Vlož URL adresu, kterou ti dal tvůj nástroj.",
   'That does not look like a URL.': 'Tohle nevypadá jako URL.',
   'It has to start with https://.': "Musí začínat na https://.",

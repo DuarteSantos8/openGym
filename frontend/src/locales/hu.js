@@ -3278,6 +3278,7 @@ export default {
   "Workout finished": "Edzés befejezve",
   "New personal record": "Új egyéni rekord",
   "Weigh-in logged": "Mérés rögzítve",
+  "Workout started": "Edzés elkezdve",
   "Paste the URL your tool gave you.": "Illeszd be az URL-t, amit az eszközöd adott.",
   "That does not look like a URL.": "Ez nem tűnik URL-nek.",
   "It has to start with https://.": "https://-sel kell kezdődnie.",

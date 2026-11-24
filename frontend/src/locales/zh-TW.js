@@ -3268,6 +3268,7 @@ export default {
   "Workout finished": "訓練結束",
   "New personal record": "新的個人紀錄",
   "Weigh-in logged": "已記錄體重",
+  "Workout started": "訓練開始",
   "Paste the URL your tool gave you.": "貼上你的工具給的 URL。",
   "That does not look like a URL.": "這看起來不像 URL。",
   "It has to start with https://.": "必須以 https:// 開頭。",

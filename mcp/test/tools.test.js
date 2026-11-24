@@ -1504,3 +1504,77 @@ describe('search_exercises (sub-connect-146)', () => {
     expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'off', bodyweight: 'view' })).toBe(false)
   })
 })
+
+/* ---------- muscle_balance: a window of dates (#1099, the idea of @danpetrv's #1099) ---------- */
+
+describe('muscle_balance from/to', () => {
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+  const daysAgo = n => iso(new Date(Date.now() - n * 86400000))
+  const seed = () => {
+    S.workouts = Array.from({ length: 20 }, (_, i) => ({ id: 'd' + i, d: daysAgo(i), entries: [{ id: '0025', sets: [{ done: true, w: 100, r: 5 }] }] }))
+    _seedStateForTests(S)
+  }
+  test('a past window counts its own whole days, both ends included', () => {
+    seed()
+    const r = call('muscle_balance', { from: daysAgo(13), to: daysAgo(7) })
+    expect(r.workouts_in_period).toBe(7)
+    expect(r).toMatchObject({ from: daysAgo(13), to: daysAgo(7), cutoff_iso: daysAgo(13) })
+    expect(r.period).toBeUndefined()
+    expect(r.worked.length).toBeGreaterThan(0)
+  })
+  test('from alone runs to today and agrees with period week; to alone has no lower bound', () => {
+    seed()
+    expect(call('muscle_balance', { from: daysAgo(6) }).workouts_in_period).toBe(call('muscle_balance', { period: 'week' }).workouts_in_period)
+    const upTo = call('muscle_balance', { to: daysAgo(10) })
+    expect(upTo.workouts_in_period).toBe(10)
+    expect(upTo.cutoff_iso).toBeNull()
+  })
+  test('the window is checked: one of period or dates, and from before to', () => {
+    seed()
+    expect(() => call('muscle_balance', {})).toThrow(/period/)
+    expect(() => call('muscle_balance', { period: 'week', from: daysAgo(3) })).toThrow(/not both/)
+    expect(() => call('muscle_balance', { from: daysAgo(1), to: daysAgo(3) })).toThrow(/after/)
+  })
+})
+
+/* ---------- get_measurements (#1205, the idea of @aleixalonso's #1205) ---------- */
+
+describe('get_measurements', () => {
+  const seed = () => {
+    S.customMeasurements = [{ id: 'cm1', name: 'Neck relaxed', unit: 'in' }, { id: 'cm2', name: 'Grip', unit: 'kg' }, { id: 'cm3', name: 'Sleep score', unit: 'none' }]
+    S.measurements = [
+      { d: '2026-07-01', waist: 86.4, bodyFat: 18.2, bpSys: 128, bpDia: 82, other: [{ id: 'cm1', name: 'Neck relaxed', value: 38.1, unit: 'in' }, { id: 'cm3', value: 7 }] },
+      { d: '2026-07-10', waist: 85.1, note: 'after the holidays', other: [{ id: 'cm2', value: 41.5, unit: 'kg' }] },
+      // A second row for the same day: one check-in, folded the way the screen folds it.
+      { d: '2026-07-10', chest: 101 },
+      { d: '2026-07-20', waist: 84.0, bodyFat: 17.5 },
+    ]
+    _seedStateForTests(S)
+  }
+  test('entries per day, units and labels per field, the change over the window', () => {
+    seed()
+    const r = call('get_measurements')
+    expect(r.count).toBe(3)
+    expect(r.entries.map(e => e.date)).toEqual(['2026-07-01', '2026-07-10', '2026-07-20'])
+    expect(r.entries[1]).toEqual({ date: '2026-07-10', values: { chest: 101, waist: 85.1, 'other:cm2': 41.5 }, note: 'after the holidays' })
+    expect(r.units).toMatchObject({ waist: 'cm', bodyFat: '%', bpSys: 'mmHg', 'other:cm1': 'cm', 'other:cm2': 'kg', 'other:cm3': null })
+    expect(r.labels).toMatchObject({ waist: 'Waist', bodyFat: 'Body fat', 'other:cm1': 'Neck relaxed' })
+    expect(r.change.waist).toEqual({ from: { date: '2026-07-01', value: 86.4 }, to: { date: '2026-07-20', value: 84 }, delta: -2.4 })
+    expect(r.change.bodyFat.delta).toBe(-0.7)
+    expect(r.change.chest).toBeUndefined()   // one reading is no change
+    expect(r.latest).toEqual({ date: '2026-07-20', values: { waist: 84, bodyFat: 17.5 } })
+    // Absent, not 0, where nothing was measured.
+    expect('bodyFat' in r.entries[1].values).toBe(false)
+  })
+  test('a window and a choice of fields, by key or by name', () => {
+    seed()
+    const r = call('get_measurements', { from: '2026-07-05', to: '2026-07-15', fields: ['waist', 'grip'] })
+    expect(r.entries).toEqual([{ date: '2026-07-10', values: { waist: 85.1, 'other:cm2': 41.5 }, note: 'after the holidays' }])
+    expect(r.fields).toEqual(['waist', 'other:cm2'])
+  })
+  test('nothing in the window says so; from after to is refused', () => {
+    seed()
+    expect(call('get_measurements', { from: '2099-01-01' })).toMatchObject({ count: 0, entries: [], latest: null, note: expect.any(String) })
+    expect(() => call('get_measurements', { from: '2026-07-10', to: '2026-07-01' })).toThrow(/after/)
+  })
+})

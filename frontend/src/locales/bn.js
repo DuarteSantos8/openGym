@@ -3354,6 +3354,7 @@ export default {
   "Workout finished": "ওয়ার্কআউট শেষ",
   "New personal record": "নতুন ব্যক্তিগত রেকর্ড",
   "Weigh-in logged": "ওজন মাপা লগ হয়েছে",
+  "Workout started": "ওয়ার্কআউট শুরু",
   "Paste the URL your tool gave you.": "আপনার টুল যে URL দিয়েছে সেটি পেস্ট করুন।",
   "That does not look like a URL.": "এটি URL-এর মতো দেখাচ্ছে না।",
   "It has to start with https://.": "এটি https:// দিয়ে শুরু হতে হবে।",

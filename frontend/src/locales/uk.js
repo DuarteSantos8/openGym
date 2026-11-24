@@ -3272,6 +3272,7 @@ export default {
   "Workout finished": "Тренування завершено",
   "New personal record": "Новий особистий рекорд",
   "Weigh-in logged": "Зважування записано",
+  "Workout started": "Тренування розпочато",
   "Paste the URL your tool gave you.": "Встав URL, який дав твій інструмент.",
   "That does not look like a URL.": "Це не схоже на URL.",
   "It has to start with https://.": "Він має починатися з https://.",

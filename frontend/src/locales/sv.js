@@ -3322,6 +3322,7 @@ export default {
   "Workout finished": "Pass avslutat",
   "New personal record": "Nytt personligt rekord",
   "Weigh-in logged": "Vägning loggad",
+  "Workout started": "Pass startat",
   "Paste the URL your tool gave you.": "Klistra in URL:en som ditt verktyg gav dig.",
   "That does not look like a URL.": "Det ser inte ut som en URL.",
   "It has to start with https://.": "Den måste börja med https://.",

@@ -3278,6 +3278,7 @@ export default {
   "Workout finished": "Treniruotė baigta",
   "New personal record": "Naujas asmeninis rekordas",
   "Weigh-in logged": "Svorio matavimas įrašytas",
+  "Workout started": "Treniruotė pradėta",
   "Paste the URL your tool gave you.": "Įklijuokite URL, kurį pateikė jūsų įrankis.",
   "That does not look like a URL.": "Tai neatrodo kaip URL.",
   "It has to start with https://.": "Jis turi prasidėti https://.",

@@ -3275,6 +3275,7 @@ export default {
   "Workout finished": "운동 완료",
   "New personal record": "새 개인 기록",
   "Weigh-in logged": "체중 기록됨",
+  "Workout started": "운동 시작",
   "Paste the URL your tool gave you.": "도구에서 받은 URL을 붙여 넣으세요.",
   "That does not look like a URL.": "URL처럼 보이지 않아요.",
   "It has to start with https://.": "https://로 시작해야 해요.",

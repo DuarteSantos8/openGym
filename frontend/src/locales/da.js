@@ -3248,6 +3248,7 @@ export default {
   "Workout finished": "Træning afsluttet",
   "New personal record": "Ny personlig rekord",
   "Weigh-in logged": "Vejning logget",
+  "Workout started": "Træning startet",
   "Paste the URL your tool gave you.": "Indsæt den URL, dit værktøj gav dig.",
   "That does not look like a URL.": "Det ligner ikke en URL.",
   "It has to start with https://.": "Den skal starte med https://.",

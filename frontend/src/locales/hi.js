@@ -3275,6 +3275,7 @@ export default {
   "Workout finished": "वर्कआउट ख़त्म",
   "New personal record": "नया पर्सनल रिकॉर्ड",
   "Weigh-in logged": "वज़न दर्ज हुआ",
+  "Workout started": "वर्कआउट शुरू",
   "Paste the URL your tool gave you.": "अपने टूल से मिला URL पेस्ट करें।",
   "That does not look like a URL.": "यह URL जैसा नहीं दिखता।",
   "It has to start with https://.": "यह https:// से शुरू होना चाहिए।",

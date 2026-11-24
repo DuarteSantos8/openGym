@@ -3253,6 +3253,7 @@ export default {
   'Workout finished': 'Buổi tập đã kết thúc',
   'New personal record': 'Kỷ lục cá nhân mới',
   'Weigh-in logged': 'Đã ghi lần cân',
+  'Workout started': 'Đã bắt đầu buổi tập',
   'Paste the URL your tool gave you.': 'Dán URL mà công cụ của bạn cung cấp.',
   'That does not look like a URL.': 'Cái này trông không giống URL.',
   'It has to start with https://.': 'Phải bắt đầu bằng https://.',

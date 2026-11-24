@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
+import zlib from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 import {
   generateRegistrationOptions, verifyRegistrationResponse,
@@ -529,6 +530,9 @@ function writeStateAs(uid, fn, { skipIf = null } = {}) {
 // → { status, body } for the answer.
 function commitState(uid, cur, state, { overRead = false, stamped = false } = {}) {
   const curRev = cur?._rev || 0;
+  // The workout running on the device is never stored, but its start is news to a webhook that
+  // asked for workout.started (#1152): kept aside for the integrations below.
+  const running = state.active && typeof state.active === 'object' && !Array.isArray(state.active) ? state.active : null;
   delete state.active;              // in-progress workouts stay device-local
   // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
   // only moves forward: a write without it, or with an older one — a client from before it, a
@@ -579,7 +583,7 @@ function commitState(uid, cur, state, { overRead = false, stamped = false } = {}
   }
   // A finished workout, a record or a weigh-in the profile's integrations asked to hear about:
   // queued for delivery (integrations/outbox.js), never sent from inside this request.
-  try { integrations.onStateWrite(uid, cur, state); } catch (e) { console.error('integrations onStateWrite', e); }
+  try { integrations.onStateWrite(uid, cur, state, { active: running }); } catch (e) { console.error('integrations onStateWrite', e); }
   return { status: 200, body: { ok: true, ts: state._ts || null, rev: curRev + 1, wid: state._wid } };
 }
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
@@ -983,7 +987,20 @@ function json(res, code, obj, extraHeaders) {
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
-function readBody(req) {
+// `gzip`: the route takes a body sent with Content-Encoding: gzip (PUT /api/data, the sync push,
+// #1489). The wire cap above still holds, and so does the same cap on what the body unzips to:
+// a few KB that would grow past MAX_BODY stop unzipping right there (maxOutputLength) and are a
+// 413 like any other big body, so a gzip bomb costs the server 5 MiB at most. Only a route that
+// asks, after its session check: a stranger's 5 KB never buys 5 MiB of unzipping. Everywhere
+// else, and on any route for a body without the header, nothing changed.
+const gunzipBody = raw => {
+  try { return zlib.gunzipSync(raw, { maxOutputLength: MAX_BODY }); }
+  catch (e) {
+    if (e && e.code === 'ERR_BUFFER_TOO_LARGE') throw new HttpError(413, 'body too large');
+    throw new HttpError(400, 'invalid gzip');
+  }
+};
+function readBody(req, { gzip = false } = {}) {
   return new Promise((resolve, reject) => {
     let size = 0, over = false; const chunks = [];
     req.on('data', d => {
@@ -1016,8 +1033,17 @@ function readBody(req) {
       if (!/^application\/json\s*(;|$)/i.test(req.headers['content-type'] || '')) {
         return reject(new HttpError(415, 'content-type must be application/json'));
       }
+      let raw = Buffer.concat(chunks);
+      if (gzip) {
+        const enc = String(req.headers['content-encoding'] || '').trim().toLowerCase();
+        if (enc === 'gzip') {
+          try { raw = gunzipBody(raw); } catch (e) { return reject(e); }
+        } else if (enc && enc !== 'identity') {
+          return reject(new HttpError(415, 'content-encoding must be gzip or none'));
+        }
+      }
       let body;
-      try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+      try { body = JSON.parse(raw.toString('utf8')); }
       catch { return reject(new HttpError(400, 'invalid json')); }
       // Every handler reads fields off the result, so a JSON `null`, string, number or array is
       // as much a client mistake as unparseable text — refused once here rather than dereferenced
@@ -2579,6 +2605,9 @@ const routes = {
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a
       // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
+      // PUT /api/data takes a gzipped body (readBody, #1489). For a session only, which is who
+      // pushes; an older server leaves it out and the app sends the body plain, as it always did.
+      ...(readSession(req) ? { gzip_body: true } : {}),
       ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
       ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
@@ -3181,7 +3210,7 @@ const routes = {
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    const body = await readBody(req);
+    const body = await readBody(req, { gzip: true });
     // The upload awaited: the account may have been deleted meanwhile (removeAccount), and a write
     // now would put its whole history back on disk with no profile left to remove it.
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
@@ -3702,7 +3731,8 @@ const server = http.createServer(async (req, res) => {
       // for an Access application that passes OPTIONS through to the origin.
       // X-OpenGym-Account: the account a media upload is meant for (GHSA-699c-6p5r-q574).
       // PATCH and If-Match: a new version of a shared item (library/routes.js).
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match',
+      // Content-Encoding: a paired phone's gzipped sync push (readBody, #1489).
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match, Content-Encoding',
       'Access-Control-Max-Age': '86400',
       ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });
