@@ -5969,4 +5969,7 @@ export default {
   "Start another session": "एक और सेशन शुरू करें",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "एक या अधिक रूटीन चुनें। सेट, रेप्स और वज़न इसके बाद।",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} आपके पिछले वज़न {1} से 15% से ज़्यादा अलग है।",
+  "Save as typed": "जैसा लिखा वैसा सेव करें",
 }

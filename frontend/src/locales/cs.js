@@ -5935,4 +5935,7 @@ export default {
   "Start another session": "Začít další trénink",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Vyber jednu nebo víc rutin. Série, opakování a váha přijdou potom.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} se od posledního vážení ({1}) liší o víc než 15 %.",
+  "Save as typed": "Uložit, jak je",
 }

@@ -5969,4 +5969,7 @@ export default {
   "Start another session": "한 세션 더 시작",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "루틴을 하나 이상 고르세요. 세트, 반복, 무게는 그다음이에요.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}은(는) 지난 체중 {1}보다 15% 넘게 차이 나요.",
+  "Save as typed": "입력한 대로 저장",
 }

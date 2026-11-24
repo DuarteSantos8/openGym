@@ -5980,4 +5980,7 @@ export default {
   "Start another session": "เริ่มอีกเซสชัน",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "เลือกรูทีนหนึ่งอันขึ้นไป เซ็ต จำนวนครั้ง และน้ำหนักตามมาทีหลัง",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} ต่างจากน้ำหนักครั้งล่าสุด {1} เกิน 15%",
+  "Save as typed": "บันทึกตามที่พิมพ์",
 }

@@ -5901,4 +5901,7 @@ export default {
   "Start another session": "もう1回トレーニングを始める",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "ルーティンを1つ以上選んでください。セット・回数・重量はこのあとです。",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}は前回の体重 {1} から15%以上離れています。",
+  "Save as typed": "このまま保存",
 }

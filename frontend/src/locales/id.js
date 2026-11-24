@@ -5934,4 +5934,7 @@ export default {
   "Start another session": "Mulai sesi lain",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Pilih satu rutinitas atau lebih. Set, repetisi, dan beban menyusul.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} berbeda lebih dari 15% dari timbangan terakhirmu, {1}.",
+  "Save as typed": "Simpan apa adanya",
 };

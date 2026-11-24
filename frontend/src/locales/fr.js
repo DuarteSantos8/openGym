@@ -5969,4 +5969,7 @@ export default {
   "Start another session": "Démarrer une autre séance",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Choisis une ou plusieurs routines. Séries, répétitions et charge viennent ensuite.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}, c’est plus de 15 % d’écart avec ta dernière pesée, {1}.",
+  "Save as typed": "Enregistrer tel quel",
 }

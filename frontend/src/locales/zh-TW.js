@@ -5962,4 +5962,7 @@ export default {
   "Start another session": "再開始一次訓練",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "選一個或多個課表。組數、次數和重量隨後設定。",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} 與上次量體重的 {1} 相差超過 15%。",
+  "Save as typed": "照輸入儲存",
 }

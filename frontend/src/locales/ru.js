@@ -5973,4 +5973,7 @@ export default {
   "Start another session": "Начать ещё одну тренировку",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Выберите одну программу или несколько. Подходы, повторы и вес будут дальше.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} отличается больше чем на 15% от прошлого взвешивания ({1}).",
+  "Save as typed": "Сохранить как есть",
 }

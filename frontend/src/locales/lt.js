@@ -5965,4 +5965,7 @@ export default {
   "Start another session": "Pradėti dar vieną treniruotę",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Pasirink vieną ar kelias programas. Serijos, kartojimai ir svoris bus po to.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} skiriasi daugiau nei 15 % nuo paskutinio svėrimo ({1}).",
+  "Save as typed": "Išsaugoti kaip įvesta",
 }

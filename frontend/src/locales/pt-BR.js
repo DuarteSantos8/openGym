@@ -4389,6 +4389,9 @@ export const PT_BR_OVERRIDES = {
   "Start another session": "Começar outra sessão",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Escolha uma rotina ou mais. Séries, repetições e peso vêm depois.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} está mais de 15% longe da sua última pesagem, {1}.",
+  "Save as typed": "Salvar assim",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

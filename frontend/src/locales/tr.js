@@ -5969,4 +5969,7 @@ export default {
   "Start another session": "Bir seans daha başlat",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Bir ya da daha fazla rutin seç. Setler, tekrarlar ve ağırlık sonra gelir.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0}, son tartın olan {1} değerinden %15’ten fazla farklı.",
+  "Save as typed": "Yazıldığı gibi kaydet",
 }

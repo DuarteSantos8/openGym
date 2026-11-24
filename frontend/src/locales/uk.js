@@ -5966,4 +5966,7 @@ export default {
   "Start another session": "Почати ще одне тренування",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Вибери одну програму або кілька. Підходи, повторення й вага будуть далі.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} відрізняється більш ніж на 15% від останнього зважування ({1}).",
+  "Save as typed": "Зберегти як є",
 }

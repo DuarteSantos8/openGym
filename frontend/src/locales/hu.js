@@ -5972,4 +5972,7 @@ export default {
   "Start another session": "Újabb edzés indítása",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Válassz egy vagy több rutint. A sorozatok, ismétlések és a súly ezután jönnek.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} több mint 15%-kal tér el a legutóbbi mérésedtől ({1}).",
+  "Save as typed": "Mentés így",
 }

@@ -5909,4 +5909,7 @@ export default {
   "Start another session": "Start en træning mere",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Vælg én eller flere rutiner. Sæt, gentagelser og vægt kommer bagefter.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} er mere end 15 % fra din seneste vejning, {1}.",
+  "Save as typed": "Gem som skrevet",
 }

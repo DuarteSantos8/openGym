@@ -6,6 +6,7 @@ import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
+import { weighInOff } from './lib/weigh-in-check.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, byCategories, byEquipment, togglePick, smOf, searchExercises, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
@@ -420,12 +421,28 @@ function BwSheet({ required, onDone, close, initial, edit }) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > todayISO()) { toast(t('Choose a valid date')); return }
     // The check-in before a workout is now; a weigh-in at the same time of a day corrects it.
     const at = required ? timeOf(Date.now()) : cleanTime(time) || (date === todayISO() ? timeOf(Date.now()) : DEFAULT_TIME)
-    update(s => {
-      if (editing) editWeighIn(s, edit.d, edit.id, { d: date, at, w: n })
-      else addWeighIn(s, { d: date, at, w: n })
-    })
-    close()
-    if (onDone) onDone(n); else toast(editing ? t('Weigh-in updated') : t('Weight saved'))
+    const commit = () => {
+      update(s => {
+        if (editing) editWeighIn(s, edit.d, edit.id, { d: date, at, w: n })
+        else addWeighIn(s, { d: date, at, w: n })
+      })
+      close()
+      if (onDone) onDone(n); else toast(editing ? t('Weigh-in updated') : t('Weight saved'))
+    }
+    // Far off the last weigh-in (lib/weigh-in-check.js) asks first, the way a mistyped set does.
+    // An edit is a correction already, and a first weigh-in has nothing to be off from.
+    if (!editing && bw && weighInOff(n, bw.w)) {
+      const kg = x => fmtNum(x) + ' ' + unit
+      confirmSheet({
+        title: t('Is that right?'),
+        message: t('{0} is more than 15% off your last weigh-in, {1}.', kg(n), kg(bw.w)),
+        confirmText: t('Fix it'),
+        cancelText: t('Save as typed'),
+        onCancel: commit,
+      })
+      return
+    }
+    commit()
   }
   const recent = useMemo(() => allReadings(st.bodyweight).reverse().slice(0, 3), [st.bodyweight])
   return <>

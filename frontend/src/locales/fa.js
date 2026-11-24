@@ -5935,4 +5935,7 @@ export default {
   "Start another session": "شروع یک جلسهٔ دیگر",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "یک یا چند روتین انتخاب کن. ست، تکرار و وزن بعدش می‌آید.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} بیش از ۱۵٪ با آخرین وزن‌کشی‌ات، {1}، فاصله دارد.",
+  "Save as typed": "همین را ذخیره کن",
 }

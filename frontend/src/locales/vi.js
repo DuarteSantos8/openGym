@@ -5935,4 +5935,7 @@ export default {
   "Start another session": "Bắt đầu buổi tập khác",
   // --- Add to my plan: several routines at once (#1466) ---
   "Pick one routine or more. Sets, reps and weight come next.": "Chọn một hoặc nhiều lịch tập. Hiệp, reps và mức tạ sẽ đến sau.",
+  // --- weigh-in typo check (idea from #1514) ---
+  "{0} is more than 15% off your last weigh-in, {1}.": "{0} lệch hơn 15% so với lần cân gần nhất, {1}.",
+  "Save as typed": "Lưu như đã nhập",
 };
