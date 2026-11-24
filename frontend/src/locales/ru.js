@@ -6323,4 +6323,5 @@ export default {
   "With an account your training follows you to your other devices. Without one it stays on this device.": "С аккаунтом тренировки доступны и на других ваших устройствах. Без аккаунта они остаются на этом устройстве.",
   "Your training on the server could not be signed out, so nothing was changed. Try again when you are online.": "Не удалось выйти из ваших тренировок на сервере, поэтому ничего не изменилось. Повторите попытку, когда будете в сети.",
   "Delete your training first: in the app, open Settings, then Account, then Delete my account. After that, come back here to delete this account.": "Сначала удалите тренировки: в приложении откройте «Настройки», затем «Аккаунт», затем «Удалить мой аккаунт». После этого вернитесь сюда, чтобы удалить этот аккаунт.",
+  "This browser is not keeping you signed in (private browsing, or its storage is full). Your training stays on this device here.": "Этот браузер не сохраняет вход в аккаунт (приватный режим или его хранилище заполнено). Здесь тренировки остаются на этом устройстве.",
 }

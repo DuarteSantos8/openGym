@@ -159,6 +159,8 @@ export function createAuth({ url, key, fetchImpl = (...a) => globalThis.fetch(..
     session: () => current,
     /** The same, after reading what this browser's storage says now: another tab may have signed in or out. */
     sync,
+    /** Whether the session will still be here after the page is loaded again: signed in, and storage kept it. */
+    lasting: () => !!current && !unsaved,
     /** Calls `fn(session | null)` on every change. Returns the function that stops it. */
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn) },
     fresh,
