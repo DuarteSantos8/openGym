@@ -6,7 +6,7 @@ import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, byCategories, byEquipment, togglePick, smOf, searchExercises, warmSearch, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
@@ -2051,8 +2051,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
     const prof = activeProfile(st)
     return sameMuscleFirst(allExercises(st), likeEx).some(e => !prof || exAvailable(st, e)) ? SAME : ''
   })                                        // '' = all, '★' = chosen, '☆' = favourites, '≈' = same muscle, else a body part
-  const [eq, setEq] = useState('')          // '' = any equipment
-  const [cat, setCat] = useState('')        // '' = any type
+  const [eq, setEq] = useState([])          // [] = any equipment, else any of the picks (Discord)
+  const [cat, setCat] = useState([])        // [] = any type, likewise
   const [showAll, setShowAll] = useState(false)
   // The gym a swap's list is filtered for (#674): null follows the active gym from Settings, ''
   // is all equipment, else a profile's id. Picking one here only filters this list. Switching
@@ -2076,18 +2076,16 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   if (bp === '★') inPart = [...inPart].sort((a, b) => (usage[b.id] - usage[a.id]) || exerciseNameFor(a).localeCompare(exerciseNameFor(b)))
   // The Library's Type row (issue #521), with its fallback: a type the search or muscle group
   // narrowed away is ignored for this view, not forgotten.
-  const { opts: catOpts, on: catOn, list: base } = byCategory(inPart, cat)
+  const { opts: catOpts, on: catOn, list: base } = byCategories(inPart, cat)
   const eqFiltered = (profile && !showAll) ? base.filter(e => exAvailable(gymS, e)) : base
   // What a search found that the gym leaves out, counted under the results.
   const gymHidden = q.trim() ? base.length - eqFiltered.length : 0
-  const eqOpts = equipmentOf(eqFiltered)
-  // Drop the equipment filter if the search narrowed it away, so you never hit a dead end.
-  const eqOn = eqOpts.includes(eq) ? eq : ''
+  // An equipment pick the search narrowed away is dropped for this view, so you never hit a dead end.
+  const { opts: eqOpts, on: eqOn, list: narrowedList } = byEquipment(eqFiltered, eq)
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
   // On the same-muscle list the equipment order wins: what is on the same kit comes first,
   // favourites leading within each half.
   // While searching, what you have logged or planned follows right after them.
-  const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
   const ranked = q.trim() ? sortYoursFirst(narrowedList, st, usage) : sortFavouritesFirst(narrowedList, st)
   const f = bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked
   const showSuggestions = !!like && !q.trim() && bp !== '★' && bp !== '☆'
@@ -2100,10 +2098,10 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   const favCount = (st.favEx || []).length
   const special = bp === '★' || bp === '☆'
   // The Library's live result count (GitLab !31), for the same reason: how many are left.
-  const narrowed = !!(q.trim() || bp || eqOn || catOn)
+  const narrowed = !!(q.trim() || bp || eqOn.length || catOn.length)
   useRevealActiveChip(bpStrip, bp)
-  useRevealActiveChip(eqStrip, eqOn)
-  useRevealActiveChip(catStrip, catOn)
+  useRevealActiveChip(eqStrip, eqOn.join())
+  useRevealActiveChip(catStrip, catOn.join())
   // Close but not exact (a typo too many, most of the words, a similar name), listed under the
   // results once you have scrolled to their end, so a search almost never ends on nothing.
   // Worked out a beat behind the typing (useDeferredValue): the list itself never waits for it.
@@ -2142,7 +2140,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
     {like && profiles.length > 0 && <div className="sect-b" style={{ marginBottom: 12 }}>
       <SelectRow icon="house" title={t('Gym')} value={profiles.some(p => p.id === profile?.id) ? profile.id : ''}
         options={[{ value: '', label: t('All equipment') }, ...profiles.map(p => ({ value: p.id, label: p.name }))]}
-        onChange={id => { setGym(id); setShowAll(false); setEq(''); setCat(''); setShown(50) }} />
+        onChange={id => { setGym(id); setShowAll(false); setEq([]); setCat([]); setShown(50) }} />
       <p className="small dim" style={{ margin: '6px 4px 0' }}>{t('Just for this list. Your gym in Settings stays put.')}</p>
     </div>}
     {/* .picker-search is what index.css keys the keyboard-aware sheet layout on: the sheet
@@ -2165,18 +2163,18 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
         those are cross-body-part views where a stale equipment filter would be confusing. */}
     <div className="chips" ref={bpStrip} style={{ margin: eqOpts.length > 1 || catOpts.length > 1 ? '10px 0 6px' : '10px 0' }}>
       {likeTg && <button className={'chip nocap' + (bp === SAME ? ' on' : '')} onClick={() => { setBp(SAME); setShown(50) }}><Icon name="figureStrength" style={{ fontSize: 'var(--fs-caption)', display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Same muscle: {0}', t(MUSCLE_NAME[likeTg] || likeTg))}</button>}
-      {favCount > 0 && <button className={'chip' + (bp === '☆' ? ' on' : '')} onClick={() => { setBp('☆'); setEq(''); setShown(50) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favCount})</button>}
-      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 'var(--fs-caption)', display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
+      {favCount > 0 && <button className={'chip' + (bp === '☆' ? ' on' : '')} onClick={() => { setBp('☆'); setEq([]); setShown(50) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favCount})</button>}
+      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq([]); setShown(50) }}><Icon name="starFill" style={{ fontSize: 'var(--fs-caption)', display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
       <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setShown(50) }}>{t('All')}</button>
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(50) }}>{t(b)}</button>)}
     </div>
     {catOpts.length > 1 && <div className="chips" ref={catStrip} style={{ marginBottom: eqOpts.length > 1 ? 6 : 10 }}>
-      <button className={'chip nocap' + (!catOn ? ' on' : '')} onClick={() => { setCat(''); setShown(50) }}>{t('Any type')}</button>
-      {catOpts.map(x => <button key={x} className={'chip' + (catOn === x ? ' on' : '')} aria-label={nameIn(t('Exercise type'), t(x))} onClick={() => { setCat(x); setShown(50) }}>{t(x)}</button>)}
+      <button className={'chip nocap' + (!catOn.length ? ' on' : '')} aria-pressed={!catOn.length} onClick={() => { setCat([]); setShown(50) }}>{t('Any type')}</button>
+      {catOpts.map(x => <button key={x} className={'chip' + (catOn.includes(x) ? ' on' : '')} aria-pressed={catOn.includes(x)} aria-label={nameIn(t('Exercise type'), t(x))} onClick={() => { setCat(c => togglePick(c, x)); setShown(50) }}>{t(x)}</button>)}
     </div>}
     {eqOpts.length > 1 && <div className="chips" ref={eqStrip} style={{ marginBottom: 10 }}>
-      <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(50) }}>{t('Any equipment')}</button>
-      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
+      <button className={'chip nocap' + (!eqOn.length ? ' on' : '')} aria-pressed={!eqOn.length} onClick={() => { setEq([]); setShown(50) }}>{t('Any equipment')}</button>
+      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn.includes(x) ? ' on' : '')} aria-pressed={eqOn.includes(x)} onClick={() => { setEq(e => togglePick(e, x)); setShown(50) }}>{t(x)}</button>)}
     </div>}
     {/* The Coach's pick, when one is set up (#1003): it knows the workout, the gym and the
         history, and answers in the workout's own sheet (components/WorkoutCoachSheet.jsx). */}

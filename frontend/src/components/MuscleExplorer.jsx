@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/useStore.js'
-import { BODYPARTS, allExercises, equipmentOf, searchExercises } from '../lib/exercises.js'
+import { BODYPARTS, allExercises, byEquipment, togglePick, searchExercises } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount, exerciseNameText } from '../lib/format.js'
@@ -29,7 +29,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
   const [openGroup, setOpenGroup] = useState(null)
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')
-  const [eq, setEq] = useState('')
+  const [eq, setEq] = useState([])   // several picks, as in the Library
   const [shown, setShown] = useState(40)
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
   const moreRef = useAutoMore(() => setShown(s => s + 40))
@@ -50,7 +50,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
     }
     return n
   }, [catalog])
-  const reset = () => { setEq(''); setShown(40) }
+  const reset = () => { setEq([]); setShown(40) }
   const pick = muscle => { setTerms(cur => toggleTerm(cur, muscle)); reset() }
   const pickGroup = g => {
     // A group of one muscle is just that muscle.
@@ -76,20 +76,19 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
   const favOn = bp === FAV
   const favHere = targeted.filter(e => isFav(S, e.id)).length
   const base = searchExercises(targeted.filter(e => favOn ? isFav(S, e.id) : (!bp || e.bp === bp)), q)
-  const eqOpts = equipmentOf(base)
-  const eqOn = eqOpts.includes(eq) ? eq : ''
+  const { opts: eqOpts, on: eqOn, list: byEq } = byEquipment(base, eq)
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
-  const exercises = sortFavouritesFirst(eqOn ? base.filter(e => e.eq === eqOn) : base, S)
+  const exercises = sortFavouritesFirst(byEq, S)
   const choose = ex => onPick ? onPick(ex) : onDetail(ex)
   // The live count and the × of the Library's search (#338): the count while a search or a
   // filter narrows the muscle's list, the × while there is text.
-  const narrowed = !!(q.trim() || bp || eqOn || terms.length > 1)
+  const narrowed = !!(q.trim() || bp || eqOn.length || terms.length > 1)
 
   return <>
     {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
       <Icon name="kettlebell" style={{ fontSize: 'var(--fs-footnote)' }} />
       {showAll ? t('Showing all equipment') : t('Showing what you have in "{0}"', profile.name)}
-      <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 'var(--fs-caption)' }} onClick={() => { setShowAll(v => !v); setEq(''); setShown(40) }}>
+      <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 'var(--fs-caption)' }} onClick={() => { setShowAll(v => !v); setEq([]); setShown(40) }}>
         {showAll ? t('Filter by "{0}"', profile.name) : t('Show all equipment')}
       </button>
     </div>}
@@ -136,14 +135,14 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
           eqOn fallback above drops it only for this view if the new body part has nothing under
           it, without forgetting the choice. "All" clears it, since it spans every body part. */}
       <div className="chips" style={{ marginBottom: eqOpts.length > 1 ? 8 : 12 }}>
-        {favIds(S).length > 0 && <button className={'chip' + (favOn ? ' on' : '')} onClick={() => { setBp(FAV); setEq(''); setShown(40) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favHere})</button>}
+        {favIds(S).length > 0 && <button className={'chip' + (favOn ? ' on' : '')} onClick={() => { setBp(FAV); setEq([]); setShown(40) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favHere})</button>}
         {/* "Body part: Shoulders" for a screen reader: the muscle groups above have a Shoulders too (P4). */}
-        <button className={'chip nocap' + (!bp ? ' on' : '')} aria-label={nameIn(t('Body part'), t('All'))} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
+        <button className={'chip nocap' + (!bp ? ' on' : '')} aria-label={nameIn(t('Body part'), t('All'))} onClick={() => { setBp(''); setEq([]); setShown(40) }}>{t('All')}</button>
         {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} aria-label={nameIn(t('Body part'), t(b))} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>
       {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
-        <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
-        {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</button>)}
+        <button className={'chip nocap' + (!eqOn.length ? ' on' : '')} aria-pressed={!eqOn.length} onClick={() => { setEq([]); setShown(40) }}>{t('Any equipment')}</button>
+        {eqOpts.map(x => <button key={x} className={'chip' + (eqOn.includes(x) ? ' on' : '')} aria-pressed={eqOn.includes(x)} onClick={() => { setEq(e => togglePick(e, x)); setShown(40) }}>{t(x)}</button>)}
       </div>}
       <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
         {exercises.slice(0, shown).map(e => {
