@@ -346,6 +346,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
  */
 final class WatchLink: NSObject, WCSessionDelegate {
     static let shared = WatchLink()
+    /// A new event from the watch is on disk (userInfo "event": it as sent).
+    static let eventStored = Notification.Name("OpenGymWatchEventStored")
     /// The page's plugin, once it loaded: told of new events and of the link changing.
     weak var plugin: WatchBridgePlugin?
     let queue = DispatchQueue(label: "ch.opengym.watch-events")
@@ -399,14 +401,17 @@ final class WatchLink: NSObject, WCSessionDelegate {
               let id = event["id"] as? String else { return nil }
         // Stored (or there already) is what the answer to the watch means: an event that could not
         // be written is not named, so the watch keeps sending it instead of counting it delivered.
-        var stored = true
+        var stored = true, added = false
         queue.sync {
             var events = self.readEvents()
             if !events.contains(where: { ($0["id"] as? String) == id }) {
                 events.append(event)
                 stored = self.writeEvents(events)
+                added = stored
             }
         }
+        // The rest alarm follows a +15, −15 or Skip at the wrist while the page sleeps (RestAlertPlugin).
+        if added { NotificationCenter.default.post(name: WatchLink.eventStored, object: nil, userInfo: ["event": event]) }
         return stored ? id : nil
     }
 
