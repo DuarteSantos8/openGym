@@ -224,7 +224,11 @@ export function unpackCurve(c, end = Infinity) {
   const step = Number(c.step) || CURVE_STEP_S
   const s = Number(c.s), ms = step * 1000
   if (!Number.isFinite(s) || !(step > 0)) return []
-  const last = Number(end) > s ? Number(end) : Infinity
+  // An end at or before the curve's first slot (a workout made shorter than where its readings
+  // start) leaves nothing; no end at all (or none given) leaves every slot.
+  const e = Number(end)
+  if (e > 0 && e <= s) return []
+  const last = e > s ? e : Infinity
   const out = []
   c.v.forEach((bpm, i) => {
     // A slot that starts at or after the end is left out (the workout was made shorter after the

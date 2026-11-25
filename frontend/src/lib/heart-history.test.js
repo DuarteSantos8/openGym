@@ -167,6 +167,10 @@ describe('packCurve', () => {
     expect(unpackCurve(null)).toEqual([])
     // the last slot's reading stays inside the workout
     expect(unpackCurve({ s: 1000, step: 5, v: [100, 110] }, 7000)).toEqual([[3500, 100], [7000, 110]])
+    // a workout made shorter than where its kept readings start: nothing, not every slot
+    expect(unpackCurve({ s: 10000, step: 5, v: [120, 130] }, 9000)).toEqual([])
+    expect(unpackCurve({ s: 10000, step: 5, v: [120, 130] }, 10000)).toEqual([])
+    expect(unpackCurve({ s: 10000, step: 5, v: [120, 130] })).toEqual([[12500, 120], [17500, 130]])
   })
   it('leaves out what was kept past a workout made shorter since, and a curve with no step forward', () => {
     // three hours kept, the workout then set to one hour: no reading piles up at its end
