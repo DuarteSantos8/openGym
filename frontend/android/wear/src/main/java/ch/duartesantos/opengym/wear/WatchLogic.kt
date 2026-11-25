@@ -10,8 +10,8 @@ import kotlin.math.min
 
 /*
  * The 1.4.5 watch redesign's rules, as plain functions: the Kotlin twins of the Apple Watch's
- * WatchCore Plan.swift, Overview.swift, SetNav.swift, RestMath.swift, Outbox.swift (waitingSets,
- * SyncState) and the Effort / WeighIn / Countdown / Idle / TouchLock parts of SessionCore.swift.
+ * WatchCore Plan.swift, Overview.swift, SetNav.swift, RestMath.swift, RestReadiness.swift, Outbox.swift
+ * (waitingSets, SyncState) and the Effort / WeighIn / Countdown / Idle / TouchLock parts of SessionCore.swift.
  * The screens (ui/) only call these, so both watches behave alike. Tested in WatchLogicTest.kt.
  */
 
@@ -242,6 +242,59 @@ object RestMath {
 
     /** The last three seconds, as shown (the clock rounds up). */
     fun warn(leftSec: Double): Boolean = kotlin.math.ceil(leftSec) in 1.0..3.0
+}
+
+/**
+ * "Ready" during a rest by heart rate (the phone's watch settings, off by default): once the pulse
+ * is back down after a set, the rest screen says so and the wrist taps once. Advice only: the
+ * countdown still runs as the limit, nothing ends a rest by itself. The Apple Watch's
+ * RestReadiness.swift, its tests case for case; the rule: docs/dev/REST_BY_HEART_RATE.md.
+ * Times in ms, readings (time, bpm) as WearStore keeps them; zeros are no reading.
+ */
+object RestReadiness {
+    /** Never before this much rest: the pulse dips right after a set before it settles. */
+    const val FLOOR_MS = 30_000L
+    /** Under the target this long, without a reading above it in between. */
+    const val HOLD_MS = 5_000L
+    /** A reading older than this says nothing about now. */
+    const val STALE_MS = 10_000L
+    /** The automatic target starts from the average over this long before the set began. */
+    const val BEFORE_MS = 60_000L
+    /** The automatic target: a quarter of the set's rise above its start, but at least 5 bpm above it. */
+    const val AUTO_FRACTION = 0.25
+    const val AUTO_MIN_ABOVE = 5.0
+
+    data class Verdict(val ready: Boolean, val since: Long?)
+
+    /** The target for one rest, null when the setting is off or there is nothing to go by. */
+    fun target(settings: HrRestSettings?, startHr: Double?, peak: Double?): Double? {
+        if (settings?.on != true) return null
+        settings.bpm?.takeIf { it > 0 && it.isFinite() }?.let { return it }
+        val base = startHr ?: return null
+        val rise = max(0.0, (peak ?: base) - base)
+        return base + max(AUTO_MIN_ABOVE, rise * AUTO_FRACTION)
+    }
+
+    /** The same from the workout's readings, for the set that ran from `setStart` to `setEnd` (its tick, where the rest begins). */
+    fun target(settings: HrRestSettings?, readings: List<Pair<Long, Int>>, setStart: Long, setEnd: Long): Double? {
+        val pulse = readings.filter { it.second > 0 }
+        val lead = pulse.filter { it.first >= setStart - BEFORE_MS && it.first < setStart }.map { it.second.toDouble() }
+        val peak = pulse.filter { it.first in setStart..setEnd }.maxOfOrNull { it.second.toDouble() }
+        return target(settings, if (lead.isEmpty()) null else lead.average(), peak)
+    }
+
+    /**
+     * Ready once the rest has run FLOOR_MS, the latest reading is fresh, and the run of readings at
+     * or under `target` that it ends spans HOLD_MS. `since` is where that run starts (null when the
+     * latest reading is above the target or stale). Only readings since `restStart` count.
+     */
+    fun evaluate(readings: List<Pair<Long, Int>>, restStart: Long, now: Long, target: Double): Verdict {
+        val inRest = readings.filter { it.second > 0 && it.first in restStart..now }.sortedBy { it.first }
+        val latest = inRest.lastOrNull()
+        if (latest == null || now - latest.first > STALE_MS || latest.second > target) return Verdict(false, null)
+        val since = inRest.asReversed().takeWhile { it.second <= target }.last().first
+        return Verdict(now - restStart >= FLOOR_MS && latest.first - since >= HOLD_MS, since)
+    }
 }
 
 object Effort {

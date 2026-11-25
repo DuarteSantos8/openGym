@@ -170,6 +170,15 @@ data class WatchSettings(
     val forgotten: ForgottenSettings? = null,
     /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
     val birthYear: Int? = null,
+    /** "Ready" during a rest by heart rate (RestReadiness in WatchLogic.kt); null from an older phone: off. */
+    val hrRest: HrRestSettings? = null,
+)
+
+/** The phone's "Ready by heart rate": `bpm` a fixed target, null the automatic one. */
+@Serializable
+data class HrRestSettings(
+    val on: Boolean? = null,
+    val bpm: Double? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */

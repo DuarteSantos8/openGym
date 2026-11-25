@@ -43,6 +43,8 @@ const FROM_APP = {
   not_now: 'Not now', workout: 'Workout', muscles: 'Muscles', less: 'Less', more: 'More',
   // Forgotten workouts (1.4.5), the phone's own words.
   still_training: 'Still training?', left_gym: 'Looks like you left the gym', keep_going: 'Keep going', finish_now: 'Finish now',
+  // The rest by heart rate: the phone's rest timer says it too when a rest is over.
+  ready: 'Ready',
 }
 // Built from an app word.
 const COMPOSED = {
