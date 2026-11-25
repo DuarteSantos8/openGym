@@ -122,7 +122,10 @@ export const modelSubstitute = (id, cfg, model) => substitutes.get(substituteKey
  * rung that changes anything, and only on a spec that opts in (`compatLadder`), since OpenAI and
  * the other hosted APIs always say what is wrong. The rungs that worked are remembered per
  * provider, endpoint and model, here for the server and in the device file on the phone. */
-export const COMPAT_STEPS = Object.freeze(['strict', 'json_object', 'tokens', 'temperature', 'plain']);
+export const COMPAT_STEPS = Object.freeze(['strict', 'json_object', 'tokens', 'temperature', 'plain', 'non_reasoning']);
+// A native thinking toggle is not portable: use it only after an explicit refusal,
+// never as a guess while walking a generic gateway's compatibility ladder.
+const GENERIC_COMPAT_STEPS = COMPAT_STEPS.filter(s => s !== 'non_reasoning');
 const compatProfiles = new Map();
 const compatKey = (id, base, model) => `${id} ${base} ${model}`;
 const cleanSteps = steps => (Array.isArray(steps) ? COMPAT_STEPS.filter(s => steps.includes(s)) : []);
@@ -410,11 +413,16 @@ export function httpAdapter(spec) {
         const status = embeddedErrorStatus(res, data);
         if (status) {
           const msg = spec.errorMessage(data) || trim(text, 200);
+          // Some local runtimes report this deterministic decoding limitation as a
+          // 502 (including an in-band SSE error), not a 400. Retrying unchanged cannot
+          // help; keep the schema and select the model's native non-reasoning rail.
+          const reasoningRefusal = id === 'compatible' && (status === 400 || status === 502)
+            && !!body.response_format && /JSON schema.*active reasoning envelope/i.test(msg);
           // An endpoint that will not stream after all: back to one answer, and remembered. A
           // strict gateway that refuses with a 400 naming nothing (#804) loses the stream first,
           // before any rung of the ladder changes the request itself.
           if (status === 400 && useStream && (/\bstream/i.test(msg) || (spec.compatLadder && !namedRungs(msg) && !isModelGone(status, msg))) && stopStreaming()) continue;
-          if (RETRY_STATUSES.has(status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
+          if (!reasoningRefusal && RETRY_STATUSES.has(status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
             continue;
@@ -423,10 +431,10 @@ export function httpAdapter(spec) {
           // without JSON mode; a reasoning model's output-limit field or temperature) goes to the
           // rung for it. A rung that changes nothing (a complaint about a temperature this request
           // never sent) is no retry: asking again would be asking the same wrong thing.
-          const named = status === 400 ? namedRungs(msg) : null;
+          const named = reasoningRefusal ? ['non_reasoning'] : status === 400 ? namedRungs(msg) : null;
           let rung = named ? nextRung(named, true) : null;
           // A 400 that names nothing walks the ladder, on an endpoint that opted in (#804).
-          if (!rung && status === 400 && !named && spec.compatLadder && !isModelGone(status, msg)) rung = nextRung(COMPAT_STEPS);
+          if (!rung && status === 400 && !named && spec.compatLadder && !isModelGone(status, msg)) rung = nextRung(GENERIC_COMPAT_STEPS);
           if (rung && !(signal && signal.aborted)) {
             if (!firstRefusal) firstRefusal = `${status} ${shownError(spec, data, 280)}`;
             steps = rung.steps;
