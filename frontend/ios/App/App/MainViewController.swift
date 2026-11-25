@@ -58,6 +58,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(AppIconPlugin())
         bridge?.registerPluginInstance(NfcTagsPlugin())
         bridge?.registerPluginInstance(VoiceBridgePlugin())
+        bridge?.registerPluginInstance(FormCheckPlugin())
         WidgetPreview.runIfAsked()
         NotificationCenter.default.addObserver(self, selector: #selector(textSizeChanged),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)

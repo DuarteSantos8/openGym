@@ -46,6 +46,7 @@
 		AA0800000000000000000004 /* GymReminderRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000003 /* GymReminderRules.swift */; };
 		AA1461000000000000000002 /* CueAudioLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1461000000000000000001 /* CueAudioLedger.swift */; };
 		AA1440000000000000000002 /* GymMapPickerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1440000000000000000001 /* GymMapPickerPlugin.swift */; };
+		AA1470000000000000000002 /* FormCheckPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1470000000000000000001 /* FormCheckPlugin.swift */; };
 		AA1450000000000000000002 /* VoiceIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1450000000000000000001 /* VoiceIntents.swift */; };
 		AA1450000000000000000004 /* AppShortcuts.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA1450000000000000000003 /* AppShortcuts.strings */; };
 		AA1450000000000000000006 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA1450000000000000000005 /* Localizable.strings */; };
@@ -94,6 +95,7 @@
 		AA0600000000000000000005 /* HealthWriteCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthWriteCore.swift; path = ../WatchCore/Sources/WatchCore/HealthWriteCore.swift; sourceTree = "<group>"; };
 		AA0800000000000000000001 /* GymReminderPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymReminderPlugin.swift; sourceTree = "<group>"; };
 		AA1440000000000000000001 /* GymMapPickerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymMapPickerPlugin.swift; sourceTree = "<group>"; };
+		AA1470000000000000000001 /* FormCheckPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormCheckPlugin.swift; sourceTree = "<group>"; };
 		AA0800000000000000000003 /* GymReminderRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GymReminderRules.swift; path = ../GymReminderCore/Sources/GymReminderCore/GymReminderRules.swift; sourceTree = "<group>"; };
 		AA1461000000000000000001 /* CueAudioLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CueAudioLedger.swift; path = ../CueAudioCore/Sources/CueAudioCore/CueAudioLedger.swift; sourceTree = "<group>"; };
 		AA1450000000000000000001 /* VoiceIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceIntents.swift; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 				AA0800000000000000000003 /* GymReminderRules.swift */,
 				AA1461000000000000000001 /* CueAudioLedger.swift */,
 				AA1440000000000000000001 /* GymMapPickerPlugin.swift */,
+				AA1470000000000000000001 /* FormCheckPlugin.swift */,
 				AA1450000000000000000001 /* VoiceIntents.swift */,
 				AA1450000000000000000003 /* AppShortcuts.strings */,
 				AA1450000000000000000005 /* Localizable.strings */,
@@ -411,6 +414,7 @@
 				AA0800000000000000000004 /* GymReminderRules.swift in Sources */,
 				AA1461000000000000000002 /* CueAudioLedger.swift in Sources */,
 				AA1440000000000000000002 /* GymMapPickerPlugin.swift in Sources */,
+				AA1470000000000000000002 /* FormCheckPlugin.swift in Sources */,
 				AA1450000000000000000002 /* VoiceIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
