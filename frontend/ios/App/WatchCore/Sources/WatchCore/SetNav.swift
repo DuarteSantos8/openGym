@@ -31,6 +31,16 @@ enum SetNav {
         let to = si + d
         return e.sets.indices.contains(to) ? to : nil
     }
+
+    /// Which set the numbers on the wrist belong to, for the targets key: its `sid` when it has
+    /// one, so a set added or removed elsewhere in the exercise keeps them; without one, its row
+    /// and how many rows there are, so a set added or removed on the phone resets them.
+    /// `si` nil: every set is done and the page shows the last one.
+    static func identity(_ e: Entry, _ si: Int?) -> String {
+        guard let si = si else { return "-|\(e.sets.last?.sid ?? "")" }
+        if let sid = e.sets.indices.contains(si) ? e.sets[si].sid : nil, !sid.isEmpty { return "sid:\(sid)" }
+        return "\(e.sets.count)|\(si)"
+    }
 }
 
 enum SetFix {

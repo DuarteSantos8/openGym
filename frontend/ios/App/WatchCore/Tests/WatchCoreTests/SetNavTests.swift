@@ -25,6 +25,72 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(SetNav.step(e, from: 3, by: 1), nil)
     }
 
+    func testIdentityKeepsASetWithSidWhenAnotherSetIsAdded() {
+        var a = row(60, 8); a.sid = "s1"
+        var b = row(60, 8); b.sid = "s2"
+        var c = row(60, 8); c.sid = "s3"
+        let before = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [a, b])
+        let after = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [a, b, c])
+        XCTAssertEqual(SetNav.identity(before, 1), SetNav.identity(after, 1), "a set appended on the phone keeps the wrist edits")
+        let shifted = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [c, a, b])
+        XCTAssertEqual(SetNav.identity(before, 1), SetNav.identity(shifted, 2), "the same set one row down is still the same set")
+        XCTAssertNotEqual(SetNav.identity(before, 1), SetNav.identity(before, 0))
+    }
+
+    func testIdentityWithoutSidResetsWhenTheRowCountChanges() {
+        let before = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8), row(60, 8)])
+        let after = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8), row(60, 8), row(60, 8)])
+        XCTAssertNotEqual(SetNav.identity(before, 1), SetNav.identity(after, 1))
+        XCTAssertEqual(SetNav.identity(before, 1), SetNav.identity(before, 1))
+        XCTAssertNotEqual(SetNav.identity(before, nil), SetNav.identity(before, 1))
+    }
+
+    func sidRow(_ sid: String?) -> SetRow { var r = row(60, 8); r.sid = sid; return r }
+
+    func workout(_ entries: [Entry], id: String = "w1") -> ActiveWorkout {
+        ActiveWorkout(id: id, name: "Push", unit: "kg", cur: 0, restSec: 90, rest: nil, entries: entries)
+    }
+
+    func bench(_ sets: [SetRow], id: String = "b") -> Entry {
+        Entry(id: id, name: "Bench", mode: "reps", restSec: nil, last: nil, sets: sets)
+    }
+
+    func testAPickFollowsItsSetWhenThePhoneTakesOutAnEarlierOne() {
+        let old = workout([bench([sidRow("a"), sidRow("b"), sidRow("c")])])
+        let new = workout([bench([sidRow("b"), sidRow("c")])])
+        XCTAssertEqual(SessionCore.rebasePicked([0: 1], from: old, to: new), [0: 0], "still B, not C")
+        var s = SessionState(); s.workout = new
+        let picked = SessionCore.rebasePicked([0: 1], from: old, to: new)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0, picked: picked[0]).map { new.entries[0].sets[$0].sid }, "b")
+    }
+
+    func testAPickFollowsItsSetWhenThePhoneAddsOneBefore() {
+        let old = workout([bench([sidRow("a"), sidRow("b")])])
+        let new = workout([bench([sidRow("z"), sidRow("a"), sidRow("b")])])
+        XCTAssertEqual(SessionCore.rebasePicked([0: 1], from: old, to: new), [0: 2])
+    }
+
+    func testAPickedSetTakenOutOnThePhoneIsNoLongerPicked() {
+        let old = workout([bench([sidRow("a"), sidRow("b")])])
+        let new = workout([bench([sidRow("a")])])
+        XCTAssertEqual(SessionCore.rebasePicked([0: 1], from: old, to: new), [:])
+    }
+
+    func testAPickWithoutSidStaysOnlyWhileTheRowCountDoes() {
+        let old = workout([bench([sidRow(nil), sidRow(nil)])])
+        XCTAssertEqual(SessionCore.rebasePicked([0: 1], from: old, to: old), [0: 1])
+        let grown = workout([bench([sidRow(nil), sidRow(nil), sidRow(nil)])])
+        XCTAssertEqual(SessionCore.rebasePicked([0: 1], from: old, to: grown), [:])
+    }
+
+    func testAPickFollowsItsExerciseMovedAndClearsOnAnotherWorkout() {
+        let curl = bench([sidRow("c1"), sidRow("c2")], id: "curl")
+        let old = workout([bench([sidRow("a")]), curl])
+        let new = workout([curl, bench([sidRow("a")])])
+        XCTAssertEqual(SessionCore.rebasePicked([1: 1], from: old, to: new), [0: 1])
+        XCTAssertEqual(SessionCore.rebasePicked([1: 1], from: old, to: workout(new.entries, id: "w2")), [:])
+    }
+
     func testAFixIsTheSameSetDoneAgainLaterWithoutHeartRate() throws {
         let e = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8, done: true, at: 5000), row(60, 8)])
         let (s, ev) = SetFix.correct(state(e), entry: 0, set: 0, side: nil, to: .init(w: 62.5, r: 7, sec: nil), now: 1000, id: "fix1")

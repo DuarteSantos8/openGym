@@ -194,6 +194,57 @@ class OfflineSyncTest {
         assertEquals(60.0, Drafts.next(turned, key, 60.0, 8.0, 30.0, force = true).w, 0.0)
     }
 
+    private fun sets(vararg sids: String?) = sids.map { SetRow(w = 60.0, r = 8.0, sid = it) }
+    private fun bench(rows: List<SetRow>, id: String = "b") = Entry(id = id, sets = rows)
+
+    @Test fun aDraftStaysOnItsSetWhenThePhoneAddsOneBefore() {
+        val before = bench(sets("a", "b"))
+        val after = bench(sets("z", "a", "b"))
+        val key = Drafts.key("w-1", "b", 0, Drafts.identity(before, 1), null, "kg")
+        val turned = Drafts.next(Draft(), key, 60.0, 8.0, 30.0).copy(w = 62.5)
+        // set B is now the third row: the same set, so the crown's 62.5 stays
+        val moved = Drafts.key("w-1", "b", 0, Drafts.identity(after, 2), null, "kg")
+        assertEquals(key, moved)
+        assertEquals(62.5, Drafts.next(turned, moved, 60.0, 8.0, 30.0).w, 0.0)
+        // appended after it: the same
+        assertEquals(key, Drafts.key("w-1", "b", 0, Drafts.identity(bench(sets("a", "b", "c")), 1), null, "kg"))
+        // without ids, a row more on the phone loads the plan again
+        val plain = bench(sets(null, null))
+        assertFalse(Drafts.identity(plain, 1) == Drafts.identity(bench(sets(null, null, null)), 1))
+    }
+
+    @Test fun aDraftTypedInKilosIsNotKeptInPounds() {
+        val kg = Drafts.key("w-1", "b", 0, "sid:a", null, "kg")
+        val turned = Drafts.next(Draft(), kg, 0.0, 8.0, 30.0).copy(w = 40.0)
+        val lb = Drafts.key("w-1", "b", 0, "sid:a", null, "lb")
+        assertEquals(0.0, Drafts.next(turned, lb, 0.0, 8.0, 30.0).w, 0.0)
+    }
+
+    @Test fun aPickFollowsItsSetWhenThePhoneMovesRows() {
+        val old = ActiveWorkout(id = "w-1", entries = listOf(bench(sets("a", "b", "c"))))
+        // an earlier set taken out: still B, not C
+        val fewer = ActiveWorkout(id = "w-1", entries = listOf(bench(sets("b", "c"))))
+        assertEquals(mapOf(0 to 0), SessionCore.rebasePicked(mapOf(0 to 1), old, fewer))
+        val s = SessionState(workout = fewer)
+        val si = SessionCore.setIndex(s, 0, SessionCore.rebasePicked(mapOf(0 to 1), old, fewer)[0])
+        assertEquals("b", fewer.entries[0].sets[si!!].sid)
+        // one added before it
+        val more = ActiveWorkout(id = "w-1", entries = listOf(bench(sets("z", "a", "b", "c"))))
+        assertEquals(mapOf(0 to 2), SessionCore.rebasePicked(mapOf(0 to 1), old, more))
+        // the picked set itself taken out: nothing picked
+        assertEquals(emptyMap<Int, Int>(), SessionCore.rebasePicked(mapOf(0 to 1), old, ActiveWorkout(id = "w-1", entries = listOf(bench(sets("a", "c"))))))
+        // no ids: kept only while the row count is
+        val plain = ActiveWorkout(id = "w-1", entries = listOf(bench(sets(null, null))))
+        assertEquals(mapOf(0 to 1), SessionCore.rebasePicked(mapOf(0 to 1), plain, plain))
+        assertEquals(emptyMap<Int, Int>(), SessionCore.rebasePicked(mapOf(0 to 1), plain, ActiveWorkout(id = "w-1", entries = listOf(bench(sets(null, null, null))))))
+        // its exercise moved: the pick follows it; another workout: cleared
+        val curl = bench(sets("c1", "c2"), id = "curl")
+        val two = ActiveWorkout(id = "w-1", entries = listOf(bench(sets("a")), curl))
+        val swapped = ActiveWorkout(id = "w-1", entries = listOf(curl, bench(sets("a"))))
+        assertEquals(mapOf(0 to 1), SessionCore.rebasePicked(mapOf(1 to 1), two, swapped))
+        assertEquals(emptyMap<Int, Int>(), SessionCore.rebasePicked(mapOf(1 to 1), two, swapped.copy(id = "w-2")))
+    }
+
     @Test fun thePhonePutsAnExerciseInFrontAndTheWatchStaysOnItsOwn() {
         var s = SessionCore.applySnapshot(SessionState(), snap(phoneWorkout(bench, curl)))
         s = s.copy(entryIndex = 1)                                  // the lifter is on the curl

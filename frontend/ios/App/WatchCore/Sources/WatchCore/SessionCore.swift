@@ -449,6 +449,29 @@ enum SessionCore {
         return sets.indices.first { !sets[$0].done && !isSkipped(s, exId, $0) }
     }
 
+    /// The sets picked by hand (entry index → set index) after a snapshot moved rows around: each
+    /// follows its exercise by id and its set by `sid`, so a set added or taken out before it on the
+    /// phone does not turn the pick into the set beside it. A set without a `sid` stays picked only
+    /// while its exercise has as many rows as before; a set gone from the phone is no longer picked.
+    static func rebasePicked(_ picked: [Int: Int], from old: ActiveWorkout?, to new: ActiveWorkout?) -> [Int: Int] {
+        guard let old = old, let new = new, old.id == new.id else { return [:] }
+        var out: [Int: Int] = [:]
+        for (ei, si) in picked {
+            guard old.entries.indices.contains(ei), old.entries[ei].sets.indices.contains(si) else { continue }
+            let was = old.entries[ei]
+            let nei = new.entries.indices.contains(ei) && new.entries[ei].id == was.id
+                ? ei : new.entries.firstIndex { $0.id == was.id }
+            guard let to = nei else { continue }
+            let sets = new.entries[to].sets
+            if let sid = was.sets[si].sid, !sid.isEmpty {
+                if let nsi = sets.firstIndex(where: { $0.sid == sid }) { out[to] = nsi }
+            } else if sets.count == was.sets.count {
+                out[to] = si
+            }
+        }
+        return out
+    }
+
     /// Sets done and sets in all, for the complication's ring.
     static func progress(_ s: SessionState) -> (done: Int, total: Int) {
         guard let w = s.workout else { return (0, 0) }

@@ -530,6 +530,13 @@ struct ExerciseDonePanel: View {
  * number on top turns red when it is out of range, and ✓ saves only what fits.
  */
 struct KeypadView: View {
+    /// How far ✕ and ✓ keep from the edges, so the round corners don't cut them.
+    private enum Corner {
+        static let side: CGFloat = 14
+        static let top: CGFloat = 4
+        static let bottom: CGFloat = 4
+    }
+
     let field: NumberField
     let unit: String
     let start: Double
@@ -559,7 +566,10 @@ struct KeypadView: View {
     var body: some View {
         GeometryReader { g in
             // Full screen, from the clock's row down: close and the number beside the clock, the keys fill the rest.
-            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 10) / 4)
+            // The screen's round corners: ✕ moves in from the top left one, ✓ ends short of the bottom two
+            // (on the whole screen both were cut, #1414 on an Ultra).
+            // 26 pt keys where they fit; on a 40 mm (197 pt) they give up the few points ✓ needs.
+            let keyH = max(22, (g.size.height - 36 - 34 - 5 * 4 - 10 - Corner.top - Corner.bottom) / 4)
             VStack(spacing: 4) {
                 HStack(spacing: 6) {
                     Button { dismiss() } label: {
@@ -571,6 +581,8 @@ struct KeypadView: View {
                     display
                 }
                 .frame(height: 36)
+                .padding(.leading, Corner.side)
+                .padding(.top, Corner.top)
                 .padding(.trailing, 50)   // the system clock
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "⌫"]], id: \.self) { keys in
                     HStack(spacing: 4) {
@@ -588,12 +600,14 @@ struct KeypadView: View {
                 .buttonStyle(.plain)
                 .disabled(!pad.fits(range))
                 .accessibilityLabel(Text("Save"))
+                .padding(.horizontal, Corner.side)
+                .padding(.bottom, Corner.bottom)
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .top)
         }
         .padding(.horizontal, 4)
         .background(Color.black.ignoresSafeArea())
-        .ignoresSafeArea()   // the whole screen; 10 pt kept clear above the bottom edge
+        .ignoresSafeArea()   // the whole screen; ✕ and ✓ keep clear of its round corners (Corner)
         .toolbar(.hidden, for: .navigationBar)
         .dynamicTypeSize(...DynamicTypeSize.large)
     }
