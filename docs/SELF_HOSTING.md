@@ -465,7 +465,17 @@ overwrites `X-Forwarded-For`. If you put another reverse proxy in front of the w
 visitor may arrive as that proxy — then the per-address limits apply to everyone together: one
 client sending wrong passwords can pause password sign-in for everybody for up to 15 minutes at a
 time (passkeys keep working), and the per-name pause is what protects the passwords. Behind
-Cloudflare, `CF_CONNECTING_IP` (see the activity log above) passes the real visitor on. Running
+Cloudflare, `CF_CONNECTING_IP` (see the activity log above) passes the real visitor on. Behind any
+other proxy on the same host (Tailscale Funnel, Caddy, Traefik), set `REAL_IP_FROM` on the web
+container to the address that proxy connects from, as nginx sees it: through Docker's port
+mapping that is the network's gateway (`docker network inspect <stack>_default`, the `Gateway`
+field, often `172.x.0.1`). nginx then takes the visitor from the last `X-Forwarded-For` entry,
+the one the proxy added; requests from any other address keep their own. That only stops a
+client from forging its address if nothing but the proxy can reach nginx from the listed
+address: Docker's userland proxy (the default) hands IPv6 connections to a published port to
+the container from that same gateway, so publish the web port on the loopback address only
+(`WEB_PORT=127.0.0.1:8080`, which the proxy on the host still reaches) before setting
+`REAL_IP_FROM` to the gateway. Running
 the API without the web container, leave `TRUST_PROXY` off unless whatever is in front overwrites
 (not appends to) `X-Forwarded-For`.
 

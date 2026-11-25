@@ -79,6 +79,10 @@ COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 USER root
 COPY --chmod=755 web/05-check-base-path.sh /docker-entrypoint.d/
 RUN sed -i 's/\r$//' /docker-entrypoint.d/05-check-base-path.sh
+# Trusts X-Forwarded-For from the proxies in REAL_IP_FROM (web/15-real-ip.sh). Writes its conf.d
+# file before nginx starts; empty, it writes nothing.
+COPY --chmod=755 web/15-real-ip.sh /docker-entrypoint.d/
+RUN sed -i 's/\r$//' /docker-entrypoint.d/15-real-ip.sh
 USER 101
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
@@ -99,6 +103,10 @@ ENV RESOLVER=127.0.0.11
 # front. Defined here too, not just in compose, so the template always renders for anyone
 # running the prebuilt image from their own compose file.
 ENV CF_CONNECTING_IP=""
+# The reverse proxies whose X-Forwarded-For nginx believes, space-separated addresses or CIDRs:
+# the address they connect from, as nginx sees it (behind Docker's port mapping, the network's
+# gateway, 172.x.0.1). Empty = every request keeps the address it connected from, as before.
+ENV REAL_IP_FROM=""
 # Subpath deployments behind a reverse proxy that does NOT strip its prefix: "/gym", no trailing
 # slash. Empty (the default) serves the app at the root exactly as before. A proxy that strips
 # the prefix needs nothing here — the app derives the API address from its own URL.
