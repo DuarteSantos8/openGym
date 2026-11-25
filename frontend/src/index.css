@@ -4293,6 +4293,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-ring circle{fill:none;stroke-width:5}
 .cp-ring-bg{stroke:var(--surface-raised)}
 .cp-ring-fg{stroke:var(--cp-phase);stroke-linecap:round}
+@media(prefers-reduced-motion:reduce){.cp-ring-fg{display:none}}
 .cp-clock-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
 .cp-word{font-size:var(--fs-callout);font-weight:600;color:var(--cp-phase)}
 .cp-time{font-size:clamp(3.5rem,19vw,6.5rem);font-weight:700;line-height:1;letter-spacing:-.04em}

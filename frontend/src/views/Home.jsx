@@ -216,6 +216,10 @@ export default function Home() {
           : <Icon name="plus" className="chev" />}
       </div>}
       {restForBeginner && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+        <Button size="sm" variant="primary" icon="play" data-session="mobility-hips" onClick={async () => {
+          const { startLearnSession } = await import('../lib/learn-sessions.js')
+          if (startLearnSession('mobility-hips', useStore)) nav('/workout')
+        }}>{t('Hip mobility')}</Button>
         <Button size="sm" variant="ghost" icon="moon" data-learn="rest" onClick={() => nav('/learn?g=rest')}>{t('Why rest days matter')}</Button>
       </div>}
       {/* openNutrition's fasting window (lib/sister-nutrition.js), when this device is linked. */}

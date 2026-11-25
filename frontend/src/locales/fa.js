@@ -1,5 +1,17 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  "Draft": "پیش‌نویس",
+  "Move gently and switch sides when comfortable.": "آرام حرکت کن و هر وقت احساس راحتی کردی، سمت حرکت را عوض کن.",
+  "Slow down gradually and release each stretch when comfortable.": "به‌تدریج سرعتت را کم کن و هر وقت احساس راحتی کردی، از هر حالت کششی خارج شو.",
+  "Start this session": "این جلسه را شروع کن",
+  "Whole-body warm-up": "گرم کردن کل بدن",
+  "Lower-body warm-up": "گرم کردن پایین‌تنه",
+  "Upper-body warm-up": "گرم کردن بالاتنه",
+  "Whole-body cool-down": "سرد کردن کل بدن",
+  "Hip mobility": "تحرک مفصل ران",
+  "Shoulder mobility": "تحرک شانه",
+  "Spine mobility": "تحرک ستون فقرات",
+  "Desk break": "وقفه حرکتی پشت میز",
   "Sign-in is only available on the server’s configured website.": "ورود فقط در وب‌سایتی که برای این سرور تنظیم شده است امکان‌پذیر است.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "ساعت‌ها",

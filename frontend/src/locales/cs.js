@@ -1,5 +1,17 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Koncept",
+  "Move gently and switch sides when comfortable.": "Pohybujte se zlehka a vyměňte strany, až vám to bude příjemné.",
+  "Slow down gradually and release each stretch when comfortable.": "Postupně zpomalujte a každé protažení ukončete, až vám to bude příjemné.",
+  "Start this session": "Spustit tuto lekci",
+  "Whole-body warm-up": "Zahřátí celého těla",
+  "Lower-body warm-up": "Zahřátí dolní části těla",
+  "Upper-body warm-up": "Zahřátí horní části těla",
+  "Whole-body cool-down": "Zklidnění celého těla",
+  "Hip mobility": "Pohyblivost kyčlí",
+  "Shoulder mobility": "Pohyblivost ramen",
+  "Spine mobility": "Pohyblivost páteře",
+  "Desk break": "Přestávka u pracovního stolu",
   "Sign-in is only available on the server’s configured website.": "Přihlásit se lze pouze na webu nastaveném pro tento server.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Hodinky",

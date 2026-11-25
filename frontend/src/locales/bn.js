@@ -1,5 +1,17 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "খসড়া",
+  "Move gently and switch sides when comfortable.": "আস্তে নড়াচড়া করুন আর স্বচ্ছন্দ বোধ করলে পাশ বদলান।",
+  "Slow down gradually and release each stretch when comfortable.": "ধীরে ধীরে গতি কমান আর স্বচ্ছন্দ বোধ করলে প্রতিটি স্ট্রেচ থেকে বেরিয়ে আসুন।",
+  "Start this session": "এই সেশন শুরু করুন",
+  "Whole-body warm-up": "পুরো শরীর গরম করা",
+  "Lower-body warm-up": "শরীরের নিচের অংশ গরম করা",
+  "Upper-body warm-up": "শরীরের ওপরের অংশ গরম করা",
+  "Whole-body cool-down": "পুরো শরীর ধীরে শান্ত করা",
+  "Hip mobility": "নিতম্বের জয়েন্ট সচল করার ব্যায়াম",
+  "Shoulder mobility": "কাঁধ সচল করার ব্যায়াম",
+  "Spine mobility": "মেরুদণ্ড সচল করার ব্যায়াম",
+  "Desk break": "কাজের ফাঁকে নড়াচড়া",
   "Sign-in is only available on the server’s configured website.": "শুধু এই সার্ভারের জন্য নির্ধারিত ওয়েবসাইটেই সাইন ইন করা যায়।",
   "Check the amount and calculated totals.": "পরিমাণ ও গণনা করা মোট মান পরীক্ষা করুন।",
   "Configured on this server. Connection is checked only when you choose Lookup.": "এই সার্ভারে কনফিগার করা আছে। খুঁজুন বেছে নিলেই সংযোগ পরীক্ষা করা হয়।",

@@ -1,5 +1,17 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  "Draft": "Bản nháp",
+  "Move gently and switch sides when comfortable.": "Cử động nhẹ nhàng và đổi bên khi thấy thoải mái.",
+  "Slow down gradually and release each stretch when comfortable.": "Giảm nhịp độ từ từ và thả lỏng sau mỗi động tác giãn cơ khi thấy thoải mái.",
+  "Start this session": "Bắt đầu buổi tập này",
+  "Whole-body warm-up": "Khởi động toàn thân",
+  "Lower-body warm-up": "Khởi động thân dưới",
+  "Upper-body warm-up": "Khởi động thân trên",
+  "Whole-body cool-down": "Thả lỏng toàn thân",
+  "Hip mobility": "Vận động khớp hông",
+  "Shoulder mobility": "Vận động khớp vai",
+  "Spine mobility": "Vận động cột sống",
+  "Desk break": "Nghỉ vận động tại bàn",
   "Sign-in is only available on the server’s configured website.": "Bạn chỉ có thể đăng nhập trên trang web được cấu hình cho máy chủ này.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Đồng hồ",

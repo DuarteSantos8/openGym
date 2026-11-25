@@ -7,9 +7,29 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { t, getLang, baseLang } from '../lib/i18n.js'
 import { GUIDES, searchGlossary, guideById } from '../lib/learn.js'
+import { LEARN_SESSIONS, learnSessionById, startLearnSession } from '../lib/learn-sessions.js'
+import { useStore } from '../store/useStore.js'
 import Icon from '../components/Icon.jsx'
-import { SearchField } from '../components/ui.jsx'
+import { Button, SearchField } from '../components/ui.jsx'
 import './onboarding.css'
+
+function SessionPicker() {
+  const nav = useNavigate()
+  const active = useStore(s => !!s.S.active)
+  const [selected, setSelected] = useState('warmup-general')
+  const session = learnSessionById(selected)
+  return <div>
+    <label>{t('Session')} <select value={selected} onChange={e => setSelected(e.target.value)}>
+      {LEARN_SESSIONS.map(session => <option key={session.id} value={session.id}>{t(session.title)}</option>)}
+    </select></label>
+    <p>{t('Draft')} · {t('about {0} min', session.minutes)}</p>
+    <p>{t(session.routine.sessions[0].note)}</p>
+    <p data-session-source><strong>{t('Sources')}</strong> {session.routine.about}</p>
+    <Button type="button" variant="primary" disabled={active} onClick={() => {
+      if (startLearnSession(selected, useStore)) nav('/workout')
+    }}>{t('Start this session')}</Button>
+  </div>
+}
 
 function Guide({ guide, open, onToggle }) {
   const id = 'iv-learn-g-' + guide.id
@@ -25,6 +45,7 @@ function Guide({ guide, open, onToggle }) {
         {b.p && <p>{t(b.p)}</p>}
         {b.list && <ul>{b.list.map((x, j) => <li key={j}>{t(x)}</li>)}</ul>}
       </div>)}
+      {guide.id === 'warm-up' && <SessionPicker />}
       {guide.sources && <div className="iv-learn-sources">
         <strong>{t('Sources')}</strong>
         {guide.sources.map((s, i) => <p key={i}>{s}</p>)}

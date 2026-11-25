@@ -76,3 +76,12 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/oidc/routes.js` | `next/EP19-unlink-group-admins` | +7 -3 | Unlink asks whether the profile is still an admin once the link is gone. |
 | `frontend/src/components/OidcAccount.jsx` | `next/EP19-unlink-group-admins` | +6 -3 | A refused unlink on a provider-only server gets the sentence that fits. |
 | `api/test/server-oidc.test.js`, `frontend/src/components/OidcAccount.test.jsx` | `next/EP19-unlink-group-admins` | Tests | The owner and the group-made admin; the refusal's wording. |
+| `frontend/src/views/Home.jsx` | `next/EP24-learn-sessions` | Small edit | Offer one mobility session on beginner rest days. |
+| `frontend/src/views/Learn.jsx` | `next/EP24-learn-sessions` | Small edit | Choose and launch a guided session in the warm-up guide. |
+| `frontend/src/views/Learn.test.jsx`, `frontend/src/views/Home.restday.test.jsx` | `next/EP24-learn-sessions` | Tests | Cover both entry points. |
+| `frontend/src/index.css` | `next/EP24-learn-sessions` | Small edit | Keep the moving countdown ring still under reduced motion. |
+| `scripts/routines/lib.mjs`, `scripts/routines/validate.mjs`, `scripts/routines/routines.test.mjs` | `next/EP24-learn-sessions` | Small edit | Validate Learn drafts separately from the published library. |
+| `web/Dockerfile` | `next/EP24-learn-sessions` | Small edit | Include the offline routines in self-hosted web builds. |
+| `25 files in frontend/src/locales/` | `next/EP24-learn-sessions` | Small edit | Translate session names and the start action. |
+| `frontend/src/lib/history.js` | `next/EP24-learn-sessions` | +2 -1 | Keep the previous group clock out of a standalone exercise. |
+| `frontend/src/store/useCircuit.js` | `next/EP24-learn-sessions` | Small edit | Release an untouched Learn preview when its Ready screen closes. |
