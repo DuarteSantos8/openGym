@@ -91,6 +91,11 @@ describe('exerciseCurve', () => {
   ] }
   const samples = Array.from({ length: 21 }, (_, m) => [at(m), 100 + m])
 
+  it('averages its goes over all their readings, rounded once', () => {
+    // first go (start → +7 min) 100 and 101, second go (+11 → +13 min) 100: 301 / 3 = 100
+    const few = [[at(1), 100], [at(2), 101], [at(12), 100]]
+    expect(exerciseCurve(w, PUSH, few, 190).stats.avg).toBe(100)
+  })
   it('keeps the readings of the exercise from the start of its span, its later go straight after', () => {
     const c = exerciseCurve(w, PUSH, samples, 190)
     // first go: start → +7 min (8 readings), then +11 → +13 (3 readings) shifted to follow on

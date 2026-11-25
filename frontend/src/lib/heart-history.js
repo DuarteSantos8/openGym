@@ -5,7 +5,7 @@
 import { modeOf } from './history.js'
 import { isSideSet, isWarmupRow } from './workout-model.js'
 import { sanitizeHr } from './heart-rate.js'
-import { exerciseSpans, heartStats, tickOf } from './heart-steps.js'
+import { avgOf, exerciseSpans, heartStats, tickOf } from './heart-steps.js'
 import { syncKeyOf } from './workout-date.js'
 
 const BPM_MIN = 25
@@ -170,7 +170,7 @@ export function exerciseCurve(w, exId, samples, hrMax, key = null) {
     points: points.sort((a, b) => a.t - b.t),
     span: offset,
     stats: {
-      avg: Math.round(parts.reduce((x, p) => x + p.avg * p.n, 0) / n),
+      avg: avgOf(parts),
       max: Math.max(...parts.map(p => p.max)),
       high: parts.reduce((x, p) => x + p.high, 0), n,
     },

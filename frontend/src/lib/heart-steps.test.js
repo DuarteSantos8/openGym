@@ -58,7 +58,7 @@ describe('heartStats', () => {
   it('averages, keeps the max and the time in zones 4 and 5', () => {
     // max 200: zone 4 from 160 bpm.
     const r = heartStats([[0, 100], [10e3, 170], [20e3, 180], [60e3, 120]], 0, 70e3, 200)
-    expect(r).toEqual({ avg: 143, max: 180, high: 10e3 + 15e3, n: 4 })
+    expect(r).toEqual({ avg: 143, max: 180, high: 10e3 + 15e3, n: 4, sum: 570 })
   })
   it('is null without a reading', () => {
     expect(heartStats([], 0, 1, 200)).toBeNull()
@@ -77,6 +77,12 @@ describe('heartByExercise', () => {
     const back = { start: S, end: S + 900e3, entries: [{ sets: [set(100), set(400)] }, { sets: [set(200)] }] }
     const r = heartByExercise(back, [[S + 50e3, 100], [S + 150e3, 140], [S + 300e3, 120]], 200)
     expect(r.map(x => [x.unit, x.avg, x.max])).toEqual([[0, 110, 120], [1, 140, 140]])
+  })
+  it('averages an exercise done in two goes over all its readings, rounded once', () => {
+    // first go 100 and 101 (100.5), second go 100: 301 / 3 = 100, not the rounded 101 and 100 averaged to 101
+    const back = { start: S, end: S + 900e3, entries: [{ sets: [set(100), set(400)] }, { sets: [set(200)] }] }
+    const r = heartByExercise(back, [[S + 40e3, 100], [S + 50e3, 101], [S + 300e3, 100]], 200)
+    expect(r.find(x => x.unit === 0).avg).toBe(100)
   })
 })
 

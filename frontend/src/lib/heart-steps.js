@@ -76,8 +76,9 @@ export function currentSpanStart(A, origin = A?.start) {
 }
 
 /**
- * The readings ([ms, bpm]) between `from` and `to` as { avg, max, high, n }: `high` the time spent
- * in zones 4 and 5 (ms) for a maximum of `hrMax`. null without a reading.
+ * The readings ([ms, bpm]) between `from` and `to` as { avg, max, high, n, sum }: `high` the time
+ * spent in zones 4 and 5 (ms) for a maximum of `hrMax`, `sum` the readings added up, so spans put
+ * together average once (avgOf) rather than over rounded averages. null without a reading.
  */
 export function heartStats(samples, from, to, hrMax) {
   const kept = (Array.isArray(samples) ? samples : [])
@@ -90,7 +91,13 @@ export function heartStats(samples, from, to, hrMax) {
     const next = i + 1 < kept.length ? kept[i + 1][0] : to
     if (hrMax > 0 && bpm >= hrMax * HIGH_SHARE) high += Math.max(0, Math.min(SAMPLE_MAX_MS, next - ms))
   })
-  return { avg: Math.round(sum / kept.length), max: Math.round(max), high, n: kept.length }
+  return { avg: Math.round(sum / kept.length), max: Math.round(max), high, n: kept.length, sum }
+}
+
+/** The average bpm of several spans' heartStats, rounded once over all their readings. */
+export const avgOf = parts => {
+  const n = parts.reduce((x, p) => x + p.n, 0)
+  return n ? Math.round(parts.reduce((x, p) => x + p.sum, 0) / n) : null
 }
 
 /**
@@ -111,10 +118,9 @@ export function heartByExercise(w, samples, hrMax) {
     // Each span on its own for the time in the zones (no reading carries over a gap between them).
     const parts = x.spans.map(([a, b]) => heartStats(x.parts, a, b, hrMax)).filter(Boolean)
     if (!parts.length) continue
-    const n = parts.reduce((s, p) => s + p.n, 0)
     out.push({
       unit: x.unit, members: x.members,
-      avg: Math.round(parts.reduce((s, p) => s + p.avg * p.n, 0) / n),
+      avg: avgOf(parts),
       max: Math.max(...parts.map(p => p.max)),
       high: parts.reduce((s, p) => s + p.high, 0),
     })
