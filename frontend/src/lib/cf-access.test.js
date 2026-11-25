@@ -120,3 +120,18 @@ describe('the Cloudflare Access token on the phone', () => {
     expect(fetch.mock.calls[0][1].headers['CF-Access-Client-Id']).toBeUndefined()
   })
 })
+
+describe('a secure storage that does not answer at start', () => {
+  it('still sends the stored token once it answers: the next request reads it again', async () => {
+    backing.set('cfAccess', JSON.stringify({ clientId: 'id', clientSecret: 'secret', origin: GYM }))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const real = SecureStorage.get
+    SecureStorage.get = async () => { throw new Error('keychain locked') }
+    try { expect(await loadCfAccess({ pairedBase: GYM })).toBe(null) } finally { SecureStorage.get = real }
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    expect(fetch.mock.calls[0][1].headers).toMatchObject({ 'CF-Access-Client-Id': 'id', 'CF-Access-Client-Secret': 'secret' })
+  })
+})

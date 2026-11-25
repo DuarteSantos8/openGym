@@ -27,7 +27,10 @@ export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToke
 // does the job, and never to a server that merely happens to be paired or typed in.
 let accessHeaders = {}
 let accessOrigin = ''
-export function setAccessHeaders(h, origin) { accessHeaders = Object.assign({}, h); accessOrigin = origin || '' }
+// `retry`: given while the stored token could not be read at start; api() runs it before a request,
+// so a token that is stored but was unreadable at launch still gets sent.
+let accessRetry = null
+export function setAccessHeaders(h, origin, retry) { accessHeaders = Object.assign({}, h); accessOrigin = origin || ''; accessRetry = retry || null }
 const originOf = base => { try { return new URL(base).origin } catch { return '' } }
 const accessFor = base => (base && accessOrigin && originOf(base) === accessOrigin ? accessHeaders : {})
 const remoteHeaders = () => Object.assign({}, accessFor(remoteBase), remoteToken ? { Authorization: 'Bearer ' + remoteToken } : {})
@@ -65,6 +68,7 @@ export async function api(path, opts) {
   // there and the change was marked as synced while the server never saw it. status 0, not
   // undefined: this is not "offline", and the store must not show it as such.
   if (MOBILE && !remoteBase) throw failure(t('This phone is not connected to a server.'), 'not-paired', 0)
+  if (accessRetry) await accessRetry()
   const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers, remoteHeaders())
   // A paired phone has an absolute base of its own; everyone else is relative to where the app
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.

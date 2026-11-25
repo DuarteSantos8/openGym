@@ -8,7 +8,7 @@
 // file, together with the origin of the server they were entered for, and are handed to
 // lib/api.js, which adds them to requests to that origin and to nothing else: a token typed for
 // one server never travels to another one, not even to a pairing typed in by mistake.
-import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
+import { secureRead, secureSet, secureRemove } from './coach-secrets.js'
 import { setAccessHeaders } from './api.js'
 
 const KEY = 'cfAccess'
@@ -31,17 +31,24 @@ export function accessHeaders(creds) {
   return { 'CF-Access-Client-Id': id, 'CF-Access-Client-Secret': secret }
 }
 
+let rereading = null
+const reread = pairedBase => rereading || (rereading = loadCfAccess({ pairedBase }).finally(() => { rereading = null }))
+
 // `pairedBase`: the server this phone is paired with. A token saved before tokens knew their
 // server has no origin; it is bound to that server on the first start that has one. Without a
 // pairing it is kept but sent nowhere until it is entered again with its address.
 export async function loadCfAccess({ pairedBase = '' } = {}) {
   let creds = null
+  let unread = false
   try {
-    const raw = await secureGet(KEY)
+    const { value: raw, failed } = await secureRead(KEY)
+    // The store did not answer: not the same as no token. The next request reads it again
+    // instead of the phone going on without a token that is still stored.
+    unread = failed
     const v = raw ? JSON.parse(raw) : null
     if (v && typeof v === 'object') creds = { clientId: clean(v.clientId), clientSecret: clean(v.clientSecret), origin: originOf(v.origin) }
   } catch { /* unreadable: as if never set */ }
-  if (!creds || !creds.clientId || !creds.clientSecret) { setAccessHeaders({}, ''); return null }
+  if (!creds || !creds.clientId || !creds.clientSecret) { setAccessHeaders({}, '', unread ? () => reread(pairedBase) : null); return null }
   if (!creds.origin && originOf(pairedBase)) {
     creds.origin = originOf(pairedBase)
     try { await secureSet(KEY, JSON.stringify(creds)) } catch { /* bound again on the next start */ }
