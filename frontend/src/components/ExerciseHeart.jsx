@@ -140,7 +140,8 @@ export default function ExerciseHeart ({ workouts = [], exId, unit = '', pick })
         <b>{latest.value} {t('bpm')}</b>
         {latest.delta ? <em>{latest.delta > 0 ? '+' : '−'}{Math.abs(latest.delta)}</em> : null}
       </div>}
-      <LineChart points={heartPoints(sessions, measure)} h={120} unit={t('bpm')} color={pickedMeasure.color} />
+      <LineChart points={heartPoints(sessions, measure)} h={120} unit={t('bpm')} color={pickedMeasure.color}
+        ariaLabel={t('Heart rate') + ', ' + pickedMeasure.label} />
     </div>
     {sessions.length > 0 && <>
       <div style={{ height: 10 }} />
