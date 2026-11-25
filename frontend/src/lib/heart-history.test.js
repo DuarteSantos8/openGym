@@ -43,6 +43,14 @@ describe('exerciseHeart', () => {
     expect(s[0]).toMatchObject({ n: 1, avg: 154, rest: null })
   })
 
+  it('puts a session without a start by its day, the newest still first', () => {
+    // brought in from another app: a day, no start, a reading per set
+    const { start, end, ...noStart } = workout(2, [{ id: ROPE, target: { mode: 'time' }, sets: [timed(60, 158, 174)] }])
+    const s = exerciseHeart([...ws, noStart], ROPE).sessions('t:60')
+    expect(s.map(x => x.id)).toEqual(['w5', 'w3', 'w2', 'w0'])
+    expect(s.map(x => x.at)).toEqual([...s.map(x => x.at)].sort((a, b) => b - a))
+  })
+
   it('leaves warm-ups out and ignores readings that cannot be a heart', () => {
     const w = workout(0, [{ id: PUSH, target: { mode: 'reps' }, sets: [
       { ...reps(16, 0, 100, 110), phase: 'warmup' }, reps(16, 0, 300, 320), reps(16, 0, 130, 150),

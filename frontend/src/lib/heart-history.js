@@ -91,10 +91,13 @@ function heartSets(w, exId) {
  *            after them (null without one).
  */
 export function exerciseHeart(workouts, exId) {
+  // Newest first on the same time as `at` below: a session without a start (one brought in from
+  // another app) goes by its day, not behind every session that has one.
+  const atOf = w => w.start || Date.parse(w.d) || 0
   const list = (Array.isArray(workouts) ? workouts : [])
     .map(w => ({ w, sets: heartSets(w, exId) }))
     .filter(x => x.sets.length)
-    .sort((a, b) => (b.w.start || 0) - (a.w.start || 0) || String(b.w.d).localeCompare(String(a.w.d)))
+    .sort((a, b) => atOf(b.w) - atOf(a.w) || String(b.w.d).localeCompare(String(a.w.d)))
   const count = new Map()
   for (const { sets } of list) {
     const seen = new Set()
@@ -112,7 +115,7 @@ export function exerciseHeart(workouts, exId) {
     const rests = mine.map(s => s.rest).filter(Boolean)
     return [{
       // An older workout without an id has its day and start instead (workout-date.js).
-      id: syncKeyOf(w), d: w.d, at: w.start || Date.parse(w.d) || 0, n: mine.length,
+      id: syncKeyOf(w), d: w.d, at: atOf(w), n: mine.length,
       avg: Math.round(mine.reduce((n, s) => n + s.hr.avg, 0) / mine.length),
       max: Math.max(...mine.map(s => s.hr.max)),
       rest: rests.length ? Math.round(rests.reduce((n, r) => n + r.avg, 0) / rests.length) : null,
