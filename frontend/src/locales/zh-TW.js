@@ -5890,4 +5890,8 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "依心率提示蓄勢待發",
+  "Target heart rate": "目標心率",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "休息時，心率降下來後手錶會顯示「蓄勢待發」，如果下方的輕點手腕已開啟，還會輕點一次。倒數照常進行。自動會把目標定在組前心率稍高一點。",
 }

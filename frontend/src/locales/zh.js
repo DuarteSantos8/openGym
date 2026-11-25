@@ -5897,4 +5897,8 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "按心率提示准备好",
+  "Target heart rate": "目标心率",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "休息时，心率降下来后手表会显示“准备好”，如果下方的轻敲手腕已打开，还会轻敲一次。倒计时照常进行。自动会把目标定在组前心率稍高一点。",
 }

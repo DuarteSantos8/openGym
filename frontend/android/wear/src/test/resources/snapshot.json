@@ -101,7 +101,11 @@
       "next": true
     },
     "lang": "de",
-    "weighIn": false
+    "weighIn": false,
+    "hrRest": {
+      "on": true,
+      "bpm": null
+    }
   },
   "streak": {
     "weeks": 1,

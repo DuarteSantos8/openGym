@@ -5917,4 +5917,8 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Bereit nach Puls",
+  "Target heart rate": "Zielpuls",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "In der Pause zeigt die Uhr Bereit, sobald dein Puls wieder unten ist, mit einem Tippen, wenn das Tippen am Handgelenk unten an ist. Der Countdown läuft weiter. Automatisch zielt knapp über deinen Puls vor dem Satz.",
 }

@@ -13,6 +13,7 @@ vi.mock('../lib/watch-sync.js', () => ({ watchStatus: async () => mocks.link }))
 import WatchSettingsPage from './WatchSettings.jsx'
 import { useStore } from '../store/useStore.js'
 import { readWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
+import { bindUI } from '../components/ui.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let where = null
@@ -148,6 +149,31 @@ describe('Settings → Apple Watch', () => {
       expect(el.querySelector('[data-watch-link]').dataset.watchLink).toBe('live')
       await act(async () => { document.body.replaceChildren() })
     } finally { vi.useRealTimers() }
+  })
+
+  // "Ready by heart rate" (docs/dev/REST_BY_HEART_RATE.md): off to begin with; on, a target to pick, Automatic first.
+  it('has ready by heart rate, off, with a target to pick once it is on', async () => {
+    let sheet = null
+    bindUI({ getState: () => ({ openSheet: render => { sheet = render; return { close: () => {} } } }) })
+    const el = await mount()
+    const sw = () => row(el, 'Ready by heart rate').querySelector('[role="switch"]')
+    expect(sw().getAttribute('aria-checked')).toBe('false')
+    expect(row(el, 'Target heart rate')).toBeUndefined()
+    await act(async () => { sw().click() })
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: null })
+    expect(row(el, 'Target heart rate').querySelector('.lrow-v').textContent).toBe('Automatic')
+    await act(async () => { row(el, 'Target heart rate').click() })
+    const box = document.createElement('div')
+    document.body.appendChild(box)
+    await act(async () => { createRoot(box).render(sheet(() => {})) })
+    const options = () => [...box.querySelectorAll('button.lrow')]
+    expect(options().map(o => o.querySelector('.lrow-t').textContent)).toEqual(['Automatic', '100 bpm', '110 bpm', '120 bpm', '130 bpm', '140 bpm'])
+    await act(async () => { options()[3].click() })
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: 120 })
+    expect(row(el, 'Target heart rate').querySelector('.lrow-v').textContent).toBe('120 bpm')
+    await act(async () => { sw().click() })
+    expect(readWatchPrefs().hrRest).toEqual({ on: false, bpm: 120 })
+    expect(row(el, 'Target heart rate')).toBeUndefined()
   })
 
   it('watchLinkState: the link still starting is not "no watch"', () => {

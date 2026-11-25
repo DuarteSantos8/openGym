@@ -5863,4 +5863,8 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "آماده بر اساس ضربان قلب",
+  "Target heart rate": "ضربان قلب هدف",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "در زمان استراحت، وقتی ضربان قلب شما دوباره پایین آمد، ساعت «آماده» را نشان می‌دهد و اگر ضربه روی مچ در پایین روشن باشد، یک بار ضربه می‌زند. شمارش معکوس ادامه دارد. «خودکار» کمی بالاتر از ضربان قلب شما پیش از ست را هدف می‌گیرد.",
 }

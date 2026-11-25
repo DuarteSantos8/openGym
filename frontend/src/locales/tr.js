@@ -5897,4 +5897,8 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Nabza göre hazır",
+  "Target heart rate": "Hedef nabız",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Dinlenmede nabzın tekrar düşünce saat Hazır der, aşağıdaki bileğe dokunma açıksa bir kez dokunur. Geri sayım devam eder. Otomatik, setten önceki nabzının biraz üstünü hedefler.",
 }

@@ -6,8 +6,8 @@
 // CheckIn): "Last heard from the watch" is the one sign that the two really talk, both ways.
 import { useEffect, useState } from 'react'
 import { t } from '../lib/i18n.js'
-import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, lastHeardAt } from '../lib/watch-settings.js'
+import { Section, Row, Switch, SelectRow } from '../components/ui.jsx'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, lastHeardAt, HR_REST_TARGETS } from '../lib/watch-settings.js'
 import { wearStatus } from '../lib/watch-sync.js'
 import { getChannel } from '../lib/channel.js'
 import { wearView, wearWatchLine, WEAR_DOCS } from '../lib/wear-view.js'
@@ -85,6 +85,15 @@ export default function WearSettingsPage ({ api = { status: wearStatus, channel:
             <Switch checked={!!prefs.show[k]} onChange={v => set({ show: { [k]: v } })} aria-label={t(title)} />
           </Row>
         ))}
+      </Section>
+      {/* "Ready" during a rest once the heart rate is back down (docs/dev/REST_BY_HEART_RATE.md). */}
+      <Section footer={t('During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.')}>
+        <Row icon="heart" iconTint="var(--red)" title={t('Ready by heart rate')}>
+          <Switch checked={prefs.hrRest.on} onChange={v => set({ hrRest: { on: v } })} aria-label={t('Ready by heart rate')} />
+        </Row>
+        {prefs.hrRest.on && <SelectRow icon="gauge" iconTint="var(--grey)" title={t('Target heart rate')} value={prefs.hrRest.bpm ?? 'auto'}
+          options={[{ value: 'auto', label: t('Automatic') }, ...HR_REST_TARGETS.map(b => ({ value: b, label: t('{0} bpm', b) }))]}
+          onChange={v => set({ hrRest: { bpm: v === 'auto' ? null : v } })} />}
       </Section>
       <Section>
         <Row icon="vibrate" iconTint="var(--indigo)" title={t('Tap the wrist when a rest is over')}>

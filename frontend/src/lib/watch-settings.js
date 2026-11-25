@@ -11,6 +11,8 @@
 //   show         what a workout screen shows: clip (the animation), hr, last (last time's sets),
 //                kcal (calories, default on), next (the next exercise during a rest), and rest:
 //                'ring' or 'plain' (the countdown alone)
+//   hrRest       "Ready" during a rest by heart rate (Apple Watch and Wear OS): { on, bpm }, bpm a
+//                fixed target or null for the automatic one (docs/dev/REST_BY_HEART_RATE.md)
 // Apple Health on the watch is not a choice of its own: it follows the phone's Apple Health switch
 // (Settings → Data, lib/health-sync.js), which the watch gets as `settings.health`. An older build's
 // `health` field in the stored prefs is left alone and not read.
@@ -20,7 +22,10 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, zones: true, rest: 'ring' })
-export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
+export const HR_REST_DEFAULTS = Object.freeze({ on: false, bpm: null })
+// The fixed targets Settings offers; any whole bpm from 60 to 180 is read back.
+export const HR_REST_TARGETS = [100, 110, 120, 130, 140]
+export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS, hrRest: HR_REST_DEFAULTS })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
@@ -28,6 +33,11 @@ const showOf = v => {
   for (const k of ['clip', 'hr', 'last', 'kcal', 'next', 'zones']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
   out.rest = o.rest === 'plain' ? 'plain' : 'ring'
   return out
+}
+
+const hrRestOf = v => {
+  const o = v && typeof v === 'object' ? v : {}
+  return { on: o.on === true, bpm: Number.isInteger(o.bpm) && o.bpm >= 60 && o.bpm <= 180 ? o.bpm : null }
 }
 
 const listeners = new Set()
@@ -44,13 +54,15 @@ export function readWatchPrefs(storage = globalThis.localStorage) {
     restHaptics: v.restHaptics !== false,
     crown: v.crown === 'weight' ? 'weight' : 'reps',
     show: showOf(v.show),
+    hrRest: hrRestOf(v.hrRest),
   }
 }
 
 export function writeWatchPrefs(patch, storage = globalThis.localStorage) {
   const cur = readWatchPrefs(storage)
-  // `show` is merged one choice at a time: a patch of one switch keeps the others.
-  const merged = { ...cur, ...patch, ...(patch && patch.show ? { show: { ...cur.show, ...patch.show } } : {}) }
+  // `show` and `hrRest` are merged one choice at a time: a patch of one switch keeps the others.
+  const merged = { ...cur, ...patch, ...(patch && patch.show ? { show: { ...cur.show, ...patch.show } } : {}),
+    ...(patch && patch.hrRest ? { hrRest: { ...cur.hrRest, ...patch.hrRest } } : {}) }
   const next = readWatchPrefs({ getItem: () => JSON.stringify(merged) })
   try { storage?.setItem(WATCH_PREFS_KEY, JSON.stringify(next)) } catch { /* private mode: for this run */ }
   emit()
@@ -103,7 +115,7 @@ export function noteWatchHeard (at, now = Date.now(), storage = globalThis.local
 export const lastHeardAt = (status = readWatchStatus(), storage = globalThis.localStorage) => Math.max(Number(status?.at) || 0, readWatchHeard(storage))
 
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
-export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show } })
+export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show }, hrRest: { ...p.hrRest } })
 
 /**
  * Where the phone and its Apple Watch stand, for Settings → Apple Watch, so every state can say

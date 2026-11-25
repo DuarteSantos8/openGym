@@ -5894,4 +5894,8 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Готовність за пульсом",
+  "Target heart rate": "Цільовий пульс",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Під час відпочинку годинник показує «Готовий», щойно пульс знову знизиться, і один раз торкається зап’ястя, якщо дотик нижче увімкнено. Зворотний відлік триває. «Автоматично» цілиться трохи вище пульсу перед підходом.",
 }

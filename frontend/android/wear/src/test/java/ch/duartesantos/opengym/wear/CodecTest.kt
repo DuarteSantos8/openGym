@@ -48,6 +48,7 @@ class CodecTest {
         assertEquals("de", snap.settings!!.lang)
         assertEquals(1988, snap.settings!!.birthYear)
         assertTrue(snap.settings!!.show!!.showZones)
+        assertEquals(HrRestSettings(on = true, bpm = null), snap.settings!!.hrRest)
         assertEquals(1, snap.streak!!.weeks)
     }
 

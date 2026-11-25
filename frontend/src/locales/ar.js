@@ -5952,4 +5952,8 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "جاهز حسب النبض",
+  "Target heart rate": "النبض المستهدف",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "أثناء الراحة تعرض الساعة «جاهز» عندما ينخفض نبضك من جديد، مع نقرة واحدة إن كانت نقرة المعصم أدناه مفعّلة. يستمر العد التنازلي. «تلقائي» يستهدف قليلًا فوق نبضك قبل المجموعة.",
 }

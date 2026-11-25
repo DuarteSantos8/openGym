@@ -5897,4 +5897,8 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "심박수로 준비됨",
+  "Target heart rate": "목표 심박수",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "휴식 중 심박수가 다시 내려오면 워치에 준비됨이 표시되고, 아래 손목 톡이 켜져 있으면 한 번 톡 해요. 카운트다운은 계속 흘러요. 자동은 세트 전 심박수보다 조금 위를 목표로 해요.",
 }
