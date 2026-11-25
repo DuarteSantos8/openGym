@@ -16,6 +16,24 @@
       140–220ms on an ease-out curve. Nothing bounces or slides for decoration.
    ========================================================================== */
 
+/* ----------------------------------------------------------------- fonts -- */
+/* Geist (SIL OFL 1.1, fonts/OFL.txt), self-hosted: no font CDN, the same files in the web image and
+   the phone apps. Latin and Cyrillic only; Arabic, Thai, Devanagari, Chinese and Korean fall through
+   unicode-range to the system face in --font, so those packs read as they always did. One variable
+   file per script covers every weight. Figures are tabular (body below), so no mono face is needed. */
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-latin-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-latin-wght-normal.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-latin-ext-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-latin-ext-wght-normal.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-cyrillic-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-cyrillic-wght-normal.woff2) format("woff2");
+  unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-cyrillic-ext-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-cyrillic-ext-wght-normal.woff2) format("woff2");
+  unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+
 /* ---------------------------------------------------------------- tokens -- */
 :root {
   /* surfaces — dark is the default */
@@ -60,10 +78,21 @@
      shade of the same hue that reaches 4.5:1 (design review 1.4.5). Fills keep --acc. */
   --acc-ink: var(--acc);
 
-  /* geometry */
-  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
+  /* geometry. Cards went from 14 to 18 px with the soft-relief pass (design 1.5): a rounder card
+     reads as one lifted object now that it carries a hairline and a shadow instead of being a flat
+     grey block. --r-pill is every capsule (chips, segmented tracks), written three ways before. */
+  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:18px; --r-pill:999px;
   --pad:16px;
   --icon-stroke:1.7;
+  /* spacing, on a 4 px grid: the gaps between blocks. New rules take these; the 8/10/12/14 spacer
+     divs in the views move onto them screen by screen. */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
+  /* relief (design 1.5): a card is a surface, a hairline of light inside its edge and a shadow
+     just deep enough to lift it off the page. --e1 is for what floats (the tab bar island). */
+  --line:rgba(255,255,255,.07);
+  --e0:0 1px 2px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.02);
+  --e1:0 12px 32px -8px rgba(0,0,0,.6);
+  --font:"Geist",-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
 
   /* type scale (redesign 1.4.5, P1): the iPhone's text styles, in rem so a browser's text size
      and zoom scale the words and the layout around them together. Every text size in the sheets
@@ -132,6 +161,9 @@
 
   --sep:       rgba(60,60,67,.29);
   --sep-op:    rgba(60,60,67,.20);
+  --line:      rgba(16,24,40,.07);
+  --e0:        0 1px 2px rgba(16,24,40,.05),0 2px 6px rgba(16,24,40,.04);
+  --e1:        0 12px 32px -8px rgba(16,24,40,.22);
 
   --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
   --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
@@ -231,7 +263,7 @@ html{
 }
 body{
   background:var(--bg);color:var(--label);
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
+  font-family:var(--font);
   font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);
   min-height:100vh;min-height:100dvh;overscroll-behavior-y:none;overflow-x:clip;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -248,6 +280,14 @@ body{
    frame. Installed apps only: in a Safari tab 100lvh is the toolbars' height taller than the page
    you can see, and a short page would scroll under them. */
 @media (display-mode: standalone){body{min-height:100lvh}}
+/* A halo of the accent behind the top of every page (design 1.5): the screen wears the user's colour
+   without one more filled block. It scrolls away with the page. Not on the workout screen
+   (no-tabbar), where nothing should compete with the numbers. */
+body:not(.no-tabbar){
+  background-image:none;
+  background-image:radial-gradient(640px 300px at 50% -120px,color-mix(in srgb,var(--acc) 12%,transparent),transparent 72%);
+  background-repeat:no-repeat;
+}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;letter-spacing:inherit}
 input,select,textarea{font:inherit;color:var(--label);letter-spacing:inherit}
 img{max-width:100%}
@@ -505,11 +545,14 @@ h4.sec{
 .rate-range{display:grid;gap:8px;margin:14px 0 8px}
 
 /* ----------------------------------------------------------------- card -- */
+/* Soft relief (design 1.5): the hairline is inset so it never adds to the card's size, and a card
+   that paints its own box-shadow (a selected state, a seasonal card) simply replaces both. */
 .card{
   background:var(--surface);border-radius:var(--r-card);
   padding:16px;margin-bottom:12px;
+  box-shadow:var(--e0),inset 0 0 0 1px var(--line);
 }
-.card .big{font-size:1.875rem;font-weight:600;letter-spacing:-.026em;line-height:1.1}
+.card .big{font-size:1.875rem;font-weight:650;letter-spacing:-.035em;line-height:1.1}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -548,7 +591,7 @@ h4.sec{
   font-size:var(--fs-footnote);font-weight:400;color:var(--label-2);
   letter-spacing:-.004em;padding:0 4px 7px;display:block;
 }
-.sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden}
+.sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden;box-shadow:var(--e0),inset 0 0 0 1px var(--line)}
 .sect-f{font-size:var(--fs-footnote);color:var(--label-2);padding:7px 4px 0;line-height:1.38}
 /* A full-width button straight above a grouped list (Programmes: "New programme", then "Starter
    programmes") kept 4px from the list's heading, which made the two read as one block. */
@@ -654,14 +697,20 @@ h4.sec{
 /* -------------------------------------------------------------- buttons -- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;
-  padding:14px 18px;border-radius:var(--r);font-size:var(--fs-body);font-weight:600;
+  padding:14px 18px;border-radius:14px;font-size:var(--fs-body);font-weight:600;
   letter-spacing:-.012em;background:var(--surface-2);color:var(--label);
-  transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast);
+  transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast),box-shadow var(--fast);
 }
 .btn .icn{font-size:1.1875rem}
 .btn:active{transform:scale(var(--press-scale))}
-.btn.primary{background:var(--acc);color:var(--on-acc)}
-.btn.primary:active{background:var(--acc-2)}
+/* The main button catches light from above and glows a little in its own colour (design 1.5). The
+   flat fill stays first, for browsers without color-mix(). */
+.btn.primary{background:var(--acc);color:var(--on-acc);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 86%,#fff),var(--acc));
+  box-shadow:0 6px 18px -6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.22);
+  box-shadow:0 6px 18px -6px color-mix(in srgb,var(--acc) 55%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn.primary:active{background:var(--acc-2);box-shadow:none}
+.btn.primary:disabled{box-shadow:none}
 .btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
 .btn.danger{background:rgba(255,69,58,0.15);background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
 .btn.ghost,.btn.plain{background:none;color:var(--acc-ink);font-weight:400}
@@ -687,13 +736,17 @@ h4.sec{
    letting text through. The blur is also down from 24px to 10px: this is a fixed element, so
    the WebView recomposites the blurred region on every scroll frame, and on Android that is
    the single most expensive thing on the screen. See @supports below for the no-blur case. */
+/* An island (design 1.5): inset from the screen's edges and lifted off the bottom by the system bar's
+   own inset, so it floats over the page the way it already did on a computer. It stays below the
+   rest timer (88px), the back-to-top button (80px) and the toast (96px), which sit where they did:
+   8 px + a 58 px bar ends at 66 px over the safe area. */
 #tabbar{
-  position:fixed;inset-inline-start:0;inset-inline-end:0;bottom:0;z-index:50;
+  position:fixed;inset-inline-start:10px;inset-inline-end:10px;bottom:calc(8px + var(--sab));z-index:50;
   display:flex;justify-content:space-around;align-items:flex-end;
-  padding:7px 6px calc(6px + var(--sab));
+  padding:7px 6px 7px;border-radius:24px;
   background:var(--bg-el);background:color-mix(in srgb,var(--bg-el) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
-  border-top:var(--hair) solid var(--sep-op);
+  border:var(--hair) solid var(--sep-op);box-shadow:var(--e1);
 }
 :root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
 /* 11px: the minimum text size Apple's HIG gives for iOS (11 pt) */
@@ -1148,7 +1201,7 @@ body.chips-dragging *{cursor:inherit}
    padding box, which is what the thumb needs. */
 .seg{
   position:relative;display:flex;
-  background:var(--surface-3);border-radius:9px;padding:2px;isolation:isolate;
+  background:var(--surface-3);border-radius:var(--r-pill);padding:2px;isolation:isolate;
 }
 .seg>button{flex:1 1 0;min-width:0}
 :root[data-theme="light"] .seg{background:rgba(118,118,128,.12)}
@@ -1156,7 +1209,7 @@ body.chips-dragging *{cursor:inherit}
   position:absolute;z-index:0;top:2px;bottom:2px;inset-inline-start:2px;
   width:calc((100% - 4px)/var(--n));
   transform:translateX(calc(100% * var(--i)));
-  background:var(--surface);border-radius:7px;
+  background:var(--surface);border-radius:var(--r-pill);
   box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.06);
   transition:transform var(--med) var(--ease);
 }
@@ -1171,6 +1224,7 @@ body.chips-dragging *{cursor:inherit}
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
   justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast),transform var(--fast) var(--ease);
 }
+.seg button.on{font-weight:600}
 .seg button .icn{font-size:var(--fs-callout)}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
 .seg button:active{transform:scale(var(--press-scale))}
