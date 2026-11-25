@@ -104,6 +104,16 @@ language-model assistance. They are not copied from a separate Portuguese
 dataset. Their review status and translation policy are documented alongside
 the source files.
 
+## Interface typeface: Geist
+
+The app's text is set in [**Geist**](https://github.com/vercel/geist-font), Copyright 2024 The Geist
+Project Authors, licensed under the SIL Open Font License 1.1 (full text in
+`frontend/src/fonts/OFL.txt`). The variable Latin, Latin Extended, Cyrillic and Cyrillic Extended
+files (taken unmodified from the `@fontsource-variable/geist` 5.3.0 package) are copied into
+`frontend/src/fonts/` and served by openGym itself, in the web image and inside the phone apps: no
+font service is contacted. The OFL lets the font be bundled and redistributed with software; it may
+not be sold on its own.
+
 ## Gym check-in QR codes and barcodes
 
 The gym check-in feature (a saved membership code shown as a QR code or barcode on the phone,

@@ -225,11 +225,18 @@ export const exerciseNameFor = ex => shownNameOf(ex) || exerciseOwnName(ex)
 
 /** The exercise's own name in the active language, whatever other name it is shown by. */
 export const exerciseOwnName = ex => {
+  const [main, english] = ownNameParts(ex)
+  return english ? `${main} ${english}` : main
+}
+
+// The own name as [the name, the English original in brackets or '']: a list can set the English
+// part quieter than the name it explains (design 1.5) and still read out the same words.
+const ownNameParts = ex => {
   // A language that chose "English names only" sees the canonical catalogue title, not the
   // translation — and never the parenthetical either. Custom exercises keep their exact name.
-  if (enOnly) return ex?.n || ''
+  if (enOnly) return [ex?.n || '', '']
   const translated = exerciseNames && ex && exerciseNames[ex.id]
-  if (!translated) return ex?.n || ''
+  if (!translated) return [ex?.n || '', '']
   // Some names (Burpee, Pilates, brand/model terms) are the established term in the target
   // language too. Repeating an identical loanword in parentheses adds noise rather than
   // context. Compared in the active language's own casing rules, not hardcoded to one —
@@ -237,8 +244,15 @@ export const exerciseOwnName = ex => {
   // (e.g. Turkish dotless i), which does not include any language shipped here today.
   return translated.toLocaleLowerCase(lang) === ex.n.toLocaleLowerCase('en')
       || !enParens
-    ? translated
-    : `${translated} ${englishInParens(ex.n)}`
+    ? [translated, '']
+    : [translated, englishInParens(ex.n)]
+}
+
+/** exerciseNameFor split in two: [name, English part or '']. Joined with a space they are exactly
+    exerciseNameFor(ex). Another name the exercise is shown by (#903) has no English part. */
+export const exerciseNameParts = ex => {
+  const shown = shownNameOf(ex)
+  return shown ? [shown, ''] : ownNameParts(ex)
 }
 
 // In a right-to-left language the English title in brackets is a left-to-right run inside

@@ -142,7 +142,8 @@ export default function Home() {
     </div>
     <TrainerNotice />
 
-    <div className="card">
+    {/* The focus card (design 1.5): the week and what to do today, lit in the accent. */}
+    <div className="card hero">
       {/* A running programme (lib/programmes.js) wrote this week's plan: where it stands, one tap from its screen. */}
       {progChip && <button type="button" className="chip ichip prog-chip" onClick={() => nav('/plan/programmes')}><Icon name="calendar" /><span>{progChip}</span></button>}
       {/* A coach week runs by order, not by weekday, so its progress row stands in for the
@@ -242,7 +243,7 @@ export default function Home() {
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
     {on('checkin') && (
       <div className="card tap-host checkin-card">
-        <CardHead icon="qr" tint="var(--blue)" eyebrow={t('At the gym')} title={t('Check in')} open={{ onClick: () => nav('/checkin') }}
+        <CardHead icon="qr" eyebrow={t('At the gym')} title={t('Check in')} open={{ onClick: () => nav('/checkin') }}
           action={<Icon name="chevronRight" className="chev" />} />
       </div>
     )}
@@ -255,13 +256,14 @@ export default function Home() {
       </div>
     )}
 
-    {/* A new profile picks how forgiving its streak is, once, right under the plan it starts with
-        (components/StreakRule.jsx). */}
-    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && <StreakRuleWelcome />}
+    {/* A new profile picks how forgiving its streak is, once (components/StreakRule.jsx). Asked after
+        the first workout, when there is a streak to keep (design 1.5): on a brand-new Home it was a
+        full form between the plan and everything else. Until then the default rule applies. */}
+    {on('motivation') && S.streakRuleAsk === true && !S.streakRule && S.workouts.length > 0 && <StreakRuleWelcome />}
 
     {on('body') && S.showWeightCard !== false && <div className="card">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
-      <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
+      <CardHead icon="scale" title={t('Body weight')} className="bw-head"
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>

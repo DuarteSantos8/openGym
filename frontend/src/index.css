@@ -16,6 +16,24 @@
       140–220ms on an ease-out curve. Nothing bounces or slides for decoration.
    ========================================================================== */
 
+/* ----------------------------------------------------------------- fonts -- */
+/* Geist (SIL OFL 1.1, fonts/OFL.txt), self-hosted: no font CDN, the same files in the web image and
+   the phone apps. Latin and Cyrillic only; Arabic, Thai, Devanagari, Chinese and Korean fall through
+   unicode-range to the system face in --font, so those packs read as they always did. One variable
+   file per script covers every weight. Figures are tabular (body below), so no mono face is needed. */
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-latin-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-latin-wght-normal.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-latin-ext-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-latin-ext-wght-normal.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-cyrillic-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-cyrillic-wght-normal.woff2) format("woff2");
+  unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Geist";font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(./fonts/geist-cyrillic-ext-wght-normal.woff2) format("woff2-variations"),url(./fonts/geist-cyrillic-ext-wght-normal.woff2) format("woff2");
+  unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+
 /* ---------------------------------------------------------------- tokens -- */
 :root {
   /* surfaces — dark is the default */
@@ -60,10 +78,21 @@
      shade of the same hue that reaches 4.5:1 (design review 1.4.5). Fills keep --acc. */
   --acc-ink: var(--acc);
 
-  /* geometry */
-  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
+  /* geometry. Cards went from 14 to 18 px with the soft-relief pass (design 1.5): a rounder card
+     reads as one lifted object now that it carries a hairline and a shadow instead of being a flat
+     grey block. --r-pill is every capsule (chips, segmented tracks), written three ways before. */
+  --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:18px; --r-pill:999px;
   --pad:16px;
   --icon-stroke:1.7;
+  /* spacing, on a 4 px grid: the gaps between blocks. New rules take these; the 8/10/12/14 spacer
+     divs in the views move onto them screen by screen. */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
+  /* relief (design 1.5): a card is a surface, a hairline of light inside its edge and a shadow
+     just deep enough to lift it off the page. --e1 is for what floats (the tab bar island). */
+  --line:rgba(255,255,255,.07);
+  --e0:0 1px 2px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.02);
+  --e1:0 12px 32px -8px rgba(0,0,0,.6);
+  --font:"Geist",-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
 
   /* type scale (redesign 1.4.5, P1): the iPhone's text styles, in rem so a browser's text size
      and zoom scale the words and the layout around them together. Every text size in the sheets
@@ -132,6 +161,9 @@
 
   --sep:       rgba(60,60,67,.29);
   --sep-op:    rgba(60,60,67,.20);
+  --line:      rgba(16,24,40,.07);
+  --e0:        0 1px 2px rgba(16,24,40,.05),0 2px 6px rgba(16,24,40,.04);
+  --e1:        0 12px 32px -8px rgba(16,24,40,.22);
 
   --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
   --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
@@ -231,7 +263,7 @@ html{
 }
 body{
   background:var(--bg);color:var(--label);
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
+  font-family:var(--font);
   font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);
   min-height:100vh;min-height:100dvh;overscroll-behavior-y:none;overflow-x:clip;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -248,6 +280,14 @@ body{
    frame. Installed apps only: in a Safari tab 100lvh is the toolbars' height taller than the page
    you can see, and a short page would scroll under them. */
 @media (display-mode: standalone){body{min-height:100lvh}}
+/* A halo of the accent behind the top of every page (design 1.5): the screen wears the user's colour
+   without one more filled block. It scrolls away with the page. Not on the workout screen
+   (no-tabbar), where nothing should compete with the numbers. */
+body:not(.no-tabbar){
+  background-image:none;
+  background-image:radial-gradient(640px 300px at 50% -120px,color-mix(in srgb,var(--acc) 12%,transparent),transparent 72%);
+  background-repeat:no-repeat;
+}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;letter-spacing:inherit}
 input,select,textarea{font:inherit;color:var(--label);letter-spacing:inherit}
 img{max-width:100%}
@@ -505,11 +545,14 @@ h4.sec{
 .rate-range{display:grid;gap:8px;margin:14px 0 8px}
 
 /* ----------------------------------------------------------------- card -- */
+/* Soft relief (design 1.5): the hairline is inset so it never adds to the card's size, and a card
+   that paints its own box-shadow (a selected state, a seasonal card) simply replaces both. */
 .card{
   background:var(--surface);border-radius:var(--r-card);
   padding:16px;margin-bottom:12px;
+  box-shadow:var(--e0),inset 0 0 0 1px var(--line);
 }
-.card .big{font-size:1.875rem;font-weight:600;letter-spacing:-.026em;line-height:1.1}
+.card .big{font-size:1.875rem;font-weight:650;letter-spacing:-.035em;line-height:1.1}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -548,7 +591,7 @@ h4.sec{
   font-size:var(--fs-footnote);font-weight:400;color:var(--label-2);
   letter-spacing:-.004em;padding:0 4px 7px;display:block;
 }
-.sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden}
+.sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden;box-shadow:var(--e0),inset 0 0 0 1px var(--line)}
 .sect-f{font-size:var(--fs-footnote);color:var(--label-2);padding:7px 4px 0;line-height:1.38}
 /* A full-width button straight above a grouped list (Programmes: "New programme", then "Starter
    programmes") kept 4px from the list's heading, which made the two read as one block. */
@@ -654,14 +697,21 @@ h4.sec{
 /* -------------------------------------------------------------- buttons -- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;
-  padding:14px 18px;border-radius:var(--r);font-size:var(--fs-body);font-weight:600;
+  padding:14px 18px;border-radius:14px;font-size:var(--fs-body);font-weight:600;
   letter-spacing:-.012em;background:var(--surface-2);color:var(--label);
-  transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast);
+  transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast),box-shadow var(--fast);
 }
 .btn .icn{font-size:1.1875rem}
 .btn:active{transform:scale(var(--press-scale))}
-.btn.primary{background:var(--acc);color:var(--on-acc)}
-.btn.primary:active{background:var(--acc-2)}
+/* The main button catches light from above and glows a little in its own colour (design 1.5). The
+   flat fill stays first, for browsers without color-mix(). */
+.btn.primary{background:var(--acc);color:var(--on-acc);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 86%,#fff),var(--acc));
+  box-shadow:0 6px 18px -6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.22);
+  box-shadow:0 6px 18px -6px color-mix(in srgb,var(--acc) 55%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.btn.primary{background:var(--acc)}}
+.btn.primary:active{background:var(--acc-2);box-shadow:none}
+.btn.primary:disabled{box-shadow:none}
 .btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
 .btn.danger{background:rgba(255,69,58,0.15);background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
 .btn.ghost,.btn.plain{background:none;color:var(--acc-ink);font-weight:400}
@@ -687,13 +737,17 @@ h4.sec{
    letting text through. The blur is also down from 24px to 10px: this is a fixed element, so
    the WebView recomposites the blurred region on every scroll frame, and on Android that is
    the single most expensive thing on the screen. See @supports below for the no-blur case. */
+/* An island (design 1.5): inset from the screen's edges and lifted off the bottom by the system bar's
+   own inset, so it floats over the page the way it already did on a computer. It stays below the
+   rest timer (88px), the back-to-top button (80px) and the toast (96px), which sit where they did:
+   8 px + a 58 px bar ends at 66 px over the safe area. */
 #tabbar{
-  position:fixed;inset-inline-start:0;inset-inline-end:0;bottom:0;z-index:50;
+  position:fixed;inset-inline-start:10px;inset-inline-end:10px;bottom:calc(8px + var(--sab));z-index:50;
   display:flex;justify-content:space-around;align-items:flex-end;
-  padding:7px 6px calc(6px + var(--sab));
+  padding:7px 6px 7px;border-radius:24px;
   background:var(--bg-el);background:color-mix(in srgb,var(--bg-el) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
-  border-top:var(--hair) solid var(--sep-op);
+  border:var(--hair) solid var(--sep-op);box-shadow:var(--e1);
 }
 :root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
 /* 11px: the minimum text size Apple's HIG gives for iOS (11 pt) */
@@ -803,6 +857,7 @@ h4.sec{
   display:flex;align-items:center;gap:12px;background:var(--surface);
   border-radius:var(--r-card);padding:10px 12px;min-height:60px;
   transition:background var(--fast);text-align: start;width:100%;
+  box-shadow:var(--e0),inset 0 0 0 1px var(--line);
 }
 .item:not(.tap-host):active{background:var(--press-fill)}
 .routine-list{position:relative}
@@ -918,6 +973,21 @@ h4.sec{
 .ex-grid .item.ex-new{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;padding:10px 12px}
 .ex-grid .item.ex-new .thumb{width:50px;height:50px;border-radius:9px}
 .ex-grid .item.ex-new .thumb-x{font-size:1.3125rem}
+/* --- Exercises: the library list (design 1.5) --- */
+/* The picture is the row's anchor: a step larger, its corners following the row's, and a hairline
+   so the white still frame does not bleed into a white card in the light theme. The name leads
+   at 550; the English original, where the language shows it, follows quieter (exerciseNameParts). */
+.lib-list .item{gap:14px;padding:10px 12px 10px 10px}
+.lib-list .item .thumb{width:56px;height:56px;border-radius:12px;outline:1px solid var(--line);outline-offset:-1px}
+.lib-list .item:not(.ex-new) .tt{font-weight:550;letter-spacing:-.015em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lib-list .tt-en{color:var(--label-2);font-weight:400;font-size:.875em;letter-spacing:-.005em}
+.lib-list .item:not(.ex-new) .ss{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Cards: the picture sits concentric in the card (18 px card, 8 px padding, 10 px picture), and
+   every card keeps the same height: the name takes up to three lines, the muscle line one. */
+.lib-list.ex-grid .item .thumb{width:100%;height:auto;border-radius:10px}
+.lib-list.ex-grid .item.ex-new .thumb{width:56px;height:56px;border-radius:12px}
+.lib-list.ex-grid .item .item-open{justify-content:flex-start;padding:0 4px 4px}
+.lib-list.ex-grid .item:not(.ex-new) .tt{min-height:calc(3 * 1.25em)}
 /* The list/cards button (ExerciseViewToggle) at the end of the search field, as tall as it and
    dressed like it; pressed while the cards are on. */
 .search-row{display:flex;gap:8px}
@@ -1148,7 +1218,7 @@ body.chips-dragging *{cursor:inherit}
    padding box, which is what the thumb needs. */
 .seg{
   position:relative;display:flex;
-  background:var(--surface-3);border-radius:9px;padding:2px;isolation:isolate;
+  background:var(--surface-3);border-radius:var(--r-pill);padding:2px;isolation:isolate;
 }
 .seg>button{flex:1 1 0;min-width:0}
 :root[data-theme="light"] .seg{background:rgba(118,118,128,.12)}
@@ -1156,7 +1226,7 @@ body.chips-dragging *{cursor:inherit}
   position:absolute;z-index:0;top:2px;bottom:2px;inset-inline-start:2px;
   width:calc((100% - 4px)/var(--n));
   transform:translateX(calc(100% * var(--i)));
-  background:var(--surface);border-radius:7px;
+  background:var(--surface);border-radius:var(--r-pill);
   box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.06);
   transition:transform var(--med) var(--ease);
 }
@@ -1171,6 +1241,7 @@ body.chips-dragging *{cursor:inherit}
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
   justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast),transform var(--fast) var(--ease);
 }
+.seg button.on{font-weight:600}
 .seg button .icn{font-size:var(--fs-callout)}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
 .seg button:active{transform:scale(var(--press-scale))}
@@ -1241,7 +1312,7 @@ body.chips-dragging *{cursor:inherit}
 .stp .val i{font-style:normal;font-size:var(--fs-caption);color:var(--label-2);flex:none}
 .stp .num{
   width:100%;min-width:0;text-align:center;background:none;border:none;outline:none;
-  font-size:var(--fs-body);font-weight:500;letter-spacing:-.012em;padding:0;
+  font-size:var(--fs-body);font-weight:600;letter-spacing:-.035em;padding:0;
   -moz-appearance:textfield;appearance:textfield;
   /* the field is the whole height of the stepper, not just its 18px text line, so a tap
      anywhere between the two buttons focuses it */
@@ -1280,6 +1351,10 @@ body.chips-dragging *{cursor:inherit}
    (set rows have an 8px gap, so they take the full 7px) */
 .chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
 .setrow .chk::before{inset:-7px}
+/* In a set row the tick is the screen's main control (design 1.5): a rounded square that fills with
+   the accent and glows a little once the set is done, so a finished set reads from across the gym. */
+.setrow .chk{border-radius:10px}
+.setrow .chk.on{box-shadow:0 4px 12px -4px var(--acc);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--acc) 60%,transparent)}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(var(--press-scale-sm))}
 .ck svg{
@@ -1348,7 +1423,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   background:rgba(0,0,0,.55);color:#fff;--icon-stroke:2.4;
 }
 .exhd{align-items:center}
-.wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.wprog{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
 /* The bar with the session's volume at its end (#774): 12 px tall where the bar is 4, so it takes
    8 px less margin and the header keeps the exact height it has without it. */
@@ -2460,13 +2535,13 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-months{display:flex;margin-inline-start:28px;margin-bottom:5px}
 /* Month names and the legend are read, not decoration: --label-3 was 1.7:1 on a light card (QA 1.4.5). */
-.hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-2);white-space:nowrap;overflow:visible}
+.hm-months span{flex:none;width:16px;font-size:var(--fs-caption2);color:var(--label-2);white-space:nowrap;overflow:visible}
 .hm-body{display:flex}
 .hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px}
-.hm-days span{height:11px;font-size:.625rem;color:var(--label-2);line-height:11px}
+.hm-days span{height:13px;font-size:.625rem;color:var(--label-2);line-height:13px}
 .hm-grid{display:flex;gap:3px}
 .hm-col{display:flex;flex-direction:column;gap:3px}
-.hm-c{width:11px;height:11px;border-radius:3px;background:var(--surface-2);flex:none}
+.hm-c{width:13px;height:13px;border-radius:4px;background:var(--surface-2);flex:none}
 .hm-c.l1{background:linear-gradient(var(--acc-line),var(--acc-line)),var(--surface-2);background:color-mix(in srgb,var(--acc) 30%,var(--surface-2))}
 .hm-c.l2{background:var(--acc);background:color-mix(in srgb,var(--acc) 55%,var(--surface-2))}
 .hm-c.l3{background:var(--acc);background:color-mix(in srgb,var(--acc) 78%,var(--surface-2))}
@@ -2695,13 +2770,14 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 
 /* --- stat tiles --- */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.tile{background:var(--surface);border-radius:var(--r-card);padding:14px}
+.tile{background:var(--surface);border-radius:var(--r-card);padding:14px;box-shadow:var(--e0),inset 0 0 0 1px var(--line)}
+/* A figure (design 1.5): a small spaced label over a large number. */
 .tile .l{
-  color:var(--label-2);font-size:var(--fs-footnote);font-weight:400;letter-spacing:-.004em;
-  text-transform:none;display:flex;align-items:center;gap:5px;
+  color:var(--label-2);font-size:var(--fs-caption2);font-weight:650;letter-spacing:.07em;
+  text-transform:uppercase;display:flex;align-items:center;gap:5px;
 }
 .tile .l .icn{font-size:.875rem;color:var(--label)}
-.tile .v{font-size:1.625rem;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
+.tile .v{font-size:1.75rem;font-weight:650;letter-spacing:-.04em;margin-top:8px;line-height:1.05}
 /* a tile that holds a count beside other counts (import summaries, the finish sheet, admin): the body size, not the headline figure */
 .tile .v.v-sm{font-size:var(--fs-body);letter-spacing:var(--ls-body)}
 .tile.tappable:active{background:var(--press-fill)}
@@ -3250,8 +3326,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wchip{
   --ring:var(--sep);
   flex:none;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;   /* own stacking context: WebKit lets the scaling fill ignore the rounded clip otherwise */
-  min-width:28px;height:28px;padding:0 8px;border-radius:99px;
-  font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
+  min-width:36px;height:36px;padding:0 10px;border-radius:12px;
+  font-size:var(--fs-subhead);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
   background:var(--surface);
 }
 /* The fill is a layer scaled from the bottom (transform only), the ring a layer above it. */
@@ -3270,6 +3346,28 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* part of the give-back above — one edge for all three insets of a row in the list view */
 @media (max-width:404px){
   .wl-unit{padding:10px 8px 2px}
+}
+
+/* --- home: the focus card (design 1.5) --- */
+/* The week and today's session, lit from the corner in the accent and edged in it, rounder than a
+   card: the one block on Home that says what to do now. The flat surface stays first for old
+   Safari without color-mix(). */
+.card.hero{
+  border-radius:var(--r-xl);padding:18px;
+  background:var(--surface);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 14%,var(--surface)),var(--surface) 62%);
+  box-shadow:var(--e0),inset 0 0 0 1px var(--acc-line);
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.card.hero{background:var(--surface)}}
+.card.hero .today-row{background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 82%,transparent)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.card.hero .today-row{background:var(--surface-2)}}
+.card.hero .ttl{font-weight:650;font-size:var(--fs-title3);letter-spacing:-.025em;line-height:1.2}
+/* Start, on the row it starts: a filled, lit button rather than a 12px tint, so today's one action
+   reads from arm's length. The row stays the target; this is its label. */
+.today-row .tag.acc{
+  padding:8px 14px;border-radius:var(--r-pill);font-size:var(--fs-subhead);font-weight:650;
+  background:var(--acc);color:var(--on-acc);
+  box-shadow:0 4px 12px -4px var(--acc);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--acc) 60%,transparent);
 }
 
 /* --- home: today's session row --- */
@@ -3888,13 +3986,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* ------------------------------------------------------ stats redesign -- */
 /* The headline numbers as one divided card (app screens: KPIs are type, not tiles): three across,
    the lifetime total under them at full width. */
-.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px;background:var(--surface);border-radius:var(--r-card)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e0),inset 0 0 0 1px var(--line)}
 /* Two across when the Body module is off (Settings → Modules): no Weight 30d, no empty third. */
 .kpis.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.kpis .tile{background:none;border-radius:0;padding:12px 14px;min-width:0;position:relative}
+.kpis .tile{background:none;border-radius:0;padding:12px 14px;min-width:0;position:relative;box-shadow:none}
+/* three to a row on a 320 px phone leaves a label 69 px: closer tracking keeps "Peso 30 d" on one line */
+.kpis .tile .l{letter-spacing:.02em}
 .kpis .tile+.tile{border-inline-start:var(--hair) solid var(--sep)}
 .kpis .tile.wide{grid-column:1 / -1;border-inline-start:0;border-top:var(--hair) solid var(--sep)}
-.kpis .tile .l{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2);overflow-wrap:break-word}
+.kpis .tile .l{font-size:var(--fs-caption2);line-height:var(--lh-small);color:var(--label-2);overflow-wrap:break-word}
 .kpis .tile .v{font-size:var(--fs-title2);margin-top:2px;overflow-wrap:anywhere}
 /* A card folded to one line (Challenges on Stats): the whole line is the button, 44px or more. */
 .card-fold{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin:-4px 0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
