@@ -584,6 +584,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
+            // A set picked here stays that set when the phone adds or takes out rows around it.
+            if !self.picked.isEmpty {
+                let moved = SessionCore.rebasePicked(self.picked, from: before.workout, to: next.workout)
+                if moved != self.picked { self.picked = moved }
+            }
             // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
             // when the phone already runs the next workout (no snapshot without one in between):
             // the session ends unsaved instead of carrying on as the next one. Remembered as run
@@ -694,7 +699,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             r = s?.r ?? 0
         }
         let sec = s?.sec ?? 30
-        let key = "\(workout?.id ?? "")|\(entryIndex)|\(e.id)|\(SetNav.identity(e, setIndex))|\(s?.sideUp ?? "")|\(w)|\(r)|\(sec)"
+        let key = "\(workout?.id ?? "")|\(entryIndex)|\(e.id)|\(SetNav.identity(e, setIndex))|\(s?.sideUp ?? "")|\(e.weightUnit(unit))|\(w)|\(r)|\(sec)"
         if keepEdits, key == targetsKey { return }
         targetsKey = key
         // Only what changed: every write redraws the set page.

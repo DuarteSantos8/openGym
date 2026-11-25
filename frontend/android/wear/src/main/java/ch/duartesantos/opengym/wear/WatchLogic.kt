@@ -153,8 +153,24 @@ data class Draft(val key: String = "", val w: Double = 0.0, val r: Double = 0.0,
 }
 
 object Drafts {
-    /** Which set a draft belongs to: the workout, the exercise (not only its row: the phone may move it), the set, the side. */
-    fun key(wid: String?, exId: String?, ei: Int, si: Int?, side: String?) = "$wid#$exId#$ei#$si#$side"
+    /**
+     * Which set a draft belongs to: the workout, the exercise (not only its row: the phone may move
+     * it), the set, the side, the weight unit (numbers typed in kg are not pounds). `set` is
+     * [identity]; a plain row index still works for callers that have no exercise at hand.
+     */
+    fun key(wid: String?, exId: String?, ei: Int, set: Any?, side: String?, unit: String = "") = "$wid#$exId#$ei#$set#$side#$unit"
+
+    /**
+     * The set, for the key: its `sid` when it has one, so a set added or taken out elsewhere in the
+     * exercise keeps the draft; without one, its row and how many rows there are, so a set added or
+     * taken out on the phone loads the plan again (the Apple Watch's SetNav.identity).
+     * `si` null: every set is done and the page shows the last one.
+     */
+    fun identity(e: Entry, si: Int?): String {
+        if (si == null) return "-|${e.sets.lastOrNull()?.sid ?: ""}"
+        val sid = e.sets.getOrNull(si)?.sid
+        return if (!sid.isNullOrEmpty()) "sid:$sid" else "${e.sets.size}|$si"
+    }
 
     /**
      * The draft after the state changed: another set (or `force`) loads the plan's numbers; the

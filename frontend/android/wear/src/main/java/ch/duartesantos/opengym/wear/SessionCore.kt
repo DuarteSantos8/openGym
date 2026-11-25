@@ -303,6 +303,33 @@ object SessionCore {
     }
 
     /**
+     * The sets picked by hand (entry index → set index) after a snapshot moved rows around: each
+     * follows its exercise by id and its set by `sid`, so a set added or taken out before it on the
+     * phone does not turn the pick into the set beside it. A set without a `sid` stays picked only
+     * while its exercise has as many rows as before; a set gone from the phone is no longer picked.
+     * The twin of the Apple Watch's SessionCore.rebasePicked.
+     */
+    fun rebasePicked(picked: Map<Int, Int>, old: ActiveWorkout?, new: ActiveWorkout?): Map<Int, Int> {
+        if (old == null || new == null || old.id != new.id) return emptyMap()
+        val out = mutableMapOf<Int, Int>()
+        for ((ei, si) in picked) {
+            val was = old.entries.getOrNull(ei) ?: continue
+            val row = was.sets.getOrNull(si) ?: continue
+            val to = if (new.entries.getOrNull(ei)?.id == was.id) ei else new.entries.indexOfFirst { it.id == was.id }
+            if (to < 0) continue
+            val sets = new.entries[to].sets
+            val sid = row.sid
+            if (!sid.isNullOrEmpty()) {
+                val nsi = sets.indexOfFirst { it.sid == sid }
+                if (nsi >= 0) out[to] = nsi
+            } else if (sets.size == was.sets.size) {
+                out[to] = si
+            }
+        }
+        return out
+    }
+
+    /**
      * Where to go after set `si` of exercise `ei`, and whether a rest comes first:
      *   per-side set with a side to go   the same exercise, no rest
      *   superset                          the next exercise of the group in turn; rest after a round

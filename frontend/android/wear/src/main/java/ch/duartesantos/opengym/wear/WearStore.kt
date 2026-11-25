@@ -222,6 +222,11 @@ object WearStore {
         val off = clockOff()
         val before = _state.value
         val after = SessionCore.applySnapshot(before, snap, off)
+        // A set picked here stays that set when the phone adds or takes out rows around it.
+        if (picked.isNotEmpty()) {
+            val moved = SessionCore.rebasePicked(picked, before.workout, after.workout)
+            picked.clear(); picked.putAll(moved)
+        }
         val gone = before.workout
         // The phone ended the workout the watch had (finished or discarded there).
         if (gone != null && after.workout == null) {
@@ -336,7 +341,7 @@ object WearStore {
         val si = setIndex()
         val row = si?.let { e.sets[it] } ?: e.sets.lastOrNull() ?: return
         val side = row.sideUp
-        val key = Drafts.key(s.workout?.id, e.id, entryIndex, si, side)
+        val key = Drafts.key(s.workout?.id, e.id, entryIndex, Drafts.identity(e, si), side, e.weightUnit(s.workout?.unit ?: s.unit))
         val one = side?.let { row.sides?.get(it) }
         // The same set keeps what the crown made of it; a plan changed on the phone under numbers
         // nobody touched here comes through (Drafts.next).
