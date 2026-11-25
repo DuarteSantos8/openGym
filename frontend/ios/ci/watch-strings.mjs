@@ -70,6 +70,8 @@ const FROM_APP = {
   'Finish now': 'Finish now',
   // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
   'Back': 'Back',
+  // The rest by heart rate: the phone's rest timer says it too when a rest is over.
+  'Ready': 'Ready',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {

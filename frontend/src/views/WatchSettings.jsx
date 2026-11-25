@@ -6,8 +6,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
-import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState, lastHeardAt } from '../lib/watch-settings.js'
+import { Section, Row, Switch, SelectRow } from '../components/ui.jsx'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState, lastHeardAt, HR_REST_TARGETS } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
@@ -132,6 +132,15 @@ export default function WatchSettingsPage() {
       </Section>
       <Section title={t('Rest timer')}>
         <RestPicker value={prefs.show.rest} onChange={v => set({ show: { rest: v } })} />
+      </Section>
+      {/* "Ready" during a rest once the heart rate is back down (docs/dev/REST_BY_HEART_RATE.md). */}
+      <Section footer={t('During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.')}>
+        <Row icon="heart" iconTint="var(--red)" title={t('Ready by heart rate')}>
+          <Switch checked={prefs.hrRest.on} onChange={v => set({ hrRest: { on: v } })} aria-label={t('Ready by heart rate')} />
+        </Row>
+        {prefs.hrRest.on && <SelectRow icon="gauge" iconTint="var(--grey)" title={t('Target heart rate')} value={prefs.hrRest.bpm ?? 'auto'}
+          options={[{ value: 'auto', label: t('Automatic') }, ...HR_REST_TARGETS.map(b => ({ value: b, label: t('{0} bpm', b) }))]}
+          onChange={v => set({ hrRest: { bpm: v === 'auto' ? null : v } })} />}
       </Section>
       <Section>
         <Row icon="vibrate" iconTint="var(--indigo)" title={t('Tap the wrist when a rest is over')}>

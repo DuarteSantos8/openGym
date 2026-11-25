@@ -7,7 +7,8 @@ import WatchKit
  *
  *   rest   the time left in the accent, a bar draining under it, −15, Skip and +15 as outlined
  *          capsules, the effort of the set just done as four chips, then what is up next (and what
- *          to load); ‹ opens the set just done to fix it while the rest runs on
+ *          to load); ‹ opens the set just done to fix it while the rest runs on; "Ready" over the
+ *          time once the heart rate is back down (RestReadiness, when the phone has it on)
  *   hold   the seconds left, a bar in the hold's teal (orange for the last five), and Stop
  *
  * The buttons wait a second after the rest comes up (the thumb that hit Done is still there).
@@ -50,6 +51,20 @@ struct RestView: View {
                 }
                 .offset(y: roomy ? 9 : 4) // the clock sits lower the bigger the case
                 .frame(height: 36)
+                // The heart rate is back down (the phone's "Ready by heart rate", RestReadiness): said
+                // in words in the heart's red, so it reads whatever the accent; the countdown runs on.
+                if store.restReady {
+                    HStack(spacing: 3) {
+                        Image(systemName: "heart.fill")
+                        Text("Ready")
+                    }
+                    .font(.system(.footnote, design: .rounded).weight(.bold))
+                    .foregroundStyle(Theme.red.opacity(dimmed ? 0.75 : 1))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .padding(.top, roomy ? 6 : 2)
+                    .accessibilityElement(children: .combine)
+                }
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
                     countdown

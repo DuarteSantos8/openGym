@@ -5900,4 +5900,8 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Kész a pulzus alapján",
+  "Target heart rate": "Célpulzus",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Pihenő közben az óra kiírja, hogy Kész, amint a pulzusod visszament, és egyszer koppint, ha lent a csuklókoppintás be van kapcsolva. A visszaszámlálás megy tovább. Az Automatikus kicsivel a sorozat előtti pulzusod fölé céloz.",
 }

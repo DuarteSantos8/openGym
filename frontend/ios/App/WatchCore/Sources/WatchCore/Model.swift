@@ -194,6 +194,8 @@ struct WatchSettings: Codable, Equatable {
     var onAccent: String?
     /// The phone's Settings → Workout → Forgotten workouts (1.4.5); nil from an older phone.
     var forgotten: ForgottenSettings?
+    /// "Ready" during a rest by heart rate (RestReadiness); nil from an older phone: off.
+    var hrRest: HrRestSettings?
 }
 
 /// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).

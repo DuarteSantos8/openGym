@@ -66,6 +66,7 @@ Design notes for specific features, kept next to the code they describe:
 | [Combine routines](dev/COMBINE_ROUTINES.md) | Spec for running more than one routine in a session |
 | [Fatigue and sets](dev/FATIGUE_SETS_MODEL.md) | How hard sets feed the fatigue map and its recovery time per muscle |
 | [Sister apps](dev/SISTER_APPS.md) | openNutrition and openRunning: the read-only link, activities (runs, matches) and the pairing contract |
+| [Ready by heart rate](dev/REST_BY_HEART_RATE.md) | When the watch says "Ready" during a rest: the setting, the target and the rule, for every watch |
 
 ## Still stuck?
 

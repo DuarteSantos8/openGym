@@ -5863,4 +5863,8 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Připraveno podle tepu",
+  "Target heart rate": "Cílový tep",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Během pauzy hodinky ukážou Připraveno, jakmile ti tep zase klesne, a jednou klepnou, pokud je klepnutí na zápěstí níže zapnuté. Odpočet běží dál. Automaticky míří kousek nad tvůj tep před sérií.",
 }

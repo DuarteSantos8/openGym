@@ -13,8 +13,8 @@ import org.junit.Test
 
 /**
  * The 1.4.5 watch redesign's rules on Wear OS (WatchLogic.kt): the Apple Watch's PlanTests,
- * OverviewTests, SetNavTests, RestMathTests and the waitingSets / SyncState cases of OutboxTests,
- * case for case, so both watches behave alike.
+ * OverviewTests, SetNavTests, RestMathTests, RestReadinessTests and the waitingSets / SyncState cases
+ * of OutboxTests, case for case, so both watches behave alike.
  */
 class WatchLogicTest {
     private fun row(w: Double = 50.0, r: Double = 8.0, done: Boolean = false, warmup: Boolean = false, at: Double? = null, sides: Sides? = null) =
@@ -656,5 +656,114 @@ class WatchLogicTest {
         k.total(260.0); assertEquals(60.0, k.value!!, 0.0)
         // The sensor rests and comes back in B: B's count goes on.
         k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
+    }
+
+    /* ---------- RestReadinessTests.swift: "Ready" during a rest by heart rate ---------- */
+
+    private val t0 = 1_000_000_000L
+    private fun at(s: Double) = t0 + Math.round(s * 1000)
+    /** Readings every `every` seconds from `from`, one value each. */
+    private fun hr(values: List<Int>, from: Double = 0.0, every: Double = 5.0) = values.mapIndexed { i, v -> at(from + i * every) to v }
+    private val auto = HrRestSettings(on = true, bpm = null)
+
+    @Test fun readinessReadsThePhonesSettingAsItSendsIt() {
+        val s = WireJson.decodeFromString(WatchSettings.serializer(), """{"restHaptics":true,"hrRest":{"on":true,"bpm":null}}""")
+        assertEquals(HrRestSettings(on = true, bpm = null), s.hrRest)
+        assertNull(WireJson.decodeFromString(WatchSettings.serializer(), "{}").hrRest)
+    }
+
+    @Test fun readinessOffOrMissingMakesNoTarget() {
+        assertNull(RestReadiness.target(null, 90.0, 150.0))
+        assertNull(RestReadiness.target(HrRestSettings(on = false, bpm = 120.0), 90.0, 150.0))
+        assertNull(RestReadiness.target(HrRestSettings(on = null, bpm = 120.0), 90.0, 150.0))
+    }
+
+    @Test fun readinessAFixedTargetIsTakenAsItIs() {
+        assertEquals(110.0, RestReadiness.target(HrRestSettings(on = true, bpm = 110.0), null, null)!!, 0.0)
+        // nonsense from the phone is no fixed target: automatic
+        assertEquals(105.0, RestReadiness.target(HrRestSettings(on = true, bpm = 0.0), 90.0, 150.0)!!, 0.0)
+    }
+
+    @Test fun readinessAutomaticIsAQuarterOfTheWayBackUpFromTheSetsStart() {
+        assertEquals(105.0, RestReadiness.target(auto, 90.0, 150.0)!!, 0.0)
+        // a set that hardly raised the pulse: still a few beats above where it started
+        assertEquals(95.0, RestReadiness.target(auto, 90.0, 96.0)!!, 0.0)
+        assertEquals(95.0, RestReadiness.target(auto, 90.0, 80.0)!!, 0.0)
+        assertEquals(95.0, RestReadiness.target(auto, 90.0, null)!!, 0.0)
+        // nothing measured before the set: nothing to go by
+        assertNull(RestReadiness.target(auto, null, 150.0))
+    }
+
+    @Test fun readinessAutomaticTakesTheMinuteBeforeTheSetAndThePeakDuringIt() {
+        // 80 long before, 90 and 92 in the minute before the set (which began at 0), 150 at its top, 160 after it
+        val all = listOf(at(-200.0) to 80, at(-50.0) to 90, at(-10.0) to 92, at(0.0) to 0, at(10.0) to 120, at(25.0) to 150, at(40.0) to 160)
+        // start 91, peak 150: 91 + 0.25 * 59
+        assertEquals(105.75, RestReadiness.target(auto, all, at(0.0), at(30.0))!!, 1e-9)
+        assertEquals(120.0, RestReadiness.target(HrRestSettings(on = true, bpm = 120.0), emptyList(), at(0.0), at(30.0))!!, 0.0)
+        // nothing in the minute before: no target
+        assertNull(RestReadiness.target(auto, listOf(at(-200.0) to 80, at(10.0) to 120), at(0.0), at(30.0)))
+        assertNull(RestReadiness.target(null, all, at(0.0), at(30.0)))
+    }
+
+    @Test fun readinessNeverBeforeTheFloor() {
+        val low = hr(listOf(100, 100, 100, 100, 100, 100))
+        assertFalse(RestReadiness.evaluate(low, t0, at(25.0), 120.0).ready)
+        assertTrue(RestReadiness.evaluate(low, t0, at(30.0), 120.0).ready)
+    }
+
+    @Test fun readinessAnOldReadingSaysNothingAboutNow() {
+        val r = RestReadiness.evaluate(hr(listOf(100, 100, 100, 100)), t0, at(40.0), 120.0)
+        assertFalse(r.ready)
+        assertNull(r.since)
+    }
+
+    @Test fun readinessOneDipUnderTheTargetIsNotReady() {
+        val r = RestReadiness.evaluate(hr(listOf(140, 130, 118, 125, 128, 126, 124)), t0, at(31.0), 120.0)
+        assertFalse(r.ready)
+        assertNull(r.since)
+    }
+
+    @Test fun readinessTheRunUnderTheTargetMustLastTheHold() {
+        // under at 27 s and 30 s: three seconds, not five
+        val short = hr(listOf(140, 130, 126, 124, 122), every = 6.0) + listOf(at(27.0) to 119, at(30.0) to 117)
+        assertFalse(RestReadiness.evaluate(short, t0, at(31.0), 120.0).ready)
+        // and once more at 33 s: six seconds, ready, since the first one under
+        val r = RestReadiness.evaluate(short + listOf(at(33.0) to 116), t0, at(34.0), 120.0)
+        assertTrue(r.ready)
+        assertEquals(at(27.0), r.since)
+    }
+
+    @Test fun readinessAReadingAboveTheTargetStartsTheRunAgain() {
+        val back = listOf(at(20.0) to 118, at(26.0) to 117, at(29.0) to 123, at(31.0) to 118, at(34.0) to 117)
+        val r = RestReadiness.evaluate(back, t0, at(35.0), 120.0)
+        assertFalse(r.ready)
+        assertEquals(at(31.0), r.since)
+    }
+
+    @Test fun readinessAtTheTargetCountsAsUnder() {
+        val r = RestReadiness.evaluate(hr(listOf(140, 120, 120, 120), from = 20.0), t0, at(36.0), 120.0)
+        assertTrue(r.ready)
+        assertEquals(at(25.0), r.since)
+    }
+
+    @Test fun readinessReadingsFromBeforeTheRestDoNotCount() {
+        // low before the rest began, then one reading in it: the run starts with the rest, not before
+        val r = RestReadiness.evaluate(hr(listOf(100, 100), from = -10.0) + listOf(at(31.0) to 100), t0, at(32.0), 120.0)
+        assertFalse(r.ready)
+        assertEquals(at(31.0), r.since)
+    }
+
+    @Test fun readinessAZeroIsNoReading() {
+        // a zero at the end is not a pulse back down; the run before it still stands
+        val r = RestReadiness.evaluate(hr(listOf(100, 100, 100), from = 25.0) + listOf(at(36.0) to 0), t0, at(37.0), 120.0)
+        assertTrue(r.ready)
+        assertEquals(at(25.0), r.since)
+        assertFalse(RestReadiness.evaluate(listOf(at(30.0) to 0, at(36.0) to 0), t0, at(37.0), 120.0).ready)
+    }
+
+    @Test fun readinessOrderDoesNotMatter() {
+        val r = RestReadiness.evaluate(listOf(at(36.0) to 110, at(30.0) to 112), t0, at(37.0), 120.0)
+        assertTrue(r.ready)
+        assertEquals(at(30.0), r.since)
     }
 }

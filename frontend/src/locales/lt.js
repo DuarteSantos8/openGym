@@ -5893,4 +5893,8 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Pasiruošęs pagal širdies ritmą",
+  "Target heart rate": "Tikslinis širdies ritmas",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Poilsio metu, kai jūsų širdies ritmas vėl nukrenta, laikrodis rodo Pasiruošęs ir vieną kartą paliečia riešą, jei žemiau įjungtas riešo palietimas. Atgalinis skaičiavimas tęsiasi. Automatiškai taikoma šiek tiek virš jūsų širdies ritmo prieš seriją.",
 }

@@ -814,6 +814,7 @@ fun RestView(rest: Rest) {
     val s by WearStore.state.collectAsState()
     val last by WearStore.lastLogged.collectAsState()
     val rated by WearStore.lastRated.collectAsState()
+    val ready by WearStore.restReady.collectAsState()
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val now = rememberNow()
@@ -842,6 +843,13 @@ fun RestView(rest: Rest) {
         // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            // The heart rate is back down (the phone's "Ready by heart rate", RestReadiness): said in words in
+            // the heart's red, so it reads whatever the accent; the countdown runs on as the limit.
+            if (ready) Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
+                Glyph(G.HEART, Og.Red.copy(alpha = if (dim) 0.75f else 1f), 10.dp); Spacer(Modifier.width(3.dp))
+                Text(stringResource(R.string.ready), color = Og.Red.copy(alpha = if (dim) 0.75f else 1f), fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
             // The time left, the screen's one number (#1100): in the accent, as big as the room the rest leaves.
             // Never shorter than ‹, and on a round screen ‹ steps in from the curve (seen on a 40 mm watch: it
             // was cut at its corner under the clock once Up next took the chips' place).

@@ -147,6 +147,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var workoutSeenAt: Date?
     /// The rest running after a set, for that rest's heart rate once it is over.
     private var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date, sid: String?)?
+    /// The heart rate is back down in this rest (WatchCore's RestReadiness, the phone's `hrRest`):
+    /// the rest screen says "Ready". Advice only, the countdown runs on.
+    @Published private(set) var restReady = false
+    /// What this rest's readings are checked against, once a second, until it is ready or over.
+    private var readyTarget: Double?
+    private var readyTimer: Timer?
     private var restTimer: Timer?
     private var holdTimer: Timer?
     /// The rest-over taps again once if nobody reacts to the first ones within a few seconds.
@@ -741,6 +747,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if rests {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             restAfter = (e.id, ei, si, w.id ?? "", now, e.sets[si].sid)
+            watchReadiness(setFrom: setFrom, end: now)
             rested = true
             // The thumb that hit Done is still there: the rest's buttons wait a second for it.
             touchLock.lock(at: now)
@@ -777,7 +784,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             send(event: ev)
         }
         setStartedAt = at
-        if resting { restAfter = (t.exId, t.entryIdx, t.setIdx, wid, at, t.sid) }
+        if resting {
+            restAfter = (t.exId, t.entryIdx, t.setIdx, wid, at, t.sid)
+            watchReadiness(setFrom: setFrom, end: at)
+        }
     }
 
     /// A set passed over (a long press on Done): not done, the next one comes up.
@@ -1348,6 +1358,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest after a set is over (it ran out, was skipped, or the next set is done): its heart
     /// rate goes to that set, and the next set starts counting from here.
     private func closeRest(at end: Date) {
+        stopReadiness()
         guard let r = restAfter else { return }
         restAfter = nil
         setStartedAt = end
@@ -1358,6 +1369,43 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         ]
         if let sid = r.sid { ev["sid"] = sid }
         send(event: ev)
+    }
+
+    /* ---------- "Ready" by heart rate (RestReadiness, docs/dev/REST_BY_HEART_RATE.md) ---------- */
+
+    /// The rest after a set that ran from `setFrom` to `end`: with the phone's setting on and a
+    /// target to go by, its readings are checked once a second while it runs. Nothing without
+    /// Apple Health, nothing in the demo; a new rest starts unmarked.
+    private func watchReadiness(setFrom: Date, end: Date) {
+        stopReadiness()
+        guard !isDemo, health.enabled,
+              let target = RestReadiness.target(settings: state.settings.hrRest, readings: health.heartSamples,
+                                                setStart: setFrom, setEnd: end) else { return }
+        readyTarget = target
+        let t = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.checkReadiness() }
+        t.tolerance = 0.3
+        RunLoop.main.add(t, forMode: .common)
+        readyTimer = t
+    }
+
+    /// Once per rest: "Ready" on the rest screen and one tap (when the rest's taps are on).
+    private func checkReadiness() {
+        guard let target = readyTarget, let r = restAfter else { stopReadiness(); return }
+        // Paused on the phone, or the phone's rest not here yet: nothing to say about it.
+        guard restEndsAt != nil, restPausedAt == nil else { return }
+        guard RestReadiness.evaluate(readings: health.heartSamples, restStart: r.from, now: Date(), target: target).ready else { return }
+        readyTimer?.invalidate()
+        readyTimer = nil
+        readyTarget = nil
+        restReady = true
+        if restHaptics { Haptics.ready() }
+    }
+
+    private func stopReadiness() {
+        readyTimer?.invalidate()
+        readyTimer = nil
+        readyTarget = nil
+        if restReady { restReady = false }
     }
 
     /// The rest ran out with the app in front: the alarm on the wrist (when the phone's "tap the
@@ -1792,6 +1840,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   done       one firm tap (a set logged)
  *   side       a light click (one side of a per-side set: the other one now)
  *   restOver   an alarm: two strong taps and a rising one (again after 5 s if not noticed)
+ *   ready      one tap mid-rest: the heart rate is back down ("Ready", RestReadiness)
  *   start      the system's start
  *   finished   stop, then two successes: the workout is saved
  *   skip       a soft one going down
@@ -1809,6 +1858,7 @@ enum Haptics {
     static func done() { play([(0, .success)]) }
     static func side() { play([(0, .click)]) }
     static func restOver() { play([(0, .notification), (0.45, .notification), (0.9, .directionUp)]) }
+    static func ready() { play([(0, .notification)]) }
     static func start() { play([(0, .start)]) }
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }

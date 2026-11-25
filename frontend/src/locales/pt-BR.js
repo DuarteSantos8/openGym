@@ -4326,6 +4326,8 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Durante o descanso, o relógio mostra Pronto quando sua frequência cardíaca volta a cair, com um toque se o toque no pulso abaixo estiver ativado. A contagem regressiva continua. Automático mira um pouco acima da sua frequência cardíaca antes da série.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

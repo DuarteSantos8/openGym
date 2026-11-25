@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: this phone's choices for its watch, per device, never in the profile.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt } from './watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, HR_REST_DEFAULTS, readWatchHeard, noteWatchHeard, lastHeardAt } from './watch-settings.js'
 import { applyEvents, bindWatchAppActions, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -11,7 +11,7 @@ describe('the choices', () => {
     expect(readWatchPrefs()).toEqual({ ...WATCH_DEFAULTS })
     const seen = vi.fn()
     onWatchPrefs(seen)
-    expect(writeWatchPrefs({ autoShow: false, crown: 'weight', junk: 1, health: true })).toEqual({ enabled: true, autoShow: false, restHaptics: true, crown: 'weight', show: { ...SHOW_DEFAULTS } })
+    expect(writeWatchPrefs({ autoShow: false, crown: 'weight', junk: 1, health: true })).toEqual({ enabled: true, autoShow: false, restHaptics: true, crown: 'weight', show: { ...SHOW_DEFAULTS }, hrRest: { ...HR_REST_DEFAULTS } })
     expect(readWatchPrefs().crown).toBe('weight')
     expect(seen).toHaveBeenCalled()
     localStorage.setItem('gym_watch_v1', '{broken')
@@ -20,7 +20,7 @@ describe('the choices', () => {
 
   it('go to the watch as its settings, and live outside the profile', () => {
     writeWatchPrefs({ restHaptics: false })
-    expect(settingsForWatch()).toEqual({ health: false, restHaptics: false, crown: 'reps', show: { ...SHOW_DEFAULTS } })
+    expect(settingsForWatch()).toEqual({ health: false, restHaptics: false, crown: 'reps', show: { ...SHOW_DEFAULTS }, hrRest: { on: false, bpm: null } })
     // Apple Health on the watch is the phone's Apple Health switch, whatever an older build stored.
     localStorage.setItem('gym_watch_v1', JSON.stringify({ health: true }))
     expect(settingsForWatch().health).toBe(false)
@@ -50,6 +50,37 @@ describe('what the watch shows', () => {
     expect(settingsForWatch().show).toEqual(readWatchPrefs().show)
     localStorage.setItem('gym_watch_v1', JSON.stringify({ show: { hr: 'yes', rest: 'spiral' } }))
     expect(readWatchPrefs().show).toEqual({ ...SHOW_DEFAULTS })
+  })
+})
+
+// "Ready by heart rate": during a rest, once the pulse is back down, the watch says so. Off to begin
+// with; the target is a fixed bpm or null for automatic (docs/dev/REST_BY_HEART_RATE.md).
+describe('ready by heart rate', () => {
+  it('starts off, on the automatic target', () => {
+    expect(readWatchPrefs().hrRest).toEqual({ on: false, bpm: null })
+    expect(HR_REST_DEFAULTS).toEqual({ on: false, bpm: null })
+  })
+  it('keeps the switch and the target apart, and goes to both watches as it is', () => {
+    writeWatchPrefs({ hrRest: { on: true } })
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: null })
+    writeWatchPrefs({ hrRest: { bpm: 120 } })
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: 120 })
+    expect(settingsForWatch().hrRest).toEqual({ on: true, bpm: 120 })
+    // a copy, not the stored object
+    expect(settingsForWatch().hrRest).not.toBe(readWatchPrefs().hrRest)
+    writeWatchPrefs({ hrRest: { bpm: null } })
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: null })
+    // another choice leaves it alone
+    writeWatchPrefs({ restHaptics: false })
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: null })
+  })
+  it('reads only what makes sense back', () => {
+    for (const bad of [{ on: 'yes', bpm: 120.5 }, { on: 1, bpm: 20 }, { bpm: 300 }, { bpm: '120' }, 'on', null]) {
+      localStorage.setItem('gym_watch_v1', JSON.stringify({ hrRest: bad }))
+      expect(readWatchPrefs().hrRest).toEqual({ on: false, bpm: null })
+    }
+    localStorage.setItem('gym_watch_v1', JSON.stringify({ hrRest: { on: true, bpm: 60 } }))
+    expect(readWatchPrefs().hrRest).toEqual({ on: true, bpm: 60 })
   })
 })
 

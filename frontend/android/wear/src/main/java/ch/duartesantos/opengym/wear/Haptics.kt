@@ -37,6 +37,9 @@ object Haptics {
         try { v.vibrate(VibrationEffect.createWaveform(timings, amps, -1)) } catch (_: Exception) {}
     }
 
+    /** The heart rate is back down mid-rest ("Ready", RestReadiness): one clear tap, not the rest's alarm. */
+    fun ready(ctx: Context) = waveform(ctx, longArrayOf(0, 90), intArrayOf(0, 255))
+
     /** Ten seconds left: one soft nudge to pick the bar up. */
     fun restSoon(ctx: Context) {
         val v = vibrator(ctx) ?: return

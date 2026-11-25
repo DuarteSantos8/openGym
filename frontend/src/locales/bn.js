@@ -5976,4 +5976,8 @@ export default {
   "Preview on": "প্রিভিউ দেখুন",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "একটু কম সময়",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "হার্ট রেট দেখে প্রস্তুত",
+  "Target heart rate": "লক্ষ্য হার্ট রেট",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "বিশ্রামের সময় আপনার হার্ট রেট আবার নেমে এলে ঘড়ি প্রস্তুত দেখায়, আর নিচের ভাইব্রেশন চালু থাকলে একবার ভাইব্রেট করে। কাউন্টডাউন চলতে থাকে। স্বয়ংক্রিয় সেটের আগের হার্ট রেটের একটু ওপরে লক্ষ্য রাখে।",
 }

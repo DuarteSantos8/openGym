@@ -5897,4 +5897,8 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "धड़कन से तैयार",
+  "Target heart rate": "लक्ष्य धड़कन",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "रेस्ट के दौरान, जैसे ही आपकी धड़कन वापस नीचे आती है, वॉच तैयार दिखाती है, और नीचे कलाई पर टैप चालू हो तो एक बार टैप करती है। काउंटडाउन चलता रहता है। अपने आप सेट से पहले की आपकी धड़कन से थोड़ा ऊपर का लक्ष्य रखता है।",
 }

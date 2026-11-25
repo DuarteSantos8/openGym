@@ -140,7 +140,9 @@ or an event depends on them: a watch that does not know them ignores them (Codab
 `ignoreUnknownKeys`), `fitSnapshot` drops the muscle fields first when a snapshot is too big (the
 other routines', then today's, the running workout's last), and
 `garminSnapshot` leaves `muscles` and `muscleNames` out (Garmin's settings are a whitelist, so
-the birth year never reaches it either).
+the birth year never reaches it either). `settings.hrRest` (`{ on, bpm }`) switches on "Ready" during
+a rest on the Apple Watch and Wear OS (docs/dev/REST_BY_HEART_RATE.md); it is advice on the wrist
+only, no event comes back for it, and Garmin's whitelist leaves it out too.
 
 ## One rest (protocol 2)
 

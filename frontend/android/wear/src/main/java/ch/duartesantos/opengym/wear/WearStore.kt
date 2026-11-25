@@ -235,7 +235,7 @@ object WearStore {
             // Another workout: the last one's rest ends here, and its stamp with it (protocol 2, rule 2).
             if (gone != null) { closeRest(now()); stopRest() }
             noteRestAt(0.0, after.workout.id)
-            readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null; restAfter = null
+            readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null; restAfter = null; stopReadiness()
             kcal.switchTo(after.workout.id); _calories.value = null
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
@@ -492,6 +492,7 @@ object WearStore {
         if (restSec > 0) {
             startRest(restSec, restEnd)
             restAfter = RestAfter(e.id, ei, si, w.id ?: "", at, e.sets[si].sid)
+            watchReadiness(from, at)
             rested = true
             // The thumb that hit Done is still there: the rest's buttons wait a second for it.
             touchLock.lock(at)
@@ -918,7 +919,7 @@ object WearStore {
         hrOf(from, at)?.let { PhoneLink.send(app, SessionCore.setHrEvent(wid, t.exId, t.entryIdx, t.setIdx, UUID.randomUUID().toString(), hr = it, sid = t.sid)) }
         setFrom = at
         // The phone started a rest after it: that rest's heart rate is this set's.
-        if (resting) restAfter = RestAfter(t.exId, t.entryIdx, t.setIdx, wid, at, t.sid)
+        if (resting) { restAfter = RestAfter(t.exId, t.entryIdx, t.setIdx, wid, at, t.sid); watchReadiness(from, at) }
     }
 
     /**
@@ -944,10 +945,48 @@ object WearStore {
      * ended): its heart rate goes to that set as a setHr's restHr, and the next set counts from here.
      */
     private fun closeRest(end: Long) {
+        stopReadiness()
         val r = restAfter ?: return
         restAfter = null
         setFrom = end
         hrOf(r.from, end)?.let { PhoneLink.send(app, SessionCore.setHrEvent(r.wid, r.exId, r.entryIdx, r.setIdx, UUID.randomUUID().toString(), restHr = it, sid = r.sid)) }
+    }
+
+    /* ---------- "Ready" by heart rate (RestReadiness, docs/dev/REST_BY_HEART_RATE.md) ---------- */
+
+    /** The heart rate is back down in this rest (the phone's `hrRest`): the rest screen says "Ready". Advice only. */
+    private val _restReady = MutableStateFlow(false)
+    val restReady: StateFlow<Boolean> = _restReady
+    private var readyJob: Job? = null
+
+    /**
+     * The rest after a set that ran from `setStart` to `end`: with the phone's setting on and a target
+     * to go by, its readings are checked once a second while it runs (the rest's wake lock keeps the
+     * watch up for it), until the pulse is back down. Once per rest; a new rest starts unmarked.
+     */
+    private fun watchReadiness(setStart: Long, end: Long) {
+        stopReadiness()
+        if (readings.isEmpty()) return       // no heart rate in this workout (no permission, no sensor)
+        val target = RestReadiness.target(_state.value.settings.hrRest, readings, setStart, end) ?: return
+        readyJob = scope.launch {
+            while (isActive) {
+                delay(1_000)
+                val r = restAfter ?: break
+                // Paused on the phone, or the phone's rest not here yet: nothing to say about it.
+                if (_rest.value?.pausedLeft != null || _rest.value == null) continue
+                if (RestReadiness.evaluate(readings, r.from, now(), target).ready) {
+                    _restReady.value = true
+                    if (buzz()) Haptics.ready(app)
+                    break
+                }
+            }
+        }
+    }
+
+    private fun stopReadiness() {
+        readyJob?.cancel()
+        readyJob = null
+        _restReady.value = false
     }
 
     /** avg and max of the readings from `from` up to `to` (ms), or null without any (the phone's sanitizeHr shape). */

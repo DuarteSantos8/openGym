@@ -45,6 +45,7 @@
 "Keep going" = "Keep going";
 "Finish now" = "Finish now";
 "Back" = "Back";
+"Ready" = "Ready";
 "Last time: %@" = "Last time: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Finish the workout now? Otherwise it ends by itself at %@.";

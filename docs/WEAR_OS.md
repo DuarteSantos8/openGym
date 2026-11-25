@@ -79,6 +79,9 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   round a 3 × 3 grid (`BurnIn`).
 - **TalkBack**: a number box (weight, reps, seconds) and the weigh-in read their name and value
   apart, and offer More and Less in TalkBack's actions, like the Apple Watch's adjustable numbers.
+- **Ready by heart rate** (the phone's watch settings, off by default): once the heart rate is back
+  down during a rest, "Ready" in red over the countdown and one tap; the countdown runs on.
+  `RestReadiness` in `WatchLogic.kt`, the rule in docs/dev/REST_BY_HEART_RATE.md.
 - **The rest from the phone**: a rest started on the phone runs on the watch as well. The watch
   follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15
   or a Skip pressed on the watch (`RestMath.follows`).

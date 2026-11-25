@@ -5862,4 +5862,8 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Siap menurut detak jantung",
+  "Target heart rate": "Target detak jantung",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Saat istirahat, jam menampilkan Siap begitu detak jantungmu turun lagi, dengan satu ketukan jika ketukan pergelangan tangan di bawah aktif. Hitung mundur tetap berjalan. Otomatis menargetkan sedikit di atas detak jantungmu sebelum set.",
 };

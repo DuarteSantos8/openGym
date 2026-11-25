@@ -5863,4 +5863,8 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // Ready by heart rate on the watches (docs/dev/REST_BY_HEART_RATE.md)
+  "Ready by heart rate": "Sẵn sàng theo nhịp tim",
+  "Target heart rate": "Nhịp tim mục tiêu",
+  "During a rest, the watch says Ready once your heart rate is back down, with one tap if the wrist taps below are on. The countdown keeps running. Automatic aims a little above your heart rate before the set.": "Trong lúc nghỉ, đồng hồ hiện Sẵn sàng khi nhịp tim của bạn đã hạ xuống, kèm một lần rung nếu rung cổ tay bên dưới đang bật. Đồng hồ đếm ngược vẫn chạy. Tự động nhắm cao hơn một chút so với nhịp tim của bạn trước hiệp.",
 };
