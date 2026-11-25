@@ -50,6 +50,9 @@ Open `exercises/<id>.json` (the browse pages link straight to it) and press the 
 - **hold** (optional): `true` for an exercise that is only ever held, never repeated: a plank, a
   wall sit, a lever, a hang. Added to a workout or a routine, it starts as a timed hold. Leave it
   out when the exercise moves (a plank with taps, a Pallof press).
+- **side** (optional): `true` for an exercise done one arm or leg at a time that the name doesn't
+  say so: a hamstring stretch held on one leg and then the other. Added to a workout or a routine,
+  it starts per side. Leave it out for an exercise done on both sides together (child's pose).
 - **track** (optional): `"distance"` for a carry, a sled push or drag, or a sprint: done over a
   distance, so it starts as metres per set with a load (the lifter can still switch it to reps or
   time). Never together with `hold`.
