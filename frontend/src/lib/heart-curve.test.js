@@ -51,8 +51,8 @@ describe('heartPerMinute', () => {
 // The graph's top and the zones work from the same age-predicted maximum (Tanaka).
 describe('hrMaxOf', () => {
   const now = Date.UTC(2026, 5, 1)
-  it('is 208 - 0.7 x age, rounded, or null without a plausible birth year', () => {
-    expect(hrMaxOf({ birthYear: 1990 }, now)).toBe(183)   // 208 - 25.2 = 182.8
+  it('is 208 - 0.7 x age, not rounded, or null without a plausible birth year', () => {
+    expect(hrMaxOf({ birthYear: 1990 }, now)).toBeCloseTo(182.8)   // 208 - 25.2
     expect(hrMaxOf({}, now)).toBeNull()
     expect(hrMaxOf({ birthYear: 2020 }, now)).toBeNull()
   })
@@ -60,5 +60,13 @@ describe('hrMaxOf', () => {
     const max = hrMaxOf({ birthYear: 1990 }, now)
     expect(hrZone(Math.ceil(max * 0.9), { birthYear: 1990 }, now)).toBe(5)
     expect(hrZone(Math.floor(max * 0.5) - 1, { birthYear: 1990 }, now)).toBeNull()
+  })
+  it('keeps a zone\'s edge where hrZone has it, with no rounding between them', () => {
+    // 54 years old: 170.2, so 136 bpm is just under 80 % (zone 3); a maximum rounded to 170
+    // would have put it at 80 % exactly, zone 4, and counted it as high-zone time
+    const S = { birthYear: 1972 }
+    expect(136 / hrMaxOf(S, now)).toBeLessThan(0.8)
+    expect(hrZone(136, S, now)).toBe(3)
+    expect(hrZone(137, S, now)).toBe(4)
   })
 })
