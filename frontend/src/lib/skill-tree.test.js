@@ -155,6 +155,12 @@ describe('from the log', () => {
     expect(skillOfExercise(S, '0652')).toBe('pull-up')
     expect(skillOfExercise(S, 'nope')).toBe(null)
   })
+  it('reads a user\u2019s exercise named exactly as a skill as that skill, before the patterns', () => {
+    const S = { customEx: [{ id: 'h', n: 'Handstand' }, { id: 'p', n: 'L-Sit Pull Up' }, { id: 'l', n: 'L-Sit' }] }
+    expect(skillOfExercise(S, 'h')).toBe('handstand')
+    expect(skillOfExercise(S, 'p')).toBe('l-sit-pull-up')
+    expect(skillOfExercise(S, 'l')).toBe('l-sit')
+  })
   it('needs a real set at the bar: five reps, a hold long enough, one side of a per-side entry', () => {
     const S = { workouts: [
       wk('2026-10-01', [{ id: '0652', sets: sets(4, 4) }, { id: '0662', sets: sets({ r: 20, warmup: true, phase: 'warmup' }, 6) }]),

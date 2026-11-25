@@ -120,7 +120,12 @@ export function skillOfExercise(S, exId) {
   // The custom exercise a branch made for its skill (lib/skill-ladder.js): 'sk-' and the skill's id.
   if (typeof exId === 'string' && exId.startsWith('sk-') && SKILLS[exId.slice(3)]) return exId.slice(3)
   const own = (Array.isArray(S?.customEx) ? S.customEx : []).find(c => c?.id === exId)
-  const hit = own && SKILL_NAMED.find(([re]) => re.test(String(own.n || own.name || '')))
+  if (!own) return null
+  const name = String(own.n || own.name || '')
+  // A skill's own name first ("Handstand", "L-Sit Pull Up"), then the patterns that also read
+  // other wordings and languages, where a shorter skill's pattern could match a longer name.
+  if (SKILLS[skillId(name)]) return skillId(name)
+  const hit = SKILL_NAMED.find(([re]) => re.test(name))
   return hit ? skillId(hit[1]) : null
 }
 
