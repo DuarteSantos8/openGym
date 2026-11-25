@@ -709,6 +709,7 @@ h4.sec{
   background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 86%,#fff),var(--acc));
   box-shadow:0 6px 18px -6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.22);
   box-shadow:0 6px 18px -6px color-mix(in srgb,var(--acc) 55%,transparent),inset 0 1px 0 rgba(255,255,255,.22)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.btn.primary{background:var(--acc)}}
 .btn.primary:active{background:var(--acc-2);box-shadow:none}
 .btn.primary:disabled{box-shadow:none}
 .btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
@@ -3357,7 +3358,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 14%,var(--surface)),var(--surface) 62%);
   box-shadow:var(--e0),inset 0 0 0 1px var(--acc-line);
 }
+@supports not (color: color-mix(in srgb, red 50%, blue)){.card.hero{background:var(--surface)}}
 .card.hero .today-row{background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 82%,transparent)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.card.hero .today-row{background:var(--surface-2)}}
 .card.hero .ttl{font-weight:650;font-size:var(--fs-title3);letter-spacing:-.025em;line-height:1.2}
 /* Start, on the row it starts: a filled, lit button rather than a 12px tint, so today's one action
    reads from arm's length. The row stays the target; this is its label. */
