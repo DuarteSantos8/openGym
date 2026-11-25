@@ -27,5 +27,5 @@ export function startLearnSession(id, store) {
       learnSession: id, cur: 0, entries, workoutView: s.workoutView || 'cards' }
   })
   useUI.getState().stopRest()
-  return useCircuit.getState().openAt(0)
+  return useCircuit.getState().openAt(0, { preview: true })
 }

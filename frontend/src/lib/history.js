@@ -548,7 +548,8 @@ export function freestyleConfig(S, cfg) {
   if (!last) return { ...cfg }
   // What a dumbbell weight meant last time is that session's stamp, not a choice to copy: a
   // freestyle add follows the exercise's own setting as it is now (lib/dumbbells.js).
-  const { dbLoad: _meant, ...lastTarget } = last.target || {}
+  // The group clock belonged to the earlier workout. A standalone exercise has no group.
+  const { dbLoad: _meant, sgCircuit: _clock, ...lastTarget } = last.target || {}
   return {
     ...cfg,
     ...lastTarget,
