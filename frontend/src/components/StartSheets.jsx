@@ -104,9 +104,9 @@ function StartPicker({ close }) {
     </div>
     <div className="list menu-list start-log" style={{ marginBottom: 14 }}>
       <Row icon="figureRun" iconTint="var(--blue)" title={t('Log an activity')} subtitle={t('A run, a ride, a match')} accessory="chevron"
-        onClick={() => { close(); activitySheet({ day: today }) }} />
+        onClick={() => { close(); activitySheet({ day: todayISO() }) }} />
       <Row icon="sparkles" iconTint="var(--teal)" title={t('Log recovery')} subtitle={t('Sauna, ice bath, massage, mobility')} accessory="chevron"
-        onClick={() => { close(); recoverySheet({ day: today }) }} />
+        onClick={() => { close(); recoverySheet({ day: todayISO() }) }} />
     </div>
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
