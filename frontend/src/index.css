@@ -856,6 +856,7 @@ h4.sec{
   display:flex;align-items:center;gap:12px;background:var(--surface);
   border-radius:var(--r-card);padding:10px 12px;min-height:60px;
   transition:background var(--fast);text-align: start;width:100%;
+  box-shadow:var(--e0),inset 0 0 0 1px var(--line);
 }
 .item:not(.tap-host):active{background:var(--press-fill)}
 .routine-list{position:relative}
@@ -971,6 +972,21 @@ h4.sec{
 .ex-grid .item.ex-new{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;padding:10px 12px}
 .ex-grid .item.ex-new .thumb{width:50px;height:50px;border-radius:9px}
 .ex-grid .item.ex-new .thumb-x{font-size:1.3125rem}
+/* --- Exercises: the library list (design 1.5) --- */
+/* The picture is the row's anchor: a step larger, its corners following the row's, and a hairline
+   so the white still frame does not bleed into a white card in the light theme. The name leads
+   at 550; the English original, where the language shows it, follows quieter (exerciseNameParts). */
+.lib-list .item{gap:14px;padding:10px 12px 10px 10px}
+.lib-list .item .thumb{width:56px;height:56px;border-radius:12px;outline:1px solid var(--line);outline-offset:-1px}
+.lib-list .item:not(.ex-new) .tt{font-weight:550;letter-spacing:-.015em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lib-list .tt-en{color:var(--label-2);font-weight:400;font-size:.875em;letter-spacing:-.005em}
+.lib-list .item:not(.ex-new) .ss{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Cards: the picture sits concentric in the card (18 px card, 8 px padding, 10 px picture), and
+   every card keeps the same height: the name takes up to three lines, the muscle line one. */
+.lib-list.ex-grid .item .thumb{width:100%;height:auto;border-radius:10px}
+.lib-list.ex-grid .item.ex-new .thumb{width:56px;height:56px;border-radius:12px}
+.lib-list.ex-grid .item .item-open{justify-content:flex-start;padding:0 4px 4px}
+.lib-list.ex-grid .item:not(.ex-new) .tt{min-height:calc(3 * 1.25em)}
 /* The list/cards button (ExerciseViewToggle) at the end of the search field, as tall as it and
    dressed like it; pressed while the cards are on. */
 .search-row{display:flex;gap:8px}

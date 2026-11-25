@@ -9,7 +9,7 @@ import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount, exerciseNameText } from '../lib/format.js'
-import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { t, tn, exerciseNameParts, exerciseNameClass } from '../lib/i18n.js'
 import { said } from '../lib/a11y-name.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
@@ -80,11 +80,13 @@ export default function Library() {
     : []
   const row = e => {
     const best = bestWeightFor(S, e.id)
+    // The English original, when the language shows it, set quieter than the name it explains.
+    const [name, english] = exerciseNameParts(e)
     // The row is not a button: its name is, stretched over the row (.tap-main), with Add to my plan
     // a sibling above it (card dismiss pass), so neither tap can land on the other.
     return <div key={e.id} className="item tap-host">
       <Thumb ex={e} />
-      <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
+      <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{name}{english && <> <span className="tt-en">{english}</span></>}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
       {/* "Not at my gym" (#923): this machine off the active gym's list, with Undo. */}
       {profile && !showAll && <NotHereButton profile={profile} ex={e} />}
@@ -135,7 +137,7 @@ export default function Library() {
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on ichip' : '')} aria-pressed={bp === b}
         onClick={() => { setBp(bp === b ? '' : b); setShown(40) }}>{t(b)}{bp === b && <Icon name="xmark" />}</button>)}
     </div>
-    <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
+    <div className={'list lib-list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
       <div className="item ex-new" data-tour="lib-new" {...tappable(() => customExSheet(null, ex => exerciseDetailSheet(ex), q.trim()))}>
         <div className="thumb thumb-x"><Icon name="plusCircle" /></div>
         <div className="grow"><div className="tt">{t('Create your own exercise')}</div><div className="ss">{t('name + body part, and a photo or video if you like')}</div></div><Icon name="plus" className="chev" />

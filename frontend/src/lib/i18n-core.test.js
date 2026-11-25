@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES,
-  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseOwnNameClass, exerciseAsTypedClass, bindOwnExercise, exerciseNameFor, CASED_NAME_LANGS, RTL_LANGS
+  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseOwnNameClass, exerciseAsTypedClass, bindOwnExercise, exerciseNameFor, exerciseNameParts, CASED_NAME_LANGS, RTL_LANGS
 } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
 import de from '../locales/de.js'
@@ -237,5 +237,30 @@ describe('English-name switches with every exercise-name pack', () => {
       expect(exerciseNameClass(ex)).toBe('capitalize')
     }
     _setLangState('en', {}, null, null)
+  })
+})
+
+// The library sets the English original quieter than the translated name (design 1.5). It splits
+// exerciseNameFor in two, so the words read out and searched stay exactly the same.
+describe('exerciseNameParts', () => {
+  const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
+  for (const lang of EXERCISE_NAME_LANGS) {
+    it(`${lang}: the two parts joined are exerciseNameFor, with every switch`, () => {
+      const names = packs[`../exercise-names/${lang}.js`]
+      const sample = EXDB.filter(e => names[e.id]).slice(0, 40).concat(EXDB.filter(e => !names[e.id]).slice(0, 5))
+      for (const [showEn, enOnly] of [[true, false], [false, false], [true, true]]) {
+        _setLangState(lang, {}, null, names, showEn, enOnly)
+        for (const ex of sample) {
+          const [name, english] = exerciseNameParts(ex)
+          expect(english ? `${name} ${english}` : name, `${lang} ${ex.id}`).toBe(exerciseNameFor(ex))
+          if (!showEn || enOnly) expect(english).toBe('')
+        }
+      }
+      _setLangState('en', {}, null, null)
+    })
+  }
+  it('English: no English part', () => {
+    _setLangState('en', {}, null, null)
+    expect(exerciseNameParts(EXDB[0])).toEqual([EXDB[0].n, ''])
   })
 })
