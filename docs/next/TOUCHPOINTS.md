@@ -83,3 +83,5 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `scripts/routines/lib.mjs`, `scripts/routines/validate.mjs`, `scripts/routines/routines.test.mjs` | `next/EP24-learn-sessions` | Small edit | Validate Learn drafts separately from the published library. |
 | `web/Dockerfile` | `next/EP24-learn-sessions` | Small edit | Include the offline routines in self-hosted web builds. |
 | `25 files in frontend/src/locales/` | `next/EP24-learn-sessions` | Small edit | Translate session names and the start action. |
+| `frontend/src/lib/history.js` | `next/EP24-learn-sessions` | +2 -1 | Keep the previous group clock out of a standalone exercise. |
+| `frontend/src/store/useCircuit.js` | `next/EP24-learn-sessions` | Small edit | Release an untouched Learn preview when its Ready screen closes. |

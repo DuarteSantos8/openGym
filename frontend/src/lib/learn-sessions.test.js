@@ -4,7 +4,7 @@ import { LEARN_SESSIONS, learnSessionById, startLearnSession } from './learn-ses
 import { useStore } from '../store/useStore.js'
 import { useCircuit } from '../store/useCircuit.js'
 import { plannedLength, stationsOf } from './circuit.js'
-import { modeOf } from './history.js'
+import { freestyleConfig, modeOf } from './history.js'
 
 beforeEach(() => {
   useStore.setState(({ S }) => ({ user: null, S: { ...S, active: null, workouts: [], spokenCues: false } }))
@@ -32,6 +32,47 @@ it('leaves a running workout alone when a session is already open or an id is un
   const active = useStore.getState().S.active
   expect(startLearnSession('desk-break', useStore)).toBe(false)
   expect(useStore.getState().S.active).toBe(active)
+})
+
+it('carries a saved station duration into freestyle without turning it into a circuit', () => {
+  startLearnSession('warmup-general', useStore)
+  const active = useStore.getState().S.active
+  const station = active.entries[0]
+  const logged = { ...station, sets: [{ sec: 30, done: true }] }
+  const freestyle = freestyleConfig({ workouts: [{ ...active, entries: [logged] }] }, { id: station.id })
+  expect(freestyle.sec).toBe(30)
+  expect(freestyle.sgCircuit).toBeUndefined()
+})
+
+it('can choose another Learn session after closing its untouched Ready screen', () => {
+  startLearnSession('warmup-general', useStore)
+  useCircuit.getState().openAt(0) // workout view opens a single circuit on mount
+  useCircuit.getState().close()
+  expect(startLearnSession('desk-break', useStore)).toBe(true)
+})
+
+it('leaves an ordinary workout alone on closing Ready', () => {
+  startLearnSession('warmup-general', useStore)
+  useCircuit.getState().reset()
+  useStore.getState().update(s => { delete s.active.learnSession })
+  const active = useStore.getState().S.active
+  useCircuit.getState().openAt(0)
+  useCircuit.getState().close()
+  expect(useStore.getState().S.active).toBe(active)
+})
+
+it('closing Ready preserves edits, and closing a running clock keeps its workout', () => {
+  startLearnSession('warmup-general', useStore)
+  useStore.getState().update(s => { s.active.entries[0].note = 'remember this' })
+  useCircuit.getState().close()
+  expect(useStore.getState().S.active.entries[0].note).toBe('remember this')
+  useCircuit.getState().openAt(0)
+  useCircuit.getState().start()
+  useCircuit.getState().close()
+  expect(useStore.getState().S.active.entries[0].note).toBe('remember this')
+  expect(useCircuit.getState().openAt(0)).toBe(true)
+  expect(useCircuit.getState().run).toBeTruthy()
+  useCircuit.getState().reset()
 })
 
 it('plays to the end in memory when device storage refuses writes', () => {
