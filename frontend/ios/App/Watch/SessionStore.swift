@@ -694,7 +694,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             r = s?.r ?? 0
         }
         let sec = s?.sec ?? 30
-        let key = "\(workout?.id ?? "")|\(entryIndex)|\(e.id)|\(e.sets.count)|\(setIndex.map(String.init) ?? "-")|\(s?.sid ?? "")|\(s?.sideUp ?? "")|\(w)|\(r)|\(sec)"
+        let key = "\(workout?.id ?? "")|\(entryIndex)|\(e.id)|\(SetNav.identity(e, setIndex))|\(s?.sideUp ?? "")|\(w)|\(r)|\(sec)"
         if keepEdits, key == targetsKey { return }
         targetsKey = key
         // Only what changed: every write redraws the set page.

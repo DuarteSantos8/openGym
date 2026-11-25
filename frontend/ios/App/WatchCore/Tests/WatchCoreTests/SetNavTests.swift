@@ -25,6 +25,26 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(SetNav.step(e, from: 3, by: 1), nil)
     }
 
+    func testIdentityKeepsASetWithSidWhenAnotherSetIsAdded() {
+        var a = row(60, 8); a.sid = "s1"
+        var b = row(60, 8); b.sid = "s2"
+        var c = row(60, 8); c.sid = "s3"
+        let before = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [a, b])
+        let after = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [a, b, c])
+        XCTAssertEqual(SetNav.identity(before, 1), SetNav.identity(after, 1), "a set appended on the phone keeps the wrist edits")
+        let shifted = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [c, a, b])
+        XCTAssertEqual(SetNav.identity(before, 1), SetNav.identity(shifted, 2), "the same set one row down is still the same set")
+        XCTAssertNotEqual(SetNav.identity(before, 1), SetNav.identity(before, 0))
+    }
+
+    func testIdentityWithoutSidResetsWhenTheRowCountChanges() {
+        let before = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8), row(60, 8)])
+        let after = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8), row(60, 8), row(60, 8)])
+        XCTAssertNotEqual(SetNav.identity(before, 1), SetNav.identity(after, 1))
+        XCTAssertEqual(SetNav.identity(before, 1), SetNav.identity(before, 1))
+        XCTAssertNotEqual(SetNav.identity(before, nil), SetNav.identity(before, 1))
+    }
+
     func testAFixIsTheSameSetDoneAgainLaterWithoutHeartRate() throws {
         let e = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8, done: true, at: 5000), row(60, 8)])
         let (s, ev) = SetFix.correct(state(e), entry: 0, set: 0, side: nil, to: .init(w: 62.5, r: 7, sec: nil), now: 1000, id: "fix1")
