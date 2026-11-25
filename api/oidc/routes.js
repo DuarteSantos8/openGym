@@ -346,9 +346,14 @@ export function oidcRoutes(d) {
       const last = () => json(res, 409, { error: 'the provider is the only way into this profile', code: 'last-way-in' });
       // Where the provider is the only way in for members (OIDC_ONLY), a passkey or password
       // does not sign a member in, so neither counts: without the link nothing would open the
-      // profile again. An admin's do sign them in, unless it is the provider's groups that make
-      // them admin, which go with the link.
-      const waysLeft = () => cfg.only && !(d.isAdmin(user) && user.adminFrom !== 'oidc') ? 0 : d.otherWaysIn(user);
+      // profile again. An admin's do sign them in, as long as they are still an admin once the
+      // link is gone: unlinking takes away a role the provider's groups gave, by the same rule
+      // as applyRoles above (never the owner's, never one given by hand or by ADMIN_UIDS).
+      const adminAfter = () => {
+        const taken = cfg.roleRules.length && user.adminFrom === 'oidc' && !user.owner;
+        return d.isAdmin(taken ? { ...user, admin: false } : user);
+      };
+      const waysLeft = () => cfg.only && !adminAfter() ? 0 : d.otherWaysIn(user);
       if (waysLeft() < 1) return last();
       const proof = await d.proveOwner(req, res, user, body, 'oidc-unlink');
       if (!proof) return;

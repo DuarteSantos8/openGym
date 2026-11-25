@@ -32,7 +32,7 @@ vi.mock('../lib/api.js', () => ({
 vi.mock('../lib/oidc.js', async orig => ({ ...(await orig()), startWebSignIn: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: vi.fn() }))
 
-import { OidcRow, OidcSheet } from './OidcAccount.jsx'
+import { OidcRow, OidcSheet, oidcError } from './OidcAccount.jsx'
 import { startWebSignIn } from '../lib/oidc.js'
 
 const mounted = []
@@ -104,6 +104,15 @@ describe('OidcAccount', () => {
     const sheet = mount(<OidcSheet close={vi.fn()} linked label="Authentik" state={{ passkeys: [{ id: 'k' }], password: true }} />)
     expect(sheet.textContent).toContain('Authentik is the only way into this profile on this server, so it stays linked.')
     expect(sheet.querySelectorAll('button').length).toBe(0)
+  })
+
+  // Found in review of #92. An admin whose role comes from the provider's groups is offered
+  // Unlink (the app cannot tell where the role came from) and the server refuses. On such a
+  // server a passkey would not help, so the refusal must not tell them to add one.
+  it('provider-only server: a refused unlink is not answered with "add a passkey"', () => {
+    const refused = { data: { code: 'last-way-in' } }
+    expect(oidcError(refused, 'Authentik', true)).toBe('Authentik is the only way into this profile on this server, so it stays linked.')
+    expect(oidcError(refused, 'Authentik')).toBe('Authentik is the only way into this profile, so it stays linked. Add a passkey first.')
   })
 
   it('provider-only server: an admin, whose passkey still signs them in, may unlink', () => {
