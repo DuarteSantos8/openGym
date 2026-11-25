@@ -8,7 +8,7 @@ import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR, sessionsFor } from './progression.js'
 import { dropGrid } from './plates.js'
 import { backoffStepOf, applyBackoff } from './backoff.js'
-import { dbLoadFor, historyAs, ownedWeightsFor, withMeaning } from './dumbbells.js'
+import { dbLoadFor, historyAs, ownedFloor, ownedWeightsFor, rowsOnOwned, withMeaning } from './dumbbells.js'
 import { isAssisted } from './exercises.js'
 import { sessionHistory } from './backfill.js'
 import { programmeSlot, pctWeight, programmeStatus } from './programmes.js'
@@ -154,7 +154,9 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // is this session's progress, not one rep more on top of it.
   const climbReps = plan.reps != null ? bandClimbReps(st, rowCfg, buildOpts) : 0
   if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined, why: undefined }
-  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
+  // On the gym's own bells or stack: history or the confirmed weight may hold a load this rack lacks.
+  const owned = modeOf(cfg) === 'reps' ? ownedWeightsFor(st, cfg) : null
+  const built = rowsOnOwned(applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg)), owned)
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
   const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
@@ -164,6 +166,8 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   const { preType: _preType, ...target } = cfg
   // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
   if (meaning !== 'as') target.dbLoad = meaning
+  // The target says what the rows open at, so it sits on the same rack (rowsOnOwned above).
+  if (owned && plan.weight > 0) plan = { ...plan, weight: ownedFloor(owned, plan.weight) }
   if (plan.weight != null) target.weight = plan.weight
   if (plan.reps != null) target.reps = plan.reps
   if (plan.sec != null) target.sec = plan.sec
@@ -290,7 +294,8 @@ function freestyleEntry(st, id, cfg) {
   // buildPlannedEntry does for a planned exercise (lib/dumbbells.js).
   const step = modeOf(full) === 'reps' ? (ownedWeightsFor(st, full) || weightIncrement(full, st.unit)) : defaultIncrement(id, st.unit)
   const block = ['auto', 'own'].includes(warmupSource(st, full).kind)
-  const rows = applyIntensifierPlan(buildSets(historyAs(past, id, dbLoadFor(st, full)), block ? { ...full, warmupSets: 0 } : full, { step, preferLast: true }), full, dropGrid(st, full))
+  const owned = modeOf(full) === 'reps' ? ownedWeightsFor(st, full) : null
+  const rows = applyIntensifierPlan(rowsOnOwned(buildSets(historyAs(past, id, dbLoadFor(st, full)), block ? { ...full, warmupSets: 0 } : full, { step, preferLast: true }), owned), full, dropGrid(st, full))
   const sets = block ? withWarmupBlock(st, full, rows, { grid: dropGrid(st, full), floor: barFloor(st, id), unit: st.unit }) : rows
   return { target: withMeaning(st, cfg, id), plan: null, sets }
 }

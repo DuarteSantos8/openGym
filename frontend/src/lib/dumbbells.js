@@ -351,3 +351,24 @@ export function ownedAround(ideal, ws, max, strict) {
   const high = ok.find(x => x >= ideal - EPS)
   return [...new Set([low, high].filter(x => x != null))].sort((a, b) => a - b)
 }
+
+/**
+ * A freshly built exercise's open work rows put on what the gym holds: each weight the heaviest
+ * owned load at or under it, the rule a gym switch mid-workout uses (gym-inventory.js
+ * reRoundOpenSets). Without it a start seeded from the confirmed working weight or last time
+ * could open at 30 kg total on a rack of 14s and 16s, and only a gym switch fixed it (Discord).
+ * `owned` is ownedWeightsFor's list; null leaves the rows as they are. Warm-ups, done rows and
+ * rows without a load stay untouched; a per-side row moves both sides.
+ */
+export function rowsOnOwned(rows, owned) {
+  if (!Array.isArray(owned) || !owned.length || !Array.isArray(rows)) return rows
+  const snap = w => (Number(w) > 0 ? ownedFloor(owned, Number(w)) : w)
+  const warm = s => s?.phase === 'warmup' || (s?.phase == null && s?.warmup === true)
+  return rows.map(s => {
+    if (!s || typeof s !== 'object' || s.done || warm(s)) return s
+    const sides = s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R
+      ? { ...s.sides, L: { ...s.sides.L, w: snap(s.sides.L.w) }, R: { ...s.sides.R, w: snap(s.sides.R.w) } }
+      : null
+    return { ...s, w: snap(s.w), ...(sides ? { sides } : {}) }
+  })
+}
