@@ -4,10 +4,11 @@
 // answers it. The base is read from where the app is being served.
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { api, appBase, beacon } from './api.js'
-import { readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmpdir } from 'node:os'
 
 const at = pathname => appBase({ pathname })
 
@@ -290,6 +291,51 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     expect(finalUser).toBeGreaterThan(upgrade)
     expect(dockerfile).toMatch(/^ENV NGINX_PORT=80$/m)
     expect(dockerfile).toMatch(/^COPY web\/nginx\.conf\.template \/etc\/nginx\/templates\/default\.conf\.template$/m)
+  })
+})
+
+// Behind a proxy on the same host every visitor reached nginx from the Docker gateway, so the
+// API's per-address limits counted them all as one. REAL_IP_FROM names the proxies whose
+// X-Forwarded-For nginx believes; the script writes that into a conf.d file before nginx starts.
+describe('the web container trusts X-Forwarded-For only from REAL_IP_FROM', () => {
+  const WEB = join(dirname(fileURLToPath(import.meta.url)), '../../../web')
+  const run = value => {
+    const out = join(mkdtempSync(join(tmpdir(), 'realip-')), '00-real-ip.conf')
+    writeFileSync(out, 'stale from a previous start\n')
+    const env = { PATH: process.env.PATH, REAL_IP_CONF: out }
+    if (value !== undefined) env.REAL_IP_FROM = value
+    const r = spawnSync('sh', [join(WEB, '15-real-ip.sh')], { env, encoding: 'utf8' })
+    return { ...r, conf: existsSync(out) ? readFileSync(out, 'utf8') : null }
+  }
+
+  it.each([[undefined], ['']])('writes nothing, and removes an old file, with REAL_IP_FROM=%s', value => {
+    const r = run(value)
+    expect(r.status).toBe(0)
+    expect(r.stderr).toBe('')
+    expect(r.conf).toBeNull()
+  })
+
+  it('trusts each listed proxy and only the last X-Forwarded-For entry', () => {
+    const r = run('172.20.0.1  10.0.0.0/8 fd00::/8')
+    expect(r.status).toBe(0)
+    expect(r.conf).toBe([
+      'set_real_ip_from 172.20.0.1;', 'set_real_ip_from 10.0.0.0/8;', 'set_real_ip_from fd00::/8;',
+      'real_ip_header X-Forwarded-For;', 'real_ip_recursive off;', '',
+    ].join('\n'))
+  })
+
+  it.each([['0.0.0.0/0;include /etc/passwd'], ['proxy.local'], ['172.20.0.1/'], ['/8']])(
+    'refuses REAL_IP_FROM=%s, says why, and writes nothing', value => {
+      const r = run(value)
+      expect(r.status).toBe(1)
+      expect(r.stderr).toContain('is not an IP address or CIDR')
+      expect(r.conf).toBeNull()
+    })
+
+  it('is installed where the entrypoint runs it, executable, and off by default', () => {
+    const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
+    expect(dockerfile).toMatch(/^COPY --chmod=755 web\/15-real-ip\.sh \/docker-entrypoint\.d\/$/m)
+    expect(dockerfile).toMatch(/^ENV REAL_IP_FROM=""$/m)
   })
 })
 
