@@ -212,7 +212,7 @@ export function checkRoutine(raw, { slug, source, cat, starters = {}, coverInfo 
   const say = m => problems.push(m)
   if (!isMap(raw)) return { problems: ['not a JSON object'], routine: null }
   if (!SLUG.test(slug || '')) say(`the file name "${slug}" must be lowercase letters, digits and dashes, 3 to 60 long`)
-  if (!SOURCES.includes(source)) say(`"${source}" is not a routines folder (${SOURCES.join(', ')})`)
+  if (source !== 'learn' && !SOURCES.includes(source)) say(`"${source}" is not a routines folder (${SOURCES.join(', ')})`)
   for (const k of Object.keys(raw)) if (!TOP_KEYS.includes(k)) say(`unknown field "${k}"`)
   const ours = source !== 'community'
 
@@ -553,11 +553,11 @@ export function slugify(s) {
 /* ------------------------------- the repository ------------------------------- */
 
 /** Reads and checks every routine under `dir` (routines/). { routines, problems: ["file: ..."] } */
-export function loadAll(dir, { cat, starters }) {
+export function loadAll(dir, { cat, starters, sources = SOURCES }) {
   const routines = []
   const problems = []
   const slugs = new Map()
-  for (const source of SOURCES) {
+  for (const source of sources) {
     const folder = path.join(dir, source)
     let files = []
     try { files = fs.readdirSync(folder).sort() } catch { continue }
@@ -586,7 +586,7 @@ export function loadAll(dir, { cat, starters }) {
     }
   }
   // Cover pictures with no routine are someone's leftover upload.
-  for (const source of SOURCES) {
+  for (const source of sources) {
     let files = []
     try { files = fs.readdirSync(path.join(dir, source)) } catch { continue }
     for (const f of files) if (/\.(webp|jpg|jpeg|png)$/.test(f) && !routines.some(r => r.source === source && r.cover === f)) problems.push(`routines/${source}/${f}: no routine uses this picture`)

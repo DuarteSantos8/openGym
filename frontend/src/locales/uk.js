@@ -1,5 +1,17 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Чернетка",
+  "Move gently and switch sides when comfortable.": "Рухайтеся плавно й змінюйте бік, коли вам зручно.",
+  "Slow down gradually and release each stretch when comfortable.": "Поступово сповільнюйтеся й виходьте з кожного положення розтягування, коли вам зручно.",
+  "Start this session": "Почати це заняття",
+  "Whole-body warm-up": "Розминка всього тіла",
+  "Lower-body warm-up": "Розминка нижньої частини тіла",
+  "Upper-body warm-up": "Розминка верхньої частини тіла",
+  "Whole-body cool-down": "Заминка для всього тіла",
+  "Hip mobility": "Рухливість кульшових суглобів",
+  "Shoulder mobility": "Рухливість плечей",
+  "Spine mobility": "Рухливість хребта",
+  "Desk break": "Руханка за робочим столом",
   "Sign-in is only available on the server’s configured website.": "Увійти можна лише на сайті, налаштованому для цього сервера.",
   "Check the amount and calculated totals.": "Перевірте кількість і розраховані підсумки.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Налаштовано на цьому сервері. З’єднання перевіряється лише після вибору «Знайти».",

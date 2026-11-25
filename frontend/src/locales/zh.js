@@ -1,5 +1,17 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "草稿",
+  "Move gently and switch sides when comfortable.": "动作轻柔，感觉舒适时再换边。",
+  "Slow down gradually and release each stretch when comfortable.": "逐渐放慢动作，每次拉伸都在感觉舒适时放松回到原位。",
+  "Start this session": "开始本次训练",
+  "Whole-body warm-up": "全身热身",
+  "Lower-body warm-up": "下半身热身",
+  "Upper-body warm-up": "上半身热身",
+  "Whole-body cool-down": "全身放松",
+  "Hip mobility": "髋部活动度",
+  "Shoulder mobility": "肩部活动度",
+  "Spine mobility": "脊柱活动度",
+  "Desk break": "办公间隙活动一下",
   "Sign-in is only available on the server’s configured website.": "只能在为此服务器配置的网站上登录。",
   "Check the amount and calculated totals.": "请检查数量和计算出的总量。",
   "Configured on this server. Connection is checked only when you choose Lookup.": "此服务器已配置。仅在选择查询时检查连接。",

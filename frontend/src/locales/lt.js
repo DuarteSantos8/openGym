@@ -1,5 +1,17 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Juodraštis",
+  "Move gently and switch sides when comfortable.": "Judėkite švelniai ir pakeiskite pusę, kai jausitės patogiai.",
+  "Slow down gradually and release each stretch when comfortable.": "Pamažu lėtinkite tempą ir baikite kiekvieną tempimo pratimą, kai jausitės patogiai.",
+  "Start this session": "Pradėti šią treniruotę",
+  "Whole-body warm-up": "Viso kūno apšilimas",
+  "Lower-body warm-up": "Apatinės kūno dalies apšilimas",
+  "Upper-body warm-up": "Viršutinės kūno dalies apšilimas",
+  "Whole-body cool-down": "Viso kūno atvėsimas",
+  "Hip mobility": "Klubų paslankumas",
+  "Shoulder mobility": "Pečių paslankumas",
+  "Spine mobility": "Stuburo paslankumas",
+  "Desk break": "Judesio pertrauka prie stalo",
   "Sign-in is only available on the server’s configured website.": "Prisijungti galima tik šiam serveriui nustatytoje svetainėje.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Laikrodžiai",

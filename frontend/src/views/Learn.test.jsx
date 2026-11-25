@@ -8,6 +8,8 @@ import Learn from './Learn.jsx'
 import Term, { openTerm } from '../components/Term.jsx'
 import FirstWins from '../components/FirstWins.jsx'
 import { GLOSSARY, GUIDES } from '../lib/learn.js'
+import { useStore } from '../store/useStore.js'
+import { useCircuit } from '../store/useCircuit.js'
 import { useUI } from '../store/useUI.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -26,6 +28,20 @@ const type = (input, value) => act(() => {
 })
 
 describe('Learn', () => {
+  it('offers a playable warm-up from the open guide', () => {
+    mount(<Learn />, '/learn?g=warm-up')
+    const action = Array.from(container.querySelectorAll('button')).find(b => b.textContent === 'Start this session')
+    expect(action).toBeTruthy()
+    const select = container.querySelector('select')
+    expect(select.options).toHaveLength(8)
+    expect(container.querySelector('[data-session-source]')?.textContent).toContain('MedlinePlus')
+    act(() => action.click())
+    expect(useStore.getState().S.active.entries[0].id).toBe('4420')
+    expect(useCircuit.getState().open).toBe(true)
+    act(() => useCircuit.getState().close())
+    act(() => useStore.setState(({ S }) => ({ S: { ...S, active: null } })))
+  })
+
   it('lists every guide closed and the whole glossary', () => {
     mount(<Learn />)
     expect(container.querySelectorAll('[data-guide]').length).toBe(GUIDES.length)

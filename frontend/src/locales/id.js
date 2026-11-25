@@ -1,5 +1,17 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Draf",
+  "Move gently and switch sides when comfortable.": "Bergeraklah perlahan dan ganti sisi saat terasa nyaman.",
+  "Slow down gradually and release each stretch when comfortable.": "Kurangi kecepatan secara bertahap dan akhiri setiap peregangan saat terasa nyaman.",
+  "Start this session": "Mulai sesi ini",
+  "Whole-body warm-up": "Pemanasan seluruh tubuh",
+  "Lower-body warm-up": "Pemanasan tubuh bagian bawah",
+  "Upper-body warm-up": "Pemanasan tubuh bagian atas",
+  "Whole-body cool-down": "Pendinginan seluruh tubuh",
+  "Hip mobility": "Mobilitas pinggul",
+  "Shoulder mobility": "Mobilitas bahu",
+  "Spine mobility": "Mobilitas tulang belakang",
+  "Desk break": "Jeda bergerak saat bekerja",
   "Sign-in is only available on the server’s configured website.": "Kamu hanya dapat masuk di situs web yang dikonfigurasi untuk server ini.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Jam tangan",

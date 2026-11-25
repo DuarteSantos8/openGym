@@ -1,5 +1,17 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "ฉบับร่าง",
+  "Move gently and switch sides when comfortable.": "เคลื่อนไหวเบา ๆ และสลับข้างเมื่อรู้สึกสบาย",
+  "Slow down gradually and release each stretch when comfortable.": "ค่อย ๆ ชะลอจังหวะ และคลายท่ายืดแต่ละท่าเมื่อรู้สึกสบาย",
+  "Start this session": "เริ่มเซสชันนี้",
+  "Whole-body warm-up": "อบอุ่นร่างกายทั้งตัว",
+  "Lower-body warm-up": "อบอุ่นร่างกายส่วนล่าง",
+  "Upper-body warm-up": "อบอุ่นร่างกายส่วนบน",
+  "Whole-body cool-down": "ผ่อนคลายกล้ามเนื้อทั้งตัว",
+  "Hip mobility": "การเคลื่อนไหวสะโพก",
+  "Shoulder mobility": "การเคลื่อนไหวไหล่",
+  "Spine mobility": "การเคลื่อนไหวกระดูกสันหลัง",
+  "Desk break": "พักขยับร่างกายระหว่างทำงาน",
   "Sign-in is only available on the server’s configured website.": "ลงชื่อเข้าใช้ได้เฉพาะบนเว็บไซต์ที่ตั้งค่าไว้สำหรับเซิร์ฟเวอร์นี้เท่านั้น",
   "Check the amount and calculated totals.": "ตรวจสอบปริมาณและยอดรวมที่คำนวณแล้ว",
   "Configured on this server. Connection is checked only when you choose Lookup.": "ตั้งค่าบนเซิร์ฟเวอร์นี้แล้ว ระบบจะตรวจสอบการเชื่อมต่อเมื่อเลือกค้นหาเท่านั้น",

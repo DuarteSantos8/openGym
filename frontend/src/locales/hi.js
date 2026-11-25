@@ -1,5 +1,17 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "मसौदा",
+  "Move gently and switch sides when comfortable.": "आराम से हिलें-डुलें और जब सहज लगे, तब दूसरी तरफ़ करें।",
+  "Slow down gradually and release each stretch when comfortable.": "धीरे-धीरे रफ़्तार कम करें और जब सहज लगे, तब हर खिंचाव की मुद्रा छोड़ें।",
+  "Start this session": "यह सत्र शुरू करें",
+  "Whole-body warm-up": "पूरे शरीर का वार्म-अप",
+  "Lower-body warm-up": "शरीर के निचले हिस्से का वार्म-अप",
+  "Upper-body warm-up": "शरीर के ऊपरी हिस्से का वार्म-अप",
+  "Whole-body cool-down": "पूरे शरीर का कूल-डाउन",
+  "Hip mobility": "कूल्हों की गतिशीलता",
+  "Shoulder mobility": "कंधों की गतिशीलता",
+  "Spine mobility": "रीढ़ की गतिशीलता",
+  "Desk break": "काम के बीच थोड़ा चलें-फिरें",
   "Sign-in is only available on the server’s configured website.": "साइन इन केवल इस सर्वर के लिए तय की गई वेबसाइट पर किया जा सकता है।",
   "Check the amount and calculated totals.": "मात्रा और गणना किए गए कुल मान जाँचें।",
   "Configured on this server. Connection is checked only when you choose Lookup.": "इस सर्वर पर कॉन्फ़िगर किया गया है। कनेक्शन केवल खोजें चुनने पर जाँचा जाता है।",

@@ -1,5 +1,17 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Wersja robocza",
+  "Move gently and switch sides when comfortable.": "Poruszaj się łagodnie i zmień stronę, kiedy będzie ci wygodnie.",
+  "Slow down gradually and release each stretch when comfortable.": "Stopniowo zwalniaj i kończ każde rozciąganie, kiedy będzie ci wygodnie.",
+  "Start this session": "Rozpocznij tę sesję",
+  "Whole-body warm-up": "Rozgrzewka całego ciała",
+  "Lower-body warm-up": "Rozgrzewka dolnej części ciała",
+  "Upper-body warm-up": "Rozgrzewka górnej części ciała",
+  "Whole-body cool-down": "Wyciszenie całego ciała",
+  "Hip mobility": "Mobilność bioder",
+  "Shoulder mobility": "Mobilność barków",
+  "Spine mobility": "Mobilność kręgosłupa",
+  "Desk break": "Przerwa na ruch przy biurku",
   "Sign-in is only available on the server’s configured website.": "Możesz się zalogować tylko w witrynie skonfigurowanej dla tego serwera.",
   "Check the amount and calculated totals.": "Sprawdź ilość i obliczone sumy.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Skonfigurowano na tym serwerze. Połączenie jest sprawdzane dopiero po wybraniu Wyszukaj.",

@@ -1,5 +1,17 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "초안",
+  "Move gently and switch sides when comfortable.": "부드럽게 움직이고 편할 때 반대쪽으로 바꾸세요.",
+  "Slow down gradually and release each stretch when comfortable.": "서서히 속도를 줄이고 편할 때 각 스트레칭 자세를 풀어 주세요.",
+  "Start this session": "이 세션 시작",
+  "Whole-body warm-up": "전신 준비 운동",
+  "Lower-body warm-up": "하체 준비 운동",
+  "Upper-body warm-up": "상체 준비 운동",
+  "Whole-body cool-down": "전신 정리 운동",
+  "Hip mobility": "고관절 가동성",
+  "Shoulder mobility": "어깨 가동성",
+  "Spine mobility": "척추 가동성",
+  "Desk break": "책상 앞에서 움직이는 휴식",
   "Sign-in is only available on the server’s configured website.": "이 서버에 설정된 웹사이트에서만 로그인할 수 있습니다.",
   "Check the amount and calculated totals.": "양과 계산된 합계를 확인하세요.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "이 서버에 설정되어 있습니다. 조회를 선택할 때만 연결을 확인합니다.",

@@ -1,5 +1,17 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Черновик",
+  "Move gently and switch sides when comfortable.": "Двигайтесь плавно и меняйте сторону, когда вам удобно.",
+  "Slow down gradually and release each stretch when comfortable.": "Постепенно замедляйтесь и выходите из каждой позы растяжки, когда вам удобно.",
+  "Start this session": "Начать это занятие",
+  "Whole-body warm-up": "Разминка всего тела",
+  "Lower-body warm-up": "Разминка нижней части тела",
+  "Upper-body warm-up": "Разминка верхней части тела",
+  "Whole-body cool-down": "Заминка для всего тела",
+  "Hip mobility": "Подвижность тазобедренных суставов",
+  "Shoulder mobility": "Подвижность плеч",
+  "Spine mobility": "Подвижность позвоночника",
+  "Desk break": "Разминка за рабочим столом",
   "Sign-in is only available on the server’s configured website.": "Войти можно только на сайте, настроенном для этого сервера.",
   "Check the amount and calculated totals.": "Проверьте количество и рассчитанные итоги.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Настроено на этом сервере. Соединение проверяется только при выборе «Найти».",
