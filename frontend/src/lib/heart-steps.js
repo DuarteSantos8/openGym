@@ -6,9 +6,13 @@
 // An exercise's span runs from the tick before its first set (the end of whatever came before it,
 // its rest included) to its own last tick. A superset is one exercise here, its members done in
 // turn. Coming back to an exercise later makes a second span of it.
-import { supersetUnits } from './history.js'
+import { sessionSections } from './history.js'
 import { t } from './i18n-core.js'
 import { fmtDur } from './format.js'
+
+// The units the detail sheet and the copied text group a workout into (history.js sessionSections):
+// a superset inside one routine is one unit, never two routines' exercises paired across their edge.
+const units = entries => sessionSections(entries).flatMap(section => section.units)
 
 const BPM_MIN = 25
 const BPM_MAX = 250
@@ -29,7 +33,7 @@ export const tickOf = s => {
 /** Every done set's tick in time order: [{ at, unit }], `unit` the first entry index of its superset unit. */
 function ticks(entries, start, end) {
   const out = []
-  for (const unit of supersetUnits(entries || [])) {
+  for (const unit of units(entries || [])) {
     for (const i of unit) {
       for (const s of entries[i]?.sets || []) {
         const at = tickOf(s)
@@ -46,7 +50,7 @@ function ticks(entries, start, end) {
  */
 export function exerciseSpans(w, start = w?.start, end = w?.end || Date.now()) {
   const entries = w?.entries || []
-  const members = new Map(supersetUnits(entries).map(u => [u[0], u]))
+  const members = new Map(units(entries).map(u => [u[0], u]))
   const spans = []
   let from = start
   for (const { at, unit } of ticks(entries, start, end)) {
@@ -64,7 +68,7 @@ export function exerciseSpans(w, start = w?.start, end = w?.end || Date.now()) {
  */
 export function currentSpanStart(A, origin = A?.start) {
   const entries = A?.entries || []
-  const unit = supersetUnits(entries).find(u => u.includes(A?.cur))
+  const unit = units(entries).find(u => u.includes(A?.cur))
   const mine = unit ? unit[0] : A?.cur
   let from = origin
   for (const tk of ticks(entries, origin, Infinity)) if (tk.unit !== mine) from = tk.at

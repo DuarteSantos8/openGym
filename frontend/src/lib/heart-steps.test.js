@@ -29,6 +29,19 @@ describe('exerciseSpans', () => {
   it('leaves out ticks outside the workout', () => {
     expect(exerciseSpans({ start: S, end: S + 100e3, entries: [{ sets: [set(200)] }] })).toEqual([])
   })
+  it('never pairs two routines across their edge, a superset inside one still one', () => {
+    // a combined session: the last of routine A and the first of B share an `sg`, as the detail
+    // sheet and the copied text read them back apart (history.js sessionSections)
+    const both = { start: S, end: S + 900e3, entries: [
+      { id: 'row', rid: 'A', sg: 'a', sets: [set(100)] },
+      { id: 'press', rid: 'A', sg: 'a', sets: [set(200)] },
+      { id: 'curl', rid: 'B', sg: 'a', sets: [set(300)] },
+    ] }
+    expect(exerciseSpans(both)).toEqual([
+      { unit: 0, members: [0, 1], from: S, to: S + 200e3 },
+      { unit: 2, members: [2], from: S + 200e3, to: S + 300e3 },
+    ])
+  })
 })
 
 describe('currentSpanStart', () => {
