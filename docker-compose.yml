@@ -61,7 +61,8 @@ services:
       # Behind a reverse proxy on the same host, nginx sees every visitor as that proxy, and the
       # API's per-address rate limits then lump them all together. List the proxy's address here
       # (the Docker network's gateway, e.g. 172.20.0.1) and nginx takes the visitor from the
-      # X-Forwarded-For it adds. Empty keeps the connecting address (docs/SELF_HOSTING.md).
+      # X-Forwarded-For it adds. Only with WEB_PORT=127.0.0.1:8080, so nothing else reaches nginx
+      # from the gateway. Empty keeps the connecting address (docs/SELF_HOSTING.md).
       - REAL_IP_FROM=${REAL_IP_FROM:-}
       # Subpath deployments behind a proxy that passes its prefix through ("/gym", no trailing
       # slash). Empty serves the app at the site root, which is what it has always done; a proxy

@@ -4,7 +4,7 @@
 // answers it. The base is read from where the app is being served.
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { api, appBase, beacon } from './api.js'
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -331,6 +331,23 @@ describe('the web container trusts X-Forwarded-For only from REAL_IP_FROM', () =
       expect(r.stderr).toContain('is not an IP address or CIDR')
       expect(r.conf).toBeNull()
     })
+
+  it('leaves a conf mounted read-only by hand in charge, even with REAL_IP_FROM set', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'realip-ro-'))
+    const out = join(dir, '00-real-ip.conf')
+    writeFileSync(out, 'set_real_ip_from 172.20.0.1;' + String.fromCharCode(10))
+    chmodSync(out, 0o444)
+    chmodSync(dir, 0o555)
+    try {
+      const r = spawnSync('sh', [join(WEB, '15-real-ip.sh')], {
+        env: { PATH: process.env.PATH, REAL_IP_CONF: out, REAL_IP_FROM: '10.0.0.1' }, encoding: 'utf8' })
+      expect(r.status).toBe(0)
+      expect(r.stderr).toContain('ignoring REAL_IP_FROM')
+      expect(readFileSync(out, 'utf8')).toBe('set_real_ip_from 172.20.0.1;' + String.fromCharCode(10))
+    } finally {
+      chmodSync(dir, 0o755)
+    }
+  })
 
   it('is installed where the entrypoint runs it, executable, and off by default', () => {
     const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')

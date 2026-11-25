@@ -470,8 +470,12 @@ other proxy on the same host (Tailscale Funnel, Caddy, Traefik), set `REAL_IP_FR
 container to the address that proxy connects from, as nginx sees it: through Docker's port
 mapping that is the network's gateway (`docker network inspect <stack>_default`, the `Gateway`
 field, often `172.x.0.1`). nginx then takes the visitor from the last `X-Forwarded-For` entry,
-the one the proxy added; requests from any other address keep their own, so a direct client
-cannot forge it. Running
+the one the proxy added; requests from any other address keep their own. That only stops a
+client from forging its address if nothing but the proxy can reach nginx from the listed
+address: Docker's userland proxy (the default) hands IPv6 connections to a published port to
+the container from that same gateway, so publish the web port on the loopback address only
+(`WEB_PORT=127.0.0.1:8080`, which the proxy on the host still reaches) before setting
+`REAL_IP_FROM` to the gateway. Running
 the API without the web container, leave `TRUST_PROXY` off unless whatever is in front overwrites
 (not appends to) `X-Forwarded-For`.
 

@@ -8,7 +8,9 @@
 #
 # Only the LAST X-Forwarded-For entry is used (real_ip_recursive off): the one the trusted proxy
 # itself added. Whatever a client wrote further left is ignored. A request from any address not
-# listed keeps its own address, so a client that reaches nginx directly cannot forge it.
+# listed keeps its own address. List only an address that nothing but the proxy connects from:
+# Docker's userland proxy hands IPv6 clients of a published port to the container from the
+# gateway too, so trusting the gateway needs the port published on 127.0.0.1 (127.0.0.1:8080:80).
 #
 # Empty (the default) writes nothing and nginx behaves exactly as before. The file goes in
 # conf.d, which nginx includes at http level, so it applies to every location; it is rewritten
@@ -17,8 +19,13 @@ set -eu
 
 conf=/etc/nginx/conf.d/00-real-ip.conf
 out=${REAL_IP_CONF:-$conf}
-# A file mounted there by hand (the workaround before this script) cannot be removed: leave it.
+# A file mounted there by hand (the workaround before this script) cannot be removed or
+# rewritten: leave it in charge, say so, and let nginx start with it.
 rm -f "$out" 2>/dev/null || :
+if [ -e "$out" ]; then
+  [ -z "${REAL_IP_FROM:-}" ] || echo "$0: $out is mounted read-only; using it and ignoring REAL_IP_FROM." >&2
+  exit 0
+fi
 [ -n "${REAL_IP_FROM:-}" ] || exit 0
 
 for entry in $REAL_IP_FROM; do
