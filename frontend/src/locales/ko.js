@@ -6038,4 +6038,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "{1}의 {0} 기준, 체중 {2}에서 평가했어요.",
   "No weigh-in within a month of it, so the nearest one stands in.": "한 달 안에 체중 기록이 없어 가장 가까운 기록을 썼어요.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "중량으로 추정했어요. 최근 90일의 최고 세트를 한계까지 한 것으로 봐요. 몇 세트를 평가하면 진짜 수치가 돼요.",
+  "Shake for a snow globe": "흔들어서 스노우볼",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "폰을 세게 흔들면 눈이 미친 듯이 날려요. 잠시 후 저절로 가라앉아요.",
 }

@@ -484,3 +484,58 @@ describe('the stat of the day', () => {
     expect(statOf(S, 'streak', 2026).big).toBe('1 week')
   })
 })
+
+describe('the snow globe: shake the phone', () => {
+  const shake = () => act(() => {
+    for (let i = 0; i < 3; i++) {
+      vi.setSystemTime(new Date(2026, 11, 5, 9, 0, 0, 200 * (i + 1)))
+      const e = new Event('devicemotion'); e.acceleration = { x: i % 2 ? -22 : 22, y: 3, z: 0 }; window.dispatchEvent(e)
+    }
+  })
+  beforeEach(() => { window.DeviceMotionEvent = function () {} })
+  afterEach(() => { delete window.DeviceMotionEvent })
+
+  it('a hard shake opens the globe: one canvas that takes no tap, and a little buzz', async () => {
+    const { Layer } = await load()
+    render(<Layer hidden={false} fresh={false} />)
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+    shake()
+    const cv = host.querySelector('[data-snow-globe]')
+    expect(cv).not.toBeNull()
+    expect(cv.getAttribute('aria-hidden')).toBe('true')
+    expect(buzz.vibrate).toHaveBeenCalled()
+    // Shaking on stirs the same globe, never a second one.
+    shake()
+    expect(host.querySelectorAll('[data-snow-globe]').length).toBe(1)
+  })
+
+  it('nothing with its switch off, with reduced motion, or on the workout screen without "Also during workouts"', async () => {
+    store.S = { ...store.S, seasonal: { christmasShake: false } }
+    let { Layer } = await load()
+    render(<Layer hidden={false} fresh={false} />)
+    shake()
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+    act(() => root.unmount()); root = createRoot(host)
+
+    store.S = { ...store.S, seasonal: {} }
+    reduce = true
+    ;({ Layer } = await load())
+    render(<Layer hidden={false} fresh={false} />)
+    shake()
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+    act(() => root.unmount()); root = createRoot(host)
+
+    reduce = false
+    ;({ Layer } = await load())
+    render(<Layer hidden fresh={false} workout={false} />)
+    shake()
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+  })
+
+  it('a gentle wobble does nothing', async () => {
+    const { Layer } = await load()
+    render(<Layer hidden={false} fresh={false} />)
+    act(() => { for (let i = 0; i < 10; i++) { const e = new Event('devicemotion'); e.acceleration = { x: 5, y: 2, z: 1 }; window.dispatchEvent(e) } })
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+  })
+})

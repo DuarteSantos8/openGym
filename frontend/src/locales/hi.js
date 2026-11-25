@@ -6038,4 +6038,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "{1} को {0} से आँका गया, {2} शरीर के वज़न पर।",
   "No weigh-in within a month of it, so the nearest one stands in.": "एक महीने के भीतर कोई वज़न नहीं, इसलिए सबसे नज़दीकी लिया गया।",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "तुम्हारे वज़न से अनुमान: पिछले 90 दिनों का सबसे अच्छा सेट पूरी ताक़त वाला माना गया। कुछ सेट रेट करो, तब यह असली तस्वीर बनेगा।",
+  "Shake for a snow globe": "स्नो ग्लोब के लिए हिलाएँ",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "फ़ोन को ज़ोर से हिलाएँ और बर्फ़ पागलों की तरह घूमेगी। फिर अपने आप बैठ जाएगी।",
 }

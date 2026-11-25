@@ -6117,4 +6117,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "{1} তারিখের {0} থেকে মূল্যায়ন, {2} শরীরের ওজনে।",
   "No weigh-in within a month of it, so the nearest one stands in.": "এক মাসের মধ্যে কোনো ওজন নেই, তাই সবচেয়ে কাছেরটি ধরা হয়েছে।",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "তোমার ওজন থেকে অনুমান: গত ৯০ দিনের সেরা সেটটিকে পুরো শক্তির ধরা হয়েছে। কয়েকটি সেট রেট করো, তখন এটি আসল ছবি হবে।",
+  "Shake for a snow globe": "স্নো গ্লোবের জন্য ঝাঁকান",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "ফোনটা জোরে ঝাঁকান, তুষার পাগলের মতো ঘুরবে। তারপর নিজেই থিতিয়ে যাবে।",
 }

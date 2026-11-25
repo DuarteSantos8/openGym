@@ -6003,4 +6003,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Dinilai dari {0} pada {1}, dengan berat badan {2}.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Tidak ada timbangan dalam sebulan, jadi yang terdekat dipakai.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Diperkirakan dari bebanmu, dengan set terbaikmu dalam 90 hari terakhir dianggap sampai habis. Beri nilai beberapa set dan ini jadi angka yang sebenarnya.",
+  "Shake for a snow globe": "Goyang untuk bola salju",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Goyangkan ponselmu kuat-kuat dan saljunya jadi heboh. Nanti turun lagi sendiri.",
 };

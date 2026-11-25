@@ -6049,4 +6049,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "ประเมินจาก {0} เมื่อ {1} ที่น้ำหนักตัว {2}",
   "No weigh-in within a month of it, so the nearest one stands in.": "ไม่มีการชั่งน้ำหนักภายในหนึ่งเดือน จึงใช้ครั้งที่ใกล้ที่สุด",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "ประมาณจากน้ำหนักที่คุณยก โดยถือว่าเซ็ตที่ดีที่สุดใน 90 วันล่าสุดเล่นจนสุดแรง ให้คะแนนสักสองสามเซ็ต แล้วจะได้ภาพจริง",
+  "Shake for a snow globe": "เขย่าเพื่อลูกแก้วหิมะ",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "เขย่ามือถือแรง ๆ แล้วหิมะจะปลิวว่อน เดี๋ยวก็ตกลงเองอีกครั้ง",
 }

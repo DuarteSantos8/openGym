@@ -6038,4 +6038,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "根据{1}的{0}评定，体重{2}。",
   "No weigh-in within a month of it, so the nearest one stands in.": "前后一个月内没有称重记录，因此使用最近的一次。",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "根据你的重量估算：把最近90天的最佳一组视为做到力竭。给几组打分，这里就会变成真实数据。",
+  "Shake for a snow globe": "摇一摇，雪花水晶球",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "用力摇手机，雪花就会疯狂飞舞。之后它会自己落下。",
 }

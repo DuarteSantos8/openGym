@@ -6034,4 +6034,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Įvertinta pagal {0} {1}, esant {2} kūno svoriui.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Per mėnesį nėra svėrimo, todėl naudojamas artimiausias.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Įvertinta pagal tavo svorius, laikant geriausią paskutinių 90 dienų seriją atlikta iki galo. Įvertink kelias serijas ir tai taps tikru vaizdu.",
+  "Shake for a snow globe": "Pakratyk sniego rutulį",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Stipriai pakratyk telefoną, ir sniegas pašėls. Paskui pats nusės.",
 }

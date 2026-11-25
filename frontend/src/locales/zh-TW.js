@@ -6031,4 +6031,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "依據{1}的{0}評定，體重{2}。",
   "No weigh-in within a month of it, so the nearest one stands in.": "前後一個月內沒有量體重紀錄，因此使用最接近的一次。",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "根據你的重量估算：把最近90天的最佳一組視為做到力竭。替幾組評分，這裡就會變成真實數據。",
+  "Shake for a snow globe": "搖一搖，雪花水晶球",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "用力搖手機，雪花就會瘋狂飛舞。之後它會自己落下。",
 }

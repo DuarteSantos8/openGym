@@ -6038,4 +6038,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "{1} tarihindeki {0} üzerinden, {2} vücut ağırlığıyla değerlendirildi.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Bir ay içinde tartım yok, bu yüzden en yakını kullanılıyor.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Ağırlıklarından tahmin edildi: son 90 günün en iyi seti tükenene kadar sayılıyor. Birkaç seti puanla, gerçek tablo ortaya çıksın.",
+  "Shake for a snow globe": "Kar küresi için salla",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Telefonu sıkıca salla, kar çılgınca dönsün. Sonra kendiliğinden yatışır.",
 }

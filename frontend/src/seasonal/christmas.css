@@ -51,6 +51,8 @@
 
 /* ---------------------------------------------------------------- snow -- */
 .xm-snowfall{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+/* The snow globe (shake the phone): over the page like Santa's flight, under bars and sheets. */
+.xm-globe{position:fixed;inset:0;width:100%;height:100%;z-index:40;pointer-events:none}
 .xm-flake{
   position:absolute;top:-16px;width:var(--s);height:var(--s);margin-left:calc(var(--s) / -2);
   border-radius:50%;background:var(--xm-flake);opacity:0;
@@ -485,7 +487,7 @@
 .xm-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:6px}
 
 @media (prefers-reduced-motion: reduce){
-  .xm-snowfall,.xm-flight,.xm-burst{display:none}
+  .xm-snowfall,.xm-flight,.xm-burst,.xm-globe{display:none}
   .xm-nose i,.xm-rudhead,.xm-teamsvg .xm-pair,.xm-teamsvg .xm-spark,.xm-arm-wave,.xm-setspark,.xm-wlights .xm-bulb,.xm-peek-house .xm-pk,.xm-plandeco .xm-pk,
   .xm-flap,.xm-door.xm-today .xm-flap,.xm-door.xm-shake,.xm-reveal-icon,.xm-hang,.xm-ginger-hang,.xm-bulb,.xm-ball,.xm-stage .xm-bigflap.xm-nudge{animation:none;transition:none}
   .xm-reveal{animation:xm-fade .2s ease both}

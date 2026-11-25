@@ -6042,4 +6042,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Оценено по {0} от {1}, при весе тела {2}.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Взвешиваний в пределах месяца нет, поэтому берётся ближайшее.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Оценка по твоим весам: лучший подход за последние 90 дней считается выполненным до отказа. Оцени несколько подходов, и картина станет настоящей.",
+  "Shake for a snow globe": "Встряхни для снежного шара",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Встряхни телефон посильнее, и снег закружится как безумный. Потом сам уляжется.",
 }

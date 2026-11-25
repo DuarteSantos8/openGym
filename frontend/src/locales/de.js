@@ -6058,4 +6058,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Bewertet nach {0} am {1}, bei {2} Körpergewicht.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Kein Wiegen innerhalb eines Monats davor oder danach, also springt das nächstgelegene ein.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Geschätzt aus deinen Gewichten: Dein bester Satz der letzten 90 Tage gilt als bis zum Limit. Bewerte ein paar Sätze, dann wird daraus das Echte.",
+  "Shake for a snow globe": "Schütteln für eine Schneekugel",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Schüttel dein Handy kräftig, und der Schnee dreht durch. Er legt sich von selbst wieder.",
 }

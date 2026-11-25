@@ -6038,4 +6038,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Avaliado a partir de {0} em {1}, com {2} de peso corporal.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Nenhuma pesagem no espaço de um mês, por isso conta a mais próxima.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Estimado a partir dos teus pesos, contando a tua melhor série dos últimos 90 dias como até à falha. Avalia algumas séries e isto passa a ser o real.",
+  "Shake for a snow globe": "Agitar para um globo de neve",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Agita o telemóvel com força e a neve fica louca. Depois assenta sozinha.",
 }

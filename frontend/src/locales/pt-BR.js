@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Christmas: the snow globe ---
+  "Shake for a snow globe": "Chacoalhe para um globo de neve",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Chacoalhe o celular com força e a neve enlouquece. Depois ela assenta sozinha.",
   // --- Stats: strength level source, estimated effort ---
   "Graded from {0} on {1}, at {2} body weight.": "Avaliado a partir de {0} em {1}, com {2} de peso corporal.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Nenhuma pesagem dentro de um mês, então vale a mais próxima.",

@@ -5970,4 +5970,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "{1}の{0}から判定、体重{2}。",
   "No weigh-in within a month of it, so the nearest one stands in.": "前後1か月以内に体重記録がないため、最も近い記録を使っています。",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "重量からの推定です。直近90日のベストセットを限界までと見なしています。いくつかのセットを評価すると、本当の数字になります。",
+  "Shake for a snow globe": "振ってスノードーム",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "スマホを強く振ると雪が大暴れ。そのうち自然に積もります。",
 }

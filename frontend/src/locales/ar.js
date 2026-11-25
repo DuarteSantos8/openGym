@@ -6093,4 +6093,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "مقيّم من {0} بتاريخ {1}، بوزن جسم {2}.",
   "No weigh-in within a month of it, so the nearest one stands in.": "لا يوجد وزن خلال شهر منه، لذا يُستخدم الأقرب.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "تقدير من أوزانك، مع اعتبار أفضل مجموعة في آخر 90 يومًا حتى الفشل. قيّم بعض المجموعات ليصبح هذا هو الحقيقي.",
+  "Shake for a snow globe": "هزّ الهاتف لكرة ثلج",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "هزّ هاتفك بقوة وسيجنّ الثلج. ثم يهدأ من تلقاء نفسه.",
 }

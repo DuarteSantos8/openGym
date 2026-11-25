@@ -28,6 +28,8 @@ import Icon from '../components/Icon.jsx'
 import Glyph, { splitEmoji } from '../components/Glyph.jsx'
 import { Button } from '../components/ui.jsx'
 import { doorFor, finisherMinutes, REINDEER_KG, STRETCH } from './advent-doors.js'
+import { makeGlobe, fitGlobe, stir, stepGlobe, flakeAlpha } from './snow-globe.js'
+import { watchShake } from '../lib/shake.js'
 import './christmas.css'
 
 /* Christmas (v1.4.4), fetched only while the theme shows (components/Seasonal.jsx), with the
@@ -280,9 +282,25 @@ export function Layer({ hidden, fresh, workout }) {
     return () => { delete de.dataset.xmCaps; delete de.dataset.xmTint }
   }, [show, tint])
   const spark = useSetSparkle(hidden && !!workout)
+  // Shake the phone hard: a snow globe (snow-globe.js). Wherever the theme shows, with its own
+  // switch in Settings; shaking again while it swirls stirs the same snow instead of a new globe.
+  const shakeOn = useStore(s => s.S?.seasonal?.christmasShake !== false)
+  const [globe, setGlobe] = useState(0)
+  const stirRef = useRef(null)
+  const firstShake = useRef(null)
+  useEffect(() => {
+    if (!show || !shakeOn) return
+    return watchShake(imp => {
+      if (reducedMotion() || document.hidden) return
+      vibrate(12)
+      if (stirRef.current) stirRef.current(imp)
+      else { firstShake.current = imp; setGlobe(n => n + 1) }
+    })
+  }, [show, shakeOn])
   return <>
     {spark && <SetSparkle key={spark.n} at={spark} />}
     {snow > 0 && show && !reducedMotion() && <Snow key={snow} few={hidden} onGone={() => setSnow(0)} />}
+    {globe > 0 && show && shakeOn && <SnowGlobe key={globe} first={firstShake} stirRef={stirRef} onGone={() => setGlobe(0)} />}
     {flight > 0 && !hidden && <div key={flight} className={'xm-flight' + (leaving ? ' xm-leave' : '')} aria-hidden="true"
       onAnimationEnd={e => { if (e.target === e.currentTarget) setFlight(0) }}
       onTransitionEnd={e => { if (e.target === e.currentTarget && leaving) setFlight(0) }}><SantaTeam /></div>}
@@ -345,6 +363,63 @@ function Snow({ few, onGone }) {
       </span>
     ))}
   </div>
+}
+
+/* The snow globe: one canvas over the page, under the bars and sheets, letting every tap through.
+   It runs only while there is snow in the air or on the floor, then takes itself away. Fast
+   flakes are drawn as short streaks along their path, so the swirl reads as speed. */
+function SnowGlobe({ first, stirRef, onGone }) {
+  const ref = useRef(null)
+  const gone = useRef(onGone)
+  gone.current = onGone
+  useEffect(() => {
+    const cv = ref.current
+    const ctx = cv?.getContext?.('2d') || null
+    const size = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1)
+      const w = window.innerWidth || 360, h = window.innerHeight || 640
+      if (cv) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr) }
+      ctx?.setTransform?.(dpr, 0, 0, dpr, 0, 0)
+      return [w, h]
+    }
+    const [w, h] = size()
+    const G = stir(makeGlobe(w, h), first.current || {})
+    first.current = null
+    stirRef.current = imp => stir(G, imp)
+    const color = (cv && getComputedStyle(cv).getPropertyValue('--xm-flake').trim()) || 'rgba(236,243,255,.78)'
+    const onResize = () => { const [w2, h2] = size(); fitGlobe(G, w2, h2) }
+    window.addEventListener('resize', onResize)
+    let raf = 0
+    let last = performance.now()
+    const frame = now => {
+      const alive = stepGlobe(G, (now - last) / 1000)
+      last = now
+      if (ctx) {
+        ctx.clearRect(0, 0, G.w, G.h)
+        ctx.fillStyle = color
+        ctx.strokeStyle = color
+        ctx.lineCap = 'round'
+        for (const f of G.flakes) {
+          const a = flakeAlpha(f, G)
+          if (!a) continue
+          ctx.globalAlpha = a
+          const sp = Math.hypot(f.vx, f.vy)
+          if (sp > 260) {
+            ctx.lineWidth = f.r * 2
+            ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(f.x - f.vx * 0.016, f.y - f.vy * 0.016); ctx.stroke()
+          } else {
+            ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.2832); ctx.fill()
+          }
+        }
+        ctx.globalAlpha = 1
+      }
+      if (!alive) { stirRef.current = null; gone.current(); return }
+      raf = requestAnimationFrame(frame)
+    }
+    raf = requestAnimationFrame(frame)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); stirRef.current = null }
+  }, [first, stirRef])
+  return <canvas ref={ref} className="xm-globe" aria-hidden="true" data-snow-globe />
 }
 
 /* ----------------------------------------------------- the spots -- */

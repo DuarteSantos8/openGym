@@ -111,6 +111,7 @@ import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
 import { THEMES, shownThemes, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
+import { hasMotion, askMotion } from '../lib/shake.js'
 import { adventOf, adventOpenable } from '../lib/advent.js'
 import { openSeasonal } from '../components/Seasonal.jsx'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
@@ -1245,6 +1246,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           {th.workoutTitle && <Row icon="play" iconTint="var(--green)" title={t(th.workoutTitle)} subtitle={t(th.workoutNote)}>
             <Switch aria-label={t(th.workoutTitle)} checked={S.seasonal?.[th.id + 'Workout'] !== false}
               onChange={v => set(th.id + 'Workout', v)} />
+          </Row>}
+          {/* The snow globe (lib/shake.js): only where there is a motion sensor to shake. iOS asks for
+              it from this tap; in the iPhone app that is granted without a prompt. */}
+          {th.shakeTitle && hasMotion() && <Row icon="snowflake" iconTint="var(--blue)" title={t(th.shakeTitle)} subtitle={t(th.shakeNote)}>
+            <Switch aria-label={t(th.shakeTitle)} checked={S.seasonal?.[th.id + 'Shake'] !== false}
+              onChange={v => { if (v) askMotion(); set(th.id + 'Shake', v) }} />
           </Row>}
         </Section>
       })}

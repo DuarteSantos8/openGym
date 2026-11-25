@@ -6041,4 +6041,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Értékelve ebből: {0}, {1}, {2} testsúlynál.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Egy hónapon belül nincs mérés, így a legközelebbi számít.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "A súlyaidból becsülve: az utolsó 90 nap legjobb sorozata teljes erőből ment. Értékelj pár sorozatot, és ebből lesz a valódi kép.",
+  "Shake for a snow globe": "Rázd meg a hógömbért",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Rázd meg erősen a telefont, és megőrül a hó. Utána magától leülepszik.",
 }

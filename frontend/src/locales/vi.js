@@ -6004,4 +6004,6 @@ export default {
   "Graded from {0} on {1}, at {2} body weight.": "Đánh giá theo {0} ngày {1}, ở cân nặng {2}.",
   "No weigh-in within a month of it, so the nearest one stands in.": "Không có lần cân nào trong vòng một tháng, nên dùng lần gần nhất.",
   "Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.": "Ước tính từ mức tạ của bạn, coi hiệp tốt nhất trong 90 ngày qua là kiệt sức. Chấm vài hiệp và đây sẽ thành số thật.",
+  "Shake for a snow globe": "Lắc để có quả cầu tuyết",
+  "Shake your phone hard and the snow goes wild. It settles again on its own.": "Lắc mạnh điện thoại và tuyết sẽ bay loạn xạ. Sau đó tự lắng xuống.",
 };
