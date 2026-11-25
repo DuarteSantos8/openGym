@@ -1295,7 +1295,7 @@ body.chips-dragging *{cursor:inherit}
 .stp .val i{font-style:normal;font-size:var(--fs-caption);color:var(--label-2);flex:none}
 .stp .num{
   width:100%;min-width:0;text-align:center;background:none;border:none;outline:none;
-  font-size:var(--fs-body);font-weight:500;letter-spacing:-.012em;padding:0;
+  font-size:var(--fs-body);font-weight:600;letter-spacing:-.035em;padding:0;
   -moz-appearance:textfield;appearance:textfield;
   /* the field is the whole height of the stepper, not just its 18px text line, so a tap
      anywhere between the two buttons focuses it */
@@ -1334,6 +1334,10 @@ body.chips-dragging *{cursor:inherit}
    (set rows have an 8px gap, so they take the full 7px) */
 .chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
 .setrow .chk::before{inset:-7px}
+/* In a set row the tick is the screen's main control (design 1.5): a rounded square that fills with
+   the accent and glows a little once the set is done, so a finished set reads from across the gym. */
+.setrow .chk{border-radius:10px}
+.setrow .chk.on{box-shadow:0 4px 12px -4px var(--acc);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--acc) 60%,transparent)}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(var(--press-scale-sm))}
 .ck svg{
@@ -1402,7 +1406,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   background:rgba(0,0,0,.55);color:#fff;--icon-stroke:2.4;
 }
 .exhd{align-items:center}
-.wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.wprog{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
 /* The bar with the session's volume at its end (#774): 12 px tall where the bar is 4, so it takes
    8 px less margin and the header keeps the exact height it has without it. */
@@ -3304,8 +3308,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wchip{
   --ring:var(--sep);
   flex:none;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;   /* own stacking context: WebKit lets the scaling fill ignore the rounded clip otherwise */
-  min-width:28px;height:28px;padding:0 8px;border-radius:99px;
-  font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
+  min-width:36px;height:36px;padding:0 10px;border-radius:12px;
+  font-size:var(--fs-subhead);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
   background:var(--surface);
 }
 /* The fill is a layer scaled from the bottom (transform only), the ring a layer above it. */
