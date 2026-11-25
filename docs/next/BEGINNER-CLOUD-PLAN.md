@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status 2026-11-24. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (`next/EP27-agent-development-plan`, in review). Still to be seen by a person on the hosted server: the admin, sign-out ending the server session, and two tabs. Read after `NEXT-STEPS.md`.
+Status 2026-11-24. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Its Task A2 is in review as `next/EP19-unlink-group-admins`. Still to be seen by a person on the hosted server: the admin, sign-out ending the server session, and two tabs. Read after `NEXT-STEPS.md`.
 
 ## Why
 
