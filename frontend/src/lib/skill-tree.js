@@ -155,17 +155,38 @@ export function earnedSkills(S) {
 /**
  * S.skills with what the log shows ticked, on the day it first showed (the skills before it
  * too). A skill someone took back stays taken back unless a session after that shows it again.
- * Returns `map` itself when there is nothing new.
+ * A skill already had keeps its day, but a newer session showing it moves its stamp (and its
+ * prerequisites') up to that session's time, so a take-back older than the session cannot win
+ * the merge on another device. Returns `map` itself when there is nothing new.
  */
 export function withEarned(map, earned, now = Date.now()) {
   let out = isMap(map) ? map : {}
-  const ids = Object.keys(earned || {}).filter(id => SKILLS[id]).sort((a, b) => SKILLS[a].tier - SKILLS[b].tier)
+  // By tier, then by the day each first showed: a skill before another in the same tier takes its
+  // own first day, never the day of a later skill that ticked it on the way.
+  const ids = Object.keys(earned || {}).filter(id => SKILLS[id])
+    .sort((a, b) => SKILLS[a].tier - SKILLS[b].tier || String(earned[a].day).localeCompare(String(earned[b].day)))
   for (const id of ids) {
-    const e = out[id]
-    if (isMap(e) && (e.at || (Number(e._ts) || 0) >= earned[id].t)) continue
+    const e = out[id], t = earned[id].t
+    if (isMap(e) && e.at) {
+      if ((Number(e._ts) || 0) < t) out = restamped(out, id, t, earned[id].day)
+      continue
+    }
+    if (isMap(e) && (Number(e._ts) || 0) >= t) continue
     out = withSkill(out, id, now, earned[id].day)
   }
   return out === map ? map : out
+}
+
+// `id` and the skills before it stamped at `t` (a session's time) where their stamp is older,
+// their day kept; one taken back before `t` is had again from `day`.
+function restamped(map, id, t, day) {
+  const out = { ...map }
+  for (let x = id; x; x = SKILLS[x].req) {
+    const cur = out[x]
+    if ((Number(cur?._ts) || 0) >= t) continue
+    out[x] = isMap(cur) && cur.at ? { ...cur, _ts: t } : { at: day, _ts: t }
+  }
+  return out
 }
 
 /** The ids `next` has that `prev` lacked, chart order. */

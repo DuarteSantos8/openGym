@@ -4920,7 +4920,8 @@ function doFinishWorkout({ end: endAt, auto, kcal } = {}) {
     const earned = earnedSkills({ workouts: [w], customEx: s.customEx })
     const skills = withEarned(s.skills, earned)
     const gained = newlyHad(s.skills, skills)
-    if (gained.length) { s.skills = skills; unlocked = provedNames(gained, earned) }
+    if (skills !== s.skills) s.skills = skills
+    if (gained.length) unlocked = provedNames(gained, earned)
   })
   if (unlocked) toast(t('Unlocked from your sessions: {0}', unlocked))
   useStore.getState().autoBackupNow()

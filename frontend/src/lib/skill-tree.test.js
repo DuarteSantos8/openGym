@@ -177,6 +177,34 @@ describe('from the log', () => {
     expect(withEarned(back, earned, 2)).toBe(back)
     const before = { 'pull-up': { _ts: 5 } }
     expect(withEarned(before, earned, 9)['pull-up'].at).toBe('2026-10-25')
-    expect(withEarned(map, earned, 3)).toBe(map)
+    // stamped after the session (as a real tick is): nothing new
+    const stamped = withEarned({}, earned, later)
+    expect(withEarned(stamped, earned, later + 1)).toBe(stamped)
+  })
+  it('gives a skill before another in the same tier its own first day, whatever the log order', () => {
+    // german hang, then tuck skin the cat (both tier 1): the later skill comes first in the log
+    const earned = {
+      'tuck-skin-the-cat': { day: '2026-10-20', t: Date.parse('2026-10-20T12:00:00') },
+      'german-hang': { day: '2026-10-01', t: Date.parse('2026-10-01T12:00:00') },
+    }
+    const map = withEarned({}, earned, Date.parse('2026-10-21T12:00:00'))
+    expect(map['german-hang'].at).toBe('2026-10-01')
+    expect(map['tuck-skin-the-cat'].at).toBe('2026-10-20')
+  })
+  it('moves a had skill\u2019s stamp up to a newer session, so an older take-back cannot win the merge', () => {
+    const t10 = Date.parse('2026-10-10T12:00:00'), t30 = Date.parse('2026-10-30T12:00:00'), t40 = Date.parse('2026-11-09T12:00:00')
+    const had = withEarned({}, { 'pull-up': { day: '2026-10-10', t: t10 } }, t10)
+    // a session on the 9th of November shows it again: its day stays, its stamp (and the skills
+    // before it) moves up to that session
+    const again = withEarned(had, { 'pull-up': { day: '2026-10-10', t: t40 } }, t40 + 1)
+    expect(again).not.toBe(had)
+    expect(again['pull-up']).toEqual({ at: '2026-10-10', _ts: t40 })
+    expect(again['scapular-pull']).toEqual({ at: '2026-10-10', _ts: t40 })
+    // another device took it back on the 30th of October, before that session: the session wins
+    const back = withoutSkill(had, 'pull-up', t30)
+    expect(again['pull-up']._ts).toBeGreaterThan(back['pull-up']._ts)
+    // a take-back after the session stays taken back
+    const late = withoutSkill(again, 'pull-up', t40 + 5)
+    expect(withEarned(late, { 'pull-up': { day: '2026-10-10', t: t40 } }, t40 + 6)).toBe(late)
   })
 })

@@ -47,10 +47,12 @@ export default function Skills() {
     const st = useStore.getState().S
     const earned = earnedSkills(st)
     const next = withEarned(st.skills, earned)
+    if (next === st.skills) return
+    // Saved when only a stamp moved up too (a newer session of a skill had), the toast only for
+    // the skills newly had.
     const gained = newlyHad(st.skills, next)
-    if (!gained.length) return
     useStore.getState().update(x => { x.skills = next })
-    useUI.getState().toast(t('Unlocked from your sessions: {0}', provedNames(gained, earned)))
+    if (gained.length) useUI.getState().toast(t('Unlocked from your sessions: {0}', provedNames(gained, earned)))
   }, [S.workouts, S.customEx])
   return <>
     <div className="hdr"><button className="iconbtn" data-back="/library" onClick={() => nav('/library')} aria-label={t('Exercises')}><Icon name="chevronLeft" /></button>
