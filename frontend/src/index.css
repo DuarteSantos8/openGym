@@ -3330,6 +3330,26 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .wl-unit{padding:10px 8px 2px}
 }
 
+/* --- home: the focus card (design 1.5) --- */
+/* The week and today's session, lit from the corner in the accent and edged in it, rounder than a
+   card: the one block on Home that says what to do now. The flat surface stays first for old
+   Safari without color-mix(). */
+.card.hero{
+  border-radius:var(--r-xl);padding:18px;
+  background:var(--surface);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 14%,var(--surface)),var(--surface) 62%);
+  box-shadow:var(--e0),inset 0 0 0 1px var(--acc-line);
+}
+.card.hero .today-row{background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 82%,transparent)}
+.card.hero .ttl{font-weight:650;font-size:var(--fs-title3);letter-spacing:-.025em;line-height:1.2}
+/* Start, on the row it starts: a filled, lit button rather than a 12px tint, so today's one action
+   reads from arm's length. The row stays the target; this is its label. */
+.today-row .tag.acc{
+  padding:8px 14px;border-radius:var(--r-pill);font-size:var(--fs-subhead);font-weight:650;
+  background:var(--acc);color:var(--on-acc);
+  box-shadow:0 4px 12px -4px var(--acc);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--acc) 60%,transparent);
+}
+
 /* --- home: today's session row --- */
 .today-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
