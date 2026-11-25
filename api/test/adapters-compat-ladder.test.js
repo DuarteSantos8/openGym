@@ -93,6 +93,65 @@ test('a generic 400 for an open schema is answered with the strict copy and work
   assert.equal(schemaOf(f.calls[1].body).additionalProperties, false);
 });
 
+const REASONING_REFUSAL = "JSON schema decoding does not yet support an active reasoning envelope; select the model's native non-reasoning mode explicitly";
+
+test('a local schema decoder gets native non-reasoning mode only after its explicit refusal', async () => {
+  for (const status of [400, 502]) {
+    const cfg = at();
+    const calls = [];
+    const f = async (url, init) => {
+      const b = JSON.parse(init.body);
+      calls.push(b);
+      if (schemaOf(b)?.additionalProperties !== false) return reply(400, { error: { message: 'named properties require additionalProperties:false' } });
+      if (b.enable_thinking !== false) return reply(status, { error: { message: REASONING_REFUSAL } });
+      return reply(200, { choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+    };
+    const r = await ask(cfg, f, { retryDelayMs: 0 });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(calls.length, 3, 'original, strict schema, then non-reasoning; no identical 502 retries');
+    assert.ok(!('enable_thinking' in calls[0]));
+    assert.equal(calls[2].enable_thinking, false);
+    assert.equal(calls[2].response_format.type, 'json_schema');
+    assert.deepEqual(compatProfile('compatible', cfg, 'gpt-6.1-sol'), ['strict', 'non_reasoning']);
+    calls.length = 0;
+    assert.equal((await ask(cfg, f)).code, 0);
+    assert.equal(calls.length, 1, 'the working mode is remembered');
+  }
+});
+
+test('in-band streamed reasoning refusals use the same bounded fallback', async () => {
+  const calls = [];
+  const f = async (url, init) => {
+    const b = JSON.parse(init.body);
+    calls.push(b);
+    if (b.enable_thinking !== false) return {
+      ...reply(200, null),
+      headers: { get: () => 'text/event-stream' },
+      text: async () => `data: ${JSON.stringify({ error: { message: REASONING_REFUSAL } })}\n\ndata: [DONE]\n\n`
+    };
+    return reply(200, { choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+  };
+  const r = await ask(at(), f, { stream: true, retryDelayMs: 0 });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].enable_thinking, false);
+  assert.equal(calls[1].stream, true);
+});
+
+test('an unchanged reasoning refusal stops after one fallback and ordinary 502s keep their retries', async () => {
+  for (const message of [REASONING_REFUSAL, 'upstream unavailable']) {
+    const calls = [];
+    const f = async (url, init) => {
+      calls.push(JSON.parse(init.body));
+      return reply(502, { error: { message } });
+    };
+    const r = await ask(at(), f, { retryDelayMs: 0 });
+    assert.equal(r.code, 1);
+    assert.equal(calls.length, message === REASONING_REFUSAL ? 2 : 3);
+    if (message !== REASONING_REFUSAL) assert.ok(calls.every(b => !('enable_thinking' in b)));
+  }
+});
+
 test('a generic 400 for a schema the gateway cannot take at all lands on plain JSON mode (#804)', async () => {
   const f = gateway(['portableSchema']);
   const r = await ask(at(), f);
@@ -139,6 +198,7 @@ test('several refusals at once are worked through, and the try count stays bound
   const r = await ask(at(), f);
   assert.equal(r.code, 0, r.stderr);
   assert.ok(f.calls.length <= 6, `${f.calls.length} calls`);
+  assert.ok(f.calls.every(c => !('enable_thinking' in c.body)), 'generic errors never change native reasoning mode');
 });
 
 test('the shape that worked is remembered per endpoint and model, so the next job asks once (#804)', async () => {
