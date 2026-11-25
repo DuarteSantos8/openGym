@@ -32,12 +32,16 @@ export function accessHeaders(creds) {
 }
 
 let rereading = null
+// Bumped by every save or removal. A read that started before one (the retry above, still waiting
+// on the store) found what is no longer there, so it is dropped rather than put back over it.
+let changes = 0
 const reread = pairedBase => rereading || (rereading = loadCfAccess({ pairedBase }).finally(() => { rereading = null }))
 
 // `pairedBase`: the server this phone is paired with. A token saved before tokens knew their
 // server has no origin; it is bound to that server on the first start that has one. Without a
 // pairing it is kept but sent nowhere until it is entered again with its address.
 export async function loadCfAccess({ pairedBase = '' } = {}) {
+  const seen = changes
   let creds = null
   let unread = false
   try {
@@ -48,10 +52,12 @@ export async function loadCfAccess({ pairedBase = '' } = {}) {
     const v = raw ? JSON.parse(raw) : null
     if (v && typeof v === 'object') creds = { clientId: clean(v.clientId), clientSecret: clean(v.clientSecret), origin: originOf(v.origin) }
   } catch { /* unreadable: as if never set */ }
+  if (changes !== seen) return null
   if (!creds || !creds.clientId || !creds.clientSecret) { setAccessHeaders({}, '', unread ? () => reread(pairedBase) : null); return null }
   if (!creds.origin && originOf(pairedBase)) {
     creds.origin = originOf(pairedBase)
     try { await secureSet(KEY, JSON.stringify(creds)) } catch { /* bound again on the next start */ }
+    if (changes !== seen) return null
   }
   setAccessHeaders(accessHeaders(creds), creds.origin)
   return creds
@@ -61,6 +67,7 @@ export async function loadCfAccess({ pairedBase = '' } = {}) {
 // refused by the caller (CfAccessSheet), and here as well.
 export async function saveCfAccess({ clientId, clientSecret, server } = {}) {
   const creds = { clientId: clean(clientId), clientSecret: clean(clientSecret), origin: originOf(server) }
+  changes++
   if (!creds.clientId || !creds.clientSecret) {
     await secureRemove(KEY)
     setAccessHeaders({}, '')

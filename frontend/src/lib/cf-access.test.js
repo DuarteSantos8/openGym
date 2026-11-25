@@ -135,3 +135,47 @@ describe('a secure storage that does not answer at start', () => {
     expect(fetch.mock.calls[0][1].headers).toMatchObject({ 'CF-Access-Client-Id': 'id', 'CF-Access-Client-Secret': 'secret' })
   })
 })
+
+describe('a read still waiting on the store when the token is saved or removed', () => {
+  // The read finds what was stored before the save; it answers only after the save is done.
+  async function slowRead(stored, change) {
+    backing.set('cfAccess', JSON.stringify(stored))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const real = SecureStorage.get
+    let answer
+    SecureStorage.get = () => new Promise(resolve => { answer = resolve })
+    try {
+      const reading = loadCfAccess({ pairedBase: GYM })
+      await change()
+      answer(JSON.stringify(stored))
+      return await reading
+    } finally { SecureStorage.get = real }
+  }
+
+  async function sentHeaders() {
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    return fetch.mock.calls[0][1].headers
+  }
+
+  it('does not put the old token back over the new one', async () => {
+    const old = { clientId: 'old', clientSecret: 'old-secret', origin: GYM }
+    expect(await slowRead(old, () => saveCfAccess({ clientId: 'new', clientSecret: 'new-secret', server: GYM }))).toBe(null)
+    expect(await sentHeaders()).toMatchObject({ 'CF-Access-Client-Id': 'new', 'CF-Access-Client-Secret': 'new-secret' })
+  })
+
+  it('does not bring back a token that was removed', async () => {
+    const old = { clientId: 'old', clientSecret: 'old-secret', origin: GYM }
+    expect(await slowRead(old, () => saveCfAccess({}))).toBe(null)
+    expect((await sentHeaders())['CF-Access-Client-Id']).toBeUndefined()
+  })
+
+  it('does not bind and send a token saved before tokens knew their server once it was removed', async () => {
+    const old = { clientId: 'old', clientSecret: 'old-secret' }
+    expect(await slowRead(old, () => saveCfAccess({}))).toBe(null)
+    expect((await sentHeaders())['CF-Access-Client-Id']).toBeUndefined()
+    expect(backing.has('cfAccess')).toBe(false)
+  })
+})
