@@ -1,5 +1,17 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Vázlat",
+  "Move gently and switch sides when comfortable.": "Mozogj finoman, és válts oldalt, amikor kényelmes.",
+  "Slow down gradually and release each stretch when comfortable.": "Fokozatosan lassíts, és akkor engedd fel az egyes nyújtásokat, amikor kényelmes.",
+  "Start this session": "Edzés indítása",
+  "Whole-body warm-up": "Teljes testes bemelegítés",
+  "Lower-body warm-up": "Alsótest bemelegítése",
+  "Upper-body warm-up": "Felsőtest bemelegítése",
+  "Whole-body cool-down": "Teljes testes levezetés",
+  "Hip mobility": "Csípőmobilitás",
+  "Shoulder mobility": "Vállmobilitás",
+  "Spine mobility": "A gerinc átmozgatása",
+  "Desk break": "Mozgásszünet az íróasztalnál",
   "Sign-in is only available on the server’s configured website.": "Csak az ehhez a szerverhez beállított webhelyen lehet bejelentkezni.",
   "Check the amount and calculated totals.": "Ellenőrizd a mennyiséget és a kiszámított összegeket.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Beállítva ezen a szerveren. A kapcsolatot csak a Keresés választásakor ellenőrizzük.",

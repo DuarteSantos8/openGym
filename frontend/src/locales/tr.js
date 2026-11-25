@@ -1,5 +1,17 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Taslak",
+  "Move gently and switch sides when comfortable.": "Yumuşak hareket et ve rahat hissettiğinde taraf değiştir.",
+  "Slow down gradually and release each stretch when comfortable.": "Yavaş yavaş hızını azalt ve kendini rahat hissettiğinde her esneme pozundan çık.",
+  "Start this session": "Bu seansı başlat",
+  "Whole-body warm-up": "Tüm vücut ısınması",
+  "Lower-body warm-up": "Alt vücut ısınması",
+  "Upper-body warm-up": "Üst vücut ısınması",
+  "Whole-body cool-down": "Tüm vücut soğuması",
+  "Hip mobility": "Kalça hareketliliği",
+  "Shoulder mobility": "Omuz hareketliliği",
+  "Spine mobility": "Omurga hareketliliği",
+  "Desk break": "Masa başında hareket molası",
   "Sign-in is only available on the server’s configured website.": "Yalnızca bu sunucu için yapılandırılan web sitesinden giriş yapabilirsin.",
   "Check the amount and calculated totals.": "Miktarı ve hesaplanan toplamları kontrol et.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Bu sunucuda yapılandırılmış. Bağlantı yalnızca Sorgula seçildiğinde kontrol edilir.",

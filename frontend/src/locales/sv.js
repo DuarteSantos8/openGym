@@ -1,5 +1,17 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Utkast",
+  "Move gently and switch sides when comfortable.": "Rör dig mjukt och byt sida när det känns bekvämt.",
+  "Slow down gradually and release each stretch when comfortable.": "Sänk tempot gradvis och avsluta varje stretch när det känns bekvämt.",
+  "Start this session": "Starta det här passet",
+  "Whole-body warm-up": "Uppvärmning för hela kroppen",
+  "Lower-body warm-up": "Uppvärmning för underkroppen",
+  "Upper-body warm-up": "Uppvärmning för överkroppen",
+  "Whole-body cool-down": "Nedvarvning för hela kroppen",
+  "Hip mobility": "Rörlighet i höfterna",
+  "Shoulder mobility": "Rörlighet i axlarna",
+  "Spine mobility": "Rörlighet i ryggraden",
+  "Desk break": "Rörelsepaus vid skrivbordet",
   "Sign-in is only available on the server’s configured website.": "Du kan bara logga in på webbplatsen som är konfigurerad för den här servern.",
   "Check the amount and calculated totals.": "Kontrollera mängden och de beräknade summorna.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Konfigurerat på denna server. Anslutningen kontrolleras först när du väljer Slå upp.",

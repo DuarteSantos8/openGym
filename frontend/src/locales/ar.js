@@ -1,5 +1,17 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "مسودة",
+  "Move gently and switch sides when comfortable.": "تحرّك برفق وبدّل الجانب عندما تشعر بالراحة.",
+  "Slow down gradually and release each stretch when comfortable.": "خفّف سرعتك تدريجيًا واخرج من كل وضعية إطالة عندما تشعر بالراحة.",
+  "Start this session": "ابدأ هذه الحصة",
+  "Whole-body warm-up": "إحماء الجسم بالكامل",
+  "Lower-body warm-up": "إحماء الجزء السفلي من الجسم",
+  "Upper-body warm-up": "إحماء الجزء العلوي من الجسم",
+  "Whole-body cool-down": "تهدئة الجسم بالكامل",
+  "Hip mobility": "حركة مفصلي الورك",
+  "Shoulder mobility": "حركة مفصلي الكتف",
+  "Spine mobility": "حركة العمود الفقري",
+  "Desk break": "استراحة حركية من الجلوس",
   "Sign-in is only available on the server’s configured website.": "لا يتوفر تسجيل الدخول إلا على الموقع الإلكتروني المُعدّ لهذا الخادم.",
   "Check the amount and calculated totals.": "تحقق من الكمية والمجاميع المحسوبة.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "تم الإعداد على هذا الخادم. يُفحص الاتصال فقط عند اختيار البحث.",

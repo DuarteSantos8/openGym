@@ -2,6 +2,18 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  "Draft": "Bozza",
+  "Move gently and switch sides when comfortable.": "Muoviti con delicatezza e cambia lato quando ti senti a tuo agio.",
+  "Slow down gradually and release each stretch when comfortable.": "Rallenta gradualmente e lascia ogni posizione di allungamento quando ti senti a tuo agio.",
+  "Start this session": "Inizia questa sessione",
+  "Whole-body warm-up": "Riscaldamento di tutto il corpo",
+  "Lower-body warm-up": "Riscaldamento della parte inferiore",
+  "Upper-body warm-up": "Riscaldamento della parte superiore",
+  "Whole-body cool-down": "Defaticamento di tutto il corpo",
+  "Hip mobility": "Mobilità delle anche",
+  "Shoulder mobility": "Mobilità delle spalle",
+  "Spine mobility": "Mobilità della colonna",
+  "Desk break": "Pausa attiva alla scrivania",
   "Sign-in is only available on the server’s configured website.": "Puoi accedere solo dal sito web configurato per questo server.",
   "Check the amount and calculated totals.": "Controlla la quantità e i totali calcolati.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Configurato su questo server. La connessione viene verificata solo quando scegli Cerca.",

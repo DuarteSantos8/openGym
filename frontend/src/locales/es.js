@@ -1,5 +1,17 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Draft": "Borrador",
+  "Move gently and switch sides when comfortable.": "Muévete con suavidad y cambia de lado cuando te resulte cómodo.",
+  "Slow down gradually and release each stretch when comfortable.": "Baja el ritmo poco a poco y sal de cada estiramiento cuando te resulte cómodo.",
+  "Start this session": "Empezar esta sesión",
+  "Whole-body warm-up": "Calentamiento de cuerpo completo",
+  "Lower-body warm-up": "Calentamiento del tren inferior",
+  "Upper-body warm-up": "Calentamiento del tren superior",
+  "Whole-body cool-down": "Vuelta a la calma de cuerpo completo",
+  "Hip mobility": "Movilidad de cadera",
+  "Shoulder mobility": "Movilidad de hombros",
+  "Spine mobility": "Movilidad de columna",
+  "Desk break": "Pausa activa en el escritorio",
   "Sign-in is only available on the server’s configured website.": "Solo puedes iniciar sesión en el sitio web configurado para este servidor.",
   "Check the amount and calculated totals.": "Comprueba la cantidad y los totales calculados.",
   "Configured on this server. Connection is checked only when you choose Lookup.": "Configurado en este servidor. La conexión solo se comprueba al pulsar Consultar.",

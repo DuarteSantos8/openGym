@@ -39,6 +39,12 @@ const mount = () => act(() => root.render(<Home />))
 const WHY = 'Rest is when you get stronger. A walk today helps.'
 
 describe('a Beginner\'s rest day', () => {
+  it('offers one mobility session on a planned beginner rest day', () => {
+    setS()
+    mount()
+    expect(host.querySelectorAll('button[data-session="mobility-hips"]')).toHaveLength(1)
+  })
+
   it('says why it is a rest day and opens the guide', () => {
     setS()
     mount()

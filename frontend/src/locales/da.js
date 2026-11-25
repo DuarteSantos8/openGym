@@ -1,6 +1,18 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  "Draft": "Udkast",
+  "Move gently and switch sides when comfortable.": "Bevæg dig roligt, og skift side, når det føles behageligt.",
+  "Slow down gradually and release each stretch when comfortable.": "Sæt gradvist tempoet ned, og afslut hvert stræk, når det føles behageligt.",
+  "Start this session": "Start denne træning",
+  "Whole-body warm-up": "Opvarmning af hele kroppen",
+  "Lower-body warm-up": "Opvarmning af underkroppen",
+  "Upper-body warm-up": "Opvarmning af overkroppen",
+  "Whole-body cool-down": "Nedkøling af hele kroppen",
+  "Hip mobility": "Bevægelighed i hofterne",
+  "Shoulder mobility": "Bevægelighed i skuldrene",
+  "Spine mobility": "Bevægelighed i ryggen",
+  "Desk break": "Bevægelsespause ved skrivebordet",
   "Sign-in is only available on the server’s configured website.": "Du kan kun logge ind på det websted, der er konfigureret til denne server.",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Ure",

@@ -4735,4 +4735,16 @@ export const PT_BR_OVERRIDES = {
   "{0} is the only way into this profile on this server, so it stays linked.": "O {0} é o único jeito de entrar neste perfil neste servidor, então ele continua conectado.",
 }
 
-export default { ...pt, ...PT_BR_OVERRIDES }
+export default {
+  "Draft": "Rascunho",
+  "Move gently and switch sides when comfortable.": "Faça movimentos suaves e troque de lado quando se sentir à vontade.",
+  "Slow down gradually and release each stretch when comfortable.": "Diminua o ritmo aos poucos e saia de cada alongamento quando se sentir à vontade.",
+  "Start this session": "Iniciar esta sessão",
+  "Whole-body warm-up": "Aquecimento do corpo inteiro",
+  "Lower-body warm-up": "Aquecimento da parte inferior do corpo",
+  "Upper-body warm-up": "Aquecimento da parte superior do corpo",
+  "Whole-body cool-down": "Volta à calma do corpo inteiro",
+  "Hip mobility": "Mobilidade do quadril",
+  "Shoulder mobility": "Mobilidade dos ombros",
+  "Spine mobility": "Mobilidade da coluna",
+  "Desk break": "Pausa ativa no trabalho", ...pt, ...PT_BR_OVERRIDES }
