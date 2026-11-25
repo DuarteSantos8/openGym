@@ -60,7 +60,7 @@ export default function Skills() {
         <div className="sub">{t('{0} of {1} skills', all.done, all.total)} · <span className="skt-open-count">{t('{0} to go for', all.open)}</span></div></div></div>
     <Segmented className="skt-modes" value={mode} onChange={setMode} options={[
       { value: 'summary', label: t('Summary') }, { value: 'list', label: t('List') },
-      { value: 'body', label: t('Body') }, { value: 'tree', label: t('Tree view') },
+      { value: 'body', label: t('Muscle map') }, { value: 'tree', label: t('Tree view') },
     ]} />
     {(mode === 'list' || mode === 'tree') && <FamilyChips fam={fam} setFam={setFam} />}
     {mode === 'summary' && <Summary have={have} body={S.body} onTree={f => { setFam(f); setMode('tree') }} />}

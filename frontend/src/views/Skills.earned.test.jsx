@@ -47,4 +47,10 @@ describe('Skills on mount', () => {
     expect(useStore.getState().S.skills['pull-up'].at).toBe('2026-10-10')
     expect(toast).toHaveBeenCalledTimes(1)
   })
+  it('calls the muscle map tab a muscle map, not "Body" (bodyweight in Japanese and Chinese)', () => {
+    mount({ workouts: [], skills: {} })
+    const tabs = [...container.querySelectorAll('.skt-modes button')].map(b => b.textContent)
+    expect(tabs).toContain('Muscle map')
+    expect(tabs).not.toContain('Body')
+  })
 })
