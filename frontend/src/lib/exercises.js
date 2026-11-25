@@ -225,8 +225,9 @@ export const isHold = idOrEx => !!(typeof idOrEx === 'string' ? EXIDX[idOrEx] : 
 // Carries, sleds and sprints a plan measures in metres (catalogue "track": "distance", #1011).
 export const isDistanceEx = idOrEx => !!(typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.ds
 
-// Exercises done one arm or leg at a time, by their catalogue name: "single leg", "one arm",
-// "single-arm", "unilateral". Stretches and rollers are mobility, not sets, and a single-leg
+// Exercises done one arm or leg at a time: the catalogue marks them ("side": true, a stretch held
+// on one leg and then the other), else their name says so: "single leg", "one arm",
+// "single-arm", "unilateral". Other stretches and rollers are mobility, not sets, and a single-leg
 // push-up or plank is a two-arm exercise with a leg lifted. Like `isBodyweightEq`, this only seeds
 // a fresh config (`side: true`); the flag lives on the config, so either way can be switched.
 const ONE_LIMB = /\b(single|one)[\s-]+(arm|leg|hand)\b|\bunilateral\b/i
@@ -234,6 +235,7 @@ const NOT_ONE_LIMB = /stretch|\broll(er|ball)?\b|two to one|single leg (push|pla
 export const isOneLimb = idOrEx => {
   const ex = typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx
   if (!ex || ex.custom || ex.bp === 'cardio') return false
+  if (ex.sd) return true
   return ONE_LIMB.test(ex.n || '') && !NOT_ONE_LIMB.test(ex.n || '')
 }
 
