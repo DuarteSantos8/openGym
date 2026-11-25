@@ -9,6 +9,7 @@ openGym ships to phones three ways, and to watches two more, all from the same c
 | iPhone (+ Apple Watch) | App Store, TestFlight beta | the App Store | Mac runner (compile) + release machine (finish, sign, upload) |
 | Wear OS watch | Play Store (Wear OS closed test), `openGym-Wear-X.Y.Z.apk` on the GitHub release | Google Play, or by hand for the APK | release machine (`scripts/android/build-wear.sh`) |
 | Garmin watch | [Connect IQ Store](https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08) | Garmin Connect | release machine (`openGym.iq`, uploaded by hand, see GARMIN.md) |
+| Huawei watch | none yet (Huawei AppGallery is the plan) | Huawei Health, from AppGallery | release machine (a signed `.hap`, by hand, see HUAWEI_WATCH.md) |
 
 The two Android builds are flavours of one Gradle project (`frontend/android/app/build.gradle`):
 `sideload` keeps the updater (InstallPlugin, `REQUEST_INSTALL_PACKAGES`), `play` leaves both out,
@@ -81,7 +82,8 @@ with the release notes from the changelog.
 ### F-Droid
 
 F-Droid builds the `fdroid` flavour itself from the release tag (fdroiddata recipe
-`metadata/ch.duartesantos.opengym.yml`): the Wear OS module deleted, then
+`metadata/ch.duartesantos.opengym.yml`): the Wear OS module and `app/huawei.gradle` (Huawei's closed
+SDK, HUAWEI_WATCH.md) deleted, then
 `scripts/android/fdroid-prebuild.sh` (`npm ci`, the phone bundle with the repo's 180 px media,
 the ML Kit plugin out of the Gradle build), then `assembleFdroidRelease`. The build is
 reproducible, so F-Droid ships it with our signature when we give it a matching signed copy:

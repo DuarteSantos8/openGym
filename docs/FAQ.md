@@ -37,11 +37,12 @@ all. Get it from the [latest release](https://github.com/DuarteSantos8/openGym/r
 
 ### Which watches work?
 
-Three, with one design: the Apple Watch (it comes with the App Store app), Wear OS watches (the
+Four, with one design: the Apple Watch (it comes with the App Store app), Wear OS watches (the
 Play test, or `openGym-WearOS-watch-only-X.Y.Z.apk` from the GitHub release next to the phone APK (on the watch only: on a phone it replaces the phone app), see
-[WEAR_OS.md](WEAR_OS.md)) and Garmin watches (the
+[WEAR_OS.md](WEAR_OS.md)), Garmin watches (the
 [Connect IQ Store](https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08), with openGym
-1.4.5 or later on the phone, see [GARMIN.md](GARMIN.md)). The phone runs the workout and the watch
+1.4.5 or later on the phone, see [GARMIN.md](GARMIN.md)) and Huawei watches (Android phones only, not in any store yet, see
+[HUAWEI_WATCH.md](HUAWEI_WATCH.md)). The phone runs the workout and the watch
 follows it. The F-Droid build and openGym Offline have no watch link.
 
 ### Where is my data?

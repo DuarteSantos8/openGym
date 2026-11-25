@@ -3348,7 +3348,6 @@ export const PT_BR_OVERRIDES = {
   "Change it anytime in Settings → Modules.": "Mude quando quiser em Configurações → Módulos.",
   "Film a set and watch it back right under the row.": "Filme uma série e assista logo abaixo da linha.",
   "How much app do you want?": "Quanto app você quer?",
-  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Registre séries pelo pulso em um Apple Watch, Wear OS, Garmin ou relógio Zepp.",
   "Log, plan, progress. Nothing else on the screen.": "Registrar, planejar, progredir. Mais nada na tela.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Registro, planos, histórico, a biblioteca de exercícios e as estatísticas básicas ficam sempre ligados.",
   "Plates and warm-ups": "Anilhas e aquecimentos",
@@ -4448,6 +4447,19 @@ export const PT_BR_OVERRIDES = {
   "{0} line still needs a look.": "{0} linha ainda precisa de uma olhada.",
   "{0} lines still need a look.": "{0} linhas ainda precisam de uma olhada.",
   "Save workout": "Salvar treino",
+  // --- Settings → Huawei watch ---
+  "Huawei watch": "Relógio Huawei",
+  "Looking for your watch…": "Procurando seu relógio…",
+  "This version of openGym can’t talk to a Huawei watch yet.": "Esta versão do openGym ainda não consegue falar com um relógio Huawei.",
+  "Huawei Health isn’t on this phone. Install it, pair your watch there, then come back here.": "O Huawei Health não está neste celular. Instale, pareie seu relógio lá e volte aqui.",
+  "openGym needs your OK in Huawei Health to talk to your watch.": "O openGym precisa da sua autorização no Huawei Health para falar com seu relógio.",
+  "Couldn’t reach Huawei Health. Try again in a moment.": "Não deu para alcançar o Huawei Health. Tente de novo daqui a pouco.",
+  "Huawei Health doesn’t know a watch yet. Pair yours there first.": "O Huawei Health ainda não conhece nenhum relógio. Pareie o seu lá primeiro.",
+  "Open openGym on your watch and keep it open while you train. The watch only hears the phone while its app is on screen.": "Abra o openGym no relógio e deixe aberto enquanto você treina. O relógio só ouve o celular enquanto o app dele está na tela.",
+  "Your Huawei watches": "Seus relógios Huawei",
+  "Allow in Huawei Health": "Permitir no Huawei Health",
+  "Get openGym for Huawei": "Obter o openGym para Huawei",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Registre séries pelo pulso em um Apple Watch, Wear OS, Garmin, Huawei ou relógio Zepp.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

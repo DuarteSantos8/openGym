@@ -6,9 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./health-sync.js', () => ({ loadHealth: async () => ({ on: false }), onHealthChange: () => () => {} }))
 
-import { startWatchSync, startLinkSync, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { startWatchSync, startLinkSync, huaweiCall, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
 import { readGarminLink, writeWatchPrefs } from './watch-settings.js'
 import { GARMIN_SNAPSHOT_VERSION } from './garmin-snapshot.js'
+import { HUAWEI_ACKED_MAX } from './huawei-snapshot.js'
 
 function store(initial) {
   let st = initial
@@ -127,6 +128,136 @@ describe('a Garmin on the watch link', () => {
     expect(acked.at(-1)).toBe('g-old')
     // and still applied once: the list has it a single time
     expect(JSON.parse(localStorage.getItem('gym_watch_applied')).filter(x => x === 'g-old')).toHaveLength(1)
+    stop()
+  })
+})
+
+// Settings → Huawei watch asks the phone for the Huawei link; any other name is not its to call.
+describe('huaweiCall', () => {
+  it('passes the two Huawei calls to WatchBridge, and nothing else', async () => {
+    const huaweiStatus = vi.fn(async () => ({ supported: true, state: 'ready', devices: [] }))
+    _setWatchPluginForTest({ huaweiStatus, huaweiPick: vi.fn(async () => ({ ok: true })), status: vi.fn() })
+    expect(await huaweiCall('huaweiStatus')).toMatchObject({ state: 'ready' })
+    expect(await huaweiCall('huaweiPick')).toEqual({ ok: true })
+    expect(await huaweiCall('status')).toBe(null)
+  })
+
+  it('no phone app, or a phone app without the call: null', async () => {
+    _setWatchPluginForTest(null)
+    expect(await huaweiCall('huaweiStatus')).toBe(null)
+    _setWatchPluginForTest({})
+    expect(await huaweiCall('huaweiStatus')).toBe(null)
+  })
+})
+
+// A Huawei watch (docs/HUAWEI_WATCH.md): the phone's status says `huawei`, and the watch gets its own,
+// fuller snapshot as `huawei`; the Garmin string is made only when a Garmin is there.
+describe('a Huawei watch on the watch link', () => {
+  const two = { id: 'w-1', start: 1, cur: 1, entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true }] }, { id: '0026', sets: [{ w: 40, r: 10 }] }, { id: '0027', sets: [{ w: 30, r: 10 }] }] }
+
+  it('alone: gets the whole workout as `huawei`, no Garmin string, and the link is remembered', async () => {
+    const b = bridge({ paired: true, installed: true, huawei: true })
+    const { stop } = await run(b, { ...S0, active: two })
+    const call = lastCall(b)
+    expect(call.garmin).toBeUndefined()
+    const h = JSON.parse(call.huawei)
+    expect(h.v).toBe(GARMIN_SNAPSHOT_VERSION)
+    expect(h.active.count).toBe(3)
+    expect(h.active.entries.map(e => e.i)).toEqual([0, 1, 2])
+    expect(h.settings.lang).toBeTruthy()
+    expect(JSON.parse(call.json).active.id).toBe('w-1')
+    expect(readGarminLink()).toBe(true)
+    stop()
+  })
+
+  it('a Garmin alone: no Huawei string, the Garmin window as before', async () => {
+    const b = bridge({ paired: true, installed: true, garmin: true, huawei: false })
+    const { stop } = await run(b, { ...S0, active: two })
+    expect(lastCall(b).huawei).toBeUndefined()
+    expect(JSON.parse(lastCall(b).garmin).active.entries.map(e => e.i)).toEqual([1, 2])
+    stop()
+  })
+
+  it('both: each gets its own', async () => {
+    const b = bridge({ paired: true, installed: true, garmin: true, huawei: true })
+    const { stop } = await run(b, { ...S0, active: two })
+    expect(JSON.parse(lastCall(b).garmin).active.entries).toHaveLength(2)
+    expect(JSON.parse(lastCall(b).huawei).active.entries).toHaveLength(3)
+    stop()
+  })
+
+  it('neither: just the full snapshot, and the remembered link is cleared', async () => {
+    localStorage.setItem('gym_garmin_link_v1', 'true')
+    const b = bridge({ paired: true, installed: true })
+    const { stop } = await run(b, { ...S0, active: two })
+    expect(Object.keys(lastCall(b))).toEqual(['json'])
+    expect(readGarminLink()).toBe(false)
+    stop()
+  })
+
+  it('the Zepp relay never makes one', async () => {
+    const b = bridge({ paired: true, installed: true, huawei: true })
+    const { stop } = await run(b, { ...S0, active: two }, true)
+    expect(lastCall(b).huawei).toBeUndefined()
+    stop()
+  })
+
+  // The big workout makes both snapshots cut their `acked` list (the Garmin to 16, then 8; the Huawei
+  // to 16 once the workout is too long for the frames).
+  const bigWorkout = () => ({
+    id: 'w-big', start: 1, cur: 30,
+    entries: Array.from({ length: 80 }, (_, k) => ({ id: '00' + String(10 + (k % 40)), sets: Array.from({ length: 6 }, () => ({ w: 62.5, r: 8 })) })),
+  })
+  const evOf = id => ({ id, type: 'setDone', wid: 'w-gone', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 1 })
+
+  it('every applied id is named to each watch at least once, a trimmed snapshot or not, and none forever', async () => {
+    const hs = Array.from({ length: 70 }, (_, i) => 'h' + String(i).padStart(3, '0'))
+    const gs = Array.from({ length: 40 }, (_, i) => 'g' + String(i).padStart(3, '0'))
+    const b = bridge({ paired: true, installed: true, garmin: true, huawei: true })
+    // the two watches' events arrive mixed, as they do on one phone
+    b.drain.mockResolvedValueOnce({ events: hs.flatMap((h, i) => (i < gs.length ? [evOf(h), evOf(gs[i])] : [evOf(h)])) })
+    const { stop } = await run(b, { ...S0, active: bigWorkout() })
+    await vi.runAllTimersAsync()
+    const calls = b.sendSnapshot.mock.calls.map(c => c[0])
+    const named = k => new Set(calls.flatMap(c => (c[k] ? JSON.parse(c[k]).acked || [] : [])))
+    // the snapshots really were trimmed (else this proves nothing)
+    expect(Math.min(...calls.filter(c => c.huawei && JSON.parse(c.huawei).acked).map(c => JSON.parse(c.huawei).acked.length))).toBeLessThanOrEqual(16)
+    expect(hs.filter(id => !named('huawei').has(id))).toEqual([])
+    expect(gs.filter(id => !named('garmin').has(id))).toEqual([])
+    // nothing keeps being sent: the lists are empty
+    const n = b.sendSnapshot.mock.calls.length
+    await vi.advanceTimersByTimeAsync(60000)
+    expect(b.sendSnapshot.mock.calls.length).toBe(n)
+    stop()
+  })
+
+  it('a snapshot the link did not take leaves its ids waiting', async () => {
+    const hs = Array.from({ length: 70 }, (_, i) => 'h' + String(i).padStart(3, '0'))
+    const b = bridge({ paired: true, installed: true, huawei: true })
+    b.sendSnapshot.mockResolvedValue({ sent: false })
+    b.drain.mockResolvedValueOnce({ events: hs.map(evOf) })
+    const { st, stop } = await run(b, { ...S0, active })
+    await vi.runAllTimersAsync()
+    // the link takes snapshots again: the next change names all 70 (60 and then the 10 left)
+    const from = b.sendSnapshot.mock.calls.length
+    b.sendSnapshot.mockResolvedValue({ sent: true })
+    st.setState({ S: { ...st.getState().S, restSec: 91 } })
+    await vi.runAllTimersAsync()
+    const named = new Set(b.sendSnapshot.mock.calls.slice(from).flatMap(c => JSON.parse(c[0].huawei).acked || []))
+    expect(hs.filter(id => !named.has(id))).toEqual([])
+    stop()
+  })
+
+  it('an event that arrives a second time makes the Huawei resend even an identical snapshot (again)', async () => {
+    const b = bridge({ paired: true, installed: true, huawei: true })
+    b.drain.mockResolvedValueOnce({ events: [evOf('h1')] })
+    const { st, stop } = await run(b, { ...S0, active })
+    await vi.runAllTimersAsync()
+    expect(b.sendSnapshot.mock.calls.some(c => c[0].again === true)).toBe(true)
+    // and an ordinary change after it does not ask for it
+    st.setState({ S: { ...st.getState().S, restSec: 91 } })
+    await vi.runAllTimersAsync()
+    expect(b.sendSnapshot.mock.calls.at(-1)[0].again).toBeUndefined()
     stop()
   })
 })

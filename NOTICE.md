@@ -186,3 +186,20 @@ store requires for a feature (such as Google Play services' Wearable Data Layer 
 system frameworks), without the Corresponding Source of those libraries. Everything else stays
 under the AGPL: openGym's own source, including the code that talks to these libraries, must
 remain available as the license requires.
+
+## Huawei watches: Wear Engine
+
+The openGym watch app for Huawei watches (`watch-huawei`, docs/HUAWEI_WATCH.md) contains Huawei's
+Wear Engine library for lite wearables, copied unchanged:
+`watch-huawei/entry/src/main/js/MainAbility/common/wearengine.js` (version 5.0.2.306), Copyright (c)
+2021 Huawei Device Co., Ltd., under the **Apache License 2.0**
+(<https://www.apache.org/licenses/LICENSE-2.0>; the licence notice is at the top of the file).
+
+The phone's link to that watch app uses Huawei's Wear Engine SDK for Android
+(`com.huawei.hms:wearengine`, from Huawei's own Maven repository). It is **not open source**, and
+openGym's repository does not contain it; the build fetches it. It is only in the GitHub APK and
+the Google Play build, set up in `frontend/android/app/huawei.gradle`. The F-Droid build and openGym
+Offline leave it out, and `scripts/android/check-fdroid.sh` and `check-offline.sh` fail if any of it
+gets in. openGym's own Huawei code (`watch-huawei`, `HuaweiLink`, `HuaweiFrames`, `HuaweiSend`, `HuaweiForget`, `frontend/src/lib/huawei-snapshot.js`)
+stays AGPL. Whether the additional permission above also has to name Huawei's SDK is the
+copyright holder's decision, as it was for Garmin's.

@@ -1,0 +1,263 @@
+<!-- One page, every screen a block shown by `if` on one value (view.js decides which): the lite
+     router can only replace a page, and a replaced page loses its state. Accent colours are bound as
+     single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
+<div class="root" onswipe="swipe">
+
+  <!-- The stored workout could not be read: nothing was changed, nothing is saved -->
+  <div class="scr" if="{{s_lost}}">
+    <text class="wrap">{{lostText}}</text>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{retryLabel}}" onclick="retry" />
+  </div>
+
+  <!-- Before a start: the check-in (one question at a time, 1 to 5) -->
+  <div class="scr" if="{{s_checkin}}">
+    <text class="head">{{title}}</text>
+    <text class="mid">{{qLabel}}</text>
+    <div class="row5">
+      <input type="button" class="dot" value="{{q0}}" onclick="ci1" />
+      <input type="button" class="dot" value="{{q1}}" onclick="ci2" />
+      <input type="button" class="dot" value="{{q2}}" onclick="ci3" />
+      <input type="button" class="dot" value="{{q3}}" onclick="ci4" />
+      <input type="button" class="dot" value="{{q4}}" onclick="ci5" />
+    </div>
+    <div class="pair"><text class="lo">{{qLo}}</text><text class="hi">{{qHi}}</text></div>
+    <text class="tiny quiet">{{qStep}}</text>
+    <input type="button" class="btn" value="{{skipLabel}}" onclick="ciSkip" />
+    <input type="button" class="btnN" value="{{cancelLabel}}" onclick="ciBack" />
+  </div>
+
+  <!-- Before a start: the weigh-in, the weight in whole steps and tenths -->
+  <div class="scr" if="{{s_weighin}}">
+    <text class="headW">{{title}}</text>
+    <text class="big">{{bwNum}}</text>
+    <text class="tiny quiet">{{bwUnit}}</text>
+    <div class="row4">
+      <input type="button" class="chip" value="-1" onclick="bwM1" />
+      <input type="button" class="chip" value="+1" onclick="bwP1" />
+      <input type="button" class="chip" value="-0.1" onclick="bwM01" />
+      <input type="button" class="chip" value="+0.1" onclick="bwP01" />
+    </div>
+    <input type="button" class="longA" style="background-color: {{accent}}; color: {{ink}};" value="{{saveLabel}}" onclick="bwSave" />
+    <input type="button" class="long" value="{{skipLabel}}" onclick="bwSkip" />
+    <input type="button" class="btnN" value="{{cancelLabel}}" onclick="bwCancel" />
+  </div>
+
+  <!-- Start -->
+  <div class="scr" if="{{s_idle}}">
+    <text class="small" style="color: {{accent}};">{{title}}</text>
+    <text class="mid">{{name}}</text>
+    <text class="tiny quiet">{{plan}}</text>
+    <text class="hint">{{hint}}</text>
+    <input if="{{canStart}}" type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{startLabel}}" onclick="start" />
+    <input elif="{{showStart}}" type="button" class="btn" value="{{startLabel}}" />
+    <input if="{{showRoutines}}" type="button" class="btn" value="{{routinesLabel}}" onclick="routines" />
+    <text class="tiny quiet">{{top}}</text>
+  </div>
+
+  <!-- Routines, three a page -->
+  <div class="scr" if="{{s_routines}}">
+    <div class="pick" if="{{rv0}}" onclick="pick0"><text class="mid">{{ro0}}</text><text class="tiny quiet">{{rs0}}</text></div>
+    <div class="pick" if="{{rv1}}" onclick="pick1"><text class="mid">{{ro1}}</text><text class="tiny quiet">{{rs1}}</text></div>
+    <div class="pick" if="{{rv2}}" onclick="pick2"><text class="mid">{{ro2}}</text><text class="tiny quiet">{{rs2}}</text></div>
+    <div class="row2">
+      <input type="button" class="half" value="{{cancelLabel}}" onclick="rback" />
+      <input if="{{rPaged}}" type="button" class="half" value="{{gt}}" onclick="rnext" />
+    </div>
+  </div>
+
+  <!-- 3-2-1 (also before a hold); a tap on the number starts at once -->
+  <div class="scr" if="{{s_count}}">
+    <text class="small quiet">{{label}}</text>
+    <text class="hero" style="color: {{accent}};" onclick="skipCount">{{big}}</text>
+    <input type="button" class="btn" value="{{cancelLabel}}" onclick="cancelCount" />
+  </div>
+
+  <!-- Waiting for the phone -->
+  <div class="scr" if="{{s_wait}}">
+    <div class="bar">
+      <text class="top">{{top}}</text>
+      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    </div>
+    <text class="mid">{{name}}</text>
+    <text class="wrap">{{body}}</text>
+  </div>
+
+  <!-- Still training? -->
+  <div class="scr" if="{{s_ask}}">
+    <text class="mid">{{title}}</text>
+    <text class="wrap">{{body}}</text>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{keepLabel}}" onclick="keep" />
+    <input type="button" class="btn" value="{{finishLabel}}" onclick="askFinish" />
+  </div>
+
+  <!-- Finish and Discard ask first -->
+  <div class="scr" if="{{s_confirm}}">
+    <text class="mid">{{title}}</text>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{noLabel}}" onclick="no" />
+    <input type="button" class="btn" value="{{yesLabel}}" onclick="yes" />
+  </div>
+
+  <!-- The workout menu: a list, it scrolls -->
+  <div class="scr" if="{{s_menu}}">
+    <list class="menuList">
+      <list-item class="li" if="{{hasPrev}}"><div class="liIn"><input type="button" class="btn" value="{{lPrev}}" onclick="mPrev" /></div></list-item>
+      <list-item class="li" if="{{hasOver}}"><div class="liIn"><input type="button" class="btn" value="{{lOver}}" onclick="mOver" /></div></list-item>
+      <list-item class="li" if="{{hasSkip}}"><div class="liIn"><input type="button" class="btn" value="{{lSkip}}" onclick="mSkip" /></div></list-item>
+      <list-item class="li" if="{{hasNext}}"><div class="liIn"><input type="button" class="btn" value="{{lNext}}" onclick="mNext" /></div></list-item>
+      <list-item class="li" if="{{hasAdd}}"><div class="liIn"><input type="button" class="btn" value="{{lAdd}}" onclick="mAdd" /></div></list-item>
+      <list-item class="li" if="{{hasRemove}}"><div class="liIn"><input type="button" class="btn" value="{{lRemove}}" onclick="mRemove" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{lFinish}}" onclick="mFinish" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{lDiscard}}" onclick="mDiscard" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{lBack}}" onclick="mBack" /></div></list-item>
+    </list>
+  </div>
+
+  <!-- A hold -->
+  <div class="scr" if="{{s_hold}}">
+    <text class="top">{{top}}</text>
+    <text class="mid">{{name}}</text>
+    <text class="tiny quiet">{{tag}}</text>
+    <text class="hero" style="color: {{timeColor}};">{{time}}</text>
+    <progress type="horizontal" class="holdBar" percent="{{pct}}" style="color: {{accent}};"></progress>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{stopLabel}}" onclick="stopHold" />
+  </div>
+
+  <!-- The set (also fixing the last one: Save, Cancel, and the arrows) -->
+  <div class="scr" if="{{s_set}}">
+    <div class="bar">
+      <text class="top">{{top}}</text>
+      <input if="{{fixing}}" type="button" class="menuBtn" value="{{cancelLabel}}" onclick="cancelFix" />
+      <input else type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    </div>
+    <text class="name">{{name}}</text>
+    <div class="tagRow">
+      <input if="{{prevOn}}" type="button" class="arrow" value="{{lt}}" onclick="prev" />
+      <div else class="arrow"></div>
+      <div class="tagBox">
+        <text class="tiny">{{tag}}</text>
+        <text class="tiny quiet">{{partner}}</text>
+      </div>
+      <input if="{{nextOn}}" type="button" class="arrow" value="{{gt}}" onclick="nextFix" />
+      <div else class="arrow"></div>
+    </div>
+    <div class="tiles">
+      <div class="tile" if="{{wOn}}">
+        <text class="num">{{wNum}}</text>
+        <text class="tiny quiet">{{wUnit}}</text>
+        <div class="steps">
+          <input type="button" class="step" value="-" onclick="wMinus" />
+          <input type="button" class="step" value="+" onclick="wPlus" />
+        </div>
+      </div>
+      <div class="tile">
+        <text class="num">{{rNum}}</text>
+        <text class="tiny quiet">{{rLabel}}</text>
+        <div class="steps">
+          <input type="button" class="step" value="-" onclick="rMinus" />
+          <input type="button" class="step" value="+" onclick="rPlus" />
+        </div>
+      </div>
+    </div>
+    <text class="tiny quiet">{{last}}</text>
+    <input if="{{locked}}" type="button" class="doneOff" value="{{doneLabel}}" />
+    <input else type="button" class="done" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="done" />
+  </div>
+
+  <!-- The rest: a ring that empties. Either the effort chips or the next set, never both. -->
+  <div class="scr" if="{{s_rest}}">
+    <div class="bar">
+      <text class="top">{{top}}</text>
+      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    </div>
+    <stack class="ring">
+      <progress type="arc" class="arc" percent="{{pct}}" style="color: {{accent}};"></progress>
+      <div class="ringIn">
+        <text class="tiny quiet">{{restLabel}}</text>
+        <text class="big">{{restTime}}</text>
+      </div>
+    </stack>
+    <div class="block" if="{{effortOn}}">
+      <text class="tiny quiet">{{how}}</text>
+      <div class="row4">
+        <input type="button" class="chip" value="{{c0}}" onclick="chip0" />
+        <input type="button" class="chip" value="{{c1}}" onclick="chip1" />
+        <input type="button" class="chip" value="{{c2}}" onclick="chip2" />
+        <input type="button" class="chip" value="{{c3}}" onclick="chip3" />
+      </div>
+    </div>
+    <div class="block" else>
+      <text class="tiny quiet">{{upNext}}</text>
+      <text class="tiny">{{nextName}}</text>
+      <text class="tiny quiet">{{nextNums}}</text>
+    </div>
+    <div class="row3">
+      <input if="{{locked}}" type="button" class="side3" value="-15" />
+      <input else type="button" class="side3" value="-15" onclick="restMinus" />
+      <input if="{{locked}}" type="button" class="mid3Off" value="{{skipLabel}}" />
+      <input else type="button" class="mid3" style="background-color: {{accent}}; color: {{ink}};" value="{{skipLabel}}" onclick="restSkip" />
+      <input if="{{locked}}" type="button" class="side3" value="+15" />
+      <input else type="button" class="side3" value="+15" onclick="restPlus" />
+    </div>
+  </div>
+
+  <!-- Overview: a list, it scrolls -->
+  <div class="scr" if="{{s_over}}">
+    <text class="small">{{title}}</text>
+    <text class="tiny quiet">{{count}}</text>
+    <list class="overList">
+      <list-item class="liNote" if="{{noteOn}}"><div class="noteBox"><text class="note">{{note}}</text></div></list-item>
+      <list-item class="li" if="{{ss0}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv0}}"><div class="liIn"><input type="button" class="btn" value="{{ot0}}" onclick="ov0" /></div></list-item>
+      <list-item class="li" if="{{ss1}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv1}}"><div class="liIn"><input type="button" class="btn" value="{{ot1}}" onclick="ov1" /></div></list-item>
+      <list-item class="li" if="{{ss2}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv2}}"><div class="liIn"><input type="button" class="btn" value="{{ot2}}" onclick="ov2" /></div></list-item>
+      <list-item class="li" if="{{ss3}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv3}}"><div class="liIn"><input type="button" class="btn" value="{{ot3}}" onclick="ov3" /></div></list-item>
+      <list-item class="li" if="{{ovPaged}}"><div class="liIn"><input type="button" class="btn" value="{{gt}}" onclick="ovNext" /></div></list-item>
+      <list-item class="li"><div class="liIn"><text class="tiny quiet">{{ovMore}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><text class="tiny quiet">{{sync}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{finishLabel}}" onclick="finish" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{backLabel}}" onclick="ovBack" /></div></list-item>
+    </list>
+  </div>
+
+  <!-- All sets done -->
+  <div class="scr" if="{{s_end}}">
+    <div class="bar">
+      <text class="top">{{top}}</text>
+      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    </div>
+    <text class="mid">{{title}}</text>
+    <text class="small quiet">{{count}}</text>
+    <text class="tiny quiet">{{sync}}</text>
+    <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{finishLabel}}" onclick="finish" />
+  </div>
+
+  <!-- Cardio, or a timed exercise with nothing left -->
+  <div class="scr" if="{{s_card}}">
+    <div class="bar">
+      <text class="top">{{top}}</text>
+      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    </div>
+    <text class="mid">{{name}}</text>
+    <text class="wrap">{{body}}</text>
+    <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{nextLabel}}" onclick="nextEx" />
+  </div>
+
+  <!-- Summary -->
+  <div class="scr" if="{{s_summary}}">
+    <text class="small" style="color: {{accent}};">{{title}}</text>
+    <text class="tiny quiet">{{name}}</text>
+    <text class="big">{{dur}}</text>
+    <text class="tiny quiet">{{durLabel}}</text>
+    <div class="row2s">
+      <div class="col"><text class="mid">{{setsNum}}</text><text class="tiny quiet">{{setsLabel}}</text></div>
+      <div class="col"><text class="mid">{{volNum}}</text><text class="tiny quiet">{{volLabel}}</text></div>
+    </div>
+    <text class="tiny quiet">{{hrLine}}</text>
+    <text class="tiny quiet">{{sync}}</text>
+    <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="close" />
+  </div>
+
+</div>

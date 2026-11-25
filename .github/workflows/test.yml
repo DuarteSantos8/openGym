@@ -46,6 +46,7 @@ jobs:
       android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
       catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
       routines: ${{ steps.f.outputs.routines == 'true' || github.event_name == 'workflow_dispatch' }}
+      huawei: ${{ steps.f.outputs.huawei == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -133,6 +134,19 @@ jobs:
               - 'catalogue/exercises/**'
               - 'api/coach/core/starter-plans.js'
               - 'api/coach/core/routine-library.js'
+            huawei:
+              - '.github/workflows/test.yml'
+              - 'watch-huawei/**'
+              # The code its tests import or read (link.test.js, core.test.js, view.test.js, page.test.js).
+              # Not the words: the app's locale packs and the Wear OS and Garmin strings are not here,
+              # so a translation pull request never waits on this job (the Wear OS, Garmin and Zepp
+              # generators are not freshness-checked either). docs/HUAWEI_WATCH.md says to regenerate.
+              - 'frontend/src/lib/garmin-snapshot.js'
+              - 'frontend/src/lib/huawei-snapshot.js'
+              - 'frontend/src/lib/watch-sync.js'
+              - 'frontend/src/lib/watch-settings.js'
+              - 'frontend/src/lib/daily-form.js'
+              - 'frontend/garmin/test/snapshot.json'
 
   frontend:
     needs: changes
@@ -361,6 +375,30 @@ jobs:
         run: node scripts/routines/build.mjs --out "$RUNNER_TEMP/routines"
       - name: Routines tests (validator, build, filters, submit service)
         run: node --test scripts/routines/routines.test.mjs
+
+  # The Huawei watch app (watch-huawei, JavaScript for a lite wearable): its logic, screens, link
+  # and words under plain node, and the language subset the watch's engine runs. No install.
+  huawei:
+    needs: changes
+    if: needs.changes.outputs.huawei == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Huawei watch app tests
+        # texts.js is generated from the app's packs and the Wear OS and Garmin words; the test
+        # fails when it is stale, so the message says what to run.
+        run: |
+          npm test || {
+            echo "::error::If strings.test.js failed, run node watch-huawei/huawei-strings.mjs and commit common/texts.js"
+            exit 1
+          }
+        working-directory: watch-huawei
 
   # Builds *and runs* the api image targets and the web image. Building alone would not have
   # caught the api image shipping without coach/: that image built perfectly and exited on boot.
@@ -599,7 +637,7 @@ jobs:
   # The single required check. Green when every job that ran passed and the others were
   # skipped because nothing they check changed.
   tests-ok:
-    needs: [changes, frontend, api, mcp, catalogue, routines, images, android]
+    needs: [changes, frontend, api, mcp, catalogue, routines, huawei, images, android]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

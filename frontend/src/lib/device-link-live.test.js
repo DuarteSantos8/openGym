@@ -73,6 +73,13 @@ describe('the live link signals', () => {
     expect(watchRow()).toBeUndefined()
   })
 
+  it('on Android a Huawei watch alone is no Wear OS watch either', async () => {
+    const wear = { supported: false, paired: false, installed: false, reachable: false }
+    _setWatchPluginForTest(plugin({ status: vi.fn(async () => ({ paired: true, installed: true, activated: true, reachable: true, garmin: true, huawei: true, wear })) }), () => state)
+    await checkLinks()
+    expect(watchRow()).toBeUndefined()
+  })
+
   it('never pings a watch that is not reachable', async () => {
     const p = plugin()
     _setWatchPluginForTest(p, () => state)

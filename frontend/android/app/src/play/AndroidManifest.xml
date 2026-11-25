@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Only the Play build's own parts. With -PplayWithoutBackgroundLocation app/build.gradle uses
+     src/playNoBackgroundLocation/AndroidManifest.xml in place of this file: keep the Huawei lines in step. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Huawei's Wear Engine SDK (HuaweiLink, src/hms): its app id (-PhuaweiAppId in app/huawei.gradle;
+             empty: the link says "build"). The SDK's own manifest brings the <queries> entry for Huawei Health. -->
+        <meta-data android:name="com.huawei.hms.client.appid" android:value="${huaweiAppId}" />
+    </application>
+</manifest>

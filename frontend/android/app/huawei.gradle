@@ -1,0 +1,57 @@
+// The Huawei watch link's build parts (HuaweiLink in src/hms, watch app in watch-huawei): Huawei's
+// Wear Engine SDK from Huawei's own Maven repository, the sideload and play flavors' source set and
+// dependency, and the two values the link needs. Applied by app/build.gradle only when this file exists.
+//
+// F-DROID: the recipe must delete this file before F-Droid's scanner runs, because the scanner
+// reads every Gradle file as text and refuses the repository URL below (an unknown Maven repo), and
+// the F-Droid build has no use for it (the fdroid flavor has no Huawei code). The recipe in
+// fdroiddata (metadata/ch.duartesantos.opengym.yml) lives outside this repository; the step is:
+//     rm: frontend/android/app/huawei.gradle        (next to its `wear` entry)
+// scripts/android/fdroid-prebuild.sh deletes it too, as its first step, for a recipe that does not
+// list it. scripts/android/check-fdroid.sh fails if the URL is anywhere else in a Gradle file.
+// Without this file the sideload and play builds do NOT build (WatchBridgePlugin calls HuaweiLink,
+// the manifests name the app id placeholder): a release can never go out without the link by accident.
+//
+// Values, from -P properties (gradle.properties or the release machine's command line). Empty by
+// default, and then HuaweiLink never starts and says "build":
+//   -PhuaweiAppId=...               Wear Engine's app id (AppGallery Connect)
+//   -PhuaweiWatchFingerprint=...    the watch app's fingerprint (peer fingerprint, docs of Wear Engine)
+
+def huaweiAppId = (project.findProperty('huaweiAppId') ?: '').toString()
+def huaweiWatchFingerprint = (project.findProperty('huaweiWatchFingerprint') ?: '').toString()
+
+repositories {
+    // Huawei's own groups come from there and only from there; nothing else is ever asked of it.
+    exclusiveContent {
+        forRepository { maven { url 'https://developer.huawei.com/repo/' } }
+        filter { includeGroupByRegex 'com\\.huawei\\..*' }
+    }
+}
+
+android {
+    productFlavors.configureEach { flavor ->
+        if (flavor.name == 'sideload' || flavor.name == 'play') {
+            flavor.buildConfigField "String", "HUAWEI_APP_ID", "\"${huaweiAppId}\""
+            flavor.buildConfigField "String", "HUAWEI_WATCH_FINGERPRINT", "\"${huaweiWatchFingerprint}\""
+            // Into the manifest's meta-data (src/sideload, src/play, src/playNoBackgroundLocation).
+            flavor.manifestPlaceholders = [huaweiAppId: huaweiAppId]
+        }
+    }
+    // Closed source like Garmin's SDK: the APK and the Play build only.
+    sourceSets {
+        sideload.java.srcDirs += ['src/hms/java']
+        play.java.srcDirs += ['src/hms/java']
+    }
+}
+
+// ProGuard: the sideload and play builds are not minified (only fdroidRelease is, which has no Huawei
+// code), so Wear Engine's keep rules are not in proguard-rules.pro. Should they be shrunk one day, add:
+//   -keepattributes *Annotation*
+//   -keepattributes Signature
+//   -keepattributes InnerClasses
+//   -keepattributes EnclosingMethod
+//   -keep class com.huawei.wearengine.**{*;}
+dependencies {
+    sideloadImplementation "com.huawei.hms:wearengine:5.0.3.304"
+    playImplementation "com.huawei.hms:wearengine:5.0.3.304"
+}

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Checks openGym Offline (flavour "offline", app/build.gradle) really cannot reach the network:
 #   1. its runtime classpath has no network SDK (OkHttp, Retrofit, Cronet, Volley, Ktor) and
-#      nothing from Google Play services, Firebase, ML Kit, Play Core or Garmin's Connect IQ SDK;
+#      nothing from Google Play services, Firebase, ML Kit, Play Core, Garmin's Connect IQ SDK or
+#      Huawei's Wear Engine SDK;
 #   2. the APK, if built, asks for neither INTERNET nor ACCESS_NETWORK_STATE nor the installer
-#      permission, names nothing from Play services or Garmin in its manifest, and does not list
+#      permission, names nothing from Play services, Garmin or Huawei in its manifest, and does not list
 #      the ML Kit plugin.
 # Run from anywhere after `npm run build:mobile` (in frontend/) and, for part 2,
 # `./gradlew :app:assembleOfflineDebug` (or Release) in frontend/android. CI runs it in the
@@ -19,7 +20,7 @@ if [ -n "$given" ] && [ ! -f "$given" ]; then echo "no such APK: $1"; exit 2; fi
 fail=0
 # What may never be on the classpath. The F-Droid list plus every common HTTP client: the app's
 # own code has none, so one showing up means a dependency pulled it in.
-NET='gms|firebase|mlkit|datatransport|com\.google\.android\.play|play-services|odml|connectiq|com\.garmin|okhttp|retrofit|cronet|volley|ktor|grpc'
+NET='gms|firebase|mlkit|datatransport|com\.google\.android\.play|play-services|odml|connectiq|com\.garmin|huawei|wearengine|okhttp|retrofit|cronet|volley|ktor|grpc'
 if [ -z "${CHECK_OFFLINE_SKIP_GRADLE:-}" ]; then
   for conf in offlineDebugRuntimeClasspath offlineReleaseRuntimeClasspath; do
     deps=$(./gradlew -q --console=plain :app:dependencies --configuration "$conf")
@@ -27,7 +28,7 @@ if [ -z "${CHECK_OFFLINE_SKIP_GRADLE:-}" ]; then
     if [ -n "$bad" ]; then
       echo "$conf has a network or non-free dependency:"; printf '%s\n' "$bad"; fail=1
     else
-      echo "$conf: no network SDK, nothing from Google Play services, Firebase, ML Kit or Garmin"
+      echo "$conf: no network SDK, nothing from Google Play services, Firebase, ML Kit, Garmin or Huawei"
     fi
   done
 fi
@@ -54,10 +55,13 @@ if [ -n "$apk" ] && [ -f "$apk" ]; then
   if grep -qE 'com\.garmin\.android\.connectiq' <<<"$manifest"; then
     echo "$apk: the manifest names Garmin's Connect IQ SDK"; fail=1
   fi
+  if grep -qE 'com\.huawei' <<<"$manifest"; then
+    echo "$apk: the manifest names Huawei (Wear Engine, Huawei Health)"; fail=1
+  fi
   if ! grep -q 'ch.duartesantos.opengym.offline' <<<"$manifest"; then
     echo "$apk: not the openGym Offline package (ch.duartesantos.opengym.offline)"; fail=1
   fi
-  [ "$fail" = 0 ] && echo "$apk: no INTERNET, no network state, no installer, no Play services, no Garmin"
+  [ "$fail" = 0 ] && echo "$apk: no INTERNET, no network state, no installer, no Play services, no Garmin, no Huawei"
 elif [ -n "${CHECK_OFFLINE_SKIP_GRADLE:-}" ]; then
   echo "no APK to check"; exit 2
 fi

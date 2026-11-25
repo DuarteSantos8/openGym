@@ -53,6 +53,7 @@ import { noteHeard } from './device-link-live.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, noteRoutinesSent, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
+import { huaweiSnapshot, HUAWEI_ACKED_MAX } from './huawei-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
@@ -1261,16 +1262,27 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   // Whether a watch with the app is there: asked at start and when the app comes back, not on every
   // change. Without one nothing below runs at all: no snapshot, no clips, no bridge call per tick.
-  // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md): that watch gets
-  // the cut-down snapshot (lib/garmin-snapshot.js) alongside, made here so Java and Swift don't.
-  let linked = false, garmin = false
-  // A Garmin's `acked` list is short (GARMIN_ACKED_MAX, its messages are small), and a workout
-  // logged with the phone away comes back as dozens of events within a second or two. The ids
-  // applied since the last snapshot wait here and are named oldest first, a list per snapshot,
-  // or the first ones would only be named after the watch sent them a second time a minute later.
-  let unnamed = []
+  // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md) and a Huawei
+  // watch (status `huawei`, docs/HUAWEI_WATCH.md): each gets a snapshot of its own alongside
+  // (lib/garmin-snapshot.js, lib/huawei-snapshot.js), made here so Java and Swift don't.
+  let linked = false, garmin = false, huawei = false
+  // A small watch's `acked` list is short (GARMIN_ACKED_MAX, HUAWEI_ACKED_MAX: its messages are
+  // small), and a workout logged with the phone away comes back as dozens of events within a
+  // second or two. The ids applied since the last snapshot wait here, one list per watch, and are
+  // named oldest first, a list per snapshot, or the first ones would only be named after the
+  // watch sent them a second time a minute later.
+  // Only a watch's own ids (the event ids start with g for a Garmin, h for a Huawei watch), so the
+  // other watch's do not take its places.
+  let unnamed = { garmin: [], huawei: [] }
+  const OWN = { garmin: 'g', huawei: 'h' }
+  // an id leaves its list when a snapshot that carried it has gone out (below)
+  let again = false
   const onAcked = (ids = []) => {
-    if (garmin && Array.isArray(ids)) unnamed = [...unnamed.filter(id => !ids.includes(id)), ...ids].slice(-ACKED_MAX)
+    if (Array.isArray(ids)) for (const [k, on] of [['garmin', garmin], ['huawei', huawei]]) {
+      const mine = ids.filter(id => typeof id === 'string' && id.startsWith(OWN[k]))
+      if (on && mine.length) unnamed[k] = [...unnamed[k].filter(id => !mine.includes(id)), ...mine].slice(-ACKED_MAX)
+    }
+    again = true
     // Sent again even when nothing differs: an event that came a second time means the watch never
     // got the snapshot that named it (the link dropped it), and the same one again is what it needs.
     lastSent = null
@@ -1278,8 +1290,9 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   const checkLink = async () => {
     const was = linked
-    try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin } catch { linked = false; garmin = false }
-    if (withGarmin) writeGarminLink(garmin)
+    try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin; huawei = withGarmin && linked && !!st.huawei } catch { linked = false; garmin = false; huawei = false }
+    // remembered for Settings → Modules for either watch (the name is from when only Garmin had one)
+    if (withGarmin) writeGarminLink(garmin || huawei)
     // A watch that is new here (the app just installed on it, or reinstalled): it has nothing yet,
     // so the snapshot goes again even when it is the same as the last one sent.
     if (linked && !was) { lastSent = null; lastRoutines = null }
@@ -1341,18 +1354,32 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       const json = ascii ? asciiJson(fit) : fit
       // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
       // Garmin pauses with the others.
-      const naming = garmin && unnamed.length > GARMIN_ACKED_MAX ? unnamed.slice(0, GARMIN_ACKED_MAX) : null
-      const g = garmin ? JSON.stringify(garminSnapshot(naming ? { ...snap, acked: naming } : snap)) : null
-      const sent = g ? json + '\n' + g : json
+      // The ids still to name go last in the list, since a snapshot short of room keeps the newest.
+      const namingOf = (k, max) => {
+        const mine = unnamed[k].slice(0, max)
+        return mine.length ? { ...snap, acked: [...(snap.acked || []).filter(id => !mine.includes(id)), ...mine] } : snap
+      }
+      const gSnap = garmin ? garminSnapshot(namingOf('garmin', GARMIN_ACKED_MAX)) : null
+      const hSnap = huawei ? huaweiSnapshot(namingOf('huawei', HUAWEI_ACKED_MAX)) : null
+      const g = gSnap ? JSON.stringify(gSnap) : null
+      const h = hSnap ? JSON.stringify(hSnap) : null
+      const sent = json + (g ? '\n' + g : '') + (h ? '\n\nhuawei ' + h : '')
       // `now` changes every time: not a change worth sending by itself.
       const same = sent.replace(/"now":\d+,?/g, '')
       if (same !== lastSent) {
         sentAt = Date.now()
-        const r = await p.WatchBridge.sendSnapshot(g ? { json, garmin: g } : { json })
-        if (r && r.sent) lastSent = same
-        // The next list of ids goes with the next snapshot (the newest ones are in every one).
-        unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
-        if (unnamed.length) schedule()
+        // `again`: an event came a second time, so the watch never got the snapshot that named it; the
+        // link must not drop this one as the same as the last (the Huawei link does that otherwise).
+        const r = await p.WatchBridge.sendSnapshot({ json, ...(g ? { garmin: g } : {}), ...(h ? { huawei: h, ...(again ? { again: true } : {}) } : {}) })
+        again = false
+        if (r && r.sent) {
+          lastSent = same
+          // Only the ids the snapshots really named are done with (a short snapshot cuts its list);
+          // the rest go with the next one. A snapshot the link did not take names nobody.
+          const done = { garmin: gSnap?.acked || [], huawei: hSnap?.acked || [] }
+          for (const k of ['garmin', 'huawei']) unnamed[k] = unnamed[k].filter(id => !done[k].includes(id))
+          if (unnamed.garmin.length || unnamed.huawei.length) schedule()
+        }
       }
       // The watch reports another file than the one sent, minutes after it went: lost on the way (a
       // transfer the system gave up on) or not kept there. It goes again, once per report, so a
@@ -1626,6 +1653,17 @@ export async function garminCall (name, args = {}) {
 }
 
 /**
+ * Settings → Huawei watch (views/HuaweiSettings.jsx): the native Huawei calls of WatchBridge
+ * (huaweiStatus, huaweiPick; docs/HUAWEI_WATCH.md). No phone app, or a build without them: null.
+ */
+export async function huaweiCall (name, args = {}) {
+  if (!['huaweiStatus', 'huaweiPick'].includes(name)) return null
+  const p = await watchPlugin()
+  if (!p) return null
+  try { return (await p.WatchBridge[name](args)) || null } catch { return null }
+}
+
+/**
  * The Wear OS link by itself, for Settings → Wear OS watch (views/WearSettings.jsx, lib/wear-view.js):
  * { supported, paired, installed, reachable, watches }. A phone app from before the plugin said it
  * that way answers with the plain fields, which are the same thing where there is no Garmin.
@@ -1636,7 +1674,7 @@ export async function wearStatus () {
   if (!p) return none
   try {
     const st = await p.WatchBridge.status()
-    const w = st?.wear && typeof st.wear === 'object' ? st.wear : (st?.garmin ? null : st)
+    const w = st?.wear && typeof st.wear === 'object' ? st.wear : (st?.garmin || st?.huawei ? null : st)
     if (!w) return none
     return { supported: !!w.supported, paired: !!w.paired, installed: !!w.installed, reachable: !!w.reachable, watches: Array.isArray(w.watches) ? w.watches : [] }
   } catch { return none }

@@ -97,6 +97,7 @@ import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
 import GarminSettingsPage from './GarminSettings.jsx'
+import HuaweiSettingsPage from './HuaweiSettings.jsx'
 import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
@@ -517,6 +518,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     watch: () => '',
     wear: () => '',
     garmin: () => '',
+    huawei: () => '',
     zepp: () => '',
   }
 
@@ -601,6 +603,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
     wear: () => <WearSettingsPage />,
     garmin: () => <GarminSettingsPage />,
+    huawei: () => <HuaweiSettingsPage />,
     zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,

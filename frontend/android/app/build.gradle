@@ -204,3 +204,11 @@ tasks.configureEach { t ->
 if (rootProject.file('asset-packs.app.gradle').exists()) {
     apply from: rootProject.file('asset-packs.app.gradle')
 }
+
+// The Huawei watch link (HuaweiLink in src/hms): all of Huawei's build parts are in this one file, so
+// the F-Droid build, which refuses Huawei's Maven repository, only has to delete it. Without the file
+// the sideload and play builds do not build (WatchBridgePlugin needs HuaweiLink): never a release
+// without the link by accident.
+if (file('huawei.gradle').exists()) {
+    apply from: 'huawei.gradle'
+}

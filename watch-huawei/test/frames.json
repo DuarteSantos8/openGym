@@ -1,0 +1,40 @@
+[
+ {
+  "name": "hello",
+  "text": "{\"events\":[{\"id\":\"h1-1-5\",\"type\":\"hello\",\"at\":1764000000000}]}",
+  "frames": [
+   "a.0.1|{\"events\":[{\"id\":\"h1-1-5\",\"type\":\"hello\",\"at\":1764000000000}]}"
+  ]
+ },
+ {
+  "name": "non-ascii",
+  "text": "{\"events\":[{\"id\":\"h2\",\"type\":\"start\",\"wid\":\"watch-1\",\"routineIds\":[\"Beine | Rücken\",\"腿\"],\"at\":1}]}",
+  "frames": [
+   "a.0.1|{\"events\":[{\"id\":\"h2\",\"type\":\"start\",\"wid\":\"watch-1\",\"routineIds\":[\"Beine | R\\u00fccken\",\"\\u817f\"],\"at\":1}]}"
+  ]
+ },
+ {
+  "name": "exactly 960",
+  "text": "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  "frames": [
+   "a.0.1|{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+  ]
+ },
+ {
+  "name": "961",
+  "text": "{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+  "frames": [
+   "a.0.2|{\"a\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+   "a.1.2|}"
+  ]
+ },
+ {
+  "name": "three parts, split inside an escape",
+  "text": "{\"name\":\"üüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüüü\",\"note\":\"a|b.c\"}",
+  "frames": [
+   "a.0.3|{\"name\":\"\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u0",
+   "a.1.3|0fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u0",
+   "a.2.3|0fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\\u00fc\",\"note\":\"a|b.c\"}"
+  ]
+ }
+]
