@@ -29,6 +29,12 @@ const DEFAULT_TIMEOUT_MS = 5 * 60000;
 // only then become the job's failure. Never on a 4xx that means "the request is wrong".
 export const RETRY_STATUSES = new Set([429, 500, 502, 503, 504, 529]);
 const RETRY_DELAYS_MS = [2000, 5000];
+// A connection that broke before any answer came back, fast: iOS drops a reused connection with
+// "The network connection was lost" (NSURLErrorNetworkConnectionLost), Node and Android with a
+// reset. Asked again on a fresh connection it usually goes through (Discord: Gemini on an iPhone
+// failed at once, every time). A refused connection, an unknown host or a bad certificate is a
+// setup problem and is not asked again.
+const DROPPED = /network connection was lost|connection (was )?reset|econnreset|socket hang up|epipe|other side closed|connection closed/i;
 const sleep = (ms, signal) => new Promise(resolve => {
   const t = setTimeout(resolve, ms);
   if (signal) signal.addEventListener('abort', () => { clearTimeout(t); resolve(); }, { once: true });
@@ -398,6 +404,12 @@ export function httpAdapter(spec) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           const waited = Math.round((Date.now() - sentAt) / 1000);
           if (Date.now() - sentAt >= WAITED_MS) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped while waiting for the answer (after ${waited} s): ${trim(e.message, 200)}` };
+          const why = `${e.message || ''} ${e.cause && (e.cause.code || e.cause.message) || ''}`;
+          if (DROPPED.test(why) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
+            await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
+            transientRetries++;
+            continue;
+          }
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };
         }
         let read;

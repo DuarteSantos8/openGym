@@ -6,6 +6,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Coach: a connection that drops before the AI answers is tried again, up to twice. On an iPhone, Gemini could fail at once with "The network connection was lost" (Discord).
+- Coach: local models that refuse a JSON answer while thinking now get asked again with thinking off, and that is remembered for the model (thanks @nathancashion for #1546).
 - Dumbbells you own: a workout now opens on the bells your gym has. A lift seeded from your confirmed working weight, from last time or from another gym could open at 30 kg total on a rack of 14s and 16s, and only switching gyms fixed it. It now opens at the heaviest load your rack makes at or under that number (28 kg), in planned sessions, freestyle and repeated workouts alike. (Discord, thanks unodostresteban)
 - Christmas: shake your phone hard and the snow goes wild, like a snow globe. It swirls, drifts back down and melts. Shaking again stirs it up some more. There is a switch for it in Settings → Seasonal themes, and nothing happens with reduced motion on.
 - Stats → Effort: with enough sets rated (five or more, and at least a quarter of your sets), the card now shows only your own ratings. The estimate for unrated sets assumes your best set of the last 90 days went to failure, so it read every set too hard: 1.5 RIR rated came out as 0.8 and "100% hard". With fewer ratings the estimate still stands in, and the card now says so. Cardio no longer counts as an unrated set.
