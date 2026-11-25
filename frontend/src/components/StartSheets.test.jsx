@@ -12,6 +12,9 @@ import { todayISO } from '../lib/format.js'
 const started = vi.hoisted(() => [])
 const menus = vi.hoisted(() => [])
 vi.mock('../sheets.jsx', () => ({ startFlow: (ids, opts) => started.push(opts?.lead ? { ids, lead: opts.lead.ex.map(x => x.id) } : ids), menuSheet: m => menus.push(m) }))
+const logged = vi.hoisted(() => [])
+vi.mock('./ActivitySheet.jsx', () => ({ activitySheet: o => logged.push(['activity', o]) }))
+vi.mock('./RecoverySheet.jsx', () => ({ recoverySheet: o => logged.push(['recovery', o]) }))
 import { startPickerSheet, startOrPreview, previewSheet } from './StartSheets.jsx'
 import TabBar, { START_HOLD_MS } from './TabBar.jsx'
 
@@ -24,6 +27,7 @@ const wd = new Date(todayISO() + 'T12:00:00').getDay()
 beforeEach(() => {
   started.length = 0
   menus.length = 0
+  logged.length = 0
   const S = structuredClone(DEF)
   S.routines = [
     { id: 'push', name: 'Push', emoji: null, ex: [{ id: '0025', sets: 3, reps: 8, w: 60 }] },
@@ -46,10 +50,23 @@ describe('the start picker (#930)', () => {
     startPickerSheet(); renderTop()
     expect(rowTitles('.start-today')).toEqual(['Push'])
     const all = rowTitles('.menu-list')
-    expect(all).toEqual(['Push', 'Pull', 'Morning mobility', 'Freestyle workout (pick as you go)'])
+    expect(all).toEqual(['Push', 'Pull', 'Morning mobility', 'Freestyle workout (pick as you go)', 'Log an activity', 'Log recovery'])
     click('Morning mobility')
     expect(started).toEqual([['mob']])
     expect(useUI.getState().sheets).toHaveLength(0)
+  })
+  it('logs an activity or recovery for today, the day sheet\'s rows, so a rotation has them on Home too', () => {
+    act(() => useStore.getState().update(s => { s.scheduleMode = 'rotation' }))
+    startPickerSheet(); renderTop()
+    expect(rowTitles('.start-log')).toEqual(['Log an activity', 'Log recovery'])
+    click('Log an activity')
+    expect(logged).toEqual([['activity', { day: todayISO() }]])
+    expect(useUI.getState().sheets).toHaveLength(0)
+    startPickerSheet(); renderTop()
+    click('Log recovery')
+    expect(logged.at(-1)).toEqual(['recovery', { day: todayISO() }])
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(started).toEqual([])
   })
   it('the Start tab: a tap starts today, a long press opens the picker, "Let me pick" asks every time', () => {
     vi.useFakeTimers()

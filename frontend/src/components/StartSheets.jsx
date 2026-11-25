@@ -16,6 +16,8 @@ import { glyphOf } from '../lib/glyphs.js'
 import { leftoversBefore } from '../lib/leftovers.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
+import { activitySheet } from './ActivitySheet.jsx'
+import { recoverySheet } from './RecoverySheet.jsx'
 
 const ui = () => useUI.getState()
 const S = () => useStore.getState().S
@@ -56,7 +58,9 @@ function askLeftovers(left, ids) {
 // Which workout to start, straight from the Start button (a long press, or every tap with
 // Settings → Workout → Start button → "Lets you pick"), and from Home's "Choose a different
 // workout": today's plan on top, every other routine below it (scheduled on another day or on
-// none), and a freestyle session last. One tap starts it, or opens its preview.
+// none), and a freestyle session last. One tap starts it, or opens its preview. Under it, today's
+// activity and recovery, the same rows as the day sheet: with a rotation, Home has no week strip
+// to open that sheet from, so this is where a run or a sauna gets logged for today.
 function StartPicker({ close }) {
   const st = useStore(s => s.S)
   const today = todayISO()
@@ -97,6 +101,12 @@ function StartPicker({ close }) {
     </>}
     <div className="list menu-list" style={{ marginBottom: 14 }}>
       <Row icon="shuffle" title={t('Freestyle workout (pick as you go)')} accessory="chevron" onClick={() => { close(); startFlow([]) }} />
+    </div>
+    <div className="list menu-list start-log" style={{ marginBottom: 14 }}>
+      <Row icon="figureRun" iconTint="var(--blue)" title={t('Log an activity')} subtitle={t('A run, a ride, a match')} accessory="chevron"
+        onClick={() => { close(); activitySheet({ day: todayISO() }) }} />
+      <Row icon="sparkles" iconTint="var(--teal)" title={t('Log recovery')} subtitle={t('Sauna, ice bath, massage, mobility')} accessory="chevron"
+        onClick={() => { close(); recoverySheet({ day: todayISO() }) }} />
     </div>
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
