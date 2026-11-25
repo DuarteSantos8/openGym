@@ -45,6 +45,7 @@
 "Keep going" = "Продолжить";
 "Finish now" = "Завершить сейчас";
 "Back" = "Назад";
+"Ready" = "Готова";
 "Last time: %@" = "В прошлый раз: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Давно ничего не записано. Если закончил, она завершится сама в %@, сохранённая на последнем подходе.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Завершить тренировку сейчас? Иначе она завершится сама в %@.";
