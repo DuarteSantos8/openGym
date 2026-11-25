@@ -874,7 +874,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       // RPE 10 - the rule the app itself keeps (workout-model partialsAllowed). Anything else is
       // read as a set without them rather than a set the app could not show them on.
       const lp = Math.floor(num(cell(r, 'partials')))
-      if (lp > 0 && lp <= 99 && !warmup && partialsAllowed(set)) set.lp = lp
+      if (lp >= 0 && lp <= LOG_LIMITS.maxReps && !warmup && partialsAllowed(set)) set.lp = lp;
     }
 
     // Strong and Hevy write the workout's start on every row, so two sessions on one day are

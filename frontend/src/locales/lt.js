@@ -2445,7 +2445,9 @@ export default {
   "Nothing left in the tank": "Nieko nebeliko",
   "Last set to failure": "Paskutinė serija iki visiško išsekimo",
   "The last set goes until nothing is left, and counts as all-out effort unless you rate it.": "Paskutinė serija atliekama iki visiško išsekimo ir skaičiuojama kaip maksimalus pastangų lygis, nebent įvertinsite kitaip.",
-  "Keep the last exercise open": "Palikti paskutinį pratimą atvirą",
+  "+ Partials": "+ Daliniai",
+  "Partial reps": "Dalinių pakartojimų",
+
   "Plan the final set as an all-out one.": "Planuokite paskutinę seriją kaip maksimalaus pastangų lygio.",
   "Triple progression": "Trikartė progresija",
   "Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.": "Pakartojimai didėja iki diapazono viršaus, tada pridedama serija, iki jūsų maksimalaus serijų skaičiaus. Visos serijos pasiekus viršų ir svoris padidinamas, grįžtama prie pirmųjų serijų ir pakartojimų.",

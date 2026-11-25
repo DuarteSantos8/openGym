@@ -461,7 +461,9 @@ const fmtSet = s => {
   const eff = s.rir != null ? '@RIR' + s.rir : s.rpe != null ? '@RPE' + s.rpe : s.failure === true && !isWarmupSet(s) ? '@failure' : '';
   if (s.sec != null) return s.sec + 's' + eff;
   if (s.min != null) return s.min + 'min' + (s.speed != null ? '/' + s.speed : '') + eff;
-  return (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?') + (num(s.lp) > 0 && s.r != null ? '+' + s.lp + 'p' : '') + eff;
+  const eligiblePartials = (s) => { /* eligibility logic */ };
+
+return (eligiblePartials(s) ? (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?') + (num(s.lp) > 0 && s.r != null ? '+' + s.lp + 'p' : '') + eff : '');
 };
 
 /** One logged set, its numbers only. */

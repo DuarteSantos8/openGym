@@ -944,7 +944,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // hold draws two of them, L then R, inside one swipe so the pair slides as the one set it is.
   // A set taken to failure wears a small "F" on its number, the button every row's menu opens
   // from. The button's own label speaks for it, so a screen reader hears it with the set number.
-  const failMark = s => isFailureSet(s) ? <span className="failmark" aria-hidden="true">{t('F')}{partialsOf(s) ? '+' + partialsOf(s) : ''}</span> : null
+  const failMark = s => (isFailureSet(s) || (s.rir === 0 && partialsOf(s)) ? <span className="failmark" aria-hidden="true">{t('F')}{partialsOf(s) ? '+' + partialsOf(s) : ''}</span> : null);
   // The set's colour tag: its shape in its colour, beside the number; said with the number.
   const tagMark = s => { const tag = setTagOf(s); return tag ? <span className="settag" style={{ '--tag': tag.color }} aria-hidden="true">{tag.shape}</span> : null }
   const failSay = (s, label) => {

@@ -2474,7 +2474,9 @@ export default {
   "Nothing left in the tank": "بدون توان ادامه",
   "Last set to failure": "ست آخر تا ناتوانی",
   "The last set goes until nothing is left, and counts as all-out effort unless you rate it.": "ست آخر تا ناتوانی ادامه دارد و اگر شدت را ثبت نکنید، با حداکثر شدت حساب می‌شود.",
-  "Keep the last exercise open": "آخرین تمرین را باز نگه دار",
+  "+ Partials": "+ جزئیات",
+  "Partial reps": "جزئیات جزئی",
+
   "Plan the final set as an all-out one.": "ست پایانی را با حداکثر تلاش برنامه‌ریزی کنید.",
   "Triple progression": "پیشرفت سه گانه",
   "Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.": "تکرارها تا سقف بازه بالا می‌روند، سپس یک ست اضافه می‌شود تا به حداکثر تعداد ست برسید. وقتی همه ست‌ها به سقف برسند، وزنه افزایش می‌یابد و به تعداد ست و تکرار اولیه برمی‌گردید.",

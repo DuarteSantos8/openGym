@@ -76,7 +76,7 @@ export function partialsNote(w) {
     if (lp > 0 && lp >= (Number(row.r) || 0) / 2) n++
   }
   return n
-    ? `${n} set${n === 1 ? '' : 's'} had lengthened partials amounting to at least half the full reps. Partials are not full-range reps: weight, reps and volume above count full reps only.`
+    ? `${n} set${n === 1 ? '' : 's'} had lengthened partials amounting to at least half the full reps, while volume is calculated above the count of full reps only.`
     : null
 }
 

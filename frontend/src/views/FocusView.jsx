@@ -289,7 +289,7 @@ export default function FocusView({
     sections: [
       { items: [
         !isWarmupRow(set) && mode !== 'cardio' && { icon: 'gauge', label: t('Taken to failure'), sub: t('Nothing left in the tank'), on: isFailureSet(set), onClick: () => onMutateSet(setIdx, row => settlePartials(toggleFailure(row))) },
-        partialsModeOf(S) !== 'off' && !isWarmupRow(set) && mode === 'reps' && !isSideSet(set) && set.done && { icon: 'arrowDown', label: t('Lengthened partials'),
+        partialsModeOf(S) !== 'off' && !isWarmupRow(set) && mode === 'reps' && !isSideSet(set) && set.done && { icon: 'arrowDown', label: t('Lengthened partials'), sidePartialControls: true,
           sub: !partialsAllowed(set) ? t('Needs a set taken to failure') : partialsOf(set) ? t('Partials: {0}', partialsOf(set)) : t('After failure, no rest'),
           onClick: () => !partialsAllowed(set)
             ? useUI.getState().toast(t('Partials only follow a set taken to failure. Mark it as failure, or rate it RIR 0 (RPE 10), first.'))
