@@ -88,7 +88,8 @@ function Summary({ have, body, onTree }) {
     <div className="skt-orbit">
       <div className="skt-ring" aria-hidden="true" />
       <div className="skt-core">
-        <BodyMap body={body} levels={muscleLevels(have)} />
+        {/* Decoration: the count under it and the six bubbles say what it shows (BodyMap.test.jsx). */}
+        <BodyMap body={body} levels={muscleLevels(have)} aria-hidden="true" />
         <div className="skt-core-cap">{t('{0} of {1} skills', total.done, total.total)}</div>
       </div>
       {SKILL_FAMILIES.map((fm, k) => {
