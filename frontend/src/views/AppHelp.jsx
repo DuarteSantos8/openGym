@@ -32,7 +32,7 @@ export default function AppHelp({ ctx, canExplain }) {
       await ensureAiConsent()
       if (current !== version.current) return
       const entries = matches.map(({ title, steps }) => ({ title, steps }))
-      const result = await api('/api/coach/help', { method: 'POST', body: JSON.stringify({ question: question.trim(), entries }) })
+      const result = await api('/api/coach/help', { method: 'POST', timeout: 0, body: JSON.stringify({ question: question.trim(), entries }) })
       if (current !== version.current) return
       if (Number.isInteger(result.index) && matches[result.index]) setSelected(matches[result.index])
       else setError(true)

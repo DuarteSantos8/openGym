@@ -68,7 +68,7 @@ import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { forgetBodyFocus } from '../lib/body-photo.js'
-import { coachAvailable } from '../lib/coach.js'
+import { coachAvailable, hasConsent } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -1471,7 +1471,7 @@ export default function Settings({ appHelp = false, page = null, find = null, vi
   }
 
   /* ---------------- a page ---------------- */
-  if (appHelp) return <AppHelp ctx={ctx} canExplain={!ctx.demo && !ctx.offline && !(MOBILE && coachLocal?.mode === 'byok') && !!user && config?.coach?.enabled && isOn(S, 'coach')} />
+  if (appHelp) return <AppHelp ctx={ctx} canExplain={!ctx.demo && !ctx.offline && !(MOBILE && coachLocal?.mode === 'byok') && !!user && hasConsent(S) && config?.coach?.enabled && isOn(S, 'coach')} />
   if (page && pages[page]) {
     const parent = PAGES[page].parent
     return <div className="narrow" ref={body}>

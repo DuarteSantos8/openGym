@@ -7,7 +7,14 @@ import { t } from './i18n.js'
 const navigation = STEPS.filter(step => step.go && !step.when && NAVIGATION_COPY[step.id])
 const filler = new Set('a an the to is are i my can how where do does change long lasts find me on in of for'.split(' '))
 export function helpMatches(question, ctx, tr = t) {
-  const words = [...new Set((fold(question).match(/[\p{L}\p{N}]+/gu) || []).filter(w => !filler.has(w)))].slice(0, 12)
+  const phrase = fold(question)
+  const parts = phrase.match(/[\p{L}\p{N}]+/gu) || []
+  // Index adjacent characters as well when words are not separated by spaces.
+  const words = [...new Set(parts.flatMap(part => {
+    const chars = Array.from(part)
+    return /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u.test(part) && chars.length > 2
+      ? [part, ...chars.slice(1).map((char, i) => chars[i] + char)] : [part]
+  }).filter(w => !filler.has(w)))].slice(0, 24)
   if (!words.length) return []
   const tokens = words.join(' ')
   const hits = []
@@ -15,7 +22,7 @@ export function helpMatches(question, ctx, tr = t) {
     const name = fold(title)
     const text = fold([title, ...steps, keywords].join(' '))
     const count = words.filter(w => text.includes(w)).length
-    if (count) hits.push({ title, steps, route, state, score: count * 10 + (name === tokens ? 8 : 0) + words.filter(w => name.includes(w)).length })
+    if (count) hits.push({ title, steps, route, state, score: count * 10 + (name === tokens || phrase.includes(name) ? 8 : 0) + words.filter(w => name.includes(w)).length })
   }
   const seen = new Set()
   for (const word of words) {
@@ -24,7 +31,7 @@ export function helpMatches(question, ctx, tr = t) {
       if (seen.has(key)) continue
       seen.add(key)
       const route = item.route || (item.page === 'coach' ? '/coach/setup' : '/settings/' + item.page)
-      add(item.label, [tr('Settings'), ...(item.isPage ? [] : [pageTrail(item.page, tr)]), item.label], route, item.kw,
+      add(item.label, [tr('Settings'), ...(item.isPage ? [] : [pageTrail(item.page, tr)]), item.label], route, [item.kw, item.tkw?.(), ...(item.opts || []).flatMap(option => [option, tr(option)])].join(' '),
         item.isPage ? undefined : { find: item.title, via: item.via })
     }
   }

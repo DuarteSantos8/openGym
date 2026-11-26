@@ -35,6 +35,7 @@ it('keeps search local and sends only question and visible directions after cons
   expect(ensureAiConsent).toHaveBeenCalledOnce()
   const [path, request] = api.mock.calls[0]
   expect(path).toBe('/api/coach/help')
+  expect(request.timeout).toBe(0)
   const body = JSON.parse(request.body)
   expect(Object.keys(body).sort()).toEqual(['entries', 'question'])
   expect(body.question).toBe('rest timer')
