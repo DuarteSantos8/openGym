@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import { closeThenNav } from '../lib/nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { t, tn } from '../lib/i18n.js'
+import { t, tn, exerciseAsTypedClass } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtChatTimestamp, DAYS, weekOrder, weekStartOf, isoOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -38,9 +38,10 @@ import { ActionCards, Sources } from '../components/CoachActions.jsx'
 import { CoachSeesSection } from '../components/CoachSees.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
-import { EXIDX, isCustomEx } from '../lib/exercises.js'
-// The Coach names exercises in English, title-cased by its CSS: your own keep the casing you typed.
-const typed = id => (isCustomEx(EXIDX[id]) ? ' nocap' : '')
+import { EXIDX } from '../lib/exercises.js'
+// Names are title-cased by the CSS, as in the exercise list: a pack with its own casing
+// (CASED_NAME_LANGS) and your own exercises keep theirs.
+const typed = id => (EXIDX[id] && exerciseAsTypedClass(EXIDX[id]) ? ' nocap' : '')
 import { activeProfile } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'

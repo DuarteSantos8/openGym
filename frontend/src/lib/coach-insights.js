@@ -10,13 +10,14 @@ import { sessionVolume, workoutAt } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 import { weighInAt } from './bodyweight.js'
+import { exerciseNameFor } from './i18n.js'
 
 const median = arr => {
   const a = arr.filter(n => Number.isFinite(n)).sort((x, y) => x - y)
   return a.length ? a[Math.floor(a.length / 2)] : null
 }
 const bpOf = (S, id) => EXIDX[id]?.bp || (S.customEx || []).find(c => c.id === id)?.bp || null
-const nameOf = (S, id) => EXIDX[id]?.n || (S.customEx || []).find(c => c.id === id)?.n || id
+const nameOf = (S, id) => (EXIDX[id] ? exerciseNameFor(EXIDX[id]) : (S.customEx || []).find(c => c.id === id)?.n || id)
 
 /** Workouts inside an inclusive ISO-date window; either bound may be missing. */
 export function windowWorkouts(S, { from, to } = {}) {

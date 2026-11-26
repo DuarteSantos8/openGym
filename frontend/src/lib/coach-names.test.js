@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { exName, exTitle, changeTitle } from './coach.js'
+import { insightsFor } from './coach-insights.js'
 import { EXIDX } from './exercises.js'
 import { _setLangState } from './i18n-core.js'
 import de from '../exercise-names/de.js'
@@ -38,5 +39,14 @@ describe('Coach exercise names', () => {
 
   it('still names an unknown id', () => {
     expect(exTitle('no-such-id')).toBe('Unknown Exercise')
+  })
+
+  it('names the lifts under a review card in the active language', () => {
+    _setLangState('de', {}, null, de, false)
+    const set = (w, r) => ({ done: true, w, r })
+    const day = d => new Date(d + 'T10:00:00').getTime()
+    const S = { unit: 'kg', workouts: ['2026-08-03', '2026-08-10'].map((d, i) => ({ id: 'w' + i, d, start: day(d), end: day(d) + 3e6, entries: [{ id, sets: [set(60 + i * 5, 10)] }] })) }
+    const lift = insightsFor(S, { from: '2026-08-01', to: '2026-08-15' }).strength.find(x => x.id === id)
+    expect(lift.name).toBe('Bankdrücken mit Langhantel')
   })
 })
