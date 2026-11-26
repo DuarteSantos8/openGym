@@ -107,3 +107,5 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/components/Tour.jsx`, `frontend/src/lib/tour.js` | `next/EP19-coach-app-navigation` | UI | Share the navigation stops and their displayed instructions with local help. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP19-coach-app-navigation` | Copy | Translate the app-help label and empty result. |
 | `docs/AI_COACH.md` | `next/EP19-coach-app-navigation` | Docs | Document local lookup, optional disclosure and destination handling. |
+| `api/coach/jobs.js`, `api/coach/routes.js` | `next/EP19-coach-app-navigation` | API | Bound and rate-limit a help request with only a question and visible directions. |
+| `api/openapi.yaml`, `website/api.html` | `next/EP19-coach-app-navigation` | API docs | Document the read-only explanation endpoint and update its generated reference. |
