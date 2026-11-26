@@ -1,5 +1,6 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "การฝึกเพิ่มความคล่องตัวสองครั้งในวันพักทำให้คุณได้ตัวหยุดหนึ่งอัน",
   "Draft": "ฉบับร่าง",
   "Move gently and switch sides when comfortable.": "เคลื่อนไหวเบา ๆ และสลับข้างเมื่อรู้สึกสบาย",
   "Slow down gradually and release each stretch when comfortable.": "ค่อย ๆ ชะลอจังหวะ และคลายท่ายืดแต่ละท่าเมื่อรู้สึกสบาย",
@@ -5480,6 +5481,7 @@ export default {
   "Handstand ladder": "บันไดแฮนด์สแตนด์",
   "Hinge ladder": "บันไดฮินจ์",
   "Hotel room": "ห้องโรงแรม",
+  "Two chairs": "เก้าอี้สองตัว",
   "It stays out of your progression, so nothing goes up or down.": "ไม่นับรวมในความก้าวหน้าของคุณ จึงไม่มีอะไรขึ้นหรือลง",
   "Ladder name": "ชื่อบันได",
   "Ladders": "บันได",

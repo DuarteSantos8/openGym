@@ -1,4 +1,5 @@
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "在休息日完成兩次活動度訓練，獲得一張凍結卡。",
   "Draft": "草稿",
   "Move gently and switch sides when comfortable.": "輕柔地活動，覺得舒服時再換邊。",
   "Slow down gradually and release each stretch when comfortable.": "慢慢放緩動作，每次伸展都在覺得舒服時放鬆回來。",
@@ -5462,6 +5463,7 @@ export default {
   "Handstand ladder": "倒立階梯",
   "Hinge ladder": "髖關節屈伸階梯",
   "Hotel room": "飯店房間",
+  "Two chairs": "兩張椅子",
   "It stays out of your progression, so nothing goes up or down.": "它不計入你的進步，所以什麼都不會加也不會減。",
   "Ladder name": "階梯名稱",
   "Ladders": "階梯",

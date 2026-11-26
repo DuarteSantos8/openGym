@@ -87,6 +87,7 @@ const GENTLE_DOSE = { sets: 2, reps: 12, rest: 90 }
 // What the estimate assumes between sets when the plan is left as written.
 const WRITTEN_REST = { '5x5': 180 }
 const DEFAULT_REST = 90
+export const writtenRestFor = id => WRITTEN_REST[id] || DEFAULT_REST
 
 function doseFor(a, planId, caution) {
   if (caution) return { ...GENTLE_DOSE }
@@ -134,7 +135,7 @@ export function planFor(answers) {
   const planId = planIdFor(a, days, caution)
   const plan = STARTER_PLANS[planId]
   const dose = doseFor(a, planId, caution)
-  const rest = dose ? dose.rest : (WRITTEN_REST[planId] || DEFAULT_REST)
+  const rest = dose ? dose.rest : writtenRestFor(planId)
 
   const weekdays = WEEKDAYS[days]
   // Session i is the plan's routine i, round and round: two bodyweight sessions fill three days as A, B, A.

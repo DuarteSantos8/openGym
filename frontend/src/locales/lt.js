@@ -1,5 +1,6 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Už dvi judrumo treniruotes poilsio dienomis gavai vieną užšaldymą.",
   "Draft": "Juodraštis",
   "Move gently and switch sides when comfortable.": "Judėkite švelniai ir pakeiskite pusę, kai jausitės patogiai.",
   "Slow down gradually and release each stretch when comfortable.": "Pamažu lėtinkite tempą ir baikite kiekvieną tempimo pratimą, kai jausitės patogiai.",
@@ -5395,6 +5396,7 @@ export default {
   "Handstand ladder": "Stovėsenos ant rankų kopėčios",
   "Hinge ladder": "Klubų lenkimo kopėčios",
   "Hotel room": "Viešbučio kambarys",
+  "Two chairs": "Dvi kėdės",
   "It stays out of your progression, so nothing goes up or down.": "Ji neįskaičiuojama į progresiją, todėl niekas nekyla ir nekrenta.",
   "Ladder name": "Kopėčių pavadinimas",
   "Ladders": "Kopėčios",

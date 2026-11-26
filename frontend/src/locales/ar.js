@@ -1,5 +1,6 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "أكسبتك جلستا تمارين مرونة في أيام الراحة تجميدًا واحدًا.",
   "Draft": "مسودة",
   "Move gently and switch sides when comfortable.": "تحرّك برفق وبدّل الجانب عندما تشعر بالراحة.",
   "Slow down gradually and release each stretch when comfortable.": "خفّف سرعتك تدريجيًا واخرج من كل وضعية إطالة عندما تشعر بالراحة.",
@@ -5524,6 +5525,7 @@ export default {
   "Handstand ladder": "سلّم الوقوف على اليدين",
   "Hinge ladder": "سلّم الانثناء من الورك",
   "Hotel room": "غرفة فندق",
+  "Two chairs": "كرسيّان",
   "It stays out of your progression, so nothing goes up or down.": "لا يدخل في تقدّمك، فلا شيء يرتفع أو ينخفض.",
   "Ladder name": "اسم السلّم",
   "Ladders": "السلالم",

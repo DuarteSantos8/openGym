@@ -6,21 +6,15 @@ import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
-import { starterPlanSheet } from '../sheets.jsx'
+import { useUI } from '../store/useUI.js'
 import Home from './Home.jsx'
 import Plan from './Plan.jsx'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
-vi.mock('../sheets.jsx', () => ({
-  starterPlanSheet: vi.fn(), bwSheet: vi.fn(), goalSheet: vi.fn(), dayOverrideSheet: vi.fn(),
-  calendarSheet: vi.fn(), startFlow: vi.fn(), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
-  dayAssignSheet: vi.fn(), planToolsSheet: vi.fn(),
-}))
-
 let host, root
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
-  starterPlanSheet.mockClear()
+  useUI.setState({ sheets: [] })
   useStore.setState(s => ({ S: { ...s.S, routines: [], week: {}, active: null }, user: null }))
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -40,7 +34,7 @@ describe.each([['Home', Home], ['Plan', Plan]])('%s empty state', (_name, View) 
     expect(button).toBeTruthy()
 
     act(() => { button.click() })
-    expect(starterPlanSheet).toHaveBeenCalledTimes(1)
+    expect(useUI.getState().sheets).toHaveLength(1)
   })
 
   it('drops the offer once the user has routines', () => {
@@ -48,4 +42,33 @@ describe.each([['Home', Home], ['Plan', Plan]])('%s empty state', (_name, View) 
     act(() => root.render(<View />))
     expect(starterButton()).toBeFalsy()
   })
+})
+
+it('shows time, frequency, level, equipment and a secondary plan name on all eight cards', () => {
+  act(() => root.render(<Plan />))
+  act(() => starterButton().click())
+  const sheet = useUI.getState().sheets.at(-1)
+  act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+
+  const expected = [
+    ['ppl', 'Build muscle', 'Push / Pull / Legs', 3, '47–54', 'Intermediate', 'Full gym'],
+    ['upper-lower', 'Build muscle', 'Upper / Lower', 4, '38–47', 'Intermediate', 'Full gym'],
+    ['full-body', 'General fitness', 'Full Body', 3, '46', 'Beginner', 'Full gym'],
+    ['5x5', 'Get stronger', '5×5', 3, '63', 'Beginner', 'Full gym'],
+    ['home-bw', 'General fitness', 'No equipment', 3, '42–43', 'Beginner', 'table'],
+    ['dumbbells', 'General fitness', 'Dumbbells only', 3, '40–48', 'Beginner', 'pair of dumbbells'],
+    ['bands', 'General fitness', 'Resistance bands', 3, '40', 'Beginner', 'door'],
+    ['hotel', 'General fitness', 'Hotel room', 2, '50', 'Beginner', 'Two chairs'],
+  ]
+  expect(host.querySelectorAll('[data-plan]')).toHaveLength(expected.length)
+  for (const [id, goal, name, days, minutes, level, kit] of expected) {
+    const card = host.querySelector(`[data-plan="${id}"]`)
+    expect(card.querySelector('.tt').textContent).toContain(`${days} days per week`)
+    expect(card.querySelector('.tt').textContent).toContain(goal)
+    expect(card.textContent).toContain(`${minutes} min per session`)
+    expect(card.querySelector('.tt').textContent).not.toContain(name)
+    expect(card.querySelector('.ss').textContent).toBe(name)
+    expect(card.textContent).toContain(level)
+    expect(card.textContent).toContain(kit)
+  }
 })

@@ -1,5 +1,6 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "आराम के दिनों में दो मोबिलिटी सत्र पूरे करने पर आपको एक फ़्रीज़ मिला।",
   "Draft": "मसौदा",
   "Move gently and switch sides when comfortable.": "आराम से हिलें-डुलें और जब सहज लगे, तब दूसरी तरफ़ करें।",
   "Slow down gradually and release each stretch when comfortable.": "धीरे-धीरे रफ़्तार कम करें और जब सहज लगे, तब हर खिंचाव की मुद्रा छोड़ें।",
@@ -5469,6 +5470,7 @@ export default {
   "Handstand ladder": "हैंडस्टैंड सीढ़ी",
   "Hinge ladder": "हिंज सीढ़ी",
   "Hotel room": "होटल का कमरा",
+  "Two chairs": "दो कुर्सियाँ",
   "It stays out of your progression, so nothing goes up or down.": "यह आपकी प्रगति में नहीं गिना जाता, तो कुछ भी ऊपर या नीचे नहीं जाता।",
   "Ladder name": "सीढ़ी का नाम",
   "Ladders": "सीढ़ियाँ",

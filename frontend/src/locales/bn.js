@@ -1,5 +1,6 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "বিশ্রামের দিনে দুটি মোবিলিটি সেশন করায় একটি ফ্রিজ পেয়েছেন।",
   "Draft": "খসড়া",
   "Move gently and switch sides when comfortable.": "আস্তে নড়াচড়া করুন আর স্বচ্ছন্দ বোধ করলে পাশ বদলান।",
   "Slow down gradually and release each stretch when comfortable.": "ধীরে ধীরে গতি কমান আর স্বচ্ছন্দ বোধ করলে প্রতিটি স্ট্রেচ থেকে বেরিয়ে আসুন।",
@@ -5548,6 +5549,7 @@ export default {
   "Handstand ladder": "হ্যান্ডস্ট্যান্ড মই",
   "Hinge ladder": "হিঞ্জ মই",
   "Hotel room": "হোটেলের ঘর",
+  "Two chairs": "দুটি চেয়ার",
   "It stays out of your progression, so nothing goes up or down.": "এটা আপনার অগ্রগতিতে গোনা হয় না, তাই কিছুই বাড়ে বা কমে না।",
   "Ladder name": "মইয়ের নাম",
   "Ladders": "মই",

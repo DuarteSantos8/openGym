@@ -1,6 +1,7 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "To mobilitetspas på hviledage gav dig en frysning.",
   "Draft": "Udkast",
   "Move gently and switch sides when comfortable.": "Bevæg dig roligt, og skift side, når det føles behageligt.",
   "Slow down gradually and release each stretch when comfortable.": "Sæt gradvist tempoet ned, og afslut hvert stræk, når det føles behageligt.",
@@ -5346,6 +5347,7 @@ export default {
   "Handstand ladder": "Håndstands-stige",
   "Hinge ladder": "Hip hinge-stige",
   "Hotel room": "Hotelværelse",
+  "Two chairs": "To stole",
   "It stays out of your progression, so nothing goes up or down.": "Den holdes uden for din progression, så intet går op eller ned.",
   "Ladder name": "Stigens navn",
   "Ladders": "Stiger",

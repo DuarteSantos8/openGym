@@ -44,6 +44,10 @@ export function explainWeek (entry) {
   switch (entry.s) {
     case 'on': {
       const base = t('You trained, so this week counts. Streak: {0}.', entry.run)
+      if (entry.mobilityEarned) {
+        const trained = entry.trainedFreeze ? ' ' + t('It also earned a freeze.') : ''
+        return base + trained + ' ' + t('Two rest-day mobility sessions earned a freeze.')
+      }
       return entry.earned ? base + ' ' + t('It also earned a freeze.') : base
     }
     case 'excused': return ({

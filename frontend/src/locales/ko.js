@@ -1,5 +1,6 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "휴식일에 가동성 운동을 두 번 해서 동결권 하나를 받았어요.",
   "Draft": "초안",
   "Move gently and switch sides when comfortable.": "부드럽게 움직이고 편할 때 반대쪽으로 바꾸세요.",
   "Slow down gradually and release each stretch when comfortable.": "서서히 속도를 줄이고 편할 때 각 스트레칭 자세를 풀어 주세요.",
@@ -5469,6 +5470,7 @@ export default {
   "Handstand ladder": "물구나무 사다리",
   "Hinge ladder": "힌지 사다리",
   "Hotel room": "호텔 방",
+  "Two chairs": "의자 두 개",
   "It stays out of your progression, so nothing goes up or down.": "진행 기록에서 빠지니 아무것도 오르거나 내려가지 않아요.",
   "Ladder name": "사다리 이름",
   "Ladders": "사다리",

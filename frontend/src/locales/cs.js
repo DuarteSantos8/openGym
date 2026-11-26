@@ -1,5 +1,6 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Za dva tréninky mobility ve dnech odpočinku jsi získal zmrazení série.",
   "Draft": "Koncept",
   "Move gently and switch sides when comfortable.": "Pohybujte se zlehka a vyměňte strany, až vám to bude příjemné.",
   "Slow down gradually and release each stretch when comfortable.": "Postupně zpomalujte a každé protažení ukončete, až vám to bude příjemné.",
@@ -5365,6 +5366,7 @@ export default {
   "Handstand ladder": "Žebřík stojky",
   "Hinge ladder": "Žebřík předklonů",
   "Hotel room": "Hotelový pokoj",
+  "Two chairs": "Dvě židle",
   "It stays out of your progression, so nothing goes up or down.": "Do progrese se nepočítá, takže nic nejde nahoru ani dolů.",
   "Ladder name": "Název žebříku",
   "Ladders": "Žebříky",

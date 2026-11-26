@@ -161,6 +161,10 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   // function's own copies, so the running session is left alone.
   cleanupSg(entries)
 
+  // Only a completed Learn circuit preserves its rest-day snapshot in history.
+  const restDayMobility = typeof active.restDayMobility === 'string' && active.restDayMobility === active.d && active.learnSession &&
+    Array.isArray(active.circuits) && active.circuits.some(c => c?.sg === active.learnSession &&
+      c.ended === 'done' && c.rounds > 0 && c.rounds === c.cfg?.rounds)
   const sessionNote = (active?.note || '').trim()
   const routineIds = [].concat(active?.routineIds ?? (active?.routineId ? [active.routineId] : []))
   // Legacy `w.excludeFromProgression` mirror: kept for older builds and external readers, but
@@ -178,6 +182,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     routineIds,
     routineId: routineIds[0] ?? null,
     name: active.name,
+    ...(restDayMobility ? { restDayMobility: active.d } : {}),
     bw: active.bw,
     entries,
     prs,

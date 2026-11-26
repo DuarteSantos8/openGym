@@ -1,5 +1,6 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "با دو جلسهٔ تمرین تحرک در روزهای استراحت، یک فرصت برای حفظ زنجیره به دست آوردی.",
   "Draft": "پیش‌نویس",
   "Move gently and switch sides when comfortable.": "آرام حرکت کن و هر وقت احساس راحتی کردی، سمت حرکت را عوض کن.",
   "Slow down gradually and release each stretch when comfortable.": "به‌تدریج سرعتت را کم کن و هر وقت احساس راحتی کردی، از هر حالت کششی خارج شو.",
@@ -5365,6 +5366,7 @@ export default {
   "Handstand ladder": "نردبان بالانس دست",
   "Hinge ladder": "نردبان هینج",
   "Hotel room": "اتاق هتل",
+  "Two chairs": "دو صندلی",
   "It stays out of your progression, so nothing goes up or down.": "در پیشرفتت حساب نمی‌شود، پس چیزی بالا یا پایین نمی‌رود.",
   "Ladder name": "نام نردبان",
   "Ladders": "نردبان‌ها",

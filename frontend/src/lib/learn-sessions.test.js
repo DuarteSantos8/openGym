@@ -4,6 +4,7 @@ import { LEARN_SESSIONS, learnSessionById, startLearnSession } from './learn-ses
 import { useStore } from '../store/useStore.js'
 import { useCircuit } from '../store/useCircuit.js'
 import { plannedLength, stationsOf } from './circuit.js'
+import { buildCompletedWorkout } from './finish-workout.js'
 import { freestyleConfig, modeOf } from './history.js'
 
 beforeEach(() => {
@@ -128,5 +129,35 @@ it('includes every session title, cue and review label in all locale packs', () 
     for (const { title, routine } of LEARN_SESSIONS) {
       for (const key of [title, routine.sessions[0].note, 'Draft']) expect(pack[key], key).toBeTruthy()
     }
+  }
+})
+
+it('saves only finished mobility on a scheduled rest day, using the plan at the start', () => {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date('2026-11-25T12:00:00'))
+  try {
+    const date = '2026-11-25'
+    const run = (id, week, dayPlan = {}, stopEarly = false) => {
+      useStore.setState(({ S }) => ({ S: { ...S, active: null, week, dayPlan, routines: [{ id: 'gym', ex: [{ id: 'lift' }] }] } }))
+      expect(startLearnSession(id, useStore)).toBe(true)
+      const active = useStore.getState().S.active
+      expect(buildCompletedWorkout(active).restDayMobility).toBeUndefined()
+      useStore.getState().update(s => { s.dayPlan[date] = dayPlan[date] === 'gym' ? 'rest' : 'gym' })
+      useCircuit.getState().start()
+      vi.advanceTimersByTime(stopEarly ? 61_000 : 21 * 60_000)
+      if (stopEarly) useCircuit.getState().stop()
+      const saved = buildCompletedWorkout(useStore.getState().S.active)
+      useCircuit.getState().reset()
+      return saved
+    }
+    expect(run('mobility-hips', { 4: 'gym' }).restDayMobility).toBe(date)
+    expect(run('mobility-shoulders', { 3: 'gym' }, { [date]: 'rest' }).restDayMobility).toBe(date)
+    expect(run('mobility-spine', { 4: 'gym' }, { [date]: 'gym' }).restDayMobility).toBeUndefined()
+    expect(run('mobility-hips', {}).restDayMobility).toBeUndefined()
+    expect(run('warmup-general', { 4: 'gym' }).restDayMobility).toBeUndefined()
+    expect(run('mobility-hips', { 4: 'gym' }, {}, true).restDayMobility).toBeUndefined()
+  } finally {
+    useCircuit.getState().reset()
+    vi.useRealTimers()
   }
 })
