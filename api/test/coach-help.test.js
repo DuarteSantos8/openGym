@@ -81,3 +81,24 @@ test('single inference on a compatible provider uses one plain request, even on 
     if (status === 200) assert.equal(result.text, '{"index":0}');
   }
 });
+
+test('stalled help falls back and frees its slot before the five-minute API proxy deadline', async t => {
+  const uid = 'help-timeout';
+  writeState(dir, uid, sampleState());
+  const body = { question: 'Where?', entries: [{ title: 'Settings', steps: ['Open Settings'] }] };
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const adapter = adapterFor('fixture');
+  let signal, timeoutMs;
+  const invoke = t.mock.method(adapter, 'invoke', args => {
+    ({ signal, timeoutMs } = args);
+    return new Promise(resolve => signal.addEventListener('abort', () => resolve({ code: 1 }), { once: true }));
+  });
+  const pending = jobs.explainHelp(uid, body);
+  t.mock.timers.tick(240000);
+  assert.ok(timeoutMs <= 240000, 'provider deadline leaves time for the proxy response');
+  assert.equal(signal.aborted, true);
+  assert.equal(await pending, null);
+  invoke.mock.mockImplementation(async () => ({ code: 0, text: '{"index":0}' }));
+  assert.equal(await jobs.explainHelp(uid, body), 0);
+  assert.equal(jobs.capState(uid).used, 2);
+});

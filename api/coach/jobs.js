@@ -303,6 +303,9 @@ export async function explainHelp(uid, body) {
   inflight.add(uid);
   running++;
   const ctl = new AbortController();
+  // The synchronous /api response must arrive before nginx's 300s read timeout.
+  const timeoutMs = Math.min(TIMEOUT_MS, 4 * 60000);
+  const deadline = setTimeout(() => ctl.abort(), timeoutMs);
   aborts.set(uid, ctl);
   let jobDir;
   try {
@@ -315,9 +318,12 @@ export async function explainHelp(uid, body) {
       const ids = unprivilegedIds();
       if (ids) shareJobDir(jobDir, ids);
     }
+    const send = fetchFor(timeoutMs);
     const response = await adapter.invoke({
       cfg, model: cfgStore.modelFor(cfg), jobDir, env: cfgStore.jobEnv(jobDir || os.tmpdir(), cfgStore.credentialFor(uid)),
-      timeoutMs: TIMEOUT_MS, fetch: fetchFor(TIMEOUT_MS), singleInference: true, signal: ctl.signal,
+      timeoutMs, singleInference: true, signal: ctl.signal,
+      // Credential renewal and model discovery may perform their own fetch before inference.
+      fetch: (url, init = {}) => send(url, { ...init, signal: init.signal ? AbortSignal.any([init.signal, ctl.signal]) : ctl.signal }),
       maxTokens: Math.min(cfg.maxOutputTokens || 512, 512),
       prompt: adapter.spawns === false ? input : system + '\n' + input, system
     });
@@ -328,6 +334,7 @@ export async function explainHelp(uid, body) {
   } catch {
     return null;
   } finally {
+    clearTimeout(deadline);
     aborts.delete(uid);
     if (jobDir) removeJobDir(jobDir, unprivilegedIds());
     inflight.delete(uid);
