@@ -11,8 +11,9 @@ import { fileURLToPath } from 'node:url'
 
 export const LIMIT = 46080
 const here = dirname(fileURLToPath(import.meta.url))
-const LOADER = join(here, 'entry', 'build', 'default', 'intermediates', 'loader_out_lite')
-const OUT = join(LOADER, 'default', 'js', 'MainAbility')
+const loaderOf = (dir) => join(dir, 'entry', 'build', 'default', 'intermediates', 'loader_out_lite')
+export const outOf = (dir = here) => join(loaderOf(dir), 'default', 'js', 'MainAbility') // where a build of `dir` puts the app
+const OUT = outOf()
 const DEVECO = '/Applications/DevEco-Studio.app/Contents'
 
 // [name, bytes] list -> the ones over the limit
@@ -24,8 +25,9 @@ export const appOver = (files, limit = LIMIT) => overLimit(files, limit).filter(
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)])
 
-function build() {
-  rmSync(LOADER, { recursive: true, force: true }) // the build does not clean it: a deleted file must not trip or hide the gate
+// huawei-sim.mjs builds a copy of the project the same way, so `dir` can be another folder
+export function build(dir = here) {
+  rmSync(loaderOf(dir), { recursive: true, force: true }) // the build does not clean it: a deleted file must not trip or hide the gate
   const env = {
     ...process.env,
     JAVA_HOME: process.env.JAVA_HOME || '/opt/homebrew/opt/openjdk@17',
@@ -34,7 +36,7 @@ function build() {
   }
   execFileSync(join(DEVECO, 'tools', 'hvigor', 'bin', 'hvigorw'),
     ['assembleHap', '--mode', 'module', '-p', 'product=default', '-p', 'buildMode=release', '--no-daemon'],
-    { cwd: here, env, stdio: 'inherit' })
+    { cwd: dir, env, stdio: 'inherit' })
 }
 
 function main() {
