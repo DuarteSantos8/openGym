@@ -1,5 +1,6 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Hai buổi tập cải thiện độ linh hoạt vào ngày nghỉ mang lại một lượt đóng băng.",
   "Draft": "Bản nháp",
   "Move gently and switch sides when comfortable.": "Cử động nhẹ nhàng và đổi bên khi thấy thoải mái.",
   "Slow down gradually and release each stretch when comfortable.": "Giảm nhịp độ từ từ và thả lỏng sau mỗi động tác giãn cơ khi thấy thoải mái.",

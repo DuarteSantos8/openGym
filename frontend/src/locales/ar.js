@@ -1,5 +1,6 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "أكسبتك جلستا تمارين مرونة في أيام الراحة تجميدًا واحدًا.",
   "Draft": "مسودة",
   "Move gently and switch sides when comfortable.": "تحرّك برفق وبدّل الجانب عندما تشعر بالراحة.",
   "Slow down gradually and release each stretch when comfortable.": "خفّف سرعتك تدريجيًا واخرج من كل وضعية إطالة عندما تشعر بالراحة.",

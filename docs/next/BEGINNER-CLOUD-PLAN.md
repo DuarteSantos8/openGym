@@ -139,7 +139,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP24-T03 | Warm-up, cool-down and mobility as guided sessions | NEW `routines/learn/*.json`, circuit player | 8 routines playable with spoken cues | prepared, content in draft pending named review |
 | EP24-T04 | Food, sleep and safety basics | `content/learn.js` | done, same branch: every number names its source; English only for now |
 | EP25-T01 | First wins | `lib/wins.js`, `components/FirstWins.jsx` | done, same branch |
-| EP25-T02 | Streak shields for rest-day mobility | `lib/streak.js` | open (the streak already counts weeks, so rest days never break it) |
+| EP25-T02 | Streak shields for rest-day mobility | `lib/streak.js` | Prepared. Two completed Learn mobility sessions on scheduled rest days earn one freeze per week within the chosen rule’s cap. Records without the rest-day date keep their existing streak treatment. |
 | EP25-T03 | Rest day explained | `views/Home.jsx` | done, `next/EP23-exercise-guidance`: a Beginner's planned rest day says why it is one and links the guide |
 
 ### Phase 4: what nobody else has

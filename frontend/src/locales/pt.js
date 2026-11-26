@@ -1,5 +1,6 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Duas sessões de mobilidade em dias de descanso deram-te um congelamento.",
   "Draft": "Rascunho",
   "Move gently and switch sides when comfortable.": "Move-te suavemente e muda de lado quando te sentires confortável.",
   "Slow down gradually and release each stretch when comfortable.": "Abranda gradualmente e sai de cada posição de alongamento quando te sentires confortável.",

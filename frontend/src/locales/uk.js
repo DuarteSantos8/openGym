@@ -1,5 +1,6 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Два тренування на рухливість у дні відпочинку принесли одну заморозку.",
   "Draft": "Чернетка",
   "Move gently and switch sides when comfortable.": "Рухайтеся плавно й змінюйте бік, коли вам зручно.",
   "Slow down gradually and release each stretch when comfortable.": "Поступово сповільнюйтеся й виходьте з кожного положення розтягування, коли вам зручно.",

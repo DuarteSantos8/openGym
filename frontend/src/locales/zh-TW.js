@@ -1,4 +1,5 @@
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "在休息日完成兩次活動度訓練，獲得一張凍結卡。",
   "Draft": "草稿",
   "Move gently and switch sides when comfortable.": "輕柔地活動，覺得舒服時再換邊。",
   "Slow down gradually and release each stretch when comfortable.": "慢慢放緩動作，每次伸展都在覺得舒服時放鬆回來。",

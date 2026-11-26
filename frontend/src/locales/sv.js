@@ -1,5 +1,6 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Två rörlighetspass på vilodagar gav dig en frysning.",
   "Draft": "Utkast",
   "Move gently and switch sides when comfortable.": "Rör dig mjukt och byt sida när det känns bekvämt.",
   "Slow down gradually and release each stretch when comfortable.": "Sänk tempot gradvis och avsluta varje stretch när det känns bekvämt.",

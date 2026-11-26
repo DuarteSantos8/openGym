@@ -2,6 +2,7 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Due sessioni di mobilità nei giorni di riposo ti hanno dato un congelamento.",
   "Draft": "Bozza",
   "Move gently and switch sides when comfortable.": "Muoviti con delicatezza e cambia lato quando ti senti a tuo agio.",
   "Slow down gradually and release each stretch when comfortable.": "Rallenta gradualmente e lascia ogni posizione di allungamento quando ti senti a tuo agio.",

@@ -66,3 +66,15 @@ describe('streak parity: server and app', () => {
     }
   })
 })
+
+it('the app and trainer both carry a missed week using the mobility freeze', () => {
+  const workouts = [
+    { id: 'first', d: '2026-10-26', restDayMobility: '2026-10-26' },
+    { id: 'second', d: '2026-10-28', restDayMobility: '2026-10-28' },
+    { id: 'third', d: '2026-11-09' },
+  ]
+  const S = { workouts, week: {}, dayPlan: {} }, today = '2026-11-10'
+  expect(streakInfo(S, today)).toMatchObject({ current: 2, freezes: 0, frozen: ['2026-11-02'] })
+  expect(streakWeeks(S, today)).toBe(2)
+  expect(summarize(S, { metrics: 'view' }, { today }).streak).toBe(2)
+})
