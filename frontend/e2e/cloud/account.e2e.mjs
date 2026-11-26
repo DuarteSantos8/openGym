@@ -253,7 +253,7 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   }
 })
 
-test("where the app's own server signs people in with the account, Continue makes them a profile there", async ({ page }) => {
+test('Continue links a member profile and keeps the Admin dashboard unavailable after reload', async ({ page }) => {
   await pretendProject(page)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
@@ -276,6 +276,17 @@ test("where the app's own server signs people in with the account, Continue make
   await expect(card.locator('.lrow-t')).toHaveText('Sam')
   await expect(card).not.toContainText('Guest')
   await expect(page.getByText('Guest mode')).toHaveCount(0)
+  await card.click()
+  const expectMemberAccount = async () => {
+    await expect(page.getByRole('button', { name: /Pair the mobile app/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Admin dashboard' })).toHaveCount(0)
+    const response = await page.request.get('/api/admin/oidc')
+    expect(response.status()).toBe(403)
+    expect(await response.json()).toEqual({ error: 'forbidden' })
+  }
+  await expectMemberAccount()
+  await page.reload()
+  await expectMemberAccount()
 })
 
 // The two sessions end together (lib/cloud/server-link.js, found in review of #78): a profile
