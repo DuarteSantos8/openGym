@@ -18,6 +18,7 @@ export const HANG = 30                 // and back under this before the next re
 export const CYCLE = { rise: 12, minAmp: liftOf(45), low: liftOf(HANG), settleMs: 600 }
 export const LEVEL = [-0.45, 0.45]     // camera from 0.45 torso above to 0.45 below the shoulders
 export const UNEVEN = 12               // the two elbows' tops this many degrees apart: uneven
+export const SPLIT_DEG = 30            // the two upper arms read further apart than this: one elbow misplaced, frame not read
 export const TILT_DEG = 8              // the torso this many degrees further to one side than at the hang: tilted
 export const FAST_DOWN_SEC = 1
 export const FADE_DEG = 10
@@ -62,6 +63,14 @@ const CUE = {
 const VIEW_NOTE = {
   front: () => t('Filmed from the front: height, tempo, both arms and the torso.'),
   diagonal: () => t('Filmed at an angle: height and tempo only.'),
+}
+
+// Both upper arms rise together. Read further apart than SPLIT_DEG, Vision has put one elbow
+// somewhere else (form lab: an elbow placed on the dumbbell at the top, 35 to 55 degrees under the
+// other arm, while real reps read at most 25 apart), and averaging it in would fake a dip.
+function split(arm) {
+  const l = liftDeg(arm.each.left), r = liftDeg(arm.each.right)
+  return l != null && r != null && Math.abs(l - r) > SPLIT_DEG
 }
 
 // The torso's angle off vertical in the image (shoulders' middle over hips' middle), signed.
@@ -137,7 +146,8 @@ function create({ standard, view: fixedView } = {}) {
     const joints = (frame && frame.joints) || {}
     const fr = { t: at, aspect: frame && frame.aspect > 0 ? frame.aspect : 1, joints }
     const why = framing(fr, CHAIN)
-    const arm = why ? null : bothArms(joints, upper, 'Shoulder', 'Elbow', fr.aspect)
+    const both = why ? null : bothArms(joints, upper, 'Shoulder', 'Elbow', fr.aspect)
+    const arm = both && !split(both) ? both : null
     const s = arm ? arm.value : null
     if (s != null && s < CYCLE.low && (machine.phase === 'bottom' || machine.phase === 'waiting')) readBottom(fr)
     const ev = machine.push(at, s)

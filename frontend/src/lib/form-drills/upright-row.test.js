@@ -103,6 +103,16 @@ describe.each([30, 45, 60, 90, -90])('the upright row filmed at yaw %i°', yaw =
     expect(res).toMatchObject({ standard: 'shoulder', cueId: 'missed' })
   })
 
+  it('counts through an elbow Vision drops onto the hands at the top, off and on', () => {
+    // Form lab: at the top Vision put one elbow on the dumbbell for a few frames at a time, 35 to 55 degrees under the other arm.
+    const frames = set(same(3, FULL))
+    frames.forEach((f, i) => {
+      const e = f.joints.leftElbow, s = f.joints.leftShoulder
+      if (Math.floor(i / 3) % 2 && e && s && e[1] < s[1] + 0.03) f.joints.leftElbow = [e[0], e[1] + 0.06, e[2]]
+    })
+    expect(run(frames).res).toMatchObject({ count: 3, missed: 0 })
+  })
+
   it('any: every real row counts', () => {
     expect(run(set([FULL, LOW, { ...FULL, bottom: 50 }, FULL]), { standard: 'any' }).res).toMatchObject({ count: 4, missed: 0 })
   })
