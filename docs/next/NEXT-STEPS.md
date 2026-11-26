@@ -6,9 +6,10 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
   is available. A tap fills the editable chat box, including after first-time setup. The person
-  chooses when to send. Two follow-up fixes are prepared: a new profile with a three-day intake
-  can confirm Tuesday push and Wednesday pull, and the equipment check recognizes no-weights
-  requests in all 25 starter translations. Tests use a simulated provider. The four new strings in all 25 packs await native-language review.
+  chooses when to send. After #102, a fresh three-day profile confirmed Tuesday push and Wednesday
+  pull on the preview. MiniMax returned three equipment-free exercises for the French starter.
+  See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102) for the catalogue evidence.
+  All 25 translations have simulated-provider coverage. The four new strings await native-language review.
 
 - **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
   account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,
