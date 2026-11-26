@@ -23,7 +23,7 @@ for (const [screen, terms] of [
       await card.getByRole('button', { name: 'Got it' }).press('Enter')
       await expect(card).toHaveCount(0)
     }
-    const { violations } = await new AxeBuilder({ page }).include('.iv-screen-glossary').analyze()
+    const { violations } = await new AxeBuilder({ page }).analyze()
     expect(violations).toEqual([])
   })
 }

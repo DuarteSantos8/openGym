@@ -58,13 +58,13 @@ afterEach(() => {
 })
 
 const mount = () => act(() => root.render(<Plan />))
-const day = name => host.querySelector(`.plan-day[aria-label^="${name}"]`)
+const day = name => host.querySelector(`.plan-day[aria-description="${name}"]`)
 
 describe('Plan — the weekday rows', () => {
   it('a planned day is one row with no buttons of its own; a tap opens the day’s picker', () => {
     mount()
     const monday = day('Monday')
-    expect(monday.getAttribute('aria-label')).toContain('Push')
+    expect(monday.getAttribute('aria-label')).toContain('Mo Push')
     expect(monday.querySelector('.tt').textContent).toBe('Push')
     expect(monday.querySelectorAll('button').length).toBe(0)
     act(() => monday.click())
