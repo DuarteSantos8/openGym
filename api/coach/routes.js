@@ -117,6 +117,12 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       } catch (e) { failEnqueue(res, e); }
     },
 
+    'POST /api/coach/help': async (req, res) => {
+      const user = guard(req, res); if (!user) return;
+      const body = await readBody(req);
+      try { json(res, 200, { index: await jobs.explainHelp(user.id, body) }); }
+      catch (e) { failEnqueue(res, e); }
+    },
     // A question in the chat. Answered in words; nothing to apply. The running session rides
     // along when there is one, since the server never holds it.
     'POST /api/coach/ask': async (req, res) => {
