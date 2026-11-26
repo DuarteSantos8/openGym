@@ -1,5 +1,8 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
+G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
+
+D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
 Read after `NEXT-STEPS.md`. What is left, in order and as tasks for a coding agent, is in
