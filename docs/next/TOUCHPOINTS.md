@@ -8,6 +8,12 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/src/lib/tour.js` | `next/EP22-beginner-tour` | +12 −3 | Register eight beginner stops and select the existing walk for other levels. |
+| `frontend/src/lib/tour.test.js` | `next/EP22-beginner-tour` | +21 −2 | Check the beginner targets, default walk, named tutorials and replay. |
+| `frontend/src/components/Tour.jsx` | `next/EP22-beginner-tour` | +9 −2 | Read the experience level and drive the practice and navigation stops. |
+| `frontend/src/views/Settings.jsx` | `next/EP22-beginner-tour` | +1 −1 | Anchor the real Learn row shown in the tour. |
+| `frontend/src/views/Workout.jsx` | `next/EP22-beginner-tour` | +1 −1 | Anchor the exercise menu containing Swap exercise. |
+| `frontend/src/lib/workout-keys.js` | `next/EP22-beginner-tour` | +1 −1 | Let focused tour dialog controls handle the keyboard during practice. |
 | `frontend/src/views/Settings.jsx` | `next/EP21-beginner-settings` | Settings | Render the short root and its profile preference. |
 | `frontend/src/views/settings-pages.js` | `next/EP21-beginner-settings` | Settings | Select the visible page IDs for the current experience. |
 | `frontend/src/views/settings-pages.test.jsx` | `next/EP21-beginner-settings` | Settings | Verify page selection and retain the existing layout check across line endings. |
