@@ -1,8 +1,8 @@
 // The page's boxes added up. Nobody can render the page here, so this is a small layout model of the
 // documented rules: every box has an explicit width and height (the engine's default is 0), a row's
 // children fit its width, a column's fit its height, targets are at least 56 px with 8 px between them,
-// and on a round screen no row is wider than the circle at its height. It also checks that the
-// round-screen media block declares the same properties as the base rules it repeats. It prints the
+// and on a round screen no row is wider than the circle at its height. There is no @media block (the
+// simulator ignores -shape for it), so the one set of rules is checked on both shapes. It prints the
 // table of heights (round 466 px, rectangle 336 x 480).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -25,15 +25,10 @@ function rules (text) {
   }
   return out
 }
-const mq = cssText.match(/@media[^{]*\{([\s\S]*)\}\s*$/)
-const base = rules(cssText.slice(0, mq.index))
-const round = rules(mq[1])
+const base = rules(cssText)
 
-test('the round-screen block declares every property its base rule has, and no other', () => {
-  Object.keys(round).forEach(k => {
-    assert.ok(base[k], '.' + k + ' is in the media block but has no base rule')
-    assert.deepEqual(Object.keys(round[k]).sort(), Object.keys(base[k]).sort(), '.' + k)
-  })
+test('the css has no @media block: the simulator ignores -shape for it, so every base rule must be safe on both shapes', () => {
+  assert.ok(!/@media/.test(cssText))
 })
 
 /* ---------- html ---------- */
@@ -64,7 +59,7 @@ function propsOf (node, isRound) {
   const out = {}
   String(node.attrs.class || '').split(/\s+/).filter(Boolean).forEach(c => {
     assert.ok(base[c], 'no style for .' + c)
-    Object.assign(out, base[c], isRound && round[c] ? round[c] : {})
+    Object.assign(out, base[c])
   })
   return out
 }

@@ -18,7 +18,7 @@ const USES = {
 const wide = ch => /[ᄀ-ᇿ⺀-鿿가-힯豈-﫿＀-￯]/.test(ch)
 const need = (s, fs) => [...s].reduce((a, ch) => a + (wide(ch) ? 1.0 : 0.55) * fs, 0)
 
-test('labels fit their buttons on the round screen (block 70% of 466) and the rectangle (336)', () => {
+test('labels fit their buttons on the round screen (the 90% block) and the rectangle (336)', () => {
   const over = []
   Object.keys(FILES).forEach(lang => {
     const words = FILES[lang]
@@ -26,7 +26,7 @@ test('labels fit their buttons on the round screen (block 70% of 466) and the re
       const p = rule(USES[k])
       const fs = parseFloat(p['font-size'])
       const frac = parseFloat(p.width) / 100
-      ;[466 * 0.7, 336].forEach(scr => {
+      ;[466, 336].map(w => w * parseFloat(rule('scr').width) / 100).forEach(scr => {
         const label = words[k]
         if (need(label, fs) > frac * scr - 8) over.push(lang + ' ' + k + ' (' + USES[k] + ' ' + Math.round(frac * scr) + 'px): "' + label + '" ~' + Math.round(need(label, fs)))
       })
@@ -36,13 +36,13 @@ test('labels fit their buttons on the round screen (block 70% of 466) and the re
 })
 
 // The words the Set page and the 3-2-1 draw in boxes the table above does not cover: the pill ("12/12 Menu"), the
-// tiles' upper-case labels (a tile is 47% of the block) and "Go!" inside the 3-2-1's ring (200 px, a 12 px stroke).
+// tiles' upper-case labels (a tile is 48% of the block) and "Go!" inside the 3-2-1's ring (200 px, a 12 px stroke).
 const BOXES = [
   ['pill', k => '12/12 ' + k.menu, 'pill', () => parseFloat(rule('pill').width)],
-  ['weight tile', k => k.weight.toUpperCase(), 'tLabel', scr => 0.47 * scr],
-  ['added weight tile', k => (k.added_weight.length <= 14 ? k.added_weight : k.weight).toUpperCase(), 'tLabel', scr => 0.47 * scr],
-  ['reps tile', k => k.reps.toUpperCase(), 'tLabel', scr => 0.47 * scr],
-  ['hold tile', k => k.hold.toUpperCase(), 'tLabel', scr => 0.47 * scr],
+  ['weight tile', k => k.weight.toUpperCase(), 'tLabel', scr => 0.48 * scr],
+  ['added weight tile', k => (k.added_weight.length <= 14 ? k.added_weight : k.weight).toUpperCase(), 'tLabel', scr => 0.48 * scr],
+  ['reps tile', k => k.reps.toUpperCase(), 'tLabel', scr => 0.48 * scr],
+  ['hold tile', k => k.hold.toUpperCase(), 'tLabel', scr => 0.48 * scr],
   ['Go!', k => k.go, 'cGo', () => 200 - 24]
 ]
 test('the pill, the tile labels and Go! fit their boxes on the round screen and the rectangle', () => {
@@ -50,7 +50,7 @@ test('the pill, the tile labels and Go! fit their boxes on the round screen and 
   Object.keys(FILES).forEach(lang => {
     const k = FILES[lang]
     BOXES.forEach(([what, label, cls, box]) => {
-      ;[466 * 0.7, 336].forEach(scr => {
+      ;[466, 336].map(w => w * parseFloat(rule('scr').width) / 100).forEach(scr => {
         const fs = parseFloat(rule(cls)['font-size'])
         if (need(label(k), fs) > box(scr) - 8) over.push(lang + ' ' + what + ' "' + label(k) + '" ~' + Math.round(need(label(k), fs)) + ' in ' + Math.round(box(scr)))
       })

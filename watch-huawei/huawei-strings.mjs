@@ -92,6 +92,8 @@ const OPEN_OWN = {
   hi: 'फ़ोन पर openGym में सेटिंग खोलें, फिर Huawei।',
   bn: 'ফোনে openGym-এ সেটিংস খুলুন, তারপর Huawei।',
   fa: 'در openGym روی گوشی، تنظیمات را باز کنید و سپس Huawei را.',
+  zh: '手机 openGym 设置里点 Huawei',
+  'zh-TW': '手機 openGym 設定裡點 Huawei',
 }
 const PHRASE_OWN = {
   'pt-BR': { next_on_phone: 'O próximo exercício está a caminho do celular.', waiting_phone: 'Esperando o celular. Abra o openGym nele se demorar.' },

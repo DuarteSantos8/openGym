@@ -14,7 +14,7 @@
   justify-content: center;
 }
 .scr {
-  width: 100%;
+  width: 90%;
   height: 100%;
   flex-direction: column;
   align-items: center;
@@ -22,14 +22,14 @@
 }
 
 /* text */
-.hero { width: 100%; height: 100px; font-size: 88px; text-align: center; color: #ffffff; }
-.big { width: 100%; height: 64px; font-size: 56px; text-align: center; color: #ffffff; }
-.mid { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.name { width: 100%; height: 30px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.small { width: 90%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.tiny { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.hint { width: 100%; height: 70px; font-size: 22px; text-align: center; color: #a1a1a6; }
-.wrap { width: 100%; height: 80px; font-size: 26px; text-align: center; color: #a1a1a6; }
+.hero { width: 80%; height: 100px; font-size: 88px; text-align: center; color: #ffffff; }
+.big { width: 80%; height: 64px; font-size: 56px; text-align: center; color: #ffffff; }
+.mid { width: 80%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.name { width: 80%; height: 30px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.small { width: 72%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tiny { width: 76%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.hint { width: 80%; height: 70px; font-size: 22px; text-align: center; color: #a1a1a6; }
+.wrap { width: 80%; height: 80px; font-size: 26px; text-align: center; color: #a1a1a6; }
 
 /* buttons: a pill, the main one in the accent (index.hml binds its colours; these are the lime) */
 .btn {
@@ -46,12 +46,12 @@
 .btnA:active { background-color: #7aad28; }
 .wide { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
 .wide:active { background-color: #7aad28; }
-.done { width: 140px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
+.done { width: 128px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
 .done:active { background-color: #7aad28; }
-.doneOff { width: 140px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #ffffff; background-color: #1c1c1e; }
+.doneOff { width: 128px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #ffffff; background-color: #1c1c1e; }
 .arrowOff { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #48484a; background-color: #1c1c1e; }
 .arrow { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #ffffff; background-color: #1c1c1e; }
-.step { width: 40%; height: 56px; margin-top: 4px; margin-left: 6%; border-radius: 28px; font-size: 28px; color: #a3e635; background-color: #0a0f04; }
+.step { width: 56px; height: 56px; margin-top: 4px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #a3e635; background-color: #0a0f04; }
 /* the rest, as the Apple Watch's: grey capsules, chips outlined in their effort colour */
 .menuS { width: 64px; height: 56px; margin-top: 0px; border-radius: 28px; font-size: 14px; color: #ffffff; background-color: #1c1c1e; }
 .hrTop { width: 40%; height: 26px; font-size: 22px; text-align: right; color: #ff453a; }
@@ -66,53 +66,53 @@
 .rated { width: 120px; height: 40px; margin-top: 4px; border-radius: 20px; border-width: 2px; border-color: #a1a1a6; background-color: #000000; flex-direction: row; align-items: center; justify-content: center; }
 .ratedTx { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; }
 .up { width: 100%; height: 78px; flex-direction: column; align-items: center; justify-content: center; }
-.upOne { width: 100%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
+.upOne { width: 86%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
 .upL { width: 34%; height: 26px; font-size: 22px; text-align: left; color: #a3e635; }
 .upR { width: 62%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
-.syncLn { width: 62%; height: 26px; font-size: 18px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
+.syncLn { width: 50%; height: 26px; font-size: 18px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
 
 /* rows: every one has a height (the sum of what it holds) and says which way it lays out */
 .bar { width: 78%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
 .doneRow { width: 100%; height: 56px; margin-top: 4px; flex-direction: row; align-items: center; justify-content: center; }
-.barS { width: 84%; height: 56px; flex-direction: row; align-items: center; justify-content: space-between; }
+.barS { width: 92%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
 .subRow { width: 100%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
 .tiles { width: 100%; height: 142px; margin-top: 4px; flex-direction: row; align-items: flex-start; justify-content: center; }
-.tile { width: 47%; height: 138px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 20px; background-color: #1e2a0b; flex-direction: column; align-items: center; justify-content: flex-start; }
+.tile { width: 48%; height: 138px; margin-left: 1%; margin-right: 1%; border-radius: 20px; background-color: #1e2a0b; flex-direction: column; align-items: center; justify-content: flex-start; }
 .steps { width: 100%; height: 64px; flex-direction: row; align-items: center; justify-content: center; }
 .row2 { width: 100%; height: 64px; margin-top: 8px; flex-direction: row; align-items: center; justify-content: center; }
-.row2s { width: 100%; height: 66px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.row2s { width: 88%; height: 66px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
 .row3 { width: 100%; height: 56px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
 .row4 { width: 100%; height: 60px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
 .pick { width: 88%; height: 68px; margin-top: 8px; border-radius: 16px; background-color: #1c1c1e; flex-direction: column; align-items: center; justify-content: center; }
 
 /* the Metrics page: a back arrow, the time big, the heart rate, sets and volume */
-.mbar { width: 100%; height: 56px; flex-direction: row; align-items: center; justify-content: flex-start; }
+.mbar { width: 100%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
 .tinyC { width: 60%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.bigY { width: 100%; height: 64px; font-size: 56px; text-align: left; color: #ffd60a; }
-.midR { width: 100%; height: 40px; font-size: 32px; text-align: left; color: #ff453a; }
-.midL { width: 100%; height: 40px; font-size: 32px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.tinyL { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.colL { width: 46%; height: 66px; flex-direction: column; align-items: flex-start; justify-content: center; }
-.tRow { width: 100%; height: 32px; flex-direction: row; align-items: center; justify-content: flex-start; }
+.bigY { width: 100%; height: 64px; font-size: 56px; text-align: center; color: #ffd60a; }
+.midR { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ff453a; }
+.midL { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tinyL { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.colL { width: 46%; height: 66px; flex-direction: column; align-items: center; justify-content: center; }
+.tRow { width: 100%; height: 32px; flex-direction: row; align-items: center; justify-content: center; }
 .tick { width: 22px; height: 22px; margin-right: 8px; border-radius: 11px; background-color: #a3e635; }
 
 /* the summary: a list, the time big, sets and volume, heart rate, sync */
 .sumList { width: 100%; height: 84%; }
 .liT { width: 100%; height: 72px; }
-.liTi { width: 76%; margin-left: 12%; height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; }
+.liTi { width: 60%; margin-left: 20%; height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; }
 .sTitle { width: 80%; height: 32px; font-size: 26px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .sName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
 .liS { width: 100%; height: 40px; }
 .liSi { width: 100%; height: 40px; flex-direction: row; align-items: center; justify-content: center; }
-.liD { width: 100%; height: 100px; }
-.liDi { width: 100%; height: 100px; flex-direction: column; align-items: flex-start; justify-content: center; }
+.liD { width: 86%; height: 100px; }
+.liDi { width: 100%; height: 100px; flex-direction: column; align-items: center; justify-content: center; }
 
 /* the set, as the Apple Watch's: a dark-lime pill and tiles, the partner in the accent */
 .pill { width: 138px; height: 56px; border-radius: 28px; font-size: 18px; color: #a3e635; background-color: #1e2a0b; }
-.hrSet { width: 130px; height: 26px; font-size: 20px; text-align: right; color: #ff453a; text-overflow: ellipsis; }
-.hrC { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ff453a; }
+.hrSet { width: 100px; height: 26px; font-size: 20px; text-align: right; color: #ff453a; text-overflow: ellipsis; }
+.hrC { width: 80%; height: 26px; font-size: 22px; text-align: center; color: #ff453a; }
 .partnerT { width: 40%; height: 26px; font-size: 20px; text-align: center; text-overflow: ellipsis; }
-.tLabel { width: 100%; height: 22px; margin-top: 4px; font-size: 18px; text-align: center; color: #a3e635; text-overflow: ellipsis; }
+.tLabel { width: 100%; height: 22px; margin-top: 4px; font-size: 17px; text-align: center; color: #a3e635; text-overflow: ellipsis; }
 .numRow { width: 100%; height: 48px; flex-direction: row; align-items: flex-end; justify-content: center; }
 .numT { width: 66%; height: 48px; font-size: 42px; text-align: right; color: #d9f99d; }
 .unitT { width: 30%; height: 26px; margin-left: 4%; font-size: 18px; text-align: left; color: #a3e635; }
@@ -130,7 +130,7 @@
 .oCnt { width: 100%; height: 22px; font-size: 18px; text-align: left; color: #a1a1a6; }
 
 /* before the workout, as the Apple Watch's: the big name, the lime-outlined 3-2-1 ring, a round X to leave */
-.nameBig { width: 100%; height: 46px; font-size: 40px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.nameBig { width: 80%; height: 46px; font-size: 40px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .cRing { width: 200px; height: 200px; margin-top: 8px; margin-bottom: 8px; }
 .cArc { width: 100%; height: 100%; start-angle: 0; total-angle: 360; stroke-width: 12px; background-color: #2c2c2e; color: #a3e635; }
 .cIn { width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
@@ -140,7 +140,7 @@
 .rName { width: 88%; height: 30px; font-size: 26px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .rSub { width: 88%; height: 22px; font-size: 18px; text-align: left; color: #a3e635; text-overflow: ellipsis; }
 .topR { width: 56%; height: 26px; font-size: 20px; text-align: right; color: #a1a1a6; text-overflow: ellipsis; }
-.waitTx { width: 100%; height: 110px; font-size: 24px; text-align: center; color: #a1a1a6; }
+.waitTx { width: 80%; height: 110px; font-size: 24px; text-align: center; color: #a1a1a6; }
 
 /* the hold's bar */
 .holdBar { width: 60%; height: 12px; margin-top: 8px; margin-bottom: 8px; }
@@ -149,20 +149,7 @@
 .menuList { width: 100%; height: 72%; }
 .overList { width: 100%; height: 60%; }
 .li { width: 100%; height: 72px; }
-.liIn { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liIn { width: 86%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
 
 /* last, so a grey label stays grey whatever size class it has */
 .quiet { color: #a1a1a6; }
-
-/* round screens: a narrower block, so the rows at the top and bottom stay inside the circle. The block
-   declares all five properties it has in the base rule: ...-common-mediaquery.md says "The number and
-   type of attributes must be the same among .container blocks. Otherwise, display errors will occur." */
-@media screen and (round-screen: true) {
-  .scr {
-    width: 70%;
-    height: 100%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-}
