@@ -91,7 +91,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => { root.render(<CoachChat />) })
+const mount = starter => act(() => { root.render(<CoachChat starter={starter} />) })
 const send = async text => {
   act(() => { type(host.querySelector('.composer textarea'), text) })
   await act(async () => { host.querySelector('.composer .send').dispatchEvent(new Event('click', { bubbles: true })); await Promise.resolve() })
@@ -112,6 +112,15 @@ describe('a typed message', () => {
     mount()
     await send('Build my first three-day plan')
     expect(refinePlan).toHaveBeenCalledWith('Build my first three-day plan')
+  })
+
+  it('honours a full-plan request that replaces a Home starter', async () => {
+    mocks.S.routines = []
+    mount('Make today shorter')
+    mount() // The chat has cleared its navigation state.
+    await send('Build my first three-day plan')
+    expect(refinePlan).toHaveBeenCalledWith('Build my first three-day plan')
+    expect(askCoach).not.toHaveBeenCalled()
   })
 
   it('still retries a failed full plan from an empty profile', async () => {
