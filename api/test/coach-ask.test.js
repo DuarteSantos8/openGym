@@ -229,3 +229,11 @@ test('unsafe existing routines, imports, swaps and exercise cards cannot bypass 
   assert.equal(check({ type: 'show', exId: '3225' }).ok, true);
   assert.equal(check({ type: 'start', routineId: 'floor' }).ok, true);
 });
+
+test('an existing floor routine with a bar substitution cannot start or be scheduled for a no-weights request', () => {
+  const profile = { routines: [{ id: 'back', name: 'Back', ex: [{ id: '3225', subs: ['0499'] }] }] };
+  const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: 'Une séance de dos sans poids' });
+  for (const action of [{ type: 'start', routineId: 'back' }, { type: 'schedule', day: 2, routineId: 'back' }]) {
+    assert.equal(validateAsk({ coach_contract: 1, answer: 'Back', actions: [action] }, payload).ok, false, action.type);
+  }
+});

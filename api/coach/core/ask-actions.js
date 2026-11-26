@@ -93,7 +93,7 @@ export function sortActions(data, payload, answer, ctx = {}) {
   const plan = payload.plan || { routines: [], week: {} };
   const routineIds = new Set((plan.routines || []).map(r => r.id));
   const canUseRoutine = id => !ctx.bodyweightOnly || plan.routines?.find(r => r.id === id)?.ex
-    ?.every(e => needsNoEquipment(e.id) && !(e.weight > 0));
+    ?.every(e => needsNoEquipment(e.id) && !(e.weight > 0) && (e.subs || []).every(needsNoEquipment));
 
   /* ---- new routines: a created plan ---- */
   const made = acts.filter(a => a.type === 'routine');
