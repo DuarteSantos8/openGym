@@ -14,7 +14,7 @@ import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
 import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, nutritionOf, rotationOf } from './context.js';
 import { shareOf } from './categories.js';
-import { asksForBodyweight, cleanHits } from './routine-library.js';
+import { asksForBodyweight, asksForBodyweightOnly, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -738,7 +738,11 @@ export function build(S, opts = {}) {
     // question gets a library slice, leaning to what the question names. "Only bodyweight" narrows
     // it to exercises that need nothing.
     const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
-    p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    const keep = trainedIds(S, workouts);
+    const strict = asksForBodyweightOnly(p.question);
+    const pins = strict ? keep.filter(id => LIB_BY_ID.get(id)?.eq === 'body weight') : keep;
+    p.library = librarySlice(S, eq, { keep: pins, max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    if (strict) p.library = p.library.filter(e => !e.custom);
     // Routines from the library (core/routine-library.js) the app found for this question.
     const hits = cleanHits(opts.routines);
     if (hits.length) p.routineLibrary = hits;

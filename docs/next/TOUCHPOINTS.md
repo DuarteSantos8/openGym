@@ -85,3 +85,5 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `25 files in frontend/src/locales/` | `next/EP24-learn-sessions` | Small edit | Translate session names and the start action. |
 | `frontend/src/lib/history.js` | `next/EP24-learn-sessions` | +2 -1 | Keep the previous group clock out of a standalone exercise. |
 | `frontend/src/store/useCircuit.js` | `next/EP24-learn-sessions` | Small edit | Release an untouched Learn preview when its Ready screen closes. |
+| `api/coach/core/routine-library.js`, `api/coach/core/payload.js`, `api/coach/core/ask-actions.js` | `next/EP19-coach-prompts` | Small edit | Recognize explicit no-weights requests and reject weighted routine or workout items in those chat proposals. |
+| `api/test/coach-ask.test.js`, `frontend/src/views/CoachChat.test.jsx` | `next/EP19-coach-prompts` | Tests | Exercise both prompts with a stubbed provider, including schedule confirmation and a repeat. |

@@ -70,6 +70,30 @@ Epic status:
 - **Merged (#85): `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
 - **OIDC follow-up:** Explain when the current website has no sign-in or guest path, and keep the provider row in native Settings.
 
+### Coach chat acceptance (B2, stubbed provider)
+
+With a plan already open, a chat message goes to the ask job. A workout action is
+offered for the person to start. New routine and weekday actions become a plan
+preview. The routines and week are written when the person selects Import.
+With no routines or with a proposed plan open, a message uses the plan builder instead.
+
+- **Back workout with no weights:** the ask tests reject a trained cable movement
+  and added load on a floor exercise. A full history of equipment-based movements
+  still leaves room for new suggestions. A request that names resistance bands
+  and rules out weights can use the bands without adding an external load.
+  The repair reply proposes a reverse push-up and a floor T raise, both catalogue
+  back exercises. The bodyweight tag alone does not guarantee floor-only movements:
+  it also includes chin-ups and bench pull-ups. The test verifies those two floor
+  movements. The Coach's catalogue should also carry accessory requirements from
+  the app (see `accessoriesOf` in `frontend/src/lib/equipment.js`).
+- **Add Tuesday push and Wednesday pull:** both routines preview on the requested
+  weekdays and the store keeps its original schedule until Import. Import replaces the
+  whole week, clearing an existing Monday. Repeating and confirming the same request
+  creates two more routines. Two expected-failure tests capture these gaps.
+  A follow-up needs to distinguish an addition from a full plan in the confirmed
+  proposal, preserve other weekdays, and reuse the same imported routines on a
+  repeat when their contents still match. Matching display names alone is ambiguous.
+
 ## 2. Merging (only the owner merges)
 
 - **Target:** every PR targets `main`.
