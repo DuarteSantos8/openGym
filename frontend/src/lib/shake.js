@@ -54,14 +54,21 @@ export const hasMotion = () => typeof window !== 'undefined' && typeof window.De
 export const motionNeedsAsk = () => hasMotion() && typeof window.DeviceMotionEvent.requestPermission === 'function'
 
 let granted = false
+let refused = false
 
-/** Ask for the sensor (call it from a tap). True when it may be read now. */
+/** Ask for the sensor (call it from a tap). True when it may be read now. An answer of "denied"
+ *  is kept (iOS will not ask again anyway); a call that threw, which iOS does when it does not
+ *  count the event as a tap, is not, so the next tap tries again. */
 export async function askMotion() {
   if (!motionNeedsAsk() || granted) return hasMotion()
-  try { granted = (await window.DeviceMotionEvent.requestPermission()) === 'granted' } catch (e) { granted = false }
+  try {
+    const r = await window.DeviceMotionEvent.requestPermission()
+    granted = r === 'granted'
+    refused = r === 'denied'
+  } catch (e) { granted = false }
   return granted
 }
-export const _resetMotionForTests = () => { granted = false }
+export const _resetMotionForTests = () => { granted = false; refused = false }
 
 /**
  * Listen for shakes until the returned function is called. In the iPhone app the permission is
@@ -74,13 +81,23 @@ export function watchShake(onShake) {
   const feed = shakeDetector(onShake)
   const onMotion = e => { feed(e) }
   window.addEventListener('devicemotion', onMotion)
+  // Asked at every tap until iOS says yes or no: a first try it did not take as a tap (the 1.4.6
+  // test build asked once and gave up, and the globe never came on an iPhone) is tried again.
+  // touchend and click both, as WebKit lets a permission prompt start from either.
   let onTap = null
-  if (motionNeedsAsk() && !granted && MOBILE) {
-    onTap = () => { window.removeEventListener('touchend', onTap, true); onTap = null; askMotion() }
+  const stop = () => { if (!onTap) return; window.removeEventListener('touchend', onTap, true); window.removeEventListener('click', onTap, true); onTap = null }
+  if (motionNeedsAsk() && !granted && !refused && MOBILE) {
+    let asking = false
+    onTap = () => {
+      if (asking) return
+      asking = true
+      askMotion().then(() => { asking = false; if (granted || refused) stop() })
+    }
     window.addEventListener('touchend', onTap, true)
+    window.addEventListener('click', onTap, true)
   }
   return () => {
     window.removeEventListener('devicemotion', onMotion)
-    if (onTap) window.removeEventListener('touchend', onTap, true)
+    stop()
   }
 }
