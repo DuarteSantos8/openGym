@@ -147,12 +147,9 @@ export default function CoachChat({ starter = '' }) {
     if (!msg || busy) return
     setBusy(true)
     try {
-      // A message about a proposed plan refines it. With no plan at all — the first attempt
-      // failed, or nothing was ever built — the message asks for one; a review would only
-      // answer that there is no workout to look at, which is how people got stuck. Anything else
-      // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
-      // review the whole plan. A review is the chip and the menu's, as it always was.
-      if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
+      // Retry an unfinished full plan. A fresh chat can propose individual days before any routine exists.
+      const retryPlan = !S.routines?.length && last?.kind === 'create' && last.outcome === 'failed'
+      if (pending?.kind === 'create' || retryPlan) await refinePlan(msg)
       else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')

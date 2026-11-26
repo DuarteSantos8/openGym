@@ -3,7 +3,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
-import { requestReview, askCoach } from '../lib/coach-api.js'
+import { requestReview, askCoach, refinePlan } from '../lib/coach-api.js'
 import { CONSENT_VERSION } from '../lib/coach.js'
 
 // When the server refuses a Coach request at enqueue it answers in English, with the refusal's
@@ -38,7 +38,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
 vi.mock('../lib/coach-api.js', () => ({
   awaitedJob: () => null,
   settleAwaited: vi.fn(),
-  useCoachStatus: () => ({ pending: null, job: null, cap: null, loading: false, lastError: null, last: null, refresh: mocks.refresh, maxMessageLen: 2200 }),
+  useCoachStatus: () => ({ pending: null, job: null, cap: null, loading: false, lastError: null, last: mocks.last, refresh: mocks.refresh, maxMessageLen: 2200 }),
   resolvePending: vi.fn(() => Promise.resolve({})),
   refinePlan: vi.fn(() => Promise.resolve({})),
   requestReview: vi.fn(() => Promise.resolve({})),
@@ -80,6 +80,7 @@ const refusal = (error, code, status = 409) => Object.assign(new Error(error), {
 let host, root
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.last = null
   mocks.S = state()
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -98,6 +99,22 @@ const send = async text => {
 const chip = re => [...host.querySelectorAll('button')].find(b => re.test(b.textContent || ''))
 
 describe('a typed message', () => {
+  it('accepts a typed schedule request before any routine exists', async () => {
+    mocks.S.routines = []
+    mount()
+    const question = 'Could you add Tuesday push and Wednesday pull?'
+    await send(question)
+    expect(askCoach).toHaveBeenCalledWith(question)
+  })
+
+  it('still retries a failed full plan from an empty profile', async () => {
+    mocks.S.routines = []
+    mocks.last = { id: 'job1', kind: 'create', outcome: 'failed' }
+    mount()
+    await send('Try the plan again with shorter sessions')
+    expect(refinePlan).toHaveBeenCalledWith('Try the plan again with shorter sessions')
+  })
+
   it('is a question for the Coach, answered in words, not a review of the whole plan', async () => {
     mount()
     await send('Quanto recupero tra le serie?')
