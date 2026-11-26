@@ -8,12 +8,13 @@ package ch.duartesantos.opengym;
  * message at a time: so one snapshot is on its way to a watch at a time. A newer one waits (only the
  * newest waiting one is kept) and goes when the one before has been sent whole or has failed. One
  * that is the same as the one on its way, or as the last one that went whole a moment ago, is not
- * sent again, unless the watch asked for it (it said hello: it just started and has nothing).
+ * sent again, unless it is asked for: the watch said hello (it just started and has nothing), or the
+ * page resent it on purpose with `again` (an event came a second time, so the watch never got the
+ * snapshot that named it: lib/watch-sync.js onAcked).
  *
- * "A moment" is REPEAT_MS: the page resends an identical snapshot on purpose when an event comes a
- * second time (the watch never got the snapshot that named it: lib/watch-sync.js onAcked). A watch
- * sends an event again 10 to 60 s later, so an identical one after REPEAT_MS goes again, while the
- * page's quick bursts of resends (a state change, a hello) are still dropped.
+ * "A moment" is REPEAT_MS, a fallback for a page without `again`. A watch sends an event again 10 to
+ * 60 s later, so an identical one after REPEAT_MS goes again, while the page's quick bursts of
+ * resends (a state change, a hello) are still dropped.
  */
 final class HuaweiSend {
     private String sending;

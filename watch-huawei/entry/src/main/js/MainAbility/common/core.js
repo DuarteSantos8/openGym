@@ -43,12 +43,13 @@
 //   entries(s) entryAt(s,pos) entryIdx(s,pos) hasMore(s) needsPhone(s) setIndex(s,pos)
 //   sideUp(row) next(s,pos,si) -> [pos, restFirst]   current(c) -> {pos,si,e,row,side,fixing}|null
 //   place(e,si) -> [n,of]   planSize(entries) -> [exercises, workSets]   partners(s,pos) -> names
-//   progress(s) -> [done,all]   waiting(s)   summary(c,w,ended)   asks(...)   lastSet(w)
+//   progress(s) -> [done,all]   waiting(s)   elapsed(c,w)   asks(...)   lastSet(w)
 //   restLeft(c) (seconds or null)   restPaused(c)   held(c)   locked(c)   canRate(c)
 //   chips(kind) chipLabel(kind,v) countNumber(ms)   stepWeight(w,step,steps) stepReps(r,steps)
 //   stepOf(s,e) unitOf(s,e) isTimed(e) isCardio(e) logged(s,pos,si,side) fixList(s)
 // WHAT THE LIFTER DOES (each returns nothing unless said)
 //   startWorkout(c, session) -> start event      finishWorkout(c, discard) -> summary|null
+//   summary(c,w,ended) -> the medal's numbers; it folds the window's records into c.s.rc (not a pure read)
 //   pressDone(c, w, r) -> 'none'|'confirmFinish'|'next'|'hold'|'tick'|'fix'   (w, r = boxes; on a set
 //                         being fixed it saves the fix and returns 'fix')
 //   tickSet(c,pos,si,side,w,r,sec,restSec)       skipSet(c)   nextExercise(c)
@@ -588,14 +589,23 @@ export function workoutTotals (w) {
   if (vol != null && vol > volume) volume = vol
   return [sets, volume]
 }
+// Seconds into the workout, null without a start: it stands at `pausedAt` while the phone has it paused. A
+// workout started here has its start on this watch's clock; the phone's start and pausedAt are on the phone's,
+// which is the watch's less its offset.
+export function elapsed (c, w) {
+  const start = toF(w.start)
+  if (start == null) return null
+  const pausedAt = toF(w.pausedAt)
+  const now = ms(c) - (same(w.id, c.s.sh) ? 0 : off(c))
+  return Math.max(0, Math.floor(((pausedAt != null && pausedAt > 0 ? pausedAt : now) - start) / 1000))
+}
 export function summary (c, w, endedOnPhone) {
   foldRecords(c.s.rc, w) // the window now, with the sets ticked here: what left it was folded before
   const tot = workoutTotals(w)
   const sets = tot[0]
   const volume = tot[1]
   const unit = strOf(w.unit)
-  const start = toF(w.start)
-  return { name: strOf(w.name), unit: unit, dur: start == null ? null : trunc((ms(c) - start) / 1000), sets: sets, vol: volume, ended: endedOnPhone, recs: recordList(c.s.rc) }
+  return { name: strOf(w.name), unit: unit, dur: elapsed(c, w), sets: sets, vol: volume, ended: endedOnPhone, recs: recordList(c.s.rc) }
 }
 
 /* ---------- heart rate ----------
@@ -987,7 +997,7 @@ export function fixSave (c, w, r) {
 // A set the last tick or the fix names: [exercise, set index, side, set id]. By its id when it has one, so rows
 // added or taken out before it do not move what it points at; else by its index. [pos, si], or null when gone.
 function rowSidOf (e, si) { const row = e ? dictOf(arrOf(e.sets)[si]) : null; return row && typeof row.sid === 'string' ? row.sid : null }
-function refSet (s, ref) {
+export function refSet (s, ref) {
   const w = dictOf(s.w)
   if (w && typeof ref[3] === 'string') {
     const at = rowAt(w, ref[3]) // wherever the row is now, also in the second copy of an exercise
@@ -1028,7 +1038,11 @@ export function rate (c, v) {
   if (!n) return
   const ev = fix(c, ref[0], ref[1], l[2], n[0], n[1], n[2], [kind, v])
   send(c, ev)
-  if (ev) { const e = entryAt(s, ref[0]); s.ef[pkey(e, ref[0], ref[1], null)] = [v, toI(e.i, ref[0]), strOf(e.name), strOf(e.id)] } // for the Effort page
+  if (ev) { // for the Effort page; a rating from before the set had an id (kept by place) is replaced, not added
+    const e = entryAt(s, ref[0])
+    delete s.ef[placeKey(e, ref[0], ref[1], null)]
+    s.ef[pkey(e, ref[0], ref[1], null)] = [v, toI(e.i, ref[0]), strOf(e.name), strOf(e.id)]
+  }
   c.g.rated = v
   buzz(c, [[40, 60]])
   save(c)
@@ -1577,6 +1591,8 @@ export function startWorkout (c, session, bw) {
   save(c)
   return ev
 }
+// The buzz of a finished workout: long on a records day, short otherwise.
+const finishBuzz = sm => (sm.recs.length ? [[60, 250]] : [[40, 60]])
 // Finished here, or discarded (the phone drops it unsaved: no summary). A running hold is logged first.
 export function finishWorkout (c, discard) {
   const s = c.s
@@ -1593,7 +1609,7 @@ export function finishWorkout (c, discard) {
   send(c, withOff(c, { id: newId(c), type: discard ? 'discard' : 'finish', wid: wid, at: at }))
   const hr = hrTotals(c)
   hrClear(c)
-  if (sm) sm.hr = hr
+  if (sm) { sm.hr = hr; buzz(c, finishBuzz(sm)) }
   reset(c)
   c.g.ended = sm
   c.g.endedAt = ms(c)
@@ -1604,16 +1620,18 @@ export function finishWorkout (c, discard) {
 // The working sets done per exercise that left the window are kept (their muscles with them), so the Muscles page
 // counts the whole workout when the phone sends only part of it; one that is back in the window is read from there.
 function foldMuscles (s, cur, next) {
-  const here = {}
-  next.forEach((e, i) => { if (dictOf(e)) here[String(toI(e.i, i))] = true })
-  Object.keys(here).forEach(k => { delete s.mu[k] })
+  const key = (e, i) => toI(e.i, i) + ':' + strOf(e.id)
+  const places = {}
+  const ids = {}
+  next.forEach((e, i) => { if (dictOf(e)) { places[toI(e.i, i)] = true; ids[strOf(e.id)] = true } })
+  // what the window shows now is read from there: a line at one of its places, or of an exercise in it (the phone moved it)
+  Object.keys(s.mu).forEach(k => { if (places[parseInt(k, 10)] || ids[k.slice(k.indexOf(':') + 1)]) delete s.mu[k] })
   arrOf(cur.entries).forEach((e, i) => {
     if (!dictOf(e)) return
-    const k = String(toI(e.i, i))
-    if (here[k] || !dictOf(e.muscles)) return
+    if (places[toI(e.i, i)] || ids[strOf(e.id)] || !dictOf(e.muscles)) return
     let n = 0
     arrOf(e.sets).forEach(r => { if (dictOf(r) && isTrue(r.done) && !isTrue(r.warmup)) n += 1 })
-    if (n > 0) s.mu[k] = [n, e.muscles]
+    if (n > 0) s.mu[key(e, i)] = [n, e.muscles]
   })
 }
 
@@ -1822,6 +1840,7 @@ export function onPhone (c, data) {
   const ended = applySnapshot(c, data)
   if (ended) {
     ended.hr = hrTotals(c)
+    buzz(c, finishBuzz(ended))
     reset(c)
     c.g.ended = ended
     c.g.endedAt = ms(c)

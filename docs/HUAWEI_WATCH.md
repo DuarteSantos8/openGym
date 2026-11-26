@@ -13,7 +13,7 @@ because Huawei's link has room the Garmin's memory does not. Source: `watch-huaw
 
 - The watch app has **never been built in DevEco Studio**, never run in Huawei's simulator and
   never run on a watch. Nobody on the project has a Huawei watch yet. What is checked is the logic,
-  the screens' data, the framing and the saving, under plain Node (313 tests, `npm test` in
+  the screens' data, the framing and the saving, under plain Node (390 tests, `npm test` in
   `watch-huawei`), and that the source keeps to the language subset Huawei says the watch runs.
 - The Android link **compiles against Huawei's Wear Engine SDK** but has never met a watch. The
   plain-Java parts have JVM tests: the framing (`HuaweiFramesTest`), the one-snapshot-at-a-time
@@ -58,7 +58,7 @@ United States is not on Huawei's list; Spain, Switzerland, Germany, the UK and m
 One page in the watch app, `pages/index`, shows one screen at a time. `common/view.js` decides
 which screen and what it says (every line is tested); the page only copies that into the HML.
 The screens are the Garmin's and Wear OS's, fitted to a touch screen with no crown and no side-button
-handling: every control is a button on the screen. Besides the ones in the table there is a "could
+handling: every control is a button on the screen, and the look is the Apple Watch app's (see "The look" below). Besides the ones in the table there is a "could
 not read the saved workout" screen with a Retry button: when the watch's files cannot be read it
 changes and saves nothing, rather than start over on top of them.
 
@@ -66,12 +66,12 @@ changes and saves nothing, rather than start over on top of them.
 | --- | --- | --- |
 | Check-in | before a start, when the phone has its daily check-in on and today's is not answered: sleep, energy and soreness, one question at a time, five dots from low to high, "1/3" | a dot answers and moves on, Skip, Cancel |
 | Weigh-in | before a start, when the phone has it on: the weight big (kg or lb, as the phone has it), -1, +1, -0.1, +0.1 | Save and start, Start without weighing, Cancel |
-| Start | "Today" (or "Rest day" when the first routine is not today's; "Not synced yet" or "No workout running" when there is nothing), the routine's name, "5 exercises · 17 sets", the heart rate and sync line, Start | Start (Quick start on a day without a plan), Routines when there are more |
+| Start | "Today" (or "Rest day" when the first routine is not today's; "Not synced yet" or "No workout running" when there is nothing), the routine's name, "5 exercises · 17 sets", the week streak when there is nothing else to hint at (in the accent once this week's workout is done), Start, and along the bottom "Phone connected" or "Phone away" (nothing when the watch cannot tell) with "Waiting to sync 3" | Start (Quick start on a day without a plan), Routines when there are more |
 | Routines | three routines a page, "Today" on today's and the folder's name under the others (routines without a folder first, then each folder's together) | tap one to start it, Cancel, `>` for the next page |
 | 3-2-1 | a big 3, 2, 1, then "Go!" (3.7 s in all) | a tap on the number starts at once, Cancel |
-| Set | the heart rate and sync line, the exercise, "Set 2 of 4" (warm-up, left or right, "Edit" while fixing), the superset partner ("+ Lateral Raise"), weight and reps as two tiles with − and + under each ("Added weight" for a bodyweight exercise), last time, Done | − and + on each tile (the exercise's own plate step, one rep, five seconds for holds), Done, `<` fixes the last logged set, Menu |
+| Set | the heart rate and sync line, the exercise, "Set 2 of 4" (warm-up, left or right, "Edit" while fixing), the resistance band tag when the phone names one ("Red + Yellow"), the superset partner ("+ Lateral Raise"), weight and reps as two tiles with − and + under each ("Added weight" for a bodyweight exercise), last time, Done | − and + on each tile (the exercise's own plate step, one rep, five seconds for holds), Done, `<` fixes the last logged set, Menu |
 | Hold | the exercise, the seconds left big (orange for the last five), a bar, Stop | Stop logs the seconds held; at zero it logs itself |
-| Rest | a ring that empties, the time, "Up next" with its numbers, four effort chips (RIR or RPE, the phone's setting) until one is picked, −15, Skip, +15 | the chips, −15, Skip, +15, Menu |
+| Rest | a ring that empties (or a plain countdown when the phone's rest style is plain), the time, "Up next" with its numbers, four effort chips (RIR or RPE, the phone's setting) until one is picked, −15, Skip, +15 | the chips, −15, Skip, +15, Menu |
 | Menu | Previous set, Overview, Add set, Remove set, Skip set, Next exercise, Finish and save, Discard workout, Continue workout (a list, it scrolls) | each one |
 | Finish, discard or remove | the question, Cancel, and the action | Finish, Discard and Remove set always ask first |
 | Overview | "7 of 17 sets", the phone's session note at the top when there is one (read only), four exercises a page with their sets done ("> " marks the one up now, a "Superset" heading above the first exercise of each superset), "+3 exercises" still to come from the phone, "Waiting to sync 3" or "All synced", Finish | an exercise with sets left takes you there, `>`, Finish, Continue workout |
@@ -79,7 +79,8 @@ changes and saves nothing, rather than start over on top of them.
 | Cardio, or a timed exercise with nothing left | "Log this one on your phone." or "All sets done", Next exercise | Next exercise |
 | Waiting for the phone | the workout's name and "Next exercise is on its way from your phone" (or "Waiting for the phone") | Menu |
 | Still training? | after 20 minutes without a set ("No set for 23 min. Still at it?"), or at once when the phone says you left the gym | Keep going (the phone hears it, a `stillHere` event) or Finish (the Overview) |
-| Summary | "Workout saved" (or "Ended on your phone"), the name, the time big, sets, volume, average and maximum heart rate, the sync line | Done (a tap in its first second is ignored) |
+| Summary | "Workout saved" (or "Ended on your phone"), the name, a still medal (gold on a records day, steel otherwise) with the minutes big, a diamond per record and the set count or record count under it, up to four record plates ("Bench 60 to 62.5 kg", "+2 more" past four), the time, sets and volume, average and maximum heart rate, the sync line | scroll, Done (a tap in its first second is ignored) |
+| Metrics | five pages, reached by a swipe left from Set or Rest: the numbers (time big, heart rate in red, "5/13 Sets", volume), Pulse (average, lowest, highest and twelve bars), Effort (RIR or RPE, the mean per exercise rated here, the latest five, "+n more"), Zones (the five bands, the time in each, the zone now marked; "Add your birth year" without one) and Muscles (sets done per muscle, most first). Pulse is left out without heart-rate readings or when the phone's heart-rate switch is off, and Zones also when its zones switch is off | a swipe left for the next page, a swipe right or the small `<` button at the top left for the one before (from the first, back to the workout) |
 
 Things that are the same as on the other watches, taken from the Garmin's `Core.mc` as a port
 (`common/core.js`): the phone's workout window, today's routine started by the watch with the phone
@@ -92,7 +93,8 @@ instead: the check-in and weigh-in before a start, Add set and Remove set, and t
 set ticked on the phone.
 
 - Buzzes: a short one ten seconds before a rest ends, two long ones at the end of a rest and of a
-  hold, a tick for each number of a 3-2-1 and for a hold's last three seconds, and one for Done. The
+  hold, a tick for each number of a 3-2-1 and for a hold's last three seconds, one for Done, and one when
+  a workout is finished (short, long on a records day). The
   phone's "rest haptics" setting turns them all off. The watch has only `short` and `long` (no
   pattern, no strength), so `view.js` turns each of the core's patterns into some of those.
 - The screen is kept on during a rest and a hold (`setKeepScreenOn`), and only then. Huawei says
@@ -118,9 +120,11 @@ set ticked on the phone.
   newest waits in the outbox). The phone stores it as it does the Apple Watch's. What the phone
   shows with it for a Huawei watch was not checked.
 - **The session note** is the phone's, read only: the watch cannot type.
+- **Records** are found on the watch by Wear OS's rules, from the sets it saw (`records.js`, keyed by the
+  exercise's place and id, so an exercise the phone moves keeps one line).
 - **The phone's look**: the accent colour (`settings.accent`) and the ink on it, otherwise openGym's
-  lime. The phone's "show" switches (heart rate, last time, up next) are followed; the others the phone
-  sends (kcal, zones, clip, rest as a ring) are stored and not used yet.
+  lime. The phone's "show" switches (heart rate, last time, up next, zones, and the rest style ring or plain) are followed; the others the
+  phone sends (kcal, clip) are stored and not used yet.
 - **Language**: the phone's (`settings.lang`), else the watch's own language when it is one of ours,
   else English. The words are the Wear OS watch's and the Garmin's, plus a few of its own, in the
   26 languages (the app's, except Japanese, which the Wear OS watch has no words for yet, so it shows
@@ -131,16 +135,31 @@ set ticked on the phone.
 
 No exercise media goes to the watch: text and numbers only (and the licence would not allow it).
 
+### The look
+
+The whole UI now follows the Apple Watch app's current look (the open 1.4.6 Apple Watch pull requests, for example #1139, #1314 and
+#1198): black ground, the accent on Done and Start, weight and reps as two tiles, the heart rate in red, the effort colours by band,
+the summary as a medal. The Huawei watch cannot copy all of it:
+
+- one font, so no bold;
+- no glass and no blur;
+- no icons such as the heart or the tick (words and plain characters only);
+- no crown, so the − and + buttons stay;
+- no curved lettering on the medal rim (the legend sits under the medal instead).
+
+Left out because the Huawei core has no logic for it yet: the set types Warm-up, Failure and Drop, half-step effort, the ±15 circle on
+the rest, the session note (read only here) and re-rating a set. The Set page's `>` is drawn dimmed and takes no tap outside fixing,
+because the core has no "look at the next set" action.
+
 ### What it leaves out
 
 Compared with the Garmin app, and with Wear OS and the Apple Watch:
 
-- The Metrics, Pulse, Zones and Muscles pages, the records (PRs, the medal) and the end-of-workout
-  extras. The summary has time, sets, volume and heart rate. These are the next build step (see
-  "What is planned next").
+- The medal's animation, its back face, its rim lettering and notches, calories, and a Metrics page for the clip or the
+  kcal.
 - Buttons, the crown and swipes. There is no way to step a number with the crown or to pick a box
-  by touch and then turn it; the − and + under each number do it. A swipe to the right leaves the
-  app, from the Start screen only, never in the middle of a workout.
+  by touch and then turn it; the − and + under each number do it. A swipe left opens the Metrics pages from the Set or the Rest and a swipe right goes back through them; a swipe right
+  leaves the app from the Start screen only, never in the middle of a workout.
 - The keypad, typing a session note, music, exercise pictures, the glance or widget.
 - Finishing a workout by holding a button (Wear OS has it). Finish takes a tap and a confirmation.
 - Undo after Remove set (Wear OS has it). Here Remove asks first instead.
@@ -232,7 +251,9 @@ vectors both codecs (JavaScript and Java) must reproduce.
 
 - The watch app opens (or comes back to the front): it registers its receiver and sends `hello`.
 - The phone gets `hello` and sends the latest snapshot to that watch.
-- The page changes the workout: `sendSnapshot` goes to every connected Huawei watch that has the app.
+- The page changes the workout: `sendSnapshot` goes to every connected Huawei watch that has the app. The page's `again`
+  flag (a deliberate resend, such as an event that came a second time) is passed on by `WatchBridgePlugin.sendSnapshot` to
+  `HuaweiLink.send(json, again)`, so it always goes.
 - A workout starts on the phone: the link **pings** each connected watch with the app. On a lite
   watch a ping opens the app (Huawei's guide says so), and the app then says `hello`.
 - A set is done on the watch: the event goes to the phone, which writes it into the same queue file
@@ -265,7 +286,8 @@ dark, and for how long, is Huawei's setting and **not verified**.
 
 The phone's side is the mirror of this: a send to a watch whose app is away fails and is ignored
 (it is normal), the last snapshot is kept and sent again when the watch says `hello`, and at
-most one snapshot is on its way to a watch at a time (`HuaweiSend`). A frame that gets no answer in
+most one snapshot is on its way to a watch at a time (`HuaweiSend`). An identical snapshot is not sent twice within 20 seconds
+(`REPEAT_MS`), unless the watch said hello or the page sent it with `again`; the 20 seconds are a fallback for a page without `again`. A frame that gets no answer in
 10 seconds marks its message stalled; the next message then waits for that frame's answer or 30
 more seconds (`STALL_MS`, `GRACE_MS` in `HuaweiLink.java`).
 
@@ -360,17 +382,15 @@ The Wear OS app is the model for the behaviour; these are the places this watch 
 - **Messages only while the app is on screen** (see above). Wear OS's Data Layer queues; Huawei does not.
 - **Stricter Add and Remove.** No add or remove on cardio or a timed exercise done per side, and a
   remove only when every set of the exercise has an id.
-- **The pages.** No Metrics, Pulse, Zones or Muscles pages, no records and no medal yet.
+- **The pages.** The Metrics pages and the summary's medal are built, as still pictures: no animation, no back face, no rim lettering.
 - **Ids.** Events are `h…`, the Garmin's `g…`, so two watches cannot clash. The two fingerprints are
   placeholders until the owner has the Huawei accounts (see "What the owner does").
 
 ## What is planned next
 
-The phone-and-watch parity is built in steps. The first is what this guide describes. The second is
-the Metrics pages (Pulse, Effort, Zones and Muscles as on the other watches), the records (PRs) and
-the medal at the end of a workout. None of it is started in the code. The cut-down pages will
-need the heart-rate buffer the watch already keeps, and the phone's `birthYear`, `show` and muscle
-fields, which the snapshot already carries and the watch does not read yet.
+The phone-and-watch parity was built in two steps, and both are in this guide: the first is the workout itself, the second is the
+Metrics pages, the records, the medal, the streak and the Apple look. What is left is what "The look" lists as left out (it needs
+new core logic first) and everything the first run on a real watch will show.
 
 Exercise pictures are out until the owner decides a licence question. The pictures and animations
 are Gym visual's, not AGPL, and its notice in `NOTICE.md` says they are "provided strictly for use
@@ -436,7 +456,7 @@ The tests need only Node (no install, no dependencies):
 
 ```bash
 cd watch-huawei
-npm test                          # 313 tests, see below
+npm test                          # 390 tests, see below
 node huawei-strings.mjs           # regenerates common/texts.js after the words change
 ```
 
@@ -454,8 +474,9 @@ pull request that touches `watch-huawei` then fails `strings.test.js` ("texts.js
 writes now"). The job's failure message says to run `node watch-huawei/huawei-strings.mjs` and commit
 `common/texts.js`.
 
-What the tests cover (12 test files): `core.test.js` the logic against the Garmin's own fixture; `view.test.js` every
-screen, taps and the data the HML binds to; `frames.test.js` and `HuaweiFramesTest` the same
+What the tests cover (15 test files): `core.test.js` the logic against the Garmin's own fixture; `view.test.js` every
+screen, taps and the data the HML binds to; `metrics.test.js`, `medal.test.js` and `records.test.js` the Metrics numbers, the
+medal's data and the record lines (ported from Wear OS's tests); `frames.test.js` and `HuaweiFramesTest` the same
 vectors; `radio.test.js` sending and receiving with a fake client; `store.test.js` saving with a
 torn write; `link.test.js` the whole wire with the phone's real snapshot code and a page that
 applies events as `watch-sync.js` does, over a radio that drops, fails or never answers;

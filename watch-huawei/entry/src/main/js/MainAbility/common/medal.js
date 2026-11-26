@@ -1,37 +1,27 @@
 // What the workout's medal shows, as plain data (Wear OS Medal.kt and SummaryMedal.kt's word rules; the Apple
 // Watch's Medal.swift is the twin; MedalTest.kt is ported in test/medal.test.js). No drawing and no Huawei API:
-// the page draws what medalOf() returns (a disc, a rim of notches, diamonds, plates). Pure, ES5 subset.
+// the page draws what medalOf() returns (a disc, diamonds, plates). Pure, ES5 subset.
 //
 //   medalOf(summary, { comma, repsWord, maxPlates }) -> {
 //       gold,        true on a records day (gold), else steel; never the accent
-//       time, hours, the big number ('52', or '1:05' with hours true), or the set count when there is no duration
+//       time,        the big number ('52', or '1:05' over an hour), or the set count when there is no duration
 //       timeLabel,   'min_minutes' | 'hours' | 'sets': the text key under it (upper-case it)
-//       notches,     [degrees]: one per set, 48 at most, the first at 12 o'clock (-90)
 //       gems,        { angles: [degrees], radius }: a diamond per record, 7 at most, under the time
 //       legend,      { key: 'n_sets' | 'new_record' | 'records', count } the text key under the rim and its number
 //       plates,      [{ name, old, now, unit, kind }] the first `maxPlates` (4) record lines, texts ready
 //       more,        how many records did not fit the plates ("+2 more")
-//       sets, volume (whole number text), unit, name, endedOnPhone,
-//       hrLine }     { avg, max } or null
+//       volume (whole number text), unit }
 //   summary = what finishWorkout / onPhone return: { name, unit, dur, sets, vol, ended, hr, recs }; any part may be
 //   missing. `comma`: write 62,5 (usesComma(lang)). `repsWord`: the app's word for reps (a reps record has no unit).
-// Left out on purpose: the rim lettering (arcable), the crown's stops, the back face, calories: none of them has a
-// Huawei lite-wearable equivalent (no arc text, no crown event on every watch, no kcal).
+// Left out on purpose: the rim lettering (arcable), the crown's stops, the back face, calories, the animation and its
+// haptic beats, the rim of notches, the medal's size per watch: none has a Huawei lite-wearable equivalent here (no
+// arc text, no canvas).
+// lean: no notches (one per set, first at -90, 48 at most); add them if the medal ever gets a canvas.
 
 const isNum = v => typeof v === 'number' && isFinite(v)
 const two = n => (n < 10 ? '0' : '') + n
 
-export const MAX_NOTCHES = 48
 export const MAX_GEMS = 7
-export const STRIKE_AT = 0.3
-export const SETTLED_AT = 1.15
-
-export function notchAngles (sets) {
-  const n = isNum(sets) ? Math.min(Math.max(Math.floor(sets), 0), MAX_NOTCHES) : 0
-  const out = []
-  for (let i = 0; i < n; i++) out.push(-90 + i * 360 / n)
-  return out
-}
 
 // One diamond per record, 7 at most, centred under the time; past 5 they are smaller and closer.
 export function gems (records) {
@@ -80,21 +70,6 @@ export function legend (k, sets) { return k <= 0 ? { key: 'n_sets', count: isNum
 // The label under the big number.
 export function timeLabel (seconds) { return !isNum(seconds) ? 'sets' : time(seconds)[1] ? 'hours' : 'min_minutes' }
 
-/* ---------- the entrance (seconds from the moment it shows): the haptics' beats ---------- */
-export function gemTimes (records) { return [1.55, 1.9, 2.25, 2.33, 2.41, 2.49, 2.57].slice(0, isNum(records) ? Math.min(Math.max(Math.floor(records), 0), MAX_GEMS) : 0) }
-export const glintAt = records => (records > 0 ? 2.45 : 1.35)
-export const entranceEnds = records => glintAt(records) + 0.95 + 0.7
-// [[seconds, 'strike' | 'settled' | 'record']]: the strike, then a settle on a plain day, or a tap per diamond (3 at most).
-export function beats (records) {
-  const rest = records > 0 ? gemTimes(records).slice(0, 3).map(t => [t, 'record']) : [[SETTLED_AT, 'settled']]
-  return [[STRIKE_AT, 'strike']].concat(rest)
-}
-
-/* ---------- size ---------- */
-// The medal's width: 78 % of the screen, never wider than the screen less its margins.
-export const diameter = (width, height) => Math.min(Math.min(width, height) * 0.78, width - 24)
-export const endScale = records => (records > 0 ? 0.46 : 0.6)
-
 export function medalOf (sum, opts) {
   const o = opts || {}
   const recs = Array.isArray(sum.recs) ? sum.recs : []
@@ -104,22 +79,15 @@ export function medalOf (sum, opts) {
   const hasTime = isNum(sum.dur)
   const t = hasTime ? time(sum.dur) : [String(sets), false]
   const plates = recs.slice(0, max).map(r => plate(r, !!o.comma, o.repsWord || 'reps'))
-  const hr = Array.isArray(sum.hr) && isNum(sum.hr[0]) && isNum(sum.hr[1]) ? { avg: sum.hr[0], max: sum.hr[1] } : null
   return {
     gold: k > 0,
     time: t[0],
-    hours: t[1],
     timeLabel: timeLabel(hasTime ? sum.dur : null),
-    notches: notchAngles(sets),
     gems: gems(k),
     legend: legend(k, sets),
     plates: plates,
     more: Math.max(0, k - plates.length),
-    sets: sets,
     volume: String(Math.round(isNum(sum.vol) ? sum.vol : 0)),
-    unit: typeof sum.unit === 'string' ? sum.unit : 'kg',
-    name: typeof sum.name === 'string' ? sum.name : '',
-    endedOnPhone: sum.ended === true,
-    hrLine: hr
+    unit: typeof sum.unit === 'string' ? sum.unit : 'kg'
   }
 }

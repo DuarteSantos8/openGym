@@ -4,7 +4,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { render, build, LANGS, KEYS, OUT } from '../huawei-strings.mjs'
 
 test('texts.js is what the generator writes now', async () => {
-  assert.equal(readFileSync(OUT, 'utf8'), await render())
+  assert.equal(readFileSync(OUT, 'utf8'), await render(), 'texts.js is out of date: run node watch-huawei/huawei-strings.mjs')
 })
 
 test('every language the app has is in, with every key, none empty', async () => {

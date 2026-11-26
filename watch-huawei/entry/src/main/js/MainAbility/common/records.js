@@ -8,7 +8,7 @@
 //       never); a per-side row counts by its aggregate (the heavier side's weight, the reps of both sides), which is how
 //       the phone builds `best` too (lib/exercise-history.js bestSetFor reads the stored row). No `best`, a best of 0, or
 //       cardio: null. `unit` is the exercise's own unit when it has one, else the workout's.
-//   foldRecords(rc, w)  rc[String(entry.i)] = the line, for every exercise of workout `w` that has a `best`;
+//   foldRecords(rc, w)  rc[place + ':' + id] = the line, for every exercise of workout `w` that has a `best`;
 //       an exercise without one keeps what was folded before (the phone may have cut `best` for size), an exercise
 //       that has one and no longer beats it loses its line (the set was unticked while it was in view).
 //   recordList(rc) -> the lines in workout order
@@ -51,15 +51,22 @@ export function recordOf (e, unit) {
 
 export function foldRecords (rc, w) {
   const unit = typeof w.unit === 'string' ? w.unit : 'kg'
-  arrOf(w.entries).forEach((e, idx) => {
-    if (!dictOf(e) || !dictOf(e.best)) return
-    const k = String(isNum(e.i) ? Math.floor(e.i) : idx)
+  const es = arrOf(w.entries)
+  es.forEach((e, idx) => {
+    if (!dictOf(e)) return
+    const place = isNum(e.i) ? Math.floor(e.i) : idx
+    const k = place + ':' + (typeof e.id === 'string' ? e.id : '')
+    // another exercise stood at this place before (the phone added, removed or moved one): its line is stale
+    Object.keys(rc).forEach(o => { if (parseInt(o, 10) === place && o !== k) delete rc[o] })
+    if (!dictOf(e.best)) return
     const r = recordOf(e, unit)
     if (r) rc[k] = r
     else delete rc[k]
   })
+  // a whole-workout snapshot: lines past its end belong to exercises the phone removed
+  if (isNum(w.count) && w.count === es.length) Object.keys(rc).forEach(o => { if (parseInt(o, 10) >= es.length) delete rc[o] })
 }
 
 export function recordList (rc) {
-  return Object.keys(rc).sort((a, b) => a - b).map(k => rc[k])
+  return Object.keys(rc).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).map(k => rc[k])
 }

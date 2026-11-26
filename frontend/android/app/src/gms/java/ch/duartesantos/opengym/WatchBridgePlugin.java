@@ -64,8 +64,8 @@ import org.json.JSONObject;
  * stays the Wear OS link by itself.
  *
  *   status()             { supported, activated, paired, installed, reachable, garmin, huawei, wear }
- *   sendSnapshot({json, garmin?, huawei?}) { sent }: `garmin` goes to the Garmins, `huawei` to the Huawei
- *                        watches
+ *   sendSnapshot({json, garmin?, huawei?, again?}) { sent }: `garmin` goes to the Garmins, `huawei` to the Huawei
+ *                        watches (`again`: a deliberate resend, sent even when the same)
  *   drain()              { events }
  *   ack({ids})
  *   openOnWatch({type})  { ok }: a workout started here shows on the watch
@@ -195,7 +195,7 @@ public class WatchBridgePlugin extends Plugin {
         if (garmin != null || huawei != null) {
             // Both links get theirs: no short-circuit.
             boolean toGarmin = garmin != null && GarminLink.get(getContext()).send(garmin);
-            boolean toHuawei = huawei != null && HuaweiLink.get(getContext()).send(huawei);
+            boolean toHuawei = huawei != null && HuaweiLink.get(getContext()).send(huawei, Boolean.TRUE.equals(call.getBoolean("again", false)));
             garminSent = toGarmin || toHuawei;
         }
         try {

@@ -8,15 +8,19 @@
 //   build(c, ui, t) -> data     the screen's fields (always `s_<screen>`, `top`, the look)
 //   act(c, ui, name)            a tap (ACTIONS lists the names; each is one handler in the page)
 //   translator(lang) -> t(key, a, b, c)
+//   swipeTo(c, ui, dir)         a swipe: left opens the Metrics pages from the set or the rest and goes on to the next
+//                               page, right goes back a page (from the first, to the workout); ui.mp is the page, 0 none
 // Same language subset as core.js (test/syntax.test.js).
 import {
   entries, current, setIndex, place, partners, planSize, progress, fixList, logged, hasMore, needsPhone,
   unitOf, stepOf, stepWeight, stepReps, isTimed, isCardio, locked, restLeft, restPaused, held, countNumber, chips, chipLabel,
   canRate, lastSet, waiting, save, startWorkout, finishWorkout, pressDone, skipSet, nextExercise, holdStart, holdStop, holdCancel,
-  restAdd, restSkip, rate, fixLast, fixStep, fixCancel, fixSave, keepGoing,
+  restAdd, restSkip, rate, refSet, fixLast, fixStep, fixCancel, fixSave, keepGoing,
   startFlow, preState, preCancel, checkinAnswer, checkinSkip, weighInStep, weighInDone, canAdd, canRemove, addSet, removeSet,
-  supersetStart, sessionNote, noteOn, sensorShouldRest, setId, lockFor
+  supersetStart, sessionNote, noteOn, sensorShouldRest, setId, lockFor, reach
 } from './core.js'
+import { numbers, pulse, zones, effort, muscles, metricPages, streak, restStyle, bandOf, setsText } from './metrics.js'
+import { medalOf, usesComma } from './medal.js'
 import { KEYS, TEXTS } from './texts.js'
 
 export const LIME = '#A3E635'
@@ -26,7 +30,17 @@ export const COUNT_MS = 3700 // "3, 2, 1", "Go!" for 0.7 s, then it starts
 export const CLOSE_GUARD_MS = 1000 // the summary ignores a tap for its first second
 export const ROUTINE_ROWS = 3
 export const OVERVIEW_ROWS = 4
-export const SCREENS = ['idle', 'routines', 'count', 'wait', 'ask', 'confirm', 'menu', 'hold', 'set', 'over', 'rest', 'end', 'card', 'summary', 'checkin', 'weighin']
+export const METRIC_ROWS = 5 // rows of the Effort and Muscles pages (and the Zones')
+export const PULSE_BARS = 12
+export const PLATES = 4
+const METRIC_SCREEN = { numbers: 'mnum', pulse: 'mpulse', effort: 'meffort', zones: 'mzones', muscles: 'mmuscles' }
+const METRIC_SCREENS = Object.keys(METRIC_SCREEN).map(k => METRIC_SCREEN[k])
+export const SCREENS = ['idle', 'routines', 'count', 'wait', 'ask', 'confirm', 'menu', 'hold', 'set', 'over', 'rest', 'end', 'card', 'summary', 'checkin', 'weighin'].concat(METRIC_SCREENS)
+// the medal's metals (Wear OS Medal.kt): never the accent
+const GOLD = { rim: '#D9B45F', rimLine: '#7A5A1E', face: '#F2D791', faceLine: '#BB9545', ink: '#2A1C07' }
+const STEEL = { rim: '#B0B8C2', rimLine: '#4F5762', face: '#D4DAE1', faceLine: '#949DA8', ink: '#13171C' }
+const QUIET = '#a1a1a6'
+const RED = '#ff453a'
 
 /* ---------- small helpers (ES5) ---------- */
 const dictOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)
@@ -105,18 +119,29 @@ function hrText (c) {
   if (show && isOff(show.hr)) return ''
   return c.g.bpm > 0 ? c.g.bpm + ' bpm' : ''
 }
-// "Waiting to sync 2", "Phone out of reach (2)", and, where asked for, "All synced".
-function syncText (c, t, synced) {
+// "Waiting to sync 2", "Phone out of reach (2)", and, where asked for, "All synced". `bar`: the short form for the
+// top bar, which is about 170 px wide: "(2)" and "Phone away (2)".
+function syncText (c, t, synced, bar) {
   const n = waiting(c.s)
-  if (c.g.awayAt != null) return t('phone_out_of_reach') + (n > 0 ? ' (' + n + ')' : '')
-  if (n > 0) return t('waiting_sync') + ' ' + n
+  if (c.g.awayAt != null) return (bar ? t('phone_gone') : t('phone_out_of_reach')) + (n > 0 ? ' (' + n + ')' : '')
+  if (n > 0) return bar ? '(' + n + ')' : t('waiting_sync') + ' ' + n
   return synced ? t('all_synced') : ''
+}
+// Apple's colours for an effort chip, by the phone's bands (lib/effort.js): purple, red, orange, yellow, the accent, teal.
+const ZONE_COLORS = ['#40c8e0', '#30d158', '#ffd60a', '#ff9f0a', '#ff453a'] // teal, green, yellow, orange, red
+const BANDS = ['#bf5af2', '#ff453a', '#ff9f0a', '#ffd60a', null, '#40c8e0']
+const BAND_TOPS = [0.25, 0.75, 1.5, 2.5, 3.5]
+function bandColor (kind, v, accent) {
+  const rir = kind === 'rpe' ? 10 - v : v
+  let i = 0
+  while (i < BAND_TOPS.length && rir > BAND_TOPS[i]) i++
+  return BANDS[i] || accent
 }
 const join = a => a.filter(x => x).join(' · ')
 
 /* ---------- ui state ---------- */
 export function newUi (lang) {
-  return { lang: lang || 'en', cd: null, rp: 0, op: 0, menu: false, confirm: null, key: '', w: 0, r: 0, hasW: false, rt: 0, rtFor: null, cdN: null, rm: null, menuRest: false }
+  return { lang: lang || 'en', cd: null, rp: 0, op: 0, mp: 0, mn: 0, menu: false, confirm: null, key: '', w: 0, r: 0, hasW: false, rt: 0, rtFor: null, cdN: null, rm: null, menuRest: false }
 }
 
 // The routines the Start screen offers: today's first, then the others: those without a folder as the
@@ -138,6 +163,8 @@ function routinesOf (s) {
 const pagesOf = (n, per) => Math.max(1, Math.ceil(n / per))
 
 /* ---------- which screen ---------- */
+// The Metrics page the lifter is on, 1 to the number of pages now (the list shrinks when the heart rate goes).
+const metricIndex = (c, ui) => Math.min(ui.mp, metricPages(c).length)
 export function screenOf (c, ui) {
   const s = c.s
   const g = c.g
@@ -152,6 +179,7 @@ export function screenOf (c, ui) {
   if (ui.confirm) return 'confirm'
   if (g.ask) return 'ask'
   if (ui.menu) return 'menu'
+  if (ui.mp > 0) return METRIC_SCREEN[metricPages(c)[metricIndex(c, ui) - 1]]
   if (needsPhone(s)) return 'wait'
   if (g.hcd != null) return 'count'
   if (g.hold) return 'hold'
@@ -216,9 +244,17 @@ function countBuzz (c, ui, el) {
 export function tick (c, ui) {
   const s = c.s
   const st = dictOf(s.set)
-  if (s.w) { ui.cd = null; if (c.g.pre) preCancel(c) }
+  if (s.w) {
+    ui.cd = null
+    // the pages came or went (Pulse, Zones): back to the first, as Wear does
+    const n = metricPages(c).length
+    ui.mp = ui.mp > 1 && n !== ui.mn ? 1 : Math.min(ui.mp, n)
+    ui.mn = n
+    if (c.g.pre) preCancel(c)
+  }
   else {
     ui.menu = false
+    ui.mp = 0
     ui.confirm = null
     if (ui.cd) {
       const el = c.env.now() - ui.cd.at
@@ -290,7 +326,7 @@ const FILL = {
     d.bwNum = fmtW(p.w)
     d.bwUnit = p.unit
     d.saveLabel = t('save_and_start')
-    d.skipLabel = t('start_without_weighin')
+    d.skipLabel = t('skip') // Apple's Skip, beside the round X: the long words did not fit the circle's foot
     d.cancelLabel = t('cancel')
   },
   idle: (c, ui, t, d) => {
@@ -306,6 +342,14 @@ const FILL = {
     d.startLabel = first && first.today ? t('start_workout') : t('quick_start')
     d.showRoutines = list.length > 1
     d.routinesLabel = t('routines')
+    // the hint's room holds the week streak when there is nothing to hint at; the accent says this week is done
+    const sk = !d.hint ? streak(c) : null
+    if (sk && sk.weeks > 0) d.hint = t('week_streak') + ' ' + sk.weeks
+    d.hintColor = sk && sk.thisWeekDone ? d.accent : QUIET
+    // the phone along the bottom: in reach, away, or nothing when the watch cannot tell (core.js reach)
+    const near = reach(c)
+    const wait = waiting(s)
+    d.top = join([near === 'near' ? t('phone_connected') : near === 'away' ? t('phone_gone') : '', wait > 0 ? t('waiting_sync') + ' ' + wait : ''])
   },
   routines: (c, ui, t, d) => {
     const list = routinesOf(c.s)
@@ -322,8 +366,11 @@ const FILL = {
   },
   count: (c, ui, t, d) => {
     const running = !!c.s.w
-    const n = countNumber(c.env.now() - (running ? c.g.hcd : ui.cd.at))
+    const el = c.env.now() - (running ? c.g.hcd : ui.cd.at)
+    const n = countNumber(el)
+    d.pct = Math.max(0, Math.min(100, Math.round(100 - el / 30))) // the ring drains over the three seconds
     d.big = n > 0 ? String(n) : t('go')
+    d.goOn = n <= 0 // Go! is wider than a number: the page draws it smaller, inside the ring
     d.label = running ? t('start_hold') : t('start_workout')
     d.cancelLabel = t('cancel')
   },
@@ -344,6 +391,7 @@ const FILL = {
     const remove = ui.confirm === 'remove'
     d.title = remove ? t('remove_set') : discard ? t('discard_workout_q') : t('finish_workout_q')
     d.yesLabel = remove ? t('remove_set') : discard ? t('discard_workout') : t('finish_and_save')
+    d.yesColor = remove || discard ? RED : '#ffffff' // a button that throws something away is outlined red, as Apple's Remove
     d.noLabel = t('cancel')
   },
   menu: (c, ui, t, d) => {
@@ -377,6 +425,8 @@ const FILL = {
     d.pct = Math.max(0, Math.min(100, Math.round(left * 100 / h[1])))
     d.timeColor = left <= 5 ? WARM : d.accent
     d.stopLabel = t('stop')
+    d.top = hrText(c) // red is the heart rate alone; the sync state is the quiet line at the foot
+    d.sync = syncText(c, t, false)
   },
   set: (c, ui, t, d) => {
     const s = c.s
@@ -392,21 +442,29 @@ const FILL = {
     const ps = partners(s, cur.pos)
     d.name = strOf(e.name)
     d.tag = tag
+    d.pill = pl[0] + '/' + pl[1] + ' ' + t('menu') // the pill opens the menu, as Apple's does
+    d.band = bandOf(cur.row)
+    d.bandOn = d.band !== ''
     d.partner = ps.length ? '+ ' + ps[0] + (ps.length > 1 ? ' +' + (ps.length - 1) : '') : ''
+    d.partnerOn = d.partner !== ''
     d.fixing = cur.fixing
     d.prevOn = fixList(s).length > 0
     d.nextOn = cur.fixing
     d.wOn = ui.hasW
     // "Added weight" for a bodyweight exercise, as Wear words it; its unit is the profile's, left off for room
     d.wNum = isTrue(e.bodyweight) ? '+' + fmtW(ui.w) : fmtW(ui.w)
-    d.wUnit = isTrue(e.bodyweight) ? t('added_weight') : unitOf(s, e)
-    d.rLabel = isTimed(e) ? t('hold') : t('reps')
+    // a long word (pl, lt) does not fit the tile: the plain word, the plus sign says the rest
+    const aw = t('added_weight').toUpperCase()
+    d.wLabel = isTrue(e.bodyweight) && aw.length <= 14 ? aw : t('weight').toUpperCase()
+    d.wUnit = unitOf(s, e).toUpperCase()
+    d.rLabel = (isTimed(e) ? t('hold') : t('reps')).toUpperCase()
     d.rNum = isTimed(e) ? clock(ui.r) : String(Math.round(ui.r))
     d.last = !cur.fixing && !(show && isOff(show.last)) && typeof e.last === 'string' && e.last ? t('last_time', e.last) : ''
     d.doneLabel = cur.fixing ? t('save') : isTimed(e) ? t('start_hold') : t('done')
     d.cancelLabel = t('cancel')
     d.locked = locked(c)
     // a rest runs on while a set is fixed: its time stays at the top
+    d.top = hrText(c) // the sync state is not shown here: red means heart rate
     const rl = cur.fixing ? restLeft(c) : null
     if (rl != null && rl > 0) d.top = join([t('rest') + ' ' + clock(rl), d.top])
   },
@@ -415,7 +473,12 @@ const FILL = {
     const left = restLeft(c)
     const paused = restPaused(c)
     const total = c.g.restTotal > 0 ? c.g.restTotal : ui.rt
-    d.restLabel = paused ? t('paused') : t('rest')
+    // as Apple's: the heart rate on top, the time, a draining bar (not while paused), the sync state at the foot
+    d.top = hrText(c)
+    d.sync = syncText(c, t, false)
+    d.barOn = restStyle(c) === 'ring' && !paused
+    d.restLabel = paused ? t('paused') : ''
+    d.timeColor = paused ? QUIET : d.accent
     d.restTime = clock(left)
     d.pct = total > 0 ? Math.max(0, Math.min(100, Math.round(left * 100 / total))) : 0
     const cur = current(c)
@@ -426,11 +489,19 @@ const FILL = {
     d.nextNums = next ? numbersOf(c, cur, t) : ''
     const kind = st ? st.effort : null
     const rated = c.g.rated
-    d.effortOn = canRate(c) && rated == null
-    d.how = t('how_hard')
+    d.rateOn = canRate(c)
+    d.effortOn = d.rateOn && rated == null
     const vals = chips(kind)
-    for (let k = 0; k < 4; k++) d['c' + k] = chipLabel(kind, vals[k])
-    d.upNext = join([next ? t('up_next') : '', rated != null ? t('effort') + ' ' + chipLabel(kind, rated) : ''])
+    for (let k = 0; k < 4; k++) { d['c' + k] = chipLabel(kind, vals[k]); d['cc' + k] = bandColor(kind, vals[k], d.accent) }
+    if (d.rateOn) {
+      const ref = refSet(s, c.g.last)
+      const e = ref ? entries(s)[ref[0]] : null
+      const sp = e ? place(e, ref[1]) : null
+      const name = String(kind).toUpperCase()
+      d.rateLn = join([name, sp ? t('up_next_set', strOf(e.name), sp[0], sp[1]) : ''])
+      if (rated != null) { d.ratedText = name + ' ' + chipLabel(kind, rated); d.ratedColor = bandColor(kind, rated, d.accent) }
+    }
+    d.upNext = next ? t('up_next') : ''
     d.skipLabel = t('skip')
     d.locked = locked(c)
   },
@@ -443,7 +514,10 @@ const FILL = {
       const i = page * OVERVIEW_ROWS + k
       const e = i < es.length ? dictOf(es[i]) : null
       const n = e ? setCount(e) : [0, 0]
-      d['ot' + k] = e ? (i === s.pos ? '> ' : '') + n[0] + '/' + n[1] + '  ' + strOf(e.name) : ''
+      d['on' + k] = e ? strOf(e.name) : ''
+      d['oc' + k] = e ? n[0] + '/' + n[1] : ''
+      d['ol' + k] = e && i === s.pos ? d.accent : '#1c1c1e' // the one up has the accent outline
+      d['ob' + k] = e && n[1] > 0 && n[0] === n[1] ? d.accent : '#2c2c2e' // all its sets done: a filled mark
       d['ovv' + k] = !!e
     }
     for (let k = 0; k < OVERVIEW_ROWS; k++) d['ss' + k] = page * OVERVIEW_ROWS + k < es.length && supersetStart(s, page * OVERVIEW_ROWS + k)
@@ -454,9 +528,10 @@ const FILL = {
     const last = es.length ? dictOf(es[es.length - 1]) : null
     const more = hasMore(s) && last ? Math.max(1, (toF(s.w.count) == null ? 0 : s.w.count) - (toF(last.i) == null ? es.length : last.i) - 1) : 0
     d.ovMore = more > 0 ? '+' + more + ' ' + t('exercises') : ''
+    d.ovMoreOn = more > 0
     d.ovPaged = pages > 1
     const p = progress(s)
-    d.title = t('overview')
+    d.title = strOf(s.w.name) || t('overview')
     d.count = t('sets_of', p[0], p[1])
     d.sync = syncText(c, t, true)
     d.finishLabel = t('finish_workout')
@@ -477,18 +552,113 @@ const FILL = {
   },
   summary: (c, ui, t, d) => {
     const m = c.g.ended
+    const md = medalOf(m, { comma: usesComma(langOf(c, ui)), repsWord: t('reps'), maxPlates: PLATES })
+    const metal = md.gold ? GOLD : STEEL
     d.title = m.ended ? t('ended_on_phone') : t('workout_saved')
     d.name = strOf(m.name)
-    d.dur = m.dur == null ? '' : clock(m.dur)
+    d.gold = md.gold
+    d.mRim = metal.rim
+    d.mRimLine = metal.rimLine
+    d.mFace = metal.face
+    d.mFaceLine = metal.faceLine
+    d.mInk = metal.ink
+    d.mTimeNum = md.time
+    d.mUnit = t(md.timeLabel).toUpperCase()
+    d.mVol = md.volume + ' ' + md.unit
+    d.gemPx = md.gems.radius > 8 ? '18px' : '14px'
+    for (let k = 0; k < 7; k++) d['gem' + k] = k < md.gems.angles.length
+    d.legend = md.legend.key === 'n_sets' ? t('n_sets', md.legend.count) : md.legend.key === 'new_record' ? t('new_record') : md.legend.count + ' ' + t('records')
+    for (let k = 0; k < PLATES; k++) {
+      const p = md.plates[k]
+      d['pv' + k] = !!p
+      d['pn' + k] = p ? p.name : ''
+      d['pnum' + k] = p ? t('band_to', p.old, p.now) + (p.unit ? ' ' + p.unit : '') : ''
+    }
+    d.rMore = md.more > 0 ? t('n_more', md.more) : ''
+    d.rMoreOn = md.more > 0
+    d.dur = m.dur == null ? '' : md.time + ' ' + t(md.timeLabel).toLowerCase() // the medal's own words
     d.durLabel = t('time')
     d.setsNum = String(m.sets)
     d.setsLabel = t('sets')
     d.volNum = Math.round(m.vol) + ' ' + strOf(m.unit)
     d.volLabel = t('volume')
     d.hrLine = Array.isArray(m.hr) ? t('hr_avg_max', m.hr[0], m.hr[1]) : ''
+    d.hrOn = Array.isArray(m.hr)
     d.sync = syncText(c, t, true)
+    d.syncOn = d.sync !== ''
     d.doneLabel = t('done')
+  },
+  // The Metrics pages (metrics.js has the numbers); each has a heading and "n/total" at the foot
+  mnum: (c, ui, t, d) => {
+    const n = numbers(c)
+    d.mSub = n.paused ? t('paused') : t('time')
+    d.mTime = n.elapsed == null ? '--' : clock(n.elapsed)
+    d.setsNum = n.sets[0] + '/' + n.sets[1]
+    d.setsLabel = t('sets')
+    d.volNum = n.volume + ' ' + n.unit
+    d.volLabel = t('volume')
+    d.mHr = n.hr && n.hr.now ? n.hr.now + ' bpm' : ''
+    d.hrLine = n.hr ? t('hr_avg_max', n.hr.avg, n.hr.max) : ''
+  },
+  mpulse: (c, ui, t, d) => {
+    const p = pulse(c, PULSE_BARS)
+    const bpm = p.points.map(x => x[1])
+    let lo = Infinity
+    let hi = 0
+    bpm.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v) })
+    const num = v => (v == null ? '--' : String(v))
+    d.mTitle = t('heart_rate')
+    d.mAvg = num(p.avg)
+    d.mAvgLabel = t('avg')
+    d.mMin = num(p.min)
+    d.mMinLabel = t('min')
+    d.mMax = num(p.max)
+    d.mMaxLabel = t('max')
+    // a bar 8 to 64 px tall for each reading, the lowest shortest; a missing reading is no bar
+    for (let k = 0; k < PULSE_BARS; k++) d['pb' + k] = k >= bpm.length ? '0px' : (hi === lo ? 36 : 8 + Math.round((bpm[k] - lo) * 56 / (hi - lo))) + 'px'
+  },
+  meffort: (c, ui, t, d) => {
+    const e = effort(c)
+    const comma = usesComma(langOf(c, ui))
+    d.mTitle = t('effort') + (e.kind ? ' ' + e.kind.toUpperCase() : '')
+    rowsOf(d, e.rows.map(r => [r.name, setsText(r.value, comma)]), t, true)
+    d.mEmpty = t('no_effort_yet')
+  },
+  mzones: (c, ui, t, d) => {
+    const z = zones(c)
+    d.mTitle = t('zones')
+    d.zNeed = z.needsBirthYear
+    d.zOn = !z.needsBirthYear
+    d.mNeed = z.needsBirthYear ? t('no_age_set') + '. ' + t('add_birth_year') : ''
+    for (let k = 0; k < 5; k++) {
+      const b = z.bands[k]
+      d['zn' + k] = z.needsBirthYear ? '' : (z.now === k + 1 ? '> Z' : 'Z') + (k + 1)
+      d['zr' + k] = !b ? '' : k === 0 ? t('band_under', z.bands[1].lo) : k === 4 ? t('band_over', b.lo) : t('band_to', b.lo, b.hi)
+      d['zt' + k] = z.needsBirthYear ? '' : clock(z.times[k])
+      d['zc' + k] = ZONE_COLORS[k] // Apple's zone colours; the zone now keeps its "> " mark
+    }
+  },
+  mmuscles: (c, ui, t, d) => {
+    const m = muscles(c)
+    const comma = usesComma(langOf(c, ui))
+    d.mTitle = t('muscles')
+    rowsOf(d, m.rows.map(r => [r.name, setsText(r.sets, comma)]), t)
+    d.mEmpty = t('no_sets_yet')
   }
+}
+
+// The five name-and-number rows of the Effort and Muscles pages: [[name, value]], "+n more" past five. `latest`:
+// the last five (Effort, as Wear: the exercise in hand shows), else the first five (Muscles: most first).
+function rowsOf (d, list, t, latest) {
+  const shown = latest ? list.slice(-METRIC_ROWS) : list
+  for (let k = 0; k < METRIC_ROWS; k++) {
+    const r = shown[k]
+    d['mrOn' + k] = !!r
+    d['mr' + k] = r ? r[0] : ''
+    d['mv' + k] = r ? r[1] : ''
+  }
+  d.mMore = list.length > METRIC_ROWS ? t('n_more', list.length - METRIC_ROWS) : ''
+  d.mEmptyOn = list.length === 0
 }
 
 // Everything the HML binds to, as the page starts with it. build() only ever returns these keys.
@@ -496,20 +666,31 @@ export function blank () {
   const d = {
     top: '', menuLabel: '', accent: LIME, ink: ON_LIME,
     canStart: false, showStart: false, showRoutines: false, routinesLabel: '', startLabel: '', title: '', name: '', plan: '', hint: '',
-    rPaged: false, cancelLabel: '', big: '', label: '', body: '', keepLabel: '', finishLabel: '', yesLabel: '', noLabel: '',
+    rPaged: false, cancelLabel: '', big: '', label: '', body: '', keepLabel: '', finishLabel: '', yesLabel: '', yesColor: '#ffffff', noLabel: '',
     hasPrev: false, hasOver: false, hasSkip: false, hasNext: false, lPrev: '', lOver: '', lSkip: '', lNext: '', lFinish: '', lDiscard: '', lBack: '',
-    tag: '', time: '', pct: 0, timeColor: LIME, stopLabel: '', partner: '', fixing: false, prevOn: false, nextOn: false, wOn: false,
+    tag: '', pill: '', band: '', bandOn: false, partnerOn: false, wLabel: '', time: '', pct: 0, timeColor: LIME, stopLabel: '', partner: '', fixing: false, prevOn: false, nextOn: false, wOn: false,
     qLabel: '', qLo: '', qHi: '', qStep: '', bwNum: '', bwUnit: '', saveLabel: '', hasAdd: false, hasRemove: false, lAdd: '', lRemove: '',
     ssLabel: '', note: '', noteOn: false, lt: '<', gt: '>', wNum: '', wUnit: '', rLabel: '', rNum: '', last: '', doneLabel: '', restLabel: '', restTime: '', upNext: '', nextName: '',
-    nextNums: '', effortOn: false, how: '', skipLabel: '', locked: false, ovMore: '', ovPaged: false, count: '', sync: '',
-    backLabel: '', nextLabel: '', dur: '', durLabel: '', setsNum: '', setsLabel: '', volNum: '', volLabel: '', hrLine: ''
+    nextNums: '', effortOn: false, skipLabel: '', locked: false, ovMore: '', ovPaged: false, count: '', sync: '', rMoreOn: false, hrOn: false, goOn: false, ovMoreOn: false,
+    backLabel: '', nextLabel: '', dur: '', durLabel: '', setsNum: '', setsLabel: '', volNum: '', volLabel: '', hrLine: '',
+    hintColor: QUIET, barOn: true, rateOn: false, ratedText: '', ratedColor: QUIET, rateLn: '', syncOn: false,
+    cc0: QUIET, cc1: QUIET, cc2: QUIET, cc3: QUIET,
+    mTitle: '', mPos: '', mSub: '', mTime: '', mHr: '', mAvg: '', mAvgLabel: '', mMin: '', mMinLabel: '', mMax: '', mMaxLabel: '',
+    mEmpty: '', mEmptyOn: false, mMore: '', zOn: false, zNeed: false, mNeed: '',
+    gold: false, mRim: STEEL.rim, mRimLine: STEEL.rimLine, mFace: STEEL.face, mFaceLine: STEEL.faceLine, mInk: STEEL.ink, mTimeNum: '', mUnit: '',
+    mVol: '', gemPx: '18px', legend: '', rMore: ''
   }
+  for (let k = 0; k < PULSE_BARS; k++) d['pb' + k] = '0px'
+  for (let k = 0; k < METRIC_ROWS; k++) { d['mrOn' + k] = false; d['mr' + k] = ''; d['mv' + k] = '' }
+  for (let k = 0; k < 5; k++) { d['zn' + k] = ''; d['zr' + k] = ''; d['zt' + k] = ''; d['zc' + k] = '#ffffff' }
+  for (let k = 0; k < 7; k++) d['gem' + k] = false
+  for (let k = 0; k < PLATES; k++) { d['pv' + k] = false; d['pn' + k] = ''; d['pnum' + k] = '' }
   SCREENS.forEach(k => { d['s_' + k] = false })
   d.s_lost = false
   d.lostText = ''
   d.retryLabel = ''
   for (let k = 0; k < ROUTINE_ROWS; k++) { d['ro' + k] = ''; d['rs' + k] = ''; d['rv' + k] = false }
-  for (let k = 0; k < OVERVIEW_ROWS; k++) { d['ot' + k] = ''; d['ovv' + k] = false }
+  for (let k = 0; k < OVERVIEW_ROWS; k++) { d['on' + k] = ''; d['oc' + k] = ''; d['ol' + k] = '#1c1c1e'; d['ob' + k] = '#2c2c2e'; d['ovv' + k] = false }
   for (let k = 0; k < 4; k++) { d['c' + k] = ''; d['ss' + k] = false }
   for (let k = 0; k < 5; k++) d['q' + k] = String(k + 1)
   for (let k = 0; k < 4; k++) d['c' + k] = ''
@@ -531,9 +712,10 @@ export function build (c, ui, t) {
   const screen = screenOf(c, ui)
   const d = { menuLabel: t('menu'), s_lost: false }
   SCREENS.forEach(k => { d['s_' + k] = k === screen })
-  d.top = join([hrText(c), syncText(c, t, false)])
+  d.top = join([hrText(c), syncText(c, t, false, true)])
   look(c, d)
   FILL[screen](c, ui, t, d)
+  if (METRIC_SCREENS.indexOf(screen) >= 0) d.mPos = metricIndex(c, ui) + '/' + metricPages(c).length
   return d
 }
 
@@ -596,6 +778,7 @@ const ACT = {
   restPlus: (c, ui) => { if (!locked(c)) restAdd(c, 15) },
   restSkip: (c, ui) => { if (!locked(c)) restSkip(c) },
   stopHold: (c, ui) => { holdStop(c) },
+  mpBack: (c, ui) => { if (ui.mp > 0) ui.mp = metricIndex(c, ui) - 1 },
   mPrev: (c, ui) => { ui.menu = false; fixLast(c) },
   mOver: (c, ui) => { ui.menu = false; ui.op = 0; c.g.page = 'over' },
   mSkip: (c, ui) => { ui.menu = false; skipSet(c) },
@@ -649,6 +832,19 @@ export const ACTIONS = Object.keys(ACT)
 
 export function act (c, ui, name) {
   if (Object.prototype.hasOwnProperty.call(ACT, name)) ACT[name](c, ui)
+}
+
+// A swipe on the page. Left opens the Metrics pages from the set or the rest and moves on through them (the last
+// stays); right moves back, and from the first page lands on the workout. Anything else on top (a confirm, the
+// menu) is left alone. Leaving the app by a swipe right from Start is the page's own rule.
+export function swipeTo (c, ui, dir) {
+  if (!c.s.w) return
+  const at = screenOf(c, ui)
+  const inside = METRIC_SCREENS.indexOf(at) >= 0
+  if (dir === 'left') {
+    if (inside) ui.mp = Math.min(metricIndex(c, ui) + 1, metricPages(c).length)
+    else if (at === 'set' || at === 'rest') ui.mp = 1
+  } else if (dir === 'right' && inside) ui.mp = metricIndex(c, ui) - 1
 }
 
 /* ---------- what the page does with the outside ---------- */

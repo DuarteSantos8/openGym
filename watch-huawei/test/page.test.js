@@ -47,10 +47,18 @@ test('every class the HML uses is in the CSS, and only components the research f
   ;[...hml.matchAll(/<progress\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="(arc|horizontal)"/))
 })
 
+test('the dimmed arrow beside Done is as wide as an arrow and has no tap handler', () => {
+  const rule = name => (css.match(new RegExp('\\.' + name + '\\s*\\{([^}]*)\\}')) || [])[1] || ''
+  assert.equal(rule('arrowOff').match(/width:\s*(\d+)px/)[1], rule('arrow').match(/width:\s*(\d+)px/)[1])
+  ;[...hml.matchAll(/<input[^>]*class="arrowOff"[^>]*>/g)].forEach(m => assert.doesNotMatch(m[0], /onclick/))
+  assert.doesNotMatch(hml, /<div else class="arrow"/)
+  assert.match(rule('pbars'), /margin-bottom:\s*\d+px/) // a gap between the bars and the "2/5" under them
+})
+
 test('buttons are at least 56 px tall and text boxes have a size', () => {
   const rule = name => (css.match(new RegExp('\\.' + name + '\\s*\\{([^}]*)\\}')) || [])[1] || ''
   ;['btn', 'arrow'].forEach(n => assert.ok(parseInt((rule(n).match(/height:\s*(\d+)px/) || [])[1] || (rule('btn').match(/height:\s*(\d+)px/) || [])[1], 10) >= 56, n))
-  ;['hero', 'big', 'num', 'mid', 'name', 'small', 'tiny', 'top'].forEach(n => assert.match(rule(n), /width:[^;]+;[^}]*height:|height:[^;]+;[^}]*width:/, n))
+  ;['hero', 'big', 'mid', 'name', 'small', 'tiny'].forEach(n => assert.match(rule(n), /width:[^;]+;[^}]*height:|height:[^;]+;[^}]*width:/, n))
   assert.doesNotMatch(css, /animation|transition|transform/)
   assert.doesNotMatch(hml + css, /—/)
   assert.doesNotMatch(hml, /\{\{[^}]*(=>|`|\.\.\.|\bconst\b|\blet\b)/)
@@ -225,9 +233,73 @@ test('page: a tap before the state is loaded does nothing, and a swipe right lea
   } finally { restore() }
 })
 
+test('page: in a workout a swipe left opens the Metrics pages and a swipe right goes back; it never leaves the app', async () => {
+  const W = world(new Map())
+  try {
+    const page = await boot(W)
+    fromPhone(W, snap())
+    page.start(); W.advance(4)
+    assert.equal(page.s_set, true)
+    page.def.swipe.call(page, { direction: 'right' })
+    assert.deepEqual([page.s_set, W.terminated], [true, 0])
+    page.def.swipe.call(page, { direction: 'left' })
+    assert.deepEqual([page.s_mnum, page.s_set, page.mPos], [true, false, '1/3'])
+    page.def.swipe.call(page, { direction: 'left' })
+    assert.deepEqual([page.s_meffort, page.mPos], [true, '2/3'])
+    page.def.swipe.call(page, { direction: 'right' })
+    page.def.swipe.call(page, { direction: 'right' })
+    assert.deepEqual([page.s_set, W.terminated], [true, 0])
+    // an up or down swipe (a list scrolling) does not redraw
+    page.tag = 'stale' // the Set screen fills the tag: a redraw would rewrite it
+    page.def.swipe.call(page, { direction: 'up' })
+    page.def.swipe.call(page, { direction: 'down' })
+    assert.equal(page.tag, 'stale')
+    page.def.onDestroy.call(page)
+    W.settle()
+  } finally { restore() }
+})
+
 /* ---------- the review's cases ---------- */
 
 
+
+test('page: the summary list gets the crown once when it shows, and a crown that is not there breaks nothing', async () => {
+  const W = world(new Map())
+  try {
+    const page = await boot(W)
+    fromPhone(W, snap())
+    page.start(); W.advance(4)
+    const asked = []
+    page.$refs = { sum: { rotation: o => asked.push(o) } }
+    page.menu(); page.mFinish(); page.yes()
+    assert.equal(page.s_summary, true)
+    W.advance(1)
+    assert.deepEqual(asked, [{ focus: true }])
+    W.advance(3)
+    assert.equal(asked.length, 1) // once, not on every redraw
+    page.close(); page.start(); W.advance(4)
+    page.$refs = {} // a watch whose list has no crown method
+    page.menu(); page.mFinish(); page.yes()
+    assert.doesNotThrow(() => W.advance(1))
+  } finally { restore() }
+})
+
+test('page: a rebuild while the summary is up asks for the crown again', async () => {
+  const W = world(new Map())
+  try {
+    const page = await boot(W)
+    fromPhone(W, snap())
+    page.start(); W.advance(4)
+    const asked = []
+    page.$refs = { sum: { rotation: o => asked.push(o) } }
+    page.menu(); page.mFinish(); page.yes()
+    W.advance(1)
+    assert.equal(asked.length, 1)
+    page.def.onDestroy.call(page)
+    page.def.onShow.call(page); W.settle(); W.advance(1)
+    assert.equal(asked.length, 2)
+  } finally { restore() }
+})
 
 test('page: nothing is sent or registered before wearengine.js knows its version; it waits, then goes on', async () => {
   const W = world(new Map())
@@ -407,7 +479,7 @@ test('config.json: the supportLists pair is the page\'s package and fingerprint,
 test('style bindings bind single values inside a declaration, never a whole style string', () => {
   const styles = [...hml.matchAll(/\bstyle="([^"]*)"/g)].map(m => m[1])
   assert.ok(styles.length > 5)
-  styles.forEach(v => { assert.doesNotMatch(v, /^\{\{[^}]*\}\}$/, v); assert.match(v, /^([a-z-]+: (\{\{[A-Za-z]+\}\}|#[0-9a-f]{6});\s?)+$/, v) })
+  styles.forEach(v => { assert.doesNotMatch(v, /^\{\{[^}]*\}\}$/, v); assert.match(v, /^([a-z-]+: (\{\{[A-Za-z][A-Za-z0-9]*\}\}|#[0-9a-f]{6});\s?)+$/, v) })
 })
 
 

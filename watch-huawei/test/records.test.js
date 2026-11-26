@@ -68,7 +68,7 @@ test('foldRecords keeps one line per exercise by its place in the workout, and r
   const rc = {}
   const es = six().map((e, i) => Object.assign(e, { i: i }))
   foldRecords(rc, { unit: 'kg', entries: es })
-  assert.deepEqual(Object.keys(rc).sort(), ['0', '1', '2', '3', '4'])
+  assert.deepEqual(Object.keys(rc).sort(), ['0:b', '1:r', '2:d', '3:p', '4:c'])
   assert.deepEqual(recordList(rc).map(r => r[0]), ['Bench', 'Row', 'Assisted dip', 'Plank', 'Curl'])
   // an exercise with i 10 comes after one with i 2 (a numeric order, not a text one)
   foldRecords(rc, { unit: 'kg', entries: [ent('z', 'Z', { w: 1, r: 1 }, [row(2, 1)], { i: 10 })] })
@@ -91,4 +91,20 @@ test('foldRecords: an exercise the window left keeps its record; one whose best 
   foldRecords(rc, { unit: 'kg', entries: [bench()] })
   foldRecords(rc, { unit: 'kg', entries: [un2] })
   assert.equal(recordList(rc).length, 0)
+})
+
+test('foldRecords: an exercise the phone moves keeps one line, a removed one leaves none', () => {
+  const rc = {}
+  const bench = i => Object.assign(six()[0], { i: i })
+  foldRecords(rc, { unit: 'kg', count: 1, entries: [bench(0)] })
+  // the phone inserts "New" (no history) at place 0: Bench is now at 1
+  foldRecords(rc, { unit: 'kg', count: 2, entries: [ent('n', 'New', null, [], { i: 0 }), bench(1)] })
+  assert.deepEqual(recordList(rc).map(r => r[0]), ['Bench'])
+  // the phone removes Bench: the whole workout is one exercise, with no record
+  foldRecords(rc, { unit: 'kg', count: 1, entries: [ent('n', 'New', null, [], { i: 0 })] })
+  assert.deepEqual(recordList(rc), [])
+  // a line from an older watch (key "3", no id) is dropped by whichever exercise now stands at 3
+  const old = { 3: ['Old', 'w', 1, 2, 'kg'] }
+  foldRecords(old, { unit: 'kg', entries: [ent('q', 'Q', null, [], { i: 3 })] })
+  assert.deepEqual(recordList(old), [])
 })

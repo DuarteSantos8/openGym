@@ -21,15 +21,6 @@ const rows = (id, n, extra) => Array.apply(null, Array(n)).map((_, j) => Object.
 const beat = (m, at, bpm) => { m.t.now = T0 + at; K.hrSample(m.c, bpm) }
 
 /* ---------- the pure formulas (WatchLogic.kt Metrics, SessionCoreTest.kt) ---------- */
-test('average is whole bpm and ignores zeros; range too', () => {
-  assert.equal(X.average([[0, 100], [1, 0], [2, 111]]), 106)
-  assert.equal(X.average([]), null)
-  assert.equal(X.average([[0, 0]]), null)
-  assert.deepEqual(X.range([[0, 120], [1, 0], [2, 99], [3, 152]]), [99, 152])
-  assert.equal(X.range([]), null)
-  assert.equal(X.range([[0, 0]]), null)
-})
-
 test('zones by percent of Tanaka\'s maximum: zone 1 is everything under 60 %', () => {
   assert.equal(X.maxHeartRate(40), 180)
   assert.equal(X.zone(68, 180), 1)
@@ -70,17 +61,6 @@ test('age only from 10 to 100', () => {
   assert.equal(X.age('1988', 2026), null)
 })
 
-test('downsample keeps the order and caps the count', () => {
-  const hr = []
-  for (let i = 0; i < 100; i++) hr.push([i, 100 + i])
-  const d = X.downsample(hr, 10)
-  assert.equal(d.length, 10)
-  assert.equal(d[0][1], 104.5)
-  assert.ok(d.every((p, i) => i === 0 || p[0] > d[i - 1][0]))
-  assert.equal(X.downsample(hr.slice(0, 5), 10).length, 5)
-  assert.deepEqual(X.downsample(hr, 0), [])
-})
-
 /* ---------- the summary page ---------- */
 test('numbers: the time stands still while the phone has the workout paused; phone time read on the watch\'s clock', () => {
   const m = running([ent('a', 0, rows('a', 3))], { start: T0 - 600000 })
@@ -114,9 +94,7 @@ test('numbers: sets done and in all, the volume, and the heart rate now, average
   assert.equal(n.volume, 480)
   assert.equal(n.unit, 'kg')
   assert.deepEqual(n.hr, { now: 140, avg: 120, max: 140 })
-  assert.equal(n.showHr, true)
   const off = running([ent('a', 0, rows('a', 1))], {}, { show: { hr: false } })
-  assert.equal(X.numbers(off.c).showHr, false)
   assert.equal(X.numbers(off.c).hr, null)
 })
 
@@ -149,7 +127,6 @@ test('zones: from the birth year, the five bands, the seconds in each, and the z
   assert.deepEqual(z.times, [10, 0, 10, 0, 5])
   assert.deepEqual(z.bands.map(b => b.lo), [null, 108, 126, 144, 162])
   assert.equal(z.now, 5)
-  assert.equal(z.longest, 10)
 })
 
 test('zones: without a birth year there is nothing to compute: five zeros and a hint', () => {
@@ -221,6 +198,15 @@ test('effort: a finished workout leaves no ratings; the ratings survive a restar
   assert.deepEqual(m.s.ef, {})
 })
 
+test('effort: a set rated before the phone gave it an id, then rated again, counts once', () => {
+  const m = running([ent('a', 0, [{ w: 60, r: 8 }, { w: 60, r: 8 }], { name: 'Bench' })], {}, { effort: 'rpe' })
+  rated(m, 0, 0, 8)
+  const sid = [{ w: 60, r: 8, sid: 's0', done: true, at: T0 + 100000 }, { w: 60, r: 8, sid: 's1' }]
+  K.onPhone(m.c, snap(act([ent('a', 0, sid, { name: 'Bench' })]), { effort: 'rpe' }))
+  m.t.now += 2000; K.rate(m.c, 10)
+  assert.deepEqual(X.effort(m.c).rows.map(r => r.value), [10])
+})
+
 /* ---------- Muscles ---------- */
 test('muscles: the working sets done, by the phone\'s weights; most first, then by name; the phone\'s names', () => {
   const m = running([
@@ -248,6 +234,17 @@ test('muscles: an exercise the window left keeps its sets', () => {
   assert.deepEqual(X.muscles(m.c).rows, [{ name: 'Chest', sets: 2 }])
   K.finishWorkout(m.c, false)
   assert.deepEqual(m.s.mu, {})
+})
+
+test('muscles: an exercise the phone moves while it is out of the window is not counted twice', () => {
+  const bench = i => ent('1', i, rows('a', 2).map(r => Object.assign(r, { done: true, at: T0 })), { name: 'Bench', muscles: { chest: 1 } })
+  const m = running([ent('1', 0, rows('a', 2), { name: 'Bench', muscles: { chest: 1 } }), ent('2', 1, rows('b', 1), { muscles: { back: 1 } })], { count: 3 })
+  K.tickSet(m.c, 0, 0, null, 60, 8, null, 0); K.tickSet(m.c, 0, 1, null, 60, 8, null, 0)
+  m.s.ob = [] // the phone has both ticks
+  K.onPhone(m.c, snap(act([ent('2', 1, rows('b', 1), { muscles: { back: 1 } })], { count: 3, cur: 1 }))) // Bench left the window
+  // the phone put a new exercise ahead: Bench is at place 1 now, and the window shows only it
+  K.onPhone(m.c, snap(act([bench(1)], { count: 4, cur: 1 })))
+  assert.deepEqual(X.muscles(m.c).rows, [{ name: 'chest', sets: 2 }])
 })
 
 /* ---------- the small ones ---------- */

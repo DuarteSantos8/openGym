@@ -3,22 +3,22 @@
 // OS's (WatchLogic.kt Metrics, SessionCore.progress/summary; the Apple Watch's Metrics.swift is the twin), ported with
 // their tests (test/metrics.test.js). Pure and ES5 subset: no Huawei API, nothing here changes the state.
 //
-//   numbers(c)   -> null (no workout) | { elapsed, paused, sets: [done, all], volume, unit, hr, showHr }
+//   numbers(c)   -> null (no workout) | { elapsed, paused, sets: [done, all], volume, unit, hr }
 //                   elapsed seconds (null without a start; stands still at `pausedAt` while the phone has the workout
 //                   paused), hr { now, avg, max } or null (none, or the phone's show.hr is off)
 //   pulse(c, n)  -> { avg, min, max, points: [[ms, bpm], ...] (at most n) }, nulls and [] without readings
-//   zones(c)     -> { maxHr, age, needsBirthYear, bands: [{lo, hi}] x5 (Z1 first), times: [s] x5, now: zone|null, longest }
+//   zones(c)     -> { maxHr, age, needsBirthYear, bands: [{lo, hi}] x5 (Z1 first), times: [s] x5, now: zone|null }
 //                   without a plausible birth year (10 to 100): maxHr null, needsBirthYear true, five zeros, no bands
 //   effort(c)    -> { kind: 'rir'|'rpe'|null, rows: [{ id, name, value }] } one per exercise rated here, mean of its rated sets
 //   muscles(c)   -> { rows: [{ name, sets }], total } sets done per muscle, most first, then by name
 //   metricPages(c) -> the pages in order: 'numbers', 'pulse'?, 'effort', 'zones'?, 'muscles' ([] without a workout)
 //   streak(c)    -> { weeks, thisWeekDone } | null          restStyle(c) -> 'ring' | 'plain'       bandOf(row) -> text
 //   setsText(v, comma) -> a set count with at most one decimal
-// and the pure formulas: average, range, downsample, age, maxHeartRate, zone, zoneBands, timeInZones.
+// and the pure formulas: age, maxHeartRate, zone, zoneBands, timeInZones.
 // What can be missing: `muscles` and `muscleNames` (the phone cuts them first when the snapshot is too big): Muscles
 // then has no rows; `birthYear` and `show.*` (an older phone): Zones asks for the birth year, pages default to shown.
 
-import { workoutTotals, progress, hrStats, hrSamples, hrDownsample, off, today } from './core.js'
+import { workoutTotals, progress, hrStats, hrSamples, hrDownsample, elapsed, today } from './core.js'
 
 const isNum = v => typeof v === 'number' && isFinite(v)
 const dictOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)
@@ -30,34 +30,6 @@ const showOf = c => dictOf(dictOf(c.s.set) ? c.s.set.show : null) || {}
 const clean = v => Math.round(v * 1e9) / 1e9
 
 /* ---------- the formulas ---------- */
-// The mean of the readings [time, bpm] in whole bpm; null without any (zeros are no reading).
-export function average (samples) {
-  const v = samples.map(p => p[1]).filter(x => x > 0)
-  if (!v.length) return null
-  let sum = 0
-  v.forEach(x => { sum += x })
-  return Math.round(sum / v.length)
-}
-// [lowest, highest] reading in whole bpm; null without any.
-export function range (samples) {
-  const v = samples.map(p => p[1]).filter(x => x > 0)
-  return v.length ? [Math.min.apply(null, v), Math.max.apply(null, v)] : null
-}
-// At most n points for drawing: buckets of consecutive samples, each averaged in time and value.
-export function downsample (samples, n) {
-  if (!(n > 0)) return []
-  if (samples.length <= n) return samples.map(p => [p[0], p[1]])
-  const out = []
-  for (let i = 0; i < n; i++) {
-    const from = Math.floor(i * samples.length / n)
-    const to = Math.floor((i + 1) * samples.length / n)
-    let t = 0
-    let v = 0
-    for (let j = from; j < to; j++) { t += samples[j][0]; v += samples[j][1] }
-    out.push([t / (to - from), v / (to - from)])
-  }
-  return out
-}
 // The age in whole years, only from 10 to 100; null from a missing or implausible year of birth.
 export function age (birthYear, year) {
   if (!isNum(birthYear)) return null
@@ -93,23 +65,16 @@ export function numbers (c) {
   const s = c.s
   const w = dictOf(s.w)
   if (!w) return null
-  const start = isNum(w.start) ? w.start : null
   const paused = isNum(w.pausedAt) && w.pausedAt > 0
-  // A workout started here and not yet reported by the phone has its start on this watch's clock; the phone's
-  // start (and pausedAt) are on the phone's, which is the watch's less its offset.
-  const own = s.sh === w.id
-  const now = c.env.now() - (own ? 0 : off(c))
-  const at = paused ? w.pausedAt : now
   const showHr = !isOff(showOf(c).hr)
   const st = hrStats(c)
   return {
-    elapsed: start == null ? null : Math.max(0, Math.floor((at - start) / 1000)),
+    elapsed: elapsed(c, w),
     paused: paused,
     sets: progress(s),
     volume: Math.round(workoutTotals(w)[1]),
     unit: strOf(w.unit),
-    hr: showHr && st ? { now: isNum(c.g.bpm) ? c.g.bpm : null, avg: st.avg, max: st.max } : null,
-    showHr: showHr
+    hr: showHr && st ? { now: isNum(c.g.bpm) ? c.g.bpm : null, avg: st.avg, max: st.max } : null
   }
 }
 
@@ -122,14 +87,13 @@ export function pulse (c, n) {
 export function zones (c) {
   const set = dictOf(c.s.set)
   const a = age(set ? set.birthYear : null, parseInt(today(c).slice(0, 4), 10))
-  if (a == null) return { maxHr: null, age: null, needsBirthYear: true, bands: [], times: [0, 0, 0, 0, 0], now: null, longest: 0 }
+  if (a == null) return { maxHr: null, age: null, needsBirthYear: true, bands: [], times: [0, 0, 0, 0, 0], now: null }
   const max = maxHeartRate(a)
   const samples = hrSamples(c)
   const times = timeInZones(samples, max)
   return {
     maxHr: max, age: a, needsBirthYear: false, bands: zoneBands(max), times: times,
-    now: samples.length ? zone(samples[samples.length - 1][1], max) : null,
-    longest: Math.max.apply(null, times)
+    now: samples.length ? zone(samples[samples.length - 1][1], max) : null
   }
 }
 

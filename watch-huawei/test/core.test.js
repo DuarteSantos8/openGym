@@ -2120,3 +2120,35 @@ test('S2: reach: near after a message got through or the phone spoke, away after
   assert.equal(K.reach(m.c), 'near')
   assert.equal(m.c.g.awayAt, null)
 })
+
+test('summary: the time is the Metrics time: it stands at the pause and reads the phone start on the watch\'s clock', () => {
+  const m = running(sixEntries().slice(0, 1), { start: T0 - 1800000, pausedAt: T0 - 1200000 }) // started 30 min ago, paused 20 min ago
+  assert.equal(K.summary(m.c, m.s.w, false).dur, 600)
+  delete m.s.w.pausedAt
+  m.s.ck = [[T0, 90000]] // the watch's clock is 90 s ahead of the phone's
+  assert.equal(K.summary(m.c, m.s.w, false).dur, 1800 - 90)
+  m.s.w.start = null
+  assert.equal(K.summary(m.c, m.s.w, false).dur, null)
+})
+
+test('finish haptic: one long buzz on a records day, one short otherwise, none with restHaptics off; the phone ending it buzzes too', () => {
+  const m = running(sixEntries().slice(0, 1), { cur: 0 })
+  tickAll(m)
+  m.buzzes.length = 0
+  K.finishWorkout(m.c, false)
+  assert.deepEqual(m.buzzes, [[[60, 250]]])
+  const p = running(two(), { cur: 0 })
+  p.buzzes.length = 0
+  K.finishWorkout(p.c, false)
+  assert.deepEqual(p.buzzes, [[[40, 60]]])
+  const q = running(sixEntries().slice(0, 1), { cur: 0 }, { restHaptics: false })
+  tickAll(q)
+  q.buzzes.length = 0
+  K.finishWorkout(q.c, false)
+  assert.deepEqual(q.buzzes, [])
+  const e = running(sixEntries().slice(0, 1), { cur: 0 })
+  tickAll(e)
+  e.buzzes.length = 0
+  K.onPhone(e.c, snapWith(null))
+  assert.deepEqual(e.buzzes, [[[60, 250]]])
+})

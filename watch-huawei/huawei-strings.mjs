@@ -39,9 +39,12 @@ const FROM_WEAR = [
   'sets_of', 'skip', 'skip_set', 'start_hold', 'start_on_phone', 'start_workout', 'still_training', 'stop', 'time', 'today',
   'up_next', 'up_next_set', 'volume', 'waiting_sync', 'warmup', 'workout_saved',
   // step 1: the weigh-in, the check-in, "Added weight", the Overview's superset heading
-  'added_weight', 'body_weight', 'save_and_start', 'start_without_weighin', 'superset',
+  'added_weight', 'weight', 'body_weight', 'save_and_start', 'start_without_weighin', 'superset',
   'checkin_title', 'checkin_skip', 'checkin_sleep', 'checkin_sleep_lo', 'checkin_sleep_hi', 'checkin_energy', 'checkin_energy_lo', 'checkin_energy_hi',
   'checkin_sore', 'checkin_sore_lo', 'checkin_sore_hi',
+  // step 2: the Metrics pages, the medal, the streak, the phone's reach
+  'add_birth_year', 'avg', 'band_over', 'band_to', 'band_under', 'heart_rate', 'hours', 'max', 'min', 'min_minutes', 'muscles', 'n_more',
+  'n_sets', 'new_record', 'no_age_set', 'no_effort_yet', 'no_sets_yet', 'phone_connected', 'phone_gone', 'records', 'week_streak', 'zones',
 ]
 // (the app's packs have the set menu's words in every language; the Wear OS strings of this branch do not yet)
 const FROM_APP = { next_exercise: 'Next exercise', paused: 'Paused', add_set: 'Add set', remove_set: 'Remove set' }

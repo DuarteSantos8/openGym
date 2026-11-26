@@ -12,7 +12,7 @@ import { P2pClient, Message, Builder } from '../../common/wearengine.js'
 import { createCore, launch, stop, second, countTick, onPhone, hrSample } from '../../common/core.js'
 import { createRadio } from '../../common/radio.js'
 import { createStore } from '../../common/store.js'
-import { blank, newUi, tick, build, act, translator, langOf, deviceLang, lostData, wantHr, wantAwake, buzzPlan, bpmNow } from '../../common/view.js'
+import { blank, newUi, tick, build, act, translator, langOf, deviceLang, lostData, wantHr, wantAwake, buzzPlan, bpmNow, swipeTo } from '../../common/view.js'
 
 // The phone app this watch talks to (wire.md section 4). The package is the phone app's release
 // applicationId (a debug phone build is ch.duartesantos.opengym.test: change it to try one).
@@ -35,7 +35,7 @@ let client = {}
 try { client = new P2pClient() } catch (e) { client = {} }
 
 // What lives while the page does. Module level, like Huawei's own sample: a page's `this` only holds data.
-const S = { boot: 0, shown: false, lost: false, core: null, ui: null, store: null, radio: null, t: null, lang: '', loop: 0, ticks: 0, lastSec: 0, fast: false, reg: 'pending', hr: false, bpm: 0, bpmAt: 0, awake: false }
+const S = { boot: 0, shown: false, lost: false, core: null, ui: null, store: null, radio: null, t: null, lang: '', loop: 0, ticks: 0, lastSec: 0, fast: false, reg: 'pending', sum: false, hr: false, bpm: 0, bpmAt: 0, awake: false }
 
 function makeMessage (text) {
   const builder = new Builder()
@@ -87,6 +87,11 @@ function refresh (page) {
   if (lang !== S.lang) { S.lang = lang; S.t = translator(lang) }
   const d = build(c, S.ui, S.t)
   Object.keys(d).forEach(function (k) { if (page[k] !== d[k]) page[k] = d[k] })
+  // the crown scrolls the summary list: ask for it once when the summary comes up (the list draws a turn later)
+  if (d.s_summary !== S.sum) {
+    S.sum = d.s_summary
+    if (S.sum) setTimeout(function () { try { page.$refs.sum.rotation({ focus: true }) } catch (e) { /* no crown on this watch */ } }, 0)
+  }
   devices(c)
 }
 
@@ -231,10 +236,18 @@ export default {
     if (S.core) resume(this)
   },
   onHide: function () { S.shown = false; pause() },
-  onDestroy: function () { S.shown = false; S.boot += 1; pause() },
+  onDestroy: function () { S.shown = false; S.sum = false; S.boot += 1; pause() },
   retry: function () { boot(this) },
   // Swipe right leaves the app, from the Start screen only: not by accident in the middle of a workout.
-  swipe: function (e) { if (e.direction === 'right' && (!S.core || this.s_idle)) app.terminate() },
+  // In a workout a swipe left opens the Metrics pages and a swipe right steps back through them (view.js swipeTo).
+  swipe: function (e) {
+    if (e.direction !== 'left' && e.direction !== 'right') return // a list scrolling is not ours
+    if (e.direction === 'right' && (!S.core || this.s_idle)) { app.terminate(); return }
+    const c = S.core
+    if (!c) return
+    try { swipeTo(c, S.ui, e.direction); tick(c, S.ui) } catch (err) { /* the screen stays */ }
+    refresh(this)
+  },
 
   start: function () { go(this, 'start') },
   routines: function () { go(this, 'routines') },
@@ -262,6 +275,7 @@ export default {
   chip2: function () { go(this, 'chip2') },
   chip3: function () { go(this, 'chip3') },
   stopHold: function () { go(this, 'stopHold') },
+  mpBack: function () { go(this, 'mpBack') },
   mPrev: function () { go(this, 'mPrev') },
   mOver: function () { go(this, 'mOver') },
   mSkip: function () { go(this, 'mSkip') },

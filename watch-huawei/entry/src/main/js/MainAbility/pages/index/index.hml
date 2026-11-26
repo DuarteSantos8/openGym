@@ -11,26 +11,29 @@
 
   <!-- Before a start: the check-in (one question at a time, 1 to 5) -->
   <div class="scr" if="{{s_checkin}}">
-    <text class="head">{{title}}</text>
-    <text class="mid">{{qLabel}}</text>
+    <text class="head quiet">{{title}}</text>
+    <div class="hdrRow"><text class="qL">{{qLabel}}</text><text class="qS">{{qStep}}</text></div>
     <div class="row5">
-      <input type="button" class="dot" value="{{q0}}" onclick="ci1" />
-      <input type="button" class="dot" value="{{q1}}" onclick="ci2" />
-      <input type="button" class="dot" value="{{q2}}" onclick="ci3" />
-      <input type="button" class="dot" value="{{q3}}" onclick="ci4" />
-      <input type="button" class="dot" value="{{q4}}" onclick="ci5" />
+      <input type="button" class="dot" style="border-color: {{accent}};" value="{{q0}}" onclick="ci1" />
+      <input type="button" class="dot" style="border-color: {{accent}};" value="{{q1}}" onclick="ci2" />
+      <input type="button" class="dot" style="border-color: {{accent}};" value="{{q2}}" onclick="ci3" />
+      <input type="button" class="dot" style="border-color: {{accent}};" value="{{q3}}" onclick="ci4" />
+      <input type="button" class="dot" style="border-color: {{accent}};" value="{{q4}}" onclick="ci5" />
     </div>
     <div class="pair"><text class="lo">{{qLo}}</text><text class="hi">{{qHi}}</text></div>
-    <text class="tiny quiet">{{qStep}}</text>
-    <input type="button" class="btn" value="{{skipLabel}}" onclick="ciSkip" />
-    <input type="button" class="btnN" value="{{cancelLabel}}" onclick="ciBack" />
+    <div class="rowX">
+      <input type="button" class="arrow" value="X" onclick="ciBack" />
+      <input type="button" class="longS" value="{{skipLabel}}" onclick="ciSkip" />
+    </div>
   </div>
 
   <!-- Before a start: the weigh-in, the weight in whole steps and tenths -->
   <div class="scr" if="{{s_weighin}}">
-    <text class="headW">{{title}}</text>
-    <text class="big">{{bwNum}}</text>
-    <text class="tiny quiet">{{bwUnit}}</text>
+    <text class="headW quiet">{{title}}</text>
+    <div class="bwBox" style="border-color: {{accent}};">
+      <text class="bwNum">{{bwNum}}</text>
+      <text class="unitT" style="color: {{accent}};">{{bwUnit}}</text>
+    </div>
     <div class="row4">
       <input type="button" class="chip" value="-1" onclick="bwM1" />
       <input type="button" class="chip" value="+1" onclick="bwP1" />
@@ -38,16 +41,18 @@
       <input type="button" class="chip" value="+0.1" onclick="bwP01" />
     </div>
     <input type="button" class="longA" style="background-color: {{accent}}; color: {{ink}};" value="{{saveLabel}}" onclick="bwSave" />
-    <input type="button" class="long" value="{{skipLabel}}" onclick="bwSkip" />
-    <input type="button" class="btnN" value="{{cancelLabel}}" onclick="bwCancel" />
+    <div class="rowX">
+      <input type="button" class="arrow" value="X" onclick="bwCancel" />
+      <input type="button" class="capMid" value="{{skipLabel}}" onclick="bwSkip" />
+    </div>
   </div>
 
   <!-- Start -->
   <div class="scr" if="{{s_idle}}">
-    <text class="small" style="color: {{accent}};">{{title}}</text>
-    <text class="mid">{{name}}</text>
+    <text class="small quiet">{{title}}</text>
+    <text class="nameBig">{{name}}</text>
     <text class="tiny quiet">{{plan}}</text>
-    <text class="hint">{{hint}}</text>
+    <text class="hint" style="color: {{hintColor}};">{{hint}}</text>
     <input if="{{canStart}}" type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{startLabel}}" onclick="start" />
     <input elif="{{showStart}}" type="button" class="btn" value="{{startLabel}}" />
     <input if="{{showRoutines}}" type="button" class="btn" value="{{routinesLabel}}" onclick="routines" />
@@ -56,30 +61,33 @@
 
   <!-- Routines, three a page -->
   <div class="scr" if="{{s_routines}}">
-    <div class="pick" if="{{rv0}}" onclick="pick0"><text class="mid">{{ro0}}</text><text class="tiny quiet">{{rs0}}</text></div>
-    <div class="pick" if="{{rv1}}" onclick="pick1"><text class="mid">{{ro1}}</text><text class="tiny quiet">{{rs1}}</text></div>
-    <div class="pick" if="{{rv2}}" onclick="pick2"><text class="mid">{{ro2}}</text><text class="tiny quiet">{{rs2}}</text></div>
+    <div class="pick" if="{{rv0}}" onclick="pick0"><text class="rName">{{ro0}}</text><text class="rSub" style="color: {{accent}};">{{rs0}}</text></div>
+    <div class="pick" if="{{rv1}}" onclick="pick1"><text class="rName">{{ro1}}</text><text class="rSub" style="color: {{accent}};">{{rs1}}</text></div>
+    <div class="pick" if="{{rv2}}" onclick="pick2"><text class="rName">{{ro2}}</text><text class="rSub" style="color: {{accent}};">{{rs2}}</text></div>
     <div class="row2">
-      <input type="button" class="half" value="{{cancelLabel}}" onclick="rback" />
-      <input if="{{rPaged}}" type="button" class="half" value="{{gt}}" onclick="rnext" />
+      <input type="button" class="arrow" value="X" onclick="rback" />
+      <input if="{{rPaged}}" type="button" class="arrow" value="{{gt}}" onclick="rnext" />
     </div>
   </div>
 
   <!-- 3-2-1 (also before a hold); a tap on the number starts at once -->
   <div class="scr" if="{{s_count}}">
     <text class="small quiet">{{label}}</text>
-    <text class="hero" style="color: {{accent}};" onclick="skipCount">{{big}}</text>
-    <input type="button" class="btn" value="{{cancelLabel}}" onclick="cancelCount" />
+    <stack class="cRing">
+      <progress type="arc" class="cArc" percent="{{pct}}" style="color: {{accent}};"></progress>
+      <div class="cIn" onclick="skipCount"><text if="{{goOn}}" class="cGo" style="color: {{accent}};">{{big}}</text><text else class="cNum" style="color: {{accent}};">{{big}}</text></div>
+    </stack>
+    <div class="rowX"><input type="button" class="arrow" value="X" onclick="cancelCount" /></div>
   </div>
 
   <!-- Waiting for the phone -->
   <div class="scr" if="{{s_wait}}">
-    <div class="bar">
-      <text class="top">{{top}}</text>
-      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    <div class="barS">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="topR">{{top}}</text>
     </div>
-    <text class="mid">{{name}}</text>
-    <text class="wrap">{{body}}</text>
+    <text class="nameBig">{{name}}</text>
+    <text class="waitTx">{{body}}</text>
   </div>
 
   <!-- Still training? -->
@@ -94,7 +102,7 @@
   <div class="scr" if="{{s_confirm}}">
     <text class="mid">{{title}}</text>
     <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{noLabel}}" onclick="no" />
-    <input type="button" class="btn" value="{{yesLabel}}" onclick="yes" />
+    <input type="button" class="btnO" style="border-color: {{yesColor}}; color: {{yesColor}};" value="{{yesLabel}}" onclick="yes" />
   </div>
 
   <!-- The workout menu: a list, it scrolls -->
@@ -104,54 +112,54 @@
       <list-item class="li" if="{{hasOver}}"><div class="liIn"><input type="button" class="btn" value="{{lOver}}" onclick="mOver" /></div></list-item>
       <list-item class="li" if="{{hasSkip}}"><div class="liIn"><input type="button" class="btn" value="{{lSkip}}" onclick="mSkip" /></div></list-item>
       <list-item class="li" if="{{hasNext}}"><div class="liIn"><input type="button" class="btn" value="{{lNext}}" onclick="mNext" /></div></list-item>
-      <list-item class="li" if="{{hasAdd}}"><div class="liIn"><input type="button" class="btn" value="{{lAdd}}" onclick="mAdd" /></div></list-item>
-      <list-item class="li" if="{{hasRemove}}"><div class="liIn"><input type="button" class="btn" value="{{lRemove}}" onclick="mRemove" /></div></list-item>
+      <list-item class="li" if="{{hasAdd}}"><div class="liIn"><input type="button" class="btnG" value="{{lAdd}}" onclick="mAdd" /></div></list-item>
+      <list-item class="li" if="{{hasRemove}}"><div class="liIn"><input type="button" class="btnR" value="{{lRemove}}" onclick="mRemove" /></div></list-item>
       <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{lFinish}}" onclick="mFinish" /></div></list-item>
-      <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{lDiscard}}" onclick="mDiscard" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnR" value="{{lDiscard}}" onclick="mDiscard" /></div></list-item>
       <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{lBack}}" onclick="mBack" /></div></list-item>
     </list>
   </div>
 
   <!-- A hold -->
   <div class="scr" if="{{s_hold}}">
-    <text class="top">{{top}}</text>
+    <text class="hrC">{{top}}</text>
     <text class="mid">{{name}}</text>
     <text class="tiny quiet">{{tag}}</text>
     <text class="hero" style="color: {{timeColor}};">{{time}}</text>
     <progress type="horizontal" class="holdBar" percent="{{pct}}" style="color: {{accent}};"></progress>
     <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{stopLabel}}" onclick="stopHold" />
+    <text class="syncLn">{{sync}}</text>
   </div>
 
-  <!-- The set (also fixing the last one: Save, Cancel, and the arrows) -->
+  <!-- The set, as the Apple Watch's: the pill (it opens the menu; Cancel while a set is fixed) and the heart rate on
+       top, the name, the weight and reps tiles, Last time, then ‹ Done › (Save while fixing). -->
   <div class="scr" if="{{s_set}}">
-    <div class="bar">
-      <text class="top">{{top}}</text>
-      <input if="{{fixing}}" type="button" class="menuBtn" value="{{cancelLabel}}" onclick="cancelFix" />
-      <input else type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    <div class="barS">
+      <input if="{{fixing}}" type="button" class="pill" value="{{cancelLabel}}" onclick="cancelFix" />
+      <input else type="button" class="pill" value="{{pill}}" onclick="menu" />
+      <text class="hrSet">{{top}}</text>
     </div>
     <text class="name">{{name}}</text>
-    <div class="tagRow">
-      <input if="{{prevOn}}" type="button" class="arrow" value="{{lt}}" onclick="prev" />
-      <div else class="arrow"></div>
-      <div class="tagBox">
-        <text class="tiny">{{tag}}</text>
-        <text class="tiny quiet">{{partner}}</text>
-      </div>
-      <input if="{{nextOn}}" type="button" class="arrow" value="{{gt}}" onclick="nextFix" />
-      <div else class="arrow"></div>
+    <text class="tiny quiet">{{tag}}</text>
+    <div class="subRow">
+      <div class="chipY" if="{{bandOn}}"><text class="chipYt">{{band}}</text></div>
+      <text class="partnerT" if="{{partnerOn}}" style="color: {{accent}};">{{partner}}</text>
     </div>
     <div class="tiles">
       <div class="tile" if="{{wOn}}">
-        <text class="num">{{wNum}}</text>
-        <text class="tiny quiet">{{wUnit}}</text>
+        <text class="tLabel" style="color: {{accent}};">{{wLabel}}</text>
+        <div class="numRow">
+          <text class="numT">{{wNum}}</text>
+          <text class="unitT" style="color: {{accent}};">{{wUnit}}</text>
+        </div>
         <div class="steps">
           <input type="button" class="step" value="-" onclick="wMinus" />
           <input type="button" class="step" value="+" onclick="wPlus" />
         </div>
       </div>
       <div class="tile">
-        <text class="num">{{rNum}}</text>
-        <text class="tiny quiet">{{rLabel}}</text>
+        <text class="tLabel" style="color: {{accent}};">{{rLabel}}</text>
+        <text class="numC">{{rNum}}</text>
         <div class="steps">
           <input type="button" class="step" value="-" onclick="rMinus" />
           <input type="button" class="step" value="+" onclick="rPlus" />
@@ -159,45 +167,58 @@
       </div>
     </div>
     <text class="tiny quiet">{{last}}</text>
-    <input if="{{locked}}" type="button" class="doneOff" value="{{doneLabel}}" />
-    <input else type="button" class="done" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="done" />
+    <div class="doneRow">
+      <input if="{{prevOn}}" type="button" class="arrow" value="{{lt}}" onclick="prev" />
+      <input else type="button" class="arrowOff" value="{{lt}}" />
+      <input if="{{locked}}" type="button" class="doneOff" value="{{doneLabel}}" />
+      <input else type="button" class="done" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="done" />
+      <input if="{{nextOn}}" type="button" class="arrow" value="{{gt}}" onclick="nextFix" />
+      <input else type="button" class="arrowOff" value="{{gt}}" />
+    </div>
   </div>
 
-  <!-- The rest: a ring that empties. Either the effort chips or the next set, never both. -->
+  <!-- The rest, as the Apple Watch's: the heart rate on top, the time, a draining bar, -15 / Skip / +15, the rating (the
+       chips, or the one it got) with Up next under it, the sync state at the foot. -->
   <div class="scr" if="{{s_rest}}">
     <div class="bar">
-      <text class="top">{{top}}</text>
-      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="hrTop">{{top}}</text>
     </div>
-    <stack class="ring">
-      <progress type="arc" class="arc" percent="{{pct}}" style="color: {{accent}};"></progress>
-      <div class="ringIn">
-        <text class="tiny quiet">{{restLabel}}</text>
-        <text class="big">{{restTime}}</text>
+    <text class="big" style="color: {{timeColor}};">{{restTime}}</text>
+    <div class="slot">
+      <progress if="{{barOn}}" type="horizontal" class="restBar" percent="{{pct}}" style="color: {{accent}};"></progress>
+      <text class="tiny quiet" else>{{restLabel}}</text>
+    </div>
+    <div class="row3">
+      <input if="{{locked}}" type="button" class="capOff" value="-15" />
+      <input else type="button" class="cap" value="-15" onclick="restMinus" />
+      <input if="{{locked}}" type="button" class="capMidOff" value="{{skipLabel}}" />
+      <input else type="button" class="capMid" value="{{skipLabel}}" onclick="restSkip" />
+      <input if="{{locked}}" type="button" class="capOff" value="+15" />
+      <input else type="button" class="cap" value="+15" onclick="restPlus" />
+    </div>
+    <div class="rate" if="{{rateOn}}">
+      <text class="tiny quiet">{{rateLn}}</text>
+      <div class="row4" if="{{effortOn}}">
+        <input type="button" class="chipR" style="border-color: {{cc0}}; color: {{cc0}};" value="{{c0}}" onclick="chip0" />
+        <input type="button" class="chipR" style="border-color: {{cc1}}; color: {{cc1}};" value="{{c1}}" onclick="chip1" />
+        <input type="button" class="chipR" style="border-color: {{cc2}}; color: {{cc2}};" value="{{c2}}" onclick="chip2" />
+        <input type="button" class="chipR" style="border-color: {{cc3}}; color: {{cc3}};" value="{{c3}}" onclick="chip3" />
       </div>
-    </stack>
-    <div class="block" if="{{effortOn}}">
-      <text class="tiny quiet">{{how}}</text>
-      <div class="row4">
-        <input type="button" class="chip" value="{{c0}}" onclick="chip0" />
-        <input type="button" class="chip" value="{{c1}}" onclick="chip1" />
-        <input type="button" class="chip" value="{{c2}}" onclick="chip2" />
-        <input type="button" class="chip" value="{{c3}}" onclick="chip3" />
+      <div class="rated" else style="border-color: {{ratedColor}};">
+        <text class="ratedTx" style="color: {{ratedColor}};">{{ratedText}}</text>
       </div>
     </div>
-    <div class="block" else>
-      <text class="tiny quiet">{{upNext}}</text>
+    <div class="upOne" if="{{effortOn}}">
+      <text class="upL" style="color: {{accent}};">{{upNext}}</text>
+      <text class="upR">{{nextNums}}</text>
+    </div>
+    <div class="up" else>
+      <text class="tiny" style="color: {{accent}};">{{upNext}}</text>
       <text class="tiny">{{nextName}}</text>
       <text class="tiny quiet">{{nextNums}}</text>
     </div>
-    <div class="row3">
-      <input if="{{locked}}" type="button" class="side3" value="-15" />
-      <input else type="button" class="side3" value="-15" onclick="restMinus" />
-      <input if="{{locked}}" type="button" class="mid3Off" value="{{skipLabel}}" />
-      <input else type="button" class="mid3" style="background-color: {{accent}}; color: {{ink}};" value="{{skipLabel}}" onclick="restSkip" />
-      <input if="{{locked}}" type="button" class="side3" value="+15" />
-      <input else type="button" class="side3" value="+15" onclick="restPlus" />
-    </div>
+    <text class="syncLn">{{sync}}</text>
   </div>
 
   <!-- Overview: a list, it scrolls -->
@@ -207,15 +228,15 @@
     <list class="overList">
       <list-item class="liNote" if="{{noteOn}}"><div class="noteBox"><text class="note">{{note}}</text></div></list-item>
       <list-item class="li" if="{{ss0}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
-      <list-item class="li" if="{{ovv0}}"><div class="liIn"><input type="button" class="btn" value="{{ot0}}" onclick="ov0" /></div></list-item>
+      <list-item class="li" if="{{ovv0}}"><div class="liIn"><div class="orow" style="border-color: {{ol0}};" onclick="ov0"><div class="omark" style="background-color: {{ob0}};"></div><div class="ocol"><text class="oName">{{on0}}</text><text class="oCnt">{{oc0}}</text></div></div></div></list-item>
       <list-item class="li" if="{{ss1}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
-      <list-item class="li" if="{{ovv1}}"><div class="liIn"><input type="button" class="btn" value="{{ot1}}" onclick="ov1" /></div></list-item>
+      <list-item class="li" if="{{ovv1}}"><div class="liIn"><div class="orow" style="border-color: {{ol1}};" onclick="ov1"><div class="omark" style="background-color: {{ob1}};"></div><div class="ocol"><text class="oName">{{on1}}</text><text class="oCnt">{{oc1}}</text></div></div></div></list-item>
       <list-item class="li" if="{{ss2}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
-      <list-item class="li" if="{{ovv2}}"><div class="liIn"><input type="button" class="btn" value="{{ot2}}" onclick="ov2" /></div></list-item>
+      <list-item class="li" if="{{ovv2}}"><div class="liIn"><div class="orow" style="border-color: {{ol2}};" onclick="ov2"><div class="omark" style="background-color: {{ob2}};"></div><div class="ocol"><text class="oName">{{on2}}</text><text class="oCnt">{{oc2}}</text></div></div></div></list-item>
       <list-item class="li" if="{{ss3}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
-      <list-item class="li" if="{{ovv3}}"><div class="liIn"><input type="button" class="btn" value="{{ot3}}" onclick="ov3" /></div></list-item>
+      <list-item class="li" if="{{ovv3}}"><div class="liIn"><div class="orow" style="border-color: {{ol3}};" onclick="ov3"><div class="omark" style="background-color: {{ob3}};"></div><div class="ocol"><text class="oName">{{on3}}</text><text class="oCnt">{{oc3}}</text></div></div></div></list-item>
       <list-item class="li" if="{{ovPaged}}"><div class="liIn"><input type="button" class="btn" value="{{gt}}" onclick="ovNext" /></div></list-item>
-      <list-item class="li"><div class="liIn"><text class="tiny quiet">{{ovMore}}</text></div></list-item>
+      <list-item class="li" if="{{ovMoreOn}}"><div class="liIn"><text class="tiny quiet">{{ovMore}}</text></div></list-item>
       <list-item class="li"><div class="liIn"><text class="tiny quiet">{{sync}}</text></div></list-item>
       <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{finishLabel}}" onclick="finish" /></div></list-item>
       <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{backLabel}}" onclick="ovBack" /></div></list-item>
@@ -224,9 +245,9 @@
 
   <!-- All sets done -->
   <div class="scr" if="{{s_end}}">
-    <div class="bar">
-      <text class="top">{{top}}</text>
-      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    <div class="barS">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="topR">{{top}}</text>
     </div>
     <text class="mid">{{title}}</text>
     <text class="small quiet">{{count}}</text>
@@ -236,28 +257,114 @@
 
   <!-- Cardio, or a timed exercise with nothing left -->
   <div class="scr" if="{{s_card}}">
-    <div class="bar">
-      <text class="top">{{top}}</text>
-      <input type="button" class="menuBtn" value="{{menuLabel}}" onclick="menu" />
+    <div class="barS">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="topR">{{top}}</text>
     </div>
     <text class="mid">{{name}}</text>
     <text class="wrap">{{body}}</text>
     <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{nextLabel}}" onclick="nextEx" />
   </div>
 
-  <!-- Summary -->
+  <!-- Summary: a list. The still medal, its legend and the record plates first, then what the summary always showed -->
   <div class="scr" if="{{s_summary}}">
-    <text class="small" style="color: {{accent}};">{{title}}</text>
-    <text class="tiny quiet">{{name}}</text>
-    <text class="big">{{dur}}</text>
-    <text class="tiny quiet">{{durLabel}}</text>
+    <list class="sumList" ref="sum">
+      <list-item class="liT"><div class="liTi"><div class="tRow"><div class="tick" style="background-color: {{accent}};"></div><text class="sTitle">{{title}}</text></div><text class="sName">{{name}}</text></div></list-item>
+      <list-item class="liM"><div class="liMi">
+        <stack class="medal">
+          <div class="rim" style="background-color: {{mRim}}; border-color: {{mRimLine}};"></div>
+          <div class="face" style="background-color: {{mFace}}; border-color: {{mFaceLine}};"></div>
+          <div class="medIn">
+            <text class="mTime" style="color: {{mInk}};">{{mTimeNum}}</text>
+            <text class="mUnit" style="color: {{mInk}};">{{mUnit}}</text>
+            <div class="gems" if="{{gold}}">
+              <div class="gem" if="{{gem0}}" style="width: {{gemPx}}; height: {{gemPx}};"></div><div class="gem" if="{{gem1}}" style="width: {{gemPx}}; height: {{gemPx}};"></div><div class="gem" if="{{gem2}}" style="width: {{gemPx}}; height: {{gemPx}};"></div><div class="gem" if="{{gem3}}" style="width: {{gemPx}}; height: {{gemPx}};"></div><div class="gem" if="{{gem4}}" style="width: {{gemPx}}; height: {{gemPx}};"></div><div class="gem" if="{{gem5}}" style="width: {{gemPx}}; height: {{gemPx}};"></div><div class="gem" if="{{gem6}}" style="width: {{gemPx}}; height: {{gemPx}};"></div>
+            </div>
+            <text class="mVol" else style="color: {{mInk}};">{{mVol}}</text>
+          </div>
+        </stack>
+      </div></list-item>
+      <list-item class="liS"><div class="liSi"><text class="tinyY" if="{{gold}}">{{legend}}</text><text class="tinyC" else>{{legend}}</text></div></list-item>
+      <list-item class="liP" if="{{pv0}}"><div class="liPi"><div class="plate"><text class="pName">{{pn0}}</text><text class="pNums">{{pnum0}}</text></div></div></list-item>
+      <list-item class="liP" if="{{pv1}}"><div class="liPi"><div class="plate"><text class="pName">{{pn1}}</text><text class="pNums">{{pnum1}}</text></div></div></list-item>
+      <list-item class="liP" if="{{pv2}}"><div class="liPi"><div class="plate"><text class="pName">{{pn2}}</text><text class="pNums">{{pnum2}}</text></div></div></list-item>
+      <list-item class="liP" if="{{pv3}}"><div class="liPi"><div class="plate"><text class="pName">{{pn3}}</text><text class="pNums">{{pnum3}}</text></div></div></list-item>
+      <list-item class="liS" if="{{rMoreOn}}"><div class="liSi"><text class="tinyC">{{rMore}}</text></div></list-item>
+      <list-item class="liD"><div class="liDi"><text class="tinyL quiet">{{durLabel}}</text><text class="bigY">{{dur}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><div class="row2s">
+        <div class="colL"><text class="tinyL quiet">{{setsLabel}}</text><text class="midL">{{setsNum}}</text></div>
+        <div class="colL"><text class="tinyL quiet">{{volLabel}}</text><text class="midL">{{volNum}}</text></div>
+      </div></div></list-item>
+      <list-item class="liS" if="{{hrOn}}"><div class="liSi"><text class="tinyC quiet">{{hrLine}}</text></div></list-item>
+      <list-item class="liS" if="{{syncOn}}"><div class="liSi"><text class="tinyC quiet">{{sync}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="close" /></div></list-item>
+    </list>
+  </div>
+
+
+  <!-- Metrics: the numbers -->
+  <div class="scr" if="{{s_mnum}}">
+    <div class="mbar"><input type="button" class="arrow" value="{{lt}}" onclick="mpBack" /></div>
+    <text class="bigY">{{mTime}}</text>
+    <text class="tinyL quiet">{{mSub}}</text>
+    <text class="midR">{{mHr}}</text>
+    <text class="tinyL quiet">{{hrLine}}</text>
     <div class="row2s">
-      <div class="col"><text class="mid">{{setsNum}}</text><text class="tiny quiet">{{setsLabel}}</text></div>
-      <div class="col"><text class="mid">{{volNum}}</text><text class="tiny quiet">{{volLabel}}</text></div>
+      <div class="colL"><text class="tinyL quiet">{{setsLabel}}</text><text class="midL">{{setsNum}}</text></div>
+      <div class="colL"><text class="tinyL quiet">{{volLabel}}</text><text class="midL">{{volNum}}</text></div>
     </div>
-    <text class="tiny quiet">{{hrLine}}</text>
-    <text class="tiny quiet">{{sync}}</text>
-    <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="close" />
+    <text class="pos">{{mPos}}</text>
+  </div>
+
+  <!-- Metrics: Pulse -->
+  <div class="scr" if="{{s_mpulse}}">
+    <div class="mbar"><input type="button" class="arrow" value="{{lt}}" onclick="mpBack" /><text class="mHeadBR">{{mTitle}}</text></div>
+    <text class="bigR">{{mAvg}}</text>
+    <text class="tinyL quiet">{{mAvgLabel}}</text>
+    <div class="row2s">
+      <div class="colL"><text class="midL">{{mMin}}</text><text class="tinyL quiet">{{mMinLabel}}</text></div>
+      <div class="colL"><text class="midL">{{mMax}}</text><text class="tinyL quiet">{{mMaxLabel}}</text></div>
+    </div>
+    <div class="pbars"><div class="pbar" style="height: {{pb0}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb1}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb2}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb3}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb4}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb5}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb6}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb7}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb8}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb9}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb10}}; background-color: #ff453a;"></div><div class="pbar" style="height: {{pb11}}; background-color: #ff453a;"></div></div>
+    <text class="pos">{{mPos}}</text>
+  </div>
+
+  <!-- Metrics: Effort -->
+  <div class="scr" if="{{s_meffort}}">
+    <div class="mbar"><input type="button" class="arrow" value="{{lt}}" onclick="mpBack" /><text class="mHeadB">{{mTitle}}</text></div>
+    <div class="mrow" if="{{mrOn0}}"><text class="mrName">{{mr0}}</text><text class="mrVal">{{mv0}}</text></div>
+    <div class="mrow" if="{{mrOn1}}"><text class="mrName">{{mr1}}</text><text class="mrVal">{{mv1}}</text></div>
+    <div class="mrow" if="{{mrOn2}}"><text class="mrName">{{mr2}}</text><text class="mrVal">{{mv2}}</text></div>
+    <div class="mrow" if="{{mrOn3}}"><text class="mrName">{{mr3}}</text><text class="mrVal">{{mv3}}</text></div>
+    <div class="mrow" if="{{mrOn4}}"><text class="mrName">{{mr4}}</text><text class="mrVal">{{mv4}}</text></div>
+    <text class="mEmpty" if="{{mEmptyOn}}">{{mEmpty}}</text>
+    <text class="mMore">{{mMore}}</text>
+    <text class="pos">{{mPos}}</text>
+  </div>
+
+  <!-- Metrics: Zones -->
+  <div class="scr" if="{{s_mzones}}">
+    <div class="mbar"><input type="button" class="arrow" value="{{lt}}" onclick="mpBack" /><text class="mHeadB">{{mTitle}}</text></div>
+    <div class="mrow" if="{{zOn}}"><text class="zName" style="color: {{zc0}};">{{zn0}}</text><text class="zRange">{{zr0}}</text><text class="zTime">{{zt0}}</text></div>
+    <div class="mrow" if="{{zOn}}"><text class="zName" style="color: {{zc1}};">{{zn1}}</text><text class="zRange">{{zr1}}</text><text class="zTime">{{zt1}}</text></div>
+    <div class="mrow" if="{{zOn}}"><text class="zName" style="color: {{zc2}};">{{zn2}}</text><text class="zRange">{{zr2}}</text><text class="zTime">{{zt2}}</text></div>
+    <div class="mrow" if="{{zOn}}"><text class="zName" style="color: {{zc3}};">{{zn3}}</text><text class="zRange">{{zr3}}</text><text class="zTime">{{zt3}}</text></div>
+    <div class="mrow" if="{{zOn}}"><text class="zName" style="color: {{zc4}};">{{zn4}}</text><text class="zRange">{{zr4}}</text><text class="zTime">{{zt4}}</text></div>
+    <text class="mEmpty" if="{{zNeed}}">{{mNeed}}</text>
+    <text class="pos">{{mPos}}</text>
+  </div>
+
+  <!-- Metrics: Muscles -->
+  <div class="scr" if="{{s_mmuscles}}">
+    <div class="mbar"><input type="button" class="arrow" value="{{lt}}" onclick="mpBack" /><text class="mHeadB">{{mTitle}}</text></div>
+    <div class="mrow" if="{{mrOn0}}"><text class="mrName">{{mr0}}</text><text class="mrVal">{{mv0}}</text></div>
+    <div class="mrow" if="{{mrOn1}}"><text class="mrName">{{mr1}}</text><text class="mrVal">{{mv1}}</text></div>
+    <div class="mrow" if="{{mrOn2}}"><text class="mrName">{{mr2}}</text><text class="mrVal">{{mv2}}</text></div>
+    <div class="mrow" if="{{mrOn3}}"><text class="mrName">{{mr3}}</text><text class="mrVal">{{mv3}}</text></div>
+    <div class="mrow" if="{{mrOn4}}"><text class="mrName">{{mr4}}</text><text class="mrVal">{{mv4}}</text></div>
+    <text class="mEmpty" if="{{mEmptyOn}}">{{mEmpty}}</text>
+    <text class="mMore">{{mMore}}</text>
+    <text class="pos">{{mPos}}</text>
   </div>
 
 </div>

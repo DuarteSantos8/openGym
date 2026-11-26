@@ -110,7 +110,7 @@ test('3-2-1: 3, 2, 1, Go!, then the workout starts by itself; a tap starts it at
   w.tap('start')
   const nums = []
   for (let i = 0; i < 4; i++) { nums.push(w.d().big); if (i < 3) w.wait(1) }
-  assert.deepEqual(nums, ['3', '2', '1', 'Go!'])
+  assert.equal(w.d().goOn, true) // Go! is drawn smaller than a number, to stay inside the ring
   assert.equal(w.screen(), 'count')
   assert.equal(w.d().label, 'Start workout')
   w.wait(1) // 4 s: past 3.7
@@ -119,6 +119,14 @@ test('3-2-1: 3, 2, 1, Go!, then the workout starts by itself; a tap starts it at
   const v = ready(null, TODAY())
   v.tap('start'); v.tap('skipCount')
   assert.equal(v.screen(), 'set')
+})
+
+test('3-2-1: the ring drains over the three seconds and is empty on Go!', () => {
+  const w = ready(null, TODAY())
+  w.tap('start')
+  const pcts = []
+  for (let i = 0; i < 4; i++) { pcts.push(w.d().pct); if (i < 3) w.wait(1) }
+  assert.deepEqual(pcts, [100, 67, 33, 0])
 })
 
 test('3-2-1: the workout\'s count buzzes on each number and on Go!, and stays quiet when the phone says so', () => {
@@ -187,8 +195,8 @@ test('Set: the phone\'s workout opens on its own, numbers as the box shows them'
   w.snap(fixture().active)
   const d = w.d()
   assert.equal(w.screen(), 'set')
-  assert.deepEqual([d.name, d.tag, d.wOn, d.wNum, d.wUnit, d.rNum, d.rLabel, d.last, d.doneLabel],
-    ['Barbell Bench Press', 'Set 2 of 2', true, '60', 'kg', '8', 'Reps', 'Last time: 55×8, 57.5×6', 'Done'])
+  assert.deepEqual([d.name, d.tag, d.pill, d.wOn, d.wLabel, d.wNum, d.wUnit, d.rNum, d.rLabel, d.last, d.doneLabel],
+    ['Barbell Bench Press', 'Set 2 of 2', '2/2 Menu', true, 'WEIGHT', '60', 'KG', '8', 'REPS', 'Last time: 55×8, 57.5×6', 'Done'])
   assert.equal(d.s_set, true)
   assert.equal(d.s_idle, false)
 })
@@ -264,7 +272,7 @@ test('Set: bodyweight shows no weight box until the phone gives it a load, and i
 test('A pound user: lb, the 5 lb grid, and the summary in lb', () => {
   const w = mk()
   w.snap(act([ent('Bench', 0, [row(135, 5)])], { unit: 'lb' }), { unit: 'lb' })
-  assert.deepEqual([w.d().wNum, w.d().wUnit], ['135', 'lb'])
+  assert.deepEqual([w.d().wNum, w.d().wUnit], ['135', 'LB'])
   w.tap('wPlus')
   assert.equal(w.d().wNum, '140')
   w.tap('done'); w.wait(2)
@@ -313,7 +321,7 @@ test('Hold: a timed set shows Hold and m:ss, no weight, a 3-2-1, the hold counti
   const w = mk()
   w.snap(act([ent('Plank', 0, [{ sec: 45 }, { sec: 45 }], { mode: 'time' })]))
   let d = w.d()
-  assert.deepEqual([d.wOn, d.rLabel, d.rNum, d.doneLabel], [false, 'Hold', '0:45', 'Start hold'])
+  assert.deepEqual([d.wOn, d.rLabel, d.rNum, d.doneLabel], [false, 'HOLD', '0:45', 'Start hold'])
   w.tap('rPlus'); assert.equal(w.d().rNum, '0:50')
   w.tap('done')
   assert.equal(w.screen(), 'count')
@@ -351,7 +359,7 @@ test('Rest: the ring empties, +15 and -15 move it, Skip ends it (after the one-s
   w.tap('done')
   assert.equal(w.screen(), 'rest')
   let d = w.d()
-  assert.deepEqual([d.restLabel, d.restTime, d.pct, d.skipLabel, d.locked], ['Rest', '2:00', 100, 'Skip', true])
+  assert.deepEqual([d.restLabel, d.restTime, d.pct, d.skipLabel, d.locked, d.barOn], ['', '2:00', 100, 'Skip', true, true])
   w.wait(30)
   d = w.d()
   assert.deepEqual([d.restTime, d.pct, d.locked], ['1:30', 75, false])
@@ -398,7 +406,7 @@ test('Rest: paused on the phone says Paused and holds the number', () => {
   const w = mk()
   w.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])], { restPaused: true, restLeft: 40, restAt: T0 }))
   assert.equal(w.screen(), 'rest')
-  assert.deepEqual([w.d().restLabel, w.d().restTime], ['Paused', '0:40'])
+  assert.deepEqual([w.d().restLabel, w.d().restTime, w.d().barOn], ['Paused', '0:40', false]) // no bar while paused
   w.wait(5)
   assert.equal(w.d().restTime, '0:40')
 })
@@ -410,15 +418,40 @@ test('Rest: the effort chips, RIR then RPE, and the chosen one after', () => {
   w.tap('done')
   w.wait(2)
   let d = w.d()
-  assert.deepEqual([d.effortOn, d.how, d.c0, d.c1, d.c2, d.c3], [true, 'How hard was that set?', '0', '1', '2', '3+'])
+  assert.deepEqual([d.effortOn, d.c0, d.c1, d.c2, d.c3], [true, '0', '1', '2', '3+'])
   w.tap('chip2')
   d = w.d()
-  assert.deepEqual([d.effortOn, d.upNext], [false, 'Up next · Effort 2'])
+  assert.deepEqual([d.effortOn, d.rateOn, d.ratedText, d.upNext], [false, true, 'RIR 2', 'Up next'])
+  assert.equal(d.ratedColor, '#ffd60a') // RIR 2 is yellow
   assert.equal(w.evs().filter(e => e.type === 'setDone').pop().rir, 2)
   const v = mk()
   v.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])]), { settings: { effort: 'rpe' } })
   v.tap('done'); v.wait(2)
   assert.deepEqual([v.d().c0, v.d().c1, v.d().c2, v.d().c3], ['10', '9', '8', '<8'])
+})
+
+test('Rest: the rating line names the set, and the chips wear the effort colours (Apple\'s)', () => {
+  const w = mk()
+  w.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])]), { settings: { effort: 'rir', accent: '#a3e635', onAccent: '#0c0e12' } })
+  w.wait(2); w.tap('done'); w.wait(2)
+  const d = w.d()
+  assert.deepEqual([d.rateOn, d.effortOn, d.rateLn], [true, true, 'RIR · Bench, set 1/2'])
+  assert.deepEqual([d.cc0, d.cc1, d.cc2, d.cc3], ['#bf5af2', '#ff9f0a', '#ffd60a', '#a3e635']) // purple, orange, yellow, the accent: 3+ is easy
+  const v = mk()
+  v.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])]), { settings: { effort: 'rpe' } })
+  v.tap('done'); v.wait(2)
+  assert.deepEqual([v.d().cc0, v.d().cc1, v.d().cc2, v.d().cc3, v.d().rateLn], ['#bf5af2', '#ff9f0a', '#ffd60a', '#A3E635', 'RPE · Bench, set 1/2'])
+})
+
+test('Rest: the chips and Up next show together; the top is the heart rate alone, the sync state is the bottom line', () => {
+  const w = mk()
+  w.snap(act([ent('Bench', 0, [row(60, 8), row(62.5, 6)])]), { settings: { effort: 'rir' } })
+  w.wait(2); w.tap('done'); w.wait(2)
+  K.hrSample(w.c, 128); w.wait(1)
+  let d = w.d()
+  assert.deepEqual([d.effortOn, d.upNext, d.nextName, d.top, d.sync], [true, 'Up next', 'Bench, set 2/2', '128 bpm', 'Waiting to sync 1'])
+  w.c.g.awayAt = w.clk.now
+  assert.equal(w.d().sync, 'Phone out of reach (1)')
 })
 
 test('Rest: no effort chips when the phone does not ask', () => {
@@ -496,12 +529,14 @@ test('Finish and Discard ask first', () => {
   assert.equal(w.screen(), 'confirm')
   let d = w.d()
   assert.deepEqual([d.title, d.yesLabel, d.noLabel], ['Finish workout?', 'Finish and save', 'Cancel'])
+  assert.equal(d.yesColor, '#ffffff')
   w.tap('no')
   assert.equal(w.screen(), 'set')
   assert.ok(w.c.s.w)
   w.tap('menu'); w.tap('mDiscard')
   d = w.d()
   assert.deepEqual([d.title, d.yesLabel], ['Discard workout?', 'Discard workout'])
+  assert.equal(d.yesColor, '#ff453a')
   w.tap('yes')
   assert.equal(w.screen(), 'idle') // a discard shows no summary
   assert.equal(w.evs().pop().type, 'discard')
@@ -528,7 +563,11 @@ test('Overview: rows with done/all, the one up marked, +N for the exercises beyo
   w.tap('menu'); w.tap('mOver')
   assert.equal(w.screen(), 'over')
   const d = w.d()
-  assert.deepEqual([d.title, d.ot0, d.ot1, d.ovv2, d.ovMore, d.count, d.ovPaged], ['Overview', '> 1/2  Bench', '0/1  Row', false, '+3 Exercises', '1 of 3 sets', false])
+  assert.deepEqual([d.title, d.on0, d.oc0, d.on1, d.oc1, d.ovv2, d.ovMore, d.count, d.ovPaged], ['Push', 'Bench', '1/2', 'Row', '0/1', false, '+3 Exercises', '1 of 3 sets', false])
+  assert.equal(d.ovMoreOn, true) // a row that says nothing is not in the list
+  assert.equal(V.blank().ovMoreOn, false)
+  // the one up has the accent outline; a finished exercise a filled mark
+  assert.deepEqual([d.ol0, d.ol1, d.ob0, d.ob1], ['#A3E635', '#1c1c1e', '#2c2c2e', '#2c2c2e'])
   w.tap('ov1')
   assert.equal(w.screen(), 'set')
   assert.equal(w.d().name, 'Row')
@@ -542,10 +581,11 @@ test('Overview: a finished exercise is not a way back in; more than four rows pa
   w.snap(act(es))
   w.tap('menu'); w.tap('mOver')
   assert.equal(w.d().ovPaged, true)
+  assert.equal(w.d().ob0, '#A3E635') // all its sets done: a filled mark
   w.tap('ov0')
   assert.equal(w.screen(), 'over')
   w.tap('ovNext')
-  assert.deepEqual([w.d().ot0, w.d().ovv1], ['0/1  E4', false])
+  assert.deepEqual([w.d().on0, w.d().oc0, w.d().ovv1], ['E4', '0/1', false])
 })
 
 test('End: the last set done lands on the Overview; Finish asks, Yes saves and the summary shows', () => {
@@ -563,9 +603,41 @@ test('End: the last set done lands on the Overview; Finish asks, Yes saves and t
   assert.equal(w.screen(), 'summary')
   const d = w.d()
   assert.deepEqual([d.title, d.name, d.dur, d.durLabel, d.setsNum, d.setsLabel, d.volNum, d.volLabel, d.hrLine, d.doneLabel],
-    ['Workout saved', 'Push day', '0:36', 'Time', '2', 'Sets', '960 kg', 'Volume', '', 'Done'])
+    ['Workout saved', 'Push day', '1 min', 'Time', '2', 'Sets', '960 kg', 'Volume', '', 'Done']) // the medal's minutes, as the medal says them
+  assert.equal(d.dur, d.mTimeNum + ' ' + d.mUnit.toLowerCase())
   assert.equal(d.sync, 'Waiting to sync 2')
   assert.equal(w.evs().pop().type, 'finish')
+})
+
+test('Overview: with no routine name the title is the word', () => {
+  const w = mk()
+  w.snap(act([ent('Bench', 0, [row(60, 8)])], { name: '' }))
+  w.tap('menu'); w.tap('mOver')
+  assert.deepEqual([w.d().title, w.d().ovMoreOn], ['Overview', false])
+})
+
+test('Set page: the top is the heart rate alone, red is never the sync state; the Hold keeps the sync line at the foot', () => {
+  const w = mk()
+  w.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])]))
+  w.tap('done'); w.wait(100); w.tap('restSkip')
+  K.hrSample(w.c, 128); w.wait(1)
+  assert.equal(w.screen(), 'set')
+  assert.equal(w.c.s.ob.length > 0, true) // something waits to sync
+  assert.equal(w.d().top, '128 bpm')
+  const h = mk()
+  h.snap(act([ent('Plank', 0, [{ sec: 45 }, { sec: 45 }], { mode: 'time' })]))
+  h.tap('done'); h.wait(4)
+  assert.equal(h.screen(), 'hold')
+  K.hrSample(h.c, 128); h.wait(1)
+  h.c.g.awayAt = h.clk.now
+  assert.deepEqual([h.d().top, h.d().sync], ['128 bpm', 'Phone out of reach'])
+})
+
+test('Added weight: a language whose word is too long for the tile gets the plain word', () => {
+  const w = mk()
+  w.snap(act([ent('Dip', 0, [row(10, 10)], { bodyweight: true })]))
+  const lt = V.translator('lt')
+  assert.equal(V.build(w.c, w.ui, lt).wLabel, lt('weight').toUpperCase())
 })
 
 test('End: Back from the Overview at the end shows the end screen, with Finish', () => {
@@ -588,6 +660,7 @@ test('Summary: heart rate, the close guard, and Start waits a second after it', 
   w.tap('finish'); w.tap('yes')
   assert.equal(w.screen(), 'summary')
   assert.equal(w.d().hrLine, '130 avg · 140 max')
+  assert.equal(w.d().hrOn, true)
   w.tap('close')
   assert.equal(w.screen(), 'summary') // within the first second
   w.wait(2)
@@ -595,10 +668,22 @@ test('Summary: heart rate, the close guard, and Start waits a second after it', 
   assert.equal(w.screen(), 'idle')
 })
 
-test('The phone ended the workout: the summary says so', () => {
+test('Summary: the sync row shows only when it has words', () => {
+  const w = mk()
+  w.snap(act([ent('Bench', 0, [row(60, 8, { done: true })])]))
+  w.snap(null)
+  assert.equal(w.screen(), 'summary')
+  assert.deepEqual([w.d().syncOn, w.d().sync], [true, 'All synced'])
+  assert.equal(w.d().syncOn, w.d().sync !== '')
+  assert.equal(V.blank().syncOn, false)
+})
+
+test('The phone ended the workout: the summary says so, with the heart rate the watch had', () => {
   const w = mk()
   w.snap(act([ent('Bench', 0, [row(60, 8, { done: true }), row(60, 8)])]))
+  K.hrSample(w.c, 120); K.hrSample(w.c, 140)
   w.snap(null)
+  assert.equal(w.d().hrLine, '130 avg · 140 max')
   assert.equal(w.screen(), 'summary')
   const d = w.d()
   assert.deepEqual([d.title, d.name, d.setsNum], ['Ended on your phone', 'Push', '1'])
@@ -657,9 +742,11 @@ test('Status line: heart rate unless the phone hides it, sync only when somethin
   K.hrSample(w.c, 128)
   assert.equal(w.d().top, '128 bpm')
   w.tap('done')
-  assert.equal(w.d().top, '128 bpm · Waiting to sync 1')
+  // on the rest the top is the heart rate alone: the sync state is the line at the bottom
+  assert.equal(w.d().top, '128 bpm')
+  assert.equal(w.d().sync, 'Waiting to sync 1')
   w.c.g.awayAt = w.clk.now
-  assert.equal(w.d().top, '128 bpm · Phone out of reach (1)')
+  assert.equal(w.d().sync, 'Phone out of reach (1)')
   const v = mk()
   v.snap(fixture().active, { settings: { show: { hr: false } } })
   K.hrSample(v.c, 128)
@@ -825,7 +912,7 @@ test('Start with the check-in on: three questions, then the weigh-in, then the 3
   w.tap('ci2'); w.tap('ci5')
   assert.equal(w.screen(), 'weighin')
   d = w.d()
-  assert.deepEqual([d.title, d.bwNum, d.bwUnit, d.saveLabel, d.skipLabel], ['Body weight', '72.5', 'kg', 'Save & start workout', 'Start without weighing in'])
+  assert.deepEqual([d.title, d.bwNum, d.bwUnit, d.saveLabel, d.skipLabel], ['Body weight', '72.5', 'kg', 'Save & start workout', 'Skip'])
   w.tap('bwP1'); w.tap('bwP01'); w.tap('bwP01')
   assert.equal(w.d().bwNum, '73.7')
   w.tap('bwM1'); w.tap('bwM01')
@@ -972,10 +1059,10 @@ test('Overview: a Superset heading above the first of a superset, the phone\'s n
 test('Added weight: a bodyweight exercise says so', () => {
   const w = mk()
   w.snap(act([ent('Dip', 0, [row(10, 10)], { bodyweight: true })]))
-  assert.deepEqual([w.d().wNum, w.d().wUnit], ['+10', 'Added weight'])
+  assert.deepEqual([w.d().wNum, w.d().wUnit, w.d().wLabel], ['+10', 'KG', 'ADDED WEIGHT'])
   const v = mk()
   v.snap(act([ent('Bench', 0, [row(60, 8)])]))
-  assert.deepEqual([v.d().wNum, v.d().wUnit], ['60', 'kg'])
+  assert.deepEqual([v.d().wNum, v.d().wUnit], ['60', 'KG'])
 })
 
 test('the heart-rate sensor rests after three idle hours and wakes with the next action', () => {
@@ -1072,4 +1159,213 @@ test('Closing the summary locks for a second by the core\'s own clock, not the w
   assert.equal(K.locked(c), true)
   clk.tick += 1100
   assert.equal(K.locked(c), false)
+})
+
+/* ---------- step 2: the Metrics pages ---------- */
+const beat = (w, bpm) => { K.hrSample(w.c, bpm); w.wait(1) }
+const beat5 = (w, bpm) => { K.hrSample(w.c, bpm); w.wait(5) } // the page keeps one reading for each five seconds
+const swipe = (w, dir) => { V.swipeTo(w.c, w.ui, dir); V.tick(w.c, w.ui) }
+const live = (entries, settings, extra) => { const w = mk(); w.snap(act(entries, extra), { settings: settings || {} }); return w }
+const dn = (id, i, n, extra) => ent(id, i, Array.apply(null, Array(n)).map((_, k) => row(60, 8, { done: true, sid: id + k })), extra)
+const startedWith = settings => { const w = ready(null, TODAY(), [], Object.assign({ weighIn: false }, settings)); w.tap('start'); w.wait(4); return w }
+
+test('Metrics: a swipe left from the set or the rest opens the pages in order, a swipe right goes back, and from the first to the workout', () => {
+  const w = startedWith()
+  swipe(w, 'right')
+  assert.equal(w.screen(), 'set') // nothing to go back to
+  swipe(w, 'left')
+  assert.equal(w.screen(), 'mnum')
+  swipe(w, 'left'); assert.equal(w.screen(), 'meffort')
+  swipe(w, 'left'); assert.equal(w.screen(), 'mmuscles')
+  swipe(w, 'left'); assert.equal(w.screen(), 'mmuscles') // the last page stays
+  swipe(w, 'right'); assert.equal(w.screen(), 'meffort')
+  swipe(w, 'right'); assert.equal(w.screen(), 'mnum')
+  swipe(w, 'right'); assert.equal(w.screen(), 'set')
+  w.tap('done')
+  assert.equal(w.screen(), 'rest')
+  swipe(w, 'left'); assert.equal(w.screen(), 'mnum')
+  swipe(w, 'right'); assert.equal(w.screen(), 'rest')
+})
+
+test('Metrics: the back button goes back a page, and from the first page to the workout', () => {
+  const w = startedWith()
+  swipe(w, 'left'); swipe(w, 'left')
+  assert.equal(w.screen(), 'meffort')
+  w.tap('mpBack'); assert.equal(w.screen(), 'mnum')
+  w.tap('mpBack'); assert.equal(w.screen(), 'set')
+  w.tap('mpBack'); assert.equal(w.screen(), 'set') // nothing to go back to
+  w.tap('done')
+  swipe(w, 'left')
+  w.tap('mpBack'); assert.equal(w.screen(), 'rest')
+})
+
+test('Metrics: not from Start, the menu or a confirm; the workout ending closes them; a page that goes away is not left on', () => {
+  const idle = ready(null, TODAY())
+  swipe(idle, 'left')
+  assert.equal(idle.screen(), 'idle')
+  const w = startedWith({ show: { hr: true } })
+  beat(w, 100)
+  w.tap('menu'); swipe(w, 'left'); w.tap('mBack')
+  assert.equal(w.screen(), 'set')
+  w.tap('menu'); w.tap('mFinish'); swipe(w, 'left'); assert.equal(w.screen(), 'confirm'); w.tap('no') // a confirm stays on top
+  assert.equal(w.screen(), 'set')
+  swipe(w, 'left'); swipe(w, 'left'); assert.equal(w.screen(), 'mpulse')
+  w.c.s.set.show.hr = false // the pages shrink under the lifter: pulse and zones are gone
+  V.tick(w.c, w.ui)
+  assert.equal(w.screen(), 'mnum') // back to the first page, as on Wear
+  swipe(w, 'right')
+  w.tap('finish'); w.tap('yes')
+  assert.equal(w.screen(), 'summary')
+  w.wait(2); w.tap('close')
+  swipe(w, 'right')
+  assert.equal(w.screen(), 'idle')
+})
+
+test('Metrics numbers: the time, the sets, the volume and the heart rate; the time stands still while paused', () => {
+  const w = startedWith()
+  w.wait(30)
+  swipe(w, 'left')
+  let d = w.d()
+  assert.deepEqual([d.mTime, d.mSub, d.setsNum, d.setsLabel, d.volNum, d.volLabel, d.mHr, d.hrLine, d.mPos], ['0:30', 'Time', '0/3', 'Sets', '0 kg', 'Volume', '', '', '1/3'])
+  beat(w, 100); beat(w, 140)
+  d = w.d()
+  assert.deepEqual([d.mHr, d.hrLine], ['140 bpm', '120 avg · 140 max'])
+  const p = live([ent('Bench', 0, [row(60, 8, { done: true }), row(60, 8)])], {}, { start: T0 - 600000, pausedAt: T0 - 540000 })
+  swipe(p, 'left')
+  assert.deepEqual([p.d().mTime, p.d().mSub], ['1:00', 'Paused'])
+  p.wait(30)
+  assert.equal(p.d().mTime, '1:00')
+})
+
+test('Metrics Pulse: the average, lowest and highest, and a bar for each reading, the lowest shortest and the highest tallest', () => {
+  const w = startedWith()
+  ;[100, 110, 120, 130, 140].forEach(b => beat5(w, b))
+  swipe(w, 'left'); swipe(w, 'left')
+  assert.equal(w.screen(), 'mpulse')
+  const d = w.d()
+  assert.deepEqual([d.mTitle, d.mAvg, d.mAvgLabel, d.mMin, d.mMinLabel, d.mMax, d.mMaxLabel, d.mPos], ['Heart rate', '120', 'avg', '100', 'min', '140', 'max', '2/5'])
+  assert.deepEqual([d.pb0, d.pb2, d.pb4, d.pb5, d.pb11], ['8px', '36px', '64px', '0px', '0px'])
+  const flat = startedWith()
+  beat5(flat, 100); beat5(flat, 100)
+  swipe(flat, 'left'); swipe(flat, 'left')
+  assert.equal(flat.d().pb0, '36px') // no spread: all the same height
+})
+
+test('Metrics Effort: one row for each exercise rated, the mean, "+n more" past five, and a line when nothing was rated', () => {
+  const w = live([ent('Bench', 0, [row(60, 8), row(60, 8)])], { effort: 'rir' })
+  w.wait(2); w.tap('done'); w.wait(2); w.tap('chip0')
+  swipe(w, 'left'); swipe(w, 'left')
+  assert.equal(w.screen(), 'meffort')
+  let d = w.d()
+  assert.deepEqual([d.mTitle, d.mrOn0, d.mr0, d.mv0, d.mrOn1, d.mEmptyOn], ['Effort RIR', true, 'Bench', String(K.chips('rir')[0]), false, false])
+  const none = live([ent('A', 0, [row(60, 8, { done: true }), row(60, 8)])], { effort: 'rir' })
+  swipe(none, 'left'); swipe(none, 'left')
+  d = none.d()
+  assert.deepEqual([d.mrOn0, d.mEmptyOn, d.mEmpty], [false, true, 'No effort rated yet'])
+  const many = live([ent('A', 0, [row(60, 8)])], { effort: 'rpe' })
+  for (let i = 0; i < 7; i++) many.c.s.ef['k' + i] = [8.5, i, 'Ex' + i, 'x' + i]
+  swipe(many, 'left'); swipe(many, 'left')
+  d = many.d()
+  // the latest five (the exercise in hand is never behind "+n more"), the earlier two counted
+  assert.deepEqual([d.mTitle, d.mr0, d.mv0, d.mr4, d.mMore], ['Effort RPE', 'Ex2', '8.5', 'Ex6', '+2 more'])
+})
+
+test('Metrics Zones: five bands with the time in each, the zone now marked, and a hint without a birth year', () => {
+  const w = startedWith({ birthYear: 1986 })
+  ;[100, 130, 170, 170].forEach(b => beat5(w, b))
+  swipe(w, 'left'); swipe(w, 'left'); swipe(w, 'left'); swipe(w, 'left')
+  assert.equal(w.screen(), 'mzones')
+  const d = w.d()
+  assert.deepEqual([d.mTitle, d.zNeed, d.zOn, d.mPos], ['Zones', false, true, '4/5'])
+  assert.deepEqual([d.zn0, d.zn2, d.zn4], ['Z1', 'Z3', '> Z5'])
+  assert.deepEqual([d.zr0, d.zr1, d.zr4], ['under 108', '108 to 125', '162 and up'])
+  assert.deepEqual([d.zt0, d.zt1, d.zt2, d.zt4], ['0:05', '0:00', '0:05', '0:05'])
+  assert.deepEqual([d.zc0, d.zc2, d.zc4], ['#40c8e0', '#ffd60a', '#ff453a']) // Apple's zone colours
+  const none = startedWith()
+  beat(none, 100)
+  swipe(none, 'left'); swipe(none, 'left'); swipe(none, 'left'); swipe(none, 'left')
+  assert.equal(none.screen(), 'mzones')
+  assert.deepEqual([none.d().zNeed, none.d().zOn, none.d().mNeed], [true, false, 'No age set. Add your birth year on the phone'])
+})
+
+test('Metrics Muscles: sets done for each muscle, most first, "+n more", and a line without any', () => {
+  const w = live([dn('Bench', 0, 2, { muscles: { chest: 1, triceps: 0.5 } }), ent('Row', 1, [row(40, 10)])], {}, { muscleNames: { chest: 'Chest' } })
+  swipe(w, 'left'); swipe(w, 'left'); swipe(w, 'left')
+  assert.equal(w.screen(), 'mmuscles')
+  let d = w.d()
+  assert.deepEqual([d.mTitle, d.mr0, d.mv0, d.mr1, d.mv1, d.mrOn2, d.mEmptyOn, d.mMore, d.mPos], ['Muscles', 'Chest', '2', 'triceps', '1', false, false, '', '3/3'])
+  const m = {}
+  for (let i = 0; i < 7; i++) m['m' + i] = 1
+  const many = live([dn('Bench', 0, 1, { muscles: m }), ent('Row', 1, [row(40, 10)])])
+  swipe(many, 'left'); swipe(many, 'left'); swipe(many, 'left')
+  assert.equal(many.d().mMore, '+2 more')
+  const none = live([ent('Bench', 0, [row(60, 8)])])
+  swipe(none, 'left'); swipe(none, 'left'); swipe(none, 'left')
+  d = none.d()
+  assert.deepEqual([d.mrOn0, d.mEmptyOn, d.mEmpty], [false, true, 'No sets yet'])
+})
+
+/* ---------- step 2: the medal, the small touches ---------- */
+function finished (entries) {
+  const w = live(entries)
+  w.tap('finish'); w.wait(30); w.tap('yes')
+  return w
+}
+
+test('Summary medal: a records day is gold with a diamond and a plate for each record, and the old lines stay', () => {
+  const w = finished([dn('Bench', 0, 2, { best: { w: 55, r: 8 } }), dn('Row', 1, 1, { best: { w: 60, r: 7 } })])
+  assert.equal(w.screen(), 'summary')
+  const d = w.d()
+  assert.deepEqual([d.gold, d.mRim, d.mFace, d.mInk, d.gem0, d.gem1, d.gem2, d.gemPx], [true, '#D9B45F', '#F2D791', '#2A1C07', true, true, false, '18px'])
+  assert.deepEqual([d.legend, d.pn0, d.pnum0, d.pv0, d.pn1, d.pnum1, d.pv1, d.pv2, d.rMore], ['2 Records', 'Bench', '55 to 60 kg', true, 'Row', '7 to 8 Reps', true, false, ''])
+  assert.deepEqual([d.title, d.name, d.setsNum, d.volNum, d.doneLabel], ['Workout saved', 'Push', '3', '1440 kg', 'Done'])
+  assert.deepEqual([d.mTimeNum, d.mUnit], ['11', 'MIN']) // started 10 min ago, 30 s of waiting: 10 min 30 s, rounded
+  assert.deepEqual([d.rMoreOn, d.hrOn], [false, false]) // nothing to say: no empty rows between the plates and Done
+})
+
+test('Summary medal: a plain day is steel with the volume under the time, and more than four records say how many are left', () => {
+  const w = finished([dn('Bench', 0, 2)])
+  const d = w.d()
+  assert.deepEqual([d.gold, d.mRim, d.mFace, d.mInk, d.gem0, d.mVol, d.legend, d.pv0, d.rMore], [false, '#B0B8C2', '#D4DAE1', '#13171C', false, '960 kg', '2 sets', false, ''])
+  const es = [0, 1, 2, 3, 4, 5].map(i => dn('E' + i, i, 1, { best: { w: 50, r: 8 } }))
+  const big = finished(es).d()
+  assert.deepEqual([big.legend, big.pv3, big.pn3, big.rMore, big.gem5, big.gem6, big.gemPx], ['6 Records', true, 'E3', '+2 more', true, false, '14px'])
+  assert.equal(finished([dn('Bench', 0, 1, { best: { w: 55, r: 8 } })]).d().legend, 'New record')
+  assert.deepEqual([big.rMoreOn, finished(es).d().hrOn], [true, false])
+})
+
+test('Start: the week streak where the hint goes, and the phone in reach or away along the bottom', () => {
+  const w = mk()
+  w.snap(null, { settings: { weighIn: false }, streak: { weeks: 12, thisWeekDone: true }, ready: { today: TODAY(), others: [] } })
+  let d = w.d()
+  assert.deepEqual([d.hint, d.hintColor], ['Week streak 12', d.accent])
+  w.c.s.stk.thisWeekDone = false
+  assert.equal(w.d().hintColor, '#a1a1a6')
+  w.c.s.stk.weeks = 0 // a new lifter: no "Week streak 0"
+  assert.equal(w.d().hint, '')
+  w.c.link.okAt = w.clk.now
+  assert.equal(w.d().top, 'Phone connected')
+  w.c.link.okAt = w.clk.now - 3600000
+  assert.equal(w.d().top, '') // nothing heard for a long time: the watch cannot tell
+  w.c.link.okAt = w.clk.now - 1; w.c.g.awayAt = w.clk.now
+  assert.equal(w.d().top, 'Phone away')
+  const n = mk()
+  n.snap(null, { ready: null })
+  assert.deepEqual([n.d().hint, n.d().hintColor], ['Start one on your phone and it shows up here.', '#a1a1a6'])
+})
+
+test('Rest: the bar unless the phone asks for a plain countdown', () => {
+  const w = startedWith()
+  w.tap('done')
+  assert.equal(w.d().barOn, true)
+  const p = startedWith({ show: { rest: 'plain' } })
+  p.tap('done')
+  assert.deepEqual([p.screen(), p.d().barOn, p.d().restTime], ['rest', false, '1:00'])
+})
+
+test('Set: the resistance band shows ahead of the partner exercise', () => {
+  const w = live([ent('Pull', 0, [row(0, 8, { band: 'Red + Yellow' })]), ent('Row', 1, [row(40, 10)])], {}, {})
+  assert.deepEqual([w.d().band, w.d().bandOn, w.d().partner, w.d().partnerOn], ['Red + Yellow', true, '', false])
+  const x = live([ent('Pull', 0, [row(0, 8)])])
+  assert.deepEqual([x.d().band, x.d().bandOn, x.d().partner], ['', false, ''])
 })

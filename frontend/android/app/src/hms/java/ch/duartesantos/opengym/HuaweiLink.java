@@ -523,8 +523,11 @@ final class HuaweiLink {
         return out;
     }
 
-    /** The page's Huawei snapshot (the Garmin's for an older page) to every connected watch with the app. Whether any got it on its way. */
-    boolean send(String json) {
+    /**
+     * The page's Huawei snapshot (the Garmin's for an older page) to every connected watch with the app. Whether any got it on its way.
+     * `again`: the page resends it on purpose (an event came twice, so the watch missed it), so it goes even if it is the same.
+     */
+    boolean send(String json, boolean again) {
         if (json == null || !json.startsWith("{")) return false;
         // Too long for 16 frames: not sent, and not kept to be sent on a hello either.
         if (!HuaweiFrames.fits(json)) return false;
@@ -535,7 +538,7 @@ final class HuaweiLink {
         boolean any = false;
         for (Device d : new ArrayList<>(devices.values())) {
             String id = d.getUuid();
-            if (Boolean.TRUE.equals(connected.get(id)) && !Boolean.FALSE.equals(installed.get(id))) { sendTo(d, json, false); any = true; }
+            if (Boolean.TRUE.equals(connected.get(id)) && !Boolean.FALSE.equals(installed.get(id))) { sendTo(d, json, again); any = true; }
         }
         return any;
     }
@@ -549,7 +552,7 @@ final class HuaweiLink {
         for (String id : devices.keySet()) if (!receivers.containsKey(id)) { lastNudge = now; refresh(); return; }
     }
 
-    /** `asked`: the watch said hello, so it gets the snapshot even if it is the one it had. */
+    /** `asked`: the watch said hello, or the page resent on purpose, so it gets the snapshot even if it is the one it had. */
     private void sendTo(Device d, String json, boolean asked) {
         if (json == null) return;
         main.post(() -> {
