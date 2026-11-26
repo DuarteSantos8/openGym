@@ -6,7 +6,9 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Rest-day mobility freeze (D8, prepared).** Two completed Learn mobility sessions started on scheduled rest days earn one freeze that week when the profile has room. The calendar explains the award. Earlier workouts retain their existing credit. Merging the shared streak code restarts the hosted API.
 
-- **Beginner tour (D4, prepared).** The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
+- **Hosted preview.** The API and Coach are live on the cloud preview. External MCP connector checks and the production-domain cutover remain open. See the [hosted server runbook](CLOUD-SERVER.md).
+
+- **Beginner Settings and tour (D3 and D4, verified on the preview).** Settings starts with the shorter list for Beginners. The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 

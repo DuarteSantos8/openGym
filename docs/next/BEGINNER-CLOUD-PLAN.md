@@ -5,6 +5,8 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+The cloud preview uses the hosted API and Coach. The shorter Beginner Settings and tour reached the preview in #116 and #117.
+
 Read after `NEXT-STEPS.md`. What is left, in order and as tasks for a coding agent, is in
 `AGENT-DEVELOPMENT-PLAN.md` (merged in #93).
 
@@ -127,12 +129,12 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|---|---|
 | EP21-T01 | Experience levels | `frontend/src/lib/experience.js`, `experience-copy.js` | Beginner, Intermediate, Experienced write four detail modules and nothing that is connected or holds data | done, #57 |
 | EP21-T02 | Workout shows less to a Beginner | `views/Workout.jsx` | done: the set menu keeps failure, drop set and burst under More (#57); the exercise menu leads with How to do it (`next/EP23-exercise-guidance`). Supersets and ordering were already under More |
-| EP21-T03 | Level in Settings | `views/Settings.jsx`, `settings-pages.js` | **part**: the row, searchable. Still open: a shorter Settings root for a Beginner |
+| EP21-T03 | Level in Settings | `views/Settings.jsx`, `settings-pages.js` | **done** (#116): Beginner Settings has a shorter root, full search and a switch to show all settings. |
 | EP22-T01 | Planner | `frontend/src/lib/planner.js`, `lib/starter.js` `buildPlanFrom` | all 1,200 answer combinations give a valid plan, deterministic, equipment respected, within the minutes | done, same branch. Draws on the 8 starter plans; `routines/opengym/` is not used yet |
 | EP22-T02 | Find my plan | `views/Onboarding.jsx`, `App.jsx` `/start` | six questions, a plan with reasons, "Use this plan"; limitations never stored; E2E with axe | done, same branch |
 | EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | **prepared**: all eight cards show these facts and adapt to the selected equipment profile |
 | EP22-T04 | First-session load finder | NEW `lib/load-finder.js`, `components/LoadFinder.jsx`, `Workout.jsx` | an exercise with no history offers "Find my weight": up to three test sets, a fifth up or down each time, and the weight found fills the open sets | **done** (#60), with review fixes in `next/EP22-load-finder-fixes`: it starts on the athlete's own bar and never suggests less, names only owned dumbbells or stack weights when those are listed, uses the column's own heading (each or both dumbbells), and writes to the first set still open. Test sets are not logged. Not offered for bodyweight, band, assisted-machine or per-side rows |
-| EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **part**: the first-run question no longer opens over the quiz. Still open: a Beginner tour of 8 stops or fewer |
+| EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **done** (#117): the tour follows the quiz. Beginners get at most eight stops and can replay it from Settings. |
 | EP23-T01 | Exercise guidance: level, pattern, cues, mistakes, feel, breathing, easier and harder | `frontend/src/content/exercise-guides.js`, `lib/exercise-guide.js` | `problems()` is empty: fields complete, ids real, ladders never circular, review status valid | done, `next/EP23-exercise-guidance`. **Kept out of `catalogue/` on purpose for now**: the generated catalogue files stay untouched and the text loads on demand. Moving it into `catalogue/exercises/*.json` is a mechanical step once upstream settles its own "top three mistakes" field |
 | EP23-T02 | Seed level and pattern | NEW `scripts/catalogue/seed-level.mjs` | 90% of exercises get a pattern; reviewed diff | open |
 | EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 exercises, which is every exercise a starter plan uses, so every Find my plan result is covered (a test holds that). All `draft`: **the owner or a named reviewer still has to read them** (ADR 0012). About 35 more for the routines library are open |
