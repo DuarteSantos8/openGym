@@ -15,11 +15,11 @@ import { useStore } from '../store/useStore.js'
 import { savePrefs } from '../lib/device-prefs-sync.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { speak, hush, listVoices, voiceLabel, voiceOpts, pickedVoice, setPickedVoice, speechRateNum, speechPitchNum, setSpeechRate, setSpeechPitch, speechSupported, SPEECH_MIN, SPEECH_MAX } from '../lib/speech.js'
+import { speak, hush, voiceState, onVoices, refreshVoices, langName, speechLang, voiceLabel, voiceOpts, pickedVoice, setPickedVoice, speechRateNum, speechPitchNum, setSpeechRate, setSpeechPitch, speechSupported, SPEECH_MIN, SPEECH_MAX } from '../lib/speech.js'
 import { sampleCue } from '../lib/spoken-cues.js'
 import { MOMENTS, MOMENT_COPY, STYLE_COPY, STYLE_IDS, cueStyleOf, linesFor, ownLines, setOwnLines, startOwnFrom, hasOwnLines, sampleLine, LINES_MAX, LINE_MAX } from '../lib/voice-styles.js'
 import { voiceClipsOf, addVoiceClip, removeVoiceClip, CLIPS_PER_MOMENT, CLIP_SEC } from '../lib/voice-clips.js'
-import { offlineBuild } from '../lib/build-caps.js'
+import { MOBILE } from '../lib/mobile.js'
 import { mediaStore } from '../lib/media-store.js'
 import { fmtClip } from '../lib/media-refs.js'
 import { unlock, chime } from '../lib/sound.js'
@@ -45,31 +45,40 @@ export function recordType(MR = globalThis.MediaRecorder) {
 }
 export const canRecord = () => typeof globalThis.MediaRecorder === 'function' && typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function'
 
+/** The phone's voice list ({ voices, auto, ios }); refreshed on mount so a voice downloaded while away shows. */
 function useVoices() {
-  const [voices, setVoices] = useState(null)
+  const [st, setSt] = useState(voiceState)
   useEffect(() => {
-    let gone = false
-    listVoices({ offline: offlineBuild() }).then(v => { if (!gone) setVoices(v) }, () => { if (!gone) setVoices([]) })
-    return () => { gone = true }
+    const off = onVoices(() => setSt(voiceState()))
+    refreshVoices().catch(() => {})
+    return off
   }, [])
-  return voices
+  return st
 }
 
-function VoiceSheet({ close, voices }) {
+function VoiceSheet({ close }) {
+  const { voices: list, auto, ios } = useVoices()
+  const voices = list || []
   const [cur, setCur] = useState(pickedVoice())
-  const pick = id => {
+  const pick = (id, say = id) => {
     setPickedVoice(id)
     savePrefs(useStore.getState().update)
     setCur(id)
-    sayIt(sampleLine(S_()) || sampleCue(S_().unit), { voice: id })
+    sayIt(sampleLine(S_()) || sampleCue(S_().unit), { voice: say })
   }
+  const lang = langName(speechLang())
+  const autoNote = !MOBILE ? null : auto
+    ? t('Uses {0} ({1}), the best {2} voice on this iPhone.', voiceLabel(auto), auto.quality === 'premium' ? t('Premium') : t('Enhanced'), lang)
+    : t('Uses your phone’s standard voice.')
+  const iosNote = !ios ? null : auto ? t('More voices: Settings → Accessibility → Read & Speak → Voices.') : t('Your iPhone only has the standard voice for {0}. For one that sounds more like a person, download a {0} voice marked Enhanced or Premium: Settings → Accessibility → Read & Speak → Voices. Each is 100 MB or more, so use Wi-Fi. openGym uses it as soon as it is there.', lang)
+  const empty = voices.length ? null : t('No other voices for this language here. Your device’s settings can add more.')
   return <>
     <h3>{t('Voice')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Tap one to hear it. The voices are your device’s own.')}</div>
-    <Section footer={voices.length ? null : t('No other voices for this language here. Your device’s settings can add more.')}>
-      <Row icon={cur ? 'play' : 'speaker'} iconTint="var(--teal)" title={t('Default voice')} accessory={!cur ? 'check' : 'none'} onClick={() => pick('')} />
+    <Section footer={empty || iosNote ? <>{empty} {iosNote}</> : null}>
+      <Row icon={cur ? 'play' : 'speaker'} iconTint="var(--teal)" title={t('Automatic')} subtitle={autoNote} accessory={!cur ? 'check' : 'none'} onClick={() => pick('', auto?.id || '')} />
       {voices.map(v => <Row key={v.id} icon={cur === v.id ? 'speaker' : 'play'} iconTint="var(--teal)" title={voiceLabel(v)}
-        subtitle={[v.quality === 'premium' ? t('Premium') : v.quality === 'enhanced' ? t('Enhanced') : null, v.online ? t('Needs internet') : null].filter(Boolean).join(' · ') || null}
+        subtitle={[v.quality === 'premium' ? t('Premium') : v.quality === 'enhanced' ? t('Enhanced') : null, langName(v.lang), v.online ? t('Needs internet') : null].filter(Boolean).join(' · ') || null}
         accessory={cur === v.id ? 'check' : 'none'} onClick={() => pick(v.id)} />)}
     </Section>
     <div style={{ height: 14 }} />
@@ -229,7 +238,8 @@ export function momentSummary(S, moment) {
 export default function VoiceSettings() {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const voices = useVoices()
+  const { voices, auto, ios } = useVoices()
+  const stuck = ios && !auto
   const style = cueStyleOf(S)
   const cur = pickedVoice()
   const curVoice = voices?.find(v => v.id === cur)
@@ -240,12 +250,13 @@ export default function VoiceSettings() {
   }
   // Shown in full even where nothing can speak (this browser): the lines and clips sync to the
   // devices that can, and the footer says why nothing is heard here.
-  const footer = !speechSupported() ? t('This browser can’t speak. Try another one.')
+  const base = !speechSupported() ? t('This browser can’t speak. Try another one.')
     : S.spokenCues === true ? null : t('Spoken cues are off. Switch them on in Timer alerts to hear any of this in a workout.')
+  const footer = stuck && !cur ? <>{t('Better voices need a download. Tap Voice to see how.')} {base}</> : base
   return <>
     <Section footer={footer}>
-      <Row icon="personCircle" iconTint="var(--teal)" title={t('Voice')} value={curVoice ? voiceLabel(curVoice) : t('Default voice')} accessory="chevron"
-        onClick={() => { if (voices) useUI.getState().openSheet(close => <VoiceSheet close={close} voices={voices} />) }} />
+      <Row icon="personCircle" iconTint="var(--teal)" title={t('Voice')} value={curVoice ? voiceLabel(curVoice) : stuck ? t('Standard voice') : t('Automatic')} accessory="chevron"
+        onClick={() => { if (voices) useUI.getState().openSheet(close => <VoiceSheet close={close} />) }} />
       <SliderRow icon="gauge" title={t('Speed')} value={speechRateNum(S)} set={setSpeechRate} low={t('Slower')} high={t('Faster')} />
       <SliderRow icon="speaker" title={t('Pitch')} value={speechPitchNum(S)} set={setSpeechPitch} low={t('Lower')} high={t('Higher')} />
       <Row icon="play" iconTint="var(--green)" title={t('Try it')} onClick={() => { sayIt(sampleCue(S.unit)); speak(sampleLine(S), { ...voiceOpts(S) }) }} />

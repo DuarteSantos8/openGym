@@ -39,7 +39,7 @@ import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
-import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
+import { speak, speechSupported, voiceOpts, voiceState, pickedVoice } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
 import VoiceSettings from '../components/VoiceSettings.jsx'
 import { bandsSheet } from '../components/Bands.jsx'
@@ -932,7 +932,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           </Row>
           {/* Settings → Timer alerts → Voice (components/VoiceSettings.jsx, v1.4.5): the voice,
               speed and pitch, a style, and lines and clips of your own per moment. */}
-          {S.spokenCues === true && <Row icon="chat" iconTint="var(--teal)" title={t('Voice')} value={t(STYLE_COPY[cueStyleOf(S)][0])} accessory="chevron" onClick={() => nav('/settings/voice')} />}
+          {S.spokenCues === true && <Row icon="chat" iconTint="var(--teal)" title={t('Voice')} value={t(STYLE_COPY[cueStyleOf(S)][0])}
+            subtitle={voiceState().ios && !voiceState().auto && !pickedVoice() ? t('Better voices need a download. Tap Voice to see how.') : null} accessory="chevron" onClick={() => nav('/settings/voice')} />}
         </Section>
       </>
     },
