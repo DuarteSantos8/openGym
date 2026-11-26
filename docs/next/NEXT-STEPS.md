@@ -74,7 +74,9 @@ preview. The routines and week are written when the person selects Import.
 With no routines or with a proposed plan open, a message uses the plan builder instead.
 
 - **Back workout with no weights:** the ask tests reject a trained cable movement
-  and added load on a floor exercise.
+  and added load on a floor exercise. A full history of equipment-based movements
+  still leaves room for new suggestions. A request that names resistance bands
+  and rules out weights can use the bands without adding an external load.
   The repair reply proposes a reverse push-up and a floor T raise, both catalogue
   back exercises. The bodyweight tag alone does not guarantee floor-only movements:
   it also includes chin-ups and bench pull-ups. The test verifies those two floor

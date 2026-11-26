@@ -91,7 +91,8 @@ test('ask pipeline: the ask rules and schema reach the provider, and an answer c
   assert.equal(calls[0].schema, SCHEMAS.ask);
 });
 
-for (const qualifier of ['with no weights', 'without weights', 'with no equipment', 'without equipment']) {
+for (const qualifier of ['with no weights', 'without weights', 'with no equipment', 'without equipment',
+  'with no equipment instead of my cable routine', 'with no bands and no weights']) {
   test(`a back workout ${qualifier}: propose floor exercises even for someone who trains with cables`, async () => {
     const question = `a back workout ${qualifier}`;
     const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0007' }, { id: '3225' }] }] };
@@ -133,3 +134,36 @@ for (const type of ['workout', 'routine']) {
     assert.equal(attempts, 2);
   });
 }
+
+test('a full library of trained cable exercises still leaves room for an equipment-free back workout', () => {
+  const pins = [...LIB_BY_ID.values()].filter(e => e.eq === 'cable').slice(0, payloadLib.ASK_LIBRARY);
+  assert.equal(pins.length, payloadLib.ASK_LIBRARY);
+  const profile = { ...S, routines: [{ id: 'gym', name: 'Gym', ex: pins.map(({ id }) => ({ id })) }] };
+  const p = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: 'a back workout with no equipment' });
+  assert.equal(p.library.length, payloadLib.ASK_LIBRARY);
+  assert.ok(p.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'));
+  assert.ok(p.library.some(e => e.bp === 'back'));
+});
+
+test('a back workout with resistance bands but no weights keeps band rows available', async () => {
+  const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0988' }] }],
+    coach: { ...S.coach, profile: { equipment: ['band'] } } };
+  for (const note of ['a back workout with resistance bands but no weights',
+    'a back workout at home with resistance bands but no weights',
+    'I have no weights, only resistance bands. Make me a band back workout.']) {
+    const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note });
+    assert.ok(payload.library.some(e => e.id === '0988'), note);
+    assert.ok(payload.library.some(e => e.id !== '0988' && LIB_BY_ID.get(e.id)?.eq === 'band'), note);
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke() {
+      const item = { id: '0988', sets: 2, reps: 8 };
+      if (++attempts === 1) item.weight = 5;
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Band rows',
+        actions: [{ type: 'workout', name: 'Back', items: [item] }] }) };
+    } };
+    const r = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.result.actions[0].items.map(({ id, weight }) => [id, weight]), [['0988', undefined]]);
+    assert.equal(attempts, 2);
+  }
+});

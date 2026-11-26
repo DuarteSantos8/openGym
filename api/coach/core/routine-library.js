@@ -125,8 +125,17 @@ export function builtinIndex() {
 const WORDS = s => (String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
 // Words that ask for a no-equipment plan, in the languages people asked in.
 const BODYWEIGHT = /\b(body ?weight|calisthenics?|at home|home workout|eigengewicht|ohne gerate|sans materiel|poids du corps|peso corporal|peso corporeo|senza attrezzi|sin equipo|sem equipamento|pull[- ]?up bar|klimmzugstange)\b/i;
-export const asksForBodyweightOnly = text => /\b(?:no|without)[ -](?:weights|equipment)\b/i.test(String(text || ''));
-export const asksForBodyweight = text => asksForBodyweightOnly(text) || BODYWEIGHT.test(String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, ''));
+const OTHER_KIT = new Set([...LIB_BY_ID.values()].map(e => e.eq).filter(eq => eq && eq !== 'body weight'));
+const NAMED_KIT = new RegExp('\\b(?:(no|without) (?:any |an? )?)?(?:' + [...OTHER_KIT].map(eq => WORDS(eq).join('[ -]')).join('|') + ')s?\\b', 'gi');
+const NO_EQUIPMENT = /\b(?:no|without)[ -]equipment\b/i;
+const NO_WEIGHTS = /\b(?:no|without)[ -]weights\b/i;
+export const asksForNoAddedWeight = text => NO_EQUIPMENT.test(text) || NO_WEIGHTS.test(text);
+// "With resistance bands but no weights" still permits a band exercise.
+export const asksForBodyweightOnly = text => NO_EQUIPMENT.test(text) ||
+  (NO_WEIGHTS.test(text) && !Array.from(String(text).matchAll(NAMED_KIT)).some(match => !match[1]));
+export const asksForBodyweight = text => asksForNoAddedWeight(text)
+  ? asksForBodyweightOnly(text)
+  : BODYWEIGHT.test(String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, ''));
 
 /**
  * The few entries worth showing the model for this question: word overlap with the title, split,

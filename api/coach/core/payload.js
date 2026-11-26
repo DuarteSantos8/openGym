@@ -738,8 +738,11 @@ export function build(S, opts = {}) {
     // question gets a library slice, leaning to what the question names. "Only bodyweight" narrows
     // it to exercises that need nothing.
     const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
-    p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
-    if (asksForBodyweightOnly(p.question)) p.library = p.library.filter(e => LIB_BY_ID.get(e.id)?.eq === 'body weight');
+    const keep = trainedIds(S, workouts);
+    const strict = asksForBodyweightOnly(p.question);
+    const pins = strict ? keep.filter(id => LIB_BY_ID.get(id)?.eq === 'body weight') : keep;
+    p.library = librarySlice(S, eq, { keep: pins, max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    if (strict) p.library = p.library.filter(e => !e.custom);
     // Routines from the library (core/routine-library.js) the app found for this question.
     const hits = cleanHits(opts.routines);
     if (hits.length) p.routineLibrary = hits;
