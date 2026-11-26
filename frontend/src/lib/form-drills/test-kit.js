@@ -9,10 +9,24 @@
 // right, the right side nearest the camera), 90 faces the camera, 180 is side-on the other way.
 const rad = d => d * Math.PI / 180
 
-/** Segment lengths and widths in metres: a lifter of about 1.75 m. */
+/**
+ * Segment lengths and widths in metres: a lifter of about 1.75 m. `hipMark`: how far up the torso
+ * from the hip joint Vision puts the hip once the hip is bent through a deep squat (at the joint
+ * standing tall). Vision's hip sits on the pelvis, above the crease: filmed side-on, real squats
+ * with the crease level with the knee read the hip about 0.2 thigh lengths above it (markHip).
+ */
 export const BODY = {
   ankleH: 0.08, shin: 0.43, thigh: 0.43, torso: 0.5, neck: 0.12, head: 0.14,
-  hipHalf: 0.1, shoulderHalf: 0.19, stanceHalf: 0.15,
+  hipHalf: 0.1, shoulderHalf: 0.19, stanceHalf: 0.15, hipMark: 0.13,
+}
+
+/**
+ * Where Vision puts the hip: the joint `hipP` ([u, v]) moved up the torso (leaning `lean` radians
+ * forward) by `bend` (0 standing tall, 1 deep in the hip, kept in between) of `body.hipMark`.
+ */
+export function markHip(hipP, lean, bend, body = BODY) {
+  const d = body.hipMark * Math.max(0, Math.min(1, bend))
+  return [hipP[0] + d * Math.sin(lean), hipP[1] + d * Math.cos(lean)]
 }
 
 /** The camera as the drills ask for it: at knee height, level. `fov` is the vertical field of view, `aspect` the frame's width / height (portrait). */
