@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Her setten sonra bir cümle.",
   "After every set": "Her setten sonra",
   "A line about the set, then the style’s own.": "Set hakkında bir cümle, sonra stilin kendi cümlesi.",
+  "How much it says": "Ne kadar konuşsun",
   "When a rest starts": "Dinlenme başlarken",
   "10 seconds left": "10 saniye kaldı",
   "When the rest is over": "Dinlenme bitince",

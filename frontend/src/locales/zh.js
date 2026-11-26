@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "每组之后说一句。",
   "After every set": "每一组之后",
   "A line about the set, then the style’s own.": "先说这一组的情况，再说风格自己的一句。",
+  "How much it says": "说多少",
   "When a rest starts": "休息开始时",
   "10 seconds left": "还剩 10 秒",
   "When the rest is over": "休息结束时",

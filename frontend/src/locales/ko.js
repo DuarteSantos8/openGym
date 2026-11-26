@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "세트가 끝날 때마다 한마디.",
   "After every set": "매 세트마다",
   "A line about the set, then the style’s own.": "세트에 대한 한마디, 그다음 스타일의 한마디.",
+  "How much it says": "말하는 양",
   "When a rest starts": "휴식이 시작될 때",
   "10 seconds left": "10초 남음",
   "When the rest is over": "휴식이 끝날 때",

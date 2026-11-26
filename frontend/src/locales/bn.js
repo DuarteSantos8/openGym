@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "প্রতিটি সেটের পর একটি লাইন।",
   "After every set": "প্রতিটি সেটের পর",
   "A line about the set, then the style’s own.": "সেট নিয়ে একটি লাইন, তারপর স্টাইলের নিজের লাইন।",
+  "How much it says": "কতটা বলবে",
   "When a rest starts": "বিশ্রাম শুরু হলে",
   "10 seconds left": "১০ সেকেন্ড বাকি",
   "When the rest is over": "বিশ্রাম শেষ হলে",

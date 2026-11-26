@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "En rad efter varje set.",
   "After every set": "Efter varje set",
   "A line about the set, then the style’s own.": "En rad om setet, sedan stilens egen.",
+  "How much it says": "Hur mycket den säger",
   "When a rest starts": "När en vila börjar",
   "10 seconds left": "10 sekunder kvar",
   "When the rest is over": "När vilan är slut",

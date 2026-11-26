@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Một câu sau mỗi hiệp.",
   "After every set": "Sau mỗi hiệp",
   "A line about the set, then the style’s own.": "Một câu về hiệp tập, rồi đến câu của phong cách.",
+  "How much it says": "Nói bao nhiêu",
   "When a rest starts": "Khi bắt đầu nghỉ",
   "10 seconds left": "Còn 10 giây",
   "When the rest is over": "Khi hết giờ nghỉ",

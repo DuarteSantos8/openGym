@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Jedna věta po každé sérii.",
   "After every set": "Po každé sérii",
   "A line about the set, then the style’s own.": "Věta o sérii, potom ta od stylu.",
+  "How much it says": "Kolik toho řekne",
   "When a rest starts": "Když začne pauza",
   "10 seconds left": "Zbývá 10 sekund",
   "When the rest is over": "Když pauza skončí",

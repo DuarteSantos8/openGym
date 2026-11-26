@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "یک جمله بعد از هر ست.",
   "After every set": "بعد از هر ست",
   "A line about the set, then the style’s own.": "یک جمله درباره ست و بعد جمله خود سبک.",
+  "How much it says": "چقدر بگوید",
   "When a rest starts": "وقتی استراحت شروع می‌شود",
   "10 seconds left": "۱۰ ثانیه مانده",
   "When the rest is over": "وقتی استراحت تمام می‌شود",

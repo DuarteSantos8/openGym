@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Une phrase après chaque série.",
   "After every set": "Après chaque série",
   "A line about the set, then the style’s own.": "Une phrase sur la série, puis celle du style.",
+  "How much it says": "Combien elle en dit",
   "When a rest starts": "Au début d’un repos",
   "10 seconds left": "10 secondes restantes",
   "When the rest is over": "À la fin du repos",

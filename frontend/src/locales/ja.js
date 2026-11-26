@@ -3744,6 +3744,7 @@ export default {
   "One line after each set.": "セットのあとにひとこと。",
   "After every set": "毎セット",
   "A line about the set, then the style’s own.": "セットについてひとこと、そのあとにスタイルのひとこと。",
+  "How much it says": "話す量",
   "When a rest starts": "休憩が始まるとき",
   "10 seconds left": "残り10秒",
   "When the rest is over": "休憩が終わるとき",

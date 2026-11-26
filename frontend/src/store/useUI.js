@@ -398,7 +398,7 @@ export const useUI = create((set, get) => ({
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
     // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js).
-    if (kind !== 'switch') cues.restStarted(forIdx)
+    if (kind !== 'switch') cues.restStarted(forIdx, forSet)
   },
   // Holding the rest where it is — a longer break than planned, a machine to wait for, a phone
   // call (#193). Paused time does not count: the countdown stops, and so does everything that

@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Satu kalimat setelah tiap set.",
   "After every set": "Setelah setiap set",
   "A line about the set, then the style’s own.": "Satu kalimat tentang set, lalu kalimat gaya itu sendiri.",
+  "How much it says": "Seberapa banyak yang diucapkan",
   "When a rest starts": "Saat istirahat dimulai",
   "10 seconds left": "Sisa 10 detik",
   "When the rest is over": "Saat istirahat selesai",

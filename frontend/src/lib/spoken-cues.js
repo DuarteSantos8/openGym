@@ -26,7 +26,10 @@ import { t, tn, tnf, exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
 import { speak, voiceOpts } from './speech.js'
-import { pickLine, linesFor } from './voice-styles.js'
+import { pickLine, linesFor, cueLevelOf, cueStyleOf, NEWS } from './voice-styles.js'
+import { setOutcome } from './set-outcome.js'
+import { lastEntryFor } from './history.js'
+import { sessionEnd } from './finish-workout.js'
 import { pickClip, voiceClipsOf } from './voice-clips.js'
 import { MOBILE } from './mobile.js'
 
@@ -201,14 +204,55 @@ function moment(S, name) {
 }
 const hasSomething = (S, name) => voiceClipsOf(S, name).length > 0 || linesFor(S, name).length > 0
 
+const nameOf = entry => { const ex = EXIDX[entry.id]; return (ex ? exerciseNameFor(ex) : (entry.n || '')) || '' }
+const repsWords = r => tn('{0} rep', '{0} reps', r)
+
+// The set a record trophy was just shown for (cheerRecord runs before the rest starts), so that
+// set's rest says the record and not how the set went.
+let recordFor = null
+
+/** What is worth saying about the set just done and the one coming: the first that applies, or ''. */
+function newsLine(S, forIdx, forSet, next) {
+  if (cueStyleOf(S) === 'own') return ''
+  const done = S.active.entries[forIdx]
+  const upNext = S.active.entries[next.idx]
+  if (recordFor && recordFor.idx === forIdx && recordFor.i === forSet) return t(NEWS.record, nameOf(done))
+  const o = Number.isInteger(forSet) ? setOutcome(S, done, forSet) : null
+  if (o?.outcome === 'short') return t(NEWS.short)
+  if (o?.outcome === 'hard') return t(NEWS.hard)
+  if (o?.outcome === 'beat') return o.moreReps > 0 ? t(NEWS.beatLast, repsWords(o.moreReps)) : t(NEWS.beatPlan)
+  if (isLastSet(S.active, next)) return t(NEWS.last, nameOf(upNext))
+  return introLine(S, next)
+}
+
+// "Last time, 80 kilos for 8 reps." for the first set of an exercise that has a last time.
+function introLine(S, next) {
+  const entry = S.active.entries[next.idx]
+  const row = entry.sets[next.i]
+  if (!row || isWarmupRow(row) || entry.sets.slice(0, next.i).some(x => !isWarmupRow(x))) return ''
+  const prev = lastEntryFor(S, entry.id, entry.rid)?.sets?.[0]
+  if (!prev || !(Number(prev.w) > 0) || !(Number(prev.r) > 0) || modeOf({ ...(entry.target || {}), id: entry.id }) !== 'reps') return ''
+  return t(NEWS.intro, weightWords(Number(prev.w), exUnitOf(S, entry.id)), repsWords(Number(prev.r)))
+}
+
 export const cues = {
-  /** A rest began after a set of entry `forIdx`: the next set, then the style's line for it. */
-  restStarted(forIdx) {
+  /** A rest began after set `forSet` of entry `forIdx`: the next set, then what to say about the
+   *  set that was done and the one coming, by how much the profile wants said (voice-styles cueLevel). */
+  restStarted(forIdx, forSet) {
     const S = live()
     if (!S) return
     const next = nextSetAfter(S.active, forIdx)
+    const wasRecord = recordFor && recordFor.idx === forIdx && recordFor.i === forSet
+    const level = cueLevelOf(S)
+    let news = next ? newsLine(S, forIdx, forSet, next) : ''
+    if (level === 'end' && !wasRecord) news = '' // "Records and the end": only a record is said
+    recordFor = null
     if (!next) return
     say(S, restStartText(S, forIdx))
+    if (news) say(S, news)
+    // The record line is the whole news of a record set, at every level; the style speaks after it only on "every".
+    if (level === 'end' || (news && level === 'rest')) return
+    if (wasRecord && level !== 'every') return
     moment(S, isLastSet(S.active, next) && hasSomething(S, 'lastSet') ? 'lastSet' : 'restStart')
   },
   /** A rest's second ticked: 10 s before the end once, on rests long enough for it to help. */
@@ -216,7 +260,7 @@ export const cues = {
   /** The rest ran out on screen. */
   restOver() { const S = live(); if (S) moment(S, 'restOver') },
   /** A set just earned a record trophy (views/Workout.jsx cheerRecord). */
-  record() { const S = live(); if (S) moment(S, 'record') },
+  record(forIdx, forSet) { const S = live(); if (!S) return; recordFor = { idx: forIdx, i: forSet }; moment(S, 'record') },
   /** A workout begins: the first exercise's first set, named. Only a rest announced anything
    *  before, so the first exercise went unsaid until its first set was done — worked around with
    *  a dummy rest before it (#1210). */
@@ -225,9 +269,8 @@ export const cues = {
     const entry = S?.active?.entries?.[Number.isInteger(S?.active?.cur) ? S.active.cur : 0]
     const i = (entry?.sets || []).findIndex(notDone)
     if (!entry || i < 0) return
-    const ex = EXIDX[entry.id]
-    const name = (ex ? exerciseNameFor(ex) : (entry.n || '')) || null
-    say(S, setCueText(S, entry, i, { name }))
+    say(S, setCueText(S, entry, i, { name: nameOf(entry) || null }))
+    if (cueLevelOf(S) !== 'end' && cueStyleOf(S) !== 'own') { const intro = introLine(S, { idx: S.active.entries.indexOf(entry), i }); if (intro) say(S, intro) }
   },
   /** The focus moved to another exercise with no rest between (a superset's next member,
    *  views/Workout.jsx): its next set, named. A rest is what announced the next set before, and
@@ -238,6 +281,15 @@ export const cues = {
     if (!S) return
     const text = restStartText(S, forIdx)
     if (text) say(S, text)
+    const next = nextSetAfter(S.active, forIdx)
+    if (text && next && cueLevelOf(S) !== 'end' && cueStyleOf(S) !== 'own') { const intro = introLine(S, next); if (intro) say(S, intro) }
+  },
+  /** The workout is being saved (sheets.jsx doFinishWorkout, before it is cleared): how long it took. */
+  finished(S) {
+    const A = S?.active
+    if (!A || A.backfill || !live() || !(A.entries || []).some(e => (e.sets || []).some(x => x.done && !isWarmupRow(x)))) return
+    const min = Math.max(1, Math.round((sessionEnd(A) - (Number(A.start) || 0)) / 60000))
+    say(S, t(NEWS.closer, tnf('{0} minute', '{0} minutes', min, fmtNum(min))))
   },
   /** A count-in or the end of a hold: a number, cutting off whatever is still being said. */
   count(n) { if (n >= 1 && n <= 3) { const S = live(); if (S) say(S, String(n), { queue: false }) } },

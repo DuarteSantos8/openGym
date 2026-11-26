@@ -70,7 +70,7 @@ describe('the moments', () => {
     cues.restStarted(0)
     cues.restLeft(11, 90); cues.restLeft(10, 90); cues.restLeft(10, 15)
     cues.restOver()
-    expect(speak.mock.calls.map(c => c[0])).toEqual(['Set 2, 80 kilos, 8 reps', '10 seconds', 'Rest is over'])
+    expect(speak.mock.calls.map(c => c[0])).toEqual(['Set 2, 80 kilos, 8 reps', 'Last set of barbell bench press.', '10 seconds', 'Rest is over'])
   })
   test('holds count 3, 2, 1 and go, each cutting off the one before', () => {
     bindCueState(() => ({ ...st, speechRate: 'fast' }))
@@ -94,7 +94,7 @@ describe('styles, the last set, records and clips (v1.4.5 Voice)', () => {
     expect(isLastSet(a, { idx: 0, i: 1 })).toBe(false)
   })
   test('a style adds its line after the next set, and its own line for the last set', () => {
-    const st = { ...two(), cueStyle: 'hype' }
+    const st = { ...two(), cueStyle: 'hype', cueLevel: 'every' }
     bindCueState(() => st)
     cues.restStarted(0)
     const said = speak.mock.calls.map(c => c[0])
@@ -103,7 +103,7 @@ describe('styles, the last set, records and clips (v1.4.5 Voice)', () => {
     speak.mockClear()
     st.active.entries[0].sets[1].done = true
     cues.restStarted(0)
-    expect(['LAST SET! EMPTY THE TANK!', 'FINAL SET! THIS IS YOUR MOMENT!']).toContain(speak.mock.calls[1][0])
+    expect(['LAST SET! EMPTY THE TANK!', 'FINAL SET! THIS IS YOUR MOMENT!']).toContain(speak.mock.calls[2][0])
   })
   // TestFlight 11-08: the voice was only heard with the end-of-rest sound on (and its "Play even
   // on silent"): a line asked for the silent switch to be kept whenever that sound was off.
@@ -192,5 +192,84 @@ describe('the first exercise and a circuit’s members (#1210)', () => {
     bindCueState(() => st)
     cues.movedOn(1)
     expect(speak.mock.calls.map(c => c[0])).toEqual([expect.stringMatching(/^.+\. Set 2, 80 kilos, 8 reps$/)])
+  })
+})
+
+// #1393: a line about each set, by how much the lifter wants said.
+const { _setLangState } = await import('./i18n-core.js')
+const de = (await import('../locales/de.js')).default
+describe('a line about each set, by level (#1393)', () => {
+  afterEach(() => { _resetCueQueue(); _resetPicks(); _setLangState('en', {}, null, null) })
+  const tgt = { mode: 'reps', sets: 3, reps: 8 }
+  const past = reps => ({ workouts: [{ id: 'w0', d: '2026-01-01', entries: [{ id: BENCH, sets: reps.map(r => set(80, r, true)) }] }] })
+  const three = (rows, extra = {}) => ({ ...S([entry(BENCH, rows, tgt)], extra), ...extra })
+  const said = () => speak.mock.calls.map(c => c[0])
+
+  test('a beat at the default level: the facts and what beat last time', () => {
+    bindCueState(() => three([set(80, 9, true), set(80, 8), set(80, 8), set(80, 8)], past([8, 8, 8])))
+    cues.restStarted(0, 0)
+    expect(said()).toEqual(['Set 2, 80 kilos, 8 reps', '1 rep more than last time.'])
+  })
+  test('a hit at the default level says the style line, at "end" only the facts', () => {
+    const rows = () => [set(80, 8, true), set(80, 8), set(80, 8), set(80, 8)]
+    bindCueState(() => three(rows(), { cueStyle: 'calm' }))
+    cues.restStarted(0, 0)
+    expect(said()[0]).toBe('Set 2, 80 kilos, 8 reps')
+    expect(['Breathe. You earned this break.', 'Shoulders down, slow breaths.']).toContain(said()[1])
+    speak.mockClear()
+    bindCueState(() => three(rows(), { cueStyle: 'calm', cueLevel: 'end' }))
+    cues.restStarted(0, 0)
+    expect(said()).toEqual(['Set 2, 80 kilos, 8 reps'])
+  })
+  test('short at "every": the short line, then the style line', () => {
+    bindCueState(() => three([set(80, 5, true), set(80, 8), set(80, 8), set(80, 8)], { cueStyle: 'calm', cueLevel: 'every' }))
+    cues.restStarted(0, 0)
+    expect(said().length).toBe(3)
+    expect(said()[1]).toBe('A bit short of the plan. Stay steady on the next one.')
+    expect(['Breathe. You earned this break.', 'Shoulders down, slow breaths.']).toContain(said()[2])
+  })
+  test('the line before the last set of an exercise', () => {
+    bindCueState(() => three([set(80, 8, true), set(80, 8, true), set(80, 8)]))
+    cues.restStarted(0, 1)
+    expect(said()[1]).toMatch(/^Last set of .+\.$/)
+  })
+  test('a new exercise with a last time says what it was', () => {
+    const st = { ...S([entry(SQUAT, [set(100, 8, true)], tgt), entry(BENCH, [set(80, 8), set(80, 8)], tgt)]), ...past([8]) }
+    bindCueState(() => st)
+    cues.restStarted(0, 0)
+    expect(said()[1]).toBe('Last time, 80 kilos for 8 reps.')
+  })
+  test('a record set says the record line and no outcome line', () => {
+    bindCueState(() => three([set(80, 9, true), set(80, 8), set(80, 8), set(80, 8)], past([8, 8, 8])))
+    cues.record(0, 0)
+    cues.restStarted(0, 0)
+    expect(said().length).toBe(2)
+    expect(said()[1]).toMatch(/^That’s a new best on .+\.$/)
+    // the record belongs to that set only
+    speak.mockClear()
+    cues.restStarted(0, 0)
+    expect(said()[1]).toBe('1 rep more than last time.')
+  })
+  test('your own lines: no spoken news at all', () => {
+    bindCueState(() => three([set(80, 5, true), set(80, 8), set(80, 8), set(80, 8)], { cueStyle: 'own', cueLines: { restStart: ['Go on.'] } }))
+    cues.restStarted(0, 0)
+    expect(said()).toEqual(['Set 2, 80 kilos, 8 reps', 'Go on.'])
+  })
+  test('the end of the workout', () => {
+    const st = S([entry(BENCH, [set(80, 8, true, { at: 1_000_000 + 52 * 60000 })], tgt)])
+    st.active.start = 1_000_000
+    bindCueState(() => st)
+    cues.finished(st)
+    expect(said()).toEqual(['Done in 52 minutes.'])
+    speak.mockClear()
+    const none = S([entry(BENCH, [set(80, 8)], tgt)])
+    cues.finished(none)
+    expect(speak).not.toHaveBeenCalled()
+  })
+  test('a German app says the German line', () => {
+    _setLangState('de', de, null, null)
+    bindCueState(() => three([set(80, 9, true), set(80, 8), set(80, 8), set(80, 8)], past([8, 8, 8])))
+    cues.restStarted(0, 0)
+    expect(said()[1]).toMatch(/mehr als letztes Mal/)
   })
 })

@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "हर सेट के बाद एक लाइन।",
   "After every set": "हर सेट के बाद",
   "A line about the set, then the style’s own.": "सेट के बारे में एक लाइन, फिर स्टाइल की अपनी।",
+  "How much it says": "कितना बोले",
   "When a rest starts": "आराम शुरू होने पर",
   "10 seconds left": "10 सेकंड बाकी",
   "When the rest is over": "आराम ख़त्म होने पर",

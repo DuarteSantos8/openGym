@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Jedno zdanie po każdej serii.",
   "After every set": "Po każdej serii",
   "A line about the set, then the style’s own.": "Zdanie o serii, potem to ze stylu.",
+  "How much it says": "Ile mówi",
   "When a rest starts": "Gdy zaczyna się przerwa",
   "10 seconds left": "Zostało 10 sekund",
   "When the rest is over": "Gdy przerwa się kończy",

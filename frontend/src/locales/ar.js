@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "جملة واحدة بعد كل مجموعة.",
   "After every set": "بعد كل مجموعة",
   "A line about the set, then the style’s own.": "جملة عن المجموعة، ثم جملة الأسلوب.",
+  "How much it says": "مقدار ما يقوله",
   "When a rest starts": "عند بدء الراحة",
   "10 seconds left": "بقيت 10 ثوانٍ",
   "When the rest is over": "عند انتهاء الراحة",

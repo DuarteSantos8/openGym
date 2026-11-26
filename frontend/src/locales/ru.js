@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Одна фраза после каждого подхода.",
   "After every set": "После каждого подхода",
   "A line about the set, then the style’s own.": "Фраза о подходе, потом фраза стиля.",
+  "How much it says": "Сколько говорить",
   "When a rest starts": "Когда начинается отдых",
   "10 seconds left": "Осталось 10 секунд",
   "When the rest is over": "Когда отдых окончен",

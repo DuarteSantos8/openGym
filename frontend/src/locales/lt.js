@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Viena frazė po kiekvienos serijos.",
   "After every set": "Po kiekvienos serijos",
   "A line about the set, then the style’s own.": "Frazė apie seriją, tada stiliaus frazė.",
+  "How much it says": "Kiek sako",
   "When a rest starts": "Kai prasideda poilsis",
   "10 seconds left": "Liko 10 sekundžių",
   "When the rest is over": "Kai poilsis baigiasi",

@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "หนึ่งประโยคหลังแต่ละเซต",
   "After every set": "หลังทุกเซต",
   "A line about the set, then the style’s own.": "หนึ่งประโยคเกี่ยวกับเซต แล้วต่อด้วยของสไตล์",
+  "How much it says": "พูดมากแค่ไหน",
   "When a rest starts": "เมื่อเริ่มพัก",
   "10 seconds left": "เหลือ 10 วินาที",
   "When the rest is over": "เมื่อหมดเวลาพัก",

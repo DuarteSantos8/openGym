@@ -149,6 +149,7 @@ export default {
   "One line after each set.": "Én sætning efter hvert sæt.",
   "After every set": "Efter hvert sæt",
   "A line about the set, then the style’s own.": "En sætning om sættet og så stilens egen.",
+  "How much it says": "Hvor meget den siger",
   "When a rest starts": "Når en pause starter",
   "10 seconds left": "10 sekunder tilbage",
   "When the rest is over": "Når pausen er slut",

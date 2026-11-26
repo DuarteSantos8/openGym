@@ -2,6 +2,7 @@ import { tempoSheet } from './components/Tempo.jsx'
 import { useCircuit } from './store/useCircuit.js'
 import { CircuitResults } from './components/CircuitCard.jsx'
 import { normalizeTempo, repSec } from './lib/tempo.js'
+import { cues } from './lib/spoken-cues.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
@@ -4859,6 +4860,7 @@ function doFinishWorkout({ end: endAt, auto, kcal } = {}) {
   const A = st.active
   if (!A) return
   const past = !!A.backfill
+  cues.finished(st)
   // A workout logged into the past is held against the history before it, the way an edit of a
   // saved one is (rebuildPrHistory, below): it gains a badge it leads with, and a later session
   // it outdoes loses its own. It used to report none at all while the editor's Save awarded them

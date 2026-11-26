@@ -151,6 +151,7 @@ export default {
   "One line after each set.": "Egy mondat minden sorozat után.",
   "After every set": "Minden sorozat után",
   "A line about the set, then the style’s own.": "Egy mondat a sorozatról, aztán a stílus saját mondata.",
+  "How much it says": "Mennyit mondjon",
   "When a rest starts": "Amikor kezdődik a pihenő",
   "10 seconds left": "Még 10 másodperc",
   "When the rest is over": "Amikor vége a pihenőnek",
