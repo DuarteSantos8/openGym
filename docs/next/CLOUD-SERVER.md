@@ -189,12 +189,6 @@ repeat that does require a second confirmation.
 After the check, the owner setting read **3** again.
 Reloading Coach on the test profile showed **5 of 3 Coach runs used today**.
 
-## Backups
-
-Everything is under `/data`. Before real users: confirm Render's disk snapshots are on for the
-disk and try one restore, or turn on the app's own WebDAV backup (`docs/WEBDAV_BACKUP.md`).
-Neither has been tried here yet.
-
 ### Live Coach checks after #102
 
 On November 25–26, 2026 (Eastern time), the cloud preview at commit `1175a32af` ran both checks
@@ -219,6 +213,39 @@ instructions confirmed that each movement can be performed without equipment:
 
 This one-off workout offered zero substitutes and was left unstarted. The counter showed
 **3 of 3 Coach runs used today** after the French reply. The daily limit stayed at three.
+
+#### French full plan with substitutes
+
+On November 26, 2026, the owner approved raising the daily limit from 3 to 5 for this test.
+The test profile showed **3 of 5** before requesting a full plan and **4 of 5** after that request.
+The tester then submitted this refinement:
+
+> Prépare-moi un programme complet de trois jours sans poids ni matériel. Pour chaque exercice, indique dans le programme un exercice de remplacement distinct, lui aussi sans matériel, réalisable debout ou au sol. Remplis le champ des substitutions de chaque exercice avec son identifiant du catalogue.
+
+The counter showed **5 of 5**. While the refinement was running, the limit was restored from
+5 to 3 and the test profile showed **5 of 3**. MiniMax-M3.1-Flash proposed “Bodyweight Push–Pull–Legs Starter”
+with one distinct substitute per exercise. The tester checked the instructions for all 18 catalogue
+entries. Each movement can be performed standing or on the floor without apparatus.
+
+| Routine | Proposed exercise | Substitute |
+| --- | --- | --- |
+| Push | [2921 pike push up](../../catalogue/exercises/2921.json) | [0258 clock push-up](../../catalogue/exercises/0258.json) |
+| Push | [0662 push-up](../../catalogue/exercises/0662.json) | [3211 kneeling push-up (male)](../../catalogue/exercises/3211.json) |
+| Push | [2398 close-grip push-up (on knees)](../../catalogue/exercises/2398.json) | [0259 close-grip push-up](../../catalogue/exercises/0259.json) |
+| Pull | [1772 elbow lift - reverse push-up](../../catalogue/exercises/1772.json) | [4117 kneeling scapular push up](../../catalogue/exercises/4117.json) |
+| Pull | [4702 alternating superman](../../catalogue/exercises/4702.json) | [4715 alternating superman v. 2](../../catalogue/exercises/4715.json) |
+| Pull | [5041 lying prone t](../../catalogue/exercises/5041.json) | [5042 lying prone w](../../catalogue/exercises/5042.json) |
+| Legs & Core | [1686 squat to overhead reach with twist](../../catalogue/exercises/1686.json) | [3948 air squat](../../catalogue/exercises/3948.json) |
+| Legs & Core | [3013 low glute bridge on floor](../../catalogue/exercises/3013.json) | [3561 glute bridge march](../../catalogue/exercises/3561.json) |
+| Legs & Core | [0001 3/4 sit-up](../../catalogue/exercises/0001.json) | [0262 cross body crunch](../../catalogue/exercises/0262.json) |
+
+The tester left the proposal unimported.
+
+## Backups
+
+Everything is under `/data`. Before real users: confirm Render's disk snapshots are on for the
+disk and try one restore, or turn on the app's own WebDAV backup (`docs/WEBDAV_BACKUP.md`).
+Neither has been tried here yet.
 
 ## Rollback
 

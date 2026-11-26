@@ -8,6 +8,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
   is available. A tap fills the editable chat box, including after first-time setup. The person
   chooses when to send. After #102, a fresh three-day profile confirmed Tuesday push and Wednesday
   pull on the preview. MiniMax returned three equipment-free exercises for the French starter.
+  A French three-day plan also offered nine distinct substitutes. All 18 movements passed the catalogue check.
   See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102) for the catalogue evidence.
   All 25 translations have simulated-provider coverage. The four new strings await native-language review.
 
