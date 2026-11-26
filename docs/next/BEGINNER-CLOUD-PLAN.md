@@ -4,7 +4,7 @@ Status 2026-11-25. The origin guard, MCP Blueprint, linked deletion (ADR 0014), 
 
 Coach B2 status: the two chat prompts have stubbed-provider coverage, including confirmation.
 The scheduling follow-up preserves other days and reuses matching routines on repeat confirmation.
-See the B2 acceptance notes in `NEXT-STEPS.md`.
+The hosted preview also kept Monday and added just one routine across two identical requests. See [the live schedule check](CLOUD-SERVER.md#live-schedule-check-after-99).
 
 ## Why
 
