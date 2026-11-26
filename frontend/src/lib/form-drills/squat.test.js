@@ -1,7 +1,7 @@
 // The squat drill against synthetic lifters (test-kit.js) filmed from side-on to facing the
 // camera: counting, depth and the standards, tempo, cues, and the extras each view can show.
 import { describe, expect, it } from 'vitest'
-import squat, { CUE, FAST_DOWN_SEC, PARALLEL_BAND, depthShare } from './squat.js'
+import squat, { CUE, FAST_DOWN_SEC, HIP_MARK, PARALLEL_BAND, depthShare } from './squat.js'
 import { squatSet, squatPose, project, same, YAWS, CAMERA } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
@@ -21,13 +21,13 @@ const ANY = { standard: 'any' }
 const FULL = { min: 45, down: 2, up: 1 }, PAR = { min: 60, down: 2, up: 1 }, SHALLOW = { min: 95, down: 2, up: 1 }
 const depths = res => res.reps.map(r => r.measures.depth)
 
-// The knee angle at which the hip sits `d` standing thigh lengths below the knee, as filmed at
-// `yaw` (bisection: the hip drops as the knee bends).
+// The knee angle at which the drill reads the hip `d` standing thigh lengths below the knee, as
+// filmed at `yaw`: Vision's hip against the knee, plus HIP_MARK (bisection: the hip drops as the knee bends).
 function kneeForDepth(d, yaw) {
   const y = (j, p) => (j['left' + p][1] + j['right' + p][1]) / 2
   const top = project(squatPose(176), { yaw })
   const thigh = y(top, 'Knee') - y(top, 'Hip')
-  const at = k => { const j = project(squatPose(k), { yaw }); return (y(j, 'Hip') - y(j, 'Knee')) / thigh }
+  const at = k => { const j = project(squatPose(k), { yaw }); return (y(j, 'Hip') - y(j, 'Knee')) / thigh + HIP_MARK }
   let lo = 30, hi = 120
   for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (at(m) > d) lo = m; else hi = m }
   return (lo + hi) / 2
@@ -213,9 +213,13 @@ describe('the squat, whatever the angle', () => {
     // The drawn lean is 0.4 of the bend: 52° at the bottom of a 50° squat.
     expect(res.reps[0].measures.lean).toBeGreaterThan(45)
     expect(res.reps[0].measures.lean).toBeLessThan(58)
-    expect(res.reps[0].measures.minKnee).toBeCloseTo(50, -1)
+    // The knee angle is read at Vision's hip, which sits up the torso at the bottom (markHip): a
+    // 50° squat reads about 10° more open.
+    expect(res.reps[0].measures.minKnee).toBeGreaterThan(55)
+    expect(res.reps[0].measures.minKnee).toBeLessThan(66)
+    // A drawn spread of 10°, a little wider at Vision's hip (it rises more the deeper the squat).
     expect(res.summary.consistency).toBeGreaterThan(7)
-    expect(res.summary.consistency).toBeLessThan(13)
+    expect(res.summary.consistency).toBeLessThan(15)
     expect(res.details[0].map(d => d.label)).toEqual(['Depth', 'Tempo', 'Knee angle', 'Lean'])
     expect(res.note).toBe('Filmed from the side: depth, tempo, knee angle and torso lean.')
   })

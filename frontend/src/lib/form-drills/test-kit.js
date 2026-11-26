@@ -44,6 +44,7 @@ export const ease = f => (1 - Math.cos(Math.PI * f)) / 2
 /**
  * A squat in body coordinates from the knee angle (180 straight). The shin tips forward a quarter
  * of the bend and the torso leans 0.4 of it, so the thigh is level (parallel) at about 60.
+ * The hip is where Vision puts it (markHip), so a parallel squat reads it above the knee.
  * `cave` (0 to 1) pulls the knees in from over the feet to well inside the ankles at the bottom;
  * `shift` moves the hips sideways, metres towards the lifter's left.
  */
@@ -67,7 +68,7 @@ export function squatPose(knee, { cave = 0, shift = 0, body = BODY } = {}) {
   }
   pair('Ankle', [0, b.ankleH], b.stanceHalf)
   pair('Knee', kneeP, kneeHalf, shift * bend * 0.5)
-  pair('Hip', hipP, b.hipHalf, shift * bend)
+  pair('Hip', markHip(hipP, lean, ((176 - knee) / 116) ** 2, b), b.hipHalf, shift * bend)
   pair('Shoulder', shP, b.shoulderHalf, shift * bend)
   return out
 }
