@@ -6,12 +6,19 @@ import { expect, it } from 'vitest'
 import Stats from './Stats.jsx'
 import { useUI } from '../store/useUI.js'
 
-it('opens the definition for every Stats term from a standalone button', () => {
+it('opens the definition for every Stats term from a standalone button', async () => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   const host = document.createElement('div')
   const root = createRoot(host)
   try {
     act(() => root.render(<MemoryRouter><Stats /></MemoryRouter>))
+    expect(host.querySelector('.iv-term')).toBeNull()
+    const glossary = host.querySelector('.iv-screen-glossary')
+    await act(async () => {
+      glossary.open = true
+      glossary.dispatchEvent(new Event('toggle'))
+      await import('../components/Term.jsx')
+    })
     const buttons = [...host.querySelectorAll('button.iv-term')]
     for (const label of ['PR', 'Volume', '1RM', 'Estimated 1RM']) {
       const button = buttons.find(el => el.textContent === label)

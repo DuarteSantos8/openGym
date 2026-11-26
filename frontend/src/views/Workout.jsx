@@ -1,4 +1,4 @@
-import { ScreenGlossary } from '../components/Term.jsx'
+import ScreenGlossary from '../components/ScreenGlossary.jsx'
 import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
