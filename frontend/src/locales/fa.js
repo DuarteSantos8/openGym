@@ -5366,6 +5366,7 @@ export default {
   "Handstand ladder": "نردبان بالانس دست",
   "Hinge ladder": "نردبان هینج",
   "Hotel room": "اتاق هتل",
+  "Two chairs": "دو صندلی",
   "It stays out of your progression, so nothing goes up or down.": "در پیشرفتت حساب نمی‌شود، پس چیزی بالا یا پایین نمی‌رود.",
   "Ladder name": "نام نردبان",
   "Ladders": "نردبان‌ها",

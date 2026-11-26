@@ -265,14 +265,14 @@ export function confirmSheet(opts) {
 // string literals written inside a t() call, so copy parked in the catalog and passed in as a
 // variable is invisible to it — it would quietly stay English in every language.
 const PLAN_COPY = {
-  ppl: () => ({ name: t('Push / Pull / Legs'), about: t('Push, pull and legs each get their own day.') }),
-  'upper-lower': () => ({ name: t('Upper / Lower'), about: t('Upper body twice, lower body twice.') }),
-  'full-body': () => ({ name: t('Full Body'), about: t('Three sessions, the whole body each time.') }),
-  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') }),
-  'home-bw': () => ({ name: t('No equipment'), about: t('Your body and the floor. A table for rows, that’s it.') }),
-  dumbbells: () => ({ name: t('Dumbbells only'), about: t('One pair of dumbbells, no bench needed.') }),
-  bands: () => ({ name: t('Resistance bands'), about: t('A set of bands and a door to anchor them.') }),
-  hotel: () => ({ name: t('Hotel room'), about: t('Twenty-five minutes between the bed and the desk chair.') })
+  ppl: () => ({ name: t('Push / Pull / Legs'), goal: t('Build muscle'), level: t('Intermediate'), kit: t('Full gym') }),
+  'upper-lower': () => ({ name: t('Upper / Lower'), goal: t('Build muscle'), level: t('Intermediate'), kit: t('Full gym') }),
+  'full-body': () => ({ name: t('Full Body'), goal: t('General fitness'), level: t('Beginner'), kit: t('Full gym') }),
+  '5x5': () => ({ name: t('5×5'), goal: t('Get stronger'), level: t('Beginner'), kit: t('Full gym') }),
+  'home-bw': () => ({ name: t('No equipment'), goal: t('General fitness'), level: t('Beginner'), kit: t('Your body and the floor. A table for rows, that’s it.') }),
+  dumbbells: () => ({ name: t('Dumbbells only'), goal: t('General fitness'), level: t('Beginner'), kit: t('One pair of dumbbells, no bench needed.') }),
+  bands: () => ({ name: t('Resistance bands'), goal: t('General fitness'), level: t('Beginner'), kit: t('A set of bands and a door to anchor them.') }),
+  hotel: () => ({ name: t('Hotel room'), goal: t('General fitness'), level: t('Beginner'), kit: t('Two chairs') })
 }
 
 /** A starter plan's name in the language on screen, or '' for an unknown id (views/Onboarding.jsx). */
@@ -314,6 +314,7 @@ function StarterPlanChooser({ close }) {
   // Fitting starts on for the profile you already filter by; '' leaves the plan as written.
   const [fitId, setFitId] = useState(() => activeProfile(useStore.getState().S)?.id || '')
   const fit = profiles.find(p => p.id === fitId) || null
+  const options = useMemo(() => starterPlanOptions(fit && profileEquipment(fit), profileMachines(fit)), [fit])
   const choose = (id, name) => {
     const days = starterPlanDays(id)
     close()
@@ -345,14 +346,19 @@ function StarterPlanChooser({ close }) {
           {profiles.map(p => <button key={p.id} className={'chip nocap' + (fit?.id === p.id ? ' on' : '')} onClick={() => setFitId(p.id)}>{p.name}</button>)}
         </div>
       : <div className="small dim" style={{ margin: '0 0 10px' }}>{t('Add an equipment profile in Settings to fit a plan to what you own.')}</div>}
-    {[starterPlanOptions().filter(o => !AWAY_PLANS.includes(o.id)), starterPlanOptions().filter(o => AWAY_PLANS.includes(o.id))].map((list, gi) => <Fragment key={gi}>
+    {[options.filter(o => !AWAY_PLANS.includes(o.id)), options.filter(o => AWAY_PLANS.includes(o.id))].map((list, gi) => <Fragment key={gi}>
       {gi === 1 && <h4 className="sec" style={{ marginTop: 16 }}>{t('Away from the gym')}</h4>}
       <div className="list">
-        {list.map(({ id, days }) => {
-          const { name, about } = PLAN_COPY[id]()
+        {list.map(({ id, days, minutes, kit }) => {
+          const { name, goal, level, kit: writtenKit } = PLAN_COPY[id]()
+          const equipment = kit ? new Intl.ListFormat(dateLocale()).format(kit.map(k => t(k))) : writtenKit
           return <div key={id} className="item" data-plan={id} {...tappable(() => choose(id, name))}>
             <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name={gi ? (id === 'hotel' ? 'bed' : id === 'dumbbells' ? 'dumbbell' : 'house') : 'clipboard'} /></span>
-            <div className="grow"><div className="tt">{name}</div><div className="ss">{t('{0} days per week', days)} · {about}</div></div>
+            <div className="grow">
+              <div className="tt">{goal} · {t('{0} days per week', days)}</div>
+              <div className="ss">{name}</div>
+              <div className="ss">{t('{0} min per session', minutes)} · {level} · {equipment || t('No equipment')}</div>
+            </div>
             <Icon name="chevronRight" className="chev" />
           </div>
         })}

@@ -5470,6 +5470,7 @@ export default {
   "Handstand ladder": "Escalera de pino",
   "Hinge ladder": "Escalera de bisagra",
   "Hotel room": "Habitación de hotel",
+  "Two chairs": "Dos sillas",
   "It stays out of your progression, so nothing goes up or down.": "No cuenta para tu progresión, así que nada sube ni baja.",
   "Ladder name": "Nombre de la escalera",
   "Ladders": "Escaleras",

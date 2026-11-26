@@ -5470,6 +5470,7 @@ export default {
   "Handstand ladder": "हैंडस्टैंड सीढ़ी",
   "Hinge ladder": "हिंज सीढ़ी",
   "Hotel room": "होटल का कमरा",
+  "Two chairs": "दो कुर्सियाँ",
   "It stays out of your progression, so nothing goes up or down.": "यह आपकी प्रगति में नहीं गिना जाता, तो कुछ भी ऊपर या नीचे नहीं जाता।",
   "Ladder name": "सीढ़ी का नाम",
   "Ladders": "सीढ़ियाँ",

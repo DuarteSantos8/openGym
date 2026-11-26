@@ -5474,6 +5474,7 @@ export default {
   "Handstand ladder": "Лестница стойки на руках",
   "Hinge ladder": "Лестница наклонов",
   "Hotel room": "Номер в отеле",
+  "Two chairs": "Два стула",
   "It stays out of your progression, so nothing goes up or down.": "Она не влияет на прогрессию, так что ничего не растёт и не падает.",
   "Ladder name": "Название лестницы",
   "Ladders": "Лестницы",

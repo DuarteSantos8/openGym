@@ -5490,6 +5490,7 @@ export default {
   "Handstand ladder": "Handstand-Leiter",
   "Hinge ladder": "Hinge-Leiter",
   "Hotel room": "Hotelzimmer",
+  "Two chairs": "Zwei Stühle",
   "It stays out of your progression, so nothing goes up or down.": "Sie zählt nicht für deine Progression, also geht nichts hoch oder runter.",
   "Ladder name": "Name der Leiter",
   "Ladders": "Leitern",

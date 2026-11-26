@@ -5480,6 +5480,7 @@ export default {
   "Handstand ladder": "Scala verticale",
   "Hinge ladder": "Scala hinge",
   "Hotel room": "Camera d’albergo",
+  "Two chairs": "Due sedie",
   "It stays out of your progression, so nothing goes up or down.": "Resta fuori dalla tua progressione, quindi niente sale e niente scende.",
   "Ladder name": "Nome della scala",
   "Ladders": "Scale",

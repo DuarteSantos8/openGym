@@ -5467,6 +5467,7 @@ export default {
   "Handstand ladder": "Драбина стійки на руках",
   "Hinge ladder": "Драбина нахилів",
   "Hotel room": "Номер у готелі",
+  "Two chairs": "Два стільці",
   "It stays out of your progression, so nothing goes up or down.": "Він не впливає на прогресію, тож нічого не росте й не падає.",
   "Ladder name": "Назва драбини",
   "Ladders": "Драбини",

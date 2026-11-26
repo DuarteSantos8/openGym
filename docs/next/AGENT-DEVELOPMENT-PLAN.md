@@ -370,11 +370,11 @@ exercise, finish, find the plan, Learn, where Settings is.
 **Files:** Modify `frontend/src/sheets.jsx` (`StarterPlanChooser`). Test:
 `frontend/src/views/starter-entry.test.jsx`.
 
-- [ ] Each card shows days per week, minutes per session (`sessionMinutes` from
+- [x] Each card shows days per week, minutes per session (`sessionMinutes` from
       `frontend/src/lib/planner.js`), level and equipment. The split name ("PPL", "5x5") is the
       subtitle, never the title.
-- [ ] Test: all eight starter plans render those four facts; none shows a split name as its title.
-- [ ] Test (review focus 5): cards at 320 px in `de` and `ru` do not overflow.
+- [x] Test: all eight starter plans render those four facts; none shows a split name as its title.
+- [x] Test (review focus 5): cards at 320 px in `de` and `ru` do not overflow.
 
 ### Task D6: a level and a movement pattern for the whole library (EP23-T02)
 

@@ -5473,6 +5473,7 @@ export default {
   "Handstand ladder": "Kézenállás létra",
   "Hinge ladder": "Csípőhajlítás létra",
   "Hotel room": "Hotelszoba",
+  "Two chairs": "Két szék",
   "It stays out of your progression, so nothing goes up or down.": "Kimarad a progresszióból, így semmi sem megy fel vagy le.",
   "Ladder name": "Létra neve",
   "Ladders": "Létrák",

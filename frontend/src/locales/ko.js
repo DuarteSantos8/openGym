@@ -5470,6 +5470,7 @@ export default {
   "Handstand ladder": "물구나무 사다리",
   "Hinge ladder": "힌지 사다리",
   "Hotel room": "호텔 방",
+  "Two chairs": "의자 두 개",
   "It stays out of your progression, so nothing goes up or down.": "진행 기록에서 빠지니 아무것도 오르거나 내려가지 않아요.",
   "Ladder name": "사다리 이름",
   "Ladders": "사다리",

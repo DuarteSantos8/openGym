@@ -5525,6 +5525,7 @@ export default {
   "Handstand ladder": "سلّم الوقوف على اليدين",
   "Hinge ladder": "سلّم الانثناء من الورك",
   "Hotel room": "غرفة فندق",
+  "Two chairs": "كرسيّان",
   "It stays out of your progression, so nothing goes up or down.": "لا يدخل في تقدّمك، فلا شيء يرتفع أو ينخفض.",
   "Ladder name": "اسم السلّم",
   "Ladders": "السلالم",

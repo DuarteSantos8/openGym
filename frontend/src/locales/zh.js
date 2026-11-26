@@ -5470,6 +5470,7 @@ export default {
   "Handstand ladder": "倒立阶梯",
   "Hinge ladder": "髋铰链阶梯",
   "Hotel room": "酒店房间",
+  "Two chairs": "两把椅子",
   "It stays out of your progression, so nothing goes up or down.": "它不计入你的进阶，所以什么都不会加也不会减。",
   "Ladder name": "阶梯名称",
   "Ladders": "阶梯",

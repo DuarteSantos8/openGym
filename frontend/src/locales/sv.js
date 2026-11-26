@@ -5517,6 +5517,7 @@ export default {
   "Handstand ladder": "Handstående-stege",
   "Hinge ladder": "Höftfällningsstege",
   "Hotel room": "Hotellrum",
+  "Two chairs": "Två stolar",
   "It stays out of your progression, so nothing goes up or down.": "Den räknas inte in i din progression, så inget går upp eller ner.",
   "Ladder name": "Stegens namn",
   "Ladders": "Stegar",
