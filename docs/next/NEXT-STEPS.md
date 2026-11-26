@@ -6,7 +6,6 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
-- **Coach app help (B4, proposed).** The owner can accept, reject or defer [ADR 0015](adr/0015-coach-app-help.md). Implementation follows acceptance.
 
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
   is available. A tap fills the editable chat box, including after first-time setup. The person
