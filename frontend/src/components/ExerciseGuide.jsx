@@ -3,7 +3,7 @@
 // for an exercise that has a guide (content/exercise-guides.js); every other sheet is unchanged.
 //
 // Loaded on demand from sheets.jsx, so the text is not in the app's first download.
-import { t, getLang, baseLang, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { t, hasTranslation, getLang, baseLang, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exOr } from '../lib/exercises.js'
 import { guideFor, ladderFor, isReviewed } from '../lib/exercise-guide.js'
 import { Button } from './ui.jsx'
@@ -13,7 +13,8 @@ export default function ExerciseGuide({ ex, onOpen }) {
   const g = guideFor(ex?.id)
   if (!g) return null
   const { easier, harder } = ladderFor(ex.id, id => !exOr(id).missing)
-  const english = baseLang(getLang()) === 'en'
+  const hasEnglishText = baseLang(getLang()) !== 'en' &&
+    [...g.cues, ...g.mistakes.flat(), g.feel, g.breathing].some(line => !hasTranslation(line))
   const rung = (id, label) => {
     const other = exOr(id)
     return <Button variant="tinted" className="iv-guide-rung" data-rung={id} onClick={() => onOpen?.(other)}>
@@ -21,7 +22,7 @@ export default function ExerciseGuide({ ex, onOpen }) {
     </Button>
   }
   return <div className="iv-guide" data-guide={ex.id}>
-    <h4 className="sec">{t('Do it well')}{!english && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4>
+    <h4 className="sec">{t('Do it well')}{hasEnglishText && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4>
     <ul className="iv-guide-cues">{g.cues.map((c, i) => <li key={i}>{t(c)}</li>)}</ul>
 
     <h4 className="sec">{t('Common mistakes')}</h4>

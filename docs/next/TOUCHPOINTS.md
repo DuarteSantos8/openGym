@@ -146,3 +146,5 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/onboarding.css` | `next/EP24-glossary-workout-plan-progress` | UI | Move shared term styles to the component stylesheet. |
 | `api/coach/core/adapters/http.js`, `api/test/chatgpt-plan.test.js` | `next/EP19-coach-app-navigation` | API and tests | Allow provider discovery and credential refresh within a single generation request. |
 | `frontend/src/views/settings-pages.js` | `next/EP19-coach-app-navigation` | Search | Expose the visible Settings index to app help to rank full translated labels in a question. |
+| `frontend/src/components/ExerciseGuide.jsx`, `frontend/src/lib/i18n{,-core}.js` | `next/EP23-routine-guide-batch-1` | UI | Show the English notice only when a guide actually falls back to English. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP23-routine-guide-batch-1` | Copy | Translate the cues, mistake and correction pairs, muscle descriptions and breathing for ten routine exercises. |
