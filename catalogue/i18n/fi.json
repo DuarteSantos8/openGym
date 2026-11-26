@@ -40311,7 +40311,7 @@
       "Kiri toiselle kartiolle ja takaisin.",
       "Siirry kolmannelle kartiolle ja takaisin.",
       "Pysy matalana käännöksissä.",
-      "Palaa, levätä ja toista."
+      "Lepää ja toista."
     ]
   },
   "5985": {
@@ -40327,12 +40327,12 @@
   },
   "5986": {
     "name": "Kartioharjoite",
-    "description": "Kartiojuoksu, joka kehittää kiihdytystä, leikkausnopeutta ja ketteryyttä.",
+    "description": "Kartiojuoksu, joka kehittää kiihdytystä, suunnanmuutosnopeutta ja ketteryyttä.",
     "instructions": [
       "Aseta useita kartioita kuvioon muutaman metrin etäisyydelle toisistaan.",
       "Aloita urheilullisessa asennossa.",
-      "Kiri tai sivuaskeleella kartioiden ympäri järjestyksessä.",
-      "Ponnista ja leikkaa lantio matalana.",
+      "Kiri tai liiku sivuaskelin kartioiden ympäri järjestyksessä.",
+      "Pysähdy ja vaihda suuntaa terävästi lantio matalana.",
       "Viimeistele rata, lepää ja lähde uudelleen."
     ]
   },
