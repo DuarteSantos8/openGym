@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { uid } from '../lib/format.js'
 import { beep, chime, vibrate, alertBuzz } from '../lib/sound.js'
+import { cue } from '../lib/feedback.js'
 import { restSoundOf } from '../lib/rest-sounds.js'
 import { toneFor, REST_KINDS } from '../lib/user-sounds.js'
 import { api } from '../lib/api.js'
@@ -258,7 +259,7 @@ const runRest = (set, get) => {
     if (left <= 0 && tm.kind === 'switch') {
       // Over like a hold is: the chime and its buzz, then the bar goes. No "Ready", no toast:
       // the other side is the next thing, one tap away.
-      if (seenLive) { endTone(snd, endSound, tm.endsAt); alertBuzz([200, 100, 200]); get().flashTimer() }
+      if (seenLive) { cue('rest-over', st, () => endTone(snd, endSound, tm.endsAt)); get().flashTimer() }
       stopRestTicking()
       set({ timer: null })
       return
@@ -268,8 +269,8 @@ const runRest = (set, get) => {
         // The Android alarm for this end stays quiet while the app is on screen, so this chime is
         // the only one. Locked, this branch never runs and the alarm's tone does. `endsAt` lets the
         // phone ring this end once when both think they saw it (#1007).
-        endTone(snd, endSound, tm.endsAt)
-        alertBuzz([200, 100, 200]); get().flashTimer()
+        cue('rest-over', st, () => endTone(snd, endSound, tm.endsAt))
+        get().flashTimer()
         cues.restOver()
       }
       // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone

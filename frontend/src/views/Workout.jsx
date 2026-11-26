@@ -17,7 +17,8 @@ import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDat
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
-import { beep, vibrate, unlock } from '../lib/sound.js'
+import { unlock } from '../lib/sound.js'
+import { cue } from '../lib/feedback.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
@@ -85,7 +86,7 @@ import { exView, viewEntry, inEntryUnit, shownWeight } from '../lib/ex-unit.js'
 import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
 import { formulaOf } from '../lib/onerm.js'
 import { cues } from '../lib/spoken-cues.js'
-import { recordBaseline, entryRecords, recordHint, liveRecordsOn, recordHintsOn, recordSoundOn } from '../lib/set-records.js'
+import { recordBaseline, entryRecords, recordHint, liveRecordsOn, recordHintsOn } from '../lib/set-records.js'
 import { RecordMark, RecordHintLine } from '../components/SetRecord.jsx'
 import { setNoteOf } from '../lib/set-notes.js'
 import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
@@ -2299,8 +2300,7 @@ function ActiveWorkout() {
     const formula = formulaOf(st)
     const kinds = entryRecords(e, recordBaseline(sessionHistory(st), e.id, { as: entryDbLoad(e), formula }), formula)[i] || []
     if (!kinds.length) return
-    vibrate([40, 60, 40, 60, 120])
-    if (recordSoundOn(st)) { beep(st.sound, 1320, 0.1, 0.14); beep(st.sound, 1760, 0.22, 0.26) }
+    cue('record', st)
     // Spoken cues (Settings → Timer alerts → Voice): the style's line for a record, or a clip.
     cues.record()
   }
@@ -2327,7 +2327,7 @@ function ActiveWorkout() {
       if (e.sets[i].done && !editing) {
         // A set logged while paused (#976): you are back, and so is the clock.
         if (isPaused(s.active)) resumeWorkout(s.active)
-        if (!quiet) { beep(S.sound, 1040, 0.12); vibrate(30) }
+        if (!quiet) cue('set-done', S)
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
         // the marker's unit here declared the workout complete after one set elsewhere.
