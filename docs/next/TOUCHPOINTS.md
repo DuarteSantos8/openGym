@@ -103,4 +103,13 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/coach/core/ask-actions.js` | `next/EP19-coach-starter-fixes` | Core | Apply the equipment restriction to chat proposals. |
 | `api/coach/core/validate.js` | `next/EP19-coach-starter-fixes` | Core | Check proposed exercise choices against the equipment restriction. |
 | `api/test/coach-ask.test.js` | `next/EP19-coach-starter-fixes` | Tests | Exercise translated requests and unsafe proposals with a simulated provider. |
+| `frontend/src/App.jsx`, `frontend/src/views/Settings.jsx`, `frontend/src/views/CoachChat.jsx` | `next/EP19-coach-app-navigation` | UI | Open local app help from Settings or Coach with the existing Settings availability context. |
+| `frontend/src/components/Tour.jsx`, `frontend/src/lib/tour.js` | `next/EP19-coach-app-navigation` | UI | Share the navigation stops and their displayed instructions with local help. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP19-coach-app-navigation` | Copy | Translate the app-help label and empty result. |
+| `docs/AI_COACH.md` | `next/EP19-coach-app-navigation` | Docs | Document local lookup, optional disclosure and destination handling. |
+| `api/coach/jobs.js`, `api/coach/routes.js` | `next/EP19-coach-app-navigation` | API | Bound and rate-limit a help request with only a question and visible directions. |
+| `api/openapi.yaml`, `website/api.html` | `next/EP19-coach-app-navigation` | API docs | Document the read-only explanation endpoint and update its generated reference. |
+| `frontend/src/views/settings-pages.test.jsx` | `next/EP19-coach-app-navigation` | Test | Verify the app-help entry after the existing Settings root rows. |
 | `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-guest-workouts` | E2E | Verify ten guest workouts in the linked server profile and in History on both devices. |
+| `api/coach/core/adapters/http.js`, `api/test/chatgpt-plan.test.js` | `next/EP19-coach-app-navigation` | API and tests | Allow provider discovery and credential refresh within a single generation request. |
+| `frontend/src/views/settings-pages.js` | `next/EP19-coach-app-navigation` | Search | Expose the visible Settings index to app help to rank full translated labels in a question. |

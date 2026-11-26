@@ -6339,4 +6339,7 @@ export default {
   "Build me a back workout with no weights": "Prépare-moi une séance de dos sans poids",
   "Add a push day on Tuesday and a pull day on Wednesday": "Ajoute une séance de poussée le mardi et une séance de tirage le mercredi",
   "Make today shorter": "Raccourcis ma séance du jour",
+  "Ask Coach to pick a result": "Demander au coach de choisir un résultat",
+  "App help": "Aide de l’application",
+  "No matching help found.": "Aucune aide correspondante trouvée.",
 }

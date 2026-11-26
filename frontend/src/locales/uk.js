@@ -6336,4 +6336,7 @@ export default {
   "Build me a back workout with no weights": "Склади мені тренування для спини без обтяжень",
   "Add a push day on Tuesday and a pull day on Wednesday": "Додай тренування з жимовими вправами на вівторок, а з тяговими на середу",
   "Make today shorter": "Скороти сьогоднішнє тренування",
+  "Ask Coach to pick a result": "Попросити тренера вибрати результат",
+  "App help": "Довідка застосунку",
+  "No matching help found.": "Відповідної довідки не знайдено.",
 }

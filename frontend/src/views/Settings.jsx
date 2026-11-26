@@ -39,6 +39,7 @@ import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
+import AppHelp from './AppHelp.jsx'
 import VoiceSettings from '../components/VoiceSettings.jsx'
 import { bandsSheet } from '../components/Bands.jsx'
 import { bandsOf } from '../lib/bands.js'
@@ -67,7 +68,7 @@ import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { forgetBodyFocus } from '../lib/body-photo.js'
-import { coachAvailable } from '../lib/coach.js'
+import { coachAvailable, hasConsent } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -141,7 +142,7 @@ let lastQuery = { q: '', key: null }
 
 // The route: /settings and /settings/<page>. An unknown page, or one this device does not have
 // (the Coach page off the phone app), goes back to the root.
-export function SettingsRoute() {
+export function SettingsRoute({ appHelp = false }) {
   const { page } = useParams()
   const loc = useLocation()
   // `ios` now, not after an async platform check: the Apple Watch page is iPhone only, and a route
@@ -154,7 +155,7 @@ export function SettingsRoute() {
   const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
-  return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
+  return <Settings appHelp={appHelp} key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
 
 // The tutorials' rows in About & updates.
@@ -174,7 +175,7 @@ const standalone = () => {
 // rather than from lib/api.js, whose test mocks across the Settings suites only carry IS_ANDROID.
 const APPLE_UA = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 
-export default function Settings({ page = null, find = null, via = null, entryKey = null }) {
+export default function Settings({ appHelp = false, page = null, find = null, via = null, entryKey = null }) {
   const nav = useNavigate()
   const cloudWho = useCloudAccount()     // Cloud edition: who is signed in to the hosted account, for its row
   const S = useStore(s => s.S)
@@ -1470,6 +1471,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   }
 
   /* ---------------- a page ---------------- */
+  if (appHelp) return <AppHelp ctx={ctx} canExplain={!ctx.demo && !ctx.offline && !(MOBILE && coachLocal?.mode === 'byok') && !!user && hasConsent(S) && config?.coach?.enabled && isOn(S, 'coach')} />
   if (page && pages[page]) {
     const parent = PAGES[page].parent
     return <div className="narrow" ref={body}>
@@ -1557,6 +1559,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
+      <Section><Row icon="magnifier" title={t('App help')} accessory="chevron" onClick={() => nav('/app-help')} /></Section>
       <div className="dim small sp-version">{APP_NAME} v{__APP_VERSION__}</div>
     </>}
   </div>

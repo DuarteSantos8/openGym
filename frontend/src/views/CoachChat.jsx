@@ -265,6 +265,7 @@ export default function CoachChat({ starter = '' }) {
 
     <div className="composer">
       {idle && !busy && <div className="chips-row">
+        <button className="qchip" onClick={() => nav('/app-help')}><Icon name="magnifier" />{t('App help')}</button>
         <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
         {!!lastWorkout && <button className="qchip" onClick={askDebrief}><Icon name="checkCircle" />{t('Last workout')}</button>}
         {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}

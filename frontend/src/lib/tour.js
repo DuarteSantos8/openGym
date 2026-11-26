@@ -63,6 +63,15 @@ export const STEPS = [
   { id: 'done', route: null, anchor: null },
 ]
 
+// Shared with the app-help index; the tour remains the source of its directions.
+export const NAVIGATION_COPY = {
+  'go-plan': () => [t('Off to Plan'), t('Your routines live behind this tab. Tap Plan.')],
+  'go-library': () => [t('The exercise library'), t('Every exercise is one tap away. Tap Library.')],
+  'go-stats': () => [t('Your progress'), t('Practice over. Progress is where the gains pile up. Tap it.')],
+  'go-home': () => [t('Settings are on Today'), t('Head back to Today first. Tap it.')],
+  'go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
+}
+
 const routineOf = c => c.S?.routines?.find(r => r.id === c.made)
 const inSettings = c => /^\/settings(\/|$)/.test(c.path || '')
 const scheduled = c => c.has('plan-week') || c.has('plan-loop-add')

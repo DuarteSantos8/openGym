@@ -20,7 +20,7 @@ import { todayISO } from '../lib/format.js'
 import { scheduleModeOf } from '../lib/rotation.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import {
-  useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
+  NAVIGATION_COPY, useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
   openTour, closeTour, placeCard, visiblePart, routeOf, reached, passOver, TUTORIALS, TUTORIAL_COPY, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID,
 } from '../lib/tour.js'
 import { beginWorkout } from '../sheets.jsx'
@@ -32,13 +32,12 @@ import './Tour.css'
 
 // What each stop says. Literal t() calls, so check-source-strings sees every one.
 const COPY = {
+  ...NAVIGATION_COPY,
   today: () => [t('Today at a glance'), t('Today’s session lives here. One tap and you’re lifting. On a rest day it says so, no guilt trip.')],
-  'go-plan': () => [t('Off to Plan'), t('Your routines live behind this tab. Tap Plan.')],
   'plan-mode': () => [t('Week or rotation'), t('Train on fixed weekdays, or run your routines in a loop where the next one waits for you.')],
   'plan-views': () => [t('Your routines'), t('Schedule says when, Routines says what. Build your own or grab a starter plan.')],
   'plan-body': () => [t('Muscles at a glance'), t('The little body shows what each day works, so leg day can’t hide.')],
   'plan-menu': () => [t('Programmes and sharing'), t('Programmes, starter plans and sharing a plan with a friend live behind this button.')],
-  'go-library': () => [t('The exercise library'), t('Every exercise is one tap away. Tap Library.')],
   'lib-search': () => [t('Find any exercise'), t('Search thousands of exercises in your language. Star your favourites and they float to the top.')],
   'lib-filters': () => [t('Filter it down'), t('Narrow the list by body part, type or the equipment you have.')],
   start: () => [t('The big Start button'), t('It starts today’s plan, or lets you pick something else. Tap it for a practice run.')],
@@ -48,12 +47,9 @@ const COPY = {
   swipe: () => [t('Swipe a set'), t('Swipe a set sideways to copy or remove it. Its number opens even more.')],
   more: () => [t('The ⋯ menu'), t('Workout settings, layouts, notes and extra exercises hide in here.')],
   finish: () => [t('Finish line'), t('Finish saves the session and moves your weights along. This practice one just quietly disappears.')],
-  'go-stats': () => [t('Your progress'), t('Practice over. Progress is where the gains pile up. Tap it.')],
   stats: () => [t('Your numbers'), t('Workouts, streaks and everything you’ve lifted. It fills up as you train.')],
   'stats-body': () => [t('Body map'), t('See which muscles got the work and which still need rest. Tap one for details.')],
   'stats-records': () => [t('Records'), t('Pick an exercise to see its best sets, estimated max and where it’s heading.')],
-  'go-home': () => [t('Settings are on Today'), t('Head back to Today first. Tap it.')],
-  'go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
   look: () => [t('Make it yours'), t('Theme, accent colour and what Home shows.')],
   units: () => [t('Units & language'), t('Kilos or pounds, and the language you like best.')],
   data: () => [t('Your data, your backups'), t('Backups, imports and syncing with your own server.')],

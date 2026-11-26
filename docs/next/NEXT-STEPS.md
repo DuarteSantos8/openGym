@@ -8,7 +8,6 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
-- **Coach app help (B4, proposed).** The owner can accept, reject or defer [ADR 0015](adr/0015-coach-app-help.md). Implementation follows acceptance.
 
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
   is available. A tap fills the editable chat box, including after first-time setup. The person
@@ -17,6 +16,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
   A French three-day plan also offered nine distinct substitutes. All 18 movements passed the catalogue check.
   See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102) for the catalogue evidence.
   All 25 translations have simulated-provider coverage. The four new strings await native-language review.
+
+- **App help (B4, prepared).** Coach and Settings can search local navigation help. The optional provider call shares the question and up to three visible results. Verify on the hosted preview after merge. The three new strings await native-language review.
 
 - **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
   account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,

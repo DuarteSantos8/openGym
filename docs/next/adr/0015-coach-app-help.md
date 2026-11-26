@@ -1,6 +1,6 @@
 # ADR 0015 — Answer questions about finding things in Ironvane
 
-**Status:** Proposed on 2026-11-26. The owner decides whether to build local app help with optional Coach wording.
+**Status:** Accepted by the owner on 2026-11-26 (#105). Implementation is prepared in #108. The provider selects a visible result and the app displays its directions.
 
 ## What the Coach knows today
 
@@ -28,4 +28,4 @@ Local lookup uses zero model tokens and costs $0, including offline. An optional
 
 Check a Settings result, a Learn guide and a tour action against the actual screens. Check a hidden module, an unknown phrase, a translated question and an offline device. Capture the outgoing explanation request using synthetic data and verify its field allowlist. A substituted link or request to modify training must leave the local result usable and the training profile unchanged.
 
-Accept this proposal to authorize a separate implementation PR. Rejecting or deferring it keeps the existing Settings search, Learn and tour as the ways to find these screens.
+App help is available from Settings and Coach. The older Settings search, Learn and tour remain available.
