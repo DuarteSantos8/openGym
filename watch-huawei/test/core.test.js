@@ -1159,6 +1159,19 @@ test('4: a reading outside 25..250 is no reading; the sums give the average and 
   assert.equal(K.hrSoFar(m.c), null)
 })
 
+test('4: the workout\'s heart-rate sums start over when the phone swaps in another workout, or a workout starts', () => {
+  const m = running(sidWorkout())
+  beat(m, 1000, 100); beat(m, 2000, 140)
+  assert.deepEqual(K.hrSoFar(m.c), [120, 140])
+  K.onPhone(m.c, snapWith(act(sidWorkout(), { id: 'w2' })))
+  assert.equal(K.hrSoFar(m.c), null)
+  beat(m, 3000, 90)
+  assert.deepEqual(K.hrSoFar(m.c), [90, 90])
+  m.c.s.w = null
+  K.startWorkout(m.c, { name: 'Quick', routineIds: [], entries: [ent('a', 0, [{ w: 10, r: 5 }])] })
+  assert.equal(K.hrSoFar(m.c), null)
+})
+
 test('4: a set the watch ticked itself gets no setHr when the phone\'s snapshot shows it', () => {
   const m = running(sidWorkout())
   beat(m, 1000, 100)

@@ -10,14 +10,66 @@
 //   translator($t) -> t(key, a, b, c)   the watch's language through the page's $t, English from en.js where it has none
 //   swipeTo(c, ui, dir)         a swipe: left opens the Metrics page from the set or the rest, right goes back; ui.mp is 1 on it
 // Same language subset as core.js (test/syntax.test.js).
-import {
-  entries, current, setIndex, place, partners, planSize, progress, fixList, logged, hasMore, needsPhone,
-  unitOf, stepOf, stepWeight, stepReps, isTimed, isCardio, locked, restLeft, restPaused, held, countNumber, chips, chipLabel,
-  canRate, lastSet, waiting, save, startWorkout, finishWorkout, pressDone, skipSet, nextExercise, holdStart, holdStop, holdCancel,
-  restAdd, restSkip, rate, refSet, fixLast, fixStep, fixCancel, fixSave, keepGoing, supersetStart, sensorShouldRest, lockFor
-} from './core.js'
-import { numbers } from './metrics.js'
+import { numbers, attach as attachMetrics } from './metrics.js'
 import { EN } from './en.js'
+// core.js stays in app.js (a page that imported it would carry its own copy): the page hands the core's
+// functions over once, with attach(K), and the code below uses them by their own names.
+let
+  entries, current, setIndex, place, partners, planSize, progress, fixList, logged, hasMore, needsPhone, unitOf,
+  stepOf, stepWeight, stepReps, isTimed, isCardio, locked, restLeft, restPaused, held, countNumber, chips, chipLabel,
+  canRate, lastSet, waiting, save, startWorkout, finishWorkout, pressDone, skipSet, nextExercise, holdStart,
+  holdStop, holdCancel, restAdd, restSkip, rate, refSet, fixLast, fixStep, fixCancel, fixSave, keepGoing,
+  supersetStart, lockFor
+export function attach (K) {
+  entries = K.entries
+  current = K.current
+  setIndex = K.setIndex
+  place = K.place
+  partners = K.partners
+  planSize = K.planSize
+  progress = K.progress
+  fixList = K.fixList
+  logged = K.logged
+  hasMore = K.hasMore
+  needsPhone = K.needsPhone
+  unitOf = K.unitOf
+  stepOf = K.stepOf
+  stepWeight = K.stepWeight
+  stepReps = K.stepReps
+  isTimed = K.isTimed
+  isCardio = K.isCardio
+  locked = K.locked
+  restLeft = K.restLeft
+  restPaused = K.restPaused
+  held = K.held
+  countNumber = K.countNumber
+  chips = K.chips
+  chipLabel = K.chipLabel
+  canRate = K.canRate
+  lastSet = K.lastSet
+  waiting = K.waiting
+  save = K.save
+  startWorkout = K.startWorkout
+  finishWorkout = K.finishWorkout
+  pressDone = K.pressDone
+  skipSet = K.skipSet
+  nextExercise = K.nextExercise
+  holdStart = K.holdStart
+  holdStop = K.holdStop
+  holdCancel = K.holdCancel
+  restAdd = K.restAdd
+  restSkip = K.restSkip
+  rate = K.rate
+  refSet = K.refSet
+  fixLast = K.fixLast
+  fixStep = K.fixStep
+  fixCancel = K.fixCancel
+  fixSave = K.fixSave
+  keepGoing = K.keepGoing
+  supersetStart = K.supersetStart
+  lockFor = K.lockFor
+  attachMetrics(K)
+}
 
 export const LIME = '#A3E635'
 export const ON_LIME = '#0C0E12'
@@ -626,31 +678,3 @@ export function swipeTo (c, ui, dir) {
   if (dir === 'left' && (at === 'set' || at === 'rest')) ui.mp = 1
   else if (dir === 'right' && at === 'mnum') ui.mp = 0
 }
-
-/* ---------- what the page does with the outside ---------- */
-// The heart-rate sensor only while a workout runs, and not after three idle hours (core.js sensorShouldRest).
-export const wantHr = c => !!c.s.w && !sensorShouldRest(c)
-// The screen stays on only during a rest or a hold.
-export const wantAwake = c => !!c.s.w && (c.s.rest != null || !!c.g.hold || c.g.hcd != null)
-
-// core.js buzzes with [[intensity %, ms], ...]; the watch has 'long' and 'short' only. Each pair with
-// an intensity is one buzz, long when the pair lasts 200 ms or more and it is the only one; a pair with 0 is a pause. Returns
-// [[delay ms, mode], ...], each buzz starting when the pairs before it have run their time.
-// A pattern with more than one buzz (the double at the end of a rest) uses short buzzes only: how long
-// 'long' lasts is not documented, and a second long buzz could start inside the first and merge with it.
-export function buzzPlan (pattern) {
-  const out = []
-  const pairs = arrOf(pattern)
-  const several = pairs.filter(p => p[0] > 0).length > 1
-  let at = 0
-  pairs.forEach(p => {
-    if (p[0] > 0) out.push([at, !several && p[1] >= 200 ? 'long' : 'short'])
-    at += p[1]
-  })
-  return out
-}
-
-// The heart rate the core is fed once a second: the sensor reports every 5 s, so the last reading
-// counts for up to 15 s (3 reports), then it is stale and counts as none.
-export const HR_STALE_MS = 15000
-export const bpmNow = (bpm, at, now) => (bpm > 0 && now - at <= HR_STALE_MS ? bpm : 0)

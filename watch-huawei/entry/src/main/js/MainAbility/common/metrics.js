@@ -5,7 +5,9 @@
 //                   elapsed seconds (null without a start; stands still at `pausedAt` while the phone has the workout
 //                   paused), hr { now, avg, max } or null (none, or the phone's show.hr is off)
 
-import { workoutTotals, progress, hrSoFar, elapsed } from './core.js'
+// core.js is not imported (see view.js attach): app.js holds the only copy.
+let workoutTotals, progress, hrSoFar, elapsed
+export function attach (K) { workoutTotals = K.workoutTotals; progress = K.progress; hrSoFar = K.hrSoFar; elapsed = K.elapsed }
 
 const isNum = v => typeof v === 'number' && isFinite(v)
 const dictOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)

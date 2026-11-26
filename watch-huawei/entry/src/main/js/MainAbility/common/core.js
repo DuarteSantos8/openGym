@@ -1184,7 +1184,7 @@ export function startWorkout (c, session) {
   const rd = dictOf(s.rd)
   if (rd && rd.today === session) rd.today = { name: strOf(session.name), routineIds: arrOf(session.routineIds), entries: [] }
   s.p = {}; s.sk = []; s.pos = 0; s.rest = null; s.rh = null; s.ra = 0
-  newSet(c)
+  hrTotals(c) // the last workout's heart-rate sums must not reach this one
   touch(c)
   reset(c)
   c.g.ended = null
@@ -1274,7 +1274,7 @@ export function applySnapshot (c, snap) {
   const onScreen = entryAt(s, s.pos)
   const onId = onScreen ? onScreen.id : null
   const atEnd = !!cur && entries(s).length > 0 && s.pos >= entries(s).length
-  if (!sameOne) { newSet(c); touch(c); s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0 }
+  if (!sameOne) { hrTotals(c); touch(c); s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0 }
 
   let es = arrOf(nx.entries)
   // the phone behind a drain: until it has every set logged here, its window without the exercise
@@ -1367,7 +1367,7 @@ function followTick (c) {
 }
 
 // What the page may cache about the set up: its place, its id and its numbers. c.g.up moves on when it changes
-// through an edit (addSet, removeSet) or a snapshot; a page that loaded its boxes for an older value loads them again.
+// through a snapshot; a page that loaded its boxes for an older value loads them again.
 function upKey (c) {
   const s = c.s
   const e = entryAt(s, s.pos)
@@ -1521,3 +1521,31 @@ export function second (c) {
   askTick(c)
   retry(c)
 }
+
+/* ---------- what the app does with the outside (app.js: sensor, screen, motor) ---------- */
+// The heart-rate sensor only while a workout runs, and not after three idle hours (sensorShouldRest).
+export const wantHr = c => !!c.s.w && !sensorShouldRest(c)
+// The screen stays on only during a rest or a hold.
+export const wantAwake = c => !!c.s.w && (c.s.rest != null || !!c.g.hold || c.g.hcd != null)
+
+// core.js buzzes with [[intensity %, ms], ...]; the watch has 'long' and 'short' only. Each pair with
+// an intensity is one buzz, long when the pair lasts 200 ms or more and it is the only one; a pair with 0 is a pause. Returns
+// [[delay ms, mode], ...], each buzz starting when the pairs before it have run their time.
+// A pattern with more than one buzz (the double at the end of a rest) uses short buzzes only: how long
+// 'long' lasts is not documented, and a second long buzz could start inside the first and merge with it.
+export function buzzPlan (pattern) {
+  const out = []
+  const pairs = arrOf(pattern)
+  const several = pairs.filter(p => p[0] > 0).length > 1
+  let at = 0
+  pairs.forEach(p => {
+    if (p[0] > 0) out.push([at, !several && p[1] >= 200 ? 'long' : 'short'])
+    at += p[1]
+  })
+  return out
+}
+
+// The heart rate the core is fed once a second: the sensor reports every 5 s, so the last reading
+// counts for up to 15 s (3 reports), then it is stale and counts as none.
+export const HR_STALE_MS = 15000
+export const bpmNow = (bpm, at, now) => (bpm > 0 && now - at <= HR_STALE_MS ? bpm : 0)

@@ -7,6 +7,8 @@ import * as K from '../entry/src/main/js/MainAbility/common/core.js'
 import * as V from '../entry/src/main/js/MainAbility/common/view.js'
 import { FILES, dollarT } from './i18n.js'
 
+V.attach(K)
+
 const T0 = 1761742800000
 const t = V.translator(dollarT('en-US'))
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -826,39 +828,39 @@ test('a handler name that is not an action does nothing, and none is an inherite
 
 test('the screen stays on only during a rest or a hold, the sensor only while a workout runs', () => {
   const w = mk()
-  assert.deepEqual([V.wantAwake(w.c), V.wantHr(w.c)], [false, false])
+  assert.deepEqual([K.wantAwake(w.c), K.wantHr(w.c)], [false, false])
   w.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])]))
-  assert.deepEqual([V.wantAwake(w.c), V.wantHr(w.c)], [false, true])
+  assert.deepEqual([K.wantAwake(w.c), K.wantHr(w.c)], [false, true])
   w.tap('done')
-  assert.equal(V.wantAwake(w.c), true)
+  assert.equal(K.wantAwake(w.c), true)
   w.tap('restSkip')
   w.wait(2); w.tap('restSkip')
-  assert.equal(V.wantAwake(w.c), false)
+  assert.equal(K.wantAwake(w.c), false)
   const v = mk()
   v.snap(act([ent('P', 0, [{ sec: 30 }], { mode: 'time' })]))
   v.tap('done')
-  assert.equal(V.wantAwake(v.c), true) // the 3-2-1 before a hold
+  assert.equal(K.wantAwake(v.c), true) // the 3-2-1 before a hold
   v.wait(4)
-  assert.equal(V.wantAwake(v.c), true)
+  assert.equal(K.wantAwake(v.c), true)
   w.tap('finish'); w.tap('yes')
-  assert.equal(V.wantHr(w.c), false)
+  assert.equal(K.wantHr(w.c), false)
 })
 
 test('buzzes: each pair with an intensity is one buzz, long from 200 ms, a 0 pair is a pause', () => {
-  assert.deepEqual(V.buzzPlan([[40, 60]]), [[0, 'short']])
-  assert.deepEqual(V.buzzPlan([[50, 150]]), [[0, 'short']])
-  assert.deepEqual(V.buzzPlan([[100, 250]]), [[0, 'long']])
-  assert.deepEqual(V.buzzPlan([[60, 300]]), [[0, 'long']])
+  assert.deepEqual(K.buzzPlan([[40, 60]]), [[0, 'short']])
+  assert.deepEqual(K.buzzPlan([[50, 150]]), [[0, 'short']])
+  assert.deepEqual(K.buzzPlan([[100, 250]]), [[0, 'long']])
+  assert.deepEqual(K.buzzPlan([[60, 300]]), [[0, 'long']])
   // the double at the end of a rest is two short buzzes: how long 'long' lasts is not documented, and a second one could merge into it
-  assert.deepEqual(V.buzzPlan([[100, 400], [0, 200], [100, 400]]), [[0, 'short'], [600, 'short']])
-  assert.deepEqual(V.buzzPlan(null), [])
+  assert.deepEqual(K.buzzPlan([[100, 400], [0, 200], [100, 400]]), [[0, 'short'], [600, 'short']])
+  assert.deepEqual(K.buzzPlan(null), [])
 })
 
 test('the heart rate fed to the core: the last reading for 15 s, then none', () => {
-  assert.equal(V.bpmNow(120, 1000, 1000), 120)
-  assert.equal(V.bpmNow(120, 1000, 16000), 120)
-  assert.equal(V.bpmNow(120, 1000, 16001), 0)
-  assert.equal(V.bpmNow(0, 1000, 1000), 0)
+  assert.equal(K.bpmNow(120, 1000, 1000), 120)
+  assert.equal(K.bpmNow(120, 1000, 16000), 120)
+  assert.equal(K.bpmNow(120, 1000, 16001), 0)
+  assert.equal(K.bpmNow(0, 1000, 1000), 0)
 })
 
 test('numbers: no trailing .0, times as m:ss', () => {
@@ -907,12 +909,12 @@ test('Added weight: a bodyweight exercise says so', () => {
 test('the heart-rate sensor rests after three idle hours and wakes with the next action', () => {
   const w = mk()
   w.snap(act([ent('Bench', 0, [row(60, 8), row(60, 8)])], { start: T0, activeAt: T0 }))
-  assert.equal(V.wantHr(w.c), true)
+  assert.equal(K.wantHr(w.c), true)
   w.clk.now += 3 * 3600000 + 1000
-  assert.equal(V.wantHr(w.c), false)
+  assert.equal(K.wantHr(w.c), false)
   w.tap('wPlus') // a tap on the boxes is no workout action; a set done is
   w.tap('done')
-  assert.equal(V.wantHr(w.c), true)
+  assert.equal(K.wantHr(w.c), true)
 })
 
 

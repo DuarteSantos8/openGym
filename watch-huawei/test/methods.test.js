@@ -8,14 +8,15 @@ import { strip } from './syntax.test.js'
 
 const root = new URL('../entry/src/main/js/MainAbility/', import.meta.url)
 const es5 = 'forEach map filter some every indexOf lastIndexOf slice concat push pop shift unshift splice sort reverse join keys isArray stringify parse floor ceil round max min abs charAt charCodeAt substring split replace test toString toLowerCase toUpperCase call'.split(' ')
-const own = 'onError onComplete accept busy gathering listen stop save load send registerReceiver unregisterReceiver readText writeText delete buzz now random'.split(' ')
+const own = 'onError onComplete accept busy gathering listen stop save load send registerReceiver unregisterReceiver readText writeText delete buzz now random transmit get k'.split(' ')
 const huawei = 'getInfo setDescription vibrate subscribeHeartRate unsubscribeHeartRate setKeepScreenOn $t setPeerPkgName setPeerFingerPrint terminate rotation'.split(' ')
 
-;['common/frames.js', 'common/radio.js', 'common/store.js', 'common/view.js', 'pages/index/index.js'].forEach(f => {
+;['app.js', 'common/frames.js', 'common/radio.js', 'common/store.js', 'common/view.js', 'pages/index/index.js'].forEach(f => {
   test(f + ' calls only ES5 methods, its own names and Huawei\'s documented calls', () => {
     const src = strip(readFileSync(new URL(f, root), 'utf8'))
     const called = []
-    src.replace(/\.\s*([A-Za-z_$][\w$]*)\s*\(/g, (m, name) => { called.push(name) })
+    // K.x() is core.js (its own test holds it to ES5), A.x() is app.js's own: both are ours, not a built-in
+    src.replace(/\b[KA]\.[A-Za-z_$][\w$]*\s*\(/g, '').replace(/\.\s*([A-Za-z_$][\w$]*)\s*\(/g, (m, name) => { called.push(name) })
     assert.deepEqual(called.filter(n => es5.indexOf(n) < 0 && own.indexOf(n) < 0 && huawei.indexOf(n) < 0), [])
     const globals = []
     src.replace(/\b(Math|Object|Array|JSON|Number|String|Date)\.([A-Za-z_$][\w$]*)/g, (m, a, b) => { globals.push(a + '.' + b) })

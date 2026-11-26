@@ -70,18 +70,26 @@ const modules = {
   '@system.file': 'file', '@system.vibrator': 'vibrator', '@system.sensor': 'sensor', '@system.brightness': 'brightness',
   '@system.app': 'app'
 }
+const appJs = readFileSync(new URL('../entry/src/main/js/MainAbility/app.js', import.meta.url), 'utf8')
+const common = new URL('../entry/src/main/js/MainAbility/common/', import.meta.url)
 let loads = 0
-async function loadPage (W) {
-  let src = js
-  loads += 1
+// The page and the app (app.js) are loaded the way the framework does: the Huawei modules are fakes, the
+// page reaches the app through getApp(). The app is made again with each page: a new boot of the watch.
+async function loadFrom (src, W) {
   // the number keeps each load's fake modules apart: Node caches a data: module by its text
   Object.keys(modules).forEach(m => { src = src.replace("'" + m + "'", "'data:text/javascript,export%20default%20globalThis.__W." + modules[m] + "%3B//" + loads + "'") })
   src = src.replace("'../../common/wearengine.js'", "'data:text/javascript,export%20const%20P2pClient%3DglobalThis.__W.P2pClient%3Bexport%20const%20Message%3DglobalThis.__W.Message%3Bexport%20const%20Builder%3DglobalThis.__W.Builder%3B//" + loads + "'")
-  src = src.replace(/'\.\.\/\.\.\/common\/([a-z]+\.js)'/g, (_, f) => "'" + new URL('../entry/src/main/js/MainAbility/common/' + f, import.meta.url).href + "'")
+  src = src.replace(/'(?:\.\.\/\.\.\/common|\.\/common)\/([a-z]+\.js)'/g, (_, f) => "'" + new URL(f, common).href + "'")
   const tmp = mkdtempSync(join(tmpdir(), 'og-page-'))
   const f = join(tmp, 'page.mjs')
   writeFileSync(f, src)
   try { return (await import(pathToFileURL(f).href + '?' + Math.random())).default } finally { rmSync(tmp, { recursive: true }) }
+}
+async function loadPage (W) {
+  loads += 1
+  const appDef = await loadFrom(appJs, W)
+  globalThis.getApp = () => ({ data: appDef.data })
+  return loadFrom(js, W)
 }
 
 // fake Huawei: files that answer later (flush), a P2P client that records, a sensor, a clock and timers
@@ -225,6 +233,18 @@ test('page: after a destroy and a new page, the words come from the new page\'s 
   } finally { restore() }
 })
 
+test('app: its data holds functions only (a state object there died with JS REF LIMIT), and the page gets the core through it', async () => {
+  const W = world(new Map())
+  try {
+    await boot(W)
+    const d = globalThis.getApp().data
+    assert.deepEqual(Object.keys(d).sort(), ['get', 'k'])
+    Object.keys(d).forEach(k => assert.equal(typeof d[k], 'function', k))
+    assert.equal(typeof d.k().pressDone, 'function')
+    assert.ok(d.get().c, 'the core is the app\'s')
+  } finally { restore() }
+})
+
 test('page: a tap before the state is loaded does nothing, and a swipe right leaves only from Start', async () => {
   const W = world(new Map())
   try {
@@ -233,6 +253,7 @@ test('page: a tap before the state is loaded does nothing, and a swipe right lea
     const def = await loadPage(W)
     const page = Object.assign({ $t: dollarT('de-DE') }, def.data) // the framework's $t, for a watch set to German
     Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
+    def.onInit.call(page) // the framework starts the page first; its files have not answered yet
     assert.doesNotThrow(() => page.done.call(page))
     def.swipe.call(page, { direction: 'left' })
     assert.equal(W.terminated, 0)
@@ -307,9 +328,11 @@ test('page: a rebuild while the summary is up asks for the crown again', async (
     page.menu(); page.mFinish(); page.yes()
     W.advance(1)
     assert.equal(asked.length, 1)
+    // the app keeps the core, but a page is rebuilt from the store: the summary (not stored) is gone, nothing to focus
     page.def.onDestroy.call(page)
-    page.def.onShow.call(page); W.settle(); W.advance(1)
-    assert.equal(asked.length, 2)
+    page.def.onInit.call(page); page.def.onShow.call(page); W.settle(); W.advance(1)
+    assert.equal(page.s_summary, false)
+    assert.equal(asked.length, 1)
   } finally { restore() }
 })
 

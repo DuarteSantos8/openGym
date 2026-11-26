@@ -1,17 +1,14 @@
-// The page: glue between Huawei's APIs, the core (common/core.js) and the screens (common/view.js).
-// It loads the stored state, makes the core, wires the radio and the store, and once a second runs
-// the core's clock and copies the screen's data into `data`. It decides nothing about what is shown
-// or what a tap does: view.js does, and has the tests.
+// The page: glue between Huawei's APIs, the screens (common/view.js) and the app (app.js). The app holds the
+// core, the clock, the sensor and the buzz; the page loads the stored state, wires the radio and the store,
+// and copies the screen's data into `data` when the app says to. It decides nothing about what is shown
+// or what a tap does: view.js does, and has the tests. It imports nothing from core.js (a page that did would
+// carry a second copy of it): the core's functions come through getApp().data.k().
 import file from '@system.file'
-import vibrator from '@system.vibrator'
-import sensor from '@system.sensor'
-import brightness from '@system.brightness'
 import app from '@system.app'
 import { P2pClient, Message, Builder } from '../../common/wearengine.js'
-import { createCore, launch, stop, second, countTick, onPhone, hrSample } from '../../common/core.js'
 import { createRadio } from '../../common/radio.js'
 import { createStore } from '../../common/store.js'
-import { blank, newUi, tick, build, act, translator, lostData, wantHr, wantAwake, buzzPlan, bpmNow, swipeTo } from '../../common/view.js'
+import { blank, newUi, tick, build, act, translator, lostData, swipeTo, attach } from '../../common/view.js'
 
 // The phone app this watch talks to (wire.md section 4). The package is the phone app's release
 // applicationId (a debug phone build is ch.duartesantos.opengym.test: change it to try one).
@@ -21,10 +18,7 @@ const PHONE_PACKAGE = 'ch.duartesantos.opengym'
 const PHONE_FINGERPRINT = 'REPLACE_WITH_SHA256_OF_SIGNING_CERT'
 const VERSION_WAIT_MS = 3000 // how long to wait for wearengine.js to learn the service version
 
-const noop = function () {}
 const nowMs = function () { return Date.now() } // unsure: Date is not in Huawei's lite docs; check on a real watch
-// No env.tick (a monotonic clock) for the core: nothing in Huawei's lite docs gives one, so durations
-// use the watch clock, as core.js falls back to.
 
 // Made at module load, as Huawei's own sample does: wearengine.js learns the Wear Engine service version
 // in a callback, and nothing may be sent or registered before it knows (it takes an older path, and
@@ -34,7 +28,10 @@ let client = {}
 try { client = new P2pClient() } catch (e) { client = {} }
 
 // What lives while the page does. Module level, like Huawei's own sample: a page's `this` only holds data.
-const S = { boot: 0, shown: false, lost: false, core: null, ui: null, store: null, radio: null, t: null, loop: 0, ticks: 0, lastSec: 0, fast: false, reg: 'pending', sum: false, hr: false, bpm: 0, bpmAt: 0, awake: false }
+// A is the app's shared state (app.js), K the core's functions.
+let A = null
+let K = null
+const S = { boot: 0, shown: false, lost: false, t: null, ticks: 0, reg: 'pending', sum: false }
 
 function makeMessage (text) {
   const builder = new Builder()
@@ -44,52 +41,17 @@ function makeMessage (text) {
   return message
 }
 
-// The watch has two buzzes. view.js turns each pattern of the core into [delay, mode] steps.
-function buzz (pattern) {
-  buzzPlan(pattern).forEach(function (step) {
-    const go = function () {
-      try { vibrator.vibrate({ mode: step[1], success: noop, fail: noop }) } catch (e) { /* no motor */ }
-    }
-    if (step[0] > 0) setTimeout(go, step[0]); else go()
-  })
-}
-
-function startHr () {
-  S.bpm = 0
-  try {
-    sensor.subscribeHeartRate({
-      success: function (ret) { S.bpm = ret && ret.heartRate > 0 ? ret.heartRate : 0; S.bpmAt = nowMs() },
-      fail: function () { S.bpm = 0 } // no permission or no sensor: the core just has no heart rate
-    })
-  } catch (e) { S.bpm = 0 }
-}
-function stopHr () {
-  try { sensor.unsubscribeHeartRate() } catch (e) { /* it was not on */ }
-  S.bpm = 0
-}
-function keepOn (on) {
-  try { brightness.setKeepScreenOn({ keepScreenOn: on, success: noop, fail: noop }) } catch (e) { /* the screen sleeps as it does */ }
-}
-
-// The sensor and the screen follow the workout: on only when the core wants them.
-function devices (c) {
-  const hr = wantHr(c)
-  if (hr !== S.hr) { S.hr = hr; if (hr) startHr(); else stopHr() }
-  const awake = wantAwake(c)
-  if (awake !== S.awake) { S.awake = awake; keepOn(awake) }
-}
-
 function refresh (page) {
-  const c = S.core
+  const c = A.c
   if (!c) return
-  const d = build(c, S.ui, words(page))
+  const d = build(c, A.ui, words(page))
   Object.keys(d).forEach(function (k) { if (page[k] !== d[k]) page[k] = d[k] })
   // the crown scrolls the summary list: ask for it once when the summary comes up (the list draws a turn later)
   if (d.s_summary !== S.sum) {
     S.sum = d.s_summary
     if (S.sum) setTimeout(function () { try { page.$refs.sum.rotation({ focus: true }) } catch (e) { /* no crown on this watch */ } }, 0)
   }
-  devices(c)
+  A.dev() // the sensor and the screen lock follow the workout
 }
 
 // The receiver is registered once per show. Its own success callback may never come (wearengine.js calls
@@ -97,64 +59,37 @@ function refresh (page) {
 // failure is tried again, and never while a message is half gathered (registering drops frames).
 function listen (page) {
   S.reg = 'pending'
-  S.radio.listen(
+  A.radio.listen(
     function (message) {
-      try { onPhone(S.core, message); tick(S.core, S.ui) } catch (e) { /* a snapshot the core cannot read must not stop the watch */ }
+      try { K.onPhone(A.c, message); tick(A.c, A.ui) } catch (e) { /* a snapshot the core cannot read must not stop the watch */ }
       refresh(page)
     },
     function (ok) { S.reg = ok ? 'ok' : 'failed' }
   )
 }
 
-// The clock. Once a second: the heart rate, the core's second(), the store's retry, the receiver's retry.
-// While a 3-2-1 is up it ticks every 250 ms, and only the count moves between seconds. A page that was
-// hidden or destroyed bumps S.loop and its timer ends itself.
-const isCounting = function () { return !!S.ui.cd || S.core.g.hcd != null }
-function loop (page) {
-  const mine = S.loop
-  const counting = isCounting()
-  S.fast = counting
-  setTimeout(function () {
-    if (mine !== S.loop) return
-    const c = S.core
+function pause () {
+  if (A.radio) A.radio.stop()
+  S.reg = 'pending'
+  A.cb = null
+  A.hide()
+}
+
+// Shown (again): the receiver, then the app's hello, redraw and clock. The app calls A.cb on each pass of
+// its clock, once a second with sec true.
+function resume (page) {
+  listen(page)
+  A.cb = function (sec) {
     try {
-      const now = nowMs()
-      if (now - S.lastSec >= 900) {
-        S.lastSec = now
-        hrSample(c, bpmNow(S.bpm, S.bpmAt, now)) // the sensor reports every 5 s: the last reading stands for up to 15 s
-        second(c)
+      tick(A.c, A.ui)
+      if (sec) {
         S.ticks += 1
-        if (S.store.failed) S.store.save(c.s) // a save that did not make it is tried again
-        if (S.reg === 'failed' && S.ticks % 10 === 0 && !S.radio.gathering()) listen(page)
-      } else countTick(c)
-      tick(c, S.ui)
+        if (S.reg === 'failed' && S.ticks % 10 === 0 && !A.radio.gathering()) listen(page) // the receiver's retry
+      }
     } catch (e) { /* the clock keeps going */ }
     refresh(page)
-    loop(page)
-  }, counting ? 250 : 1000)
-}
-
-function pause () {
-  S.loop += 1
-  if (S.hr) { S.hr = false; stopHr() }
-  if (S.awake) { S.awake = false; keepOn(false) }
-  if (S.radio) S.radio.stop()
-  S.reg = 'pending'
-  if (S.core && S.store) S.store.save(S.core.s) // the store skips it when nothing changed
-}
-
-// Shown (again): the receiver, a hello, the clock.
-function resume (page) {
-  S.loop += 1
-  listen(page)
-  launch(S.core) // hello, and the watch's version when it is due
-  refresh(page)
-  loop(page)
-}
-
-// The app's own version for the phone's watch list: documented @system.app getInfo().versionName.
-function appVersion () {
-  try { return String(app.getInfo().versionName || '') } catch (e) { return '' }
+  }
+  A.show()
 }
 
 // the page's $t, kept until the page is destroyed or boots again: the framework picks the file for the watch's language
@@ -180,22 +115,14 @@ function whenVersion (cb) {
   poll()
 }
 
-function start (page, stored, mine) {
-  S.ui = newUi()
+function start (page, stored) {
+  A.ui = newUi()
   try {
     client.setPeerPkgName(PHONE_PACKAGE)
     client.setPeerFingerPrint(PHONE_FINGERPRINT)
   } catch (e) { /* the failing client stays failing */ }
-  S.radio = createRadio(client, makeMessage, nowMs())
-  S.core = createCore({
-    radio: S.radio,
-    now: nowMs,
-    random: Math.random,
-    version: appVersion(),
-    // only this boot's core may save (a late callback of an older one must not write over the new store)
-    save: function (state) { if (mine === S.boot && S.store) S.store.save(state) },
-    buzz: buzz
-  }, stored)
+  A.radio = createRadio(client, makeMessage, nowMs())
+  A.make(stored)
   if (S.shown) resume(page)
 }
 
@@ -205,46 +132,51 @@ function boot (page) {
   S.boot += 1
   S.t = null // the new page's $t, not the old one's
   const mine = S.boot
-  S.loop += 1
-  if (S.core) stop(S.core) // the old core sends and saves nothing more
-  S.core = null
+  A.drop()
   S.lost = false
-  S.store = createStore(file)
-  S.store.load(function (stored, status) {
+  const store = createStore(file)
+  A.store = store
+  store.load(function (stored, status) {
     if (mine !== S.boot) return
     if (status === 'unreadable') { showLost(page); return }
-    whenVersion(function () { if (mine === S.boot) start(page, stored, mine) })
+    whenVersion(function () { if (mine === S.boot) start(page, stored) })
   })
 }
 
 // One tap: view.js does it, then the screen is drawn again. An error must not take the page down;
 // the core saves after each change, so nothing already done is lost.
 function go (page, name) {
-  const c = S.core
+  const c = A.c
   if (!c) return
-  try { act(c, S.ui, name); tick(c, S.ui) } catch (e) { /* nothing done, the screen stays */ }
+  try { act(c, A.ui, name); tick(c, A.ui) } catch (e) { /* nothing done, the screen stays */ }
   refresh(page)
-  if (isCounting() && !S.fast && S.shown) { S.loop += 1; loop(page) } // a 3-2-1 just began: do not wait out a slow tick
+  A.poke()
 }
 
 export default {
   data: blank(),
-  onInit: function () { boot(this) },
+  onInit: function () {
+    A = getApp().data.get()
+    K = getApp().data.k()
+    attach(K)
+    boot(this)
+  },
   onShow: function () {
     S.shown = true
-    if (S.core) resume(this)
+    if (A.c) resume(this)
   },
   onHide: function () { S.shown = false; pause() },
-  onDestroy: function () { S.shown = false; S.sum = false; S.t = null; S.boot += 1; pause() },
+  // nothing of this page stays in the app: its store and radio go with it
+  onDestroy: function () { S.shown = false; S.sum = false; S.t = null; S.boot += 1; pause(); A.store = null; A.radio = null },
   retry: function () { boot(this) },
   // Swipe right leaves the app, from the Start screen only: not by accident in the middle of a workout.
   // In a workout a swipe left opens the Metrics page and a swipe right steps back (view.js swipeTo).
   swipe: function (e) {
     if (e.direction !== 'left' && e.direction !== 'right') return // a list scrolling is not ours
-    if (e.direction === 'right' && (!S.core || this.s_idle)) { app.terminate(); return }
-    const c = S.core
+    if (e.direction === 'right' && (!A.c || this.s_idle)) { app.terminate(); return }
+    const c = A.c
     if (!c) return
-    try { swipeTo(c, S.ui, e.direction); tick(c, S.ui) } catch (err) { /* the screen stays */ }
+    try { swipeTo(c, A.ui, e.direction); tick(c, A.ui) } catch (err) { /* the screen stays */ }
     refresh(this)
   },
 

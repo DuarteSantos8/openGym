@@ -131,3 +131,22 @@ test('core.js calls only ES5 methods and its own names', () => {
   const ok = ['Math.floor', 'Math.ceil', 'Math.round', 'Math.max', 'Math.min', 'Math.abs', 'Object.keys', 'Array.isArray', 'JSON.stringify', 'JSON.parse']
   assert.deepEqual(globals.filter(g => ok.indexOf(g) < 0), [])
 })
+
+// A page that imports core.js (directly, or through view.js, metrics.js...) is built with its own copy of it:
+// the core lives in app.js only and the page reaches it through getApp().data.k().
+test('no page reaches core.js through its imports', () => {
+  const reach = (file, seen) => {
+    if (seen.indexOf(file) >= 0) return
+    seen.push(file)
+    const src = readFileSync(join(root, file), 'utf8')
+    src.replace(/^import [^'\n]*'([^']+)'/gm, (m, spec) => {
+      if (spec.charAt(0) === '.') reach(join(file, '..', spec), seen)
+    })
+  }
+  sources('pages').forEach(f => {
+    const seen = []
+    reach(f, seen)
+    assert.ok(seen.length > 1, f + ' imports its helpers')
+    assert.deepEqual(seen.filter(n => n === 'common/core.js'), [], f)
+  })
+})

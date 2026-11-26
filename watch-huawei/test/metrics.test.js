@@ -4,6 +4,8 @@ import assert from 'node:assert/strict'
 import * as K from '../entry/src/main/js/MainAbility/common/core.js'
 import * as X from '../entry/src/main/js/MainAbility/common/metrics.js'
 
+X.attach(K)
+
 const clone = v => JSON.parse(JSON.stringify(v))
 const T0 = 1761742800000
 function mk (stored) {

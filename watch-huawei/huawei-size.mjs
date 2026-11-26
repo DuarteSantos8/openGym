@@ -2,7 +2,7 @@
 // The size gate: Huawei's lite engine refuses a file over 48 KB, so no built file may pass 45 KB.
 // Clears the build's output folder, runs the release build, lists the built JS/JSON files and exits 1 if one is over the limit.
 //   node watch-huawei/huawei-size.mjs            fails when a file is too big
-//   node watch-huawei/huawei-size.mjs --report   prints the table, never fails
+//   node watch-huawei/huawei-size.mjs --report   prints the table; fails only for app.js (the page files are being split)
 // Needs DevEco Studio's command line tools (JAVA_HOME and DEVECO_SDK_HOME, docs/HUAWEI_WATCH.md).
 import { execFileSync } from 'node:child_process'
 import { readdirSync, rmSync, statSync } from 'node:fs'
@@ -17,6 +17,9 @@ const DEVECO = '/Applications/DevEco-Studio.app/Contents'
 
 // [name, bytes] list -> the ones over the limit
 export const overLimit = (files, limit = LIMIT) => files.filter(([, bytes]) => bytes > limit)
+
+// app.js is the file every page shares and the tightest: it fails the gate even under --report (pages join in later tasks)
+export const appOver = (files, limit = LIMIT) => overLimit(files, limit).filter(([n]) => /^app\.(js|bc)$/.test(n))
 
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)])
@@ -43,7 +46,7 @@ function main() {
   const bad = new Set(overLimit(files).map(([n]) => n))
   for (const [name, bytes] of files) console.log(`${String(bytes).padStart(8)}  ${bad.has(name) ? 'OVER' : 'ok  '}  ${name}`)
   console.log(`limit ${LIMIT} bytes, ${bad.size} file(s) over`)
-  if (bad.size && !report) process.exit(1)
+  if ((bad.size && !report) || appOver(files).length) process.exit(1)
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main()
