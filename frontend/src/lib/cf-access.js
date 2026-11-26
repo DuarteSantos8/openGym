@@ -35,6 +35,10 @@ let rereading = null
 // Bumped by every save or removal. A read that started before one (the retry above, still waiting
 // on the store) found what is no longer there, so it is dropped rather than put back over it.
 let changes = 0
+// Writes to the stored token run one after another, in the order they were asked for: a binding
+// write from a read that a save or removal then overtook never lands after that save or removal.
+let writing = Promise.resolve()
+const inOrder = write => { const done = writing.then(write); writing = done.catch(() => {}); return done }
 const reread = pairedBase => rereading || (rereading = loadCfAccess({ pairedBase }).finally(() => { rereading = null }))
 
 // `pairedBase`: the server this phone is paired with. A token saved before tokens knew their
@@ -56,7 +60,7 @@ export async function loadCfAccess({ pairedBase = '' } = {}) {
   if (!creds || !creds.clientId || !creds.clientSecret) { setAccessHeaders({}, '', unread ? () => reread(pairedBase) : null); return null }
   if (!creds.origin && originOf(pairedBase)) {
     creds.origin = originOf(pairedBase)
-    try { await secureSet(KEY, JSON.stringify(creds)) } catch { /* bound again on the next start */ }
+    try { await inOrder(() => secureSet(KEY, JSON.stringify(creds))) } catch { /* bound again on the next start */ }
     if (changes !== seen) return null
   }
   setAccessHeaders(accessHeaders(creds), creds.origin)
@@ -69,12 +73,12 @@ export async function saveCfAccess({ clientId, clientSecret, server } = {}) {
   const creds = { clientId: clean(clientId), clientSecret: clean(clientSecret), origin: originOf(server) }
   changes++
   if (!creds.clientId || !creds.clientSecret) {
-    await secureRemove(KEY)
+    await inOrder(() => secureRemove(KEY))
     setAccessHeaders({}, '')
     return null
   }
   if (!creds.origin) throw new Error('A Cloudflare Access token needs the server it is for')
-  await secureSet(KEY, JSON.stringify(creds))
+  await inOrder(() => secureSet(KEY, JSON.stringify(creds)))
   setAccessHeaders(accessHeaders(creds), creds.origin)
   return creds
 }

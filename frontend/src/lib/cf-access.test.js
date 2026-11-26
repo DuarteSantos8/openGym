@@ -179,3 +179,37 @@ describe('a read still waiting on the store when the token is saved or removed',
     expect(backing.has('cfAccess')).toBe(false)
   })
 })
+
+describe('a binding write still on its way when the token is saved or removed', () => {
+  // A token saved before tokens knew their server is bound to the paired one on load; that write
+  // reaches the store only after the save or removal was asked for.
+  async function slowBinding(change) {
+    backing.set('cfAccess', JSON.stringify({ clientId: 'old', clientSecret: 'old-secret' }))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const real = SecureStorage.set
+    let land
+    SecureStorage.set = (k, v) => {
+      SecureStorage.set = real
+      return new Promise(resolve => { land = () => { backing.set(k, v); resolve() } })
+    }
+    try {
+      const reading = loadCfAccess({ pairedBase: GYM })
+      while (!land) await new Promise(r => setTimeout(r, 0))
+      const changing = change()
+      await new Promise(r => setTimeout(r, 0))
+      land()
+      await Promise.all([reading, changing])
+    } finally { SecureStorage.set = real }
+  }
+
+  it('does not put the old token back in the store over a removal', async () => {
+    await slowBinding(() => saveCfAccess({}))
+    expect(backing.has('cfAccess')).toBe(false)
+    expect(await loadCfAccess({ pairedBase: GYM })).toBe(null)
+  })
+
+  it('does not put the old token back in the store over a new one', async () => {
+    await slowBinding(() => saveCfAccess({ clientId: 'new', clientSecret: 'new-secret', server: GYM }))
+    expect(JSON.parse(backing.get('cfAccess'))).toEqual({ clientId: 'new', clientSecret: 'new-secret', origin: GYM })
+  })
+})
