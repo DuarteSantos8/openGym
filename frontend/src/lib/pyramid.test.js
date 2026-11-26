@@ -34,6 +34,9 @@ describe('normalizePyramid', () => {
   it('rounds typed numbers and holds them to at least one rep', () => {
     expect(normalizePyramid([7.6, 0, -3, '5'])).toEqual([8, 1, 1, 5])
   })
+  it('caps a target at the validator 100-rep ceiling', () => {
+    expect(normalizePyramid([120, 101, 100, 99])).toEqual([100, 100, 100, 99])
+  })
   it('drops what is neither a number nor max', () => {
     expect(normalizePyramid([10, 'abc', null, undefined, 'max'])).toEqual([10, 'max'])
   })
@@ -194,6 +197,12 @@ describe('a pyramid session is graded against its own targets', () => {
   it('an invalid target is not a set of its own', () => {
     const bad = pyramidCfg({ sets: 3, reps: 12, pyramid: [12, 'bad', 8] })
     expect(readSession({ id: LIFT, target: bad, sets: [12, 8].map(r => ({ w: 60, r, done: true })) }, bad).ok).toBe(true)
+  })
+
+  it('grades a target above 100 at the same 100-rep ceiling as the API', () => {
+    const high = pyramidCfg({ sets: 1, reps: 120, pyramid: [120] })
+    expect(readSession({ id: LIFT, target: high, sets: [{ w: 60, r: 110, done: true }] }, high).ok).toBe(true)
+    expect(readSession({ id: LIFT, target: high, sets: [{ w: 60, r: 99, done: true }] }, high).ok).toBe(false)
   })
 })
 
