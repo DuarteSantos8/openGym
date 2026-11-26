@@ -4,6 +4,10 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
+  account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,
+  successful retry and MiniMax's hourly subscription totals. Per-run billing remains unknown.
+
 All openGym Next work so far is on `main` (44f837f23). CI is green there: the `Tests` workflow with every job, including `e2e`, passed on its first run on GitHub (run 43719512582, 2026-11-15).
 
 | PR | Content | Status |
