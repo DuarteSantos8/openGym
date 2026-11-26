@@ -101,7 +101,8 @@ export function createGlue (name, fields, after) {
   function pause () {
     if (S.rx && A.radio === S.rx) S.rx.stop() // a newer page's receiver is not ours to unregister
     S.reg = 'pending'
-    if (S.cb && A.cb === S.cb) { A.cb = null; A.hide() }
+    // a page that asked for another is not the app leaving the screen: the next page's show carries on (the sensor, the lock)
+    if (S.cb && A.cb === S.cb) { A.cb = null; if (!S.left) A.hide() }
     S.cb = null
   }
 

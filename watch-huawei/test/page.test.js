@@ -142,7 +142,8 @@ function world (disk) {
     delete: p => W.io.push(() => { W.disk.delete(p.uri); p.success() })
   }
   W.vibrator = { vibrate: p => { W.buzzes.push(p.mode); p.success() } }
-  W.sensor = { subscribeHeartRate: p => { W.hr = p }, unsubscribeHeartRate: () => { W.hr = null } }
+  W.subs = 0; W.unsubs = 0
+  W.sensor = { subscribeHeartRate: p => { W.subs += 1; W.hr = p }, unsubscribeHeartRate: () => { W.unsubs += 1; W.hr = null } }
   W.brightness = { setKeepScreenOn: p => { W.awake.push(p.keepScreenOn); p.success() } }
   W.replaced = [] // the pages the app asked the router for, oldest first
   W.router = { replace: o => { W.replaced.push(o.uri) } }
@@ -452,7 +453,33 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       assert.deepEqual(W.replaced, ['pages/lift/index']) // the next set is the lift page's
       W.advance(1)
       next.def.onHide.call(next)
-      assert.equal(W.hr, null) // the page that owns the app stops it
+      assert.ok(W.hr, 'a page that asked for another leaves the sensor to it') // a hide that is not a leave stops it (above)
+    } finally { restore() }
+  }
+})
+
+test('page switch: a page leaving for another is not the app leaving the screen (the sensor, the screen lock and the link stay as they were), in either teardown order', async () => {
+  for (const newFirst of [false, true]) {
+    const W = world(new Map())
+    try {
+      let page = await boot(W)
+      fromPhone(W, snap())
+      page.start(); page = await follow(W, page); W.advance(4)
+      W.hr.success({ heartRate: 120 }); W.advance(3)
+      page.done()
+      const next = await nextPage(W, W.replaced.shift().split('/')[1])
+      const A = globalThis.getApp().data.get()
+      const [subs, unsubs, awake, sent] = [W.subs, W.unsubs, W.awake.length, W.sent.length]
+      const old = page.def
+      if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
+      assert.equal(A.c.g.awayAt, null, 'no failed hello while the new page has no link yet')
+      W.settle(); W.advance(1)
+      assert.equal(W.unsubs, unsubs, 'the sensor was not stopped')
+      assert.equal(W.subs, subs, 'the sensor was not subscribed again')
+      assert.ok(W.hr, 'the sensor runs')
+      assert.ok(!W.awake.slice(awake).includes(false), 'the screen lock was not turned off')
+      assert.equal(A.c.g.awayAt, null, 'no "Phone out of reach"')
+      assert.ok(W.sent.length > sent, 'the new page says hello once it has its link')
     } finally { restore() }
   }
 })

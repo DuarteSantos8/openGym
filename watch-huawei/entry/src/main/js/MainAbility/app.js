@@ -123,7 +123,7 @@ A.drop = function () {
 A.show = function () {
   L.on = true
   L.loop += 1
-  K.launch(A.c)
+  if (A.radio) K.launch(A.c) // no link yet (a page switch): G.adopt says hello once the new page has its own
   if (A.cb) A.cb(false)
   devices()
   loop()
