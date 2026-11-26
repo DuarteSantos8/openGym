@@ -26,7 +26,7 @@ function renderTop() {
   return host
 }
 
-const rowFor = (host, name) => [...host.querySelectorAll('.item')].find(el => el.querySelector('.tt')?.textContent === name)
+const rowFor = (host, name) => [...host.querySelectorAll('[data-plan]')].find(el => el.querySelector('.ss')?.textContent === name)
 const buttonFor = (host, label) => [...host.querySelectorAll('button')].find(b => b.textContent === label)
 
 // Opens the chooser and taps one of its rows.
@@ -54,12 +54,12 @@ describe('starter plan chooser', () => {
     starterPlanSheet()
     const host = renderTop()
     // the row above the plans is the way to the quiz (EP22), not a plan
-    expect([...host.querySelectorAll('.item:not([data-start]) .tt')].map(el => el.textContent))
+    expect([...host.querySelectorAll('[data-plan] .tt + .ss')].map(el => el.textContent))
       .toEqual(['Push / Pull / Legs', 'Upper / Lower', 'Full Body', '5×5', 'No equipment', 'Dumbbells only', 'Resistance bands', 'Hotel room'])
-    expect(rowFor(host, 'Upper / Lower').querySelector('.ss').textContent).toContain('4 days per week')
+    expect(rowFor(host, 'Upper / Lower').querySelector('.tt').textContent).toContain('4 days per week')
     // The four for training away from the gym sit under their own heading.
     expect(host.textContent).toContain('Away from the gym')
-    expect(rowFor(host, 'Hotel room').querySelector('.ss').textContent).toContain('2 days per week')
+    expect(rowFor(host, 'Hotel room').querySelector('.tt').textContent).toContain('2 days per week')
   })
 
   it('loads straight away when the plan’s weekdays are free, without asking', () => {

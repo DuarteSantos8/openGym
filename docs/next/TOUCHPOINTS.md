@@ -8,6 +8,11 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `api/coach/core/streak.js` | `next/EP25-mobility-freeze` | Streak | Bank one freeze for two verified mobility sessions in a week under the active rule. |
+| `frontend/src/lib/finish-workout.js` | `next/EP25-mobility-freeze` | Workout | Preserve the rest-day date only for a completed Learn circuit. |
+| `frontend/src/lib/streak.js`, `streak-explain.js` | `next/EP25-mobility-freeze` | Calendar | Document the shared rule and explain a mobility award. |
+| `frontend/src/lib/streak.test.js`, `streak-parity.test.js`, `streak-explain.test.js` | `next/EP25-mobility-freeze` | Tests | Check weekly limits, history, trainer parity and calendar wording. |
+| `frontend/src/locales/*.js` | `next/EP25-mobility-freeze` | Copy | Translate the mobility award in all 25 packs. |
 | `frontend/e2e/cloud/account.e2e.mjs` | #120 | +12 −1 | Check member access on the first Account visit and after reload against the local training server. |
 | `frontend/src/lib/tour.js` | `next/EP22-beginner-tour` | +12 −3 | Register eight beginner stops and select the existing walk for other levels. |
 | `frontend/src/lib/tour.test.js` | `next/EP22-beginner-tour` | +21 −2 | Check the beginner targets, default walk, named tutorials and replay. |
@@ -19,6 +24,12 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/settings-pages.js` | `next/EP21-beginner-settings` | Settings | Select the visible page IDs for the current experience. |
 | `frontend/src/views/settings-pages.test.jsx` | `next/EP21-beginner-settings` | Settings | Verify page selection and retain the existing layout check across line endings. |
 | `frontend/src/locales/*.js` | `next/EP21-beginner-settings` | Settings | Translate the two Settings navigation controls in all 25 packs. |
+| `frontend/src/sheets.jsx` | `next/EP22-starter-plan-cards` | Chooser | Show frequency, session length, level and kit, with each split name below. |
+| `frontend/src/lib/starter.js` | `next/EP22-starter-plan-cards` | Preview | Estimate the sessions and equipment in the selected plan. |
+| `frontend/src/lib/starter.test.js` | `next/EP22-starter-plan-cards` | Test | Retain the weekly schedule contract with the expanded preview. |
+| `frontend/src/sheets.starter.test.jsx` | `next/EP22-starter-plan-cards` | Test | Select plans by their secondary name and check the primary weekly frequency. |
+| `frontend/src/views/starter-entry.test.jsx` | `next/EP22-starter-plan-cards` | Test | Open the real chooser and verify the facts on all eight cards. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP22-starter-plan-cards` | +1 each | Identify both chairs used by the hotel routine. |
 | `frontend/src/views/AppHelp.jsx` | `next/EP19-coach-help-quota` | UI | Explain a daily Coach limit while local help stays available. |
 | `frontend/src/views/AppHelp.test.jsx` | `next/EP19-coach-help-quota` | Test | Distinguish the daily cap from other failures and open a local match. |
 | `frontend/src/store/useStore.js` | `next/EP19-delete-fixes` | +6 | Clear the local signed-in copy only when its profile ID matches the deleted server profile. |

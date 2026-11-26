@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Rest-day mobility freeze (D8, prepared).** Two completed Learn mobility sessions started on scheduled rest days earn one freeze that week when the profile has room. The calendar explains the award. Earlier workouts retain their existing credit. Merging the shared streak code restarts the hosted API.
+
 - **Beginner tour (D4, prepared).** The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
@@ -14,6 +16,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
+- **Starter plan cards (D5, prepared).** All eight lead with the goal and show weekly frequency, estimated minutes per session, level and equipment before loading. A device guest can fit a plan to local equipment offline. The translated hotel equipment label awaits native-language review. [English phone view](evidence/EP22-T03/starter-cards-390-dark.png).
+
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
 
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach

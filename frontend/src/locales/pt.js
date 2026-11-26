@@ -1,5 +1,6 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Duas sessões de mobilidade em dias de descanso deram-te um congelamento.",
   "Draft": "Rascunho",
   "Move gently and switch sides when comfortable.": "Move-te suavemente e muda de lado quando te sentires confortável.",
   "Slow down gradually and release each stretch when comfortable.": "Abranda gradualmente e sai de cada posição de alongamento quando te sentires confortável.",
@@ -5469,6 +5470,7 @@ export default {
   "Handstand ladder": "Escada de pino",
   "Hinge ladder": "Escada de dobradiça",
   "Hotel room": "Quarto de hotel",
+  "Two chairs": "Duas cadeiras",
   "It stays out of your progression, so nothing goes up or down.": "Fica fora da tua progressão, por isso nada sobe nem desce.",
   "Ladder name": "Nome da escada",
   "Ladders": "Escadas",

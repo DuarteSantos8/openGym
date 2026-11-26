@@ -8,7 +8,8 @@
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
-import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { accessoriesOf, eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { sessionMinutes, writtenRestFor } from './planner.js'
 import { defaultConfig } from './history.js'
 import { STARTER_PLANS, AWAY_PLANS } from '../../../api/coach/core/starter-plans.js'
 export { AWAY_PLANS }
@@ -31,10 +32,22 @@ const build = routines =>
 // top of exactly these three, so this entry point keeps its shape.
 export const starterRoutines = () => build(PPL)
 
-// [{ id, days }] for the chooser. The day count is read off the schedule rather than stored
-// beside it, so the two can never disagree.
-export const starterPlanOptions = () =>
-  Object.entries(PLANS).map(([id, { schedule }]) => ({ id, days: schedule.length }))
+// Preview the same sessions the loader will put on the week, including a local equipment fit.
+export const starterPlanOptions = (equipment, machines) =>
+  Object.entries(PLANS).map(([id, plan]) => {
+    const fitted = equipment && fitRoutines(plan.routines, equipment, machines)
+    const routines = fitted ? fitted.routines : plan.routines
+    const days = plan.schedule.filter(([, key]) => routines.some(r => r[0] === key)).length
+    const times = routines.map(r => sessionMinutes(r[3], writtenRestFor(id))).sort((a, b) => a - b)
+    const first = times[0] ?? 0, last = times.at(-1) ?? 0
+    const minutes = first === last ? String(first) : `${first}–${last}`
+    let kit = null
+    if (fitted && (fitted.swapped || fitted.dropped)) {
+      const exercises = routines.flatMap(r => r[3].map(([exId]) => EXIDX[exId])).filter(Boolean)
+      kit = [...new Set(exercises.flatMap(ex => [ex.eq, ...accessoriesOf(ex)]))]
+    }
+    return { id, days, minutes, kit }
+  })
 
 // The weekdays a plan would claim, or null for an unknown id.
 export const starterPlanDays = id => PLANS[id]?.schedule.map(([day]) => day) ?? null

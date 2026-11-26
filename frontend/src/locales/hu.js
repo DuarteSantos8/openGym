@@ -1,5 +1,6 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "A pihenőnapokon végzett két mobilitási edzésért egy sorozatfagyasztást kaptál.",
   "Draft": "Vázlat",
   "Move gently and switch sides when comfortable.": "Mozogj finoman, és válts oldalt, amikor kényelmes.",
   "Slow down gradually and release each stretch when comfortable.": "Fokozatosan lassíts, és akkor engedd fel az egyes nyújtásokat, amikor kényelmes.",
@@ -5472,6 +5473,7 @@ export default {
   "Handstand ladder": "Kézenállás létra",
   "Hinge ladder": "Csípőhajlítás létra",
   "Hotel room": "Hotelszoba",
+  "Two chairs": "Két szék",
   "It stays out of your progression, so nothing goes up or down.": "Kimarad a progresszióból, így semmi sem megy fel vagy le.",
   "Ladder name": "Létra neve",
   "Ladders": "Létrák",
