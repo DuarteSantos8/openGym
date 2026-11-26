@@ -6394,4 +6394,6 @@ export default {
   "Build me a back workout with no weights": "حضّر لي تمرينًا للظهر من دون أوزان",
   "Add a push day on Tuesday and a pull day on Wednesday": "أضف تمارين دفع يوم الثلاثاء وتمارين سحب يوم الأربعاء",
   "Make today shorter": "اختصر تمرين اليوم",
+  "App help": "مساعدة التطبيق",
+  "No matching help found.": "لم يتم العثور على مساعدة مطابقة.",
 }

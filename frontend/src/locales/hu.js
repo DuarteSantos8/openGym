@@ -6342,4 +6342,6 @@ export default {
   "Build me a back workout with no weights": "Állíts össze nekem egy súlyok nélküli hátedzést",
   "Add a push day on Tuesday and a pull day on Wednesday": "Adj hozzá keddre egy nyomóedzést, szerdára pedig egy húzóedzést",
   "Make today shorter": "Rövidítsd le a mai edzést",
+  "App help": "Alkalmazássúgó",
+  "No matching help found.": "Nincs megfelelő súgótalálat.",
 }

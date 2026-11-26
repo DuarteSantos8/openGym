@@ -6418,4 +6418,6 @@ export default {
   "Build me a back workout with no weights": "ওজন ছাড়া পিঠের ব্যায়ামের একটি রুটিন বানিয়ে দিন",
   "Add a push day on Tuesday and a pull day on Wednesday": "মঙ্গলবার ঠেলার ব্যায়াম আর বুধবার টানার ব্যায়াম যোগ করুন",
   "Make today shorter": "আজকের ব্যায়ামের সময় কমিয়ে দিন",
+  "App help": "অ্যাপের সহায়তা",
+  "No matching help found.": "কোনো মিল পাওয়া যায়নি।",
 }

@@ -6339,4 +6339,6 @@ export default {
   "Build me a back workout with no weights": "मेरे लिए बिना वज़न के पीठ की कसरत तैयार करें",
   "Add a push day on Tuesday and a pull day on Wednesday": "मंगलवार को धक्का देने वाले व्यायाम और बुधवार को खींचने वाले व्यायाम जोड़ें",
   "Make today shorter": "आज की कसरत छोटी करें",
+  "App help": "ऐप सहायता",
+  "No matching help found.": "कोई मिलती-जुलती सहायता नहीं मिली।",
 }

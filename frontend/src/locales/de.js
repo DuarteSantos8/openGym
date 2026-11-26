@@ -6359,4 +6359,6 @@ export default {
   "Build me a back workout with no weights": "Stell mir ein Rückentraining ohne Gewichte zusammen",
   "Add a push day on Tuesday and a pull day on Wednesday": "Plane für Dienstag Druckübungen und für Mittwoch Zugübungen ein",
   "Make today shorter": "Verkürze mein heutiges Training",
+  "App help": "App-Hilfe",
+  "No matching help found.": "Keine passende Hilfe gefunden.",
 }

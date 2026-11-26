@@ -6279,4 +6279,6 @@ export default {
   "Build me a back workout with no weights": "Lav en rygtræning til mig uden vægte",
   "Add a push day on Tuesday and a pull day on Wednesday": "Tilføj en dag med presseøvelser om tirsdagen og en dag med trækøvelser om onsdagen",
   "Make today shorter": "Gør dagens træning kortere",
+  "App help": "Hjælp til appen",
+  "No matching help found.": "Ingen matchende hjælp fundet.",
 }

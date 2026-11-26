@@ -6349,4 +6349,6 @@ export default {
   "Build me a back workout with no weights": "Preparami un allenamento per la schiena senza pesi",
   "Add a push day on Tuesday and a pull day on Wednesday": "Aggiungi una sessione di spinta il martedì e una di tirata il mercoledì",
   "Make today shorter": "Accorcia l’allenamento di oggi",
+  "App help": "Guida dell’app",
+  "No matching help found.": "Nessun argomento corrispondente.",
 }

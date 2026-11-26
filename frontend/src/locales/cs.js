@@ -6305,4 +6305,6 @@ export default {
   "Build me a back workout with no weights": "Sestav mi trénink zad bez závaží",
   "Add a push day on Tuesday and a pull day on Wednesday": "Přidej mi na úterý trénink tlakových cviků a na středu trénink tahových cviků",
   "Make today shorter": "Zkrať dnešní trénink",
+  "App help": "Nápověda aplikace",
+  "No matching help found.": "Žádná odpovídající nápověda.",
 }

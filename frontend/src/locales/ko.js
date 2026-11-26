@@ -6339,4 +6339,6 @@ export default {
   "Build me a back workout with no weights": "중량 없이 할 수 있는 등 운동 루틴을 짜 줘",
   "Add a push day on Tuesday and a pull day on Wednesday": "화요일에는 미는 운동을, 수요일에는 당기는 운동을 추가해 줘",
   "Make today shorter": "오늘 운동 시간을 줄여 줘",
+  "App help": "앱 도움말",
+  "No matching help found.": "일치하는 도움말이 없습니다.",
 }

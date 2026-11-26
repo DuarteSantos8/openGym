@@ -6350,4 +6350,6 @@ export default {
   "Build me a back workout with no weights": "ช่วยจัดโปรแกรมฝึกหลังแบบไม่ใช้เวทให้หน่อย",
   "Add a push day on Tuesday and a pull day on Wednesday": "เพิ่มวันฝึกท่าดันในวันอังคารและวันฝึกท่าดึงในวันพุธ",
   "Make today shorter": "ลดเวลาฝึกของวันนี้ลงหน่อย",
+  "App help": "ความช่วยเหลือในแอป",
+  "No matching help found.": "ไม่พบหัวข้อความช่วยเหลือที่ตรงกัน",
 }

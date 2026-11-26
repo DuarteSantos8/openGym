@@ -6305,4 +6305,6 @@ export default {
   "Build me a back workout with no weights": "Lên cho tôi một buổi tập lưng không cần tạ",
   "Add a push day on Tuesday and a pull day on Wednesday": "Thêm một buổi tập đẩy vào thứ Ba và một buổi tập kéo vào thứ Tư",
   "Make today shorter": "Rút ngắn buổi tập hôm nay",
+  "App help": "Trợ giúp ứng dụng",
+  "No matching help found.": "Không tìm thấy trợ giúp phù hợp.",
 };
