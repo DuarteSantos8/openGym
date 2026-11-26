@@ -2238,6 +2238,7 @@ export const PT_BR_OVERRIDES = {
   'Choose at least one measurement first.': 'Escolha pelo menos uma medida primeiro.',
   "Collapse": "Recolher",
   "bpm": "bpm",
+  "{0} in zones 4 and 5": "{0} nas zonas 4 e 5",
   "Average {0} · Max {1} bpm": "Média {0} · Máx. {1} bpm",
   "Heart rate curve": "Curva da frequência cardíaca",
   "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Uma linha abaixo da barra de progresso enquanto seu Apple Watch mede. Toque para ver o treino todo.",
@@ -4474,7 +4475,6 @@ export const PT_BR_OVERRIDES = {
   "{0} line still needs a look.": "{0} linha ainda precisa de uma olhada.",
   "{0} lines still need a look.": "{0} linhas ainda precisam de uma olhada.",
   "Save workout": "Salvar treino",
-  "{0} in zones 4 and 5": "{0} nas zonas 4 e 5",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
