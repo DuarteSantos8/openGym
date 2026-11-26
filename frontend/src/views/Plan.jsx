@@ -384,8 +384,8 @@ function Schedule({ S, update, nav, mode }) {
   const dayRow = (d, rs = dayRoutines(d)) => {
     const title = rs.length ? deriveSessionName(rs.map(r => r.name)) : t('Rest day')
     const description = rs.length === 1 ? exCount(rs[0].ex.length) : rs.length ? routineCount(rs.length) : t('Tap to plan something')
-    return <div key={d} className="item plan-day" data-day={d} aria-label={[t(DAYS[d]), title, description].join(' ')} aria-description={t(DAYN[d])} {...tappable(() => dayAssignSheet(d))}>
-      <span className={'plan-day-n' + (d === todayDow ? ' today' : '')} aria-hidden="true">{t(DAYS[d])}</span>
+    return <div key={d} className="item plan-day" data-day={d} aria-description={t(DAYN[d])} {...tappable(() => dayAssignSheet(d))}>
+      <span className={'plan-day-n' + (d === todayDow ? ' today' : '')}>{t(DAYS[d])}</span>
       <span className={'lrow-i' + (rs.length ? '' : ' rest')}><Icon name={rs.length ? glyphOf(rs[0].emoji) : 'moon'} /></span>
       <div className="grow">
         <div className="tt">{title}</div>

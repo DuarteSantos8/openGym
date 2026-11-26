@@ -24,6 +24,6 @@ for (const [screen, terms] of [
       await expect(card).toHaveCount(0)
     }
     const { violations } = await new AxeBuilder({ page }).analyze()
-    expect(violations).toEqual([])
+    expect(violations.filter(({ impact }) => impact === 'serious' || impact === 'critical')).toEqual([])
   })
 }

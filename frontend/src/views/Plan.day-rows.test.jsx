@@ -64,7 +64,8 @@ describe('Plan — the weekday rows', () => {
   it('a planned day is one row with no buttons of its own; a tap opens the day’s picker', () => {
     mount()
     const monday = day('Monday')
-    expect(monday.getAttribute('aria-label')).toContain('Mo Push')
+    expect(monday.hasAttribute('aria-label')).toBe(false)
+    expect(monday.querySelector('.plan-day-n').hasAttribute('aria-hidden')).toBe(false)
     expect(monday.querySelector('.tt').textContent).toBe('Push')
     expect(monday.querySelectorAll('button').length).toBe(0)
     act(() => monday.click())
