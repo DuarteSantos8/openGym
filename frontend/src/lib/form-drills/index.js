@@ -16,13 +16,21 @@ import curl from './curl.js'
 import lateralRaise from './lateral-raise.js'
 import sidePlank from './side-plank.js'
 import plank from './plank.js'
+import sideLunge from './side-lunge.js'
+import hangingLegRaise from './hanging-leg-raise.js'
+import seatedCableRow from './seated-cable-row.js'
+import uprightRow from './upright-row.js'
+import straightArmPulldown from './straight-arm-pulldown.js'
+import frontRaise from './front-raise.js'
+import hipAbduction from './hip-abduction.js'
+import wallSit from './wall-sit.js'
 
 export const DRILLS = [
-  squat, splitSquat, romanianDeadlift,
-  pullUp, invertedRow, chestSupportedRow, rearFly,
+  squat, splitSquat, sideLunge, romanianDeadlift, hipAbduction,
+  pullUp, hangingLegRaise, invertedRow, chestSupportedRow, seatedCableRow, rearFly, uprightRow, straightArmPulldown,
   pushUp, dip, overheadPress, tricepsPushdown,
-  curl, lateralRaise,
-  sidePlank, plank,
+  curl, lateralRaise, frontRaise,
+  sidePlank, plank, wallSit,
 ]
 
 const BY_ID = new Map(DRILLS.map(d => [d.id, d]))

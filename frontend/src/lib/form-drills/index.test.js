@@ -76,6 +76,24 @@ describe('the registry', () => {
     expect(DRILLS.filter(d => d.matches(EXIDX[id])).length).toBe(drill ? 1 : 0)
   })
 
+  // The drills added together, and the neighbours each must not take rows from: lateral against
+  // front raise, pull-up against hanging leg raise, chest-supported against seated row, squat and
+  // split squat against side lunge, rear fly against upright row, triceps against straight-arm pushdown.
+  it.each([
+    ['0310', 'front-raise'], ['0978', 'front-raise'], ['0334', 'lateral-raise'], ['0335', null], ['0392', null],
+    ['0120', 'upright-row'], ['0246', 'upright-row'], ['2500', 'rear-fly'], ['0775', null], ['0363', null],
+    ['0238', 'straight-arm-pulldown'], ['1229', 'straight-arm-pulldown'], ['0199', 'straight-arm-pulldown'], ['0200', 'triceps-pushdown'], ['5844', null],
+    ['9819', 'hanging-leg-raise'], ['0475', 'hanging-leg-raise'], ['1326', 'pull-up'], ['0826', null], ['3891', null], ['0011', null],
+    ['0861', 'seated-cable-row'], ['3896', 'seated-cable-row'], ['9698', 'chest-supported-row'], ['1350', null], ['0214', null], ['0213', null],
+    ['0734', 'wall-sit'], ['7559', 'wall-sit'], ['0463', 'plank'], ['0731', null], ['1546', null],
+    ['2972', 'side-lunge'], ['2569', 'side-lunge'], ['4789', 'side-lunge'], ['2966', 'squat'], ['2290', 'split-squat'], ['3350', null], ['10052', null],
+    ['0791', 'hip-abduction'], ['3853', 'hip-abduction'], ['11266', 'hip-abduction'], ['0597', null], ['0790', null], ['0837', null],
+  ])('gives exercise %s to %s and no other drill', (id, drill) => {
+    expect(EXIDX[id]).toBeTruthy()
+    expect(drillFor(EXIDX[id])?.id ?? null).toBe(drill)
+    expect(DRILLS.filter(d => d.matches(EXIDX[id])).map(d => d.id)).toEqual(drill ? [drill] : [])
+  })
+
   // Let in by a drill's name test, but not what its signal judges: the registry turns them away.
   it.each(['1352', '1148', '9002', '4923', '1090', '1130', '3237', '4161', '3581'])('gives exercise %s no drill', id => {
     expect(EXIDX[id]).toBeTruthy()

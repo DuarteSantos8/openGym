@@ -23,6 +23,40 @@ A drill measures, it never grades: depth is where a joint was, tempo is seconds,
 Nothing else changes. `index.test.js` runs every registered drill through `checkDrill()`, checks
 its declared strings in every locale, and pushes an empty frame through it.
 
+## The drills
+
+In `index.js` order (`drillFor()` asks them in this order), with the views each judges:
+
+| drill | kind | views | what it reads |
+| --- | --- | --- | --- |
+| `squat` | reps | side, front, diagonal | hip drop and hip against knee |
+| `split-squat` | reps | side, diagonal, front | hip over the front knee |
+| `side-lunge` | reps | front | hip drop, hip against the bending knee, the other knee |
+| `romanian-deadlift` | reps | side, diagonal, front | the hinge, hands against the legs |
+| `hip-abduction` | reps | front | the working leg's angle out from upright, torso lean, knee |
+| `pull-up` | reps | front, side, diagonal | wrists over shoulders, nose over the wrists |
+| `hanging-leg-raise` | reps | side | thigh lift against the torso while hanging, knees, swing |
+| `inverted-row` | reps | side, diagonal | chest to the bar |
+| `chest-supported-row` | reps | side | elbows past the shoulder-hip line |
+| `seated-cable-row` | reps | side | wrist in to the shoulder, elbows to the torso, straight-arm start |
+| `rear-fly` | reps | side, front, diagonal | elbows to shoulder height |
+| `upright-row` | reps | front, diagonal | elbows to shoulder height, both arms, torso tilt |
+| `straight-arm-pulldown` | reps | side | the angle at the shoulder between hip and wrist |
+| `push-up`, `dip` | reps | side, diagonal, front | shoulders against the elbows |
+| `overhead-press` | reps | front, diagonal | lockout |
+| `triceps-pushdown` | reps | side, diagonal | lockout, elbow drift |
+| `curl` | reps | side, front, diagonal | the forearm's swing |
+| `lateral-raise` | reps | front, diagonal | elbows to shoulder height |
+| `front-raise` | reps | side, diagonal | wrists to shoulder height and back to the hang, lean, elbows |
+| `side-plank` | hold | front | the body line |
+| `plank` | hold | side | the body line |
+| `wall-sit` | hold | side | thigh against level, torso against upright |
+
+The registry test (`index.test.js`) checks that no catalogue exercise matches two drills and pins
+the neighbours that look alike (lateral and front raise, pull-up and hanging leg raise,
+chest-supported and seated row, squat, split squat and side lunge, rear fly and upright row,
+triceps pushdown and straight-arm pulldown).
+
 ## The contract
 
 ```js
