@@ -53,7 +53,6 @@ import { noteHeard } from './device-link-live.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, noteRoutinesSent, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
-import { huaweiSnapshot, HUAWEI_ACKED_MAX } from './huawei-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
@@ -1264,9 +1263,9 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // change. Without one nothing below runs at all: no snapshot, no clips, no bridge call per tick.
   // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md) and a Huawei
   // watch (status `huawei`, docs/HUAWEI_WATCH.md): each gets a snapshot of its own alongside
-  // (lib/garmin-snapshot.js, lib/huawei-snapshot.js), made here so Java and Swift don't.
+  // (lib/garmin-snapshot.js, the same one for both), made here so Java and Swift don't.
   let linked = false, garmin = false, huawei = false
-  // A small watch's `acked` list is short (GARMIN_ACKED_MAX, HUAWEI_ACKED_MAX: its messages are
+  // A small watch's `acked` list is short (GARMIN_ACKED_MAX, the same for both: their messages are
   // small), and a workout logged with the phone away comes back as dozens of events within a
   // second or two. The ids applied since the last snapshot wait here, one list per watch, and are
   // named oldest first, a list per snapshot, or the first ones would only be named after the
@@ -1360,7 +1359,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         return mine.length ? { ...snap, acked: [...(snap.acked || []).filter(id => !mine.includes(id)), ...mine] } : snap
       }
       const gSnap = garmin ? garminSnapshot(namingOf('garmin', GARMIN_ACKED_MAX)) : null
-      const hSnap = huawei ? huaweiSnapshot(namingOf('huawei', HUAWEI_ACKED_MAX)) : null
+      const hSnap = huawei ? garminSnapshot(namingOf('huawei', GARMIN_ACKED_MAX)) : null
       const g = gSnap ? JSON.stringify(gSnap) : null
       const h = hSnap ? JSON.stringify(hSnap) : null
       const sent = json + (g ? '\n' + g : '') + (h ? '\n\nhuawei ' + h : '')

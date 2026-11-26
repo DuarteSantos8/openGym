@@ -9,7 +9,6 @@ vi.mock('./health-sync.js', () => ({ loadHealth: async () => ({ on: false }), on
 import { startWatchSync, startLinkSync, huaweiCall, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
 import { readGarminLink, writeWatchPrefs } from './watch-settings.js'
 import { GARMIN_SNAPSHOT_VERSION } from './garmin-snapshot.js'
-import { HUAWEI_ACKED_MAX } from './huawei-snapshot.js'
 
 function store(initial) {
   let st = initial
@@ -150,12 +149,12 @@ describe('huaweiCall', () => {
   })
 })
 
-// A Huawei watch (docs/HUAWEI_WATCH.md): the phone's status says `huawei`, and the watch gets its own,
-// fuller snapshot as `huawei`; the Garmin string is made only when a Garmin is there.
+// A Huawei watch (docs/HUAWEI_WATCH.md): the phone's status says `huawei`, and the watch gets the
+// Garmin's snapshot as `huawei`; the Garmin string is made only when a Garmin is there.
 describe('a Huawei watch on the watch link', () => {
   const two = { id: 'w-1', start: 1, cur: 1, entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true }] }, { id: '0026', sets: [{ w: 40, r: 10 }] }, { id: '0027', sets: [{ w: 30, r: 10 }] }] }
 
-  it('alone: gets the whole workout as `huawei`, no Garmin string, and the link is remembered', async () => {
+  it('alone: gets the Garmin window as `huawei`, no Garmin string, and the link is remembered', async () => {
     const b = bridge({ paired: true, installed: true, huawei: true })
     const { stop } = await run(b, { ...S0, active: two })
     const call = lastCall(b)
@@ -163,7 +162,7 @@ describe('a Huawei watch on the watch link', () => {
     const h = JSON.parse(call.huawei)
     expect(h.v).toBe(GARMIN_SNAPSHOT_VERSION)
     expect(h.active.count).toBe(3)
-    expect(h.active.entries.map(e => e.i)).toEqual([0, 1, 2])
+    expect(h.active.entries.map(e => e.i)).toEqual([1, 2])
     expect(h.settings.lang).toBeTruthy()
     expect(JSON.parse(call.json).active.id).toBe('w-1')
     expect(readGarminLink()).toBe(true)
@@ -178,11 +177,11 @@ describe('a Huawei watch on the watch link', () => {
     stop()
   })
 
-  it('both: each gets its own', async () => {
+  it('both: each gets a snapshot', async () => {
     const b = bridge({ paired: true, installed: true, garmin: true, huawei: true })
     const { stop } = await run(b, { ...S0, active: two })
     expect(JSON.parse(lastCall(b).garmin).active.entries).toHaveLength(2)
-    expect(JSON.parse(lastCall(b).huawei).active.entries).toHaveLength(3)
+    expect(JSON.parse(lastCall(b).huawei).active.entries).toHaveLength(2)
     stop()
   })
 

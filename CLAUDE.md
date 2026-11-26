@@ -23,7 +23,7 @@ frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, 
 watch-zepp/ The Zepp OS (Amazfit) watch app (JavaScript; docs/ZEPP_OS.md), reaching the page through
             the server (api/watch-relay.js). Tests: `cd watch-zepp && npm test`.
 watch-huawei/ The Huawei watch app (HML + CSS + JS for lite wearables, built in DevEco Studio;
-            docs/HUAWEI_WATCH.md), on its own snapshot (lib/huawei-snapshot.js) over Wear Engine. Its phone half is
+            docs/HUAWEI_WATCH.md), on the Garmin snapshot (lib/garmin-snapshot.js) over Wear Engine. Its phone half is
             android/app/src/hms (closed SDK, app/huawei.gradle). Tests: `cd watch-huawei && npm test`.
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             coach/ is the optional AI coach; coach/core/ is shared with the phone apps.

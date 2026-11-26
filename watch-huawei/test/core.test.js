@@ -947,7 +947,7 @@ test('a transmit left hanging is given up after 45 s, also when the clock goes b
 })
 
 /* ======================================================================================
- * Step 1 of the parity work: the whole-workout snapshot (lib/huawei-snapshot.js), the new events,
+ * Step 1 of the parity work: the whole-workout snapshot (since replaced by lib/garmin-snapshot.js), the new events,
  * heart rate, weigh-in, check-in, add / remove a set, the note.
  * ==================================================================================== */
 const sid = (id, n) => id + n

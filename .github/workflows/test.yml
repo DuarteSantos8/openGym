@@ -142,7 +142,6 @@ jobs:
               # so a translation pull request never waits on this job (the Wear OS, Garmin and Zepp
               # generators are not freshness-checked either). docs/HUAWEI_WATCH.md says to regenerate.
               - 'frontend/src/lib/garmin-snapshot.js'
-              - 'frontend/src/lib/huawei-snapshot.js'
               - 'frontend/src/lib/watch-sync.js'
               - 'frontend/src/lib/watch-settings.js'
               - 'frontend/src/lib/daily-form.js'

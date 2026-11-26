@@ -5,7 +5,6 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { garminSnapshot, GARMIN_MAX_BYTES } from '../../frontend/src/lib/garmin-snapshot.js'
-import { huaweiSnapshot, wireLength, HUAWEI_MAX_WIRE } from '../../frontend/src/lib/huawei-snapshot.js'
 import * as K from '../entry/src/main/js/MainAbility/common/core.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -36,9 +35,8 @@ function world (skew) {
   const ready = () => ({ today: { routineIds: ['r1'], name: 'Push', entries: routine() }, others: [] })
   w.snapshot = () => {
     const input = { unit: 'kg', restSec: 90, settings: clone(w.settings), streak: null, discarded: w.discarded, acked: w.acked, now: w.phoneNow(), active: clone(w.A), ready: ready() }
-    const snap = w.huawei ? huaweiSnapshot(input) : garminSnapshot(input)
-    if (w.huawei) assert.ok(wireLength(JSON.stringify(snap)) <= HUAWEI_MAX_WIRE)
-    else assert.ok(new TextEncoder().encode(JSON.stringify(snap)).length <= GARMIN_MAX_BYTES)
+    const snap = garminSnapshot(input)
+    assert.ok(new TextEncoder().encode(JSON.stringify(snap)).length <= GARMIN_MAX_BYTES)
     return strip(snap)
   }
   w.send = () => { if (w.inRange && w.alive) w.queue.push(w.snapshot()) }
@@ -448,52 +446,6 @@ test('everything the watch queued reaches the phone: ids unique, each set once, 
 /* ---------- the Huawei snapshot and the new events, both ends ---------- */
 const huaweiWorld = settings => { const w = world(); w.huawei = true; w.settings = settings || {}; return w }
 
-test('the real Huawei snapshot: the whole workout, the new settings, and the watch logs across it with the phone away', () => {
-  const w = huaweiWorld({ weighIn: true, lastBw: 80.5, workoutNote: true, checkin: true, birthYear: 1990, lang: 'de', show: { hr: true, zones: true } })
-  w.newWatch()
-  startOnPhone(w)
-  w.run(2)
-  const c = w.watch
-  assert.deepEqual(c.s.w.entries.map(e => e.i), [0, 1, 2])
-  assert.equal(K.hasMore(c.s), false)
-  assert.equal(K.needsPhone(c.s), false)
-  assert.deepEqual([c.s.set.lastBw, c.s.set.birthYear, c.s.pl, c.s.set.show.zones], [80.5, 1990, 'de', true])
-  w.inRange = false
-  while (K.setIndex(c.s, c.s.pos) != null || c.s.pos < 3) {
-    const pos = c.s.pos
-    if (pos >= 3) break
-    K.tickSet(c, pos, K.setIndex(c.s, pos), null, 50, 5, null, 0)
-  }
-  assert.equal(K.waiting(c.s), 7) // every set of the workout, none needed the phone
-  w.inRange = true
-  w.run(200)
-  assert.equal(w.A.entries.flatMap(e => e.sets.filter(s => s.done)).length, 7)
-  assert.equal(c.s.ob.length, 0)
-})
-
-test('a set added at the wrist with the phone away reaches it once; a removed one is gone there; the edits leave the outbox with the ack', () => {
-  const w = huaweiWorld()
-  w.newWatch()
-  startOnPhone(w)
-  w.run(2)
-  const c = w.watch
-  w.inRange = false
-  const add = K.addSet(c, 0)
-  const rem = K.removeSet(c, 1, 0)
-  w.run(40)
-  assert.equal(c.s.w.entries[0].sets.length, 4)
-  assert.equal(c.s.w.entries[1].sets.length, 1)
-  assert.equal(w.A.entries[0].sets.length, 3) // not there yet
-  w.inRange = true
-  w.run(120)
-  assert.deepEqual(w.A.entries.map(e => e.sets.length), [4, 1, 2])
-  assert.equal(w.A.entries[0].sets[3].sid, add.sid)
-  assert.equal(w.applyCount[add.id], 1)
-  assert.equal(w.applyCount[rem.id], 1)
-  assert.deepEqual(c.s.w.entries.map(e => e.sets.length), [4, 1, 2])
-  assert.equal(c.s.ob.filter(e => ['addSet', 'removeSet'].indexOf(K.evField(e, 1)) >= 0).length, 0)
-})
-
 test('a set ticked on the phone gets the watch\'s heart rate (setHr), and the rest\'s once it is over', () => {
   const w = huaweiWorld()
   w.newWatch()
@@ -509,22 +461,3 @@ test('a set ticked on the phone gets the watch\'s heart rate (setHr), and the re
   assert.ok(row.hr.avg >= 100 && row.hr.max <= 130 && row.hr.max >= row.hr.avg)
 })
 
-test('watchStatus, the check-in and the weigh-in reach the phone, and the start carries the weight', () => {
-  const w = huaweiWorld({ weighIn: true, lastBw: 80.5, checkin: true })
-  w.newWatch()
-  w.watch.env.version = '0.1.0'
-  K.launch(w.watch)
-  w.run(3)
-  assert.equal(w.statuses.length, 1)
-  assert.equal(w.statuses[0].version, '0.1.0')
-  const c = w.watch
-  K.startFlow(c, c.s.rd.today)
-  K.checkinAnswer(c, 4); K.checkinAnswer(c, 3); K.checkinAnswer(c, 5)
-  K.weighInStep(c, 2)
-  K.weighInDone(c, true)
-  K.startWorkout(c, K.preState(c).session, K.preState(c).bw)
-  w.run(10)
-  assert.deepEqual(w.weighIns, [80.7])
-  assert.deepEqual([w.forms[0].sleep, w.forms[0].energy, w.forms[0].sore], [4, 3, 5])
-  assert.ok(w.A, 'the workout started on the phone')
-})

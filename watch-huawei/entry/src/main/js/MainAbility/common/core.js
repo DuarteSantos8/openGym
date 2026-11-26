@@ -1,7 +1,7 @@
 // The openGym watch's logic for Huawei lite wearables: the Garmin watch's Core.mc, Actions.mc and
 // App.mc (Link) as plain JavaScript, no screens and no Huawei API. Same wire protocol: the phone
-// sends the snapshot of lib/huawei-snapshot.js (the Garmin's shape and names; normally the whole workout, every
-// exercise with `i` = its index so hasMore is false, else the Garmin's window: both are read the same), the watch
+// sends the Garmin snapshot (lib/garmin-snapshot.js: a window of the workout,
+// each exercise with `i` = its index; the whole-workout case is still read), the watch
 // sends { events: [...] } and keeps each event until a snapshot's `acked` names it. Constants and the event field
 // names are the Garmin's (new ones are appended to EV_KEYS: an outbox stored by an older watch still reads).
 // Event ids start with "h" (the Garmin's start with "g"): unique per watch.

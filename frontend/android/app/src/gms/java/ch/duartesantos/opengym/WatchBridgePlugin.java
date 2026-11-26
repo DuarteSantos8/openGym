@@ -188,7 +188,7 @@ public class WatchBridgePlugin extends Plugin {
         String json = call.getString("json");
         if (json == null) { call.reject("json is required"); return; }
         // The cut-down snapshot (lib/garmin-snapshot.js) for the Garmins, and the Huawei watches' own
-        // (lib/huawei-snapshot.js); the page makes each only when status says such a watch is there.
+        // (lib/garmin-snapshot.js, for both); the page makes each only when status says such a watch is there.
         String garmin = call.getString("garmin");
         String huawei = call.getString("huawei");
         boolean garminSent = false;

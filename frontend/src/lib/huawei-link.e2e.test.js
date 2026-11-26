@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 // The Huawei watch link end to end, both ends in the real code: the page's sync (lib/watch-sync.js:
-// buildSnapshot -> huaweiSnapshot, the real event apply path) against the watch's own logic, plain
+// buildSnapshot -> garminSnapshot, the real event apply path) against the watch's own logic, plain
 // JavaScript (watch-huawei/.../common/core.js: createCore, onPhone, pressDone, ...). Only what sits
 // between them is modelled, on the native bridge (HuaweiLink.java, WatchEventQueue.java):
 //
@@ -18,7 +18,7 @@ import { startWatchSync, bindWatchActions, bindWatchAppActions, patchSetIn, appl
 import { buildCombinedEntries } from './session-merge.js'
 import { logWeighIn } from './bodyweight.js'
 import { withWatchForm } from './daily-form.js'
-import { wireLength, HUAWEI_MAX_WIRE } from './huawei-snapshot.js'
+import { GARMIN_MAX_BYTES } from './garmin-snapshot.js'
 import * as K from '../../../watch-huawei/entry/src/main/js/MainAbility/common/core.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -105,8 +105,7 @@ function world (S = S0()) {
     sendSnapshot: async ({ huawei, garmin }) => {
       expect(garmin).toBeUndefined()
       if (huawei) {
-        // the frames hold 16 x 960 characters; the page keeps under 12,000 on the wire
-        expect(wireLength(huawei)).toBeLessThanOrEqual(HUAWEI_MAX_WIRE)
+        expect(huawei.length).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
         w.last = JSON.parse(huawei)
         deliver(w.last)
       }
@@ -191,15 +190,15 @@ afterEach(() => { _resetWatchSync(); vi.useRealTimers() })
 const ids = es => es.map(e => e.id)
 
 describe('a workout from the phone, logged on the watch', () => {
-  it('the whole workout is on the watch; each set lands once with its numbers, and leaves the outbox when named', async () => {
+  it('the Garmin window is on the watch; each set lands once with its numbers, and leaves the outbox when named', async () => {
     const w = world()
     await w.launch()
     w.startOnPhone()
     await w.run(2)
     expect(w.c.s.w).toMatchObject({ id: 'w-phone', count: 3 })
-    // no window: every exercise, with its place in the workout
-    expect(w.c.s.w.entries.map(e => [e.id, e.i])).toEqual([['0025', 0], ['0001', 1], ['0003', 2]])
-    expect(K.hasMore(w.c.s)).toBe(false)
+    // the Garmin window: the exercise up now and the one after it, each with its place in the workout
+    expect(w.c.s.w.entries.map(e => [e.id, e.i])).toEqual([['0025', 0], ['0001', 1]])
+    expect(K.hasMore(w.c.s)).toBe(true)
     expect(w.tick({ r: 7 })).toBe('tick')
     expect(K.waiting(w.c.s)).toBe(1)
     await w.run(3)
@@ -217,13 +216,14 @@ describe('a workout from the phone, logged on the watch', () => {
     w.startOnPhone()
     await w.run(2)
     w.inRange = false
-    for (let i = 0; i < 7; i++) { expect(w.tick()).toBe('tick'); await w.run(5) }
-    expect(w.c.s.ob.length).toBeGreaterThanOrEqual(7)
+    // the window holds two exercises (5 sets); the watch can log no further without a new snapshot
+    for (let i = 0; i < 5; i++) { expect(w.tick()).toBe('tick'); await w.run(5) }
+    expect(w.c.s.ob.length).toBeGreaterThanOrEqual(5)
     expect(w.setDone).toEqual([])
     w.reconnect()
     await w.run(120)
-    expect(w.doneRows()).toEqual(['0025', '0025', '0025', '0001', '0001', '0003', '0003'])
-    expect(w.setDone).toHaveLength(7)
+    expect(w.doneRows()).toEqual(['0025', '0025', '0025', '0001', '0001'])
+    expect(w.setDone).toHaveLength(5)
     expect(w.c.s.ob).toEqual([])
     expect(w.queue).toEqual([])
   })
@@ -347,31 +347,6 @@ describe('heart rate', () => {
   })
 })
 
-describe('before a start: check-in and weigh-in', () => {
-  it('the check-in and the weigh-in asked at the wrist are on the phone, and the start carries the weight', async () => {
-    const S = S0()
-    S.dailyForm = true
-    const w = world(S)
-    await w.launch()
-    await w.run(2)
-    expect(w.c.s.set.checkin).toBe(true)
-    expect(K.startFlow(w.c, w.c.s.rd.today)).toBe('checkin')
-    K.checkinAnswer(w.c, 4); K.checkinAnswer(w.c, 3)
-    expect(K.checkinAnswer(w.c, 2)).toBe('weighin')
-    K.weighInSet(w.c, 81.4)
-    expect(K.weighInDone(w.c, true)).toBe('count')
-    const p = K.preState(w.c)
-    const ev = K.startWorkout(w.c, p.session, p.bw)
-    expect(ev.bw).toBe(81.4)
-    await w.run(6)
-    const day = new Date(Date.now()).toISOString().slice(0, 10)
-    expect(w.S().dayForm?.[day]).toBeTruthy()
-    expect(w.S().bodyweight.at(-1)).toMatchObject({ w: 81.4 })
-    expect(w.starts).toBe(1)
-    expect(w.c.s.ob).toEqual([])
-  })
-})
-
 describe('the same event twice', () => {
   it('a message delivered two times is applied once, and named', async () => {
     const w = world()
@@ -448,7 +423,7 @@ describe('a workout too big for one snapshot', () => {
     expect(w.last.active.entries.length).toBeLessThan(70)
     expect(w.c.s.w.count).toBe(70)
     expect(w.c.s.w.entries.every(e => w.S().active.entries[e.i].id === e.id)).toBe(true)
-    expect(wireLength(JSON.stringify(w.last))).toBeLessThanOrEqual(HUAWEI_MAX_WIRE)
+    expect(JSON.stringify(w.last).length).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
     // log the first 12 sets at the wrist: each one lands on the right row of the phone
     for (let i = 0; i < 12; i++) { expect(w.tick()).toBe('tick'); await w.run(4) }
     await w.run(10)

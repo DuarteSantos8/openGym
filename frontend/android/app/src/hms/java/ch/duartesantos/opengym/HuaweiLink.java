@@ -40,7 +40,7 @@ import org.json.JSONObject;
  * queue file at once. The wire is HuaweiFrames: the Garmin link's messages as JSON text in frames
  * of at most 1 KB.
  *
- * Phone → watch: the page's Huawei snapshot (lib/huawei-snapshot.js), as it is, to every connected
+ * Phone → watch: the page's snapshot for it (lib/garmin-snapshot.js), as it is, to every connected
  * watch that has the app, one snapshot at a time per watch (HuaweiSend). The last one is kept and
  * sent when the watch says hello. Huawei holds nothing back: a message to a watch whose app is not
  * in front is lost (code 206, ignored), and the watch's hello when it opens brings the latest.

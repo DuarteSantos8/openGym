@@ -4,9 +4,9 @@ A watch app for Huawei watches that run "lite wearable" apps (Watch GT 2 to GT 6
 the family around them), and the phone link for it in the Android app. It is the Garmin watch's
 sibling (docs/GARMIN.md): the phone stays the source of truth, the watch follows the workout the
 phone runs, logs sets on it and can start today's routine by itself. Its events are the Garmin's, so
-the phone's page applies a set from a Huawei exactly like one from a Garmin. Its snapshot is its own:
-the phone sends the Huawei watch a fuller one than the Garmin gets (`frontend/src/lib/huawei-snapshot.js`),
-because Huawei's link has room the Garmin's memory does not. Source: `watch-huawei` (the watch app),
+the phone's page applies a set from a Huawei exactly like one from a Garmin. Its snapshot is the
+Garmin's (`frontend/src/lib/garmin-snapshot.js`): the watch app is cut to the Garmin's level, so it needs no
+more. Source: `watch-huawei` (the watch app),
 `frontend/android/app/src/hms` (the phone's end), Settings → Watches → Huawei watch (the page).
 
 **Status (v1.4.6): written and unit-tested, never run.** Be clear about what that means:
@@ -176,23 +176,10 @@ Compared with the Garmin app, and with Wear OS and the Apple Watch:
 
 The same protocol as the Garmin (docs/GARMIN.md, docs/WATCH_SYNC.md): `{ "events": [...] }` comes
 back, each event stays on the watch until a snapshot's `acked` names it, and the phone applies each
-event once, by its id, through the workout screen's own actions. The snapshot is the Huawei's own,
-because the Garmin's 3 KB is a Connect IQ memory limit:
+event once, by its id, through the workout screen's own actions. The snapshot is the Garmin's
+(`lib/garmin-snapshot.js`, at most 3 KB, a window of the workout), made in JavaScript so Java does not
+repeat it.
 
-- **`lib/huawei-snapshot.js`** builds it, with the Garmin's shape and field names (so the watch reads
-  it as it reads the Garmin's), in JavaScript so Java does not repeat it. It carries the whole
-  running workout when it fits (every exercise with its place `i`, and each one's `best`, `last` and
-  `muscles`), today's routine with its exercises also while a workout runs, up to 24 other routines by
-  name with their folder, and the settings the watch reads: the Garmin's look and the phone's
-  `show`, `weighIn`, `lastBw`, `workoutNote`, `checkin`, `checkinDay`, `birthYear` and the forgotten
-  workout's `graceMin` and `leaveGym`, each only when the phone has it. Up to 60 applied event ids go in
-  `acked`.
-- The size is counted as it travels: every character outside 0x20 to 0x7E costs 6 (see "The frames").
-  The cap is 12,000 characters (13 frames of at most 960; the link allows 16). Over the cap, what
-  matters least goes first, and the last steps are the Garmin's own cut: the block up now and the one
-  after it. A very big workout (a review fuzzed 30 exercises of six sets) can drop from the whole
-  workout straight to that last step, so the watch has two exercises. That was found in review and
-  is not fixed here.
 - **`WatchBridge`**: `status()` says `garmin` for the Garmins alone and `huawei` for a Huawei watch
   with the app, each flag meaning the page makes that watch's snapshot; `sendSnapshot` takes a `garmin`
   and a `huawei` string and each goes to its own watches.
@@ -221,7 +208,6 @@ watch app  --frames-->  Wear Engine  -->  Huawei Health  -->  HuaweiLink  -->  q
 | `watch-huawei/.../common/wearengine.js` | watch | Huawei's own SDK file, unchanged (Apache-2.0) |
 | `frontend/android/app/src/hms/.../HuaweiLink.java` | phone | the link: Huawei Health, permission, watches, receivers, sending |
 | `frontend/android/app/src/main/.../HuaweiFrames.java`, `HuaweiSend.java`, `HuaweiForget.java` | phone | the framing (same vectors as the watch), one-snapshot-at-a-time sending, and when a watch is forgotten (two lists in a row leave it out; an empty list forgets nothing), JVM-tested |
-| `frontend/src/lib/huawei-snapshot.js` | page | the Huawei watch's own snapshot and its cut |
 | `frontend/android/app/huawei.gradle` | phone | everything of Huawei's for the build |
 | `frontend/android/app/src/{sideload,play,playNoBackgroundLocation}/AndroidManifest.xml` | phone | the Wear Engine app id as manifest meta-data |
 | `WatchBridgePlugin` (`huaweiStatus`, `huaweiPick`) | phone | the two calls the page makes; the F-Droid and Offline builds answer "build" |
@@ -338,10 +324,7 @@ the SDK answers that for a lite watch).
 
 ## Where it differs from the Garmin, on purpose
 
-- **The snapshot.** The Garmin gets 3 KB, cut to a window of the workout, because Connect IQ has little
-  memory. The Huawei watch gets its own, up to 12,000 characters on the wire: normally the whole
-  workout, today's routine while a workout runs, 24 routines with their folders and more of the phone's
-  settings. The watch's reader is the same, so it reads a window too when the cut comes to that.
+- **The snapshot.** None of its own: the Huawei watch gets the Garmin's.
 - **The wire.** Garmin sends a dictionary (Monkey C has no JSON parser). Huawei carries text, so the
   watch parses and writes JSON, framed and escaped as above.
 - **Touch only.** The Garmin app has a layout per kind of watch (buttons, touch, black and white).
@@ -462,7 +445,7 @@ node huawei-strings.mjs           # regenerates common/texts.js after the words 
 
 CI runs `npm test` in `watch-huawei` (job `huawei` in `.github/workflows/test.yml`) when
 `watch-huawei/**` changes or one of the files its tests import or read does: the Garmin and Huawei
-snapshot code (`garmin-snapshot.js`, `huawei-snapshot.js`), `watch-sync.js`, `watch-settings.js`,
+snapshot code (`garmin-snapshot.js`), `watch-sync.js`, `watch-settings.js`,
 `daily-form.js` and the Garmin fixture `frontend/garmin/test/snapshot.json`. The filter is in one
 place, the `huawei:` list of the `changes` job. **It leaves out the words on purpose**: the app's
 locale packs and the Wear OS and Garmin strings files do not start it, so a translation pull request
@@ -690,11 +673,6 @@ sample code; "not verified" means a blog, a third-party project or a guess.
 - **`isAppInstalled` for a lite watch** may not be answered by the SDK. The link treats a watch that has
   ever spoken to it as having the app (`HuaweiLink`: "lean: unsure the SDK answers this for a lite
   watch").
-- **The snapshot is big.** Up to 12,000 characters, 13 frames, and only seen in tests. How long
-  that takes over Huawei's link, and whether the watch's engine parses 12 KB of JSON without trouble,
-  are not known. The Garmin's 3 KB limit was a memory limit found in a simulator; this one has no such
-  evidence. The first test should be a long workout. If it fails, `HUAWEI_MAX_WIRE` in
-  `huawei-snapshot.js` is the number to lower.
 - **Known gaps from the phone review, not fixed when this was written.** The cut can jump from the
   whole workout to the Garmin's window for a very large workout; the cut order drops fields the
   watch reads (`last`) before fields it never reads (`muscles`, `best`, `healthType`); ids cut from

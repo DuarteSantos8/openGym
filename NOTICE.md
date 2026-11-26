@@ -200,6 +200,6 @@ The phone's link to that watch app uses Huawei's Wear Engine SDK for Android
 openGym's repository does not contain it; the build fetches it. It is only in the GitHub APK and
 the Google Play build, set up in `frontend/android/app/huawei.gradle`. The F-Droid build and openGym
 Offline leave it out, and `scripts/android/check-fdroid.sh` and `check-offline.sh` fail if any of it
-gets in. openGym's own Huawei code (`watch-huawei`, `HuaweiLink`, `HuaweiFrames`, `HuaweiSend`, `HuaweiForget`, `frontend/src/lib/huawei-snapshot.js`)
+gets in. openGym's own Huawei code (`watch-huawei`, `HuaweiLink`, `HuaweiFrames`, `HuaweiSend`, `HuaweiForget`)
 stays AGPL. Whether the additional permission above also has to name Huawei's SDK is the
 copyright holder's decision, as it was for Garmin's.
