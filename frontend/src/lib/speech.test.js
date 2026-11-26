@@ -86,3 +86,84 @@ describe('the voice picker (v1.4.5)', () => {
     expect(voiceLabel({ name: 'Samantha' }, 'en')).toBe('Samantha')
   })
 })
+
+describe('voice ranking (#1390)', () => {
+  const v = (id, name, lang, quality, online = false) => ({ id, name, lang, online, ...(quality ? { quality } : {}) })
+  test('premium before enhanced before none, whatever the region', async () => {
+    const { rankVoices } = await import('./speech.js')
+    const out = rankVoices([v('a', 'A', 'en-GB'), v('b', 'B', 'en-US', 'enhanced'), v('c', 'C', 'en-AU', 'premium')], 'en-GB')
+    expect(out.map(x => x.id)).toEqual(['c', 'b', 'a'])
+  })
+  test('same tier: the exact region first, then by name', async () => {
+    const { rankVoices } = await import('./speech.js')
+    const out = rankVoices([v('us', 'Zed', 'en-US'), v('gb2', 'Zoe', 'en-GB'), v('gb1', 'Amy', 'en-GB')], 'en-GB')
+    expect(out.map(x => x.id)).toEqual(['gb1', 'gb2', 'us'])
+  })
+  test('autoVoice takes the best tiered voice in the own accent', async () => {
+    const { autoVoice } = await import('./speech.js')
+    const list = [v('ava', 'Ava', 'en-US', 'premium'), v('serena', 'Serena', 'en-GB', 'enhanced'), v('daniel', 'Daniel', 'en-GB')]
+    expect(autoVoice(list, 'en-GB').id).toBe('serena')
+  })
+  test('autoVoice never picks another accent', async () => {
+    const { autoVoice } = await import('./speech.js')
+    expect(autoVoice([v('ava', 'Ava', 'en-US', 'premium'), v('daniel', 'Daniel', 'en-GB')], 'en-GB')).toBeNull()
+  })
+  test('autoVoice never picks an online voice', async () => {
+    const { autoVoice } = await import('./speech.js')
+    expect(autoVoice([v('o', 'O', 'en-GB', 'premium', true)], 'en-GB')).toBeNull()
+  })
+  test('no region in the language: the phone language decides, else any tiered voice', async () => {
+    const { autoVoice } = await import('./speech.js')
+    const list = [v('x', 'X', 'ar-SA', 'premium'), v('e', 'E', 'ar-EG', 'enhanced')]
+    expect(autoVoice(list, 'ar', 'ar-EG').id).toBe('e')
+    expect(autoVoice(list, 'ar').id).toBe('x')
+    expect(autoVoice([], 'en-GB')).toBeNull()
+  })
+  test('langName reads a language tag, empty on failure', async () => {
+    const { langName } = await import('./speech.js')
+    expect(langName('en-GB', 'en')).toBe('British English')
+    expect(langName('!!', 'en')).toBe('')
+  })
+})
+
+describe('the automatic voice (#1390)', () => {
+  let list, mod
+  beforeEach(async () => {
+    vi.resetModules()
+    list = [{ id: 'ava', name: 'Ava', lang: 'en-GB', online: false, quality: 'premium' }]
+    vi.doMock('./mobile.js', async orig => ({ ...(await orig()), MOBILE: true, nativePlatform: async () => 'ios' }))
+    vi.doMock('./rest-alert.js', () => ({ speakNative: async () => true, hushNative: () => {}, voicesNative: async () => list }))
+    localStorage.clear()
+    mod = await import('./speech.js')
+  })
+  afterEach(() => { vi.doUnmock('./mobile.js'); vi.doUnmock('./rest-alert.js') })
+  const lang = () => mod.speechLang()
+  test('before the first refresh: today\'s voice, no wait', () => {
+    expect(mod.voiceState().voices).toBeNull()
+    expect(mod.voiceOpts({}).voice).toBe('')
+  })
+  test('after a refresh the automatic voice is used, a pick wins', async () => {
+    list[0].lang = lang()
+    await mod.refreshVoices()
+    expect(mod.voiceState()).toMatchObject({ ios: true, auto: { id: 'ava' } })
+    expect(mod.voiceOpts({}).voice).toBe('ava')
+    mod.setPickedVoice('mine')
+    expect(mod.voiceOpts({}).voice).toBe('mine')
+  })
+  test('a voice deleted in Settings: the next refresh drops it; subscribers hear both', async () => {
+    list[0].lang = lang()
+    const cb = vi.fn()
+    mod.onVoices(cb)
+    await mod.refreshVoices()
+    list = []
+    await mod.refreshVoices()
+    expect(mod.voiceOpts({}).voice).toBe('')
+    expect(cb).toHaveBeenCalledTimes(2)
+  })
+  test('the automatic voice is never written as a pick', async () => {
+    list[0].lang = lang()
+    await mod.refreshVoices()
+    mod.voiceOpts({})
+    expect(localStorage.getItem('og_speech_voice')).toBeNull()
+  })
+})

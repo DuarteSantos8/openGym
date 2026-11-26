@@ -14,7 +14,8 @@
 // Speed and pitch are numbers in S (speechRateN, speechPitch, 0.5 to 2, 1 is normal) and sync;
 // `speechRate` (Slow, Normal, Fast) is how an app from before stored the speed, and is still
 // written, rounded to the nearest of the three, for those apps.
-import { MOBILE } from './mobile.js'
+import { MOBILE, nativePlatform } from './mobile.js'
+import { offlineBuild } from './build-caps.js'
 import { speakNative, hushNative, voicesNative } from './rest-alert.js'
 import { dateLocale } from './i18n-core.js'
 
@@ -48,7 +49,13 @@ export function setPickedVoice (id) {
 }
 
 /** What speak() needs from a profile: { rate, pitch, voice }. */
-export const voiceOpts = S => ({ rate: speechRateNum(S), pitch: speechPitchNum(S), voice: pickedVoice() })
+// With nothing picked, the automatic voice (the best one in the person's own accent, #1390) when
+// the list is in; until then '' (the phone's default), so the first cue never waits for the list.
+// It is never written to VOICE_KEY: it is chosen again on every refresh.
+export const voiceOpts = S => {
+  if (MOBILE && voiceCache && voiceCache.lang !== speechLang()) refreshVoices()
+  return { rate: speechRateNum(S), pitch: speechPitchNum(S), voice: pickedVoice() || voiceState().auto?.id || '' }
+}
 
 /** The app's language as a voice language: 'de-DE', 'pt-BR', 'ar' (no Unicode extensions). */
 export const speechLang = (loc = dateLocale()) => String(loc || 'en-GB').split('-u-')[0]
@@ -163,8 +170,45 @@ export async function listVoices({ lang = speechLang(), offline = false } = {}) 
     const quality = v.quality === 'enhanced' || v.quality === 'premium' ? v.quality : null
     out.push({ id: v.id, name: String(v.name || v.id), lang: String(v.lang || ''), online, ...(quality ? { quality } : {}) })
   }
+  return rankVoices(out, lang)
+}
+
+const tier = v => (v.quality === 'premium' ? 0 : v.quality === 'enhanced' ? 1 : 2)
+const regionOf = tag => normLang(tag).split('-')[1] || ''
+
+/** The voices best first: premium, then enhanced, then the rest; each tier the exact region of `lang` first, then by name. */
+export function rankVoices(voices, lang) {
   const exact = v => (normLang(v.lang) === normLang(lang) ? 0 : 1)
-  return out.sort((a, b) => exact(a) - exact(b) || a.name.localeCompare(b.name))
+  return [...voices].sort((a, b) => tier(a) - tier(b) || exact(a) - exact(b) || a.name.localeCompare(b.name))
+}
+
+/**
+ * The voice to use when none is picked: the best ranked voice that has a tier, is not online and
+ * is in the person's own region (that of `lang`, else of `phoneLang`, else any). null: keep the default.
+ */
+export function autoVoice(voices, lang, phoneLang = '') {
+  const region = regionOf(lang) || regionOf(phoneLang)
+  return rankVoices(voices, lang).find(v => v.quality && !v.online && (!region || regionOf(v.lang) === region)) || null
+}
+
+/** A language tag in words ("British English"), '' when the engine cannot. */
+export function langName(tag, ui = speechLang()) {
+  try { return new Intl.DisplayNames([ui], { type: 'language' }).of(String(tag).replace('_', '-')) || '' } catch { return '' }
+}
+
+let voiceCache = null // { lang, voices, auto, ios }
+const voiceSubs = new Set()
+/** The phone's voices for the app's language, the automatic one, and whether this is an iPhone. voices: null before the first refresh. */
+export const voiceState = () => ({ voices: voiceCache?.voices ?? null, auto: voiceCache?.auto ?? null, ios: !!voiceCache?.ios })
+/** Calls cb after each refresh; returns the way to stop. */
+export function onVoices(cb) { voiceSubs.add(cb); return () => voiceSubs.delete(cb) }
+/** Lists the voices again (app opened, back in front, language changed) and tells the listeners. */
+export async function refreshVoices() {
+  const lang = speechLang()
+  const voices = await listVoices({ lang, offline: offlineBuild() })
+  const ios = (await nativePlatform()) === 'ios'
+  voiceCache = { lang, voices, auto: autoVoice(voices, lang, typeof navigator !== 'undefined' ? navigator.language : ''), ios }
+  voiceSubs.forEach(cb => { try { cb() } catch { /* a listener must not stop the others */ } })
 }
 
 /** Stops speaking, and drops what was still waiting to be said. */
