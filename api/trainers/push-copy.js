@@ -259,7 +259,7 @@ export const TRAINER_COPY = {
       "body": "Tutustu ensin. Jos se ei sovi sinulle, voit perua sen yhdellä napautuksella kohdasta Valmentaja ja sali."
     },
     "suggest": {
-      "title": "{0}:lla on sinulle idea",
+      "title": "{0} ehdottaa sinulle jotain",
       "body": "Hyväksy tai hylkää kohdassa Valmentaja ja sali."
     },
     "comment": {
