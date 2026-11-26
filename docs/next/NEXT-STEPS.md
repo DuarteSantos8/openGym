@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
+
 - **Rest-day mobility freeze (D8, prepared).** Two completed Learn mobility sessions started on scheduled rest days earn one freeze that week when the profile has room. The calendar explains the award. Earlier workouts retain their existing credit. Merging the shared streak code restarts the hosted API.
 
 - **Hosted preview.** The API and Coach are live on the cloud preview. External MCP connector checks and the production-domain cutover remain open. See the [hosted server runbook](CLOUD-SERVER.md).

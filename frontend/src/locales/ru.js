@@ -1,5 +1,7 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Тренировка с подсказками",
+  "Using {0} for this workout.": "В этой тренировке вы выполните {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Две тренировки на подвижность в дни отдыха принесли одну заморозку.",
   "Draft": "Черновик",
   "Move gently and switch sides when comfortable.": "Двигайтесь плавно и меняйте сторону, когда вам удобно.",

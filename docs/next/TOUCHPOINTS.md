@@ -8,6 +8,12 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/public/sw.js` | `next/EP26-T03-guided-workout` | Hashed assets | Reuse the installed immutable module when an offline module request sends an Origin header. |
+| `frontend/src/views/Workout.jsx` | `next/EP26-T03-guided-workout` | Layout | Offer the session layout and pass its active exercise to the existing swap flow. |
+| `frontend/src/views/FocusView.jsx`, `FocusView.css` | `next/EP26-T03-guided-workout` | Guided card | Keep set logging and show the selected exercise’s cues and controls. |
+| `frontend/src/sheets.jsx` | `next/EP26-T03-guided-workout` | Swap | Announce the easier exercise only after a confirmed active-session swap. |
+| `frontend/src/views/Workout.test.jsx` | `next/EP26-T03-guided-workout` | Tests | Include Guided workout in the two layout-menu expectations. |
+| `frontend/src/locales/*.js` | `next/EP26-T03-guided-workout` | Copy | Translate the layout name and swap confirmation in all 25 packs. |
 | `api/coach/core/streak.js` | `next/EP25-mobility-freeze` | Streak | Bank one freeze for two verified mobility sessions in a week under the active rule. |
 | `frontend/src/lib/finish-workout.js` | `next/EP25-mobility-freeze` | Workout | Preserve the rest-day date only for a completed Learn circuit. |
 | `frontend/src/lib/streak.js`, `streak-explain.js` | `next/EP25-mobility-freeze` | Calendar | Document the shared rule and explain a mobility award. |

@@ -1,4 +1,6 @@
 export default {
+  "Guided workout": "引導式訓練",
+  "Using {0} for this workout.": "本次訓練改做「{0}」。",
   "Two rest-day mobility sessions earned a freeze.": "在休息日完成兩次活動度訓練，獲得一張凍結卡。",
   "Draft": "草稿",
   "Move gently and switch sides when comfortable.": "輕柔地活動，覺得舒服時再換邊。",

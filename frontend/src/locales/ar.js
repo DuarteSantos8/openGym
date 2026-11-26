@@ -1,5 +1,7 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "تمرين موجّه",
+  "Using {0} for this workout.": "ستستخدم {0} في هذا التمرين.",
   "Two rest-day mobility sessions earned a freeze.": "أكسبتك جلستا تمارين مرونة في أيام الراحة تجميدًا واحدًا.",
   "Draft": "مسودة",
   "Move gently and switch sides when comfortable.": "تحرّك برفق وبدّل الجانب عندما تشعر بالراحة.",

@@ -2378,16 +2378,16 @@ export function swapActiveWorkoutExercise(index, { askCoach } = {}) {
  * One tap from the exercise's ⋯ menu (#649): a planned backup takes the slot with the slot's own
  * plan, and the exercise it replaces becomes its first backup (backupSlotConfig).
  */
-export function swapActiveWorkoutToBackup(index, backupId) {
+export function swapActiveWorkoutToBackup(index, backupId, onSwapped) {
   const st = S()
   const current = st.active?.entries?.[index]
   const ex = EXIDX[backupId]
   if (!current || !ex || backupId === current.id) return
   const cfg = backupSlotConfig({ ...plannedConfigOf(current), id: current.id }, backupId, st, current.rid, id => !!EXIDX[id])
-  commitActiveSwap(index, ex, cfg)
+  commitActiveSwap(index, ex, cfg, onSwapped)
 }
 
-function commitActiveSwap(index, ex, cfg) {
+function commitActiveSwap(index, ex, cfg, onSwapped) {
   const st = S()
   const current = st.active?.entries?.[index]
   if (!current) return
@@ -2426,6 +2426,7 @@ function commitActiveSwap(index, ex, cfg) {
         useUI.setState({ timer: kept })
       }
     }
+    if (swapped) onSwapped?.()
   }
   const logged = (current.sets || []).some(set => set.done === true)
   if (!logged) { apply(); return }

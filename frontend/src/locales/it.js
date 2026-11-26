@@ -2,6 +2,8 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  "Guided workout": "Allenamento guidato",
+  "Using {0} for this workout.": "Per questo allenamento farai {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Due sessioni di mobilità nei giorni di riposo ti hanno dato un congelamento.",
   "Draft": "Bozza",
   "Move gently and switch sides when comfortable.": "Muoviti con delicatezza e cambia lato quando ti senti a tuo agio.",

@@ -1,5 +1,7 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Trénink s vedením",
+  "Using {0} for this workout.": "V tomto tréninku teď použijete {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Za dva tréninky mobility ve dnech odpočinku jsi získal zmrazení série.",
   "Draft": "Koncept",
   "Move gently and switch sides when comfortable.": "Pohybujte se zlehka a vyměňte strany, až vám to bude příjemné.",

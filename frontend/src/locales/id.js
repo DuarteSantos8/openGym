@@ -1,5 +1,7 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Latihan terpandu",
+  "Using {0} for this workout.": "Latihan kali ini menggunakan {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Dua sesi mobilitas pada hari istirahat memberimu satu freeze.",
   "Draft": "Draf",
   "Move gently and switch sides when comfortable.": "Bergeraklah perlahan dan ganti sisi saat terasa nyaman.",

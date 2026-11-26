@@ -4,6 +4,8 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Guided workout": "Treino guiado",
+  "Using {0} for this workout.": "Neste treino você vai fazer {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Duas sessões de mobilidade em dias de descanso renderam um congelamento.",
   "Two chairs": "Duas cadeiras",
   "Draft": "Rascunho",
