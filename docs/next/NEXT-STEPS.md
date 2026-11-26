@@ -7,7 +7,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 
 - D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
-- **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm the two preview HTTP statuses and the owner dashboard. See [Before real users](CLOUD-SERVER.md#before-real-users).
+- **Hosted account checks (A1, partial).** The owner opened the Admin dashboard. The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.

@@ -154,8 +154,13 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   Opening `GET /api/me` in each existing tab returned an authenticated user with the
   same nonempty account ID. The numeric HTTP statuses were not recorded. The first
   tab was returned to Settings and the second to Home.
-- **Pending with the owner.** Verify the Admin dashboard on the owner's preview account.
-  Known wart: an admin who opened their own profile through the account, signed out, and within
+- **Owner Admin dashboard verified on November 26, 2026.** On the restored preview after a
+  successful Vercel deployment, the owner opened Settings > Account > Admin dashboard.
+  The **ADMIN** screen showed Invite codes, Identity provider, Users and Activity log.
+  `GET /api/admin/oidc` returned a configuration with `enabled: true` and `reachable: true`.
+  The browser did not expose the HTTP status. `GET /api/health` returned
+  `{"ok":true,"writable":true}`.
+- Known wart: an admin who opened their own profile through the account, signed out, and within
   two minutes uses their passkey on that same profile is signed out once and has to try again.
 - Backups, below. Sign-in throttling, above.
 
