@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
+
 - D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
 - **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm the two preview HTTP statuses and the owner dashboard. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
