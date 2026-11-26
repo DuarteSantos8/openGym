@@ -9,7 +9,7 @@ import Icon from './Icon.jsx'
 /* Settings → Look & Home → App icon: the icon on this phone's home screen. The phone keeps the
    choice (lib/app-icon.js), so it is asked here and never synced. In a browser, or on a phone that
    cannot switch icons, the row is not there at all. */
-export default function AppIconRow() {
+export default function AppIconRow({ prizes = [] }) {
   const [state, setState] = useState(null)
   const [busy, setBusy] = useState(false)
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function AppIconRow() {
     </span>
     <span className="lrow-v">{t(current.name)}</span>
     <div className="app-icons" role="radiogroup" aria-label={t('App icon')}>
-      {offeredIcons(seasonNow(), state.name).map(v => (
+      {offeredIcons(seasonNow(), state.name, prizes).map(v => (
         <button key={v.id} type="button" role="radio" aria-checked={v.id === state.name} disabled={busy}
           className={'app-icon' + (v.id === state.name ? ' on' : '')} onClick={() => pick(v.id)} aria-label={t(v.name)}>
           <img src={`app-icons/${v.id}.png`} alt="" width="56" height="56" draggable="false" />

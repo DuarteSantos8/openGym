@@ -592,3 +592,9 @@
   .xm-setspark{display:none}
   #timer > .xm-reststar{transition:none}
 }
+
+/* The Saturday presents and the thank-you behind door 24. */
+.xm-gift-img{flex:none;width:46px;height:46px;border-radius:11px}
+[data-present="nutrition"] .xm-gift-i{color:var(--green)}
+.xm-thanks .xm-reveal-text{text-align:start}
+.xm-thanks-sig{margin:6px 0 4px;text-align:end;font-weight:600;font-style:italic;color:var(--label-2)}

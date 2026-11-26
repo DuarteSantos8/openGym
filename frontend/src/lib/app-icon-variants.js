@@ -16,14 +16,15 @@ export const APP_ICON_VARIANTS = [
   { id: 'violet', name: 'Purple', bg: '#bf5af2', fg: '#ffffff', ios: 'AppIcon-Violet', android: 'IconViolet' },
   // All year, Halloween theme or not: some people are spooky in March.
   { id: 'halloween', name: 'Halloween', bg: '#0d0517', fg: '#ff7a1a', art: 'resources/icons/halloween.svg', ios: 'AppIcon-Halloween', android: 'IconHalloween' },
-  // Christmas only in December (`months`, 1-based): the theme is a surprise every year until
-  // 1 December (lib/seasonal.js `hidden`), its icon too. One already on the home screen stays
-  // offered all year. The native projects carry it in every build.
-  { id: 'christmas', name: 'Christmas', bg: '#070b16', fg: '#a3e635', art: 'resources/icons/christmas.svg', ios: 'AppIcon-Christmas', android: 'IconChristmas', months: [12] },
+  // Christmas 2026: the advent calendar's present on 12 December 2026 (seasonal/advent-doors.js),
+  // only for whoever opened that door, and theirs to keep all year (`prize`, S.prizes). One already
+  // on the home screen stays offered. The native projects carry it in every build.
+  { id: 'christmas', name: 'Christmas', bg: '#070b16', fg: '#a3e635', art: 'resources/icons/christmas.svg', ios: 'AppIcon-Christmas', android: 'IconChristmas', prize: 'xmas-icon-2026' },
 ]
 
 export const APP_ICON_IDS = APP_ICON_VARIANTS.map(v => v.id)
 
-/** The icons the picker offers on `now`: all but a seasonal one out of its months (unless worn). */
-export const offeredIcons = (now, current) => APP_ICON_VARIANTS.filter(v =>
-  !v.months || v.id === current || v.months.includes(now.getMonth() + 1))
+/** The icons the picker offers: all but a seasonal one out of its months and a present not given
+ *  (`prizes`, S.prizes, lib/prizes.js), unless it is the one on the home screen. */
+export const offeredIcons = (now, current, prizes = []) => APP_ICON_VARIANTS.filter(v =>
+  v.id === current || ((!v.months || v.months.includes(now.getMonth() + 1)) && (!v.prize || (Array.isArray(prizes) && prizes.includes(v.prize)))))

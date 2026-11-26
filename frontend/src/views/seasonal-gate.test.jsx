@@ -110,6 +110,7 @@ describe.each([['the last minute of November 2026', NOV], ['New Year\'s Day 2027
     expect(offeredIcons(new Date(), 'default').map(v => v.id)).not.toContain('christmas')
     expect(pickerChoices({ advent: { year: 2025, opened: [] } }, 'flame').map(c => c.v)).not.toContain('flameHat')
     expect(offeredIcons(new Date(), 'christmas').map(v => v.id)).toContain('christmas')   // one in use stays
+    expect(offeredIcons(new Date(), 'default', ['xmas-icon-2026']).map(v => v.id)).toContain('christmas')   // a present stays yours
   })
 
   it('no way in to the calendar: openSeasonal, the chunk\'s own open() and its Home card all say no', async () => {
@@ -142,7 +143,9 @@ describe('1 December 2026, one minute past midnight', () => {
     act(() => host.querySelector('[aria-label="Christmas"]').click())
     expect(mocks.S.seasonal.christmas).toBe('auto')
     expect(searchSettings('christmas', guestWeb, s => s).length).toBeGreaterThan(0)
-    expect(offeredIcons(new Date(), 'default').map(v => v.id)).toContain('christmas')
+    // The Christmas icon is not handed out with the theme since 1.4.6: it is door 12's present.
+    expect(offeredIcons(new Date(), 'default').map(v => v.id)).not.toContain('christmas')
+    expect(offeredIcons(new Date(), 'default', ['xmas-icon-2026']).map(v => v.id)).toContain('christmas')
     expect(await openSeasonal('christmas', 'advent')).toBe(true)
     expect(mocks.sheets).toHaveLength(1)
   })

@@ -15,6 +15,7 @@
 //
 // Only the app shows the choice. The watches and the widgets draw their own flame from the
 // streak's number (lib/watch-sync.js, lib/widgets.js) and keep it.
+import { hasPrize } from './prizes.js'
 
 export const FLAME_DEFAULT = '#ff8a1f'
 export const FREEZE_DEFAULT = '#64d2ff'
@@ -31,9 +32,9 @@ export const FLAME_CHOICES = [
   { v: 'sun', c: '#ff9f0a' },
   { v: 'dumbbell', c: '#30d158' },
   { v: 'kettlebell', c: '#bf5af2' },
-  // The festive flame, the advent calendar's present (door 24, in the Christmas chunk). Always a
-  // valid pick so a worn one shows on every device; offered in the picker only to someone who
-  // opened door 24 or wears it already (pickerChoices).
+  // The festive flame, the advent calendar's present (the 19th since 1.4.6, in the Christmas
+  // chunk). Always a valid pick so a worn one shows on every device; offered in the picker only to
+  // someone who was given it (S.prizes, lib/prizes.js) or wears it already (pickerChoices).
   { v: 'flameHat', c: '#ff5a5f', prize: 'advent' },
 ]
 export const FREEZE_CHOICES = [
@@ -53,7 +54,7 @@ export const FESTIVE_FLAME = FLAME_CHOICES.find(ch => ch.prize === 'advent')
 /** The picks the picker offers: every curated one, a prize only once it is earned or worn. */
 export function pickerChoices (S, kind) {
   const worn = S?.[keyFor(kind)]?.v
-  const advent = Array.isArray(S?.advent?.opened) && S.advent.opened.map(Number).includes(24)
+  const advent = hasPrize(S, 'festive-flame')
   return choicesFor(kind).filter(ch => !ch.prize || ch.v === worn || (ch.prize === 'advent' && advent))
 }
 

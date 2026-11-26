@@ -4,6 +4,17 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Have a look": "Dar uma olhada",
+  "Meet openNutrition": "Conheça o openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Feliz Natal, descanse bastante e até o ano novo.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Minha carreira está só começando, e o que vocês construíram em volta deste projeto significa mais para mim do que consigo dizer. Obrigado a toda a comunidade.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Só para quem abriu esta porta em dezembro de 2026. É seu para sempre, o ano todo e todos os anos depois.",
+  "Put it on my home screen": "Colocar na minha tela inicial",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Obrigado. A todo mundo que deixou uma estrela no GitHub, contou para um amigo, compartilhou o openGym na internet, ajudou alguém no Discord, mandou uma correção ou uma tradução, relatou um bug ou me pagou um café: o openGym não existiria sem vocês.",
+  "Your present: the Christmas 2026 icon": "Seu presente: o ícone de Natal 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "É seu. Escolha no app do celular: Configurações, Aparência e Início, Ícone do app.",
+  "Yours. Settings, Look & Home, App icon.": "É seu. Configurações, Aparência e Início, Ícone do app.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "O openGym tem uma irmã mais nova. Comida, suplementos e peso, no seu próprio servidor como o openGym, sem anúncios e sem ninguém bisbilhotando. Está em beta privado, e você chegou cedo.",
   // --- Christmas: the snow globe ---
   "Shake for a snow globe": "Chacoalhe para um globo de neve",
   "Shake your phone hard and the snow goes wild. It settles again on its own.": "Chacoalhe o celular com força e a neve enlouquece. Depois ela assenta sozinha.",

@@ -13,7 +13,8 @@
 //   stat       a number from the user's own year (`stat`: best, volume, muscle, streak, year).
 //   stretch    the gentle routine of holds that can be added to the user's routines.
 // Each door also carries a line to smile at (`text`), mostly the old calendar's jokes and facts.
-// Door 24 is always SPECIAL: a little year in review and a present. The other 23 turn by five
+// Door 24 is always SPECIAL: a thank-you to everyone who helped openGym along, and every
+// Saturday before it a present (PRESENTS). The other 23 turn by five
 // places each year, so next December does not open on the same thing; within a year, a day
 // always opens to the same thing.
 
@@ -45,9 +46,26 @@ export const DOOR_LIST = [
 
 export const SPECIAL = { kind: 'special' }
 
+/* The presents (v1.4.6): every Saturday before Christmas a door holds one instead of its usual
+   thing. In 2026 those are the 5th, 12th and 19th:
+     nutrition  openGym's sister app, openNutrition, to have a look at
+     icon       the Christmas app icon, only for whoever opened this door in December 2026, kept
+                for good (S.prizes, lib/prizes.js)
+     flame      the festive flame for the streak
+   Door 24 is the thank-you (SPECIAL). Later years keep the flame on the 19th; the icon was 2026's
+   and openNutrition only needs introducing once. */
+export const PRESENTS = { 2026: { 5: 'nutrition', 12: 'icon', 19: 'flame' } }
+const LATER = { 19: 'flame' }
+const PRESENT_DOORS = Object.fromEntries(['nutrition', 'icon', 'flame'].map(p => [p, Object.freeze({ kind: 'present', present: p })]))
+export const presentFor = (day, year) => (PRESENTS[Number(year)] || (Number(year) > 2026 ? LATER : {}))[day] || null
+/** The day the festive flame is given in `year`. */
+export const flameDay = year => Number(Object.entries(PRESENTS[Number(year)] || LATER).find(([, v]) => v === 'flame')?.[0]) || 19
+
 /** What door `day` (1 to 24) of `year` opens to. Always the same for the same day and year. */
 export function doorFor(day, year) {
   if (day === 24) return SPECIAL
+  const present = presentFor(day, year)
+  if (present) return PRESENT_DOORS[present]
   const n = DOOR_LIST.length
   const shift = ((Number(year) - 2026) * 5) % n
   return DOOR_LIST[(((day - 1 + shift) % n) + n) % n]

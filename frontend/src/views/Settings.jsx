@@ -66,6 +66,8 @@ import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } f
 import { layoutSheet } from '../components/PageLayout.jsx'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
+import { APP_ICON_VARIANTS } from '../lib/app-icon-variants.js'
+import { hasPrize } from '../lib/prizes.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { bugReportUrl, environmentOf } from '../lib/bug-report.js'
@@ -1141,7 +1143,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
         <DisplayRows />
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
-        {MOBILE && platformNow() && <AppIconRow />}
+        {MOBILE && platformNow() && <AppIconRow prizes={S.prizes} />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
@@ -1895,10 +1897,13 @@ function activeSeasonTitle(S) {
   return th ? t(th.title) : null
 }
 
-// The showing theme, when it has a home-screen icon of its own to suggest.
+// The showing theme, when it has a home-screen icon of its own to suggest. An icon that is a
+// present (Christmas 2026, lib/app-icon-variants.js `prize`) only to whoever was given it.
 function seasonWithIcon(S) {
   const th = THEMES.find(x => x.id === activeSeason(S))
-  return th?.appIcon ? th : null
+  if (!th?.appIcon) return null
+  const prize = APP_ICON_VARIANTS.find(v => v.id === th.appIcon)?.prize
+  return prize && !hasPrize(S, prize) ? null : th
 }
 
 function accentLabel(S) {

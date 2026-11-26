@@ -12,14 +12,13 @@ import {
 import { MOBILE } from '../lib/mobile.js'
 import { appIconState, setAppIcon } from '../lib/app-icon.js'
 import { yearStats, workoutsOfYear } from '../lib/wrapped.js'
-import { openWrapped } from '../lib/wrapped-ui.js'
 import { bestWeightForEntry, defaultConfig } from '../lib/history.js'
 import { buildSessionEntry } from '../lib/session-start.js'
 import { joinSessionNoProg } from '../lib/session-noprog.js'
 import { closeThenNav } from '../lib/nav.js'
-import { isOn } from '../lib/modules.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { FESTIVE_FLAME } from '../lib/streak-icons.js'
+import { grantPrize } from '../lib/prizes.js'
 import { EXIDX } from '../lib/exercises.js'
 import { exerciseNameText, fmtDur, fmtNum, fmtVol, todayISO, uid } from '../lib/format.js'
 import { shownWeight, exUnitOf } from '../lib/ex-unit.js'
@@ -437,7 +436,7 @@ function art(spot) {
       <span className="xm-peek xm-peek-snowman xm-peek-home" aria-hidden="true" data-snowman><span className="xm-pk"><Snowman wave /></span></span></>
     case 'home-streak': return <><PeekPresent /><span className="xm-peek xm-peek-mini" aria-hidden="true"><span className="xm-pk"><DecoTree /></span></span></>
     case 'streak-flame': return <FlameHat />
-    case 'home-advent': return <><IconSuggest /><AdventCard /></>
+    case 'home-advent': return <AdventCard />
     // Plan: a decorated tree and a present in the empty top corner of How you train.
     case 'plan-card': return <span className="xm-plandeco" aria-hidden="true"><span className="xm-pk"><DecoTree /></span><span className="xm-pk xm-pk-gift"><Present hue={1} /></span></span>
     // Stats: lights along the header, two baubles in the lifetime tile, a gingerbread person
@@ -609,11 +608,8 @@ const Confetti = ({ at }) => (
 
 /* ------------------------------------------------ the festive icon -- */
 
-// Asked once per phone: the icon is the phone's own (lib/app-icon.js), so is the answer.
-export const ICON_ASKED = 'og_season_xmas_icon'
-const asked = () => { try { return !!localStorage.getItem(ICON_ASKED) } catch (e) { return true } }
-const markAsked = () => { try { localStorage.setItem(ICON_ASKED, '1') } catch (e) { /* no storage: it simply asks again */ } }
-
+// The Christmas icon is the present behind door 12 of 2026 (seasonal/advent-doors.js PRESENTS);
+// the phone keeps which icon it wears (lib/app-icon.js).
 async function wearFestiveIcon() {
   const toast = useUI.getState().toast
   try {
@@ -624,33 +620,6 @@ async function wearFestiveIcon() {
     toast(t('The icon could not be changed.'))
     return false
   }
-}
-
-/** Home, on a phone that can switch icons, from 1 December: one gentle question, once. */
-function IconSuggest() {
-  const [show, setShow] = useState(false)
-  useEffect(() => {
-    if (!MOBILE || asked()) return
-    let live = true
-    appIconState().then(s => { if (live && s && s.name !== 'christmas') setShow(true) })
-    return () => { live = false }
-  }, [])
-  if (!show) return null
-  const done = () => { markAsked(); setShow(false) }
-  return <div className="card xm-ask" data-xmas-icon>
-    <button type="button" className="iconbtn wr-x" aria-label={t('Not now')} onClick={done}><Icon name="xmark" /></button>
-    <div className="row" style={{ gap: 12, alignItems: 'center', paddingInlineEnd: 34 }}>
-      <img src="app-icons/christmas.png" alt="" width="48" height="48" className="xm-ask-img" draggable="false" />
-      <div style={{ minWidth: 0 }}>
-        <div className="ttl">{t('Fancy a festive icon?')}</div>
-        <div className="muted small">{t('The barbell has put on its Santa hat. Just for this phone, and you can switch back in Settings any time.')}</div>
-      </div>
-    </div>
-    <div className="row" style={{ gap: 8, marginTop: 12 }}>
-      <Button size="sm" variant="primary" icon="gift" onClick={async () => { done(); await wearFestiveIcon() }}>{t('Try it')}</Button>
-      <Button size="sm" variant="ghost" onClick={done}>{t('No thanks')}</Button>
-    </div>
-  </div>
 }
 
 /* -------------------------------------------------- the calendar -- */
@@ -706,7 +675,8 @@ const KIND = {
   exercise: [['dumbbell', '🏋️'], 'Exercise of the day'],
   stretch: [['stretch', '🧘'], 'Cosy stretch'],
   stat: [['chart', '📊'], 'Stat of the day'],
-  special: [['starFill', '⭐'], 'Merry everything!'],
+  present: [['gift', '🎁'], 'A present'],
+  special: [['heart', '❤️'], 'Thank you'],
 }
 const kindGlyph = ([icon, emoji]) => <Glyph icon={icon} emoji={emoji} />
 const kindOf = door => KIND[door.kind] || KIND.stat
@@ -932,7 +902,8 @@ function DoorView({ day, year, back, close }) {
       {door.kind === 'exercise' && <ExerciseDoor door={door} close={close} did={did} />}
       {door.kind === 'stat' && <StatDoor S={S} stat={door.stat} year={year} />}
       {door.kind === 'stretch' && <StretchDoor close={close} did={did} />}
-      {door.kind === 'special' && <SpecialDoor S={S} year={year} close={close} did={did} />}
+      {door.kind === 'present' && <PresentDoor present={door.present} did={did} />}
+      {door.kind === 'special' && <SpecialDoor />}
       {door.text && <p className="xm-reveal-aside">{t(door.text)}</p>}
       <div className={'xm-litline' + (lit ? ' xm-on' : '')} data-lit={lit ? '1' : '0'}>
         <span className="xm-litball" aria-hidden="true" />
@@ -1093,19 +1064,49 @@ function StretchDoor({ close, did }) {
   </>
 }
 
-/* Door 24: the year so far on one card (lib/wrapped.js), a way into the full Wrapped, and a present:
-   the festive flame for the streak (lib/streak-icons.js FESTIVE_FLAME), yours to keep, plus the
-   Christmas app icon on a phone that can switch icons. */
-function SpecialDoor({ S, year, close, did }) {
+/* The Saturday presents (seasonal/advent-doors.js PRESENTS). Opening the door is what counts: the
+   icon and the flame are given as it opens (S.prizes, lib/prizes.js) and kept for good, wherever
+   they are put on later. */
+const PRESENT_PRIZE = { icon: 'xmas-icon-2026', flame: 'festive-flame' }
+const NUTRITION_URL = 'https://opennutrition.ch'
+
+function PresentDoor({ present, did }) {
+  const S = useStore(s => s.S)
   const update = useStore(s => s.update)
+  const prize = PRESENT_PRIZE[present]
+  useEffect(() => { if (prize) update(s => { grantPrize(s, prize) }) }, [prize])
   const [canIcon, setCanIcon] = useState(false)
   useEffect(() => {
-    if (!MOBILE) return
+    if (present !== 'icon' || !MOBILE) return
     let live = true
-    appIconState().then(s => { if (live && s && s.name !== 'christmas') setCanIcon(true) })
+    appIconState().then(st => { if (live && st && st.name !== 'christmas') setCanIcon(true) })
     return () => { live = false }
-  }, [])
-  const st = yearStats(S, year)
+  }, [present])
+  if (present === 'nutrition') return <>
+    <div className="xm-gift" data-present="nutrition">
+      <span className="xm-gift-i" aria-hidden="true"><Icon name="apple" /></span>
+      <div className="xm-gift-t">
+        <div className="ttl">{t('Meet openNutrition')}</div>
+        <div className="muted small">{t('openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.')}</div>
+      </div>
+    </div>
+    <div className="xm-actions">
+      <Button variant="primary" icon="gift" onClick={e => { did(e.currentTarget); try { window.open(NUTRITION_URL, '_blank', 'noopener,noreferrer') } catch { /* nothing to open with */ } }}>{t('Have a look')}</Button>
+    </div>
+  </>
+  if (present === 'icon') return <>
+    <div className="xm-gift" data-present="icon">
+      <img src="app-icons/christmas.png" alt="" width="46" height="46" className="xm-gift-img" draggable="false" />
+      <div className="xm-gift-t">
+        <div className="ttl">{t('Your present: the Christmas 2026 icon')}</div>
+        <div className="muted small">{t('Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.')}</div>
+      </div>
+    </div>
+    <div className="xm-actions">
+      {canIcon ? <Button variant="primary" icon="gift" onClick={async e => { did(e.currentTarget); if (await wearFestiveIcon()) setCanIcon(false) }}>{t('Put it on my home screen')}</Button>
+        : <div className="xm-badge"><Glyph icon="check" emoji="✅" /> {MOBILE ? t('Yours. Settings, Look & Home, App icon.') : t('Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.')}</div>}
+    </div>
+  </>
   const worn = S.flameIcon?.k === 'icon' && S.flameIcon.v === FESTIVE_FLAME.v
   const wear = e => {
     did(e.currentTarget)
@@ -1113,14 +1114,7 @@ function SpecialDoor({ S, year, close, did }) {
     useUI.getState().toast(t('Festive flame on. Your streak looks very merry.'))
   }
   return <>
-    {st && <div className="xm-review" data-review>
-      <div><b>{fmtNum(st.workouts)}</b><span>{t('Workouts')}</span></div>
-      <div><b>{st.ms > 0 ? fmtDur(st.ms) : '0'}</b><span>{t('Time')}</span></div>
-      <div><b>{fmtVol(Math.round(st.volume), st.unit)}</b><span>{t('Volume')}</span></div>
-      <div><b>{tn('{0} week', '{0} weeks', st.streak?.weeks || 0)}</b><span>{t('Longest streak')}</span></div>
-    </div>}
-    <p className="xm-reveal-text">{t('Whatever you celebrate, even if it is mostly a day on the sofa: thank you for training with openGym this year. Rest well, eat well, see you in the new year.')}</p>
-    <div className="xm-gift">
+    <div className="xm-gift" data-present="flame">
       <span className="xm-gift-i" aria-hidden="true"><Icon name={FESTIVE_FLAME.v} /></span>
       <div className="xm-gift-t">
         <div className="ttl">{t('Your present: a festive flame')}</div>
@@ -1130,11 +1124,16 @@ function SpecialDoor({ S, year, close, did }) {
     <div className="xm-actions">
       {worn ? <div className="xm-badge"><Glyph icon="check" emoji="✅" /> {t('Wearing it. Very merry.')}</div>
         : <Button variant="primary" icon="gift" onClick={wear}>{t('Put it on')}</Button>}
-      {st && isOn(S, 'motivation') && <Button variant="ghost" icon="sparkles" onClick={() => { close(); openWrapped(year) }}>{t('Show me my year')}</Button>}
     </div>
-    {canIcon && <>
-      <p className="xm-reveal-text muted small">{t('One more surprise: the barbell has a festive outfit for your home screen.')}</p>
-      <Button variant="ghost" icon="gift" onClick={async () => { markAsked(); if (await wearFestiveIcon()) setCanIcon(false) }}>{t('Try the Christmas icon')}</Button>
-    </>}
   </>
+}
+
+/* Door 24: a thank-you, from the person who makes openGym, to everyone who helped it along. */
+function SpecialDoor() {
+  return <div className="xm-thanks" data-thanks>
+    <p className="xm-reveal-text">{t('Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.')}</p>
+    <p className="xm-reveal-text">{t('My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.')}</p>
+    <p className="xm-reveal-text">{t('Merry Christmas, rest well, and see you in the new year.')}</p>
+    <p className="xm-thanks-sig">Duarte Santos</p>
+  </div>
 }

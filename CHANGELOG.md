@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Advent calendar: a present every Saturday. On 5 December openGym's little sister, openNutrition, says hello. On the 12th the Christmas 2026 app icon, only for whoever opens that door, and theirs to keep. On the 19th the festive flame for your streak. Door 24 is a thank-you to everyone who helped openGym along this year.
 - Christmas: the snow on the cards' top edges comes in five shapes instead of one, so no two cards next to each other look alike.
 - Coach: automatic reviews switched on before 1.4.6 keep running after the update. They waited for the Coach to be opened first; the app now carries over the yes this device already gave. The server log says why someone's automatic review was held back.
 - Coach: a connection that drops before the AI answers is tried again, up to twice. On an iPhone, Gemini could fail at once with "The network connection was lost" (Discord).
