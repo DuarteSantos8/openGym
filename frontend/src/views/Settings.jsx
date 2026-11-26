@@ -965,7 +965,7 @@ export default function Settings({ appHelp = false, page = null, find = null, vi
           value={experienceOf(S) || ''}
           options={[...(experienceOf(S) ? [] : [{ value: '', label: t('Not set') }]), ...LEVELS.map(l => ({ value: l, label: levelName(l) }))]}
           onChange={v => { if (v) update(s => { applyExperience(s, v) }) }} />
-        <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
+        <Row tour="settings-learn" icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
       </Section>
       {/* Cloud edition only (lib/edition.js): the hosted account. Nothing in a default build. */}
       {isCloud() && <Section>
