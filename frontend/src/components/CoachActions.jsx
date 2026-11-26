@@ -6,11 +6,12 @@ import { t, tn } from '../lib/i18n.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { EXIDX } from '../lib/exercises.js'
+import { exerciseNameText } from '../lib/format.js'
 import { confirmSheet, exerciseDetailSheet, customExSheet, startBuiltSession, startFlow, planImportSheet } from '../sheets.jsx'
 import { parsePlan } from '../lib/plan-share.js'
 import Icon from './Icon.jsx'
 
-const exName = id => (EXIDX[id]?.n) || t('Unknown exercise')
+const exName = id => (EXIDX[id] ? exerciseNameText(EXIDX[id]) : t('Unknown exercise'))
 const itemLine = it => `${exName(it.id)} · ${it.sec ? t('{0} × {1} s', it.sets, it.sec) : t('{0} × {1}', it.sets, it.reps)}`
 const NOTE_MAX = 600
 

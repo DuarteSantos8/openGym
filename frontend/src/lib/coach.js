@@ -15,13 +15,13 @@
 import { offlineBuild } from './build-caps.js'
 import { EXIDX, canonicalExId } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
-import { uid, todayISO, DAYN } from './format.js'
+import { uid, todayISO, DAYN, exerciseNameText } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICIES, POLICY_NAME, POLICY_DESC } from './progression.js'
 import { newProgramme, programmeById, saveProgramme, normalizeProgramme } from './programmes.js'
 import { ownRowsOf, cleanOwnRow, ownRowsLine } from './warmup-ramp.js'
-import { t, tn } from './i18n.js'
+import { t, tn, exerciseNameFor } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
@@ -699,11 +699,15 @@ export function recordDebrief(s, proposal) {
 
 /* ============================ display helpers ============================ */
 
-export const exName = id => EXIDX[id]?.n || t('Unknown exercise')
+// In the app's language, like every other screen: the English catalogue field showed through on
+// the plan, the swaps and the review in every language.
+export const exName = id => (EXIDX[id] ? exerciseNameFor(EXIDX[id]) : t('Unknown exercise'))
 // Catalogue names are lower-case; a title reads better with each word capitalised, and doing it
 // here rather than with CSS keeps a German sentence around the name from being Title Cased too.
+// exerciseNameText cases a name the way the exercise list shows it: a pack with its own casing
+// (CASED_NAME_LANGS) keeps it, a lower-case one is title-cased, the English in brackets too.
 const cap = s => String(s || '').replace(/(^|\s)(\p{L})/gu, (m, sp, ch) => sp + ch.toUpperCase())
-export const exTitle = id => cap(exName(id))
+export const exTitle = id => (EXIDX[id] ? exerciseNameText(EXIDX[id]) : cap(exName(id)))
 
 /** Human label for a change, used on the review screen and in the log. */
 export function changeTitle(c, S) {
