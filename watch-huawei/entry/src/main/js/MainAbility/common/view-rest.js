@@ -21,13 +21,13 @@ export function attach (K) {
   unitOf = K.unitOf
   isTimed = K.isTimed
   fixList = K.fixList
-        lastSet = K.lastSet
+  lastSet = K.lastSet
   finishWorkout = K.finishWorkout
   keepGoing = K.keepGoing
   skipSet = K.skipSet
   nextExercise = K.nextExercise
   fixLast = K.fixLast
-      restAdd = K.restAdd
+  restAdd = K.restAdd
   restSkip = K.restSkip
   attachMetrics(K)
 }

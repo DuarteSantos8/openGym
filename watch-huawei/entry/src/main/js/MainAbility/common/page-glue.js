@@ -54,7 +54,7 @@ export function createGlue (name, fields, after) {
 
   // the page's $t, kept until the page is destroyed or boots again: the framework picks the file for the watch's language
   function words (page) {
-    return S.t || (S.t = translator(function (path) { return page.$t(path) }))
+    return S.t || (S.t = translator(function (path, args) { return args ? page.$t(path, args) : page.$t(path) }))
   }
   G.words = words
   // Only the names the page's HML binds go into the page.

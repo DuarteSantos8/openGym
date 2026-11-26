@@ -1,6 +1,6 @@
 <!-- The over page: the Overview, a list of the exercises with their sets done (Finish and Continue at its foot).
      Accent colours are bound as single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
-<div class="root" onswipe="swipe">
+<div class="root">
 
   <!-- Overview: a list, it scrolls -->
   <div class="scr" if="{{s_over}}">

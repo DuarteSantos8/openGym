@@ -56,6 +56,19 @@ test('Words: $t first, then the English kept in the code, then the key; {0} {1} 
   assert.equal(V.translator(() => '')('done'), 'Done')
 })
 
+// The framework's $t blanks a placeholder it was given no value for: the counts went missing on a zh-CN watch ("/ 组").
+test('Words: the values go to $t, so a placeholder in the watch\'s language is filled; a key $t lacks is English', () => {
+  const zh = V.translator(dollarT('zh-CN'))
+  assert.equal(zh('sets_of', 3, 5), '3 / 5 组')
+  assert.equal(zh('up_next_set', 'Row', 1, 3), 'Row，第 1/3 组')
+  assert.equal(zh('last_time', '60x8'), '上次: 60x8')
+  assert.equal(zh('no_such_key'), 'no_such_key') // $t gave the path back: not a word
+  assert.equal(V.translator(dollarT('zh-CN'))('done'), FILES['zh-CN'].done)
+  const asked = []
+  V.translator((path, params) => { asked.push([path, params]); return undefined })('set_of', 2, 4)
+  assert.deepEqual(asked, [['strings.set_of', ['2', '4']]])
+})
+
 test('the screens speak every language they are given: no key missing, no leftover placeholder', () => {
   Object.keys(FILES).forEach(lang => {
     assert.deepEqual(Object.keys(FILES[lang]), Object.keys(FILES['en-US']), lang)

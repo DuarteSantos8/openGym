@@ -5,7 +5,7 @@
 // would carry a second copy of it): the core's functions come through getApp().data.k(). When the workout is on a screen
 // another page draws (view-common.js pageOf), it switches page BEFORE it builds anything: this page's view files have no such screen.
 import { createGlue } from '../../common/page-glue.js'
-import { blank, tick, swipeTo, attach } from '../../common/view-common.js'
+import { blank, attach } from '../../common/view-common.js'
 import { attach as attachOver } from '../../common/view-over.js'
 
 // The names this page's HML binds (a test keeps the list and the HML the same).
@@ -26,15 +26,7 @@ export default {
   onShow: function () { G.show(this) },
   onHide: function () { G.hide() },
   onDestroy: function () { G.destroy() },
-  // In a workout a swipe left opens the Metrics page and a swipe right steps back (view-common.js swipeTo). A swipe never leaves the app from here.
-  swipe: function (e) {
-    if (e.direction !== 'left' && e.direction !== 'right') return // a list scrolling is not ours
-    const A = G.A
-    const c = A.c
-    if (!c) return
-    try { swipeTo(c, A.ui, e.direction); tick(c, A.ui) } catch (err) { /* the screen stays */ }
-    G.refresh(this)
-  },
+  // No swipe handler: a swipe acts only on the set, the rest and the Metrics page (view-common.js swipeTo), none of them here.
 
   ov0: function () { go(this, 'ov0') },
   ov1: function () { go(this, 'ov1') },

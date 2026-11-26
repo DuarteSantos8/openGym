@@ -66,7 +66,7 @@ test('every tap in a page\'s HML has a handler in that page, and every action is
     have.forEach(h => assert.ok(ACTIONS.indexOf(h) >= 0 || ['onInit', 'onShow', 'onHide', 'onDestroy', 'swipe', 'retry'].indexOf(h) >= 0, n + ': stray ' + h))
     // each handler forwards its own name
     have.filter(h => ACTIONS.indexOf(h) >= 0).forEach(h => assert.ok(p.js.indexOf('  ' + h + ': function () { go(this, \'' + h + '\') }') >= 0, n + ': ' + h))
-    assert.ok(p.hml.indexOf('onswipe="swipe"') >= 0, n)
+    assert.equal(p.hml.indexOf('onswipe="swipe"') >= 0, n !== 'over', n) // the Overview has nothing a swipe acts on (view-common.js swipeTo)
   })
   const wired = handlersIn(PG.index).concat(handlersIn(PG.lift), handlersIn(PG.rest), handlersIn(PG.over))
   ACTIONS.forEach(a => assert.ok(wired.indexOf(a) >= 0, a + ' is not wired in the HML of any page'))

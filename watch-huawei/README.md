@@ -12,13 +12,13 @@ built with Huawei's DevEco Studio. Nobody has run it on a watch yet: see
 entry/src/main/config.json                    app id, version, permissions, the phone's package and fingerprint
 entry/src/main/js/MainAbility/
   app.js                                      the app shell
-  pages/index/                                the one page: index.hml, index.css, index.js (glue only)
+  pages/index, lift, rest, over/              the pages, each with its own screens: index.hml, index.css, index.js (glue only)
   common/core.js                              the logic: the Garmin watch's Core/Actions/Link as plain JS
-  common/view-common.js, view-home/lift/rest.js  what each screen shows and what each tap does (the shared part, then one file per page)
+  common/view-common.js, view-home/lift/rest/over.js  what each screen shows and what each tap does (the shared part, then one file per page)
   common/frames.js, radio.js                  1 KB message framing and the Wear Engine send/receive
   common/store.js                             the state in the watch's files, safe against being killed
   common/en.js, i18n/<lang>-<REGION>.json     the words: English in code, one file per watch language (generated, do not edit)
-  common/wearengine.js                        Huawei's own SDK file, Apache-2.0, unchanged
+  common/wearengine.js                        Huawei's own SDK file, Apache-2.0, trimmed to the calls openGym makes (text send, register, unregister, set peer)
 huawei-strings.mjs                            writes common/en.js and i18n/*.json
 huawei-size.mjs                               release build, fails if a built file is over 45 KB (--report: print only)
 huawei-sim.mjs                                simulator smoke: builds a temp copy with a fake phone (sim/debugphone.js), drives a workout, prints the heap peak (-hs 196608 by default, `--hs none` to skip); exit 1 on OOM

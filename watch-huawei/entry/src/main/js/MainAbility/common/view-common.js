@@ -64,11 +64,15 @@ export function clock (sec) {
 /* ---------- words ---------- */
 // `get` is the page's $t: the word in i18n/<language>-<REGION>.json for the WATCH's language (the phone's is
 // ignored, as on the Garmin). A language with no file gets undefined on the device, so English is kept here.
+// The values go to $t as its params array: $t blanks a {0} it has no value for (measured in the simulator), and a
+// key its file lacks comes back as the path itself. The English fallback is filled in here.
 export function translator (get) {
   return (key, a, b, c) => {
+    const path = 'strings.' + key
+    const args = (c !== undefined ? [a, b, c] : b !== undefined ? [a, b] : a !== undefined ? [a] : []).map(String)
     let w
-    try { w = get('strings.' + key) } catch (e) { w = undefined }
-    if (typeof w !== 'string' || w === '') w = EN[key]
+    try { w = args.length ? get(path, args) : get(path) } catch (e) { w = undefined }
+    if (typeof w !== 'string' || w === '' || w === path) w = EN[key]
     if (w === undefined) return key
     if (a !== undefined) w = w.split('{0}').join(String(a))
     if (b !== undefined) w = w.split('{1}').join(String(b))
