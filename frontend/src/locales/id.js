@@ -5364,6 +5364,7 @@ export default {
   "Handstand ladder": "Tangga handstand",
   "Hinge ladder": "Tangga hinge",
   "Hotel room": "Kamar hotel",
+  "Two chairs": "Dua kursi",
   "It stays out of your progression, so nothing goes up or down.": "Tidak masuk progresimu, jadi tidak ada yang naik atau turun.",
   "Ladder name": "Nama tangga",
   "Ladders": "Tangga",

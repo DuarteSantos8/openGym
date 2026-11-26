@@ -5365,6 +5365,7 @@ export default {
   "Handstand ladder": "Thang trồng chuối",
   "Hinge ladder": "Thang hinge",
   "Hotel room": "Phòng khách sạn",
+  "Two chairs": "Hai chiếc ghế",
   "It stays out of your progression, so nothing goes up or down.": "Không tính vào tiến độ của bạn, nên không có gì tăng hay giảm.",
   "Ladder name": "Tên thang",
   "Ladders": "Thang",

@@ -5469,6 +5469,7 @@ export default {
   "Handstand ladder": "Amuda kalkış merdiveni",
   "Hinge ladder": "Hinge merdiveni",
   "Hotel room": "Otel odası",
+  "Two chairs": "İki sandalye",
   "It stays out of your progression, so nothing goes up or down.": "İlerlemenin dışında kalır, yani hiçbir şey artmaz ya da azalmaz.",
   "Ladder name": "Merdiven adı",
   "Ladders": "Merdivenler",

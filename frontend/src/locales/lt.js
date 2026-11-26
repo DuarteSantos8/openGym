@@ -5395,6 +5395,7 @@ export default {
   "Handstand ladder": "Stovėsenos ant rankų kopėčios",
   "Hinge ladder": "Klubų lenkimo kopėčios",
   "Hotel room": "Viešbučio kambarys",
+  "Two chairs": "Dvi kėdės",
   "It stays out of your progression, so nothing goes up or down.": "Ji neįskaičiuojama į progresiją, todėl niekas nekyla ir nekrenta.",
   "Ladder name": "Kopėčių pavadinimas",
   "Ladders": "Kopėčios",

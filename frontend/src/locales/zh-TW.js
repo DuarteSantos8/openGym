@@ -5462,6 +5462,7 @@ export default {
   "Handstand ladder": "倒立階梯",
   "Hinge ladder": "髖關節屈伸階梯",
   "Hotel room": "飯店房間",
+  "Two chairs": "兩張椅子",
   "It stays out of your progression, so nothing goes up or down.": "它不計入你的進步，所以什麼都不會加也不會減。",
   "Ladder name": "階梯名稱",
   "Ladders": "階梯",

@@ -5346,6 +5346,7 @@ export default {
   "Handstand ladder": "Håndstands-stige",
   "Hinge ladder": "Hip hinge-stige",
   "Hotel room": "Hotelværelse",
+  "Two chairs": "To stole",
   "It stays out of your progression, so nothing goes up or down.": "Den holdes uden for din progression, så intet går op eller ned.",
   "Ladder name": "Stigens navn",
   "Ladders": "Stiger",

@@ -5469,6 +5469,7 @@ export default {
   "Handstand ladder": "Échelle équilibre",
   "Hinge ladder": "Échelle charnière",
   "Hotel room": "Chambre d’hôtel",
+  "Two chairs": "Deux chaises",
   "It stays out of your progression, so nothing goes up or down.": "Elle ne compte pas dans ta progression, donc rien ne monte ni ne descend.",
   "Ladder name": "Nom de l’échelle",
   "Ladders": "Échelles",

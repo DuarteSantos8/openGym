@@ -12,6 +12,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 - **Hosted account checks (A1, partial).** The owner opened the Admin dashboard. The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
+- **Starter plan cards (D5, prepared).** All eight lead with the goal and show weekly frequency, estimated minutes per session, level and equipment before loading. A device guest can fit a plan to local equipment offline. The translated hotel equipment label awaits native-language review. [English phone view](evidence/EP22-T03/starter-cards-390-dark.png).
+
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
 
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
