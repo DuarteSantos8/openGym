@@ -71,3 +71,20 @@ test('leg-raise direction, curl-ups and named strength work inside cardio', () =
   ]
   assert.deepEqual(seedLevels(fixture).counts.strength, {total:1, matched:1})
 })
+
+test('the named motion outranks a grip or a trailing starting position', () => {
+  for (const [id, level, pattern] of [
+    ['6751', 'beginner', 'isolation'], ['1563', 'beginner', 'isolation'],
+    ['6423', 'beginner', 'isolation'], ['1534', 'advanced', 'squat'],
+    ['1524', 'advanced', 'squat'], ['4862', 'intermediate', 'isolation'],
+    ['1533', 'advanced', 'hinge'],
+  ]) assert.deepEqual(levels[id], {level, pattern}, id)
+  assert.equal(classify({name:'side plank with leg raise',target:'glutes'})?.pattern, 'core')
+})
+
+test('every named difficulty overrides even a specific movement rule', () => {
+  for (const [name,target] of [
+    ['chair pose (advanced)','quads'], ['curl-up (advanced)','abs'],
+    ['standing side leg raise (advanced)','glutes'], ['sit (wall) (advanced)','quads'],
+  ]) assert.equal(classify({name,target})?.level, 'advanced', name)
+})

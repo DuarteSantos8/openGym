@@ -112,21 +112,25 @@ function targetedPattern(name, target) {
 
 export function classify({ name, target, equipment }) {
   const fullName = name.toLowerCase().replace(/[-_]/g, ' ')
-  const movement = fullName.split('(')[0].trim()
+  const movement = fullName.split('(')[0].replace(/\bsnatch grip\b/g, '')
+    .replace(/\s+(?:from|in) (?:a |the )?plank position\b.*$/, '').trim()
+  const explicitLevel = fullName.match(/\((beginner|intermediate|advanced)\)/)?.[1]
+  const rated = (level, pattern) => ({level: explicitLevel ?? level, pattern})
   // Named strength holds in mixed yoga entries have recognizable movement families.
-  if (/\b(?:chair pose|revolved chair|utkatasana|prayer squat|garland pose)\b/.test(movement)) return {level: 'beginner', pattern: 'squat'}
-  if (/\b(?:warrior ii|warrior pose(?! iii)|humble warrior|low lunge yoga pose|twisted leg lunge pose)\b/.test(movement)) return {level: 'intermediate', pattern: 'lunge'}
-  if (/\b(?:chaturanga|four limbed staff)\b/.test(movement)) return {level: 'intermediate', pattern: 'push-h'}
-  if (/\b(?:boat yoga pose|half boat pose)\b/.test(movement)) return {level: 'intermediate', pattern: 'core'}
-  if (/\bbridge pose\b/.test(movement)) return {level: 'beginner', pattern: 'hinge'}
+  if (/\b(?:chair pose|revolved chair|utkatasana|prayer squat|garland pose)\b/.test(movement)) return rated('beginner', 'squat')
+  if (/\b(?:warrior ii|warrior pose(?! iii)|humble warrior|low lunge yoga pose|twisted leg lunge pose)\b/.test(movement)) return rated('intermediate', 'lunge')
+  if (/\b(?:chaturanga|four limbed staff)\b/.test(movement)) return rated('intermediate', 'push-h')
+  if (/\b(?:boat yoga pose|half boat pose)\b/.test(movement)) return rated('intermediate', 'core')
+  if (/\bbridge pose\b/.test(movement)) return rated('beginner', 'hinge')
   if (/\b(?:stretch(?:ing)?|massage|smr|pose|mobility|mobilization)\b/.test(fullName)
     || equipment === 'massage ball' || (equipment === 'roller' && /^roll /.test(movement))) return null
-  if (/\bsit \(wall\)/.test(fullName)) return {level: 'beginner', pattern: 'squat'}
-  if (/^spine \(lumbar\) (?:lateral flexion|flexion|rotation)$/.test(fullName)) return {level: 'intermediate', pattern: 'core'}
-  if (['abductors','adductors'].includes(target)
-    && /\bleg (?:raises?|lifts?)\b/.test(movement) && !/\bplank\b/.test(movement)) return {level: 'intermediate', pattern: 'isolation'}
-  if (target === 'abs' && /\bcurl ups?\b/.test(movement)) return {level: 'intermediate', pattern: 'core'}
-  const pattern = families.find(([, terms]) => terms.test(movement))?.[0] ?? targetedPattern(movement, target)
+  if (/\bsit \(wall\)/.test(fullName)) return rated('beginner', 'squat')
+  if (/^spine \(lumbar\) (?:lateral flexion|flexion|rotation)$/.test(fullName)) return rated('intermediate', 'core')
+  const hipLegRaise = ['glutes', 'abductors', 'adductors'].includes(target)
+    && /\bleg (?:raises?|lifts?)\b/.test(movement) && !/\bplank\b/.test(movement)
+  if (/\bsnatch balance\b/.test(movement)) return rated('advanced', 'squat')
+  if (target === 'abs' && /\bcurl ups?\b/.test(movement)) return rated('intermediate', 'core')
+  const pattern = hipLegRaise ? 'isolation' : families.find(([, terms]) => terms.test(movement))?.[0] ?? targetedPattern(movement, target)
   if (!pattern) return null
 
   // Practice demand, not prescribed load or a claim of safety. Authored guides override every rule.
@@ -135,8 +139,7 @@ export function classify({ name, target, equipment }) {
   else if (['leverage machine','sled machine','assisted'].includes(equipment)
     || /\b(?:supported|assisted|wall push up|kneeling push up)\b/.test(movement)
     || (pattern === 'isolation' && ['band','cable','body weight','dumbbell'].includes(equipment))) level = 'beginner'
-  const explicitLevel = fullName.match(/\((beginner|intermediate|advanced)\)/)?.[1]
-  return { level: explicitLevel ?? level, pattern }
+  return rated(level, pattern)
 }
 
 export async function readCatalogue() {
