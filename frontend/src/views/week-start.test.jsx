@@ -93,7 +93,7 @@ describe('Settings — week starts on', () => {
 
 describe('Plan — the week schedule follows the setting', () => {
   const mount = () => act(() => root.render(<Plan />))
-  const planDays = () => [...host.querySelectorAll('.plan-day')].map(e => e.getAttribute('aria-description'))
+  const planDays = () => [...host.querySelectorAll('.plan-day')].map(e => e.querySelector('.vh').textContent)
 
   it('runs Monday to Sunday by default', () => {
     mount()
@@ -112,7 +112,7 @@ describe('Plan — the week schedule follows the setting', () => {
     mocks.S.weekStart = 0
     mount()
     const rows = [...host.querySelectorAll('.plan-day')]
-    expect(rows[0].getAttribute('aria-description')).toBe('Sunday')
+    expect(rows[0].querySelector('.vh').textContent).toBe('Sunday')
     expect(rows[0].querySelector('.tt').textContent).toBe('Push')
     expect(rows[1].textContent).not.toContain('Push')
   })
@@ -120,7 +120,7 @@ describe('Plan — the week schedule follows the setting', () => {
 
 describe('Plan — a combined day (combine routines)', () => {
   const mount = () => act(() => root.render(<Plan />))
-  const day = name => [...host.querySelectorAll('.plan-day')].find(el => el.getAttribute('aria-description') === name)
+  const day = name => [...host.querySelectorAll('.plan-day')].find(el => el.querySelector('.vh').textContent === name)
 
   beforeEach(() => {
     mocks.S.routines = [
