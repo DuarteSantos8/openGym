@@ -115,3 +115,21 @@ for (const qualifier of ['with no weights', 'without weights', 'with no equipmen
     assert.equal(attempts, 2);
   });
 }
+
+for (const type of ['workout', 'routine']) {
+  test(`a no-equipment ${type} repairs a positive added load on a floor exercise`, async () => {
+    const payload = payloadLib.build(S, { handle: 'test', kind: 'ask', note: 'a back workout with no equipment' });
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke() {
+      const item = { id: '1772', sets: 2, reps: 8 };
+      if (++attempts === 1) item.weight = 10;
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Back session',
+        actions: [{ type, name: 'Back', items: [item] }] }) };
+    } };
+    const r = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
+    assert.equal(r.ok, true);
+    const items = type === 'routine' ? r.result.bundle.routines[0].ex : r.result.actions[0].items;
+    assert.deepEqual(items.map(({ id, weight }) => [id, weight]), [['1772', undefined]]);
+    assert.equal(attempts, 2);
+  });
+}

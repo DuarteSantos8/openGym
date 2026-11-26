@@ -73,12 +73,13 @@ offered for the person to start. New routine and weekday actions become a plan
 preview. The routines and week are written when the person selects Import.
 With no routines or with a proposed plan open, a message uses the plan builder instead.
 
-- **Back workout with no weights:** the ask test rejects a trained cable movement.
+- **Back workout with no weights:** the ask tests reject a trained cable movement
+  and added load on a floor exercise.
   The repair reply proposes a reverse push-up and a floor T raise, both catalogue
   back exercises. The bodyweight tag alone does not guarantee floor-only movements:
   it also includes chin-ups and bench pull-ups. The test verifies those two floor
-  movements; reliable equipment-free selection across the catalogue needs accessory
-  requirements in the exercise metadata.
+  movements. The Coach's catalogue should also carry accessory requirements from
+  the app (see `accessoriesOf` in `frontend/src/lib/equipment.js`).
 - **Add Tuesday push and Wednesday pull:** both routines preview on the requested
   weekdays and the store keeps its original schedule until Import. Import replaces the
   whole week, clearing an existing Monday. Repeating and confirming the same request
