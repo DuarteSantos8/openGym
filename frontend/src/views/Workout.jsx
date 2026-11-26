@@ -1,3 +1,4 @@
+import { ScreenGlossary } from '../components/Term.jsx'
 import { Fragment, useEffect, useId, useRef, useState } from 'react'
 import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
@@ -103,6 +104,8 @@ import { isoDir } from '../lib/bidi.js'
 const HOLD_KEY_GRACE_MS = 1500
 
 /* ---------- start chooser (no active workout) ---------- */
+const WORKOUT_TERMS = ['warm-up', 'working-set', 'rir', 'rpe', 'drop-set', 'superset']
+
 function StartChooser() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -132,6 +135,7 @@ function StartChooser() {
         second choice, so a first visit is one tap from a workout (release pass). */}
     <Button icon="shuffle" variant={S.routines.length ? undefined : 'primary'} onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
     {!S.routines.length && <><div style={{ height: 10 }} /><Button onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
+    <ScreenGlossary ids={WORKOUT_TERMS} />
   </div>
 }
 
@@ -2818,6 +2822,7 @@ function ActiveWorkout() {
         anywhere in a long stack. */}
     {listMode && chipRow}
     </div>
+    <ScreenGlossary ids={WORKOUT_TERMS} />
     {/* Paused (#976): said plainly, with the one thing to do about it. Set a set done and it resumes too. */}
     {paused && <div className="wpause" role="status">
       <span className="wpause-i" aria-hidden="true"><Icon name="pause" /></span>

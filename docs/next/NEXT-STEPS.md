@@ -4,6 +4,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
 - **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. Confirm the two preview HTTP statuses, the owner dashboard and the two-tab case. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
