@@ -58,12 +58,13 @@ afterEach(() => {
 })
 
 const mount = () => act(() => root.render(<Plan />))
-const day = name => host.querySelector(`.plan-day[aria-description="${name}"]`)
+const day = name => [...host.querySelectorAll('.plan-day')].find(row => row.querySelector('.vh').textContent === name)
 
 describe('Plan — the weekday rows', () => {
   it('a planned day is one row with no buttons of its own; a tap opens the day’s picker', () => {
     mount()
     const monday = day('Monday')
+    expect(monday.querySelector('.vh')?.textContent).toBe('Monday')
     expect(monday.hasAttribute('aria-label')).toBe(false)
     expect(monday.querySelector('.plan-day-n').hasAttribute('aria-hidden')).toBe(false)
     expect(monday.querySelector('.tt').textContent).toBe('Push')
