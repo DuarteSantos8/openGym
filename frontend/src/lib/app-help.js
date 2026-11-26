@@ -24,7 +24,7 @@ export function helpMatches(question, ctx, tr = t) {
       if (seen.has(key)) continue
       seen.add(key)
       const route = item.route || (item.page === 'coach' ? '/coach/setup' : '/settings/' + item.page)
-      add(item.label, [item.isPage ? tr('Settings') : pageTrail(item.page, tr), item.label], route, item.kw,
+      add(item.label, [tr('Settings'), ...(item.isPage ? [] : [pageTrail(item.page, tr)]), item.label], route, item.kw,
         item.isPage ? undefined : { find: item.title, via: item.via })
     }
   }
