@@ -1,5 +1,7 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Тренування з підказками",
+  "Using {0} for this workout.": "У цьому тренуванні ви виконаєте {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Два тренування на рухливість у дні відпочинку принесли одну заморозку.",
   "Draft": "Чернетка",
   "Move gently and switch sides when comfortable.": "Рухайтеся плавно й змінюйте бік, коли вам зручно.",

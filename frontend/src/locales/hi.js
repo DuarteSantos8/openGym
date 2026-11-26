@@ -1,5 +1,7 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "निर्देशित वर्कआउट",
+  "Using {0} for this workout.": "इस वर्कआउट में अब {0} करेंगे।",
   "Two rest-day mobility sessions earned a freeze.": "आराम के दिनों में दो मोबिलिटी सत्र पूरे करने पर आपको एक फ़्रीज़ मिला।",
   "Draft": "मसौदा",
   "Move gently and switch sides when comfortable.": "आराम से हिलें-डुलें और जब सहज लगे, तब दूसरी तरफ़ करें।",

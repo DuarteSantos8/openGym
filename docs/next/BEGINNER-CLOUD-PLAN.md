@@ -157,7 +157,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|
 | EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
-| EP26-T03 | Coach Mode: one card at a time, spoken cues, "too hard" swaps to the easier version | open |
+| EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
 | EP26-T04 | Ladder skill tree | open |
 | EP26-T05 | Haptics and sound kit that respects mute and reduced motion | open |
 | EP26-T06 | Second form-check movement (closes EP10-T04) | open; needs the owner's three clips first |

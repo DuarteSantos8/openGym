@@ -1,5 +1,7 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Treniruotė su gairėmis",
+  "Using {0} for this workout.": "Šioje treniruotėje dabar atliksite {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Už dvi judrumo treniruotes poilsio dienomis gavai vieną užšaldymą.",
   "Draft": "Juodraštis",
   "Move gently and switch sides when comfortable.": "Judėkite švelniai ir pakeiskite pusę, kai jausitės patogiai.",

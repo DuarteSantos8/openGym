@@ -1,6 +1,8 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  "Guided workout": "Guidet træning",
+  "Using {0} for this workout.": "Du bruger nu {0} i denne træning.",
   "Two rest-day mobility sessions earned a freeze.": "To mobilitetspas på hviledage gav dig en frysning.",
   "Draft": "Udkast",
   "Move gently and switch sides when comfortable.": "Bevæg dig roligt, og skift side, når det føles behageligt.",

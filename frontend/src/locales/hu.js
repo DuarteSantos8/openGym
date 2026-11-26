@@ -1,5 +1,7 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Vezetett edzés",
+  "Using {0} for this workout.": "Ezen az edzésen most ez a gyakorlat következik: {0}.",
   "Two rest-day mobility sessions earned a freeze.": "A pihenőnapokon végzett két mobilitási edzésért egy sorozatfagyasztást kaptál.",
   "Draft": "Vázlat",
   "Move gently and switch sides when comfortable.": "Mozogj finoman, és válts oldalt, amikor kényelmes.",

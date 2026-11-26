@@ -1381,9 +1381,9 @@ function ActiveWorkout() {
   // auto-advance share one path. Unknown/absent values read as cards, keeping every
   // pre-existing profile (and a session started before this field) as it was.
   const requestedView = A.workoutView || S.workoutView
-  const workoutView = ['list', 'compact', 'focus'].includes(requestedView) ? requestedView : 'cards'
+  const workoutView = ['list', 'compact', 'focus', 'guided'].includes(requestedView) ? requestedView : 'cards'
   const listMode = workoutView === 'list' || workoutView === 'compact'
-  const focusMode = workoutView === 'focus'
+  const focusMode = workoutView === 'focus' || workoutView === 'guided'
   const dense = workoutView === 'compact'
   // A superset's heading: its own name and rest between rounds when it has them (#292).
   const ssTitle = u => {
@@ -1856,9 +1856,9 @@ function ActiveWorkout() {
   const blockProps = idx => ({
     editing,
     onSwap: () => swapExercise(idx),
-    onSwapBackup: id => {
+    onSwapBackup: (id, ...afterSwap) => {
       if (focusMode) focusPointerEpoch.current++
-      swapActiveWorkoutToBackup(idx, id)
+      swapActiveWorkoutToBackup(idx, id, ...afterSwap)
     },
     onMoveUp: () => moveUnitAt(idx, -1, true),
     onMoveDown: () => moveUnitAt(idx, 1, true),
@@ -1926,6 +1926,7 @@ function ActiveWorkout() {
     list: t('List'),
     compact: t('Compact'),
     focus: t('Focus'),
+    guided: t('Guided workout'),
   }
   const openLayoutMenu = () => menuSheet({
     title: t('Layout'),
@@ -1934,6 +1935,7 @@ function ActiveWorkout() {
       { icon: 'list', label: t('List'), on: workoutView === 'list', onClick: () => setWorkoutView('list') },
       { icon: 'compact', label: t('Compact'), on: workoutView === 'compact', onClick: () => setWorkoutView('compact') },
       { icon: 'target', label: t('Focus'), on: workoutView === 'focus', onClick: () => setWorkoutView('focus') },
+      { icon: 'figureStrength', label: t('Guided workout'), on: workoutView === 'guided', onClick: () => setWorkoutView('guided') },
       listMode && { icon: 'minimize', label: t('Collapse completed exercises'),
         sub: t('Keep the current exercise open'), on: collapseOn,
         onClick: () => update(s => { if (s.active) s.active.collapseCompleted = !collapseOn }) },
@@ -2929,7 +2931,7 @@ function ActiveWorkout() {
             {...blockProps(adjacent[0])} />
         }}>
       {focusMode ? (
-        <FocusView entryIdx={cur} unit={unit}
+        <FocusView entryIdx={cur} unit={unit} guided={workoutView === 'guided'}
           onSelectEntry={selectFocusEntry} onAdvanceUnit={advanceFocusUnit} pointerEpoch={focusPointerEpoch.current}
           onPairPrev={onPairPrev} onPairNext={onPairNext} onUnpair={() => unpairAt(cur)}
           {...blockProps(cur)} />

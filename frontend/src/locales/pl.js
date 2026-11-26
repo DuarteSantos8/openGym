@@ -1,5 +1,7 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Trening z instrukcjami",
+  "Using {0} for this workout.": "W tym treningu wykonasz teraz {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Za dwie sesje mobilności w dni odpoczynku otrzymujesz jedno zamrożenie.",
   "Draft": "Wersja robocza",
   "Move gently and switch sides when comfortable.": "Poruszaj się łagodnie i zmień stronę, kiedy będzie ci wygodnie.",

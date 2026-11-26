@@ -1,5 +1,7 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Guided workout": "Guidad träning",
+  "Using {0} for this workout.": "Du använder nu {0} i det här passet.",
   "Two rest-day mobility sessions earned a freeze.": "Två rörlighetspass på vilodagar gav dig en frysning.",
   "Draft": "Utkast",
   "Move gently and switch sides when comfortable.": "Rör dig mjukt och byt sida när det känns bekvämt.",

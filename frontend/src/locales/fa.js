@@ -1,5 +1,7 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  "Guided workout": "تمرین هدایت‌شده",
+  "Using {0} for this workout.": "در این جلسه از {0} استفاده می‌شود.",
   "Two rest-day mobility sessions earned a freeze.": "با دو جلسهٔ تمرین تحرک در روزهای استراحت، یک فرصت برای حفظ زنجیره به دست آوردی.",
   "Draft": "پیش‌نویس",
   "Move gently and switch sides when comfortable.": "آرام حرکت کن و هر وقت احساس راحتی کردی، سمت حرکت را عوض کن.",
