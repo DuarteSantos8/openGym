@@ -148,9 +148,13 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   at the time of the check.
 - **Direct API check.** A separate anonymous curl to the live Render service's `/api/me`
   returned HTTP 401 with `{"error":"not signed in"}`.
+- **Two-tab sign-in verified on the hosted preview, November 26, 2026.** Both tabs started
+  signed out. The owner signed in and chose Continue in the second tab. After selecting
+  the first tab in the browser tab strip, Settings showed the signed-in account.
+  Opening `GET /api/me` in each existing tab returned an authenticated user with the
+  same nonempty account ID. The numeric HTTP statuses were not recorded. The first
+  tab was returned to Settings and the second to Home.
 - **Pending with the owner.** Verify the Admin dashboard on the owner's preview account.
-  To check two tabs, leave one signed out, sign in with the owner's password in the other,
-  then focus the first tab and verify the linked profile stays signed in.
   Known wart: an admin who opened their own profile through the account, signed out, and within
   two minutes uses their passkey on that same profile is signed out once and has to try again.
 - Backups, below. Sign-in throttling, above.
