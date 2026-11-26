@@ -20,7 +20,7 @@
  * one coherent thing to say yes or no to. */
 import { libraryHas, LIB_BY_ID, equipmentAllows, isDumbbellLift, machineAllows } from './library.js';
 import { validatePlan, validateReview } from './validate.js';
-import { asksForNoWeights } from './routine-library.js';
+import { asksForBodyweightOnly } from './routine-library.js';
 
 export const ACTION_TYPES = ['routine', 'schedule', 'swap', 'target', 'workout', 'start', 'note', 'exercise', 'show', 'import'];
 export const MAX_ACTIONS = 8;
@@ -49,7 +49,7 @@ function itemsOf(a, where, ctx, errors) {
     const it = list[i] || {};
     const id = known.has(it.id) ? it.id : libId(it.id);
     if (!libraryHas(id) && !known.has(id)) { errors.push(`${where}.items[${i}].id ${JSON.stringify(it.id)} is not in the exercise library — copy an id exactly as the library lists it`); return null; }
-    if (ctx.noWeights && LIB_BY_ID.get(id)?.eq !== 'body weight') {
+    if (ctx.bodyweightOnly && LIB_BY_ID.get(id)?.eq !== 'body weight') {
       errors.push(`${where}.items[${i}] needs a bodyweight exercise for this request`); return null;
     }
     if (libraryHas(id) && !(ctx.offered && ctx.offered.has(id)) && ((ctx.equipment?.length && !equipmentAllows(ctx.equipment, id)) || (ctx.noDumbbells && isDumbbellLift(id)) || !machineAllows(ctx.machines, id))) {
@@ -77,7 +77,7 @@ function itemsOf(a, where, ctx, errors) {
 export function sortActions(data, payload, answer, ctx = {}) {
   const raw = Array.isArray(data.actions) ? data.actions : [];
   if (!raw.length) return { ok: true, kind: 'ask', actions: [] };
-  ctx = { ...ctx, noWeights: asksForNoWeights(payload.question) };
+  ctx = { ...ctx, bodyweightOnly: asksForBodyweightOnly(payload.question) };
   const errors = [];
   const acts = [];
   raw.slice(0, MAX_ACTIONS).forEach((a, i) => {

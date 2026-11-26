@@ -91,25 +91,27 @@ test('ask pipeline: the ask rules and schema reach the provider, and an answer c
   assert.equal(calls[0].schema, SCHEMAS.ask);
 });
 
-test('a back workout with no weights: propose floor exercises even for someone who trains with cables', async () => {
-  const question = 'a back workout with no weights';
-  const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0007' }, { id: '3225' }] }] };
-  const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: question });
-  // A trained cable movement is deliberately offered by the stub on its first attempt.
-  // The repair reply picks two real back movements performed on the floor.
-  let attempts = 0;
-  const adapter = { spawns: false, async invoke({ prompt }) {
-    assert.ok(prompt.includes(question));
-    const ids = ++attempts === 1 ? ['0007'] : ['1772', '3225'];
-    return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Back session',
-      actions: [{ type: 'workout', name: 'Back', items: ids.map(id => ({ id, sets: 2, reps: 8 })) }] }) };
-  } };
-  const result = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
-  assert.equal(result.ok, true);
-  const ids = result.result.actions[0].items.map(item => item.id);
-  assert.deepEqual(ids, ['1772', '3225']);
-  assert.deepEqual(ids.map(id => LIB_BY_ID.get(id)?.n), ['elbow lift - reverse push-up', 'floor t raise']);
-  assert.ok(ids.every(id => payload.library.some(e => e.id === id) && LIB_BY_ID.get(id).bp === 'back'));
-  assert.ok(payload.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'));
-  assert.equal(attempts, 2);
-});
+for (const qualifier of ['with no weights', 'without weights', 'with no equipment', 'without equipment']) {
+  test(`a back workout ${qualifier}: propose floor exercises even for someone who trains with cables`, async () => {
+    const question = `a back workout ${qualifier}`;
+    const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0007' }, { id: '3225' }] }] };
+    const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: question });
+    // A trained cable movement is deliberately offered by the stub on its first attempt.
+    // The repair reply picks two real back movements performed on the floor.
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke({ prompt }) {
+      assert.ok(prompt.includes(question));
+      const ids = ++attempts === 1 ? ['0007'] : ['1772', '3225'];
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Back session',
+        actions: [{ type: 'workout', name: 'Back', items: ids.map(id => ({ id, sets: 2, reps: 8 })) }] }) };
+    } };
+    const result = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
+    assert.equal(result.ok, true);
+    const ids = result.result.actions[0].items.map(item => item.id);
+    assert.deepEqual(ids, ['1772', '3225']);
+    assert.deepEqual(ids.map(id => LIB_BY_ID.get(id)?.n), ['elbow lift - reverse push-up', 'floor t raise']);
+    assert.ok(ids.every(id => payload.library.some(e => e.id === id) && LIB_BY_ID.get(id).bp === 'back'));
+    assert.ok(payload.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'));
+    assert.equal(attempts, 2);
+  });
+}
