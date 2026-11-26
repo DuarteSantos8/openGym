@@ -191,13 +191,10 @@ public class WatchBridgePlugin extends Plugin {
         // watches; the page makes each only when status says such a watch is there.
         String garmin = call.getString("garmin");
         String huawei = call.getString("huawei");
-        boolean garminSent = false;
-        if (garmin != null || huawei != null) {
-            // Both links get theirs: no short-circuit.
-            boolean toGarmin = garmin != null && GarminLink.get(getContext()).send(garmin);
-            boolean toHuawei = huawei != null && HuaweiLink.get(getContext()).send(huawei, Boolean.TRUE.equals(call.getBoolean("again", false)));
-            garminSent = toGarmin || toHuawei;
-        }
+        // Both links get theirs: no short-circuit.
+        boolean toGarmin = garmin != null && GarminLink.get(getContext()).send(garmin);
+        boolean toHuawei = huawei != null && HuaweiLink.get(getContext()).send(huawei, Boolean.TRUE.equals(call.getBoolean("again", false)));
+        boolean garminSent = toGarmin || toHuawei;
         try {
             PutDataMapRequest req = PutDataMapRequest.create(SNAPSHOT);
             req.getDataMap().putString("snapshot", json);
@@ -207,14 +204,14 @@ public class WatchBridgePlugin extends Plugin {
             req.getDataMap().putLong("at", at);
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
-                .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
-                .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("error", String.valueOf(e.getMessage()))));
+                .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true).put("garmin", toGarmin).put("huawei", toHuawei)))
+                .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("garmin", toGarmin).put("huawei", toHuawei).put("error", String.valueOf(e.getMessage()))));
             // And as a message to the watches in reach (protocol 2): on time, for the watch's clock offset.
             byte[] msg = WatchEventQueue.snapshotMessage(at, json);
             // Not on `io`: the stills' uploads wait seconds there, and a late message misleads the watch's clock.
             if (msg != null) snapshotMessages.submit(() -> messageWatches(msg));
         } catch (Exception e) {
-            call.resolve(new JSObject().put("sent", garminSent));
+            call.resolve(new JSObject().put("sent", garminSent).put("garmin", toGarmin).put("huawei", toHuawei));
         }
     }
 

@@ -223,7 +223,8 @@ describe('a workout from the phone, logged on the watch', () => {
     w.reconnect()
     await w.run(120)
     expect(w.doneRows()).toEqual(['0025', '0025', '0025', '0001', '0001'])
-    expect(w.setDone).toHaveLength(5)
+    // the order the screen handler was called in, not the routine's order
+    expect(w.setDone).toEqual(['0025/0', '0025/1', '0025/2', '0001/0', '0001/1'])
     expect(w.c.s.ob).toEqual([])
     expect(w.queue).toEqual([])
   })

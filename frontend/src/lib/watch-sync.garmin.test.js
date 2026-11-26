@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./health-sync.js', () => ({ loadHealth: async () => ({ on: false }), onHealthChange: () => () => {} }))
 
-import { startWatchSync, startLinkSync, huaweiCall, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { startWatchSync, startLinkSync, huaweiCall, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
 import { readGarminLink, writeWatchPrefs } from './watch-settings.js'
 import { GARMIN_SNAPSHOT_VERSION } from './garmin-snapshot.js'
 
@@ -205,7 +205,8 @@ describe('a Huawei watch on the watch link', () => {
   // to 16 once the workout is too long for the frames).
   const bigWorkout = () => ({
     id: 'w-big', start: 1, cur: 30,
-    entries: Array.from({ length: 80 }, (_, k) => ({ id: '00' + String(10 + (k % 40)), sets: Array.from({ length: 6 }, () => ({ w: 62.5, r: 8 })) })),
+    // a superset of twenty exercises is up, so the window is wide and the byte budget cuts the acked list
+    entries: Array.from({ length: 80 }, (_, k) => ({ id: '00' + String(10 + (k % 40)), ...(k >= 28 && k < 48 ? { sg: 'ss' } : {}), sets: Array.from({ length: 6 }, () => ({ w: 62.5, r: 8 })) })),
   })
   const evOf = id => ({ id, type: 'setDone', wid: 'w-gone', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 1 })
 
@@ -220,7 +221,7 @@ describe('a Huawei watch on the watch link', () => {
     const calls = b.sendSnapshot.mock.calls.map(c => c[0])
     const named = k => new Set(calls.flatMap(c => (c[k] ? JSON.parse(c[k]).acked || [] : [])))
     // the snapshots really were trimmed (else this proves nothing)
-    expect(Math.min(...calls.filter(c => c.huawei && JSON.parse(c.huawei).acked).map(c => JSON.parse(c.huawei).acked.length))).toBeLessThanOrEqual(16)
+    expect(Math.min(...calls.filter(c => c.huawei && JSON.parse(c.huawei).acked).map(c => JSON.parse(c.huawei).acked.length))).toBeLessThan(16)
     expect(hs.filter(id => !named('huawei').has(id))).toEqual([])
     expect(gs.filter(id => !named('garmin').has(id))).toEqual([])
     // nothing keeps being sent: the lists are empty
@@ -252,11 +253,70 @@ describe('a Huawei watch on the watch link', () => {
     b.drain.mockResolvedValueOnce({ events: [evOf('h1')] })
     const { st, stop } = await run(b, { ...S0, active })
     await vi.runAllTimersAsync()
-    expect(b.sendSnapshot.mock.calls.some(c => c[0].again === true)).toBe(true)
+    const first = b.sendSnapshot.mock.calls.length
+    // h1 is named now; the watch sends it a second time, the workout unchanged
+    b.drain.mockResolvedValueOnce({ events: [evOf('h1')] })
+    await drainWatchEvents()
+    await vi.runAllTimersAsync()
+    expect(b.sendSnapshot.mock.calls.length).toBeGreaterThan(first)
+    const again = lastCall(b)
+    expect(again.again).toBe(true)
+    const strip = c => JSON.parse(c.huawei, (k, v) => (k === 'now' ? undefined : v))
+    expect(strip(again)).toEqual(strip(b.sendSnapshot.mock.calls[first - 1][0]))
     // and an ordinary change after it does not ask for it
     st.setState({ S: { ...st.getState().S, restSec: 91 } })
     await vi.runAllTimersAsync()
-    expect(b.sendSnapshot.mock.calls.at(-1)[0].again).toBeUndefined()
+    expect(lastCall(b).again).toBeUndefined()
     stop()
+  })
+
+  it('a Huawei link that did not take the snapshot keeps its ids, although the Garmin took it', async () => {
+    const hs = Array.from({ length: 70 }, (_, i) => 'h' + String(i).padStart(3, '0'))
+    const b = bridge({ paired: true, installed: true, garmin: true, huawei: true })
+    b.sendSnapshot.mockResolvedValue({ sent: true, garmin: true, huawei: false })
+    b.drain.mockResolvedValueOnce({ events: hs.map(evOf) })
+    const { st, stop } = await run(b, { ...S0, active })
+    await vi.runAllTimersAsync()
+    const from = b.sendSnapshot.mock.calls.length
+    b.sendSnapshot.mockResolvedValue({ sent: true, garmin: true, huawei: true })
+    st.setState({ S: { ...st.getState().S, restSec: 91 } })
+    await vi.runAllTimersAsync()
+    const named = new Set(b.sendSnapshot.mock.calls.slice(from).flatMap(c => JSON.parse(c[0].huawei).acked || []))
+    expect(hs.filter(id => !named.has(id))).toEqual([])
+    stop()
+  })
+
+  it('a replay that comes while a snapshot is on its way is not lost', async () => {
+    const b = bridge({ paired: true, installed: true, huawei: true })
+    b.drain.mockResolvedValueOnce({ events: [evOf('h1')] })
+    let release
+    b.sendSnapshot.mockImplementationOnce(() => new Promise(r => { release = () => r({ sent: true }) }))
+    const { stop } = await run(b, { ...S0, active })
+    const n = b.sendSnapshot.mock.calls.length
+    // the watch sends h1 again while that call is open
+    b.drain.mockResolvedValueOnce({ events: [evOf('h1')] })
+    await drainWatchEvents()
+    release()
+    await vi.runAllTimersAsync()
+    expect(b.sendSnapshot.mock.calls.length).toBeGreaterThan(n)
+    const last = lastCall(b)
+    expect(last.again).toBe(true)
+    expect(JSON.parse(last.huawei).acked).toContain('h1')
+    stop()
+  })
+
+  it('a reply after the link run has stopped arms no new send', async () => {
+    const hs = Array.from({ length: 70 }, (_, i) => 'h' + String(i).padStart(3, '0'))
+    const b = bridge({ paired: true, installed: true, huawei: true })
+    b.drain.mockResolvedValueOnce({ events: hs.map(evOf) })
+    let release
+    b.sendSnapshot.mockImplementationOnce(() => new Promise(r => { release = () => r({ sent: true }) }))
+    const { stop } = await run(b, { ...S0, active })
+    const n = b.sendSnapshot.mock.calls.length
+    stop()
+    release()
+    await vi.advanceTimersByTimeAsync(60000)
+    // 10 ids were still to name, and nothing went after the stop
+    expect(b.sendSnapshot.mock.calls.length).toBe(n)
   })
 })

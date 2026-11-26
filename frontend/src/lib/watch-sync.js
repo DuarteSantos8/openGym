@@ -1276,7 +1276,13 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const OWN = { garmin: 'g', huawei: 'h' }
   // an id leaves its list when a snapshot that carried it has gone out (below)
   let again = false
+  // Set by the cleanup: a reply that comes after it must not arm a new send.
+  let stopped = false
+  // The ids that came again while a snapshot was on its way: that snapshot did not name them for the
+  // watch's new request, so they stay pending and its reply must not mark the state as sent.
+  let replayed = new Set()
   const onAcked = (ids = []) => {
+    for (const id of ids) replayed.add(id)
     if (Array.isArray(ids)) for (const [k, on] of [['garmin', garmin], ['huawei', huawei]]) {
       const mine = ids.filter(id => typeof id === 'string' && id.startsWith(OWN[k]))
       if (on && mine.length) unnamed[k] = [...unnamed[k].filter(id => !mine.includes(id)), ...mine].slice(-ACKED_MAX)
@@ -1369,14 +1375,18 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         sentAt = Date.now()
         // `again`: an event came a second time, so the watch never got the snapshot that named it; the
         // link must not drop this one as the same as the last (the Huawei link does that otherwise).
-        const r = await p.WatchBridge.sendSnapshot({ json, ...(g ? { garmin: g } : {}), ...(h ? { huawei: h, ...(again ? { again: true } : {}) } : {}) })
+        const sendAgain = again
+        // A replay that comes during the call sets these anew, for the next send.
         again = false
+        replayed = new Set()
+        const r = await p.WatchBridge.sendSnapshot({ json, ...(g ? { garmin: g } : {}), ...(h ? { huawei: h, ...(sendAgain ? { again: true } : {}) } : {}) })
         if (r && r.sent) {
-          lastSent = same
+          if (!replayed.size) lastSent = same
           // Only the ids the snapshots really named are done with (a short snapshot cuts its list);
-          // the rest go with the next one. A snapshot the link did not take names nobody.
-          const done = { garmin: gSnap?.acked || [], huawei: hSnap?.acked || [] }
-          for (const k of ['garmin', 'huawei']) unnamed[k] = unnamed[k].filter(id => !done[k].includes(id))
+          // the rest go with the next one. A snapshot the link did not take names nobody: the native
+          // side says per link whether it took its own (an older build says nothing: taken).
+          const done = { garmin: r.garmin === false ? [] : gSnap?.acked || [], huawei: r.huawei === false ? [] : hSnap?.acked || [] }
+          for (const k of ['garmin', 'huawei']) unnamed[k] = unnamed[k].filter(id => !done[k].includes(id) || replayed.has(id))
           if (unnamed.garmin.length || unnamed.huawei.length) schedule()
         }
       }
@@ -1411,7 +1421,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // snapshot went in the last SEND_DEBOUNCE_MS; inside that, once at its end. A tick on the phone
   // used to wait 400 ms every time, which is what "the watch lags behind" was partly made of (#882).
   const schedule = () => {
-    if (!linked || useStore.getState().tourSandbox) return
+    if (stopped || !linked || useStore.getState().tourSandbox) return
     if (tm) return
     // (a clock set back since the last one counts as long ago, or nothing would go for a day)
     const since = Date.now() - sentAt
@@ -1503,7 +1513,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { stopped = true; ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

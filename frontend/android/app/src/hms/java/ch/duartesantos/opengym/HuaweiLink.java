@@ -383,7 +383,11 @@ final class HuaweiLink {
         // leave it out (HuaweiForget), and never because of an empty one.
         reviveMs = 0;
         reviveNo++;
-        Set<String> out = forget.missing(new HashSet<>(devices.keySet()), ids);
+        // The watches restored at launch count too: one unpaired before this launch was never listed, and must not stay for ever.
+        Set<String> have = new HashSet<>(devices.keySet());
+        have.addAll(installed.keySet());
+        have.addAll(heard);
+        Set<String> out = forget.missing(have, ids);
         if (!ids.isEmpty()) {
             for (String id : new ArrayList<>(devices.keySet())) if (!ids.contains(id)) { if (Boolean.TRUE.equals(connected.put(id, false))) changed = true; unlisten(id); }
         }
@@ -395,7 +399,9 @@ final class HuaweiLink {
             frameAt.remove(id);
             stalled.remove(id);
             askedAt.remove(id);
-            watched.remove(id);
+            // The SDK registration goes with it: a watch that comes back registers a new listener.
+            MonitorListener l = watched.remove(id);
+            if (l != null) try { HiWear.getMonitorClient(ctx).unregister(l); } catch (Throwable ignored) {}
             devices.remove(id);
             connected.remove(id);
             gone = true;
@@ -412,7 +418,8 @@ final class HuaweiLink {
         if (receivers.containsKey(id)) return;
         Receiver r = message -> onMessage(d, message);
         receivers.put(id, r);
-        try { p2p.registerReceiver(d, r).addOnFailureListener(e -> receivers.remove(id)); } catch (Throwable e) { receivers.remove(id); }
+        // Only this registration goes (a newer one may stand), and discovery looks again: with no receiver left the watch cannot sync.
+        try { p2p.registerReceiver(d, r).addOnFailureListener(e -> { receivers.remove(id, r); main.post(this::lookAgainSoon); }); } catch (Throwable e) { receivers.remove(id); }
     }
 
     private void unlisten(String id) {
@@ -449,6 +456,8 @@ final class HuaweiLink {
         try {
             p2p.isAppInstalled(d, WATCH_PKG).addOnSuccessListener(has -> {
                 boolean yes = Boolean.TRUE.equals(has);
+                // The watch left the list while this probe was on its way: its answer is stale.
+                if (!devices.containsKey(id)) return;
                 // lean: unsure the SDK answers this for a lite watch. A watch that ever spoke to us has the
                 // app whatever it says; it is only forgotten when it leaves Huawei Health.
                 if (!yes && heard.contains(id)) return;
