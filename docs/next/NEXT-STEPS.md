@@ -4,6 +4,10 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
+  account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,
+  successful retry and MiniMax's hourly subscription totals. Per-run billing remains unknown.
+
 All openGym Next work so far is on `main` (44f837f23). CI is green there: the `Tests` workflow with every job, including `e2e`, passed on its first run on GitHub (run 43719512582, 2026-11-15).
 
 | PR | Content | Status |
@@ -65,6 +69,28 @@ Epic status:
 - **In review: `next/EP19-hosted-mcp`.** The optional hosted MCP service and preview routing are prepared. Provisioning needs owner approval and external connectors need a reachable HTTPS address.
 - **Merged (#85): `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
 - **OIDC follow-up:** Explain when the current website has no sign-in or guest path, and keep the provider row in native Settings.
+
+### Coach chat acceptance (B2, stubbed provider)
+
+With a plan already open, a chat message goes to the ask job. A workout action is
+offered for the person to start. New routine and weekday actions become a plan
+preview. The routines and week are written when the person selects Import.
+With no routines or with a proposed plan open, a message uses the plan builder instead.
+
+- **Back workout with no weights:** the ask tests reject a trained cable movement
+  and added load on a floor exercise. A full history of equipment-based movements
+  still leaves room for new suggestions. A request that names resistance bands
+  and rules out weights can use the bands without adding an external load.
+  The repair reply proposes a reverse push-up and a floor T raise, both catalogue
+  back exercises. The bodyweight tag alone does not guarantee floor-only movements:
+  it also includes chin-ups and bench pull-ups. The test verifies those two floor
+  movements. The Coach's catalogue should also carry accessory requirements from
+  the app (see `accessoriesOf` in `frontend/src/lib/equipment.js`).
+- **Add Tuesday push and Wednesday pull:** both routines preview on the requested
+  weekdays. Confirming the chat proposal appends them to those days, keeping Monday,
+  existing sessions on Tuesday and Wednesday, and per-date overrides. A repeat reuses
+  routines with the same name and prescription. Undo restores the original week even
+  after a repeat confirmation. Full-plan imports keep their replacement behavior.
 
 ## 2. Merging (only the owner merges)
 

@@ -108,7 +108,7 @@ Then, in order:
   `/api/health` answered `{"ok":true,"users":0,"writable":true}`, `/api/config` listed the
   Ironvane sign-in, and it wrote its own secret into the data directory.
 
-Not checked, because it needs the real service: the Docker build on Render, the disk's
+Outside the scope of that local check: the Docker build on Render, the disk's
 permissions for the Coach's unprivileged user, the sign-in round trip, and the Coach with a real
 provider.
 
@@ -147,6 +147,24 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   two minutes uses their passkey on that same profile is signed out once and has to try again.
 - Backups, below. Sign-in throttling, above.
 
+## The Coach
+
+On November 25, 2026, the hosted test account received a chat reply. Its first full-plan
+attempt failed with the output limit set to 16,000. Retrying the same plan at 32,000 succeeded.
+
+In the MiniMax console, open **M Plan > Plan Usage > Usage details** and select **Search**.
+For November 26, 01:00 to 02:00 UTC (November 25, 8 to 9 p.m. Eastern), the active
+Monthly M Plan Explore showed one hourly row for `MiniMax-M3.1-Flash`:
+
+| Input tokens | Output tokens | Cache read tokens | Cache write tokens |
+| ---: | ---: | ---: | ---: |
+| 20,637 | 36,590 | 384 | 0 |
+
+The row covers the test hour. MiniMax grouped usage by model and hour, so individual runs,
+their token counts and dollar costs cannot be identified. The row also did not split included
+quota from purchased credits. **API > API Usage**, the separate pay-as-you-go and resource-pack
+ledger, showed no entry for the test window when checked. MiniMax updates that ledger daily.
+
 ## Backups
 
 Everything is under `/data`. Before real users: confirm Render's disk snapshots are on for the
@@ -162,4 +180,4 @@ until its data is no longer wanted.
 ## Cost
 
 A Starter instance plus a 1 GB disk, at Render's published prices. Check the pricing page on the
-day: prices change. The Coach is billed separately by the model provider, per token.
+day: prices change. For the hosted Coach's subscription usage, see [The Coach](#the-coach).
