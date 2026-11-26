@@ -117,7 +117,8 @@ export function syncText (c, t, synced, bar) {
   const n = waiting(c.s)
   if (c.g.awayAt != null) return (bar ? t('phone_gone') : t('phone_out_of_reach')) + (n > 0 ? ' (' + n + ')' : '')
   if (n > 0) return bar ? '(' + n + ')' : t('waiting_sync') + ' ' + n
-  return synced ? t('all_synced') : ''
+  // every event counts here, not only the sets: a finish the phone has not acknowledged is not synced
+  return synced && c.s.ob.length === 0 ? t('all_synced') : ''
 }
 export const join = a => a.filter(x => x).join(' · ')
 
@@ -171,7 +172,8 @@ export function loadBoxes (c, ui) {
   const e = cur.e
   // by the set's id and its planned numbers, not its place: a removal or an add gives the next set the same
   // place, and a snapshot may change what is planned; each must load that set's numbers (core.js c.g.up moves on them)
-  const key = (cur.fixing ? 'f' : '') + strOf(e.id) + '#' + cur.si + '#' + strOf(cur.side) + '#' + strOf(cur.row.sid) + '#' + strOf(cur.row.w) + '/' + strOf(cur.row.r) + '/' + strOf(cur.row.sec)
+  const planned = cur.side && dictOf(cur.row.sides) ? dictOf(cur.row.sides[cur.side]) : null // this side's own plan
+  const key = (cur.fixing ? 'f' : '') + strOf(e.id) + '#' + cur.si + '#' + strOf(cur.side) + '#' + strOf(cur.row.sid) + '#' + strOf(cur.row.w) + '/' + strOf(cur.row.r) + '/' + strOf(cur.row.sec) + '#' + strOf(planned && planned.w) + '/' + strOf(planned && planned.r)
   if (ui.key === key) return
   ui.key = key
   let w = null

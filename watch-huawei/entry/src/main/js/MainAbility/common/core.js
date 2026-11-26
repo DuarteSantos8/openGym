@@ -434,7 +434,8 @@ export function next (s, pos, si) {
   const e = entryAt(s, pos)
   if (!e) return [s.pos, false]
   const sets = arrOf(e.sets)
-  if (si >= 0 && si < sets.length && sideUp(dictOf(sets[si])) != null) return [pos, false]
+  // the other side of a per-side set goes on the same screen, unless the whole set was skipped
+  if (si >= 0 && si < sets.length && sideUp(dictOf(sets[si])) != null && !isSkipped(s, e, si)) return [pos, false]
   const g = e.group
   if (g != null) {
     let lo = pos
@@ -506,8 +507,13 @@ export function progress (s) {
   })
   const pr = arrOf(w.progress)
   if (pr.length === 2) {
+    // one per work set the phone has not counted yet: no warm-up, and a per-side set once it is whole
     let ticks = 0
-    Object.keys(s.p).forEach(k => { if (s.p[k].length === 4) ticks += 1 })
+    const tick = (e, ei, si, side) => { const t = s.p[pend(s.p, e, ei, si, side)]; return t != null && t.length === 4 }
+    entries(s).forEach((e, ei) => arrOf(dictOf(e) ? e.sets : null).forEach((row, si) => {
+      if (!dictOf(row) || isTrue(row.warmup)) return
+      if (dictOf(row.sides)) { if (isTrue(row.done) && (tick(e, ei, si, 'L') || tick(e, ei, si, 'R'))) ticks += 1 } else if (tick(e, ei, si, null)) ticks += 1
+    }))
     return [toI(pr[0], 0) + ticks, toI(pr[1], all)]
   }
   return [done, all]
@@ -1015,7 +1021,8 @@ function followRest (c, nx) {
   if (endsAt != null) {
     const end = endsAt + off(c)
     const d = mine == null ? 1000 : end - mine
-    if (end <= now) s.rest = null
+    // the phone's end is already past: its rest ended, as a skip there does
+    if (end <= now) { s.rest = null; c.rx = was }
     else if (d > REST_SLACK_MS || d < -REST_SLACK_MS) s.rest = end
   } else if (isTrue(nx.restPaused)) {
     const lf = toF(nx.restLeft)
@@ -1153,9 +1160,12 @@ function askTick (c) {
   const paused = toF(w.pausedAt)
   if (paused != null && paused > 0) { g.ask = false; g.askLeft = false; return } // never while paused on the phone
   const left = toF(w.leftGymAt)
-  g.askLeft = left != null && (g.snooze == null || g.snooze < left)
+  // The phone's workout times are on the phone's clock (the watch's less its offset); one started here is on the watch's.
+  const shift = same(w.id, c.s.sh) ? 0 : off(c)
+  const snooze = g.snooze == null ? null : g.snooze - shift
+  g.askLeft = left != null && (snooze == null || snooze < left)
   const st = dictOf(c.s.set)
-  const yes = g.askLeft || asks(lastSet(w), g.snooze, ms(c), st ? toF(st.askMin) : null)
+  const yes = g.askLeft || asks(lastSet(w), snooze, ms(c) - shift, st ? toF(st.askMin) : null)
   if (yes && !g.ask) { g.ask = true; g.page = 'set'; buzz(c, [[60, 300]]) } else if (!yes && g.ask) g.ask = false
 }
 // "Keep going" (tell: a stillHere event) or Finish there (no event).
@@ -1274,7 +1284,8 @@ export function applySnapshot (c, snap) {
   const onScreen = entryAt(s, s.pos)
   const onId = onScreen ? onScreen.id : null
   const atEnd = !!cur && entries(s).length > 0 && s.pos >= entries(s).length
-  if (!sameOne) { hrTotals(c); touch(c); s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0 }
+  // another workout: the old one's "still training?" prompt and snooze are not its own
+  if (!sameOne) { hrTotals(c); touch(c); s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0; c.g.ask = false; c.g.askLeft = false; c.g.snooze = null }
 
   let es = arrOf(nx.entries)
   // the phone behind a drain: until it has every set logged here, its window without the exercise
@@ -1312,7 +1323,9 @@ export function applySnapshot (c, snap) {
         const sd = dictOf(row.sides)
         const one = sd ? dictOf(sd[side]) : null
         const rowAt2 = toF(row.at)
-        if (!held2 && one && isTrue(one.done) && (rowAt2 == null || rowAt2 >= ts[2])) delete p[ks]
+        // the row's `at` is the newest change of either side: this side is clear only when it shows the correction's own numbers
+        const mine = one && (ts[0] == null || toF(one.w) === ts[0]) && (ts[1] == null || toF(one.r) === ts[1])
+        if (!held2 && one && isTrue(one.done) && mine && (rowAt2 == null || rowAt2 >= ts[2])) delete p[ks]
         else if (sd) markSide(row, side, ts[0], ts[1], ts[2])
         else delete p[ks]
       })
@@ -1373,8 +1386,10 @@ function upKey (c) {
   const e = entryAt(s, s.pos)
   const si = e ? setIndex(s, s.pos) : null
   const row = si == null ? null : dictOf(arrOf(e.sets)[si])
+  const side = row ? sideUp(row) : null
+  const planned = side ? dictOf(row.sides[side]) : null // the side up has its own plan
   return (dictOf(s.w) ? strOf(s.w.id) : '') + '|' + s.pos + '|' + (e ? strOf(e.id) : '') + '|' + (si == null ? '' : si) + '|' +
-    (row ? strOf(row.sid) + '|' + strOf(row.w) + '|' + strOf(row.r) + '|' + strOf(row.sec) : '')
+    (row ? strOf(row.sid) + '|' + strOf(row.w) + '|' + strOf(row.r) + '|' + strOf(row.sec) + '|' + strOf(planned && planned.w) + '|' + strOf(planned && planned.r) : '')
 }
 // A message from the phone (the snapshot). Returns the summary when the phone ended the workout the
 // watch had running (the page shows it; c.g.ended holds it too), else null. After it, if s.w went

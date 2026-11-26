@@ -11,6 +11,7 @@ test('3-2-1: 3, 2, 1, Go!, then the workout starts by itself; a tap starts it at
   w.tap('start')
   const nums = []
   for (let i = 0; i < 4; i++) { nums.push(w.d().big); if (i < 3) w.wait(1) }
+  assert.deepEqual(nums, ['3', '2', '1', 'Go!'])
   assert.equal(w.d().goOn, true) // Go! is drawn smaller than a number, to stay inside the ring
   assert.equal(w.screen(), 'count')
   assert.equal(w.d().label, 'Start workout')
@@ -73,6 +74,17 @@ test('Set: + and - move the boxes on the exercise\'s grid, never below zero, no 
   w.tap('rPlus'); assert.equal(w.d().rNum, '9')
   for (let i = 0; i < 12; i++) w.tap('rMinus')
   assert.equal(w.d().rNum, '0')
+})
+
+test('Set: a per-side set\'s boxes reload when the phone changes the planned weight of the side up, the row weight staying', () => {
+  const plan = lw => act([ent('Split squat', 0, [{ w: 25, r: 8, sid: 'u', sides: { L: { w: lw, r: 8 }, R: { w: 25, r: 8 } } }])])
+  const w = mk()
+  w.snap(plan(20))
+  assert.equal(w.d().wNum, '20')
+  const up = w.c.g.up
+  w.snap(plan(22.5)) // the row's own weight is still the heavier 25
+  assert.equal(w.d().wNum, '22.5')
+  assert.equal(w.c.g.up, up + 1)
 })
 
 test('Set: the edits survive a redraw and a snapshot, and reload for the next set', () => {

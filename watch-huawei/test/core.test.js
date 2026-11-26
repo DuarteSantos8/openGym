@@ -181,8 +181,25 @@ test('a per-side tick is reconciled with the phone side by side', () => {
   assert.equal(m.s.w.entries[0].sets[0].sides.L.done, true)
   const phone = sided()
   phone.sets[0].sides.L.done = true
+  phone.sets[0].sides.L.r = 9 // the phone applied the watch's numbers
   phone.sets[0].at = T0 + 5000
   K.onPhone(m.c, snapOf(act([phone]))) // now the phone has it: the pending tick goes
+  assert.equal(m.s.p['s:s1#L'], undefined)
+})
+
+test('a side\'s pending correction waits for that side: a newer change of the other side does not clear it', () => {
+  const sided = () => ent('a', 0, [{ w: 20, r: 10, sid: 's1', sides: { L: { w: 20, r: 10 }, R: { w: 20, r: 10 } } }])
+  const m = running([sided()])
+  K.tickSet(m.c, 0, 0, 'L', 20, 9, null, 60)
+  const phone = sided()
+  phone.sets[0].sides.L.done = true // the phone's L is still its own 10
+  phone.sets[0].sides.R.done = true
+  phone.sets[0].at = T0 + 99000 // newer than our tick: the R side's
+  K.onPhone(m.c, snapOf(act([phone])))
+  assert.ok(m.s.p['s:s1#L'], 'the correction is kept')
+  assert.equal(m.s.w.entries[0].sets[0].sides.L.r, 9)
+  phone.sets[0].sides.L.r = 9
+  K.onPhone(m.c, snapOf(act([phone]))) // the phone shows it now
   assert.equal(m.s.p['s:s1#L'], undefined)
 })
 
@@ -304,6 +321,15 @@ test('no effort without the setting, in the lock second, or for a warm-up or car
   const m2 = running(two())
   K.tickSet(m2.c, 0, 0, null, 1, 1, null, 60)
   assert.equal(K.canRate(m2.c), false)
+  // cardio, with the setting on and the lock over: only the cardio guard says no
+  const m3 = running([ent('c', 0, [{ w: 1, r: 1 }], { mode: 'cardio' })], null, { effort: 'rpe' })
+  K.tickSet(m3.c, 0, 0, null, 1, 1, null, 60)
+  m3.t.now += 2000
+  assert.equal(K.locked(m3.c), false)
+  assert.equal(K.canRate(m3.c), false)
+  const n = m3.s.ob.length
+  K.rate(m3.c, 8)
+  assert.equal(m3.s.ob.length, n)
 })
 
 test('rest math: -15 floors at a second, then it is a Skip', () => {
@@ -602,6 +628,73 @@ test('auto holds start after the rest only when the phone says so', () => {
   K.tickSet(m2.c, 0, 0, null, 1, 1, null, 5)
   m2.t.now += 6000; K.second(m2.c)
   assert.equal(m2.c.g.hcd, null)
+})
+
+test('a rest the phone shortened to a time already past ends like a skip: the auto hold starts', () => {
+  const entries = () => [ent('a', 0, [{ w: 1, r: 1 }]), ent('t', 1, [{ sec: 20 }], { mode: 'time' })]
+  const m = running(entries(), { progress: [0, 2] }, { autoHolds: true })
+  K.tickSet(m.c, 0, 0, null, 1, 1, null, 60)
+  assert.ok(m.s.rest > T0)
+  m.t.now += 5000
+  K.onPhone(m.c, snapOf(act(entries(), { restAt: T0 + 5000, rest: { endsAt: T0 + 1000 } }), { settings: { autoHolds: true } }))
+  assert.equal(m.s.rest, null)
+  assert.equal(m.c.g.hcd, T0 + 5000)
+  // a paused rest is not an end
+  const m2 = running(entries(), { progress: [0, 2] }, { autoHolds: true })
+  K.tickSet(m2.c, 0, 0, null, 1, 1, null, 60)
+  K.onPhone(m2.c, snapOf(act(entries(), { restAt: T0 + 100, restPaused: true, restLeft: 30 })))
+  assert.deepEqual([m2.s.rh, m2.c.g.hcd], [30, null])
+})
+
+test('a skipped per-side set is left for the next exercise, not kept on screen for its open side', () => {
+  const m = running([ent('a', 0, [{ w: 5, r: 5, sid: 'u', sides: { L: {}, R: {} } }]), ent('b', 1, [{ w: 1, r: 1 }])])
+  assert.equal(m.s.pos, 0)
+  K.skipSet(m.c)
+  assert.equal(m.s.pos, 1)
+  // without a skip the other side stays up after the first
+  const m2 = running([ent('a', 0, [{ w: 5, r: 5, sid: 'u', sides: { L: {}, R: {} } }]), ent('b', 1, [{ w: 1, r: 1 }])])
+  K.tickSet(m2.c, 0, 0, 'L', 5, 5, null, 30)
+  assert.equal(m2.s.pos, 0)
+})
+
+test('the set count adds a warm-up never, and a per-side set once when both sides are done', () => {
+  const sided = () => ent('a', 0, [{ warmup: true, w: 20, r: 5 }, { w: 5, r: 5, sid: 'u', sides: { L: {}, R: {} } }, { w: 5, r: 5 }])
+  const m = running([sided()], { progress: [0, 2] })
+  K.tickSet(m.c, 0, 0, null, 20, 5, null, 0) // the warm-up
+  assert.equal(K.progress(m.s)[0], 0)
+  K.tickSet(m.c, 0, 1, 'L', 5, 5, null, 0)
+  assert.equal(K.progress(m.s)[0], 0) // one side of two
+  K.tickSet(m.c, 0, 1, 'R', 5, 5, null, 0)
+  assert.equal(K.progress(m.s)[0], 1)
+  K.tickSet(m.c, 0, 2, null, 5, 5, null, 0)
+  assert.deepEqual(K.progress(m.s), [2, 2])
+})
+
+test('Still training compares the phone\'s times on the phone\'s clock: a watch 30 minutes ahead is not idle', () => {
+  const ahead = 30 * 60000
+  const m = running(two(), { activeAt: T0 - ahead - 60000 }, {}) // the phone's clock: a minute ago
+  m.s.ck = [[T0, ahead]]
+  for (let i = 0; i < 10; i++) K.second(m.c)
+  assert.equal(m.c.g.ask, false)
+  m.t.now += 21 * 60000
+  for (let i = 0; i < 10; i++) K.second(m.c)
+  assert.equal(m.c.g.ask, true)
+  // the snooze is the watch's own clock: keep going waits another 20 minutes, not a shifted one
+  K.keepGoing(m.c, false)
+  m.t.now += 19 * 60000
+  for (let i = 0; i < 10; i++) K.second(m.c)
+  assert.equal(m.c.g.ask, false)
+})
+
+test('a snapshot of another workout drops the old one\'s Still training prompt and snooze', () => {
+  const m = running(two(), { activeAt: T0 - 21 * 60000 }, {})
+  for (let i = 0; i < 10; i++) K.second(m.c)
+  assert.equal(m.c.g.ask, true)
+  K.keepGoing(m.c, false)
+  assert.notEqual(m.c.g.snooze, null)
+  m.c.g.ask = true
+  K.onPhone(m.c, snapOf(act(two(), { id: 'w2', activeAt: T0 })))
+  assert.deepEqual([m.s.w.id, m.c.g.ask, m.c.g.askLeft, m.c.g.snooze], ['w2', false, false, null])
 })
 
 test('cardio is logged on the phone: Done on it just moves on, sends nothing', () => {
@@ -1028,7 +1121,8 @@ test('1: whole to window mid-workout: position, pending ticks, skipped sets stay
 })
 
 test('1: window to whole keeps the exercise on screen, also when an exercise is in the workout twice', () => {
-  const twice = () => [wex('x', 0, 2), wex('y', 1, 1), wex('x', 2, 2)]
+  // the two copies have set ids of their own, so an event can only come from the one it was ticked on
+  const twice = () => { const a = [wex('x', 0, 2), wex('y', 1, 1), wex('x', 2, 2)]; a[2].sets.forEach((r, j) => { r.sid = 'z' + j }); return a }
   const m = running(twice().slice(2), { cur: 2, count: 3 })
   assert.equal(m.s.pos, 0)
   assert.equal(K.entryIdx(m.s, 0), 2)
@@ -1036,7 +1130,9 @@ test('1: window to whole keeps the exercise on screen, also when an exercise is 
   assert.equal(K.entryIdx(m.s, m.s.pos), 2) // the second x, not the first
   K.tickSet(m.c, m.s.pos, 0, null, 50, 8, null, 60)
   assert.equal(m.evs()[0].entryIdx, 2)
-  assert.equal(m.evs()[0].sid, 'x0')
+  assert.equal(m.evs()[0].sid, 'z0')
+  assert.equal(m.s.w.entries[2].sets[0].done, true)
+  assert.notEqual(m.s.w.entries[0].sets[0].done, true) // the first copy is untouched
   // whole to a window of the second x again: still the second x
   K.onPhone(m.c, snapWith(act(twice().slice(1), { cur: 2, count: 3 })))
   assert.equal(K.entryIdx(m.s, m.s.pos), 2)

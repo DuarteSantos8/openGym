@@ -117,6 +117,18 @@ test('Summary: the sync row shows only when it has words', () => {
   assert.equal(V.blank().syncOn, false)
 })
 
+test('Summary: no "All synced" while the finish the phone has not acknowledged is waiting', () => {
+  const w = mk()
+  w.snap(act([ent('Bench', 0, [row(60, 8, { done: true })])]))
+  K.finishWorkout(w.c, false)
+  w.wait(1)
+  assert.equal(w.screen(), 'summary')
+  assert.equal(w.evs().some(e => e.type === 'finish'), true)
+  assert.equal(w.d().sync, '')
+  K.ackOutbox(w.c.s, w.evs().map(e => e.id))
+  assert.equal(w.d().sync, 'All synced')
+})
+
 test('The phone ended the workout: the summary says so, with the heart rate the watch had', () => {
   const w = mk()
   w.snap(act([ent('Bench', 0, [row(60, 8, { done: true }), row(60, 8)])]))
