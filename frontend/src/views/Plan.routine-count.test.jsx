@@ -49,7 +49,7 @@ afterEach(() => {
 
 const mount = () => act(() => root.render(<Plan />))
 // a single routine says how many exercises it has; a combined day says how many routines
-const countOn = day => host.querySelector(`.plan-day[aria-label="${day}"] .ss`)?.textContent
+const countOn = day => host.querySelector(`.plan-day[aria-description="${day}"] .ss`)?.textContent
 
 describe('Plan — the day header counts its routines', () => {
   it('names the exercises of a single routine, and counts the routines of a combined day', () => {

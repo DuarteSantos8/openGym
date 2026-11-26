@@ -163,3 +163,5 @@ npm run test:e2e                         # Playwright + axe; starts API and prev
 ## 6. Resume prompt for a coding agent
 
 > Repo: `sorensadrgit-art/openGym`. Read `AGENTS.md`, then `docs/next/NEXT-STEPS.md`. Take the first unfinished task in section 3 that an agent can do. Create a worktree from `main`. Write the tests first. Then run the full suite with `--maxWorkers=8`, the build, `check-bundle-syntax` and `test:e2e`. Open a draft PR on the fork with a body that says what was verified and what wasn't. Follow section 5. Stop and ask before anything irreversible.
+
+D2 follow-up keeps definitions out of the first load. The full-screen accessibility check covers Workout, Plan and Progress.

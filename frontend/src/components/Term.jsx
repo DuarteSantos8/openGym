@@ -35,10 +35,3 @@ export default function Term({ id, children }) {
     {children ?? t(entry.term)}
   </button>
 }
-
-export function ScreenGlossary({ ids }) {
-  return <details className="iv-screen-glossary">
-    <summary>{t('Glossary')}</summary>
-    <div>{ids.map(id => <Term key={id} id={id} />)}</div>
-  </details>
-}
