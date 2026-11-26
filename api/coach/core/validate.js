@@ -50,7 +50,7 @@ const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,
 // and either way it reaches the plan, the progression engine and a printed line reading "∞ kg".
-const MAX_WEIGHT = 1000;
+export const MAX_WEIGHT = 1000;
 const MAX_SPEED = 60;
 // Ids that are object keys downstream (exIdMap/ridMap in plan-share.js). Assigning to them is
 // silently ignored and reading them back yields Object.prototype, which persists into state as
@@ -60,6 +60,60 @@ const safeId = v => isStr(v) && !RESERVED_IDS.includes(v);
 const MAX_CHANGES = 25;
 const MAX_ROUTINES = 7;
 const MAX_EX_PER_ROUTINE = 20;
+
+/* ---------- pyramids (frontend/src/lib/pyramid.js) ----------
+   One rep target per set, in order: a whole number or "max". A pyramid is not four copies of
+   the same set, so a plan that loses it is not the plan the user wrote. The API image cannot
+   import the frontend, so these rules are copied and pinned against the app's own fixture
+   (test/coach-pyramid.test.js), the same trade-off payload.js already makes for readSession. */
+const PYRAMID_MAX = 'max';
+const MAX_PYRAMID_SETS = 10;
+const MAX_PYRAMID_REST = 900;
+function pyramidTargets(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const x of v) {
+    if (x === PYRAMID_MAX) out.push(PYRAMID_MAX);
+    else if (x != null && x !== '' && Number.isFinite(Number(x))) out.push(Math.min(100, Math.max(1, Math.round(Number(x)))));
+  }
+  return out.slice(0, MAX_PYRAMID_SETS);
+}
+// All zeros is no field at all, as the app writes it (normalizePyramidRest/Weight). Bounded the
+// same way payload.js carries them, so a plan validated here reads the same there.
+// The index each accepted target came from, so a per-set rest or load stays beside its own set
+// when a malformed target in the middle is dropped.
+function pyramidIndexes(v) {
+  if (!Array.isArray(v)) return [];
+  const idx = [];
+  v.forEach((x, i) => {
+    if (x === PYRAMID_MAX || (x != null && x !== '' && Number.isFinite(Number(x)))) idx.push(i);
+  });
+  return idx.slice(0, MAX_PYRAMID_SETS);
+}
+function pyramidRestList(v, idx) {
+  const src = Array.isArray(v) ? v : [];
+  const out = idx.map(i => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
+  return out.some(n => n > 0) ? out : [];
+}
+function pyramidWeightList(v, idx) {
+  const src = Array.isArray(v) ? v : [];
+  const out = idx.map(i => {
+    const w = Number(src[i]);
+    return Number.isFinite(w) && w > 0 ? Math.min(MAX_WEIGHT, Math.round(w * 100) / 100) : 0;
+  });
+  return out.some(w => w > 0) ? out : [];
+}
+// A pyramid is the prescription: it fixes the set count, each set's target and its own planned
+// load, and the app never progresses one (progression.js returns "off"). A review change that
+// writes a flat field beside it would be applied over a slot that still follows the pyramid —
+// the session would train 4 sets while the card promised 6, or show a progression that never
+// runs — so these types are refused. No review change type can carry a pyramid, so the message
+// says what a review can do instead: leave the slot alone, or swap or remove the exercise.
+const PYRAMID_OWNS = ['sets', 'reps', 'repsMin', 'repsMax', 'exercise-prog', 'inc'];
+const PYRAMID_LOCKED = (where, type, ex) =>
+  `${where} (${type}) targets exercise "${ex.id}"${ex.name ? ` (${ex.name})` : ''}, a pyramid slot — `
+  + 'a pyramid owns its sets, reps and progression, and no review change can rewrite it. '
+  + 'Leave this change out; to change that exercise, swap or remove it';
 
 const isStr = v => typeof v === 'string' && v.trim().length > 0;
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
@@ -233,6 +287,9 @@ export function validatePlan(data, ctx = {}) {
       const clean = { id: eid, sets: isInt(e.sets, 1, 10) ? e.sets : 3 };
       const mode = MODES.includes(e.mode) ? e.mode : 'reps';
       const perSide = !!e.side;
+      // Read before the flat fields: a pyramid owns each set's reps, so the odd-per-side rule
+      // belongs to the pyramid's targets, not to a flat `reps` it is about to replace.
+      const pyramid = mode === 'reps' && e.pyramid != null ? pyramidTargets(e.pyramid) : [];
       if (mode === 'cardio') {
         // Written out like 'time' below: without it every reader falls back to the catalogue,
         // and a cardio finisher on a non-cardio exercise (kettlebell swings) comes out as reps
@@ -247,8 +304,28 @@ export function validatePlan(data, ctx = {}) {
       } else {
         clean.mode = 'reps';
         clean.reps = isInt(e.reps, 1, 100) ? e.reps : 10;
-        if (perSide && clean.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.reps`)); return; }
+        // Only when there is no pyramid to take over below: the app itself can hold a per-side
+        // pyramid [12, 10] beside a stale flat `reps: 11`, and refusing that would reject a slot
+        // whose prescription is entirely valid.
+        if (perSide && !pyramid.length && clean.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.reps`)); return; }
         if (isNum(e.weight) && e.weight > 0 && e.weight <= MAX_WEIGHT) clean.weight = e.weight;
+      }
+      // A pyramid owns each set's reps, so it has to survive this whitelist. The flat fields
+      // follow it exactly as the app's own editor writes them (flatFromPyramid): the set count
+      // is its length, and `reps` its first numeric target, so a reader that ignores `pyramid`
+      // still sees a sane prescription rather than a stale pair.
+      if (pyramid.length) {
+        if (perSide && pyramid.some(v => typeof v === 'number' && v % 2)) {
+          errors.push(ODD_PER_SIDE(`${where}.pyramid`)); return;
+        }
+        clean.pyramid = pyramid;
+        clean.sets = pyramid.length;
+        const first = pyramid.find(v => typeof v === 'number');
+        if (first != null) clean.reps = first;
+        const rest = pyramidRestList(e.pyramidRest, pyramidIndexes(e.pyramid));
+        if (rest.length) clean.pyramidRest = rest;
+        const weight = pyramidWeightList(e.pyramidWeight, pyramidIndexes(e.pyramid));
+        if (weight.length) clean.pyramidWeight = weight;
       }
       if (e.prog != null) {
         if (!POLICIES.includes(e.prog)) errors.push(`${where}.prog "${e.prog}" is not one of ${POLICIES.join(', ')}`);
@@ -325,13 +402,22 @@ export function validatePlan(data, ctx = {}) {
   // FR-20: never start someone above what they have actually lifted.
   const caps = new Map((ctx.workingWeights || []).map(w => [w.id, w.best]));
   routines.forEach(r => r.ex.forEach(e => {
-    if (e.weight == null) return;
     const cap = caps.get(e.id);
     // No cap for THIS exercise means they have never lifted it, whether or not they have
     // lifted anything else. Either way the number is invented, and create.md already tells the
     // model to omit it: drop it and let the first session set the baseline, like the app does.
-    if (cap == null) delete e.weight;
-    else if (e.weight > cap) e.weight = cap;
+    if (e.weight != null) {
+      if (cap == null) delete e.weight;
+      else if (e.weight > cap) e.weight = cap;
+    }
+    // Each set's planned pyramid load is a prescription too, so the same ceiling applies; a set
+    // with no history starts from 0 (what that set lifted last time) rather than an invented
+    // number. All zero is no field at all, like the cleaner writes it.
+    if (Array.isArray(e.pyramidWeight) && e.pyramidWeight.length) {
+      const capped = e.pyramidWeight.map(w => (w > 0 ? (cap == null ? 0 : Math.min(w, cap)) : 0));
+      if (capped.some(w => w > 0)) e.pyramidWeight = capped;
+      else delete e.pyramidWeight;
+    }
   }));
 
   // FR-17: honour the number of training days the user asked for.
@@ -422,6 +508,14 @@ export function validateReview(data, plan, ctx = {}) {
         errors.push(`${where}.target.exId "${target.exId}" is not in routine "${routine.name}" (routineId "${routine.id}") — `
           + `a change's target.exId must be one of that routine's own exercises: ${exIdsOf(routine)}`); return;
       }
+      // Dropped like a duplicate rather than fatal: the change is self-contained (it only ever
+      // rewrites one field of one slot), so the rest of a sound review still reaches the person.
+      // Not recorded in droppedRefs: nothing else in the set depends on a flat field of this slot.
+      // When it is all that was proposed, or something else is wrong too, it goes to repair.
+      if (planned.pyramid && PYRAMID_OWNS.includes(c.type)) {
+        const msg = PYRAMID_LOCKED(where, c.type, planned);
+        errors.push(msg); dropped.push(msg); return;
+      }
     }
 
     // Two changes under one id share a checkbox on the review screen: ticking one applies
@@ -497,11 +591,21 @@ export function validateReview(data, plan, ctx = {}) {
         if (!isStr(aid) || !knownEx(aid)) { errors.push(BAD_EX_ID(`${where}.after.id`, a.id)); return; }
         if (offEquipment(ctx, aid)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, aid)); return; }
         if (aid === planned.id) { errors.push(`${where} swaps an exercise for itself`); return; }
+        // The pyramid travels with the slot in the app (applyChangeSet keeps every field but
+        // `bodyweight`/`side`), so a flat pair copied here would be written over it on apply and
+        // leave the entry disagreeing with its own pyramid. The pyramid already says both.
+        const flat = !planned?.pyramid;
+        const pyr = Array.isArray(planned?.pyramid) && planned.pyramid.length ? planned.pyramid : null;
+        const weight = isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? a.weight : null;
         out.after = {
           id: aid, name: nameOf(aid, ctx),
-          ...(isInt(a.sets, 1, 10) ? { sets: a.sets } : {}),
-          ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
-          ...(isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? { weight: a.weight } : {})
+          ...(flat && isInt(a.sets, 1, 10) ? { sets: a.sets } : {}),
+          ...(flat && isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
+          ...(weight ? { weight } : {}),
+          // The old per-set loads described the movement being swapped out. A weight the Coach
+          // supplied becomes the starting load of every set; without one the sets fall back to
+          // what that set lifted last time.
+          ...(pyr ? { pyramidWeight: weight ? Array(pyr.length).fill(weight) : [] } : {})
         };
         break;
       }

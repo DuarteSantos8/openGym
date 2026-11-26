@@ -26,6 +26,7 @@ import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
+import { normalizePyramid, normalizePyramidRest, normalizePyramidWeight, PYRAMID_MAX, MAX_PYRAMID_SETS } from './pyramid.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
@@ -115,7 +116,13 @@ export function canonicalPlan(S) {
           weight: mode === 'cardio' ? 0 : (e.weight || 0),
           prog: e.prog || '', inc: e.inc || 0, repsMin: e.repsMin || 0, repsMax: e.repsMax || 0,
           bodyweight: isBw(e), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // A pyramid is its own prescription, so a change to its targets, rests or loads is a
+          // plan change like any other. Strings, so "no pyramid" is one value rather than an
+          // absent field that would hash apart from an empty list.
+          pyramid: Array.isArray(e.pyramid) ? e.pyramid.join(' ') : '',
+          pyramidRest: Array.isArray(e.pyramidRest) ? e.pyramidRest.join(' ') : '',
+          pyramidWeight: Array.isArray(e.pyramidWeight) ? e.pyramidWeight.join(' ') : ''
         }
       })
     })),
@@ -132,7 +139,10 @@ export function hashPlan(plan) {
   const canon = JSON.stringify({
     routines: (plan?.routines || []).map(r => [r.id, r.name, r.prog, (r.ex || []).map(e =>
       [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.weight, e.prog, e.inc,
-        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg].join(':')
+        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg,
+        // Only when there is a pyramid: a plan without one has to keep the fingerprint it had
+        // before v1.4.5, or every pending proposal reads as stale the moment someone upgrades.
+        ...(e.pyramid ? [e.pyramid, e.pyramidRest, e.pyramidWeight] : [])].join(':')
     )]),
     // `plan` is a canonicalPlan output, so each day is already an array. `{1:['r1']}` → "1=r1",
     // byte-identical to the pre-upgrade fingerprint; `{3:['r2','r3']}` → "3=r2+r3". Weekday
@@ -333,6 +343,30 @@ export const logEntry = (S, id) => (S?.coach?.log || []).find(e => e.id === id) 
  * rationale text. The full bundle was merged into the plan already; this is what the chat
  * shows back when someone opens an old proposal months later.
  */
+// The source index of each target normalizePyramid keeps, so per-set rest and load stay beside
+// their own set when an invalid target in the middle is dropped.
+function pyramidIndexes(list) {
+  const idx = []
+  ;(Array.isArray(list) ? list : []).forEach((v, i) => {
+    if (v === PYRAMID_MAX || (v != null && v !== '' && Number.isFinite(Number(v)))) idx.push(i)
+  })
+  return idx.slice(0, MAX_PYRAMID_SETS)
+}
+function pyramidOf(e) {
+  const pyramid = normalizePyramid(e.pyramid)
+  if (!pyramid.length) return {}
+  // Bounded exactly as the editor writes them: an all-zero rest or load is no field at all, so a
+  // logged proposal keeps the prescription it was accepted with and nothing invented. The index
+  // mapping keeps each accepted target's own rest and load.
+  const idx = pyramidIndexes(e.pyramid)
+  const rest = normalizePyramidRest(Array.isArray(e.pyramidRest) ? idx.map(i => e.pyramidRest[i]) : [], pyramid.length)
+  const weight = normalizePyramidWeight(Array.isArray(e.pyramidWeight) ? idx.map(i => e.pyramidWeight[i]) : [], pyramid.length)
+  return {
+    pyramid,
+    ...(rest.length ? { pyramidRest: rest } : {}),
+    ...(weight.length ? { pyramidWeight: weight } : {})
+  }
+}
 export function lightBundle(b) {
   if (!b) return null
   return {
@@ -340,7 +374,7 @@ export function lightBundle(b) {
     routines: (b.routines || []).map(r => ({
       id: r.id, name: r.name, emoji: r.emoji || '', why: r.why || '',
       ex: (r.ex || []).map(e => ({
-        id: e.id, sets: e.sets, mode: e.mode || 'reps',
+        id: e.id, sets: e.sets, mode: e.mode || 'reps', ...pyramidOf(e),
         ...(e.reps != null ? { reps: e.reps } : {}), ...(e.sec != null ? { sec: e.sec } : {}),
         ...(e.min != null ? { min: e.min } : {}), ...(e.weight ? { weight: e.weight } : {}),
         ...(e.why ? { why: String(e.why).slice(0, 200) } : {}),
@@ -529,6 +563,17 @@ const CHANGE_APPLY = {
     // app halve a rep count that was never per-side, so an explicit flag is dropped and the new
     // exercise goes back to whatever the catalogue says about it.
     const { bodyweight, side, ...keep } = old
+    // A pyramid's per-set loads described the old movement, not the new one. The server sends
+    // either the supplied weight on every set or an empty list; an older proposal falls back to
+    // the same rule here.
+    const pyr = Array.isArray(keep.pyramid) && keep.pyramid.length ? keep.pyramid : null
+    if (pyr) {
+      if (Array.isArray(a.pyramidWeight)) {
+        if (a.pyramidWeight.length) keep.pyramidWeight = a.pyramidWeight
+        else delete keep.pyramidWeight
+      } else if (Number(a.weight) > 0) keep.pyramidWeight = Array(pyr.length).fill(Number(a.weight))
+      else delete keep.pyramidWeight
+    }
     r.ex[i] = { ...keep, id: canonicalExId(a.id), ...(a.sets ? { sets: a.sets } : {}), ...(a.reps ? { reps: a.reps } : {}), ...(a.weight > 0 ? { weight: a.weight } : {}) }
   },
   sets: (s, c) => { need(findExIn(s, c)).sets = c.after },

@@ -54,6 +54,13 @@ const EX_SCHEMA = {
     weight: { type: 'number' }, prog: STR, inc: { type: 'number' },
     repsMin: { type: 'integer' }, repsMax: { type: 'integer' },
     bodyweight: { type: 'boolean' }, side: { type: 'boolean' },
+    // A pyramid owns one rep target per set, so a provider that enforces the schema would
+    // otherwise refuse (or strip) the one field that says 12-10-8-6 is not 4 x 12. A target is
+    // written as a string ("12" or "max"): a union type (integer | "max") cannot be expressed in
+    // Gemini's responseSchema subset, and that would cost the whole create schema for its users.
+    pyramid: { type: 'array', maxItems: 10, items: { type: 'string', description: 'a whole number of reps ("12") or "max"' } },
+    pyramidRest: { type: 'array', maxItems: 10, items: { type: 'integer' } },
+    pyramidWeight: { type: 'array', maxItems: 10, items: { type: 'number' } },
     sg: STR, why: STR, position: { type: 'integer' },
     // A tip to keep in mind while doing it, and up to three library ids to do instead when the
     // machine is taken (#1003). Both kept with the routine; `why` is for the review screen only.

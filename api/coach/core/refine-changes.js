@@ -17,6 +17,10 @@
  */
 
 const PLACEABLE = new Set(['swap-exercise', 'remove-exercise', 'add-exercise', 'sets', 'reps', 'repsMin', 'repsMax', 'sec']);
+// A pyramid owns the set count and each set's reps (validate.js PYRAMID_OWNS). Laying one of
+// these onto `refine.previous` would keep the pyramid and let the plan validator restore the flat
+// field, so the requested refinement would vanish while the answer reported success.
+const PYRAMID_OWNS = new Set(['sets', 'reps', 'repsMin', 'repsMax']);
 
 /** Is this answer a review-style change list rather than a plan? */
 export const isChangeList = data => !!data && typeof data === 'object'
@@ -53,25 +57,37 @@ export function changesOntoPlan(previous, data) {
     }
     const i = routine.ex.findIndex(e => e.id === target.exId);
     if (i < 0) return null;
+    const planned = routine.ex[i];
+    if (planned.pyramid && PYRAMID_OWNS.has(c.type)) return null;
     if (c.type === 'remove-exercise') { routine.ex.splice(i, 1); continue; }
     if (c.type === 'swap-exercise') {
       const a = c.after;
       if (!a || typeof a !== 'object' || typeof a.id !== 'string') return null;
       // The new exercise takes the old one's slot and prescription, minus what only described
-      // the old one; what the change states itself wins.
-      const { id: _old, weight: _w, why: _why, bodyweight: _bw, side: _side, ...kept } = routine.ex[i];
-      routine.ex[i] = {
+      // the old one; what the change states itself wins. A pyramid already owns the flat pair,
+      // exactly as validateReview leaves it off a swap on a pyramid slot. Its old per-set loads
+      // belonged to the movement being swapped out: a supplied weight becomes every set's
+      // starting load, and without one the loads are cleared to "last time".
+      const { id: _old, weight: _w, why: _why, bodyweight: _bw, side: _side, ...kept } = planned;
+      const flat = !planned.pyramid;
+      const next = {
         ...kept, id: a.id,
-        ...(a.sets != null ? { sets: a.sets } : {}),
-        ...(a.reps != null ? { reps: a.reps } : {}),
+        ...(flat && a.sets != null ? { sets: a.sets } : {}),
+        ...(flat && a.reps != null ? { reps: a.reps } : {}),
         ...(a.weight != null ? { weight: a.weight } : {}),
         ...(typeof c.why === 'string' ? { why: c.why } : {})
       };
+      if (Array.isArray(planned.pyramid) && planned.pyramid.length) {
+        const w = Number(a.weight);
+        if (Number.isFinite(w) && w > 0) next.pyramidWeight = Array(planned.pyramid.length).fill(w);
+        else delete next.pyramidWeight;
+      }
+      routine.ex[i] = next;
       continue;
     }
     // A value of the wrong kind would be quietly defaulted by the plan validator; refuse it here.
     if (!Number.isInteger(c.after)) return null;
-    routine.ex[i] = { ...routine.ex[i], [c.type]: c.after };
+    routine.ex[i] = { ...planned, [c.type]: c.after };
   }
   return {
     coach_contract: data.coach_contract,

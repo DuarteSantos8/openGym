@@ -188,7 +188,15 @@ function readSession(entry, fallback) {
   // Triple progression's per-set aims (frontend readSession): only on the session's own target.
   const rowGoals = mode === 'reps' && entry && entry.target && Array.isArray(target.rowReps) && target.rowReps.length
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null;
-  const planned = rowGoals ? rowGoals.length : (target.sets || logged.length);
+  // A pyramid carries one target per set too, and it owns the flat `reps`. Without reading it a
+  // clean 12-10-8-6 session is graded against 12 on every set, so its lower sets read as misses
+  // and three of them manufacture a stall the athlete never had. "max" has no fixed goal.
+  // Normalise first, exactly as the plan and history do, so an invalid entry is ignored rather
+  // than becoming a goal of its own and shifting the set count.
+  const pyr = mode === 'reps' && entry && entry.target ? pyramidOut(target.pyramid) : [];
+  const pyrGoals = pyr.length ? pyr.map(v => (v === PYRAMID_MAX ? 0 : v)) : null;
+  const setGoals = rowGoals || (pyrGoals && pyrGoals.length ? pyrGoals : null);
+  const planned = setGoals ? setGoals.length : (target.sets || logged.length);
   const enough = logged.length >= planned;
   // Only the sets the plan asked for decide whether the session was hit, exactly as
   // frontend/src/lib/progression.js readSession has done since issue #233. This copy graded
@@ -205,18 +213,69 @@ function readSession(entry, fallback) {
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0));
     return { mode, bw, goal, ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal) };
   }
-  const goal = rowGoals ? Math.max(...rowGoals) : (target.reps || 0);
+  const goal = setGoals ? Math.max(...setGoals) : (target.reps || 0);
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0));
   // Set count is the dimension bodyweight work grows once reps hit their ceiling (upstream
   // #33), so it travels alongside the reps rather than being inferred from them downstream.
   const done = logged.filter(s => s.done).length;
-  return { mode, bw, goal, count: done, ok: goal > 0 && enough && reps.length > 0 && reps.every((r, k) => r >= (rowGoals ? rowGoals[k] ?? goal : goal)) };
+  // A pyramid can be all "max" sets: it has no numeric goal at all, so "goal > 0" is not a
+  // requirement when it owns the per-set aims. Every prescribed row still has to be ticked —
+  // an undone "max" row becomes 0 reps and would otherwise meet its goal of zero.
+  return {
+    mode, bw, goal, count: done,
+    ok: enough && sets.length > 0 && sets.every(s => s.done)
+      && (setGoals || goal > 0)
+      && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal))
+  };
 }
 /** Consecutive misses counting back from the most recent session. */
 export function stallCount(sessions) {
   let n = 0;
   for (let i = sessions.length - 1; i >= 0; i--) { if (sessions[i].ok) break; n++; }
   return n;
+}
+
+/* ---------- pyramids (frontend/src/lib/pyramid.js) ----------
+   One rep target per set, in order: a whole number or "max". Bounded like the app normalises
+   them — whole targets of at least one rep, at most ten sets, a rest and a planned load per
+   set — plus the ceilings the validator already holds a plan to (100 reps, REST_MAX seconds,
+   MAX_WEIGHT). Without this a 12-10-8-6 slot reached the model as four identical sets, and a
+   rewrite flattened it. */
+export const PYRAMID_MAX = 'max';
+export const MAX_PYRAMID_SETS = 10;
+const MAX_PYRAMID_REST = 900;
+// The validator's MAX_WEIGHT: a planned load past it is a model slip, and the plan it writes is
+// refused on the way back, so showing the model a weight it cannot keep would only cost a round.
+export const MAX_PYRAMID_WEIGHT = 1000;
+function pyramidOut(v) {
+  const out = [];
+  for (const x of list(v)) {
+    if (x === PYRAMID_MAX) out.push(PYRAMID_MAX);
+    else if (num(x) !== undefined) out.push(Math.min(100, Math.max(1, Math.round(Number(x)))));
+  }
+  return out.slice(0, MAX_PYRAMID_SETS);
+}
+// All zeros is "no field at all", as the app writes it: a pyramid that never set a rest stays
+// the shape it was.
+// The index each accepted target came from, so a per-set rest or load stays beside its own set
+// when a malformed target in the middle is dropped (`[12, "bad", 8]` must not move 8's load).
+function pyramidIndexes(v) {
+  const idx = [];
+  list(v).forEach((x, i) => { if (x === PYRAMID_MAX || num(x) !== undefined) idx.push(i); });
+  return idx.slice(0, MAX_PYRAMID_SETS);
+}
+function pyramidRestOut(v, idx) {
+  const src = list(v);
+  const out = idx.map(i => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
+  return out.some(n => n > 0) ? out : [];
+}
+function pyramidWeightOut(v, idx) {
+  const src = list(v);
+  const out = idx.map(i => {
+    const w = Number(src[i]);
+    return Number.isFinite(w) && w > 0 ? Math.min(MAX_PYRAMID_WEIGHT, Math.round(w * 100) / 100) : 0;
+  });
+  return out.some(w => w > 0) ? out : [];
 }
 
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
@@ -237,6 +296,19 @@ function cleanEx(e, custom) {
   put('repsMax', e.repsMax);
   // Triple progression's set ceiling: `sets` is where its cycle starts, `setsMax` where it ends.
   put('setsMax', e.setsMax);
+  // A pyramid owns each set's reps, so it travels whole — including each set's own rest and
+  // planned load. `sets` and `reps` stay as the plan holds them (the app keeps them in step).
+  if (mode === 'reps') {
+    const pyramid = pyramidOut(e.pyramid);
+    if (pyramid.length) {
+      const idx = pyramidIndexes(e.pyramid);
+      o.pyramid = pyramid;
+      const rest = pyramidRestOut(e.pyramidRest, idx);
+      if (rest.length) o.pyramidRest = rest;
+      const weight = pyramidWeightOut(e.pyramidWeight, idx);
+      if (weight.length) o.pyramidWeight = weight;
+    }
+  }
   // Written out only when they disagree with the catalogue, matching plan-share.js — an
   // absent flag has always meant "whatever the exercise says", and still does.
   if (e.bodyweight != null) o.bodyweight = !!e.bodyweight;
@@ -347,7 +419,12 @@ export function canonicalPlan(S) {
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
           bodyweight: isBw(e, exOf(e.id, custom)), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // A pyramid is its own prescription, so a change to its targets, rests or loads is a
+          // plan change like any other. Strings, so "no pyramid" is one value rather than an
+          // absent field that would hash apart from an empty list.
+          pyramid: list(e.pyramid).join(' '), pyramidRest: list(e.pyramidRest).join(' '),
+          pyramidWeight: list(e.pyramidWeight).join(' ')
         };
       })
     })),
@@ -494,9 +571,27 @@ function cleanSet(s) {
 }
 const entriesOf = w => list(w.entries).filter(en => en && typeof en === 'object');
 const setsOf = en => list(en.sets).filter(s => s && typeof s === 'object');
-const targetOf = en => (en.target && typeof en.target === 'object'
-  ? { sets: num(en.target.sets), reps: num(en.target.reps), sec: num(en.target.sec), weight: num(en.target.weight) }
-  : null);
+/* A logged session's target can carry the pyramid it was prescribed under. Without it the
+   history reads as a flat 4x12, so a session that actually trained 12-10-8-Max looks like four
+   sets against one target. Bounded exactly as the plan is, with each set's own rest and load. */
+function targetPyramid(t) {
+  const pyramid = pyramidOut(t.pyramid);
+  if (!pyramid.length) return null;
+  const idx = pyramidIndexes(t.pyramid);
+  const rest = pyramidRestOut(t.pyramidRest, idx);
+  const weight = pyramidWeightOut(t.pyramidWeight, idx);
+  return {
+    pyramid,
+    ...(rest.length ? { pyramidRest: rest } : {}),
+    ...(weight.length ? { pyramidWeight: weight } : {})
+  };
+}
+const targetOf = en => {
+  if (!(en.target && typeof en.target === 'object')) return null;
+  const target = { sets: num(en.target.sets), reps: num(en.target.reps), sec: num(en.target.sec), weight: num(en.target.weight) };
+  const pyramid = targetPyramid(en.target);
+  return pyramid ? { ...target, ...pyramid } : target;
+};
 
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
 function compactWorkout(w, custom) {
@@ -518,7 +613,12 @@ function compactWorkout(w, custom) {
         id: ident(en.id),
         name: nameOf(en.id, custom),
         done: done.length + '/' + sets.length,
-        ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
+        ...(target ? {
+          target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }),
+          // A compact line keeps only the numbers, but a pyramid is the one prescription a flat
+          // target cannot say, so its per-set aims travel beside it.
+          ...(target.pyramid ? { pyramid: target.pyramid } : {})
+        } : {}),
         ...(top ? { top: fmtSet(top) } : {})
       };
     })

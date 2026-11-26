@@ -22,7 +22,7 @@ import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet, isRestPauseSet 
 import { normalizeRepRange } from './rep-range.js'
 import { nextRung } from './ladders.js'
 import { gymSplitView } from './gym-split.js'
-import { isPyramid } from './pyramid.js'
+import { isPyramid, normalizePyramid, PYRAMID_MAX } from './pyramid.js'
 import { backoffAt } from './backoff.js'
 import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
 
@@ -312,7 +312,16 @@ export function readSession(entry, fallback) {
   // plan. Only a session built under triple carries it; every other one reads exactly as before.
   const rowGoals = mode === 'reps' && entry && entry.target && Array.isArray(target.rowReps) && target.rowReps.length
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null
-  const plannedRows = rowGoals ? rowGoals.length : (target.sets || logged.length)
+  // A pyramid owns one target per set too, so it has to be read before the flat `reps`: grading a
+  // 12-10-8-6 session against 12 counts every lower set as a miss and invents a stall. "max" has
+  // no fixed goal. Normalise first, exactly as the plan and history do, so an invalid entry is
+  // ignored rather than becoming a goal of its own and shifting the set count; a numeric target
+  // is held to at least one rep, so a corrupt zero cannot make a zero-rep set a hit. The coach
+  // payload (api/coach/core/payload.js) mirrors this read.
+  const pyr = mode === 'reps' && entry && entry.target && isPyramid(target) ? normalizePyramid(target.pyramid) : []
+  const pyrGoals = pyr.length ? pyr.map(v => (v === PYRAMID_MAX ? 0 : v)) : null
+  const setGoals = rowGoals || (pyrGoals && pyrGoals.length ? pyrGoals : null)
+  const plannedRows = setGoals ? setGoals.length : (target.sets || logged.length)
   const planned = mode === 'time' && isPerSide(target) ? plannedRows * 2 : plannedRows
   const enough = logged.length >= planned
   // Only the sets the plan asked for decide what happens next (issue #233). A set added on top
@@ -359,7 +368,7 @@ export function readSession(entry, fallback) {
       ok: rows.length > 0 && rows[0].done === true && (rows[0].r || 0) >= asked
     }
   }
-  const goal = rowGoals ? Math.max(...rowGoals) : (target.reps || 0)
+  const goal = setGoals ? Math.max(...setGoals) : (target.reps || 0)
   // Back-off sets (lib/backoff.js): each planned set after the first is held to its own weight,
   // stepped down from the top set as logged. Taking a back-off set lighter to get its reps is
   // not the sequence done, so it reads like a set short of its reps. Only a session that was
@@ -374,7 +383,7 @@ export function readSession(entry, fallback) {
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
-    ok: goal > 0 && enough && reps.length > 0 && reps.every((r, k) => r >= (rowGoals ? rowGoals[k] ?? goal : goal))
+    ok: enough && sets.length > 0 && sets.every(s => s.done) && (setGoals || goal > 0) && reps.every((r, k) => r >= (setGoals ? setGoals[k] ?? goal : goal))
   }
 }
 

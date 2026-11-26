@@ -21,15 +21,16 @@ export function isPyramid(cfg) {
 }
 
 // What the editor and a hand-edited plan file can hold, kept to what the session can train:
-// whole targets of at least one rep, "max", and no more than MAX_PYRAMID_SETS sets. `stride` 2
-// is a per-side exercise: each target is rounded up to even, so it splits evenly between L and R.
+// whole targets of at least one rep and at most 100 (the plan validator's ceiling, so both
+// runtimes grade the same saved target), "max", and no more than MAX_PYRAMID_SETS sets. `stride`
+// 2 is a per-side exercise: each target is rounded up to even, so it splits evenly between L and R.
 export function normalizePyramid(list, stride = 1) {
   if (!Array.isArray(list)) return []
   const out = []
   for (const v of list) {
     if (v === PYRAMID_MAX) out.push(PYRAMID_MAX)
     else if (v != null && v !== '' && Number.isFinite(Number(v))) {
-      const n = Math.max(1, Math.round(Number(v)))
+      const n = Math.min(100, Math.max(1, Math.round(Number(v))))
       out.push(Math.ceil(n / stride) * stride)
     }
   }
