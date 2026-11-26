@@ -4860,7 +4860,6 @@ function doFinishWorkout({ end: endAt, auto, kcal } = {}) {
   const A = st.active
   if (!A) return
   const past = !!A.backfill
-  cues.finished(st)
   // A workout logged into the past is held against the history before it, the way an edit of a
   // saved one is (rebuildPrHistory, below): it gains a badge it leads with, and a later session
   // it outdoes loses its own. It used to report none at all while the editor's Save awarded them
@@ -4879,6 +4878,8 @@ function doFinishWorkout({ end: endAt, auto, kcal } = {}) {
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
   })
   w.vol = workoutVolume(w)
+  // Said with the minutes the summary shows (w.end is cut at a pause or a late watch Finish).
+  cues.finished(st, w)
   // A run/walk session's step up its ladder was only noted when the run ended (store/useCircuit.js);
   // it is taken below, with the save, and the saved workout does not carry it.
   if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
