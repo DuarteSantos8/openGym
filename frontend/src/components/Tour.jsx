@@ -18,6 +18,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { todayISO } from '../lib/format.js'
 import { scheduleModeOf } from '../lib/rotation.js'
+import { experienceOf } from '../lib/experience.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import {
   NAVIGATION_COPY, useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
@@ -41,6 +42,9 @@ const COPY = {
   'lib-search': () => [t('Find any exercise'), t('Search thousands of exercises in your language. Star your favourites and they float to the top.')],
   'lib-filters': () => [t('Filter it down'), t('Narrow the list by body part, type or the equipment you have.')],
   start: () => [t('The big Start button'), t('It starts today’s plan, or lets you pick something else. Tap it for a practice run.')],
+  'start-home': () => COPY.start(),
+  swap: () => [t('Swap exercise'), [t('More'), t('Swap exercise')].join(' → ')],
+  learn: () => [t('Learn'), t('The basics, explained plainly. Works offline.')],
   set: () => [t('A practice workout'), t('This one is pretend, nothing gets saved. Each row is a set: weight, then reps. Tap a number to change it.')],
   tick: () => [t('Tick it off'), t('Done with a set? Tick it. Go on, try it.')],
   rest: () => [t('Catch your breath'), t('The rest timer starts by itself. Add time, or skip it if you feel heroic.')],
@@ -156,6 +160,7 @@ const nameOf = el => {
 
 // Which optional stops this profile gets (lib/tour.js tourSteps).
 const profileOf = S => ({
+  level: experienceOf(S),
   plannedDays: scheduleModeOf(S) !== 'rotation' && Object.values(S.week || {}).some(v => [].concat(v || []).some(id => S.routines.some(r => r.id === id))),
   rest: (S.restSec ?? 90) > 0,
   swipe: !!workoutControls(S).swipeSets && (S.workoutView || 'cards') !== 'focus',
@@ -195,6 +200,8 @@ export function startPractice() {
   const st = useStore.getState()
   if (st.tourSandbox) return
   st.enterTourSandbox(s => {
+    // The beginner tour points at controls in Cards, even if the real profile uses Focus.
+    if (experienceOf(s) === 'beginner') s.workoutView = 'cards'
     s.routines = [...s.routines, sampleRoutine(s)]
     s.active = null
   })
@@ -375,7 +382,7 @@ function Run({ at, flow = 'tour' }) {
     // A screen that was only there in a copy (the practice workout, the routine not saved) is not
     // left on screen without its data.
     const gone = /^\/plan\/r\//.test(path) && !useStore.getState().S.routines.some(r => '/plan/r/' + r.id === path)
-    if (path === '/workout' || (!tutorial && completed)) nav('/home', { replace: true })
+    if (path === '/workout' || (!tutorial && completed && !step.go)) nav('/home', { replace: true })
     else if (gone) nav('/plan', { replace: true })
   }
   const go = dir => {
@@ -617,7 +624,7 @@ function Run({ at, flow = 'tour' }) {
         {i > 0 && <Button onClick={() => go(-1)}>{t('Back')}</Button>}
         {step.commit
           ? <Button variant="primary" disabled={!routine?.ex.length} onClick={save}>{t('Save plan')}</Button>
-          : step.go || step.intercept
+          : step.go || step.intercept || (step.tap && experienceOf(S0) === 'beginner' && !tutorial)
             ? <Button variant="primary" onClick={showMe}>{t('Show me')}</Button>
             : <Button variant="primary" onClick={() => go(1)}>{last ? (tutorial ? t('Done') : t('Let’s go')) : t('Next')}</Button>}
       </div>
