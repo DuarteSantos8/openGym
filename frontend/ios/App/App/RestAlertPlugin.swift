@@ -56,8 +56,14 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         var cues: [Cue] = []
         /// When this end was set (ms): a watch's change older than it is left alone (PhoneRestAlarm).
         var since: Double = Date().timeIntervalSince1970 * 1000
+        /// The tone and the rest-over line baked into one file in Library/Sounds (#1393): the rest's own alert only, never the cues'.
+        var lineSound: String?
     }
     private var pending: Pending?
+    /// Names the bake now allowed to finish: a new rest, a cancel or a hold lets an older one go to waste.
+    private var bakeId = UUID()
+    /// The synthesizer writing the rest-over line to samples, kept alive until it is done.
+    private var baking: AVSpeechSynthesizer?
     /// The tones playing now, by their CueAudioLedger id (an end tone, an own clip, a hype clip).
     private var players: [Int: AVAudioPlayer] = [:]
     /// The spoken lines not finished yet, to their CueAudioLedger id.
@@ -131,23 +137,132 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             tone: RestTone.normalised(call.getString("tone") ?? ((call.getBool("classic") ?? false) ? "classic" : "chime")),
             cues: cues
         )
+        bakeId = UUID()
+        let mine = bakeId
+        let line = call.getObject("line")
+        let withTone = pending?.sound == true ? pending?.tone : nil
         DispatchQueue.main.async {
             if UIApplication.shared.applicationState != .active {
                 self.withdraw()
                 self.post()
             }
+            if let line = line { self.bakeLine(line, tone: withTone, id: mine) }
             call.resolve()
+        }
+    }
+
+    // MARK: the rest-over line in the notification's sound (#1393)
+
+    private func number(_ v: Any?) -> Double? {
+        (v as? Double) ?? (v as? NSNumber)?.doubleValue ?? (v as? Int).map(Double.init)
+    }
+
+    /// The utterance for `text` with the voice rules every spoken cue follows: the voice picked by its
+    /// identifier, else the language's own. One that is not on this phone (any more) leaves the default.
+    private func utterance(_ text: String, lang: String, rate: Float, pitch: Float, voiceId: String) -> AVSpeechUtterance {
+        let utterance = AVSpeechUtterance(string: text)
+        // Settings → Timer alerts → Voice (v1.4.5): the voice picked there, by its identifier;
+        // one that is not on this phone (any more) leaves the language's default.
+        if !voiceId.isEmpty, let picked = AVSpeechSynthesisVoice(identifier: voiceId) {
+            utterance.voice = picked
+        } else if !lang.isEmpty {
+            let base = String(lang.split(separator: "-").first ?? "")
+            if let voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: base) {
+                utterance.voice = voice
+            }
+        }
+        let wanted = AVSpeechUtteranceDefaultSpeechRate * max(0.5, min(2, rate))
+        utterance.rate = max(AVSpeechUtteranceMinimumSpeechRate, min(AVSpeechUtteranceMaximumSpeechRate, wanted))
+        utterance.pitchMultiplier = max(0.5, min(2, pitch))
+        return utterance
+    }
+
+    /// Main thread. Makes the line's samples (the person's own clip, else the spoken line written
+    /// out), then the file. Any failure leaves the tone-only notification as it is.
+    private func bakeLine(_ line: [String: Any], tone: String?, id: UUID) {
+        if let hash = line["clip"] as? String {
+            // Validated as a hash, so it can never name a path outside the media folder.
+            guard RestTone.userHash("u:\(hash)") != nil,
+                  let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+            let url = lib.appendingPathComponent("opengym-media", isDirectory: true).appendingPathComponent("\(hash).wav")
+            DispatchQueue.global(qos: .utility).async { self.finishBake(RestTone.samples(contentsOf: url), tone: tone, id: id) }
+            return
+        }
+        guard let text = line["text"] as? String, !text.isEmpty else { return }
+        let u = utterance(String(text.prefix(500)), lang: line["lang"] as? String ?? "", rate: Float(number(line["rate"]) ?? 1),
+                          pitch: Float(number(line["pitch"]) ?? 1), voiceId: line["voice"] as? String ?? "")
+        let synth = AVSpeechSynthesizer()
+        baking = synth
+        let queue = DispatchQueue(label: "opengym.restline")
+        var buffers: [AVAudioPCMBuffer] = []
+        var finished = false
+        func finish(_ samples: [Int16]?) {
+            finished = true
+            DispatchQueue.main.async { if self.baking === synth { self.baking = nil } }
+            finishBake(samples, tone: tone, id: id)
+        }
+        // write() hands over buffers (never plays them, never touches the audio session); an empty one is the end.
+        synth.write(u) { buffer in
+            queue.async {
+                guard !finished else { return }
+                if let pcm = buffer as? AVAudioPCMBuffer, pcm.frameLength > 0 { buffers.append(pcm) } else { finish(RestTone.samples(buffers)) }
+            }
+        }
+        // A synthesizer that never reports the end: the tone-only notification stays.
+        queue.asyncAfter(deadline: .now() + 10) { if !finished { finish(nil) } }
+    }
+
+    /// Off the main thread: tone, gap and line into one file, then the notification is posted again with it.
+    private func finishBake(_ line: [Int16]?, tone: String?, id: UUID) {
+        guard let line = line, !line.isEmpty else { return }
+        var toneSamples: [Int16] = []
+        if let tone = tone {
+            // A sound of one's own whose file is not on this phone yet rings the chime, as post() does.
+            guard let url = RestTone.soundFile(tone) ?? RestTone.soundFile("chime"), let s = RestTone.samples(contentsOf: url) else { return }
+            toneSamples = s
+        }
+        // The same silence after the line as after a tone: Bluetooth earbuds clip the end of a sound.
+        let padded = line + [Int16](repeating: 0, count: Int(RestTone.tailSec * Double(RestTone.rate)))
+        let mix = RestLineMix.join(tone: toneSamples, line: padded, rate: RestTone.rate)
+        // Over 30 s join() keeps the tone alone, and a line alone has no cap there: no point in a file then.
+        guard mix.count > toneSamples.count, mix.count <= 29 * RestTone.rate,
+              let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+        let dir = lib.appendingPathComponent("Sounds", isDirectory: true)
+        // A new name each time: iOS keeps a notification sound by its name.
+        let name = "rest-line-\(UUID().uuidString).wav"
+        do {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try RestTone.wav(mix).write(to: dir.appendingPathComponent(name), options: .atomic)
+        } catch { return }
+        DispatchQueue.main.async {
+            let old = (try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? []
+            // Still the same rest: the notification goes back in with the line. Not in front: the page rings it.
+            if self.bakeId == id, var p = self.pending {
+                p.lineSound = name
+                self.pending = p
+                if UIApplication.shared.applicationState != .active {
+                    self.withdraw()
+                    self.post()
+                }
+            }
+            let keep = self.pending?.lineSound
+            for f in old where f.hasPrefix("rest-line-") && f != name && f != keep {
+                try? FileManager.default.removeItem(at: dir.appendingPathComponent(f))
+            }
+            if self.pending?.lineSound != name { try? FileManager.default.removeItem(at: dir.appendingPathComponent(name)) }
         }
     }
 
     @objc func cancel(_ call: CAPPluginCall) {
         pending = nil
+        bakeId = UUID()
         withdraw()
         call.resolve()
     }
 
     @objc func hold(_ call: CAPPluginCall) {
         pending = nil
+        bakeId = UUID()
         withdraw()
         call.resolve()
     }
@@ -230,20 +345,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let onSilent = call.getBool("onSilent") ?? false
         let flush = call.getBool("flush") ?? false
         DispatchQueue.main.async {
-            let utterance = AVSpeechUtterance(string: text)
-            // Settings → Timer alerts → Voice (v1.4.5): the voice picked there, by its identifier;
-            // one that is not on this phone (any more) leaves the language's default.
-            if !voiceId.isEmpty, let picked = AVSpeechSynthesisVoice(identifier: voiceId) {
-                utterance.voice = picked
-            } else if !lang.isEmpty {
-                let base = String(lang.split(separator: "-").first ?? "")
-                if let voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: base) {
-                    utterance.voice = voice
-                }
-            }
-            let wanted = AVSpeechUtteranceDefaultSpeechRate * max(0.5, min(2, rate))
-            utterance.rate = max(AVSpeechUtteranceMinimumSpeechRate, min(AVSpeechUtteranceMaximumSpeechRate, wanted))
-            utterance.pitchMultiplier = max(0.5, min(2, pitch))
+            let utterance = self.utterance(text, lang: lang, rate: rate, pitch: pitch, voiceId: voiceId)
             // The new line holds the session before the old ones are cut off, so the music stays
             // down across a flush instead of bouncing up for a moment.
             let id = self.beginSound(.speech, onSilent: onSilent)
@@ -395,7 +497,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 self.pending = nil
                 return
             }
-            p = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues)
+            p = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, lineSound: p.lineSound)
             self.pending = p
             self.withdraw()
             if UIApplication.shared.applicationState != .active { self.post() }
@@ -409,7 +511,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let at = (note.userInfo?["at"] as? Double) ?? Date().timeIntervalSince1970 * 1000
         DispatchQueue.main.async {
             guard let p = self.pending else { return }
-            self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: at)
+            self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: at, lineSound: p.lineSound)
         }
     }
 
@@ -437,14 +539,14 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             self.withdraw()
             if c.sameRest, let over = c.over {
                 // The watch's end passed already (an event that came late): the chain keeps its phases from it, and only what is still ahead rings.
-                self.pending = Pending(at: Date(timeIntervalSince1970: over / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.pending = Pending(at: Date(timeIntervalSince1970: over / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at, lineSound: p.lineSound)
                 self.post()
             } else if c.sameRest, let end = c.end {
-                self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at, lineSound: p.lineSound)
                 self.post()
             } else if c.sameRest, !p.cues.isEmpty {
                 // Skip before a hold that starts by itself: its count-in now, the chain after it (as restSkipped).
-                self.pending = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at)
+                self.pending = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at, lineSound: p.lineSound)
                 self.post()
             } else {
                 // A Skip, or a set ticked at the wrist: that set's new rest is the page's to book when it wakes, named for the next set.
@@ -462,7 +564,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         for (id, at, title) in alerts where at > Date() {
             let content = UNMutableNotificationContent()
             content.title = title
-            if p.sound {
+            if id == RestAlertPlugin.requestId, let line = p.lineSound, RestAlertPlugin.soundExists(line) {
+                // Tone and line in one file (the tone left out when the rest sound is off); the cues keep the plain tone.
+                content.sound = UNNotificationSound(named: UNNotificationSoundName(line))
+            } else if p.sound {
                 // A sound of one's own whose file is not on this phone yet rings the chime.
                 let tone = RestTone.soundFile(p.tone) != nil ? p.tone : "chime"
                 content.sound = RestTone.soundFile(tone) != nil
@@ -473,6 +578,11 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: SafeNum.interval(at.timeIntervalSinceNow), repeats: false)
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
         }
+    }
+
+    private static func soundExists(_ name: String) -> Bool {
+        guard let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return false }
+        return FileManager.default.fileExists(atPath: lib.appendingPathComponent("Sounds").appendingPathComponent(name).path)
     }
 
     private func withdraw(_ ids: [String] = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds) {
