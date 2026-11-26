@@ -210,9 +210,25 @@ export function activityFromHealth(rec, S, src, now = Date.now()) {
   return readActivity({ d: isoLocal(start), sport: SPORTS.includes(sport) ? sport : 'other', min, at: start, km: Number(rec.km) || 0, title: typeof rec.title === 'string' ? rec.title : '', src })
 }
 
+// Two health-store workouts of the same sport that start this close together are one session saved
+// twice: an app that deletes its workout and writes it again under a new id (Garmin Connect after a
+// re-sync or an edit), or two apps saving the same ride (Peloton and the bike computer).
+export const SAME_SESSION_MS = 2 * 60e3
+
+// The activity from this source already here for the same session, as [id, entry], or null.
+function sameSession(map, a) {
+  for (const [id, e] of Object.entries(map)) {
+    const b = readActivity(e)
+    if (b && b.src === a.src && b.sport === a.sport && b.at > 0 && Math.abs(b.at - a.at) <= SAME_SESSION_MS) return [id, b]
+  }
+  return null
+}
+
 /**
  * Health-store workouts into S.activities (mutates S): new ones added, nothing removed, a removed one
- * (a stamped empty entry) never brought back, one already here left as it is. Returns the ids added.
+ * (a stamped empty entry) never brought back, one already here left as it is. A workout under a new
+ * id for a session already here (sameSession) is not added again; when it has a distance the stored
+ * copy lacks, the stored copy takes its numbers. Returns the ids added or changed.
  */
 export function mergeHealthActivities(S, records, { src, now = Date.now() } = {}) {
   const map = isMap(S.activities) ? S.activities : {}
@@ -222,6 +238,15 @@ export function mergeHealthActivities(S, records, { src, now = Date.now() } = {}
     if (!a) continue
     const id = healthActivityId(rec, src)
     if (Object.hasOwn(map, id)) continue
+    const twin = sameSession(map, a)
+    if (twin) {
+      const [twinId, b] = twin
+      if (a.km > 0 && !(b.km > 0)) {
+        map[twinId] = { ...a, ...(b.title ? { title: b.title } : {}), ...(b.note ? { note: b.note } : {}), _ts: now }
+        added.push(twinId)
+      }
+      continue
+    }
     map[id] = { ...a, _ts: now }
     added.push(id)
   }
