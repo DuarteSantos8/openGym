@@ -1,5 +1,15 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "تازه‌های {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "در دسامبر گوشی‌ات را تکان بده تا برف دیوانه‌وار بچرخد، درست مثل گوی برفی.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "تمرین‌ها با دمبل‌هایی شروع می‌شوند که واقعاً داری. دیگر خبری از ۳۰ کیلو نیست وقتی جای دمبلت تا ۲۸ است.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "یک تمرین گذشته را همان‌طور که در یادداشت‌هایت هست تایپ کن و ثبت کن.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "رمپ گرم‌کردن خودت: یک بار در تنظیمات تعیینش کن، هر گرم‌کردنی از آن پیروی می‌کند.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "ساعتت قبل از شروع یک بررسی کوتاه می‌پرسد و در پایان به تو مدال می‌دهد.",
+  "What’s new in this version": "تازه‌های این نسخه",
+  "openGym {0} is out": "openGym {0} منتشر شد",
+  "Update": "به‌روزرسانی",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "تمرینت چطور نمایش داده شود؟",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "هر کدام راحت‌تر است انتخاب کن. هر وقت خواستی از ⋯ → چیدمان عوضش کن، یا برای همیشه در تنظیمات → تمرین.",
@@ -6018,4 +6028,15 @@ export default {
   "Allow in Huawei Health": "اجازه دادن در Huawei Health",
   "Get openGym for Huawei": "دریافت openGym برای Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "ست‌ها را از روی مچتان با Apple Watch، Wear OS، Garmin، Huawei یا ساعت Zepp ثبت کنید.",
+  "Have a look": "نگاهی بینداز",
+  "Meet openNutrition": "با openNutrition آشنا شو",
+  "Merry Christmas, rest well, and see you in the new year.": "کریسمس مبارک، خوب استراحت کن، در سال نو می‌بینمت.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "کار من تازه شروع شده و چیزی که شما دور این پروژه ساخته‌اید برایم بیشتر از آن است که بتوانم در کلمات بگویم. از همهٔ جامعه ممنونم.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "فقط برای کسانی که این در را در دسامبر ۲۰۲۶ باز کردند. مال توست، تمام سال و همهٔ سال‌های بعد.",
+  "Put it on my home screen": "روی صفحهٔ اصلی‌ام بگذار",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "ممنونم. از همه که در GitHub ستاره گذاشتید، به دوستی گفتید، openGym را آنلاین هم‌رسانی کردید، در Discord به کسی کمک کردید، اصلاح یا ترجمه فرستادید، باگی گزارش دادید یا برایم قهوه خریدید: بدون شما openGym وجود نداشت.",
+  "Your present: the Christmas 2026 icon": "هدیهٔ تو: نماد کریسمس ۲۰۲۶",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "مال توست. در برنامهٔ گوشی‌ات انتخابش کن: تنظیمات، ظاهر و خانه، نماد برنامه.",
+  "Yours. Settings, Look & Home, App icon.": "مال توست. تنظیمات، ظاهر و خانه، نماد برنامه.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym یک خواهر کوچک دارد. غذا، مکمل‌ها و وزن بدن، روی سرور خودت مثل openGym، بدون تبلیغ و بدون اینکه کسی سرک بکشد. در بتای خصوصی است و تو زود آمده‌ای.",
 }

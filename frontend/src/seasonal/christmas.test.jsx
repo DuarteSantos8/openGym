@@ -285,12 +285,6 @@ describe('the advent card on Home', () => {
     expect(host.querySelector('[data-advent-home]')).toBeNull()
   })
 
-  it('the festive icon question never shows in a browser', async () => {
-    const { Deco } = await load()
-    render(<Deco spot="home-advent" />)
-    await act(async () => { await Promise.resolve() })
-    expect(host.querySelector('[data-xmas-icon]')).toBeNull()
-  })
 })
 
 describe('the calendar', () => {
@@ -434,19 +428,45 @@ describe('the calendar', () => {
     expect(host.querySelector('[data-lit="1"]').textContent).toContain('Bauble lit')
   })
 
-  it('door 24: the year so far, and the festive flame to keep', async () => {
-    const set = (w, r) => ({ w, r, done: true })
-    store.S.workouts = [{ id: 'a', d: '2026-03-02', start: 1, end: 3600001, entries: [{ id: '0025', sets: [set(70, 5)] }] }]
+  it('door 24: a thank-you from Duarte, and the star lights up', async () => {
     vi.setSystemTime(new Date(2026, 11, 24, 9))
     await openDay(24)
-    expect(host.querySelector('[data-review]').textContent).toContain('Workouts')
-    act(() => button('Put it on').click())
-    expect(store.S.flameIcon).toEqual({ k: 'icon', v: 'flameHat', c: '#ff5a5f' })
-    expect(store.S.advent.done).toEqual([24])
-    expect(host.textContent).toContain('Wearing it. Very merry.')
+    const thanks = host.querySelector('[data-thanks]')
+    expect(thanks.textContent).toContain('openGym would not exist without you')
+    expect(thanks.textContent).toContain('Duarte Santos')
+    expect(host.querySelector('[data-review]')).toBeNull()
     act(() => host.querySelector('.xm-back').click())
     expect(host.querySelector('.xm-star.xm-lit')).not.toBeNull()
   })
+
+  it('the 19th: the festive flame, given as the door opens and kept for good', async () => {
+    vi.setSystemTime(new Date(2026, 11, 19, 9))
+    await openDay(19)
+    expect(store.S.prizes).toEqual(['festive-flame'])
+    act(() => button('Put it on').click())
+    expect(store.S.flameIcon).toEqual({ k: 'icon', v: 'flameHat', c: '#ff5a5f' })
+    expect(store.S.advent.done).toEqual([19])
+    expect(host.textContent).toContain('Wearing it. Very merry.')
+  })
+
+  it('the 12th: the Christmas 2026 icon is given to whoever opens it', async () => {
+    vi.setSystemTime(new Date(2026, 11, 12, 9))
+    await openDay(12)
+    expect(store.S.prizes).toEqual(['xmas-icon-2026'])
+    expect(host.querySelector('[data-present="icon"]').textContent).toContain('Christmas 2026')
+  })
+
+  it('the 5th: openNutrition, with a way to have a look', async () => {
+    vi.setSystemTime(new Date(2026, 11, 5, 9))
+    await openDay(5)
+    expect(host.querySelector('[data-present="nutrition"]').textContent).toContain('openNutrition')
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    act(() => button('Have a look').click())
+    expect(open).toHaveBeenCalledWith('https://opennutrition.ch', '_blank', 'noopener,noreferrer')
+    expect(store.S.advent.done).toEqual([5])
+    open.mockRestore()
+  })
+
 
   it('not before 1 December 2026: open() refuses and nothing is drawn on Home', async () => {
     vi.setSystemTime(new Date(2026, 10, 30, 23, 59))

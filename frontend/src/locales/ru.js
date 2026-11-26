@@ -1,5 +1,15 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Новое в {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Встряхните телефон в декабре, и снег закружится, как в снежном шаре.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Тренировка начинается с гантелей, которые у вас есть. Никаких 30 кг, если ваша стойка заканчивается на 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Добавьте прошлую тренировку, просто написав её так, как она записана в заметках.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Своя разминочная лесенка: задайте её один раз в настройках, и ей следует каждая разминка.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Часы перед стартом коротко спросят о самочувствии, а в конце вручат медаль.",
+  "What’s new in this version": "Что нового в этой версии",
+  "openGym {0} is out": "Вышел openGym {0}",
+  "Update": "Обновить",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Как показывать тренировку?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Выбери, как удобнее. Переключить можно в любой момент через ⋯ → Вид, а насовсем в Настройки → Тренировка.",
@@ -6056,4 +6066,15 @@ export default {
   "Allow in Huawei Health": "Разрешить в Huawei Health",
   "Get openGym for Huawei": "openGym для Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Записывай подходы с запястья на Apple Watch, Wear OS, Garmin, Huawei или часах Zepp.",
+  "Have a look": "Посмотреть",
+  "Meet openNutrition": "Знакомьтесь: openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "С Рождеством! Хорошо отдохни, и до встречи в новом году.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Моя карьера только начинается, и то, что вы построили вокруг этого проекта, значит для меня больше, чем я могу выразить словами. Спасибо всему сообществу.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Только для тех, кто открыл эту дверцу в декабре 2026 года. Она твоя навсегда, весь год и каждый следующий.",
+  "Put it on my home screen": "Поставить на главный экран",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Спасибо. Всем, кто поставил звезду на GitHub, рассказал другу, поделился openGym в сети, помог кому-то в Discord, прислал исправление или перевод, сообщил об ошибке или угостил меня кофе: без вас openGym бы не было.",
+  "Your present: the Christmas 2026 icon": "Твой подарок: рождественский значок 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Он твой. Выбери его в приложении на телефоне: Настройки, Вид и Главная, Значок приложения.",
+  "Yours. Settings, Look & Home, App icon.": "Он твой. Настройки, Вид и Главная, Значок приложения.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "У openGym появилась младшая сестра. Еда, добавки и вес тела, на твоём собственном сервере, как openGym, без рекламы и без посторонних глаз. Она в закрытой бете, и ты здесь одним из первых.",
 }

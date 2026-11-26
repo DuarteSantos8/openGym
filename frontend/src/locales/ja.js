@@ -1,5 +1,15 @@
 // Japanese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0}の新機能",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "12月にスマホを振ると、スノードームのように雪が舞い上がります。",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "トレーニングは実際に持っているダンベルで始まります。ラックが28 kgまでなら、もう30 kgは出てきません。",
+  "Log a past workout by typing it out, the way it sits in your notes.": "過去のトレーニングを、メモにある通りに打ち込んで記録できます。",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "自分だけのウォームアップの段階：設定で一度決めれば、すべてのウォームアップがそれに従います。",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "ウォッチが開始前にさっと体調を聞き、最後にメダルをくれます。",
+  "What’s new in this version": "このバージョンの新機能",
+  "openGym {0} is out": "openGym {0} が出ました",
+  "Update": "アップデート",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "トレーニング画面の見た目は？",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "しっくりくる方を選んでください。⋯ → レイアウトでいつでも切り替えられ、設定 → トレーニングで固定もできます。",
@@ -5984,4 +5994,15 @@ export default {
   "Allow in Huawei Health": "Huawei Healthで許可",
   "Get openGym for Huawei": "Huawei用openGymを入手",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Apple Watch、Wear OS、Garmin、Huawei、Zeppのウォッチから手元でセットを記録できます。",
+  "Have a look": "見てみる",
+  "Meet openNutrition": "openNutritionのご紹介",
+  "Merry Christmas, rest well, and see you in the new year.": "メリークリスマス。ゆっくり休んで、また新しい年に会いましょう。",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "僕のキャリアはまだ始まったばかりで、皆さんがこのプロジェクトの周りに築いてくれたものは、言葉にできないほど大きな意味があります。コミュニティの皆さん、本当にありがとう。",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "2026年12月にこの扉を開けた人だけのもの。ずっとあなたのものです。今年も、その先も毎年。",
+  "Put it on my home screen": "ホーム画面に置く",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "ありがとう。GitHubでスターをくれた人、友だちに話してくれた人、openGymをネットでシェアしてくれた人、Discordで誰かを助けてくれた人、修正や翻訳を送ってくれた人、バグを報告してくれた人、コーヒーをおごってくれた人へ。皆さんがいなければ、openGymは存在しませんでした。",
+  "Your present: the Christmas 2026 icon": "プレゼント：クリスマス2026アイコン",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "あなたのものです。スマホのアプリで選んでください：設定、表示とホーム、アプリアイコン。",
+  "Yours. Settings, Look & Home, App icon.": "あなたのものです。設定、表示とホーム、アプリアイコン。",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGymに妹ができました。食事、サプリ、体重を、openGymと同じく自分のサーバーで。広告なし、誰にも見られません。いまはプライベートベータで、あなたは一足早い参加者です。",
 }

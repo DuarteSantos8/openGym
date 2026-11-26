@@ -1,5 +1,15 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "มีอะไรใหม่ใน {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "เขย่ามือถือในเดือนธันวาคม แล้วหิมะจะหมุนวนเหมือนในลูกแก้วหิมะ",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "การฝึกเริ่มด้วยดัมเบลที่คุณมีจริง ไม่มี 30 กก. อีกแล้วเมื่อชั้นวางของคุณมีถึงแค่ 28",
+  "Log a past workout by typing it out, the way it sits in your notes.": "บันทึกการฝึกที่ผ่านมาโดยพิมพ์ตามที่จดไว้ในโน้ต",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "ขั้นวอร์มอัปของคุณเอง: ตั้งครั้งเดียวในการตั้งค่า แล้วทุกการวอร์มอัปจะทำตาม",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "นาฬิกาจะถามความพร้อมสั้นๆ ก่อนเริ่ม และมอบเหรียญให้ตอนจบ",
+  "What’s new in this version": "มีอะไรใหม่ในเวอร์ชันนี้",
+  "openGym {0} is out": "openGym {0} มาแล้ว",
+  "Update": "อัปเดต",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "อยากให้หน้าการฝึกเป็นแบบไหน?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "เลือกแบบที่ถูกใจ เปลี่ยนได้ทุกเมื่อที่ ⋯ → เลย์เอาต์ หรือตั้งถาวรที่ ตั้งค่า → การฝึก",
@@ -6063,4 +6073,15 @@ export default {
   "Allow in Huawei Health": "อนุญาตใน Huawei Health",
   "Get openGym for Huawei": "รับ openGym สำหรับ Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "บันทึกเซ็ตจากข้อมือด้วย Apple Watch, Wear OS, Garmin, Huawei หรือนาฬิกา Zepp",
+  "Have a look": "ลองดู",
+  "Meet openNutrition": "ขอแนะนำ openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "สุขสันต์วันคริสต์มาส พักผ่อนให้เต็มที่ แล้วเจอกันปีใหม่",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "เส้นทางอาชีพของผมเพิ่งเริ่มต้น และสิ่งที่ทุกคนสร้างขึ้นรอบโปรเจกต์นี้มีความหมายกับผมมากเกินกว่าจะบรรยายได้ ขอบคุณทั้งคอมมูนิตี้",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "เฉพาะคนที่เปิดประตูบานนี้ในเดือนธันวาคม 2026 เท่านั้น เป็นของคุณตลอดไป ทั้งปีนี้และทุกปีหลังจากนี้",
+  "Put it on my home screen": "ใส่ไว้บนหน้าจอหลัก",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "ขอบคุณ ถึงทุกคนที่กดดาวบน GitHub เล่าให้เพื่อนฟัง แชร์ openGym ทางออนไลน์ ช่วยเหลือคนอื่นใน Discord ส่งการแก้ไขหรือคำแปล รายงานบั๊ก หรือเลี้ยงกาแฟผม: ถ้าไม่มีพวกคุณ ก็คงไม่มี openGym",
+  "Your present: the Christmas 2026 icon": "ของขวัญของคุณ: ไอคอนคริสต์มาส 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "เป็นของคุณแล้ว เลือกได้ในแอปบนมือถือ: ตั้งค่า, หน้าตาและหน้าหลัก, ไอคอนแอป",
+  "Yours. Settings, Look & Home, App icon.": "เป็นของคุณแล้ว ตั้งค่า, หน้าตาและหน้าหลัก, ไอคอนแอป",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym มีน้องสาวแล้ว อาหาร อาหารเสริม และน้ำหนักตัว บนเซิร์ฟเวอร์ของคุณเองเหมือน openGym ไม่มีโฆษณา ไม่มีใครแอบดู ตอนนี้อยู่ในเบต้าแบบปิด และคุณมาก่อนใคร",
 }

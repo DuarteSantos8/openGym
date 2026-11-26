@@ -1,5 +1,15 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Novedades de la {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Agita el móvil en diciembre y la nieve se vuelve loca, como en una bola de nieve.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Los entrenos empiezan con las mancuernas que tienes. Se acabaron los 30 kg cuando tu rack llega a 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Registra un entreno pasado escribiéndolo tal cual está en tus notas.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Tu propia rampa de calentamiento: ajústala una vez en Ajustes y todo calentamiento la sigue.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Tu reloj te hace un check-in rápido antes de empezar y te da una medalla al final.",
+  "What’s new in this version": "Novedades de esta versión",
+  "openGym {0} is out": "Ya está aquí openGym {0}",
+  "Update": "Actualizar",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "¿Cómo quieres ver tu entreno?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Elige lo que te encaje. Puedes cambiarlo cuando quieras en ⋯ → Diseño, o para siempre en Ajustes → Entreno.",
@@ -6052,4 +6062,15 @@ export default {
   "Allow in Huawei Health": "Permitir en Huawei Health",
   "Get openGym for Huawei": "Conseguir openGym para Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Registra series desde la muñeca con un Apple Watch, Wear OS, Garmin, Huawei o un reloj Zepp.",
+  "Have a look": "Echar un vistazo",
+  "Meet openNutrition": "Te presento openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Feliz Navidad, descansa mucho y nos vemos en el año nuevo.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Mi carrera apenas está empezando, y lo que habéis construido alrededor de este proyecto significa para mí más de lo que puedo expresar. Gracias a toda la comunidad.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Solo para quien abrió esta puerta en diciembre de 2026. Es tuyo para siempre, todo el año y todos los que vengan.",
+  "Put it on my home screen": "Ponerlo en mi pantalla de inicio",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Gracias. A todas las personas que dejaron una estrella en GitHub, se lo contaron a un amigo, compartieron openGym en internet, ayudaron a alguien en Discord, enviaron un arreglo o una traducción, informaron de un error o me invitaron a un café: openGym no existiría sin vosotros.",
+  "Your present: the Christmas 2026 icon": "Tu regalo: el icono de Navidad 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Es tuyo. Elígelo en la app de tu móvil: Ajustes, Aspecto e Inicio, Icono de la app.",
+  "Yours. Settings, Look & Home, App icon.": "Es tuyo. Ajustes, Aspecto e Inicio, Icono de la app.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym tiene una hermana pequeña. Comida, suplementos y peso corporal, en tu propio servidor como openGym, sin anuncios y sin nadie mirando. Está en beta privada, y llegas pronto.",
 }

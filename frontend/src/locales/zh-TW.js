@@ -1,4 +1,14 @@
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} 新功能",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "十二月搖一搖手機，雪花就會像雪花球裡一樣狂舞。",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "訓練會用你真正擁有的啞鈴開始。啞鈴架只到 28 公斤，就不會再出現 30 公斤。",
+  "Log a past workout by typing it out, the way it sits in your notes.": "照著筆記裡的樣子直接輸入，記錄過去的訓練。",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "你自己的熱身階梯：在設定裡定一次，之後每次熱身都照著來。",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "手錶會在開始前快速問問你的狀態，結束時還會頒給你一面獎牌。",
+  "What’s new in this version": "此版本新功能",
+  "openGym {0} is out": "openGym {0} 已推出",
+  "Update": "更新",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "訓練要怎麼顯示？",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "選你順手的。隨時可以在 ⋯ → 畫面佈局 裡切換，或在 設定 → 訓練 裡固定下來。",
@@ -6045,4 +6055,15 @@ export default {
   "Allow in Huawei Health": "在 Huawei Health 中允許",
   "Get openGym for Huawei": "取得 Huawei 版 openGym",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "在 Apple Watch、Wear OS、Garmin、Huawei 或 Zepp 手錶上直接從手腕記錄組數。",
+  "Have a look": "看看",
+  "Meet openNutrition": "認識一下 openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "聖誕快樂，好好休息，新年見。",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "我的職涯才剛開始，你們圍繞這個專案所建立的一切，對我的意義難以言喻。感謝整個社群。",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "僅限於 2026 年 12 月打開這扇門的人。它永遠屬於你，今年和之後的每一年。",
+  "Put it on my home screen": "放到主畫面",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "謝謝。感謝每一位在 GitHub 上按星、向朋友推薦、在網路上分享 openGym、在 Discord 幫助別人、送出修正或翻譯、回報問題，或請我喝咖啡的人：沒有你們，就沒有 openGym。",
+  "Your present: the Christmas 2026 icon": "你的禮物：2026 聖誕圖示",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "歸你了。在手機上的 App 裡選擇：設定、外觀與首頁、App 圖示。",
+  "Yours. Settings, Look & Home, App icon.": "歸你了。設定、外觀與首頁、App 圖示。",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym 有了一個妹妹。飲食、補充品和體重，像 openGym 一樣放在你自己的伺服器上，沒有廣告，也沒人偷看。目前是私人測試版，你來得很早。",
 }

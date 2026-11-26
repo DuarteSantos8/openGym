@@ -1,5 +1,15 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Újdonságok: {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Rázd meg decemberben a telefonod, és megvadul a hó, mint egy hógömbben.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Az edzés azokkal a kézisúlyzókkal indul, amik tényleg megvannak. Nincs több 30 kg, ha az állványod 28-nál véget ér.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Rögzíts egy korábbi edzést úgy, hogy begépeled, ahogy a jegyzeteidben áll.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Saját bemelegítő lépcső: egyszer állítsd be a Beállításokban, és minden bemelegítés ezt követi.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Az órád indulás előtt gyorsan rákérdez, hogy vagy, a végén pedig érmet ad.",
+  "What’s new in this version": "Újdonságok ebben a verzióban",
+  "openGym {0} is out": "Megjelent az openGym {0}",
+  "Update": "Frissítés",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Hogy nézzen ki az edzésed?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Válaszd, ami jólesik. Bármikor átválthatsz a ⋯ → Elrendezés alatt, vagy végleg a Beállítások → Edzés részben.",
@@ -6055,4 +6065,15 @@ export default {
   "Allow in Huawei Health": "Engedélyezés a Huawei Healthben",
   "Get openGym for Huawei": "openGym Huawei órára",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Rögzíts sorozatokat a csuklódról Apple Watch-on, Wear OS-, Garmin-, Huawei- vagy Zepp-órán.",
+  "Have a look": "Nézd meg",
+  "Meet openNutrition": "Ismerd meg az openNutritiont",
+  "Merry Christmas, rest well, and see you in the new year.": "Boldog karácsonyt, pihenj sokat, és találkozunk az új évben.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "A karrierem még csak most kezdődik, és amit a projekt köré építettetek, többet jelent nekem, mint amit szavakba tudok önteni. Köszönöm az egész közösségnek.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Csak annak, aki 2026 decemberében kinyitotta ezt az ajtót. A tiéd marad, egész évben és minden évben utána.",
+  "Put it on my home screen": "Tedd a kezdőképernyőre",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Köszönöm. Mindenkinek, aki csillagot hagyott a GitHubon, mesélt róla egy barátjának, megosztotta az openGymet online, segített valakinek a Discordon, javítást vagy fordítást küldött, hibát jelentett vagy meghívott egy kávéra: nélkületek nem létezne az openGym.",
+  "Your present: the Christmas 2026 icon": "Az ajándékod: a 2026-os karácsonyi ikon",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "A tiéd. Válaszd ki a telefonos alkalmazásban: Beállítások, Megjelenés és Kezdőlap, Alkalmazásikon.",
+  "Yours. Settings, Look & Home, App icon.": "A tiéd. Beállítások, Megjelenés és Kezdőlap, Alkalmazásikon.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "Az openGymnek van egy húga. Étel, étrend-kiegészítők és testsúly, a saját szervereden, mint az openGym, reklám és kíváncsi szemek nélkül. Zárt bétában van, és te korán érkeztél.",
 }

@@ -1,5 +1,15 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Baru di {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Guncang ponselmu di bulan Desember dan saljunya mengamuk, seperti di bola salju.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Latihan dibuka dengan dumbel yang benar-benar kamu punya. Tak ada lagi 30 kg kalau rakmu berhenti di 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Catat latihan yang sudah lewat dengan mengetiknya persis seperti di catatanmu.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Tangga pemanasanmu sendiri: atur sekali di Pengaturan, setiap pemanasan mengikutinya.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Jammu menanyakan kabarmu sebentar sebelum mulai dan memberimu medali di akhir.",
+  "What’s new in this version": "Yang baru di versi ini",
+  "openGym {0} is out": "openGym {0} sudah keluar",
+  "Update": "Perbarui",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Latihanmu mau tampil seperti apa?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Pilih yang terasa pas. Bisa diganti kapan saja di ⋯ → Tata letak, atau permanen di Pengaturan → Latihan.",
@@ -6017,4 +6027,15 @@ export default {
   "Allow in Huawei Health": "Izinkan di Huawei Health",
   "Get openGym for Huawei": "Dapatkan openGym untuk Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Catat set dari pergelangan tanganmu menggunakan Apple Watch, Wear OS, Garmin, Huawei, atau jam tangan Zepp.",
+  "Have a look": "Lihat-lihat",
+  "Meet openNutrition": "Kenalan dengan openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Selamat Natal, istirahat yang cukup, sampai jumpa di tahun baru.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Karierku baru saja dimulai, dan apa yang kalian bangun di sekitar proyek ini berarti lebih dari yang bisa kuungkapkan. Terima kasih untuk seluruh komunitas.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Hanya untuk yang membuka pintu ini di bulan Desember 2026. Ini milikmu, sepanjang tahun dan setiap tahun sesudahnya.",
+  "Put it on my home screen": "Pasang di layar utama",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Terima kasih. Untuk semua yang memberi bintang di GitHub, cerita ke teman, membagikan openGym di internet, membantu orang di Discord, mengirim perbaikan atau terjemahan, melaporkan bug, atau mentraktirku kopi: tanpa kalian openGym tidak akan ada.",
+  "Your present: the Christmas 2026 icon": "Hadiahmu: ikon Natal 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Milikmu. Pilih di aplikasi di ponselmu: Pengaturan, Tampilan & Beranda, Ikon aplikasi.",
+  "Yours. Settings, Look & Home, App icon.": "Milikmu. Pengaturan, Tampilan & Beranda, Ikon aplikasi.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym punya adik perempuan. Makanan, suplemen, dan berat badan, di servermu sendiri seperti openGym, tanpa iklan dan tanpa ada yang mengintip. Masih beta privat, dan kamu datang lebih awal.",
 };

@@ -1,5 +1,15 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} sürümünde yeni",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Aralıkta telefonunu salla, kar tıpkı bir kar küresindeki gibi çılgına dönsün.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Antrenmanlar gerçekten sahip olduğun dambıllarla açılır. Rafın 28’de bitiyorsa artık 30 kg yok.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Geçmiş bir antrenmanı notlarındaki gibi yazarak kaydet.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Kendi ısınma rampan: Ayarlar’da bir kez belirle, her ısınma ona uysun.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Saatin başlamadan önce kısa bir durum sorar ve sonunda sana bir madalya verir.",
+  "What’s new in this version": "Bu sürümde neler yeni",
+  "openGym {0} is out": "openGym {0} çıktı",
+  "Update": "Güncelle",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Antrenmanın nasıl görünsün?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Sana uygun olanı seç. İstediğin an ⋯ → Düzen’den değiştirebilir, kalıcı olarak Ayarlar → Antrenman’dan ayarlayabilirsin.",
@@ -6052,4 +6062,15 @@ export default {
   "Allow in Huawei Health": "Huawei Health’te izin ver",
   "Get openGym for Huawei": "Huawei için openGym’i al",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Setleri bileğinden kaydet: Apple Watch, Wear OS, Garmin, Huawei veya Zepp saatiyle.",
+  "Have a look": "Bir göz at",
+  "Meet openNutrition": "openNutrition ile tanış",
+  "Merry Christmas, rest well, and see you in the new year.": "Mutlu Noeller, iyi dinlen, yeni yılda görüşürüz.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Kariyerim daha yeni başlıyor ve bu projenin etrafında kurduğunuz şey benim için kelimelerle anlatabileceğimden çok daha fazlası. Tüm topluluğa teşekkürler.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Yalnızca bu kapıyı Aralık 2026'da açanlar için. Senin, bütün yıl ve sonraki her yıl.",
+  "Put it on my home screen": "Ana ekranıma koy",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Teşekkürler. GitHub'da yıldız bırakan, bir arkadaşına anlatan, openGym'i internette paylaşan, Discord'da birine yardım eden, düzeltme ya da çeviri gönderen, hata bildiren veya bana bir kahve ısmarlayan herkese: sizin olmadan openGym olmazdı.",
+  "Your present: the Christmas 2026 icon": "Hediyen: 2026 Noel simgesi",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Senin. Telefonundaki uygulamada seç: Ayarlar, Görünüm ve Ana sayfa, Uygulama simgesi.",
+  "Yours. Settings, Look & Home, App icon.": "Senin. Ayarlar, Görünüm ve Ana sayfa, Uygulama simgesi.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym'in bir küçük kız kardeşi var. Yemek, takviyeler ve vücut ağırlığı, openGym gibi kendi sunucunda, reklamsız ve kimse okumadan. Kapalı betada ve sen erken geldin.",
 }

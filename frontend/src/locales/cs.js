@@ -1,5 +1,15 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Novinky ve {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Zatřes v prosinci telefonem a sníh se rozběsní jako ve sněžítku.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Tréninky začínají s jednoručkami, které opravdu máš. Žádných 30 kg, když tvůj stojan končí na 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Zapiš starší trénink tak, že ho napíšeš, jak ho máš v poznámkách.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Vlastní rozcvičovací rampa: nastav ji jednou v Nastavení a každá rozcvička se jí řídí.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Hodinky se před startem krátce zeptají, jak na tom jsi, a na konci ti dají medaili.",
+  "What’s new in this version": "Co je nového v této verzi",
+  "openGym {0} is out": "Vyšel openGym {0}",
+  "Update": "Aktualizovat",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Jak má tvůj trénink vypadat?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vyber, co ti sedí. Přepnout můžeš kdykoli přes ⋯ → Rozložení, nebo natrvalo v Nastavení → Trénink.",
@@ -6018,4 +6028,15 @@ export default {
   "Allow in Huawei Health": "Povolit v Huawei Health",
   "Get openGym for Huawei": "Získat openGym pro Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Zapisuj série přímo ze zápěstí: Apple Watch, hodinky s Wear OS, Garmin, Huawei nebo Zepp.",
+  "Have a look": "Mrknout",
+  "Meet openNutrition": "Seznamte se s openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Veselé Vánoce, pořádně si odpočiň a uvidíme se v novém roce.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Moje kariéra teprve začíná a to, co jste kolem tohoto projektu vybudovali, pro mě znamená víc, než dokážu říct. Díky celé komunitě.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Jen pro ty, kdo otevřeli tato dvířka v prosinci 2026. Je tvoje napořád, celý rok i každý další.",
+  "Put it on my home screen": "Dát na plochu",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Díky. Všem, kdo nechali hvězdičku na GitHubu, řekli o něm kamarádovi, sdíleli openGym online, pomohli někomu na Discordu, poslali opravu nebo překlad, nahlásili chybu nebo mi koupili kafe: bez vás by openGym nebyl.",
+  "Your present: the Christmas 2026 icon": "Tvůj dárek: vánoční ikona 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Je tvoje. Vyber si ji v aplikaci v telefonu: Nastavení, Vzhled a obrazovka Domů, Ikona aplikace.",
+  "Yours. Settings, Look & Home, App icon.": "Je tvoje. Nastavení, Vzhled a obrazovka Domů, Ikona aplikace.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym má mladší sestru. Jídlo, doplňky a tělesná váha, na tvém vlastním serveru jako openGym, bez reklam a bez šmírování. Je v soukromé betě a ty jsi tu brzy.",
 }

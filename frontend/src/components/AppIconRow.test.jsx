@@ -44,7 +44,8 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove(); delete globalThis.Capacitor; vi.useRealTimers() })
 
-const mount = async () => { await act(async () => { root.render(<AppIconRow />) }) }
+const GIVEN = ['xmas-icon-2026']   // door 12 of 2026 opened: the Christmas icon is theirs
+const mount = async (prizes = GIVEN) => { await act(async () => { root.render(<AppIconRow prizes={prizes} />) }) }
 const buttons = () => [...host.querySelectorAll('.app-icon')]
 const chosen = () => buttons().filter(b => b.classList.contains('on')).map(b => b.getAttribute('aria-label'))
 const tap = async label => { await act(async () => { buttons().find(b => b.getAttribute('aria-label') === label).click() }) }
@@ -91,16 +92,17 @@ describe('App icon row', () => {
     expect(chosen()).toEqual(['Christmas'])
   })
 
-  it('before 1 December 2026 the Christmas icon is not offered, unless it is the one in use', async () => {
-    vi.setSystemTime(new Date(2026, 10, 30, 23, 59))
-    await mount()
+  it('the Christmas icon is door 12\'s present: not offered without it, in December too, unless it is the one in use', async () => {
+    vi.setSystemTime(new Date(2026, 11, 13, 9))
+    await mount([])
     expect(buttons().map(b => b.getAttribute('aria-label'))).not.toContain('Christmas')
     expect(buttons().at(-1).getAttribute('aria-label')).toBe('Halloween')
     act(() => root.unmount()); root = createRoot(host)
     m.state.name = 'christmas'
-    await mount()
+    await mount([])
     expect(chosen()).toEqual(['Christmas'])
   })
+
 
   it('a tap on the icon in use asks the phone nothing', async () => {
     await mount()

@@ -1,5 +1,15 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Kas naujo {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Gruodį pakratyk telefoną ir sniegas pasiutiškai sukasi, kaip sniego rutulyje.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Treniruotės prasideda nuo hantelių, kuriuos tikrai turi. Jokių 30 kg, kai tavo stovas baigiasi ties 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Įrašyk buvusią treniruotę tiesiog ją surašydamas, kaip ji parašyta tavo užrašuose.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Tavo apšilimo laiptai: nustatyk kartą Nustatymuose ir kiekvienas apšilimas jų laikysis.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Laikrodis prieš pradedant greitai pasiteirauja, kaip jautiesi, o pabaigoje įteikia medalį.",
+  "What’s new in this version": "Kas naujo šioje versijoje",
+  "openGym {0} is out": "Išėjo openGym {0}",
+  "Update": "Atnaujinti",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Kaip turi atrodyti tavo treniruotė?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Rinkis, kas patinka. Perjungti gali bet kada per ⋯ → Išdėstymas, arba visam laikui Nustatymai → Treniruotė.",
@@ -6048,4 +6058,15 @@ export default {
   "Allow in Huawei Health": "Leisti Huawei Health",
   "Get openGym for Huawei": "Gauti openGym Huawei laikrodžiui",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Fiksuokite serijas iš riešo naudodami „Apple Watch“, „Wear OS“, „Garmin“, „Huawei“ arba „Zepp“ laikrodį.",
+  "Have a look": "Pažiūrėk",
+  "Meet openNutrition": "Susipažink su openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Linksmų Kalėdų, gerai pailsėk ir iki naujųjų metų.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Mano karjera tik prasideda, o tai, ką sukūrėte aplink šį projektą, man reiškia daugiau, nei galiu išsakyti žodžiais. Ačiū visai bendruomenei.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Tik tiems, kurie atvėrė šias dureles 2026 m. gruodį. Ji tavo visam laikui, visus metus ir kiekvienus po jų.",
+  "Put it on my home screen": "Įdėti į pradžios ekraną",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Ačiū. Visiems, kurie paliko žvaigždutę GitHub, papasakojo draugui, pasidalijo openGym internete, padėjo kam nors Discord, atsiuntė pataisymą ar vertimą, pranešė apie klaidą ar nupirko man kavos: be jūsų openGym nebūtų.",
+  "Your present: the Christmas 2026 icon": "Tavo dovana: 2026 m. Kalėdų piktograma",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Ji tavo. Pasirink ją programėlėje telefone: Nustatymai, Išvaizda ir namai, Programėlės piktograma.",
+  "Yours. Settings, Look & Home, App icon.": "Ji tavo. Nustatymai, Išvaizda ir namai, Programėlės piktograma.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym turi mažąją sesę. Maistas, papildai ir kūno svoris, tavo paties serveryje kaip openGym, be reklamų ir be smalsių akių. Ji privačioje beta versijoje, o tu čia anksti.",
 }

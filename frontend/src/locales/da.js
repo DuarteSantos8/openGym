@@ -1,6 +1,16 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Nyt i {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Ryst telefonen i december, og sneen går amok, som i en snekugle.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Træningen starter med de håndvægte, du rent faktisk har. Ingen 30 kg, når dit stativ stopper ved 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Log en tidligere træning ved at skrive den, som den står i dine noter.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Din egen opvarmningstrappe: indstil den én gang i Indstillinger, og al opvarmning følger den.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Dit ur laver et hurtigt check-in, før du starter, og giver dig en medalje til sidst.",
+  "What’s new in this version": "Nyt i denne version",
+  "openGym {0} is out": "openGym {0} er ude",
+  "Update": "Opdater",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Hvordan skal din træning se ud?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vælg det, der føles rigtigt. Du kan skifte når som helst under ⋯ → Layout, eller for altid i Indstillinger → Træning.",
@@ -5992,4 +6002,15 @@ export default {
   "Allow in Huawei Health": "Tillad i Huawei Health",
   "Get openGym for Huawei": "Hent openGym til Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Log sæt fra håndleddet på et Apple Watch, Wear OS-, Garmin-, Huawei- eller Zepp-ur.",
+  "Have a look": "Tag et kig",
+  "Meet openNutrition": "Mød openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Glædelig jul, hvil godt ud, og vi ses i det nye år.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Min karriere er kun lige begyndt, og det, I har bygget op omkring projektet, betyder mere for mig, end jeg kan sige med ord. Tak til hele fællesskabet.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Kun til dem, der åbnede denne låge i december 2026. Den er din at beholde, hele året og alle år efter.",
+  "Put it on my home screen": "Sæt det på min hjemmeskærm",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Tak. Til alle, der har givet en stjerne på GitHub, fortalt en ven om det, delt openGym online, hjulpet nogen på Discord, sendt en rettelse eller en oversættelse, meldt en fejl eller købt mig en kop kaffe: openGym ville ikke findes uden jer.",
+  "Your present: the Christmas 2026 icon": "Din gave: julikonet 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Det er dit. Vælg det i appen på din telefon: Indstillinger, Udseende og Hjem, App-ikon.",
+  "Yours. Settings, Look & Home, App icon.": "Det er dit. Indstillinger, Udseende og Hjem, App-ikon.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym har fået en lillesøster. Mad, kosttilskud og kropsvægt, på din egen server ligesom openGym, uden reklamer og uden nogen der kigger med. Den er i privat beta, og du er tidligt ude.",
 }

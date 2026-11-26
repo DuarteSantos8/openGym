@@ -1,5 +1,15 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Có gì mới trong {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Lắc điện thoại vào tháng Mười Hai và tuyết sẽ quay cuồng như trong quả cầu tuyết.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Buổi tập mở bằng đúng những quả tạ đơn bạn có. Không còn 30 kg khi giá tạ của bạn chỉ tới 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Ghi lại một buổi tập cũ bằng cách gõ đúng như trong ghi chú của bạn.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Thang khởi động của riêng bạn: đặt một lần trong Cài đặt, mọi phần khởi động đều theo nó.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Đồng hồ hỏi nhanh tình trạng của bạn trước khi bắt đầu và trao huy chương khi kết thúc.",
+  "What’s new in this version": "Có gì mới trong phiên bản này",
+  "openGym {0} is out": "openGym {0} đã ra mắt",
+  "Update": "Cập nhật",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Bạn muốn buổi tập hiển thị thế nào?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Chọn kiểu bạn thấy hợp. Có thể đổi bất cứ lúc nào ở ⋯ → Bố cục, hoặc cố định trong Cài đặt → Buổi tập.",
@@ -6018,4 +6028,15 @@ export default {
   "Allow in Huawei Health": "Cho phép trong Huawei Health",
   "Get openGym for Huawei": "Tải openGym cho Huawei",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Ghi hiệp ngay trên cổ tay với Apple Watch, Wear OS, Garmin, Huawei hoặc đồng hồ Zepp.",
+  "Have a look": "Xem thử",
+  "Meet openNutrition": "Làm quen với openNutrition",
+  "Merry Christmas, rest well, and see you in the new year.": "Giáng sinh vui vẻ, nghỉ ngơi thật tốt và hẹn gặp lại năm mới.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "Sự nghiệp của mình chỉ mới bắt đầu, và những gì các bạn đã xây dựng quanh dự án này có ý nghĩa với mình hơn mọi lời nói. Cảm ơn cả cộng đồng.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "Chỉ dành cho ai đã mở cánh cửa này vào tháng 12 năm 2026. Nó là của bạn, cả năm và mọi năm sau đó.",
+  "Put it on my home screen": "Đặt lên màn hình chính",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "Cảm ơn. Gửi tất cả những ai đã để lại một ngôi sao trên GitHub, kể cho bạn bè, chia sẻ openGym trên mạng, giúp đỡ ai đó trên Discord, gửi bản sửa lỗi hay bản dịch, báo lỗi, hoặc mời mình một ly cà phê: không có các bạn thì đã không có openGym.",
+  "Your present: the Christmas 2026 icon": "Quà của bạn: biểu tượng Giáng sinh 2026",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "Của bạn. Chọn nó trong ứng dụng trên điện thoại: Cài đặt, Giao diện & Trang chủ, Biểu tượng ứng dụng.",
+  "Yours. Settings, Look & Home, App icon.": "Của bạn. Cài đặt, Giao diện & Trang chủ, Biểu tượng ứng dụng.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym có một cô em gái. Ăn uống, thực phẩm bổ sung và cân nặng, trên máy chủ của riêng bạn như openGym, không quảng cáo và không ai nhòm ngó. Đang trong bản beta riêng, và bạn đến sớm đấy.",
 };

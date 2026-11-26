@@ -1,5 +1,15 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} में नया",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "दिसंबर में फ़ोन हिलाइए और बर्फ़ बर्फ़ीले गोले की तरह झूम उठेगी।",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "वर्कआउट उन्हीं डम्बल से शुरू होते हैं जो आपके पास सच में हैं। रैक 28 पर खत्म हो तो अब 30 किलो नहीं।",
+  "Log a past workout by typing it out, the way it sits in your notes.": "पिछला वर्कआउट वैसे ही टाइप करके दर्ज करें जैसा आपके नोट्स में लिखा है।",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "आपकी अपनी वार्म-अप सीढ़ी: सेटिंग्स में एक बार सेट करें, हर वार्म-अप उसी पर चलेगा।",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "आपकी घड़ी शुरू करने से पहले झटपट हाल पूछती है और आख़िर में मेडल देती है।",
+  "What’s new in this version": "इस वर्शन में नया क्या है",
+  "openGym {0} is out": "openGym {0} आ गया है",
+  "Update": "अपडेट करें",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "आपका वर्कआउट कैसा दिखे?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "जो ठीक लगे चुनें। कभी भी ⋯ → लेआउट से बदल सकते हैं, या हमेशा के लिए सेटिंग्स → वर्कआउट में।",
@@ -6052,4 +6062,15 @@ export default {
   "Allow in Huawei Health": "Huawei Health में अनुमति दें",
   "Get openGym for Huawei": "Huawei के लिए openGym पाएँ",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Apple Watch, Wear OS, Garmin, Huawei या Zepp घड़ी पर कलाई से ही सेट दर्ज करें।",
+  "Have a look": "एक नज़र डालें",
+  "Meet openNutrition": "मिलिए openNutrition से",
+  "Merry Christmas, rest well, and see you in the new year.": "मेरी क्रिसमस, खूब आराम कीजिए, नए साल में मिलते हैं।",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "मेरा करियर अभी शुरू ही हुआ है, और इस प्रोजेक्ट के इर्द-गिर्द आपने जो बनाया है, वह मेरे लिए शब्दों से कहीं ज़्यादा मायने रखता है। पूरे समुदाय का धन्यवाद।",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "सिर्फ़ उनके लिए जिन्होंने दिसंबर 2026 में यह दरवाज़ा खोला। यह हमेशा आपका है, पूरे साल और उसके बाद हर साल।",
+  "Put it on my home screen": "मेरी होम स्क्रीन पर लगाएँ",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "धन्यवाद। हर उस व्यक्ति को जिसने GitHub पर स्टार दिया, किसी दोस्त को बताया, openGym को ऑनलाइन शेयर किया, Discord पर किसी की मदद की, कोई फ़िक्स या अनुवाद भेजा, बग की रिपोर्ट की, या मुझे कॉफ़ी पिलाई: आपके बिना openGym होता ही नहीं।",
+  "Your present: the Christmas 2026 icon": "आपका तोहफ़ा: क्रिसमस 2026 आइकन",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "यह आपका है। फ़ोन के ऐप में चुनें: सेटिंग्स, दिखावट और होम, ऐप आइकन।",
+  "Yours. Settings, Look & Home, App icon.": "यह आपका है। सेटिंग्स, दिखावट और होम, ऐप आइकन।",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym की एक छोटी बहन है। खाना, सप्लीमेंट और शरीर का वज़न, openGym की तरह आपके अपने सर्वर पर, बिना विज्ञापन और बिना किसी के झाँके। यह प्राइवेट बीटा में है, और आप जल्दी आए हैं।",
 }

@@ -6,6 +6,10 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Advent calendar: a present every Saturday. On 5 December openGym's little sister, openNutrition, says hello. On the 12th the Christmas 2026 app icon, only for whoever opens that door, and theirs to keep. On the 19th the festive flame for your streak. Door 24 is a thank-you to everyone who helped openGym along this year.
+- What's new: after an update the app shows the version's top five changes once, and Settings → About has them to read again. The APK from GitHub or opengym.ch also says when a newer version is out (at most once a day, once per version), with Update one tap away. Play, F-Droid and the App Store update their own copies, so nothing there.
+- Christmas: the snow on the cards' top edges comes in five shapes instead of one, so no two cards next to each other look alike.
+- Coach: automatic reviews switched on before 1.4.6 keep running after the update. They waited for the Coach to be opened first; the app now carries over the yes this device already gave. The server log says why someone's automatic review was held back.
 - Coach: a connection that drops before the AI answers is tried again, up to twice. On an iPhone, Gemini could fail at once with "The network connection was lost" (Discord).
 - Coach: local models that refuse a JSON answer while thinking now get asked again with thinking off, and that is remembered for the model (thanks @nathancashion for #1546).
 - Dumbbells you own: a workout now opens on the bells your gym has. A lift seeded from your confirmed working weight, from last time or from another gym could open at 30 kg total on a rack of 14s and 16s, and only switching gyms fixed it. It now opens at the heaviest load your rack makes at or under that number (28 kg), in planned sessions, freestyle and repeated workouts alike. (Discord, thanks unodostresteban)

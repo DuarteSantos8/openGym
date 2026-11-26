@@ -1,5 +1,15 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0}의 새로운 기능",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "12월에 휴대폰을 흔들면 스노볼처럼 눈이 휘몰아쳐요.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "운동이 실제로 가진 덤벨로 시작돼요. 랙이 28 kg까지면 이제 30 kg은 없어요.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "지난 운동을 메모에 적힌 그대로 입력해서 기록하세요.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "나만의 워밍업 단계: 설정에서 한 번 정하면 모든 워밍업이 그대로 따라요.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "워치가 시작 전에 컨디션을 짧게 묻고, 끝나면 메달을 줘요.",
+  "What’s new in this version": "이번 버전의 새로운 기능",
+  "openGym {0} is out": "openGym {0} 출시",
+  "Update": "업데이트",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "운동 화면을 어떻게 볼까요?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "마음에 드는 쪽을 고르세요. ⋯ → 레이아웃에서 언제든 바꿀 수 있고, 설정 → 운동에서 아예 정할 수도 있어요.",
@@ -6052,4 +6062,15 @@ export default {
   "Allow in Huawei Health": "Huawei Health에서 허용",
   "Get openGym for Huawei": "Huawei용 openGym 받기",
   "Log sets from your wrist on an Apple Watch, Wear OS, Garmin, Huawei or Zepp watch.": "Apple Watch, Wear OS, Garmin, Huawei 또는 Zepp 워치로 손목에서 세트를 기록해요.",
+  "Have a look": "둘러보기",
+  "Meet openNutrition": "openNutrition을 소개합니다",
+  "Merry Christmas, rest well, and see you in the new year.": "메리 크리스마스, 푹 쉬시고 새해에 만나요.",
+  "My career is only just starting, and what you have built around this project means more to me than I can put into words. Thank you to the whole community.": "제 커리어는 이제 막 시작됐고, 여러분이 이 프로젝트를 중심으로 만들어 주신 것은 말로 다 할 수 없을 만큼 큰 의미가 있어요. 커뮤니티 모두에게 고마워요.",
+  "Only for whoever opened this door in December 2026. It is yours to keep, all year and every year after.": "2026년 12월에 이 문을 연 사람만을 위한 거예요. 올해도, 그다음 해에도 계속 당신의 것이에요.",
+  "Put it on my home screen": "홈 화면에 두기",
+  "Thank you. To everyone who left a star on GitHub, told a friend, shared openGym online, helped someone out on Discord, sent a fix or a translation, reported a bug, or bought me a coffee: openGym would not exist without you.": "고마워요. GitHub에 별을 남겨 준 분, 친구에게 알려 준 분, openGym을 온라인에 공유해 준 분, Discord에서 누군가를 도와준 분, 수정이나 번역을 보내 준 분, 버그를 알려 준 분, 커피를 사 준 분 모두에게: 여러분이 없었다면 openGym도 없었을 거예요.",
+  "Your present: the Christmas 2026 icon": "선물: 2026 크리스마스 아이콘",
+  "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "당신의 것이에요. 휴대폰 앱에서 고르세요: 설정, 화면과 홈, 앱 아이콘.",
+  "Yours. Settings, Look & Home, App icon.": "당신의 것이에요. 설정, 화면과 홈, 앱 아이콘.",
+  "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym에 여동생이 생겼어요. 식단, 보충제, 체중을 openGym처럼 내 서버에서, 광고도 엿보는 사람도 없이. 지금은 비공개 베타이고, 당신은 남들보다 빨라요.",
 }
