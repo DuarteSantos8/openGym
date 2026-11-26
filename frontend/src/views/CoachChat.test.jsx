@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
-import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
+import { CONSENT_VERSION, revertLast } from '../lib/coach.js'   // fixtures grant the current consent version
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { build } from '../../../api/coach/core/payload.js'
@@ -155,18 +155,27 @@ describe('the Coach chat', () => {
     }
   })
 
-  // B2: a routine+schedule answer currently becomes a full-plan import.
-  it.fails('preserves Monday when the person asks to add Tuesday and Wednesday', async () => {
+  it('preserves Monday when the person asks to add Tuesday and Wednesday', async () => {
     const S = withMonday()
+    S.week[2] = 'old'   // A pre-upgrade weekday containing a single routine ID.
+    S.dayPlan['2099-01-01'] = 'rest'
+    S.scheduleMode = 'rotation'
+    S.rotation = { id: 'loop', sequence: ['old', 'rest'], at: 1 }
     await mount(await pushPullProposal(S, 'first'), null, { S })
+    expect(container.textContent).not.toContain('Replaces your current week')
     await click(byText(/Import this plan/))
     expect(S.week[1]).toEqual(['old'])
+    expect(S.coach.chat.at(-1).text).toBe('scheduled on 2 days')
+    expect(S.week[2]).toEqual(['old', S.routines.find(r => r.name === 'Push').id])
+    expect(S.dayPlan['2099-01-01']).toBe('rest')
+    expect(S.rotation).toEqual({ id: 'loop', sequence: ['old', 'rest'], at: 1 })
   })
 
-  it.fails('keeps one copy when the same push/pull request is sent and confirmed on a second visit', async () => {
+  it('keeps one copy when the same push/pull request is sent and confirmed on a second visit', async () => {
     const S = withMonday()
     await mount(await pushPullProposal(S, 'first'), null, { S })
     await click(byText(/Import this plan/))
+    S.routines.forEach(r => { r._ts = 100; r._f = { name: 100 } })
     const afterFirst = structuredClone({ routines: S.routines, week: S.week })
     await act(async () => { root.unmount() })
     await mount(await pushPullProposal(S, 'second'), null, { S })
@@ -174,6 +183,20 @@ describe('the Coach chat', () => {
     await click(byText(/Import this plan/))
     expect(S.routines.map(r => r.name)).toEqual(afterFirst.routines.map(r => r.name))
     expect(S.week).toEqual(afterFirst.week)
+    expect(S.coach.snapshots).toHaveLength(1)
+    expect(revertLast(S)).toBe(true)
+    expect(S.week).toEqual({ 1: ['old'] })
+    expect(S.routines.map(r => r.id)).toEqual(['old'])
+  })
+
+  it('keeps a same-name routine with a different prescription', async () => {
+    const S = withMonday()
+    S.routines[0].name = 'Push'
+    S.routines[0].ex[0].sets = 5
+    await mount(await pushPullProposal(S, 'first'), null, { S })
+    await click(byText(/Import this plan/))
+    expect(S.routines.filter(r => r.name === 'Push').map(r => r.ex[0].sets)).toEqual([5, 2])
+    expect(S.week[2]).not.toContain('old')
   })
 
   it('opens with the questionnaire summary and pitches the plan as a card with routine tabs', async () => {

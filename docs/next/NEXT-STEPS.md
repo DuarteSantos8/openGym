@@ -87,12 +87,10 @@ With no routines or with a proposed plan open, a message uses the plan builder i
   movements. The Coach's catalogue should also carry accessory requirements from
   the app (see `accessoriesOf` in `frontend/src/lib/equipment.js`).
 - **Add Tuesday push and Wednesday pull:** both routines preview on the requested
-  weekdays and the store keeps its original schedule until Import. Import replaces the
-  whole week, clearing an existing Monday. Repeating and confirming the same request
-  creates two more routines. Two expected-failure tests capture these gaps.
-  A follow-up needs to distinguish an addition from a full plan in the confirmed
-  proposal, preserve other weekdays, and reuse the same imported routines on a
-  repeat when their contents still match. Matching display names alone is ambiguous.
+  weekdays. Confirming the chat proposal appends them to those days, keeping Monday,
+  existing sessions on Tuesday and Wednesday, and per-date overrides. A repeat reuses
+  routines with the same name and prescription. Undo restores the original week even
+  after a repeat confirmation. Full-plan imports keep their replacement behavior.
 
 ## 2. Merging (only the owner merges)
 
