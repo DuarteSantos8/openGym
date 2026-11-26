@@ -50,7 +50,7 @@ import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui
 import '../coach.css'
 import { isoRun } from '../lib/bidi.js'
 
-export default function CoachChat() {
+export default function CoachChat({ starter = '' }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
@@ -63,7 +63,7 @@ export default function CoachChat() {
   // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
   const gate = useCoachGate()
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
-  const [text, setText] = useState('')
+  const [text, setText] = useState(starter)
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -79,8 +79,9 @@ export default function CoachChat() {
   useEffect(() => {
     if (!storeReady || !gate.known) return
     if (!ok) nav('/home', { replace: true })
-    else if (!ready) nav('/coach/intake', { replace: true })
-  }, [storeReady, gate.known, ok, ready])
+    else if (!ready) nav('/coach/intake', starter ? { replace: true, state: { coachStarter: starter } } : { replace: true })
+    else if (starter) nav('/coach', { replace: true }) // The draft now belongs to this composer.
+  }, [storeReady, gate.known, ok, ready, starter])
 
   // A job that ends is either a proposal, "nothing to change", or a failure. The server tells
   // the client none of that directly — the job simply stops appearing — so the transition is

@@ -6414,4 +6414,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "এই ব্রাউজার আপনাকে সাইন ইন অবস্থায় রাখছে না (প্রাইভেট ব্রাউজিং, অথবা এর স্টোরেজ ভরে গেছে)। এখানে যা লগ করবেন তাও হয়তো থাকবে না।",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "এই ব্রাউজার এই সাইটের জন্য কিছুই সংরক্ষণ করছে না, তাই অ্যাপটি এখানে খোলা যাচ্ছে না। স্টোরেজ খালি করুন বা প্রাইভেট ব্রাউজিং ছেড়ে আবার চেষ্টা করুন।",
   "{0} is the only way into this profile on this server, so it stays linked.": "এই সার্ভারে {0} এই প্রোফাইলে ঢোকার একমাত্র উপায়, তাই লিংক থাকছে।",
+  "Ask your Coach": "আপনার কোচকে জিজ্ঞেস করুন",
+  "Build me a back workout with no weights": "ওজন ছাড়া পিঠের ব্যায়ামের একটি রুটিন বানিয়ে দিন",
+  "Add a push day on Tuesday and a pull day on Wednesday": "মঙ্গলবার ঠেলার ব্যায়াম আর বুধবার টানার ব্যায়াম যোগ করুন",
+  "Make today shorter": "আজকের ব্যায়ামের সময় কমিয়ে দিন",
 }

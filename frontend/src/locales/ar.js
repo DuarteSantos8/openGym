@@ -6390,4 +6390,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "هذا المتصفح لا يُبقيك مسجّلًا للدخول (تصفّح خاص، أو أن مساحة تخزينه ممتلئة). ما تسجّله هنا قد لا يُحفظ أيضًا.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "هذا المتصفح لا يخزّن أي شيء لهذا الموقع، لذلك لا يمكن فتح التطبيق هنا. أفرغ بعض مساحة التخزين أو اخرج من التصفّح الخاص ثم حاول مجددًا.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} هو الطريق الوحيد إلى هذا الملف الشخصي على هذا الخادم، لذا يبقى مربوطًا.",
+  "Ask your Coach": "اسأل مدرّبك",
+  "Build me a back workout with no weights": "حضّر لي تمرينًا للظهر من دون أوزان",
+  "Add a push day on Tuesday and a pull day on Wednesday": "أضف تمارين دفع يوم الثلاثاء وتمارين سحب يوم الأربعاء",
+  "Make today shorter": "اختصر تمرين اليوم",
 }

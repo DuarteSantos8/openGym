@@ -4,6 +4,10 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Beginner Coach entry (B3, prepared).** Home offers three starter questions when the Coach
+  is available. A tap fills the editable chat box, including after first-time setup. The person
+  chooses when to send. The four new strings in all 25 packs await native-language review.
+
 - **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
   account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,
   successful retry and MiniMax's hourly subscription totals. Per-run billing remains unknown.

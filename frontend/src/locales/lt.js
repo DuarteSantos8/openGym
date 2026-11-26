@@ -6331,4 +6331,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Ši naršyklė neišlaiko tavęs prisijungusio (privatus naršymas arba jos saugykla pilna). Tai, ką čia užrašysi, taip pat gali neišlikti.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Ši naršyklė šiai svetainei nieko nesaugo, todėl programėlė čia negali atsidaryti. Atlaisvink saugyklos vietos arba išjunk privatų naršymą ir bandyk dar kartą.",
   "{0} is the only way into this profile on this server, so it stays linked.": "Šiame serveryje {0} yra vienintelis kelias į šį profilį, todėl jis lieka susietas.",
+  "Ask your Coach": "Paklausk savo trenerio",
+  "Build me a back workout with no weights": "Sudaryk man nugaros treniruotę be svarmenų",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Pridėk stūmimo pratimų treniruotę antradieniui ir traukimo pratimų treniruotę trečiadieniui",
+  "Make today shorter": "Sutrumpink šiandienos treniruotę",
 }

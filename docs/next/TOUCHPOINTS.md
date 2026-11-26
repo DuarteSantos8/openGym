@@ -89,3 +89,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/test/coach-ask.test.js`, `frontend/src/views/CoachChat.test.jsx` | `next/EP19-coach-prompts` | Tests | Exercise both prompts with a stubbed provider, including schedule confirmation and a repeat. |
 | `frontend/src/lib/coach.js`, `frontend/src/lib/plan-share.js` | `next/EP19-coach-add-days` | Small edit | Append scheduled routines from chat and reuse matching prescriptions on repeat confirmation. |
 | `frontend/src/views/CoachChat.jsx`, `frontend/src/views/CoachChat.test.jsx` | `next/EP19-coach-add-days` | UI and tests | Show the additive schedule choice and verify preservation, repeat confirmation and Undo. |
+| `frontend/src/App.jsx`, `frontend/src/views/Home.jsx`, `frontend/src/views/Home.modules.test.jsx` | `next/EP19-beginner-coach-card` | UI and tests | Offer the beginner starter card and pass its draft through the Coach routes. |
+| `frontend/src/views/CoachChat.jsx`, `frontend/src/views/CoachIntake.jsx` and their tests | `next/EP19-beginner-coach-card` | UI and tests | Keep the starter editable through consent and intake until the person sends it. |
+| `frontend/src/components/AskCoach.jsx` and its tests | `next/EP19-beginner-coach-card` | UI and tests | Show three translated prompts when the Coach is reachable. |
+| All 25 locale packs | `next/EP19-beginner-coach-card` | UI and tests | Translate the card heading and starter prompts. |

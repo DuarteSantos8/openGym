@@ -6301,4 +6301,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Trình duyệt này không giữ bạn ở trạng thái đăng nhập (duyệt web riêng tư, hoặc bộ nhớ của nó đã đầy). Những gì bạn ghi lại ở đây cũng có thể không được lưu.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Trình duyệt này không lưu gì cho trang web này nên không thể mở ứng dụng ở đây. Hãy giải phóng bộ nhớ hoặc thoát chế độ duyệt web riêng tư rồi thử lại.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} là cách duy nhất để vào hồ sơ này trên máy chủ này, nên vẫn giữ liên kết.",
+  "Ask your Coach": "Hỏi huấn luyện viên của bạn",
+  "Build me a back workout with no weights": "Lên cho tôi một buổi tập lưng không cần tạ",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Thêm một buổi tập đẩy vào thứ Ba và một buổi tập kéo vào thứ Tư",
+  "Make today shorter": "Rút ngắn buổi tập hôm nay",
 };

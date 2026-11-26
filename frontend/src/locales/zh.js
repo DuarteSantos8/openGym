@@ -6335,4 +6335,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "此浏览器不会保留你的登录状态（无痕浏览，或存储空间已满）。你在这里记录的内容也可能无法保留。",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "此浏览器不会为此网站存储任何数据，因此无法在这里打开应用。请释放存储空间或退出无痕浏览后重试。",
   "{0} is the only way into this profile on this server, so it stays linked.": "在此服务器上，{0} 是进入此资料的唯一方式，所以保持关联。",
+  "Ask your Coach": "问问你的教练",
+  "Build me a back workout with no weights": "帮我安排一次不用负重的背部训练",
+  "Add a push day on Tuesday and a pull day on Wednesday": "帮我在周二加一节推类训练，周三加一节拉类训练",
+  "Make today shorter": "缩短今天的训练时间",
 }

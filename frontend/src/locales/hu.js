@@ -6338,4 +6338,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Ez a böngésző nem tart bejelentkezve (privát böngészés, vagy megtelt a tárhelye). Lehet, hogy amit itt rögzítesz, az sem marad meg.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Ez a böngésző semmit sem tárol ehhez az oldalhoz, ezért az alkalmazás itt nem nyitható meg. Szabadíts fel tárhelyet, vagy lépj ki a privát böngészésből, majd próbáld újra.",
   "{0} is the only way into this profile on this server, so it stays linked.": "Ezen a szerveren a(z) {0} az egyetlen út ebbe a profilba, ezért összekapcsolva marad.",
+  "Ask your Coach": "Kérdezd az edződet",
+  "Build me a back workout with no weights": "Állíts össze nekem egy súlyok nélküli hátedzést",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Adj hozzá keddre egy nyomóedzést, szerdára pedig egy húzóedzést",
+  "Make today shorter": "Rövidítsd le a mai edzést",
 }
