@@ -14,13 +14,23 @@ export const STARTERS = [
   'Make today shorter',
 ]
 
+// A phone may run an OpenAI-compatible model on its own loopback interface.
+function onThisPhone(baseUrl) {
+  try {
+    const { hostname } = new URL(baseUrl)
+    return hostname === 'localhost' || hostname.endsWith('.localhost') || /^127[.][0-9.]+$/.test(hostname) || hostname === '[::1]'
+  } catch { return false }
+}
+
 function StarterCard() {
   const nav = useNavigate()
   const { ok } = useCoachGate()
   const online = useOnline()
   const offline = useStore(s => s.sync?.offline)
-  const local = useStore(s => MOBILE && s.coachLocal?.mode === 'byok')
-  if (!ok || (!DEMO && !local && (!online || offline))) return null
+  const phone = useStore(s => MOBILE ? s.coachLocal : null)
+  const byok = phone?.mode === 'byok'
+  const reachable = byok ? online || onThisPhone(phone.baseUrl) : online && !offline
+  if (!ok || (!DEMO && !reachable)) return null
 
   return <section className="card" aria-label={t('Ask your Coach')}>
     <CardHead icon="sparkles" title={t('Ask your Coach')} />

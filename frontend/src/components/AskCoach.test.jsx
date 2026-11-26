@@ -5,12 +5,15 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import AskCoach, { STARTERS } from './AskCoach.jsx'
 import { useStore } from '../store/useStore.js'
 
+const mode = vi.hoisted(() => ({ mobile: false }))
 const { nav } = vi.hoisted(() => ({ nav: vi.fn() }))
+vi.mock('../lib/mobile.js', async importOriginal => ({ ...await importOriginal(), get MOBILE() { return mode.mobile } }))
 vi.mock('react-router-dom', async importOriginal => ({ ...await importOriginal(), useNavigate: () => nav }))
 
 let host, root
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  mode.mobile = false
   host = document.createElement('div')
   root = createRoot(host)
   useStore.setState({ user: { id: 'test' }, config: { coach: { enabled: true } } })
@@ -43,4 +46,14 @@ it('hides all prompts if connectivity drops while the enabled config is cached',
   vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
   act(() => window.dispatchEvent(new Event('offline')))
   expect(host.textContent).toBe('')
+})
+
+it('an offline phone can still reach a loopback Coach but cannot reach a hosted provider', () => {
+  mode.mobile = true
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+  useStore.setState({ coachLocal: { mode: 'byok', provider: 'minimax' } })
+  act(() => root.render(<AskCoach level="beginner" />))
+  expect(host.textContent).toBe('')
+  act(() => useStore.setState({ coachLocal: { mode: 'byok', provider: 'compatible', baseUrl: 'http://localhost:8080/v1' } }))
+  expect(host.textContent).toContain('Ask your Coach')
 })
