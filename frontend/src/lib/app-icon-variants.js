@@ -16,7 +16,7 @@ export const APP_ICON_VARIANTS = [
   { id: 'violet', name: 'Purple', bg: '#bf5af2', fg: '#ffffff', ios: 'AppIcon-Violet', android: 'IconViolet' },
   // All year, Halloween theme or not: some people are spooky in March.
   { id: 'halloween', name: 'Halloween', bg: '#0d0517', fg: '#ff7a1a', art: 'resources/icons/halloween.svg', ios: 'AppIcon-Halloween', android: 'IconHalloween' },
-  // Christmas 2026: the advent calendar's present on 12 December 2026 (seasonal/advent-doors.js),
+  // Christmas 2026: the advent calendar's present on 12 December 2026 (door 12, PRESENTS in the theme),
   // only for whoever opened that door, and theirs to keep all year (`prize`, S.prizes). One already
   // on the home screen stays offered. The native projects carry it in every build.
   { id: 'christmas', name: 'Christmas', bg: '#070b16', fg: '#a3e635', art: 'resources/icons/christmas.svg', ios: 'AppIcon-Christmas', android: 'IconChristmas', prize: 'xmas-icon-2026' },
