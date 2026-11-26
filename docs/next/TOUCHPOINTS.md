@@ -8,6 +8,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/e2e/cloud/account.e2e.mjs` | #120 | +12 −1 | Check member access on the first Account visit and after reload against the local training server. |
 | `frontend/src/lib/tour.js` | `next/EP22-beginner-tour` | +12 −3 | Register eight beginner stops and select the existing walk for other levels. |
 | `frontend/src/lib/tour.test.js` | `next/EP22-beginner-tour` | +21 −2 | Check the beginner targets, default walk, named tutorials and replay. |
 | `frontend/src/components/Tour.jsx` | `next/EP22-beginner-tour` | +9 −2 | Read the experience level and drive the practice and navigation stops. |

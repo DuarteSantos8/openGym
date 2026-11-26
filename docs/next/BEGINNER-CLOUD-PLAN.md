@@ -1,5 +1,7 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
+G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
+
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 
 Coach App Help daily-limit guidance is prepared. Local search remains available after a refused request.
