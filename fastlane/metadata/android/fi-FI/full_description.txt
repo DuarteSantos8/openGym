@@ -1,0 +1,33 @@
+openGym on treenisovellus, jonka ovat tehneet salilla kävijät salilla kävijöille. Suunnittele viikkosi, kirjaa jokainen sarja ja näe, mitä oikeasti teit. Ei tiliä, ei mainoksia, ei tilausmaksua, ei seurantaa.
+
+SUUNNITTELE
+• Yli 5 600 liikettä animoiduin esimerkein, yli 20 kielellä, myös suomeksi
+• Neljä valmista ohjelmaa (työntö/veto/jalat, ylä-/alavartalo, koko keho, 5×5) tai tee oma
+• Oma ohjelma jokaiselle viikonpäivälle tai kierto (A, B, C, A …), jos viikkosi ei noudata aikataulua
+• Supersarjat, lämmittelysarjat, pudotussarjat, rest-pause, pitoajat ja toistot puolta kohden
+
+TREENAA
+• Päivän treeni käynnistyy itsestään, ja painot täyttyvät edellisestä kerrasta
+• Palautusajastin soi myös näytön ollessa lukittuna
+• Levylaskuri juuri niille levypainoille, jotka sinulla on
+• Progressiosäännöt: lineaarinen, Greyskull, kaksoisprogressio ja muita
+• Näytä salin jäsenkortti suoraan sovelluksesta
+
+SEURAA
+• Arvioidun 1RM:n käyrät, volyymi lihasryhmittäin ja palautumiskartta
+• Kehonpaino tavoitetta vasten ja edistymiskuvat rinnakkain
+• Muokkaa mitä tahansa aiempaa treeniä tai kirjaa paperille tehty treeni jälkikäteen
+
+SINUN OMASI
+• Kaikki pysyy puhelimessasi. Haluatko synkronoinnin? Yhdistä oma openGym-palvelimesi.
+• Tuonti Strongista, Hevystä ja FitNotesista, ja kaiken voi viedä ulos milloin tahansa
+• Valinnainen AI-valmentaja luonnostelee viikkosi omalla API-avaimellasi ja vain kysyttyään ensin sinulta
+• Ilmainen ja avoimen lähdekoodin (AGPL), kehitetään avoimesti yhteisön kanssa
+
+ANDROIDILLA
+• Salimuistutus: lisää salisi, niin openGym muistuttaa, kun kävelet sisään, vaikka sovellus olisi kiinni. Se käyttää sijaintia taustalla vain, kun olet kytkenyt toiminnon päälle, eivätkä paikkasi koskaan poistu puhelimesta
+• Health Connect, jos haluat: valmiit treenit ja punnitukset menevät sinne, ja syke ja vaa'an punnitukset tulevat takaisin
+• Aloitusnäytön widget päivän suunnitelmalla ja NFC-tarrat, jotka avaavat sovelluksen telineesi luona
+• Tässä F-Droid-versiossa on mukana tavalliset 180 px:n animaatiot, mutta ei Wear OS -yhteyttä, koska se vaatii Google Play -palvelut
+
+Liikeanimaatiot © Gym visual (gymvisual.com), lisensoitu openGymille.
