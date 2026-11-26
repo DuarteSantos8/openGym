@@ -87,3 +87,5 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/store/useCircuit.js` | `next/EP24-learn-sessions` | Small edit | Release an untouched Learn preview when its Ready screen closes. |
 | `api/coach/core/routine-library.js`, `api/coach/core/payload.js`, `api/coach/core/ask-actions.js` | `next/EP19-coach-prompts` | Small edit | Recognize explicit no-weights requests and reject weighted routine or workout items in those chat proposals. |
 | `api/test/coach-ask.test.js`, `frontend/src/views/CoachChat.test.jsx` | `next/EP19-coach-prompts` | Tests | Exercise both prompts with a stubbed provider, including schedule confirmation and a repeat. |
+| `frontend/src/lib/coach.js`, `frontend/src/lib/plan-share.js` | `next/EP19-coach-add-days` | Small edit | Append scheduled routines from chat and reuse matching prescriptions on repeat confirmation. |
+| `frontend/src/views/CoachChat.jsx`, `frontend/src/views/CoachChat.test.jsx` | `next/EP19-coach-add-days` | UI and tests | Show the additive schedule choice and verify preservation, repeat confirmation and Undo. |
