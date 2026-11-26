@@ -170,7 +170,8 @@ public class HuaweiFramesTest {
             HuaweiFrames.Receiver r = new HuaweiFrames.Receiver();
             String back = null;
             for (String f : want) back = r.accept(f);
-            assertTrue(c.getString("name"), new JSONObject(back).similar(new JSONObject(text)));
+            // not similar(): android.jar's org.json stub comes first when the tests compile, and it has no similar()
+            assertEquals(c.getString("name"), new JSONObject(text).toString(), new JSONObject(back).toString());
         }
     }
 
