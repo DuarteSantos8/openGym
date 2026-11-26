@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "В верхней точке штанга должна быть над серединой стоп.",
   "Shoulders and back of your upper arms.": "Плечи и задняя поверхность плеч.",
   "Breathe out as you press and in as you lower.": "Выдыхайте при жиме и вдыхайте при опускании.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Установите блок на уровне верхней части груди и возьмитесь за концы каната.",
   "Face a high pulley and hold both rope ends.": "Встаньте лицом к верхнему блоку и возьмитесь за концы каната.",
   "Step back until the rope is taut.": "Отойдите назад, чтобы натянуть канат.",
   "Pull the rope ends beside your face.": "Тяните концы каната к лицу, разводя их в стороны.",

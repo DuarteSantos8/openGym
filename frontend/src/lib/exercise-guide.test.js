@@ -45,6 +45,17 @@ describe('exercise guides', () => {
     }
   })
 
+  it('keeps the face-pull setup and supported dead-bug regression consistent with the catalogue', () => {
+    expect(guideFor('5609').cues[0]).toContain('upper chest')
+    expect(ladderFor('0276', exists).easier).toBe('4096')
+  })
+
+  it('preserves the pull and press breathing directions in Ukrainian', () => {
+    const uk = localePacks['../locales/uk.js']
+    expect(uk[guideFor('0652').breathing]).toBe('Видихайте, коли тягнете, і вдихайте під час повернення.')
+    expect(uk[guideFor('0289').breathing]).toBe('Видихайте під час жиму і вдихайте під час опускання.')
+  })
+
   it('so every plan Find my plan can hand out is covered from its first session', () => {
     for (const a of everyAnswer().filter((_, i) => i % 5 === 0)) {
       for (const [, , , list] of planFor(a).routines) for (const line of list) expect(guideFor(line[0]), JSON.stringify(a) + ' ' + line[0]).toBeTruthy()

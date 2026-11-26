@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Avsluta med stången över fötternas mitt.",
   "Shoulders and back of your upper arms.": "Axlarna och överarmarnas baksida.",
   "Breathe out as you press and in as you lower.": "Andas ut när du pressar och in när du sänker.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Ställ in trissan i höjd med övre delen av bröstet och greppa repändarna.",
   "Face a high pulley and hold both rope ends.": "Stå vänd mot en hög kabeltrissa och greppa båda repändarna.",
   "Step back until the rope is taut.": "Ta ett steg bakåt tills repet är spänt.",
   "Pull the rope ends beside your face.": "Dra repändarna till varsin sida av ansiktet.",

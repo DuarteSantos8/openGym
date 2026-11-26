@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Termine com a barra sobre o meio dos pés.",
   "Shoulders and back of your upper arms.": "Ombros e parte de trás dos braços.",
   "Breathe out as you press and in as you lower.": "Expire ao empurrar e inspire ao baixar.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Regule a roldana à altura da parte superior do peito e agarre as pontas da corda.",
   "Face a high pulley and hold both rope ends.": "De frente para uma roldana alta, agarre as duas pontas da corda.",
   "Step back until the rope is taut.": "Recue até a corda ficar esticada.",
   "Pull the rope ends beside your face.": "Puxe as pontas da corda para os lados da cara.",

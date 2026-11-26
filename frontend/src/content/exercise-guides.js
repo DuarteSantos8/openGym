@@ -298,7 +298,7 @@ export const EXERCISE_GUIDES = {
   }),
   '5609': draft({
     level: 'beginner', pattern: 'pull-h',
-    cues: ['Face a high pulley and hold both rope ends.', 'Step back until the rope is taut.', 'Pull the rope ends beside your face.'],
+    cues: ['Set the pulley at upper chest height and grip the rope ends.', 'Step back until the rope is taut.', 'Pull the rope ends beside your face.'],
     mistakes: [['Shrugging your shoulders', 'Keep your shoulders away from your ears.'], ['Leaning back to pull', 'Keep your trunk still.']],
     feel: 'Upper back and rear shoulders.', breathing: 'Breathe out as you pull and in as you return.',
     easier: '1503', sources: ['PureGym, How To Do Face Pulls.'],
@@ -395,6 +395,6 @@ export const EXERCISE_GUIDES = {
     cues: ['Lie on your back with arms and knees raised.', 'Reach one arm back and extend the opposite leg.', 'Return to the start and switch sides.'],
     mistakes: [['Lower back lifting', 'Shorten the reach.'], ['Rushing the switch', 'Bring both limbs back before changing sides.']],
     feel: 'Muscles around your abdomen.', breathing: 'Breathe out as you reach and in as you return.',
-    easier: '4007', harder: '4127', sources: ['PureGym, How To Do A Deadbug.'],
+    easier: '4096', harder: '4127', sources: ['PureGym, How To Do A Deadbug.'],
   }),
 }

@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "A felső helyzetben a rúd a talpad közepe fölött legyen.",
   "Shoulders and back of your upper arms.": "A vállak és a felkar hátsó része.",
   "Breathe out as you press and in as you lower.": "Nyomáskor fújd ki a levegőt, leengedéskor lélegezz be.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Állítsd a csigát a mellkasod felső részének magasságába, és fogd meg a kötél két végét.",
   "Face a high pulley and hold both rope ends.": "Állj szembe a felső csigával, és fogd meg a kötél két végét.",
   "Step back until the rope is taut.": "Lépj hátra, amíg a kötél megfeszül.",
   "Pull the rope ends beside your face.": "Húzd a kötélvégeket az arcod két oldalához.",

@@ -20,6 +20,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Slut med stangen over midten af fødderne.",
   "Shoulders and back of your upper arms.": "Skuldrene og bagsiden af overarmene.",
   "Breathe out as you press and in as you lower.": "Pust ud, når du presser, og træk vejret ind, når du sænker.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Indstil trissen ud for den øverste del af brystet, og tag fat i rebenderne.",
   "Face a high pulley and hold both rope ends.": "Stå foran en høj kabeltrisse, og hold i begge rebender.",
   "Step back until the rope is taut.": "Træd tilbage, til rebet er stramt.",
   "Pull the rope ends beside your face.": "Træk rebenderne ind på hver side af ansigtet.",

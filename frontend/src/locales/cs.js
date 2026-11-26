@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "V horní poloze držte osu nad středem chodidel.",
   "Shoulders and back of your upper arms.": "Ramena a zadní část paží.",
   "Breathe out as you press and in as you lower.": "Při tlaku vydechněte a při spouštění se nadechněte.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Nastavte kladku do výše horní části hrudníku a uchopte konce lana.",
   "Face a high pulley and hold both rope ends.": "Postavte se čelem k horní kladce a uchopte oba konce lana.",
   "Step back until the rope is taut.": "Ustupte, dokud se lano nenapne.",
   "Pull the rope ends beside your face.": "Přitáhněte konce lana ke stranám obličeje.",

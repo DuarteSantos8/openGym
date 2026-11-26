@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "শেষে বার যেন পায়ের পাতার মাঝ বরাবর ওপরে থাকে।",
   "Shoulders and back of your upper arms.": "কাঁধ ও বাহুর পেছনের অংশ।",
   "Breathe out as you press and in as you lower.": "ঠেলার সময় শ্বাস ছাড়ুন, নামানোর সময় শ্বাস নিন।",
+  "Set the pulley at upper chest height and grip the rope ends.": "পুলিটি বুকের ওপরের অংশের সমান উচ্চতায় রেখে দড়ির দুই প্রান্ত ধরুন।",
   "Face a high pulley and hold both rope ends.": "উঁচু পুলির দিকে মুখ করে দড়ির দুই প্রান্ত ধরুন।",
   "Step back until the rope is taut.": "দড়ি টানটান হওয়া পর্যন্ত পিছিয়ে যান।",
   "Pull the rope ends beside your face.": "দড়ির দুই প্রান্ত মুখের দুই পাশে টানুন।",

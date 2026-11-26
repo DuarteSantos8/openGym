@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "W górze gryf powinien znajdować się nad środkiem stóp.",
   "Shoulders and back of your upper arms.": "Barki i tylna część ramion.",
   "Breathe out as you press and in as you lower.": "Zrób wydech przy wyciskaniu i wdech przy opuszczaniu.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Ustaw wyciąg na wysokości górnej części klatki piersiowej i chwyć końce liny.",
   "Face a high pulley and hold both rope ends.": "Stań przodem do górnego wyciągu i chwyć oba końce liny.",
   "Step back until the rope is taut.": "Cofnij się, aż lina się napnie.",
   "Pull the rope ends beside your face.": "Przyciągnij końce liny po obu stronach twarzy.",

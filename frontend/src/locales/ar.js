@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "أنه الحركة والبار فوق منتصف القدمين.",
   "Shoulders and back of your upper arms.": "الكتفان وخلف العضدين.",
   "Breathe out as you press and in as you lower.": "ازفر عند الدفع واستنشق عند الخفض.",
+  "Set the pulley at upper chest height and grip the rope ends.": "اضبط البكرة عند أعلى الصدر وأمسك بطرفي الحبل.",
   "Face a high pulley and hold both rope ends.": "قف مقابل بكرة مرتفعة وأمسك بطرفي الحبل.",
   "Step back until the rope is taut.": "تراجع حتى يصبح الحبل مشدودًا.",
   "Pull the rope ends beside your face.": "اسحب طرفي الحبل إلى جانبي وجهك.",

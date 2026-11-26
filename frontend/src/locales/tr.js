@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "En üstte bar ayaklarının orta kısmıyla aynı hizada olsun.",
   "Shoulders and back of your upper arms.": "Omuzlar ve üst kolların arka kısmı.",
   "Breathe out as you press and in as you lower.": "İterken nefes ver, indirirken nefes al.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Makarayı göğsünün üst kısmı hizasına getir ve halatın uçlarını tut.",
   "Face a high pulley and hold both rope ends.": "Yüzünü yüksek makaraya dön ve halatın iki ucunu tut.",
   "Step back until the rope is taut.": "Halat gerilene kadar geriye yürü.",
   "Pull the rope ends beside your face.": "Halatın uçlarını yüzünün iki yanına çek.",

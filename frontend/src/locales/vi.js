@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Kết thúc với thanh đòn ở ngay trên giữa bàn chân.",
   "Shoulders and back of your upper arms.": "Vai và mặt sau bắp tay.",
   "Breathe out as you press and in as you lower.": "Thở ra khi đẩy và hít vào khi hạ.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Chỉnh ròng rọc ngang phần ngực trên rồi nắm hai đầu dây.",
   "Face a high pulley and hold both rope ends.": "Đứng đối diện ròng rọc cao và nắm hai đầu dây.",
   "Step back until the rope is taut.": "Lùi lại đến khi dây căng.",
   "Pull the rope ends beside your face.": "Kéo hai đầu dây về hai bên mặt.",

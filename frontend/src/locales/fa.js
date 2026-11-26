@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "در پایان میله را درست بالای وسط پاها نگه دارید.",
   "Shoulders and back of your upper arms.": "شانه‌ها و پشت بازوها.",
   "Breathe out as you press and in as you lower.": "هنگام فشار دادن بازدم و هنگام پایین آوردن دم بگیرید.",
+  "Set the pulley at upper chest height and grip the rope ends.": "قرقره را هم‌ارتفاع بالای سینه تنظیم کنید و دو سر طناب را بگیرید.",
   "Face a high pulley and hold both rope ends.": "روبه‌روی قرقره بالایی بایستید و دو سر طناب را بگیرید.",
   "Step back until the rope is taut.": "به عقب بروید تا طناب کشیده شود.",
   "Pull the rope ends beside your face.": "دو سر طناب را به دو طرف صورت بکشید.",

@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "จบโดยให้บาร์อยู่ตรงเหนือกึ่งกลางเท้า",
   "Shoulders and back of your upper arms.": "ไหล่และด้านหลังของต้นแขน",
   "Breathe out as you press and in as you lower.": "หายใจออกขณะดัน และหายใจเข้าขณะลดลง",
+  "Set the pulley at upper chest height and grip the rope ends.": "ปรับรอกให้อยู่ระดับหน้าอกส่วนบนแล้วจับปลายเชือกทั้งสองข้าง",
   "Face a high pulley and hold both rope ends.": "ยืนหันหน้าเข้าหารอกสูง จับปลายเชือกทั้งสองข้าง",
   "Step back until the rope is taut.": "ก้าวถอยหลังจนเชือกตึง",
   "Pull the rope ends beside your face.": "ดึงปลายเชือกเข้าหาด้านข้างของใบหน้าทั้งสองข้าง",

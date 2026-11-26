@@ -23,6 +23,7 @@ export const PT_BR_OVERRIDES = {
   "Finish with the bar over the middle of your feet.": "Termine com a barra alinhada sobre o meio dos pés.",
   "Shoulders and back of your upper arms.": "Ombros e parte de trás dos braços.",
   "Breathe out as you press and in as you lower.": "Solte o ar ao empurrar e inspire ao descer.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Ajuste a polia na altura da parte superior do peito e segure as pontas da corda.",
   "Face a high pulley and hold both rope ends.": "De frente para uma polia alta, segure as duas pontas da corda.",
   "Step back until the rope is taut.": "Dê um passo para trás até esticar a corda.",
   "Pull the rope ends beside your face.": "Puxe as pontas da corda para os lados do rosto.",

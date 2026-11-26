@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Am Ende befindet sich die Stange über der Fußmitte.",
   "Shoulders and back of your upper arms.": "Schultern und Rückseite der Oberarme.",
   "Breathe out as you press and in as you lower.": "Atme beim Hochdrücken aus und beim Absenken ein.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Stell die Kabelrolle auf Höhe der oberen Brust und greife die Seilenden.",
   "Face a high pulley and hold both rope ends.": "Stell dich vor einen hohen Kabelzug und greife beide Seilenden.",
   "Step back until the rope is taut.": "Geh zurück, bis das Seil gespannt ist.",
   "Pull the rope ends beside your face.": "Ziehe die Seilenden seitlich neben dein Gesicht.",

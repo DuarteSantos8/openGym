@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "마지막에 바벨이 발 중앙의 수직선 위에 오게 하세요.",
   "Shoulders and back of your upper arms.": "어깨와 위팔 뒤쪽.",
   "Breathe out as you press and in as you lower.": "밀 때 숨을 내쉬고 내릴 때 들이마시세요.",
+  "Set the pulley at upper chest height and grip the rope ends.": "도르래를 가슴 윗부분 높이에 맞추고 로프 양 끝을 잡으세요.",
   "Face a high pulley and hold both rope ends.": "높은 도르래를 마주 보고 로프 양 끝을 잡으세요.",
   "Step back until the rope is taut.": "로프가 팽팽해질 때까지 뒤로 물러나세요.",
   "Pull the rope ends beside your face.": "로프 양 끝을 얼굴 양옆으로 당기세요.",

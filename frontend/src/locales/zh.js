@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "推到顶端时，让杠铃位于脚掌中部正上方。",
   "Shoulders and back of your upper arms.": "肩部和上臂后侧。",
   "Breathe out as you press and in as you lower.": "向上推时呼气，下放时吸气。",
+  "Set the pulley at upper chest height and grip the rope ends.": "将滑轮调至上胸高度，握住绳索两端。",
   "Face a high pulley and hold both rope ends.": "面对高位滑轮，握住绳索两端。",
   "Step back until the rope is taut.": "向后退，直到绳索拉紧。",
   "Pull the rope ends beside your face.": "将绳索两端分别拉向脸部两侧。",

@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Viršuje štanga turi būti ties pėdų viduriu.",
   "Shoulders and back of your upper arms.": "Pečiai ir užpakalinė žastų dalis.",
   "Breathe out as you press and in as you lower.": "Spausdami iškvėpkite, nuleisdami įkvėpkite.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Nustatykite skridinį ties viršutine krūtinės dalimi ir suimkite virvės galus.",
   "Face a high pulley and hold both rope ends.": "Atsistokite veidu į viršutinį skridinį ir suimkite abu virvės galus.",
   "Step back until the rope is taut.": "Ženkite atgal, kol virvė įsitemps.",
   "Pull the rope ends beside your face.": "Traukite virvės galus link veido šonų.",

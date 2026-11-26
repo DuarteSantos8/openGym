@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "Akhiri dengan barbel tepat di atas bagian tengah telapak kaki.",
   "Shoulders and back of your upper arms.": "Bahu dan bagian belakang lengan atas.",
   "Breathe out as you press and in as you lower.": "Buang napas saat mendorong dan tarik napas saat menurunkan beban.",
+  "Set the pulley at upper chest height and grip the rope ends.": "Atur katrol setinggi dada bagian atas dan genggam kedua ujung tali.",
   "Face a high pulley and hold both rope ends.": "Berdiri menghadap katrol tinggi dan pegang kedua ujung tali.",
   "Step back until the rope is taut.": "Mundurlah sampai tali menegang.",
   "Pull the rope ends beside your face.": "Tarik kedua ujung tali ke sisi wajah.",

@@ -19,6 +19,7 @@ export default {
   "Finish with the bar over the middle of your feet.": "ऊपर पहुँचने पर बार पैरों के बीच वाले हिस्से के ठीक ऊपर हो।",
   "Shoulders and back of your upper arms.": "कंधे और ऊपरी बाँहों का पिछला हिस्सा।",
   "Breathe out as you press and in as you lower.": "धकेलते समय साँस छोड़ें और नीचे लाते समय साँस लें।",
+  "Set the pulley at upper chest height and grip the rope ends.": "पुली को छाती के ऊपरी हिस्से की ऊँचाई पर लगाएँ और रस्सी के दोनों सिरे पकड़ें।",
   "Face a high pulley and hold both rope ends.": "ऊँची पुली की ओर मुँह करके रस्सी के दोनों सिरे पकड़ें।",
   "Step back until the rope is taut.": "रस्सी तनने तक पीछे हटें।",
   "Pull the rope ends beside your face.": "रस्सी के सिरों को चेहरे के दोनों ओर खींचें।",
