@@ -107,6 +107,13 @@ describe('a typed message', () => {
     expect(askCoach).toHaveBeenCalledWith(question)
   })
 
+  it('still requests a full plan when a new profile asks for one', async () => {
+    mocks.S.routines = []
+    mount()
+    await send('Build my first three-day plan')
+    expect(refinePlan).toHaveBeenCalledWith('Build my first three-day plan')
+  })
+
   it('still retries a failed full plan from an empty profile', async () => {
     mocks.S.routines = []
     mocks.last = { id: 'job1', kind: 'create', outcome: 'failed' }

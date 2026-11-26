@@ -64,6 +64,7 @@ export default function CoachChat({ starter = '' }) {
   const gate = useCoachGate()
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
   const [text, setText] = useState(starter)
+  const starterDraft = useRef(starter)
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -147,10 +148,12 @@ export default function CoachChat({ starter = '' }) {
     if (!msg || busy) return
     setBusy(true)
     try {
-      // Retry an unfinished full plan. A fresh chat can propose individual days before any routine exists.
-      const retryPlan = !S.routines?.length && last?.kind === 'create' && last.outcome === 'failed'
-      if (pending?.kind === 'create' || retryPlan) await refinePlan(msg)
+      // Home starters ask for individual changes, including when intake has saved no routines yet.
+      const addingDay = /\b(add|schedule|put)\b/i.test(msg) && /\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i.test(msg)
+      const needsPlan = !S.routines?.length && !starterDraft.current && !addingDay
+      if (pending?.kind === 'create' || needsPlan) await refinePlan(msg)
       else await askCoach(msg)
+      starterDraft.current = ''
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
       setExpanded(false)
