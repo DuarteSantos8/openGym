@@ -905,7 +905,7 @@ export default {
   "abdominals": "vatsalihakset",
   "ankle stabilizers": "nilkan tukilihakset",
   "ankles": "nilkat",
-  "brachialis": "olkavarsilihas",
+  "brachialis": "olkalihas",
   "core": "keskivartalo",
   "deltoids": "hartialihakset",
   "feet": "jalkaterät",

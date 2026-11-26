@@ -7306,7 +7306,7 @@
   },
   "1659": {
     "name": "Vasarakääntö jumppapallolla käsipainoilla",
-    "description": "Hauiskääntö vasaraotteella istuen jumppapallolla. Vahvistaa hauiksia, olkavarsilihasta ja keskivartaloa.",
+    "description": "Hauiskääntö vasaraotteella istuen jumppapallolla. Vahvistaa hauiksia, olkalihasta ja keskivartaloa.",
     "instructions": [
       "Istu jumppapallolle jalat tasaisesti maassa ja selkä suorana.",
       "Pidä käsipainoja käsissä kämmenet vartaloon päin ja kädet täysin ojennettuina.",
@@ -7390,7 +7390,7 @@
   },
   "1666": {
     "name": "Yhden käden vasarakääntö päinmakuulla käsipainolla",
-    "description": "Yhden käden vasarahauiskääntö vatsallaan penkillä maaten. Se kehittää olkavarsilihasta ja hauista.",
+    "description": "Yhden käden vasarahauiskääntö vatsallaan penkillä maaten. Se kehittää olkalihasta ja hauista.",
     "instructions": [
       "Asetu vatsallesi tasapenkille käsipaino toisessa kädessä, kämmen vartaloon päin ja käsi täysin ojennettuna.",
       "Pidä olkavarsi paikoillaan ja käännä käsipaino kohti olkapäätä hauista jännittäen.",
@@ -7400,7 +7400,7 @@
   },
   "1667": {
     "name": "Yhden käden käänteinen spider-hauiskääntö käsipainolla",
-    "description": "Yhden käden spider-hauiskääntö myötäotteella penkin yli. Liike vahvistaa kyynärvarsia ja olkavarsilihasta.",
+    "description": "Yhden käden spider-hauiskääntö myötäotteella penkin yli. Liike vahvistaa kyynärvarsia ja olkalihasta.",
     "instructions": [
       "Asetu vatsallesi vinopenkille jalat lattialla.",
       "Anna toisen käden roikkua suoraan alaspäin pitäen käsipainoa myötäotteella, ja pidä kiinni penkistä toisella kädellä.",
@@ -7447,7 +7447,7 @@
   },
   "1671": {
     "name": "Yhden käden vasarakääntö seisten käsipainolla",
-    "description": "Seisten tehtävä yhden käden vasarahauiskääntö. Se harjoittaa olkavarsilihasta ja hauista neutraalilla otteella.",
+    "description": "Seisten tehtävä yhden käden vasarahauiskääntö. Se harjoittaa olkalihasta ja hauista neutraalilla otteella.",
     "instructions": [
       "Seiso ryhdikkäästi käsipaino toisessa kädessä, kämmen reittä kohti.",
       "Pidä kyynärpää lähellä kylkeä.",
@@ -7568,7 +7568,7 @@
   },
   "1681": {
     "name": "Kahden käden vasarakääntö istuen jumppapallolla käsipainoilla",
-    "description": "Jumppapallolla istuen tehtävä hauiskääntö molemmilla käsipainoilla kämmenet vastakkain. Liike aktivoi hauista ja olkavarsilihasta samalla, kun tasapainoilu haastaa keskivartaloa.",
+    "description": "Jumppapallolla istuen tehtävä hauiskääntö molemmilla käsipainoilla kämmenet vastakkain. Liike aktivoi hauista ja olkalihasta samalla, kun tasapainoilu haastaa keskivartaloa.",
     "instructions": [
       "Istu suorassa jumppapallolla käsipaino kummassakin kädessä, kämmenet vastakkain.",
       "Aseta jalat leveälle tasapainon säilyttämiseksi ja pidä kyynärpäät kyljissä.",
@@ -12637,7 +12637,7 @@
   },
   "2321": {
     "name": "Hauiskääntö sisäkierrolla seisten käsipainoilla v. 2",
-    "description": "Seisten tehtävä hauiskääntö, jossa kämmenet kääntyvät eteenpäin nostaessa. Vahvistaa hauista ja olkavarsilihasta.",
+    "description": "Seisten tehtävä hauiskääntö, jossa kämmenet kääntyvät eteenpäin nostaessa. Vahvistaa hauista ja olkalihasta.",
     "instructions": [
       "Seiso suorana käsipainot käsissä kämmenet vartaloon päin.",
       "Pidä kyynärvarret lähellä vartaloa ja kierrä kämmeniä eteenpäin.",
@@ -40970,7 +40970,7 @@
   },
   "6069": {
     "name": "Vuorottainen vasarakääntö pulloilla",
-    "description": "Vuorottaiset hauiskäännöt kämmenet vastakkain. Se työstää hauiksia, olkavarsilihasta ja kyynärvarsia.",
+    "description": "Vuorottaiset hauiskäännöt kämmenet vastakkain. Se työstää hauiksia, olkalihasta ja kyynärvarsia.",
     "instructions": [
       "Seiso ryhdikkäästi pullo kummassakin kädessä, kämmenet kehoon päin.",
       "Käännä toinen pullo ylös kiertämättä rannetta.",
@@ -40981,7 +40981,7 @@
   },
   "6070": {
     "name": "Käänteinen hauiskääntö pulloilla",
-    "description": "Kääntö myötäotteella pulloja pidellen. Se vahvistaa kyynärvarsia ja olkavarsilihasta.",
+    "description": "Kääntö myötäotteella pulloja pidellen. Se vahvistaa kyynärvarsia ja olkalihasta.",
     "instructions": [
       "Seiso suorana pitäen pulloa kummassakin kädessä kämmenet alaspäin.",
       "Pidä kyynärpäät kyljissäsi.",
@@ -41320,7 +41320,7 @@
   },
   "6147": {
     "name": "Vuorottainen tiukka vasarakääntö käsipainoilla",
-    "description": "Vuorottainen hammer-kääntö tehtynä tarkasti ilman vartalon heilautuksia. Rakentaa hauiksia, olkavarsilihasta ja kyynärvarsia.",
+    "description": "Vuorottainen hammer-kääntö tehtynä tarkasti ilman vartalon heilautuksia. Rakentaa hauiksia, olkalihasta ja kyynärvarsia.",
     "instructions": [
       "Seiso pitäen käsipainoja kämmenet vastakkain.",
       "Pidä kyynärpäät kyljissä.",
@@ -55569,7 +55569,7 @@
   },
   "0165": {
     "name": "Vasarakääntö taljassa köydellä",
-    "description": "Hauiskääntö vasaraotteella köyttä käyttäen. Treenaa hauiksia ja olkavarsilihasta.",
+    "description": "Hauiskääntö vasaraotteella köyttä käyttäen. Treenaa hauiksia ja olkalihasta.",
     "instructions": [
       "Asetu seisomaan ryhdikkäästi jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
       "Tartu köysikahvaan vastaotteella kämmenet vastakkain ja kädet täysin ojennettuina.",
@@ -57249,7 +57249,7 @@
   },
   "0313": {
     "name": "Vasarakääntö käsipainoilla",
-    "description": "Perinteinen hauiskääntö neutraalilla otteella. Liike kuormittaa olkavarsilihasta, hauista ja kyynärvarsia.",
+    "description": "Perinteinen hauiskääntö neutraalilla otteella. Liike kuormittaa olkalihasta, hauista ja kyynärvarsia.",
     "instructions": [
       "Seiso suorassa käsipainot käsissäsi, kämmenet vartaloon päin.",
       "Pidä kyynärpäät lähellä vartaloa ja käännä kämmeniä hieman.",
@@ -57337,7 +57337,7 @@
   },
   "0320": {
     "name": "Vasarakääntö vinopenkillä käsipainoilla",
-    "description": "Vasaraoteyhdistelmä vinopenkillä. Neutraali ote aktivoi olkavarsilihasta ja hauista.",
+    "description": "Vasaraoteyhdistelmä vinopenkillä. Neutraali ote aktivoi olkalihasta ja hauista.",
     "instructions": [
       "Istu vinopenkille käsipainot käsissä, kämmenet kehoon päin ja kädet suorina.",
       "Pidä selkä penkkiä vasten ja jalat lattiassa.",
@@ -60773,7 +60773,7 @@
   },
   "0636": {
     "name": "Vasarakääntö olympiatangolla",
-    "description": "Seisten tehtävä hauiskääntö levytangolla neutraalilla otteella. Vahvistaa hauiksia, olkavarsilihasta ja kyynärvarsia.",
+    "description": "Seisten tehtävä hauiskääntö levytangolla neutraalilla otteella. Vahvistaa hauiksia, olkalihasta ja kyynärvarsia.",
     "instructions": [
       "Seiso suorana jalat hartioiden leveydellä ja pidä kiinni levytangosta myötäotteella.",
       "Anna tangon roikkua kädet suorina reisien edessä kämmenet vartaloon päin.",
@@ -63610,7 +63610,7 @@
   },
   "0917": {
     "name": "Hauiskääntö myötäotteella kuminauhalla",
-    "description": "Hauiskääntö kuminauhalla myötäotteella. Kehittää kyynärvarsia ja olkavarsilihasta.",
+    "description": "Hauiskääntö kuminauhalla myötäotteella. Kehittää kyynärvarsia ja olkalihasta.",
     "instructions": [
       "Seiso kuminauhan päällä ja tartu päihin kämmenet alaspäin.",
       "Pidä kyynärpäät kyljissä.",
