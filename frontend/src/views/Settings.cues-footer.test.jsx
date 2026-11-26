@@ -41,7 +41,8 @@ vi.mock('../lib/api.js', () => ({
   api: vi.fn(), webauthnOK: () => false, passkeyLogin: vi.fn(), passkeyRegister: vi.fn(), IS_ANDROID: false,
 }))
 vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn(), disablePush: vi.fn(), sendTestPush: vi.fn() }))
-vi.mock('../lib/speech.js', () => ({ speak: vi.fn(), speechSupported: () => true, voiceOpts: () => ({}) }))
+// Partial: Settings may read more of speech.js than this test cares about (the voice list).
+vi.mock('../lib/speech.js', async importOriginal => ({ ...(await importOriginal()), speak: vi.fn(), speechSupported: () => true, voiceOpts: () => ({}) }))
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
 // MOBILE is read at render time through a getter so one module mock serves both builds.
 vi.mock('../lib/mobile.js', () => ({
