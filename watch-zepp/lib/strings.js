@@ -2367,7 +2367,7 @@ export const STRINGS = {
   "finish_and_save": "Lopeta ja tallenna",
   "finish_now": "Lopeta nyt",
   "finish_workout": "Lopeta treeni",
-  "finish_workout_q": "Lopeta treeni?",
+  "finish_workout_q": "Lopetetaanko treeni?",
   "go": "Nyt!",
   "heart_rate": "Syke",
   "hold": "Pidä",
