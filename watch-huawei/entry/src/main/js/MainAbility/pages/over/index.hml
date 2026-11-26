@@ -3,7 +3,7 @@
 <div class="root">
 
   <!-- Overview: a list, it scrolls -->
-  <div class="scr" if="{{s_over}}">
+  <div class="scrL" if="{{s_over}}">
     <text class="small">{{title}}</text>
     <text class="tiny quiet">{{count}}</text>
     <list class="overList">

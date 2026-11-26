@@ -49,7 +49,7 @@ function parse (text) {
   }
   return root.kids[0]
 }
-const screens = hmls.flatMap(h => parse(h).kids.filter(n => n.attrs.class === 'scr'))
+const screens = hmls.flatMap(h => parse(h).kids.filter(n => /^scrL?$/.test(n.attrs.class)))
 
 /* ---------- a model of the documented layout ---------- */
 const R = 233 // a 466 px round screen
@@ -135,6 +135,10 @@ function tallest (b) {
 }
 
 // Every row of a screen block against the circle: [{ name, top, bottom, width, chord }]
+// What the simulator does with a list (measured on its frames, not what Chrome draws): it puts a list at the left edge of the
+// screen instead of centring it, so a list screen's block is the whole screen wide; it honours a px margin on a list row's box
+// but not a % one, so a row is centred by its list-item (a row that centres its child), never by margin-left in %. Each list row
+// carries cx, where its content is centred, counted from the list's left edge (x = 0).
 function rowsOf (box, top) {
   const out = []
   let y = top
@@ -150,13 +154,13 @@ function rowsOf (box, top) {
           // a list-item holds a div that holds the button or text
           const inner = it.kids[0][0]
           const content = inner.kids.length ? Math.max.apply(null, inner.kids.map(k => k[0].w)) : it.w
-          out.push({ name: it.name, top: ly, bottom: ly + it.h, width: content })
+          out.push({ name: it.name, top: ly, bottom: ly + it.h, width: content, cx: centreOf(it, inner) })
           ly += it.h
         })
         // scrolled to the end, the last item sits at the list's bottom edge
         const last = v.kids[v.kids.length - 1][0]
         const li = last.kids[0][0]
-        out.push({ name: last.name + ' (scrolled to the end)', top: y + v.h - last.h, bottom: y + v.h, width: li.kids.length ? Math.max.apply(null, li.kids.map(k => k[0].w)) : last.w })
+        out.push({ name: last.name + ' (scrolled to the end)', top: y + v.h - last.h, bottom: y + v.h, width: li.kids.length ? Math.max.apply(null, li.kids.map(k => k[0].w)) : last.w, cx: centreOf(last, li) })
       } else {
         const width = v.kids.length && v.node.tag === 'div' && v.node.attrs.class !== 'pick' && v.node.attrs.class !== 'ring' ? Math.min(v.w, v.content || v.w) : v.w
         out.push({ name: v.name, top: y, bottom: y + v.h, width: width })
@@ -165,6 +169,14 @@ function rowsOf (box, top) {
     y += rep.h
   })
   return out
+}
+
+function centreOf (item, inner) {
+  const flexC = (p) => (p['flex-direction'] === 'column' ? p['align-items'] : p['justify-content']) === 'center'
+  if (!flexC(inner.props)) bad(inner.name + ' does not centre its content (a list row must be centred)')
+  if (/%/.test(inner.props['margin-left'] || '')) bad(inner.name + ' has a % margin-left, which the engine does not honour in a list: centre it from the list-item')
+  if (!flexC(item.props)) return inner.ml + inner.w / 2 // not centred by its list-item: the box sits at the left edge
+  return item.w / 2 + inner.ml
 }
 
 const table = []
@@ -179,17 +191,16 @@ test('every screen: explicit sizes, targets at least 56 px with 8 px between, ro
       const total = box.kids.reduce((t, vs) => t + vs.reduce((a, b) => (b.h + b.mt > a.h + a.mt ? b : a)).h + vs.reduce((a, b) => (b.h + b.mt > a.h + a.mt ? b : a)).mt, 0)
       if (total > sh) bad(id + ' (' + label + ') is ' + total + ' tall on a ' + sh + ' screen')
       dims[label] = total
-      if (isRound) {
-        const top = (sh - total) / 2
-        let worst = Infinity
-        rowsOf(box, top).forEach(r => {
-          const chord = chordAt(r.top, r.bottom, sh)
-          if (r.width > chord + 0.5) bad(id + ': ' + r.name + ' is ' + r.width.toFixed(0) + ' wide at y ' + r.top.toFixed(0) + '-' + r.bottom.toFixed(0) + ' where the circle is ' + chord.toFixed(0))
-          worst = Math.min(worst, chord - r.width)
-        })
-        dims.room = worst
-        dims.top = top
-      }
+      const top = (sh - total) / 2
+      let worst = Infinity
+      rowsOf(box, top).forEach(r => {
+        // the circle's width at the row (its diameter is the screen's 466); a rectangle is as wide as the screen at every row
+        const chord = isRound ? chordAt(r.top, r.bottom, sw) : sw
+        if (r.width > chord + 0.5) bad(id + ' (' + label + '): ' + r.name + ' is ' + r.width.toFixed(0) + ' wide at y ' + r.top.toFixed(0) + '-' + r.bottom.toFixed(0) + ' where the screen is ' + chord.toFixed(0))
+        if (r.cx !== undefined && Math.abs(r.cx - sw / 2) > 1) bad(id + ' (' + label + '): ' + r.name + ' is centred at x ' + r.cx.toFixed(0) + ', not ' + (sw / 2))
+        worst = Math.min(worst, chord - r.width)
+      })
+      if (isRound) { dims.room = worst; dims.top = top }
     })
     table.push([id.replace('s_', ''), Math.round(dims['round 466']), Math.round(dims['rect 336x480']), Math.round(dims.top), Math.round(dims.room)])
     all.push.apply(all, problems)

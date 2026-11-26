@@ -18,7 +18,7 @@
   </div>
 
   <!-- The workout menu: a list, it scrolls -->
-  <div class="scr" if="{{s_menu}}">
+  <div class="scrL" if="{{s_menu}}">
     <list class="menuList">
       <list-item class="li" if="{{hasPrev}}"><div class="liIn"><input type="button" class="btn" value="{{lPrev}}" onclick="mPrev" /></div></list-item>
       <list-item class="li" if="{{hasOver}}"><div class="liIn"><input type="button" class="btn" value="{{lOver}}" onclick="mOver" /></div></list-item>

@@ -14,14 +14,15 @@
   align-items: center;
   justify-content: center;
 }
-.scr {
-  width: 90%;
+/* A screen that is a list: as wide as the screen, because the engine puts a list at the left edge instead of centring it. */
+.scrL {
+  width: 100%;
   height: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
-.small { width: 72%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.small { width: 65%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .tiny { width: 76%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .btn {
   width: 88%;
@@ -41,6 +42,6 @@
 .oName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .oCnt { width: 100%; height: 22px; font-size: 18px; text-align: left; color: #a1a1a6; }
 .overList { width: 100%; height: 60%; }
-.li { width: 100%; height: 72px; }
-.liIn { width: 86%; margin-left: 7%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.li { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liIn { width: 78%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
 .quiet { color: #a1a1a6; }

@@ -14,6 +14,14 @@
   align-items: center;
   justify-content: center;
 }
+/* A screen that is a list: as wide as the screen, because the engine puts a list at the left edge instead of centring it. */
+.scrL {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 .scr {
   width: 90%;
   height: 100%;
@@ -52,8 +60,8 @@
 .ratedTx { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; }
 .up { width: 100%; height: 78px; flex-direction: column; align-items: center; justify-content: center; }
 .upOne { width: 86%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
-.upL { width: 34%; height: 26px; font-size: 22px; text-align: left; color: #a3e635; }
-.upR { width: 62%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
+.upL { width: 38%; height: 26px; font-size: 22px; text-align: right; margin-right: 8px; color: #a3e635; }
+.upR { width: 58%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
 .syncLn { width: 50%; height: 26px; font-size: 18px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
 .bar { width: 78%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
 .row2s { width: 88%; height: 66px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
@@ -68,6 +76,6 @@
 .btnR { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ff453a; font-size: 20px; color: #ff453a; background-color: #000000; }
 .btnO { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ffffff; font-size: 20px; color: #ffffff; background-color: #000000; }
 .menuList { width: 100%; height: 72%; }
-.li { width: 100%; height: 72px; }
-.liIn { width: 86%; margin-left: 7%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.li { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liIn { width: 78%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
 .quiet { color: #a1a1a6; }

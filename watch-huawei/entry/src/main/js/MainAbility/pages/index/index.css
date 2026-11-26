@@ -14,6 +14,14 @@
   align-items: center;
   justify-content: center;
 }
+/* A screen that is a list: as wide as the screen, because the engine puts a list at the left edge instead of centring it. */
+.scrL {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 .scr {
   width: 90%;
   height: 100%;
@@ -53,19 +61,19 @@
 .tRow { width: 100%; height: 32px; flex-direction: row; align-items: center; justify-content: center; }
 .tick { width: 22px; height: 22px; margin-right: 8px; border-radius: 11px; background-color: #a3e635; }
 .sumList { width: 100%; height: 84%; }
-.liT { width: 100%; height: 72px; }
-.liTi { width: 60%; margin-left: 20%; height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; }
-.sTitle { width: 80%; height: 32px; font-size: 26px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.sName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
+.liT { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liTi { width: 54%; height: 72px; flex-direction: column; align-items: center; justify-content: center; }
+.sTitle { width: 80%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.sName { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
 .liS { width: 100%; height: 40px; }
 .liSi { width: 100%; height: 40px; flex-direction: row; align-items: center; justify-content: center; }
-.liD { width: 86%; margin-left: 7%; height: 100px; }
-.liDi { width: 100%; height: 100px; flex-direction: column; align-items: center; justify-content: center; }
+.liD { width: 100%; height: 100px; flex-direction: row; align-items: center; justify-content: center; }
+.liDi { width: 78%; height: 100px; flex-direction: column; align-items: center; justify-content: center; }
 .nameBig { width: 80%; height: 46px; font-size: 40px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .rName { width: 88%; height: 30px; font-size: 26px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .rSub { width: 88%; height: 22px; font-size: 18px; text-align: left; color: #a3e635; text-overflow: ellipsis; }
 .topR { width: 56%; height: 26px; font-size: 20px; text-align: right; color: #a1a1a6; text-overflow: ellipsis; }
 .waitTx { width: 80%; height: 110px; font-size: 24px; text-align: center; color: #a1a1a6; }
-.li { width: 100%; height: 72px; }
-.liIn { width: 86%; margin-left: 7%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.li { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liIn { width: 78%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
 .quiet { color: #a1a1a6; }

@@ -43,7 +43,7 @@
   </div>
 
   <!-- Summary: a list -->
-  <div class="scr" if="{{s_summary}}">
+  <div class="scrL" if="{{s_summary}}">
     <list class="sumList" ref="sum">
       <list-item class="liT"><div class="liTi"><div class="tRow"><div class="tick" style="background-color: {{accent}};"></div><text class="sTitle">{{title}}</text></div><text class="sName">{{name}}</text></div></list-item>
       <list-item class="liD"><div class="liDi"><text class="tinyL quiet">{{durLabel}}</text><text class="bigY">{{dur}}</text></div></list-item>
