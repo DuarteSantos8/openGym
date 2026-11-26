@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
+
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
 - **Coach app help (B4, proposed).** The owner can accept, reject or defer [ADR 0015](adr/0015-coach-app-help.md). Implementation follows acceptance.

@@ -104,3 +104,8 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/coach/core/validate.js` | `next/EP19-coach-starter-fixes` | Core | Check proposed exercise choices against the equipment restriction. |
 | `api/test/coach-ask.test.js` | `next/EP19-coach-starter-fixes` | Tests | Exercise translated requests and unsafe proposals with a simulated provider. |
 | `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-guest-workouts` | E2E | Verify ten guest workouts in the linked server profile and in History on both devices. |
+| `frontend/src/views/Workout.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain terms for sets and effort before and during a session. |
+| `frontend/src/views/Plan.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain terms for the weekly schedule. |
+| `frontend/src/views/Stats.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain record and volume metrics in Progress. |
+| `frontend/src/components/Term.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Reuse the definition sheet for small, screen-specific glossaries. |
+| `frontend/src/views/onboarding.css` | `next/EP24-glossary-workout-plan-progress` | UI | Move shared term styles to the component stylesheet. |

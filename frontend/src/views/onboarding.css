@@ -25,10 +25,6 @@
 .iv-quiz-week{margin-bottom:20px}
 .iv-quiz-day .ss{white-space:normal;overflow-wrap:anywhere}
 .iv-quiz-foot{margin:16px 0 0;text-align:center}
-.iv-term{display:inline;padding:0;border:0;background:none;font:inherit;color:var(--acc-ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;cursor:pointer}
-.iv-term-card{text-align:center;padding:4px 0}
-.iv-term-card h3{margin-bottom:8px}
-.iv-term-card p{margin:0 0 18px;line-height:1.5;text-align:start}
 .iv-learn-guides{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
 .iv-learn-guide{border:var(--hair) solid var(--sep);border-radius:var(--r);background:var(--surface);overflow:hidden}
 .iv-learn-guide>button{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 14px;border:0;background:none;color:var(--label);font:inherit;text-align:start;cursor:pointer}

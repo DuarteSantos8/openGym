@@ -1,3 +1,4 @@
+import { ScreenGlossary } from '../components/Term.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -959,6 +960,7 @@ export default function Stats() {
 
   return <div className="iv-stats">
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Progress')}</h1><div className="sub">{t('Records & history')}</div></div></div>
+    <ScreenGlossary ids={['pr', 'volume', '1rm', 'e1rm']} />
     {/* Every workout, one tap from the top of the page. It used to float above the tab bar,
         where it sat over the chart and the session list (and, on a desktop with the sidebar,
         over the middle of the page). */}

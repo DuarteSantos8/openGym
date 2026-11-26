@@ -1,3 +1,4 @@
+import { ScreenGlossary } from '../components/Term.jsx'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -211,6 +212,7 @@ export default function Plan() {
     </details>
     <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
       options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
+    <ScreenGlossary ids={['split', 'rest-day', 'deload']} />
     {progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
       <Icon name="calendar" /><span className="grow">{S.programmes?.[S.programme?.id]?.name || t('Programme')}</span><span className="tag acc">{progChip}</span>
     </button>}
