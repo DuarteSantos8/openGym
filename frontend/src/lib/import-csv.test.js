@@ -98,6 +98,14 @@ describe('Hevy notes and converted weights', () => {
     expect(w.entries[0].note).toBe('a\\nb')
   })
 
+  it('reads distance_miles from an imperial Hevy export', () => {
+    const head = HEVY_HEAD.replace('weight_kg', 'weight_lbs').replace('distance_km', 'distance_miles')
+    const run = '"Run","25 Nov 2026, 07:05","25 Nov 2026, 08:00","","Running",,"",0,normal,,,3.1,1800,'
+    const p = parseWorkoutCSV([head, run].join('\n'), { unit: 'lb' })
+    expect(p.skipped).toBe(0)
+    expect(p.workouts[0].entries[0].sets[0]).toMatchObject({ min: 30, speed: 10 })
+  })
+
   it('keeps a converted weight to the hundredth', () => {
     const p = parseWorkoutCSV('Date,Exercise,Weight,Weight Unit,Reps\n2025-03-03,Squat,45,lbs,5', { unit: 'kg' })
     expect(p.workouts[0].entries[0].sets[0].w).toBe(20.41)

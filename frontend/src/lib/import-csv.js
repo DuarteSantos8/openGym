@@ -106,6 +106,8 @@ const COLUMNS = [
   ['rir', ['rir', 'reps in reserve']],
   ['distanceKm', ['distance km']],
   ['distanceM', ['distance meters', 'distance m', 'distance metres']],
+  // Hevy writes distance_miles for an account set to imperial units.
+  ['distanceMi', ['distance miles', 'distance mi']],
   ['distance', ['distance']],
   ['distanceUnit', ['distance unit']],
   // gravl writes a treadmill's grade per set; "Incline (%)" normalises to the same name.
@@ -749,7 +751,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       ? num(cell(r, 'distanceKm'))
       : map.distanceM !== undefined && cell(r, 'distanceM')
         ? toKm(cell(r, 'distanceM'), 'm')
-        : toKm(cell(r, 'distance'), cell(r, 'distanceUnit'))
+        : map.distanceMi !== undefined && cell(r, 'distanceMi')
+          ? toKm(cell(r, 'distanceMi'), 'mi')
+          : toKm(cell(r, 'distance'), cell(r, 'distanceUnit'))
     if (!w && !reps && !mins && !km) { skipped++; continue }
     // Nobody lifts a negative weight or 2 t, nor does 1,000 reps in a set; a cell like that is
     // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
