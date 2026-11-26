@@ -60,6 +60,16 @@ describe('the rest the app starts, pauses and ends', () => {
     useUI.getState().startRest(10, null, { kind: 'switch' })
     expect(armRestAlert.mock.calls.at(-1)[1]).not.toHaveProperty('line')
   })
+  it('sends no rest-over line with a rest that has a chain (a hold that starts by itself)', () => {
+    const S = useStore.getState().S
+    useStore.setState({ S: { ...S, spokenCues: true, active: { cur: 0, entries: [] } } })
+    const unbind = useUI.getState().bindAuto({ peek: () => ({ label: 'Plank', plan: 30 }), forecast: () => [] })
+    useUI.getState().startRest(90)
+    unbind()
+    const opts = armRestAlert.mock.calls.at(-1)[1]
+    expect(opts.cues.length).toBeGreaterThan(0)
+    expect(opts).not.toHaveProperty('line')
+  })
   it('arms when the rest starts and rearms when time is added, with the whole rest', () => {
     useUI.getState().startRest(90)
     const first = armRestAlert.mock.calls.at(-1)[0]

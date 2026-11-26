@@ -3924,7 +3924,7 @@ export default {
   "Rest is over": "Vilan är slut",
   "Spoken cues": "Talade signaler",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Bara när appen är på skärmen. Musiken sänks en stund, den stannar aldrig.",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Med låst iPhone sägs ändå slutet på vilan, om den inte står på ljudlöst. Musiken dämpas en stund, den stannar aldrig.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Bara när appen är på skärmen. Med låst iPhone sägs ändå slutet på vilan, om den inte står på ljudlöst. Musiken sänks en stund, den stannar aldrig.",
   "This browser can’t speak. Try another one.": "Den här webbläsaren kan inte prata. Testa en annan.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Säger ditt nästa set, ”10 sekunder” och ”Vilan är slut”, och räknar ner håll.",
   "Speaking rate": "Taltempo",

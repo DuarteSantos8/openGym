@@ -204,14 +204,16 @@ const hasSomething = (S, name) => voiceClipsOf(S, name).length > 0 || linesFor(S
 
 /**
  * What a locked iPhone says at the end of a rest (booked with the rest, lib/rest-alert.js): the
- * person's own clip, else the style's line with the voice settings, else null. Plain rests only.
+ * person's own clip (with the line as a stand-in), else the style's line with the voice settings, else null. Plain rests only.
  */
 export function restOverCue(S) {
   if (!cuesOn(S)) return null
+  // keep: false, so booking does not use up the line the page says if the app stays on screen.
+  const text = pickLine(S, 'restOver', Math.random, { keep: false })
+  const said = text ? { text, lang: speechLang(), ...voiceOpts(S) } : null
   const clip = pickClip(S, 'restOver')
-  if (clip) return { clip: clip.m.hash }
-  const text = pickLine(S, 'restOver')
-  return text ? { text, lang: speechLang(), ...voiceOpts(S) } : null
+  // A clip's file may not be on this phone (synced from another device): the line then stands in.
+  return clip ? { clip: clip.m.hash, ...said } : said
 }
 
 export const cues = {

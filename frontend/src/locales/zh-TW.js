@@ -3870,7 +3870,7 @@ export default {
   "Rest is over": "休息結束",
   "Spoken cues": "語音提示",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "僅在 App 顯示在螢幕上時。音樂只會暫時調低，絕不會停。",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "iPhone 鎖定時也會說出休息結束，靜音模式下除外。音樂只會短暫調低，不會停止。",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "僅在 App 顯示在螢幕上時。iPhone 鎖定時也會說出休息結束，靜音模式下除外。音樂只會暫時調低，絕不會停。",
   "This browser can’t speak. Try another one.": "這個瀏覽器不會說話，換一個試試。",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "會報出下一組、「還有 10 秒」和「休息結束」，並為靜態動作倒數。",
   "Speaking rate": "語速",

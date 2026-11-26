@@ -3283,7 +3283,7 @@ export const PT_BR_OVERRIDES = {
   "Rest is over": "Acabou o descanso",
   "Spoken cues": "Avisos de voz",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Só com o app na tela. A música abaixa por um momento, nunca para.",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Com o iPhone bloqueado, o fim do descanso continua sendo dito, a menos que esteja no silencioso. A música abaixa por um momento, nunca para.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Só com o app na tela. Com o iPhone bloqueado, o fim do descanso continua sendo dito, a menos que esteja no silencioso. A música abaixa por um momento, nunca para.",
   "This browser can’t speak. Try another one.": "Este navegador não sabe falar. Tente outro.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Fala sua próxima série, “10 segundos” e “Acabou o descanso”, e faz a contagem regressiva das isometrias.",
   "Speaking rate": "Velocidade da voz",

@@ -3497,7 +3497,7 @@ export default {
   "Rest is over": "休憩終了",
   "Spoken cues": "音声ガイド",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "アプリを画面に表示している間だけ有効です。音楽の音量が一時的に下がりますが、停止はしません。",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "iPhoneがロックされていても、休憩の終わりは読み上げられます。サイレントモードの場合は除きます。音楽は一瞬小さくなるだけで、止まりません。",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "アプリを画面に表示している間だけ有効です。iPhoneがロックされていても、休憩の終わりは読み上げられます。サイレントモードの場合は除きます。音楽の音量が一時的に下がりますが、停止はしません。",
   "This browser can’t speak. Try another one.": "このブラウザーは音声読み上げに対応していません。別のブラウザーをお試しください。",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "次のセットや「10秒」「休憩終了」を音声で案内し、姿勢を保持する残り時間をカウントダウンします。",
   "Speaking rate": "読み上げ速度",

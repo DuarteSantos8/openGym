@@ -3888,7 +3888,7 @@ export default {
   "Rest is over": "หมดเวลาพัก",
   "Spoken cues": "เสียงบอก",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "เฉพาะตอนที่แอปเปิดอยู่บนหน้าจอ เพลงจะเบาลงครู่หนึ่ง ไม่หยุด",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "แม้ล็อก iPhone อยู่ ก็ยังบอกเมื่อพักจบ ยกเว้นเมื่ออยู่ในโหมดเงียบ เพลงจะเบาลงชั่วครู่และไม่หยุดเลย",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "เฉพาะตอนที่แอปเปิดอยู่บนหน้าจอ แม้ล็อก iPhone อยู่ ก็ยังบอกเมื่อพักจบ ยกเว้นเมื่ออยู่ในโหมดเงียบ เพลงจะเบาลงครู่หนึ่ง ไม่หยุด",
   "This browser can’t speak. Try another one.": "เบราว์เซอร์นี้พูดไม่ได้ ลองตัวอื่นดู",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "บอกเซ็ตถัดไป “10 วินาที” และ “หมดเวลาพัก” และนับถอยหลังท่าค้าง",
   "Speaking rate": "ความเร็วในการพูด",

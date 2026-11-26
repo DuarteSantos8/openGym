@@ -104,13 +104,14 @@ export function linesFor (S, moment) {
 
 // The line said last per moment, so the same one does not come twice in a row.
 const lastSaid = {}
-/** One of the moment's lines, never the one said just before when there is a choice; '' for none. */
-export function pickLine (S, moment, rnd = Math.random) {
+/** One of the moment's lines, never the one said just before when there is a choice; '' for none.
+ *  `keep: false` picks without using up the turn (a line handed over to be said later, not said now). */
+export function pickLine (S, moment, rnd = Math.random, { keep = true } = {}) {
   const lines = linesFor(S, moment)
   if (!lines.length) return ''
   const pool = lines.length > 1 ? lines.filter(l => l !== lastSaid[moment]) : lines
   const line = pool[Math.min(pool.length - 1, Math.floor(rnd() * pool.length))]
-  lastSaid[moment] = line
+  if (keep) lastSaid[moment] = line
   return line
 }
 export function _resetPicks () { for (const k of Object.keys(lastSaid)) delete lastSaid[k] }

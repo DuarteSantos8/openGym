@@ -3880,7 +3880,7 @@ export default {
   "Rest is over": "Vége a pihenőnek",
   "Spoken cues": "Hangos jelzések",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Csak amíg az app a képernyőn van. A zene egy pillanatra halkabb lesz, sosem áll le.",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Zárolt iPhone-nál is elhangzik a pihenő vége, hacsak nincs néma módban. A zene egy pillanatra halkabb lesz, de sosem áll le.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Csak amíg az app a képernyőn van. Zárolt iPhone-nál is elhangzik a pihenő vége, hacsak nincs néma módban. A zene egy pillanatra halkabb lesz, sosem áll le.",
   "This browser can’t speak. Try another one.": "Ez a böngésző nem tud beszélni. Próbálj egy másikat.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Bemondja a következő sorozatot, a „10 másodperc”-et és a „Vége a pihenőnek”-et, és visszaszámol a tartásoknál.",
   "Speaking rate": "Beszédtempó",

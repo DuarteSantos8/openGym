@@ -3840,7 +3840,7 @@ export default {
   "Rest is over": "Pausen er slut",
   "Spoken cues": "Talte signaler",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Kun mens appen er på skærmen. Musikken skrues ned et øjeblik, den stopper aldrig.",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Med låst iPhone bliver slutningen af en pause stadig sagt, medmindre den er på lydløs. Musikken dæmpes et øjeblik, den stopper aldrig.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Kun mens appen er på skærmen. Med låst iPhone bliver slutningen af en pause stadig sagt, medmindre den er på lydløs. Musikken skrues ned et øjeblik, den stopper aldrig.",
   "This browser can’t speak. Try another one.": "Denne browser kan ikke tale. Prøv en anden.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Siger dit næste sæt, “10 sekunder” og “Pausen er slut”, og tæller hold ned.",
   "Speaking rate": "Taletempo",

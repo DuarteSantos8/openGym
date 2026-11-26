@@ -130,24 +130,28 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                   let title = c["title"] as? String else { return nil }
             return Cue(dt: dt / 1000, title: title)
         }
-        pending = Pending(
+        let next = Pending(
             at: at,
             title: call.getString("title") ?? "Rest’s over. Next set!",
             sound: call.getBool("sound") ?? true,
             tone: RestTone.normalised(call.getString("tone") ?? ((call.getBool("classic") ?? false) ? "classic" : "chime")),
             cues: cues
         )
-        bakeId = UUID()
-        let mine = bakeId
-        let line = call.getObject("line")
-        let withTone = pending?.sound == true ? pending?.tone : nil
+        // The line only goes with a plain rest: a chain's alerts keep the plain tone.
+        let line = cues.isEmpty ? call.getObject("line") : nil
+        let withTone = next.sound ? next.tone : nil
+        // pending and bakeId are the main thread's alone.
         DispatchQueue.main.async {
+            self.pending = next
+            self.bakeId = UUID()
+            let mine = self.bakeId
             if UIApplication.shared.applicationState != .active {
                 self.withdraw()
                 self.post()
             }
-            if let line = line { self.bakeLine(line, tone: withTone, id: mine) }
+            // Resolved first: the bake must not hold up the page's next schedule or cancel.
             call.resolve()
+            if let line = line { self.bakeLine(line, tone: withTone, id: mine) }
         }
     }
 
@@ -180,15 +184,32 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     /// Main thread. Makes the line's samples (the person's own clip, else the spoken line written
     /// out), then the file. Any failure leaves the tone-only notification as it is.
     private func bakeLine(_ line: [String: Any], tone: String?, id: UUID) {
+        // A phone locked a moment after the set is ticked suspends the app: the bake gets a few seconds more.
+        // `end` runs on every way out and from the expiry handler (which must end it before it returns);
+        // it ends the task only the first time. Everything that touches `task` runs on main.
+        var task: UIBackgroundTaskIdentifier = .invalid
+        let end: () -> Void = {
+            let run = { if task != .invalid { UIApplication.shared.endBackgroundTask(task); task = .invalid } }
+            if Thread.isMainThread { run() } else { DispatchQueue.main.async(execute: run) }
+        }
+        task = UIApplication.shared.beginBackgroundTask(withName: "rest-line") { end() }
         if let hash = line["clip"] as? String {
             // Validated as a hash, so it can never name a path outside the media folder.
             guard RestTone.userHash("u:\(hash)") != nil,
-                  let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+                  let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { end(); return }
             let url = lib.appendingPathComponent("opengym-media", isDirectory: true).appendingPathComponent("\(hash).wav")
-            DispatchQueue.global(qos: .utility).async { self.finishBake(RestTone.samples(contentsOf: url), tone: tone, id: id) }
+            DispatchQueue.global(qos: .utility).async {
+                // A clip whose file is not on this phone (synced from another device) says the line instead.
+                if let samples = RestTone.samples(contentsOf: url) { self.finishBake(samples, tone: tone, id: id, done: end) } else { DispatchQueue.main.async { self.bakeSpoken(line, tone: tone, id: id, done: end) } }
+            }
             return
         }
-        guard let text = line["text"] as? String, !text.isEmpty else { return }
+        bakeSpoken(line, tone: tone, id: id, done: end)
+    }
+
+    /// Main thread: the spoken line written out as samples. `done` runs once, whatever happens.
+    private func bakeSpoken(_ line: [String: Any], tone: String?, id: UUID, done: @escaping () -> Void) {
+        guard let text = line["text"] as? String, !text.isEmpty else { done(); return }
         let u = utterance(String(text.prefix(500)), lang: line["lang"] as? String ?? "", rate: Float(number(line["rate"]) ?? 1),
                           pitch: Float(number(line["pitch"]) ?? 1), voiceId: line["voice"] as? String ?? "")
         let synth = AVSpeechSynthesizer()
@@ -199,7 +220,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         func finish(_ samples: [Int16]?) {
             finished = true
             DispatchQueue.main.async { if self.baking === synth { self.baking = nil } }
-            finishBake(samples, tone: tone, id: id)
+            finishBake(samples, tone: tone, id: id, done: done)
         }
         // write() hands over buffers (never plays them, never touches the audio session); an empty one is the end.
         synth.write(u) { buffer in
@@ -213,7 +234,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
     }
 
     /// Off the main thread: tone, gap and line into one file, then the notification is posted again with it.
-    private func finishBake(_ line: [Int16]?, tone: String?, id: UUID) {
+    /// `done` (the background task's end) runs once on every way out.
+    private func finishBake(_ line: [Int16]?, tone: String?, id: UUID, done: @escaping () -> Void) {
+        var handedOff = false
+        defer { if !handedOff { done() } }
         guard let line = line, !line.isEmpty else { return }
         var toneSamples: [Int16] = []
         if let tone = tone {
@@ -234,37 +258,48 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             try RestTone.wav(mix).write(to: dir.appendingPathComponent(name), options: .atomic)
         } catch { return }
+        handedOff = true
         DispatchQueue.main.async {
+            defer { done() }
             let old = (try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? []
             // Still the same rest: the notification goes back in with the line. Not in front: the page rings it.
+            // Not when the end is at hand or past: withdraw() would take away a banner that has rung.
             if self.bakeId == id, var p = self.pending {
                 p.lineSound = name
                 self.pending = p
-                if UIApplication.shared.applicationState != .active {
+                if UIApplication.shared.applicationState != .active, p.at.timeIntervalSinceNow > 1 {
                     self.withdraw()
                     self.post()
                 }
             }
             let keep = self.pending?.lineSound
             for f in old where f.hasPrefix("rest-line-") && f != name && f != keep {
-                try? FileManager.default.removeItem(at: dir.appendingPathComponent(f))
+                // A file written in the last 30 s may be another bake's, not yet claimed.
+                let url = dir.appendingPathComponent(f)
+                let wrote = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+                if let wrote = wrote, -wrote.timeIntervalSinceNow < 30 { continue }
+                try? FileManager.default.removeItem(at: url)
             }
             if self.pending?.lineSound != name { try? FileManager.default.removeItem(at: dir.appendingPathComponent(name)) }
         }
     }
 
     @objc func cancel(_ call: CAPPluginCall) {
-        pending = nil
-        bakeId = UUID()
-        withdraw()
-        call.resolve()
+        DispatchQueue.main.async {
+            self.pending = nil
+            self.bakeId = UUID()
+            self.withdraw()
+            call.resolve()
+        }
     }
 
     @objc func hold(_ call: CAPPluginCall) {
-        pending = nil
-        bakeId = UUID()
-        withdraw()
-        call.resolve()
+        DispatchQueue.main.async {
+            self.pending = nil
+            self.bakeId = UUID()
+            self.withdraw()
+            call.resolve()
+        }
     }
 
     @objc func setAccent(_ call: CAPPluginCall) {
@@ -497,7 +532,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 self.pending = nil
                 return
             }
-            p = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, lineSound: p.lineSound)
+            p = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, lineSound: nil)
             self.pending = p
             self.withdraw()
             if UIApplication.shared.applicationState != .active { self.post() }
@@ -511,6 +546,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let at = (note.userInfo?["at"] as? Double) ?? Date().timeIntervalSince1970 * 1000
         DispatchQueue.main.async {
             guard let p = self.pending else { return }
+            // A bake still running was for the old rest: the Lock Screen's own alert stays as it booked it.
+            self.bakeId = UUID()
             self.pending = Pending(at: Date(timeIntervalSince1970: end / 1000), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: at, lineSound: p.lineSound)
         }
     }
@@ -546,7 +583,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 self.post()
             } else if c.sameRest, !p.cues.isEmpty {
                 // Skip before a hold that starts by itself: its count-in now, the chain after it (as restSkipped).
-                self.pending = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at, lineSound: p.lineSound)
+                self.pending = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues, since: c.at, lineSound: nil)
                 self.post()
             } else {
                 // A Skip, or a set ticked at the wrist: that set's new rest is the page's to book when it wakes, named for the next set.

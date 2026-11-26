@@ -3845,7 +3845,7 @@ export default {
   'Rest is over': 'Pauza skončila',
   'Spoken cues': 'Hlasové pokyny',
   'Only while the app is on screen. Music turns down for a moment, it never stops.': "Jen když je aplikace na obrazovce. Hudba se na chvíli ztiší, nikdy se nezastaví.",
-  'With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.': 'I se zamčeným iPhonem se konec odpočinku řekne, pokud není v tichém režimu. Hudba se na chvíli ztlumí, nikdy se nezastaví.',
+  'Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.': 'Jen když je aplikace na obrazovce. I se zamčeným iPhonem se konec odpočinku řekne, pokud není v tichém režimu. Hudba se na chvíli ztiší, nikdy se nezastaví.',
   'This browser can’t speak. Try another one.': 'Tento prohlížeč neumí mluvit. Zkus jiný.',
   'Says your next set, “10 seconds” and “Rest is over”, and counts holds down.': "Ohlásí tvou další sérii, „10 sekund“ a „Pauza skončila“ a odpočítává výdrže.",
   'Speaking rate': 'Rychlost řeči',

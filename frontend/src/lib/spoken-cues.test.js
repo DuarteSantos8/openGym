@@ -204,11 +204,28 @@ describe('the rest-over line handed to a locked phone', () => {
   test('the plain style: the line with the voice settings', () => {
     expect(restOverCue(st)).toEqual({ text: 'Rest is over', lang: 'en-GB', rate: 1, pitch: 1, voice: '' })
   })
-  test('a clip of one\'s own wins over the line', () => {
-    const hash = 'a'.repeat(64)
-    expect(restOverCue({ ...st, sounds: [{ id: 'c1', name: 'Go', m: { kind: 'audio', hash, mime: 'audio/wav', size: 1000, width: 1, height: 1, dur: 2 }, voice: 'restOver' }] })).toEqual({ clip: hash })
-  })
   test('own style with no rest-over lines: nothing', () => {
     expect(restOverCue({ ...st, cueStyle: 'own', cueLines: {} })).toBe(null)
+  })
+  test('a clip of one’s own wins, and carries the spoken line for a phone that lacks the clip file', () => {
+    const hash = 'a'.repeat(64)
+    const sounds = [{ id: 'c1', name: 'Go', m: { kind: 'audio', hash, mime: 'audio/wav', size: 1000, width: 1, height: 1, dur: 2 }, voice: 'restOver' }]
+    expect(restOverCue({ ...st, sounds })).toEqual({ clip: hash, text: 'Rest is over', lang: 'en-GB', rate: 1, pitch: 1, voice: '' })
+  })
+  test('booking the rest does not use up the on-screen line\'s turn', async () => {
+    const { _resetPicks } = await import('./voice-styles.js')
+    _resetPicks()
+    const hype = { ...st, cueStyle: 'hype' }
+    bindCueState(() => hype)
+    const heard = []
+    for (let k = 0; k < 3; k++) {
+      restOverCue(hype)
+      cues.restOver()
+      heard.push(speak.mock.calls.at(-1)[0])
+    }
+    expect(new Set(heard).size).toBe(2)
+    expect(heard[0]).not.toBe(heard[1])
+    expect(heard[1]).not.toBe(heard[2])
+    _resetPicks()
   })
 })

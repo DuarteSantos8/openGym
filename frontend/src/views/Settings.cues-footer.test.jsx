@@ -89,7 +89,7 @@ describe('Settings, spoken cues footer', () => {
     mocks.platform = 'ios'
     globalThis.Capacitor = { getPlatform: () => 'ios' }
     await mount()
-    expect(host.textContent).toContain(LOCKED + ' Music turns down for a moment, it never stops.')
+    expect(host.textContent).toContain('Only while the app is on screen. ' + LOCKED + ' Music turns down for a moment, it never stops.')
     expect(host.textContent).not.toContain(OLD)
   })
 

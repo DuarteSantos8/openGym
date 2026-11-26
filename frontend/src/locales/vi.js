@@ -3845,7 +3845,7 @@ export default {
   'Rest is over': 'Hết giờ nghỉ',
   'Spoken cues': 'Nhắc bằng giọng nói',
   'Only while the app is on screen. Music turns down for a moment, it never stops.': 'Chỉ khi ứng dụng đang trên màn hình. Nhạc nhỏ lại một lúc, không bao giờ dừng hẳn.',
-  'With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.': 'Khi iPhone bị khóa, hết giờ nghỉ vẫn được đọc lên, trừ khi máy đang ở chế độ im lặng. Nhạc nhỏ lại một lúc, không bao giờ dừng hẳn.',
+  'Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.': 'Chỉ khi ứng dụng đang trên màn hình. Khi iPhone bị khóa, hết giờ nghỉ vẫn được đọc lên, trừ khi máy đang ở chế độ im lặng. Nhạc nhỏ lại một lúc, không bao giờ dừng hẳn.',
   'This browser can’t speak. Try another one.': 'Trình duyệt này không phát giọng nói được. Hãy thử trình duyệt khác.',
   'Says your next set, “10 seconds” and “Rest is over”, and counts holds down.': 'Đọc hiệp tiếp theo, “10 giây” và “Hết giờ nghỉ”, và đếm ngược các tư thế giữ.',
   'Speaking rate': 'Tốc độ đọc',

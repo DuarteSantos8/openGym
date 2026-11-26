@@ -3897,7 +3897,7 @@ export default {
   "Rest is over": "Pause ist vorbei",
   "Spoken cues": "Sprachansagen",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Nur solange die App auf dem Bildschirm ist. Musik wird kurz leiser, sie stoppt nie.",
-  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Bei gesperrtem iPhone wird das Ende der Pause trotzdem gesagt, außer es steht auf lautlos. Die Musik wird kurz leiser, sie stoppt nie.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Nur solange die App auf dem Bildschirm ist. Bei gesperrtem iPhone wird das Ende der Pause trotzdem gesagt, außer es steht auf lautlos. Musik wird kurz leiser, sie stoppt nie.",
   "This browser can’t speak. Try another one.": "Dieser Browser kann nicht sprechen. Probier einen anderen.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Sagt deinen nächsten Satz, „10 Sekunden“ und „Pause ist vorbei“ an und zählt Halteübungen runter.",
   "Speaking rate": "Sprechtempo",

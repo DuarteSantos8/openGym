@@ -924,7 +924,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             phone's own voice in the apps (music ducks and comes back), the browser's elsewhere.
             Off by default. */}
         {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
-        <Section footer={speechSupported() ? (MOBILE && ios ? t('With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.') : t('Only while the app is on screen. Music turns down for a moment, it never stops.')) : t('This browser can’t speak. Try another one.')}>
+        <Section footer={speechSupported() ? (MOBILE && ios ? t('Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.') : t('Only while the app is on screen. Music turns down for a moment, it never stops.')) : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
             subtitle={t('Says your next set, “10 seconds” and “Rest is over”, and counts holds down.')}>
             <Switch aria-label={t('Spoken cues')} checked={S.spokenCues === true} disabled={!speechSupported()}
