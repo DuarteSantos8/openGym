@@ -8,7 +8,11 @@
 //   - the working leg: the one bent more at the knee in the image (the other stays near 180);
 //   - depth: the hips' height against the working knee's, in standing thigh heights (positive
 //     below), as for the squat; the other leg's knee angle in the image for the trailing leg.
-// Side-on the two legs stack up and the working one cannot be told: not judged. Facing the camera
+// Vision's hip sits on the pelvis above the crease, as for the squat, so HIP_MARK is added before
+// the hips are compared with the knee (a real lunge with the hip at knee height read -0.1 to -0.23).
+// Side-on the two legs stack up and the working one cannot be told: not judged. At an angle it
+// counts as facing: the drop is image-vertical, and a slender lifter squarely facing the camera
+// reads as an angle (shoulder and hip width 0.49 to 0.51 of the torso, under kit's 0.53). Facing the camera
 // the working knee comes forward at the bottom, so, as for the squat, a camera far above or below
 // the knees misjudges the depth: it is judged only with the phone at knee height and level.
 import { t } from '../i18n-core.js'
@@ -21,6 +25,7 @@ import {
 export const DEPTH_FULL = 0.5         // the hips' drop at depth, in standing legs: the signal's 1
 export const STRAIGHT_DEG = 165       // both knees at least this in the image: standing tall
 export const PARALLEL_BAND = 0.1      // hips within this many thigh heights above the working knee: parallel
+export const HIP_MARK = 0.2           // Vision's hip above the hip crease at the bottom, in standing thigh heights (as the squat's)
 export const HALF_DEPTH = 0.5         // hips within this many thigh heights above it: halfway down
 export const TRAIL_DEG = 160          // the other knee under this at the bottom: bent
 export const LEVEL_ROW = 0.12         // standing knees at most this far from the middle row: camera at knee height
@@ -116,7 +121,7 @@ function create({ standard, view: fixedView } = {}) {
   function track(f, s) {
     const a = acc
     if (!(thighRef > 0) || !f.legs) return
-    const hd = (f.hip[1] - f.legs[f.work].knee[1]) / thighRef
+    const hd = (f.hip[1] - f.legs[f.work].knee[1]) / thighRef + HIP_MARK
     if (a.maxHd == null || hd > a.maxHd) a.maxHd = hd
     a.frames.push({ s, work: f.work, trail: f.legs[f.other].angle })
   }
@@ -239,7 +244,7 @@ const sideLunge = {
   id: 'side-lunge',
   name: 'Side lunge',
   kind: 'reps',
-  views: ['front'],
+  views: ['front', 'diagonal'],
   setup: 'Phone at knee height and level, 2 to 3 m away, facing you, your whole body and both feet in the frame. Lunge to one side or both.',
   matches: ex => matchExercise(ex, { ids: IDS, name: /\b(side|lateral) (lunge|squat)s?\b|\bcossack squats?\b/i, not: NOT_A_PLAIN_LUNGE, cats: new Set(['strength', 'calisthenics']) }),
   standards: STANDARDS,

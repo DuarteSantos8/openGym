@@ -2,9 +2,9 @@
 // either leg, depth under each standard, tempo, the trailing leg bending, the camera's height,
 // views refused, a missing knee, and the exercises it takes.
 import { describe, expect, it } from 'vitest'
-import sideLunge, { PARALLEL_BAND } from './side-lunge.js'
+import sideLunge, { HIP_MARK, PARALLEL_BAND } from './side-lunge.js'
 import { checkDrill } from './index.js'
-import { BODY, ease, film, project, same } from './test-kit.js'
+import { BODY, ease, film, markHip, project, same } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
 const W = 0.45                        // the feet's half-width, metres
@@ -25,6 +25,7 @@ function kneeAt(H, A) {
 /**
  * Feet wide, the hips dropped `drop` metres and pushed back, shifted over the working leg (`side`,
  * the lifter's 'left' or 'right'); the other leg straight, or `trail` metres shorter (bent).
+ * The hips are where Vision puts them (markHip), rising with the square of the drop.
  */
 export function sideLungePose(drop, { side = 'left', trail = 0 } = {}) {
   const k = side === 'left' ? 1 : -1
@@ -33,8 +34,9 @@ export function sideLungePose(drop, { side = 'left', trail = 0 } = {}) {
   const dw = Math.sqrt(Math.max(0, Lt ** 2 - uh ** 2 - (vh - BODY.ankleH) ** 2))
   const wh = -k * W + k * dw + k * BODY.hipHalf
   const Aw = [0, BODY.ankleH, k * W], At = [0, BODY.ankleH, -k * W]
-  const Hw = [uh, vh, wh + k * BODY.hipHalf], Ht = [uh, vh, wh - k * BODY.hipHalf]
   const lean = 1.2 * drop
+  const [mu, mv] = markHip([uh, vh], lean, (drop / 0.45) ** 2)
+  const Hw = [mu, mv, wh + k * BODY.hipHalf], Ht = [mu, mv, wh - k * BODY.hipHalf]
   const sh = [uh + BODY.torso * Math.sin(lean), vh + BODY.torso * Math.cos(lean)]
   const neck = [sh[0] + BODY.neck * Math.sin(lean), sh[1] + BODY.neck * Math.cos(lean)]
   const p = { nose: [neck[0] + 0.08, neck[1] + 0.1, wh], neck: [neck[0], neck[1], wh] }
@@ -68,12 +70,13 @@ export function sideLungeSet(reps, { stand = 1, fps = 15, without = null, ...opt
   return frames
 }
 
-// The hip's drop at which the hip sits `d` standing thigh heights below the working knee, filmed from the front.
+// The hip's drop at which the drill reads the hip `d` standing thigh heights below the working
+// knee (Vision's hip, plus HIP_MARK), filmed from the front.
 function dropForDepth(d, yaw = 90) {
   const y = (j, p) => (j['left' + p][1] + j['right' + p][1]) / 2
   const top = project(sideLungePose(0), { yaw })
   const thigh = y(top, 'Knee') - y(top, 'Hip')
-  const at = x => { const j = project(sideLungePose(x), { yaw }); return (y(j, 'Hip') - j.leftKnee[1]) / thigh }
+  const at = x => { const j = project(sideLungePose(x), { yaw }); return (y(j, 'Hip') - j.leftKnee[1]) / thigh + HIP_MARK }
   let lo = 0.05, hi = 0.6
   for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (at(m) > d) hi = m; else lo = m }
   return (lo + hi) / 2
@@ -97,7 +100,7 @@ const FULL = { drop: PAR, down: 1.5, up: 1 }, HALF = { drop: dropForDepth(-0.3),
 describe('the side lunge drill', () => {
   it('keeps the contract', () => {
     expect(checkDrill(sideLunge)).toEqual([])
-    expect(sideLunge).toMatchObject({ kind: 'reps', views: ['front'], defaultStandard: 'parallel' })
+    expect(sideLunge).toMatchObject({ kind: 'reps', views: ['front', 'diagonal'], defaultStandard: 'parallel' })
   })
 
   it('films the pose helper as meant: one knee bent, the other leg straight', () => {
@@ -151,7 +154,9 @@ describe.each([90, 75, -90, -75])('the side lunge filmed at yaw %i°', yaw => {
   })
 
   it('the trailing leg bending: measured on every rep, said when most bend', () => {
-    const bent = run(set(same(3, { ...FULL, trail: 0.12 }))).res
+    // At Vision's hip (markHip) a bent trailing leg looks straighter, most from behind: 0.12 m
+    // shorter reads 169° at yaw -90, so the bent leg here is 0.18 m shorter.
+    const bent = run(set(same(3, { ...FULL, trail: 0.18 }))).res
     expect(bent.reps.every(r => r.measures.trail < 160)).toBe(true)
     expect(bent.cueId).toBe('trail')
     expect(bent.cue).toBe('The other leg bent on most reps. Try keeping it straight as you sit into the side.')
@@ -174,12 +179,14 @@ describe.each([90, 75, -90, -75])('the side lunge filmed at yaw %i°', yaw => {
 })
 
 describe('the side lunge, whatever the angle', () => {
-  it('side-on or at an angle: asks to face the camera and counts nothing', () => {
-    for (const yaw of [0, 45]) {
-      const { outs, res } = run(sideLungeSet(same(3, FULL), { yaw }))
-      expect(outs.at(-1).hint).toBe('Face the camera')
-      expect(res.count).toBe(0)
-    }
+  it('side-on: asks to face the camera and counts nothing', () => {
+    const { outs, res } = run(sideLungeSet(same(3, FULL), { yaw: 0 }))
+    expect(outs.at(-1).hint).toBe('Face the camera')
+    expect(res.count).toBe(0)
+  })
+
+  it('at an angle: counts, as for a lifter facing the camera whom Vision reads narrow', () => {
+    expect(run(sideLungeSet(same(3, FULL), { yaw: 45 }), { standard: 'any' }).res).toMatchObject({ count: 3, view: 'diagonal' })
   })
 
   it('asks for the phone at knee height and leaves the depth unjudged when it is not', () => {
