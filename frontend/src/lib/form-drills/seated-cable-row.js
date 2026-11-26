@@ -8,7 +8,7 @@
 // arms does not change it, so a rocking torso is not a rep. Side-on the arms move in the plane the
 // camera sees; at an angle or from the front they move along the view and foreshorten: refused.
 // The finish is the elbow against the line from the shoulder to the hip (the torso's middle, as
-// Vision places them), positive behind it; the start is the elbow's angle while reaching.
+// Vision places them), positive behind it; the start is the straighter elbow's angle while reaching.
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
@@ -74,6 +74,16 @@ export function missOf(past, reach, standard) {
   return reach != null && reach < REACH_DEG ? 'reach' : null
 }
 
+/**
+ * The straighter of the two elbows (degrees), null when neither arm is seen whole. Both arms reach
+ * together; filmed side-on Vision reads one of them 8 to 20 degrees more bent than the other on
+ * straight arms (form lab, three clips), so the straighter one is the reach.
+ */
+export function straighterElbow(joints, aspect) {
+  const a = ['left', 'right'].map(s => angleAt(seen(joints, s + 'Shoulder'), seen(joints, s + 'Elbow'), seen(joints, s + 'Wrist'), aspect)).filter(x => x != null)
+  return a.length ? Math.max(...a) : null
+}
+
 // The torso's angle off vertical in the image, signed.
 function torsoAngle(joints, aspect) {
   const s = mid(joints, 'Shoulder'), h = mid(joints, 'Hip')
@@ -132,9 +142,8 @@ function create({ standard, view: fixedView } = {}) {
     const why = rowFraming(fr)
     const sd = side(joints)
     const sh = why ? null : seen(joints, sd + 'Shoulder'), wr = why ? null : seen(joints, sd + 'Wrist')
-    const el = why ? null : seen(joints, sd + 'Elbow')
     const d = sh && wr ? dist(sh, wr, fr.aspect) : null
-    const elbow = sh && el && wr ? angleAt(sh, el, wr, fr.aspect) : null
+    const elbow = why || d == null ? null : straighterElbow(joints, fr.aspect)
     const phase0 = machine.phase
     const atRest = phase0 === 'waiting' || phase0 === 'standing'
     // Reaching with straight arms: the length of the reach, the way the lifter faces, the view.

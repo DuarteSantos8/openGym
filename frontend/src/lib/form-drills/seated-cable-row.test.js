@@ -120,6 +120,15 @@ describe.each([0, 10, 180])('the seated cable row filmed side-on, yaw %i°', yaw
     expect(res.details[3][0]).toEqual({ label: 'Start', value: 'Bent arms' })
   })
 
+  it('reads the reach on the straighter arm: Vision bends one of two straight arms', () => {
+    // Side-on, Vision reads one elbow 8 to 20 degrees more bent than the other on straight arms (form lab).
+    for (const side of ['left', 'right']) {
+      const frames = set(same(3, FULL))
+      for (const f of frames) if (f.joints[side + 'Elbow']) f.joints[side + 'Elbow'] = [f.joints[side + 'Elbow'][0], f.joints[side + 'Elbow'][1] + 0.04, f.joints[side + 'Elbow'][2]]
+      expect(run(frames).res).toMatchObject({ count: 3, missed: 0 })
+    }
+  })
+
   it('any range: every real row counts', () => {
     expect(run(set([FULL, SHORT, BENT]), { standard: 'any' }).res).toMatchObject({ count: 3, missed: 0 })
   })
