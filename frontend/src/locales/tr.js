@@ -6335,4 +6335,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Bu tarayıcı oturumunu açık tutmuyor (gizli gezinme veya depolaması dolu). Burada kaydettiklerin de saklanmayabilir.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Bu tarayıcı bu site için hiçbir şey saklamıyor, bu yüzden uygulama burada açılamıyor. Depolama alanı aç veya gizli gezinmeden çık, sonra tekrar dene.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} bu sunucuda bu profile girmenin tek yolu, bu yüzden bağlı kalıyor.",
+  "Ask your Coach": "Koçuna sor",
+  "Build me a back workout with no weights": "Bana ağırlıksız bir sırt antrenmanı hazırla",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Salıya bir itiş antrenmanı, çarşambaya bir çekiş antrenmanı ekle",
+  "Make today shorter": "Bugünkü antrenmanı kısalt",
 }

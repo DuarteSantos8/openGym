@@ -50,7 +50,7 @@ import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui
 import '../coach.css'
 import { isoRun } from '../lib/bidi.js'
 
-export default function CoachChat() {
+export default function CoachChat({ starter = '' }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
@@ -63,7 +63,8 @@ export default function CoachChat() {
   // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
   const gate = useCoachGate()
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
-  const [text, setText] = useState('')
+  const [text, setText] = useState(starter)
+  const starterDraft = useRef(starter.trim())
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -79,8 +80,9 @@ export default function CoachChat() {
   useEffect(() => {
     if (!storeReady || !gate.known) return
     if (!ok) nav('/home', { replace: true })
-    else if (!ready) nav('/coach/intake', { replace: true })
-  }, [storeReady, gate.known, ok, ready])
+    else if (!ready) nav('/coach/intake', starter ? { replace: true, state: { coachStarter: starter } } : { replace: true })
+    else if (starter) nav('/coach', { replace: true }) // The draft now belongs to this composer.
+  }, [storeReady, gate.known, ok, ready, starter])
 
   // A job that ends is either a proposal, "nothing to change", or a failure. The server tells
   // the client none of that directly — the job simply stops appearing — so the transition is
@@ -146,13 +148,12 @@ export default function CoachChat() {
     if (!msg || busy) return
     setBusy(true)
     try {
-      // A message about a proposed plan refines it. With no plan at all — the first attempt
-      // failed, or nothing was ever built — the message asks for one; a review would only
-      // answer that there is no workout to look at, which is how people got stuck. Anything else
-      // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
-      // review the whole plan. A review is the chip and the menu's, as it always was.
-      if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
+      // Home starters ask for individual changes, including when intake has saved no routines yet.
+      const addingDay = /\b(add|schedule|put)\b/i.test(msg) && /\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i.test(msg)
+      const needsPlan = !S.routines?.length && msg !== starterDraft.current && !addingDay
+      if (pending?.kind === 'create' || needsPlan) await refinePlan(msg)
       else await askCoach(msg)
+      starterDraft.current = ''
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
       setExpanded(false)

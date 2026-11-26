@@ -6382,4 +6382,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Den här webbläsaren håller dig inte inloggad (privat surfning, eller så är dess lagring full). Det du loggar här kanske inte heller sparas.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Den här webbläsaren sparar ingenting för den här webbplatsen, så appen kan inte öppnas här. Frigör lagringsutrymme eller lämna privat surfning och försök igen.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} är den enda vägen in i den här profilen på den här servern, så den förblir kopplad.",
+  "Ask your Coach": "Fråga din coach",
+  "Build me a back workout with no weights": "Sätt ihop ett ryggpass utan vikter åt mig",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Lägg till ett presspass på tisdag och ett dragpass på onsdag",
+  "Make today shorter": "Gör dagens pass kortare",
 }

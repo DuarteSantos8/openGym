@@ -4,6 +4,12 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
+  is available. A tap fills the editable chat box, including after first-time setup. The person
+  chooses when to send. Two follow-up fixes are prepared: a new profile with a three-day intake
+  can confirm Tuesday push and Wednesday pull, and the equipment check recognizes no-weights
+  requests in all 25 starter translations. Tests use a simulated provider. The four new strings in all 25 packs await native-language review.
+
 - **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
   account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,
   successful retry and MiniMax's hourly subscription totals. Per-run billing remains unknown.
@@ -70,7 +76,7 @@ Epic status:
 - **Merged (#85): `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
 - **OIDC follow-up:** Explain when the current website has no sign-in or guest path, and keep the provider row in native Settings.
 
-### Coach chat acceptance (B2, stubbed provider)
+### Coach chat acceptance (B2)
 
 With a plan already open, a chat message goes to the ask job. A workout action is
 offered for the person to start. New routine and weekday actions become a plan
@@ -90,7 +96,9 @@ With no routines or with a proposed plan open, a message uses the plan builder i
   weekdays. Confirming the chat proposal appends them to those days, keeping Monday,
   existing sessions on Tuesday and Wednesday, and per-date overrides. A repeat reuses
   routines with the same name and prescription. Undo restores the original week even
-  after a repeat confirmation. Full-plan imports keep their replacement behavior.
+  after a repeat confirmation in the stubbed test. Full-plan imports keep their replacement behavior.
+  In the live preview, the first confirmation added Push Day and retained Wednesday’s existing
+  pull routine. The repeat produced a text reply with no changes. See [the schedule and restored daily limit](CLOUD-SERVER.md#live-schedule-check-after-99).
 
 ## 2. Merging (only the owner merges)
 

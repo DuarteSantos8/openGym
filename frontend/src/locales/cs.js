@@ -6301,4 +6301,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Tento prohlížeč tě nenechává přihlášeného (anonymní režim, nebo má plné úložiště). Ani to, co si tu zapíšeš, se nemusí uložit.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Tento prohlížeč pro tento web nic neukládá, takže se tu aplikace nemůže otevřít. Uvolni úložiště nebo opusť anonymní režim a zkus to znovu.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} je na tomto serveru jediná cesta do tohoto profilu, proto zůstává propojený.",
+  "Ask your Coach": "Zeptej se svého trenéra",
+  "Build me a back workout with no weights": "Sestav mi trénink zad bez závaží",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Přidej mi na úterý trénink tlakových cviků a na středu trénink tahových cviků",
+  "Make today shorter": "Zkrať dnešní trénink",
 }

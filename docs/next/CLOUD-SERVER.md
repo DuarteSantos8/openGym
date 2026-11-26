@@ -165,6 +165,30 @@ their token counts and dollar costs cannot be identified. The row also did not s
 quota from purchased credits. **API > API Usage**, the separate pay-as-you-go and resource-pack
 ledger, showed no entry for the test window when checked. MiniMax updates that ledger daily.
 
+### Live schedule check after #99
+
+On November 25, 2026, the test profile on the cloud preview asked twice, “Add a push day on Tuesday
+and a pull day on Wednesday.”
+Before the first run, the owner raised **Per user, per day** from 3 to 5 under **Admin dashboard >
+AI Coach > Advanced**.
+After a reload the test profile showed **3 of 5 Coach runs used today**.
+
+| Observed on the test profile | Before | After importing the first proposal | After the second reply and reload |
+| --- | --- | --- | --- |
+| Monday | Bodyweight Back Strength, 7 exercises | Same | Same |
+| Tuesday | Rest day | Push Day, 5 exercises | Same |
+| Wednesday | Bodyweight Back Strength, 7 exercises | Same, used as the pull day | Same |
+| Total routines | 2 | 3 | 3 |
+
+The starting list contained two Bodyweight Back Strength routines, one with five exercises and one
+with seven. Only the seven-exercise routine was scheduled.
+The first proposal added one Push Day. On the repeat the Coach recognized both scheduled days and
+replied “No changes are needed.” There was no second Import button. The local test in #99 covers a
+repeat that does require a second confirmation.
+
+After the check, the owner setting read **3** again.
+Reloading Coach on the test profile showed **5 of 3 Coach runs used today**.
+
 ## Backups
 
 Everything is under `/data`. Before real users: confirm Render's disk snapshots are on for the

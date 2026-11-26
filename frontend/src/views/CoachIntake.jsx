@@ -57,7 +57,7 @@ const QUICK_MIN = [30, 45, 60, 90]
 const sameDays = (a, b) => a.length === b.length && b.every(d => a.includes(d))
 const toHHMM = min => Math.floor(min / 60) + ':' + String(min % 60).padStart(2, '0')
 
-export default function CoachIntake() {
+export default function CoachIntake({ starter }) {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const editing = params.get('edit') === '1'
@@ -95,6 +95,8 @@ export default function CoachIntake() {
   const next = () => (last ? finish() : setStep(step + 1))
   const back = () => (step ? setStep(step - 1) : nav(editing ? '/coach' : '/plan'))
 
+  const returnToChat = () => nav('/coach', starter ? { replace: true, state: { coachStarter: starter } } : { replace: true })
+
   const agree = info => {
     // This screen just named the provider and listed what goes there, which is the question the
     // data-sharing sheet asks before the first request (lib/coach-api.js ensureAiConsent). The
@@ -103,7 +105,7 @@ export default function CoachIntake() {
     const target = !DEMO && consentTarget(info, coachVia())
     if (target && !target.local) allowAi(target).catch(() => {})
     update(s => { s.coach = { ...(s.coach || emptyCoach()), consent: { agreedAt: new Date().toISOString(), version: CONSENT_VERSION } } })
-    if (reconsentOnly) nav('/coach', { replace: true })
+    if (reconsentOnly) returnToChat()
     else setStep(step + 1)
   }
 
@@ -121,6 +123,7 @@ export default function CoachIntake() {
       if (!(c.chat || []).some(m => m.kind === 'intake')) appendChat(s, { role: 'user', kind: 'intake' })
     })
     if (editing) { toast(t('Saved')); nav('/coach'); return }
+    if (starter) { returnToChat(); return }
     setBusy(true)
     try {
       await requestPlan(profile)
@@ -249,7 +252,7 @@ export default function CoachIntake() {
 
     {key !== 'consent' && <div className="ob-foot">
       <Button variant="primary" style={{ flex: 1 }} disabled={!canNext || busy} icon={last ? 'sparkles' : undefined} onClick={next}>
-        {last ? (editing ? t('Save') : t('Build my plan')) : t('Continue')}
+        {last && editing ? t('Save') : last && !starter ? t('Build my plan') : t('Continue')}
       </Button>
     </div>}
     {(key === 'goal' || key === 'experience') && !canNext && <div className="ob-hint">{t('Pick one to continue.')}</div>}

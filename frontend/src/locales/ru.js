@@ -6339,4 +6339,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Этот браузер не сохраняет вход в аккаунт (приватный режим или его хранилище заполнено). То, что вы здесь запишете, тоже может не сохраниться.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Этот браузер ничего не сохраняет для этого сайта, поэтому приложение здесь открыть нельзя. Освободите место или выйдите из приватного режима и повторите попытку.",
   "{0} is the only way into this profile on this server, so it stays linked.": "На этом сервере {0} единственный способ войти в этот профиль, поэтому привязка остаётся.",
+  "Ask your Coach": "Спроси своего тренера",
+  "Build me a back workout with no weights": "Составь мне тренировку для спины без отягощений",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Добавь тренировку с жимовыми упражнениями на вторник, а с тяговыми на среду",
+  "Make today shorter": "Сократи сегодняшнюю тренировку",
 }

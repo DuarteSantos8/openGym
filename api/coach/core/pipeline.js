@@ -10,6 +10,7 @@
  * config it needs, and whatever the adapter's `invoke` wants passed through (`jobDir`, `env`,
  * a `fetch`), and gets back a plain object.
  */
+import { asksForBodyweightOnly, asksForNoAddedWeight } from './routine-library.js';
 import { CONTRACT } from './payload.js';
 import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
@@ -89,6 +90,8 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
       ? validateAdapt(parsed.value, payload.today, { customIds, equipment, offered, noDumbbells, machines })
       : validatePlan(answer, {
       customIds, equipment, offered, noDumbbells, machines,
+      bodyweightOnly: asksForBodyweightOnly(payload.refine?.text || payload.userNote),
+      noAddedWeight: asksForNoAddedWeight(payload.refine?.text || payload.userNote),
       workingWeights: payload.history?.workingWeights,
       daysPerWeek: payload.coachProfile?.daysPerWeek
     });

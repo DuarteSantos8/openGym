@@ -6335,4 +6335,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "이 브라우저는 로그인 상태를 유지하지 않습니다(시크릿 모드이거나 저장 공간이 가득 참). 여기서 기록한 내용도 보관되지 않을 수 있습니다.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "이 브라우저는 이 사이트의 데이터를 전혀 저장하지 않아 여기서는 앱을 열 수 없습니다. 저장 공간을 비우거나 시크릿 모드를 종료한 뒤 다시 시도해 주세요.",
   "{0} is the only way into this profile on this server, so it stays linked.": "이 서버에서는 {0}이(가) 이 프로필에 들어오는 유일한 방법이라 연결이 유지돼요.",
+  "Ask your Coach": "내 코치에게 물어보기",
+  "Build me a back workout with no weights": "중량 없이 할 수 있는 등 운동 루틴을 짜 줘",
+  "Add a push day on Tuesday and a pull day on Wednesday": "화요일에는 미는 운동을, 수요일에는 당기는 운동을 추가해 줘",
+  "Make today shorter": "오늘 운동 시간을 줄여 줘",
 }

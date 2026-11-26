@@ -6275,4 +6275,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Denne browser holder dig ikke logget ind (privat browsing, eller dens lager er fuldt). Det, du logger her, bliver måske heller ikke gemt.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Denne browser gemmer ikke noget for dette websted, så appen kan ikke åbne her. Frigør lagerplads, eller forlad privat browsing, og prøv igen.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} er den eneste vej ind i denne profil på denne server, så den forbliver forbundet.",
+  "Ask your Coach": "Spørg din coach",
+  "Build me a back workout with no weights": "Lav en rygtræning til mig uden vægte",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Tilføj en dag med presseøvelser om tirsdagen og en dag med trækøvelser om onsdagen",
+  "Make today shorter": "Gør dagens træning kortere",
 }
