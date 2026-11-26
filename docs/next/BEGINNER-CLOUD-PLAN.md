@@ -5,6 +5,7 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+D6 is prepared. The rule-based draft seed assigns 4,368 of 4,835 strength-eligible canonical exercises (90.34%), 4,388 of 5,632 canonical exercises (77.91%), and 5,135 of 6,554 IDs including aliases (78.35%).
 The cloud preview uses the hosted API and Coach. The shorter Beginner Settings and tour reached the preview in #116 and #117.
 
 Read after `NEXT-STEPS.md`. What is left, in order and as tasks for a coding agent, is in
