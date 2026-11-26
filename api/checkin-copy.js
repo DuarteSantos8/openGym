@@ -53,7 +53,7 @@ export const CHECKIN_COPY = {
     "title": "Tilannekatsauksen aika",
     "measure": "Tilannekatsauksen aika. Muutama luku, kaksi minuuttia ja päivä jatkuu.",
     "photos": "Edistymiskuvapäivä. Sama paikka, sama valo, sama ylpeä ilme.",
-    "both": "Tilannekatsauksen ja edistymiskuvan aika. Maksimissaan viisi minuuttia."
+    "both": "Tilannekatsauksen ja edistymiskuvan aika. Enintään viisi minuuttia."
   },
   "fr": {
     "title": "C’est l’heure du bilan",
