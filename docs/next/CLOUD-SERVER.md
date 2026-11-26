@@ -255,9 +255,18 @@ The tester left the proposal unimported.
 
 ## Backups
 
-Everything is under `/data`. Before real users: confirm Render's disk snapshots are on for the
-disk and try one restore, or turn on the app's own WebDAV backup (`docs/WEBDAV_BACKUP.md`).
-Neither has been tried here yet.
+On November 26, 2026, the **Disk** page for `ironvane-api` listed one snapshot of the 1 GB disk
+mounted at `/data`. Its timestamp popover showed November 24, 2026 at 7:33:05 PM EST
+(November 25 at 00:33:05 UTC).
+
+**Restore test blocked on the owner's decision.** No restore was attempted. Restoring a snapshot
+overwrites current disk data. Run the test only with the owner's approval while the data is
+disposable, then verify a later test routine is gone and `/api/health` succeeds.
+
+For a device profile, Settings > Integrations > WebDAV backup writes a JSON backup to a
+folder the person controls. Choose **Back up now**, or enable daily backups while the app is
+open. **Restore from a backup** lets the person pick a date and merge or replace their device
+data. It excludes photos and videos. See the [WebDAV backup guide](../WEBDAV_BACKUP.md).
 
 ## Rollback
 
