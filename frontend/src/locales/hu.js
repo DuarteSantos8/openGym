@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "A test hintáztatása",
   "Back of your upper arms.": "A felkar hátsó része.",
   "Breathe out as you straighten your arms and in as they bend.": "Karnyújtáskor fújd ki a levegőt, hajlításkor lélegezz be.",
+  "Guided workout": "Vezetett edzés",
+  "Using {0} for this workout.": "Ezen az edzésen most ez a gyakorlat következik: {0}.",
   "Two rest-day mobility sessions earned a freeze.": "A pihenőnapokon végzett két mobilitási edzésért egy sorozatfagyasztást kaptál.",
   "Draft": "Vázlat",
   "Move gently and switch sides when comfortable.": "Mozogj finoman, és válts oldalt, amikor kényelmes.",

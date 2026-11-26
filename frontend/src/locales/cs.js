@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Houpání trupem",
   "Back of your upper arms.": "Zadní část paží.",
   "Breathe out as you straighten your arms and in as they bend.": "Při natažení paží vydechněte a při pokrčení se nadechněte.",
+  "Guided workout": "Trénink s vedením",
+  "Using {0} for this workout.": "V tomto tréninku teď použijete {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Za dva tréninky mobility ve dnech odpočinku jsi získal zmrazení série.",
   "Draft": "Koncept",
   "Move gently and switch sides when comfortable.": "Pohybujte se zlehka a vyměňte strany, až vám to bude příjemné.",

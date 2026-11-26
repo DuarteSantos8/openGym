@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "शरीर को आगे-पीछे झुलाना",
   "Back of your upper arms.": "ऊपरी बाँहों का पिछला हिस्सा।",
   "Breathe out as you straighten your arms and in as they bend.": "बाँहें सीधी करते समय साँस छोड़ें और मोड़ते समय साँस लें।",
+  "Guided workout": "निर्देशित वर्कआउट",
+  "Using {0} for this workout.": "इस वर्कआउट में अब {0} करेंगे।",
   "Two rest-day mobility sessions earned a freeze.": "आराम के दिनों में दो मोबिलिटी सत्र पूरे करने पर आपको एक फ़्रीज़ मिला।",
   "Draft": "मसौदा",
   "Move gently and switch sides when comfortable.": "आराम से हिलें-डुलें और जब सहज लगे, तब दूसरी तरफ़ करें।",

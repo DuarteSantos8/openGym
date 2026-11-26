@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Mit dem Körper wippen",
   "Back of your upper arms.": "Rückseite der Oberarme.",
   "Breathe out as you straighten your arms and in as they bend.": "Atme beim Strecken der Arme aus und beim Beugen ein.",
+  "Guided workout": "Geführtes Training",
+  "Using {0} for this workout.": "Für dieses Training verwendest du jetzt {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Für zwei Mobilitätseinheiten an Ruhetagen hast du einen Freeze erhalten.",
   "Draft": "Entwurf",
   "Move gently and switch sides when comfortable.": "Bewege dich sanft und wechsle die Seite, wenn es sich angenehm anfühlt.",

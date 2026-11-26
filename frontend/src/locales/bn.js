@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "শরীর দোলানো",
   "Back of your upper arms.": "বাহুর পেছনের অংশ।",
   "Breathe out as you straighten your arms and in as they bend.": "হাত সোজা করার সময় শ্বাস ছাড়ুন, ভাঁজ করার সময় শ্বাস নিন।",
+  "Guided workout": "নির্দেশিত ওয়ার্কআউট",
+  "Using {0} for this workout.": "এই ওয়ার্কআউটে {0} ব্যবহার করা হচ্ছে।",
   "Two rest-day mobility sessions earned a freeze.": "বিশ্রামের দিনে দুটি মোবিলিটি সেশন করায় একটি ফ্রিজ পেয়েছেন।",
   "Draft": "খসড়া",
   "Move gently and switch sides when comfortable.": "আস্তে নড়াচড়া করুন আর স্বচ্ছন্দ বোধ করলে পাশ বদলান।",

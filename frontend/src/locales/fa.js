@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "تاب دادن بدن",
   "Back of your upper arms.": "پشت بازوها.",
   "Breathe out as you straighten your arms and in as they bend.": "هنگام صاف کردن دست‌ها بازدم و هنگام خم کردن آن‌ها دم بگیرید.",
+  "Guided workout": "تمرین هدایت‌شده",
+  "Using {0} for this workout.": "در این جلسه از {0} استفاده می‌شود.",
   "Two rest-day mobility sessions earned a freeze.": "با دو جلسهٔ تمرین تحرک در روزهای استراحت، یک فرصت برای حفظ زنجیره به دست آوردی.",
   "Draft": "پیش‌نویس",
   "Move gently and switch sides when comfortable.": "آرام حرکت کن و هر وقت احساس راحتی کردی، سمت حرکت را عوض کن.",

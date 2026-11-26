@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Se balancer avec le buste",
   "Back of your upper arms.": "Arrière des bras.",
   "Breathe out as you straighten your arms and in as they bend.": "Expirez en tendant les bras et inspirez en les repliant.",
+  "Guided workout": "Entraînement guidé",
+  "Using {0} for this workout.": "Pour cette séance, vous ferez {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Deux séances de mobilité les jours de repos t’ont rapporté un gel.",
   "Draft": "Brouillon",
   "Move gently and switch sides when comfortable.": "Bougez en douceur et changez de côté quand vous vous sentez à l’aise.",

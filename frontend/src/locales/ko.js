@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "몸을 앞뒤로 흔들기",
   "Back of your upper arms.": "위팔 뒤쪽.",
   "Breathe out as you straighten your arms and in as they bend.": "팔을 펼 때 숨을 내쉬고 굽힐 때 들이마시세요.",
+  "Guided workout": "가이드 운동",
+  "Using {0} for this workout.": "이번 운동에서는 {0} 동작을 합니다.",
   "Two rest-day mobility sessions earned a freeze.": "휴식일에 가동성 운동을 두 번 해서 동결권 하나를 받았어요.",
   "Draft": "초안",
   "Move gently and switch sides when comfortable.": "부드럽게 움직이고 편할 때 반대쪽으로 바꾸세요.",

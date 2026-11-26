@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Розгойдування тулуба",
   "Back of your upper arms.": "Задня поверхня верхньої частини рук.",
   "Breathe out as you straighten your arms and in as they bend.": "Видихайте під час розгинання рук і вдихайте під час згинання.",
+  "Guided workout": "Тренування з підказками",
+  "Using {0} for this workout.": "У цьому тренуванні ви виконаєте {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Два тренування на рухливість у дні відпочинку принесли одну заморозку.",
   "Draft": "Чернетка",
   "Move gently and switch sides when comfortable.": "Рухайтеся плавно й змінюйте бік, коли вам зручно.",

@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "โยกลำตัว",
   "Back of your upper arms.": "ด้านหลังของต้นแขน",
   "Breathe out as you straighten your arms and in as they bend.": "หายใจออกเมื่อเหยียดแขน และหายใจเข้าเมื่องอแขน",
+  "Guided workout": "การออกกำลังกายแบบมีคำแนะนำ",
+  "Using {0} for this workout.": "การออกกำลังกายครั้งนี้จะใช้ท่า {0}",
   "Two rest-day mobility sessions earned a freeze.": "การฝึกเพิ่มความคล่องตัวสองครั้งในวันพักทำให้คุณได้ตัวหยุดหนึ่งอัน",
   "Draft": "ฉบับร่าง",
   "Move gently and switch sides when comfortable.": "เคลื่อนไหวเบา ๆ และสลับข้างเมื่อรู้สึกสบาย",

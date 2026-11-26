@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "تأرجح الجسم",
   "Back of your upper arms.": "الجزء الخلفي من العضدين.",
   "Breathe out as you straighten your arms and in as they bend.": "ازفر عند فرد الذراعين واستنشق عند ثنيهما.",
+  "Guided workout": "تمرين موجّه",
+  "Using {0} for this workout.": "ستستخدم {0} في هذا التمرين.",
   "Two rest-day mobility sessions earned a freeze.": "أكسبتك جلستا تمارين مرونة في أيام الراحة تجميدًا واحدًا.",
   "Draft": "مسودة",
   "Move gently and switch sides when comfortable.": "تحرّك برفق وبدّل الجانب عندما تشعر بالراحة.",

@@ -73,6 +73,8 @@ export default {
   "Rocking your body": "Kroppen vugger",
   "Back of your upper arms.": "Bagsiden af overarmene.",
   "Breathe out as you straighten your arms and in as they bend.": "Pust ud, når du strækker armene, og træk vejret ind, når du bøjer dem.",
+  "Guided workout": "Guidet træning",
+  "Using {0} for this workout.": "Du bruger nu {0} i denne træning.",
   "Two rest-day mobility sessions earned a freeze.": "To mobilitetspas på hviledage gav dig en frysning.",
   "Draft": "Udkast",
   "Move gently and switch sides when comfortable.": "Bevæg dig roligt, og skift side, når det føles behageligt.",

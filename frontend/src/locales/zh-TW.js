@@ -71,6 +71,8 @@ export default {
   "Rocking your body": "身體來回晃動",
   "Back of your upper arms.": "上臂後側。",
   "Breathe out as you straighten your arms and in as they bend.": "伸直手臂時呼氣，彎曲時吸氣。",
+  "Guided workout": "引導式訓練",
+  "Using {0} for this workout.": "本次訓練改做「{0}」。",
   "Two rest-day mobility sessions earned a freeze.": "在休息日完成兩次活動度訓練，獲得一張凍結卡。",
   "Draft": "草稿",
   "Move gently and switch sides when comfortable.": "輕柔地活動，覺得舒服時再換邊。",

@@ -9,6 +9,7 @@ import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { finishWorkout, finishWorkoutSheet } from './sheets.jsx'
 import { EXDB } from './lib/exercises-data.js'
+import * as feedback from './lib/feedback.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const S = () => useStore.getState().S
@@ -74,8 +75,13 @@ describe('finishing while a timed hold runs', () => {
     const held = holdInto(1)
     useUI.getState().startWork(45, 'Plank', held)
 
-    act(() => finishWorkout())
-    tapInTopSheet('Finish workout')
+    const completed = vi.spyOn(feedback, 'cue')
+    try {
+      act(() => finishWorkout())
+      expect(completed).not.toHaveBeenCalled()
+      tapInTopSheet('Finish workout')
+      expect(completed.mock.calls.map(([kind]) => kind)).toEqual(['session-done'])
+    } finally { completed.mockRestore() }
 
     expect(S().active).toBeNull()
     expect(useUI.getState().work).toBeNull()

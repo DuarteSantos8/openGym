@@ -4,6 +4,11 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
+
+- **Workout feedback (E3, prepared).** Set checks, records, completed rest timers and confirmed workout saves use the profile’s sound and vibration settings. Reduced motion suppresses the optional cues. Configured rest alarms still announce when to resume.
+
+- **Catalogue level and pattern (D6, prepared).** Rebuild the draft index with `node scripts/catalogue/seed-level.mjs`. All strength, calisthenics, isometric, olympic and plyometric entries count, including unclassified ones. Exercises in mixed categories also count unless text identifies a non-strength activity. The classifier uses the movement name, target and equipment. All 45 authored guides take precedence, and variants inherit their canonical entry. Unknown IDs stay absent. Review the sample before using draft levels in the app.
 - **Rest-day mobility freeze (D8, prepared).** Two completed Learn mobility sessions started on scheduled rest days earn one freeze that week when the profile has room. The calendar explains the award. Earlier workouts retain their existing credit. Merging the shared streak code restarts the hosted API.
 
 - **Hosted preview.** The API and Coach are live on the cloud preview. External MCP connector checks and the production-domain cutover remain open. See the [hosted server runbook](CLOUD-SERVER.md).
@@ -17,7 +22,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
 
-- **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
+- **Guest sign-in (A5, verified live November 26, 2026).** Ten guest workouts reached the hosted server and appeared once each on their original dates in both browsers. See [Before real users](CLOUD-SERVER.md#before-real-users).
 - **Starter plan cards (D5, prepared).** All eight lead with the goal and show weekly frequency, estimated minutes per session, level and equipment before loading. A device guest can fit a plan to local equipment offline. The translated hotel equipment label awaits native-language review. [English phone view](evidence/EP22-T03/starter-cards-390-dark.png).
 
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.

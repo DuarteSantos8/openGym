@@ -19,7 +19,7 @@ import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, eff
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
-import { beep, vibrate } from './lib/sound.js'
+import { cue } from './lib/feedback.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nameIn, said } from './lib/a11y-name.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
@@ -146,7 +146,6 @@ const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
-const snd = () => S().sound
 
 /* ============================ custom confirm dialog ============================ */
 // `noCancel`: one button only, for an explainer that must lead straight to the phone's own
@@ -2378,16 +2377,16 @@ export function swapActiveWorkoutExercise(index, { askCoach } = {}) {
  * One tap from the exercise's ⋯ menu (#649): a planned backup takes the slot with the slot's own
  * plan, and the exercise it replaces becomes its first backup (backupSlotConfig).
  */
-export function swapActiveWorkoutToBackup(index, backupId) {
+export function swapActiveWorkoutToBackup(index, backupId, onSwapped) {
   const st = S()
   const current = st.active?.entries?.[index]
   const ex = EXIDX[backupId]
   if (!current || !ex || backupId === current.id) return
   const cfg = backupSlotConfig({ ...plannedConfigOf(current), id: current.id }, backupId, st, current.rid, id => !!EXIDX[id])
-  commitActiveSwap(index, ex, cfg)
+  commitActiveSwap(index, ex, cfg, onSwapped)
 }
 
-function commitActiveSwap(index, ex, cfg) {
+function commitActiveSwap(index, ex, cfg, onSwapped) {
   const st = S()
   const current = st.active?.entries?.[index]
   if (!current) return
@@ -2426,6 +2425,7 @@ function commitActiveSwap(index, ex, cfg) {
         useUI.setState({ timer: kept })
       }
     }
+    if (swapped) onSwapped?.()
   }
   const logged = (current.sets || []).some(set => set.done === true)
   if (!logged) { apply(); return }
@@ -4980,7 +4980,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // on Discard: its bar is app-wide and would chime over the summary, and its callback writes
   // into s.active, which is gone. What it held is not logged, like any set left unchecked.
   useUI.getState().stopWork()
-  beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
+  cue('session-done', st)
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} close={close} />, { kind: 'center', locked: true, wide: true })
 }
 

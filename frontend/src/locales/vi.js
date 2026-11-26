@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Đung đưa thân người",
   "Back of your upper arms.": "Mặt sau bắp tay.",
   "Breathe out as you straighten your arms and in as they bend.": "Thở ra khi duỗi tay và hít vào khi gập tay.",
+  "Guided workout": "Buổi tập có hướng dẫn",
+  "Using {0} for this workout.": "Trong buổi tập này, bạn sẽ thực hiện {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Hai buổi tập cải thiện độ linh hoạt vào ngày nghỉ mang lại một lượt đóng băng.",
   "Draft": "Bản nháp",
   "Move gently and switch sides when comfortable.": "Cử động nhẹ nhàng và đổi bên khi thấy thoải mái.",

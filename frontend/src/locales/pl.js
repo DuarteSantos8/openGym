@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Kołysanie tułowiem",
   "Back of your upper arms.": "Tylna część ramion.",
   "Breathe out as you straighten your arms and in as they bend.": "Zrób wydech przy prostowaniu rąk i wdech przy ich zginaniu.",
+  "Guided workout": "Trening z instrukcjami",
+  "Using {0} for this workout.": "W tym treningu wykonasz teraz {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Za dwie sesje mobilności w dni odpoczynku otrzymujesz jedno zamrożenie.",
   "Draft": "Wersja robocza",
   "Move gently and switch sides when comfortable.": "Poruszaj się łagodnie i zmień stronę, kiedy będzie ci wygodnie.",

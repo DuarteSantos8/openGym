@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Gövdeyi sallamak",
   "Back of your upper arms.": "Üst kolların arka kısmı.",
   "Breathe out as you straighten your arms and in as they bend.": "Kollarını düzleştirirken nefes ver, bükerken nefes al.",
+  "Guided workout": "Rehberli antrenman",
+  "Using {0} for this workout.": "Bu antrenmanda {0} yapacaksınız.",
   "Two rest-day mobility sessions earned a freeze.": "Dinlenme günlerinde yaptığın iki hareketlilik seansı bir dondurma kazandırdı.",
   "Draft": "Taslak",
   "Move gently and switch sides when comfortable.": "Yumuşak hareket et ve rahat hissettiğinde taraf değiştir.",

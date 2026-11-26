@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Kūno siūbavimas",
   "Back of your upper arms.": "Užpakalinė žastų dalis.",
   "Breathe out as you straighten your arms and in as they bend.": "Tiesdami rankas iškvėpkite, lenkdami įkvėpkite.",
+  "Guided workout": "Treniruotė su gairėmis",
+  "Using {0} for this workout.": "Šioje treniruotėje dabar atliksite {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Už dvi judrumo treniruotes poilsio dienomis gavai vieną užšaldymą.",
   "Draft": "Juodraštis",
   "Move gently and switch sides when comfortable.": "Judėkite švelniai ir pakeiskite pusę, kai jausitės patogiai.",

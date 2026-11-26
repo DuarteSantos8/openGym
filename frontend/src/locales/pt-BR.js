@@ -76,6 +76,8 @@ export const PT_BR_OVERRIDES = {
   "Rocking your body": "Balançar o corpo",
   "Back of your upper arms.": "Parte de trás dos braços.",
   "Breathe out as you straighten your arms and in as they bend.": "Solte o ar ao estender os braços e inspire ao dobrá-los.",
+  "Guided workout": "Treino guiado",
+  "Using {0} for this workout.": "Neste treino você vai fazer {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Duas sessões de mobilidade em dias de descanso renderam um congelamento.",
   "Two chairs": "Duas cadeiras",
   "Draft": "Rascunho",

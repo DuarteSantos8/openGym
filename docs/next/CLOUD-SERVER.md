@@ -132,6 +132,13 @@ launch, not for the beta.
 
 Not needed for the owner's own bring-up, required before anyone else is let in.
 
+- **Guest workout import (A5), November 26, 2026.** On the hosted preview, an Edge InPrivate
+  guest had ten synthetic workouts, one per day from November 1 through 10. The fresh linked
+  account returned zero workouts from `GET /api/data` before the guest chose **Add them**.
+  After a reload, Edge History showed each original name once on its original date.
+  The authenticated `GET /api/data` returned ten distinct workout IDs with the same ten
+  names and dates, each once. A fresh load of History in a second browser showed all ten
+  exactly once without importing there. This run did not check offline or signed-out History.
 - **Linked deletion: verified once on the hosted service (2026-11-24).**
   [ADR 0014](adr/0014-hosted-account-deletion.md) has what was seen and what was not tried: a
   deletion after an old sign-in, signing up again with the deleted address, and a browser

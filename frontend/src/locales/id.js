@@ -72,6 +72,8 @@ export default {
   "Rocking your body": "Mengayunkan tubuh",
   "Back of your upper arms.": "Bagian belakang lengan atas.",
   "Breathe out as you straighten your arms and in as they bend.": "Buang napas saat meluruskan lengan dan tarik napas saat menekuknya.",
+  "Guided workout": "Latihan terpandu",
+  "Using {0} for this workout.": "Latihan kali ini menggunakan {0}.",
   "Two rest-day mobility sessions earned a freeze.": "Dua sesi mobilitas pada hari istirahat memberimu satu freeze.",
   "Draft": "Draf",
   "Move gently and switch sides when comfortable.": "Bergeraklah perlahan dan ganti sisi saat terasa nyaman.",
