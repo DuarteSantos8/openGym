@@ -91,10 +91,11 @@ test('ask pipeline: the ask rules and schema reach the provider, and an answer c
   assert.equal(calls[0].schema, SCHEMAS.ask);
 });
 
-for (const qualifier of ['with no weights', 'without weights', 'with no equipment', 'without equipment',
-  'with no equipment instead of my cable routine', 'with no bands and no weights']) {
-  test(`a back workout ${qualifier}: propose floor exercises even for someone who trains with cables`, async () => {
-    const question = `a back workout ${qualifier}`;
+for (const question of ['a back workout with no weights', 'a back workout without weights',
+  'a back workout with no equipment', 'a back workout without equipment',
+  'a back workout with no equipment instead of my cable routine', 'a back workout with no bands and no weights',
+  'a bodyweight back workout at home with no weights or bands']) {
+  test(`${question}: propose floor exercises even for someone who trains with cables`, async () => {
     const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0007' }, { id: '3225' }] }] };
     const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: question });
     // A trained cable movement is deliberately offered by the stub on its first attempt.
@@ -149,6 +150,7 @@ test('a back workout with resistance bands but no weights keeps band rows availa
   const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0988' }] }],
     coach: { ...S.coach, profile: { equipment: ['band'] } } };
   for (const note of ['a back workout with resistance bands but no weights',
+    'a back workout using bands but no weights',
     'a back workout at home with resistance bands but no weights',
     'I have no weights, only resistance bands. Make me a band back workout.']) {
     const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note });
