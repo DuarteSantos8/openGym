@@ -82,7 +82,12 @@ function create({ standard, view: fixedView } = {}) {
   const count = () => reps.filter(r => r.counted).length
   const reachedNow = () => !!acc && acc.top != null && acc.top >= need && acc.rec.rawPeak >= PHASES.minRep
 
-  // How far out each leg is against its rest; the working one is the further out.
+  // How far out each leg is against its rest; the working one is the further out. `swing`, what
+  // the rep is counted on: the angle between the legs against theirs at rest, when the other leg
+  // is seen. Lifting, the hips shift over the standing leg and often stay there between lifts
+  // (a band at the ankles): that tips both legs the same way in the image, the working leg out
+  // and the standing one in, by 10 to 12 degrees each on real video, so the working leg alone never
+  // came back to its rest and the set read as one rep. The angle between them does not move.
   function working(f) {
     let best = null
     for (const s of SIDES) {
@@ -90,6 +95,10 @@ function create({ standard, view: fixedView } = {}) {
       if (!l || base[s] == null) continue
       const v = l.out - base[s]
       if (!best || v > best.v) best = { side: s, v, knee: l.knee }
+    }
+    if (best) {
+      const o = best.side === 'left' ? 'right' : 'left'
+      best.swing = f.legs[o] && base[o] != null ? best.v + f.legs[o].out - base[o] : best.v
     }
     return best
   }
@@ -140,7 +149,7 @@ function create({ standard, view: fixedView } = {}) {
     // At rest with both legs in view and near upright: each leg's own upright, the torso's, the view.
     if (both && atRest && Math.abs(f.legs.left.out - f.legs.right.out) < 6 && (acc == null)) readRest(fr, f)
     const w = f ? working(f) : null
-    let s = w ? Math.max(0, w.v) / SCALE_DEG : null
+    let s = w ? Math.max(0, w.swing) / SCALE_DEG : null
     if (!supported(viewNow())) s = null
     const ev = machine.push(at, s, { canStart: !!both && s != null })
     let justCounted = false, justMissed = false, reason = null

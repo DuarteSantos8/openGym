@@ -156,6 +156,31 @@ describe.each([90, 75, -90, -75])('the hip abduction filmed at yaw %i°', yaw =>
 })
 
 describe('the hip abduction, other angles and edges', () => {
+  it('counts every lift when the hips shift over the standing leg and stay there between lifts', () => {
+    // As filmed with a band at the ankles: from the first lift on, the hips and everything above
+    // sit `d` metres towards the standing (right) leg, the knees half that, the feet where they
+    // were (the lifted foot with its leg). The working leg alone then reads about 12° out between
+    // lifts, never back at its rest.
+    const d = 0.18
+    const shifted = (abd, o) => {
+      const p = abductionPose(abd, o)
+      for (const [name, j] of Object.entries(p)) {
+        const f = name.endsWith('Ankle') ? (name === 'leftAnkle' ? Math.min(1, abd / 10) : 0) : name.endsWith('Knee') ? 0.5 : 1
+        p[name] = [j[0], j[1], j[2] - d * f]
+      }
+      return p
+    }
+    const poses = []
+    for (let i = 0; i < 15; i++) poses.push(abductionPose(0))
+    for (let r = 0; r < 4; r++) {
+      for (let i = 1; i <= 15; i++) poses.push(shifted(FULL.top * ease(i / 15)))
+      for (let i = 1; i <= 20; i++) poses.push(shifted(FULL.top * (1 - ease(i / 20))))
+      for (let i = 0; i < 12; i++) poses.push(shifted(0))
+    }
+    const { res } = run(film(poses, { yaw: 90, height: 0.8 }))
+    expect(res).toMatchObject({ count: 4, missed: 0 })
+  })
+
   it('side-on or at an angle: asks to face the camera and counts nothing', () => {
     for (const yaw of [0, 45]) {
       const { outs, res } = run(abductionSet(same(3, FULL), { yaw }))
