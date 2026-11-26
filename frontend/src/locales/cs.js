@@ -87,7 +87,6 @@ export default {
   "Clip": "Klip",
   "Clip added. It plays instead of the line.": "Klip přidán. Zazní místo věty.",
   "Clip removed.": "Klip odebrán.",
-  "Default voice": "Výchozí hlas",
   "Uses {0} ({1}), the best {2} voice on this iPhone.": "Používá {0} ({1}), nejlepší hlas ({2}) na tomto iPhonu.",
   "Uses your phone’s standard voice.": "Používá standardní hlas telefonu.",
   "Your iPhone only has the standard voice for {0}. For one that sounds more like a person, download a {0} voice marked Enhanced or Premium: Settings → Accessibility → Read & Speak → Voices. Each is 100 MB or more, so use Wi-Fi. openGym uses it as soon as it is there.": "Váš iPhone má pro jazyk {0} jen standardní hlas. Pro hlas, který zní lidštěji, stáhněte hlas ({0}) označený jako Vylepšený nebo Prémiový: Nastavení → Zpřístupnění → Čtení a mluvení → Hlasy. Každý má 100 MB nebo víc, použijte proto Wi-Fi. openGym ho začne používat, jakmile tam bude.",

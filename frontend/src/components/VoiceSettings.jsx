@@ -46,18 +46,19 @@ export function recordType(MR = globalThis.MediaRecorder) {
 export const canRecord = () => typeof globalThis.MediaRecorder === 'function' && typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function'
 
 /** The phone's voice list ({ voices, auto, ios }); refreshed on mount so a voice downloaded while away shows. */
-function useVoices() {
+export function useVoices() {
   const [st, setSt] = useState(voiceState)
   useEffect(() => {
     const off = onVoices(() => setSt(voiceState()))
-    refreshVoices().catch(() => {})
+    // A failed listing is an empty one: the sheet still opens, as it did before the list was cached.
+    refreshVoices().catch(() => setSt(s => (s.voices ? s : { ...s, voices: [] })))
     return off
   }, [])
   return st
 }
 
 function VoiceSheet({ close }) {
-  const { voices: list, auto, ios } = useVoices()
+  const { voices: list, auto, ios, tag } = useVoices()
   const voices = list || []
   const [cur, setCur] = useState(pickedVoice())
   const pick = (id, say = id) => {
@@ -66,8 +67,8 @@ function VoiceSheet({ close }) {
     setCur(id)
     sayIt(sampleLine(S_()) || sampleCue(S_().unit), { voice: say })
   }
-  const lang = langName(speechLang())
-  const autoNote = !MOBILE ? null : auto
+  const lang = langName(tag || speechLang())
+  const autoNote = !ios ? null : auto
     ? t('Uses {0} ({1}), the best {2} voice on this iPhone.', voiceLabel(auto), auto.quality === 'premium' ? t('Premium') : t('Enhanced'), lang)
     : t('Uses your phone’s standard voice.')
   const iosNote = !ios ? null : auto ? t('More voices: Settings → Accessibility → Read & Speak → Voices.') : t('Your iPhone only has the standard voice for {0}. For one that sounds more like a person, download a {0} voice marked Enhanced or Premium: Settings → Accessibility → Read & Speak → Voices. Each is 100 MB or more, so use Wi-Fi. openGym uses it as soon as it is there.', lang)
@@ -255,7 +256,7 @@ export default function VoiceSettings() {
   const footer = stuck && !cur ? <>{t('Better voices need a download. Tap Voice to see how.')} {base}</> : base
   return <>
     <Section footer={footer}>
-      <Row icon="personCircle" iconTint="var(--teal)" title={t('Voice')} value={curVoice ? voiceLabel(curVoice) : stuck ? t('Standard voice') : t('Automatic')} accessory="chevron"
+      <Row icon="personCircle" iconTint="var(--teal)" title={t('Voice')} value={voices === null ? null : curVoice ? voiceLabel(curVoice) : stuck ? t('Standard voice') : t('Automatic')} accessory="chevron"
         onClick={() => { if (voices) useUI.getState().openSheet(close => <VoiceSheet close={close} />) }} />
       <SliderRow icon="gauge" title={t('Speed')} value={speechRateNum(S)} set={setSpeechRate} low={t('Slower')} high={t('Faster')} />
       <SliderRow icon="speaker" title={t('Pitch')} value={speechPitchNum(S)} set={setSpeechPitch} low={t('Lower')} high={t('Higher')} />

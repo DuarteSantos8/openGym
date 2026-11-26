@@ -39,7 +39,7 @@ import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
-import { speak, speechSupported, voiceOpts, voiceState, pickedVoice } from '../lib/speech.js'
+import { speak, speechSupported, voiceOpts, voiceState, onVoices, pickedVoice } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
 import VoiceSettings from '../components/VoiceSettings.jsx'
 import { bandsSheet } from '../components/Bands.jsx'
@@ -197,6 +197,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
   const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
   const toast = useUI(s => s.toast)
+  // The Timer alerts row reads the voice list: draw again when a refresh lands (a voice downloaded in iPhone Settings).
+  const [, voicesV] = useState(0)
+  useEffect(() => onVoices(() => voicesV(v => v + 1)), [])
   const fileRef = useRef(null)
   const importRef = useRef(null)
   const body = useRef(null)

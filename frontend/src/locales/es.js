@@ -87,7 +87,6 @@ export default {
   "Clip": "Clip",
   "Clip added. It plays instead of the line.": "Clip añadido. Suena en lugar de la frase.",
   "Clip removed.": "Clip quitado.",
-  "Default voice": "Voz predeterminada",
   "Uses {0} ({1}), the best {2} voice on this iPhone.": "Usa {0} ({1}), la mejor voz de {2} en este iPhone.",
   "Uses your phone’s standard voice.": "Usa la voz estándar de tu teléfono.",
   "Your iPhone only has the standard voice for {0}. For one that sounds more like a person, download a {0} voice marked Enhanced or Premium: Settings → Accessibility → Read & Speak → Voices. Each is 100 MB or more, so use Wi-Fi. openGym uses it as soon as it is there.": "Tu iPhone solo tiene la voz estándar para {0}. Para una que suene más humana, descarga una voz de {0} marcada como Mejorada o Premium: Ajustes → Accesibilidad → Leer y hablar → Voces. Cada una pesa 100 MB o más, así que usa Wi-Fi. openGym la usa en cuanto esté ahí.",

@@ -86,7 +86,6 @@ export default {
   "Clip": "片段",
   "Clip added. It plays instead of the line.": "已新增片段。它會取代這句話播放。",
   "Clip removed.": "已移除片段。",
-  "Default voice": "預設語音",
   "Uses {0} ({1}), the best {2} voice on this iPhone.": "使用 {0}（{1}），這是此 iPhone 上最好的{2}語音。",
   "Uses your phone’s standard voice.": "使用手機的標準語音。",
   "Your iPhone only has the standard voice for {0}. For one that sounds more like a person, download a {0} voice marked Enhanced or Premium: Settings → Accessibility → Read & Speak → Voices. Each is 100 MB or more, so use Wi-Fi. openGym uses it as soon as it is there.": "你的 iPhone 只有{0}的標準語音。想要更像真人的聲音，請下載標有增強音質或高級音質的{0}語音：設定 → 輔助使用 → 朗讀與說話 → 聲音。每個語音 100 MB 或更大，請使用 Wi-Fi。下載完成後，openGym 會立即使用。",

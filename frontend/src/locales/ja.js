@@ -3680,7 +3680,6 @@ export default {
   "Clip": "クリップ",
   "Clip added. It plays instead of the line.": "クリップを追加しました。セリフの代わりに再生されます。",
   "Clip removed.": "クリップを削除しました。",
-  "Default voice": "デフォルトの音声",
   "Uses {0} ({1}), the best {2} voice on this iPhone.": "{0}（{1}）を使います。この iPhone で最も良い{2}の音声です。",
   "Uses your phone’s standard voice.": "お使いのスマートフォンの標準音声を使います。",
   "Your iPhone only has the standard voice for {0}. For one that sounds more like a person, download a {0} voice marked Enhanced or Premium: Settings → Accessibility → Read & Speak → Voices. Each is 100 MB or more, so use Wi-Fi. openGym uses it as soon as it is there.": "この iPhone には{0}の標準音声しかありません。より人間らしい声にするには、「拡張」または「プレミアム」と表示された{0}の音声をダウンロードしてください: 設定 → アクセシビリティ → 読み上げコンテンツ → 声。1つあたり100 MB以上なので、Wi-Fiをお使いください。ダウンロードされ次第、openGym がその声を使います。",

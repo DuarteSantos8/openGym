@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null, sheets: [], opts: [], mobile: false, voices: { voices: [], auto: null, ios: false } }
+  const state = { S: null, sheets: [], opts: [], mobile: false, voices: { voices: [], auto: null, ios: false }, subs: [], refresh: () => Promise.resolve() }
   state.snapshot = () => ({ S: state.S, update: mut => { const next = structuredClone(state.S); mut(next); state.S = next } })
   return state
 })
@@ -29,8 +29,8 @@ vi.mock('../lib/speech.js', async importOriginal => {
     ...o,
     speak: (text, opts) => { mocks.opts.push(opts); return o.speak(text, opts) },
     voiceState: () => mocks.voices,
-    onVoices: () => () => {},
-    refreshVoices: () => Promise.resolve(),
+    onVoices: cb => { mocks.subs.push(cb); return () => {} },
+    refreshVoices: () => mocks.refresh(),
   }
 })
 
@@ -44,6 +44,8 @@ beforeEach(() => {
   mocks.S = { unit: 'kg', spokenCues: true }
   mocks.sheets = []
   mocks.opts = []
+  mocks.subs = []
+  mocks.refresh = () => Promise.resolve()
   mocks.mobile = false
   mocks.voices = { voices: [{ id: 'anna', name: 'Anna', lang: 'en-GB', online: false }], auto: null, ios: false }
   host = document.createElement('div')
@@ -122,6 +124,43 @@ describe('Settings → Timer alerts → Voice', () => {
       await act(async () => { rowTitled('Automatic').click() })
       expect(mocks.opts.at(-1).voice).toBe('serena')
       expect(localStorage.getItem('og_speech_voice')).toBeNull()
+    })
+    it('an American iPhone in an English app: the hint names American English', async () => {
+      phone([{ ...anna, lang: 'en-US' }], null)
+      mocks.voices.tag = 'en-US'
+      await render(<VoiceSettings />)
+      await openSheet()
+      const text = await sheetText()
+      expect(text).toContain('American English')
+      expect(text).not.toContain('British English')
+    })
+    it('a voice downloaded while away shows in the Voice row when the refresh lands', async () => {
+      phone([anna], null)
+      await render(<VoiceSettings />)
+      expect(rowTitled('Voice').querySelector('.lrow-v').textContent).toBe('Standard voice')
+      mocks.voices = { voices: [serena, anna], auto: serena, ios: true }
+      await act(async () => { mocks.subs.forEach(cb => cb()) })
+      expect(rowTitled('Voice').querySelector('.lrow-v').textContent).toBe('Automatic')
+    })
+    it('before the first listing the Voice row shows no value', async () => {
+      phone(null, null, false)
+      await render(<VoiceSettings />)
+      expect(rowTitled('Voice').querySelector('.lrow-v')).toBeNull()
+    })
+    it('a listing that fails still lets the sheet open, with nothing to pick', async () => {
+      phone(null, null, false)
+      mocks.refresh = () => Promise.reject(new Error('no list'))
+      await render(<VoiceSettings />)
+      await openSheet()
+      expect(mocks.sheets).toHaveLength(1)
+      expect(await sheetText()).toContain('No other voices')
+    })
+    it('Android gets no "on this iPhone" subtitle and no standard-voice note', async () => {
+      phone([anna], null, false)
+      await render(<VoiceSettings />)
+      await openSheet()
+      await render(mocks.sheets[0](() => {}))
+      expect(rowTitled('Automatic').querySelector('.lrow-s')).toBeNull()
     })
     it('Android and the web get no download hint', async () => {
       for (const mobile of [true, false]) {
