@@ -9,12 +9,20 @@ Garmin's (`frontend/src/lib/garmin-snapshot.js`): the watch app is cut to the Ga
 more. Source: `watch-huawei` (the watch app),
 `frontend/android/app/src/hms` (the phone's end), Settings → Watches → Huawei watch (the page).
 
-**Status (v1.4.6): written and unit-tested, never run.** Be clear about what that means:
+**Status (v1.4.6): built and smoke-run in Huawei's simulator, never run on a watch.** Be clear about
+what that means:
 
-- The watch app has **never been built in DevEco Studio**, never run in Huawei's simulator and
-  never run on a watch. Nobody on the project has a Huawei watch yet. What is checked is the logic,
-  the screens' data, the framing and the saving, under plain Node (390 tests, `npm test` in
-  `watch-huawei`), and that the source keeps to the language subset Huawei says the watch runs.
+- The watch app **builds in DevEco Studio's command line tools** (`hvigorw assembleHap`, release
+  mode) and **runs a whole workout in Huawei's lite wearable simulator** (see "Size and memory").
+  Nobody on the project has a Huawei watch yet, so it has never run on one. The simulator ignores
+  taps, so its smoke run calls the pages' own handlers on a timer; how a tap feels is unseen. The
+  logic, the screens' data, the framing and the saving are checked under plain Node (317 tests,
+  `npm test` in `watch-huawei`), and the source keeps to the language subset Huawei says the watch
+  runs.
+- The watch app was rebuilt in 1.4.6 to be **small**: it is cut to the Garmin watch's features so it
+  fits Huawei's file limit and a small JavaScript memory (see "What it does" and "Size and memory").
+  One goal is **not met**: the memory target of 160 KB. Read "Size and memory" before you rely on a
+  number.
 - The Android link **compiles against Huawei's Wear Engine SDK** but has never met a watch. The
   plain-Java parts have JVM tests: the framing (`HuaweiFramesTest`), the one-snapshot-at-a-time
   choice (`HuaweiSendTest`) and when a watch is forgotten (`HuaweiForgetTest`). `HuaweiLink` itself
@@ -55,48 +63,49 @@ United States is not on Huawei's list; Spain, Switzerland, Germany, the UK and m
 
 ## What it does
 
-One page in the watch app, `pages/index`, shows one screen at a time. `common/view-common.js` (and `view-home.js`, `view-lift.js`, `view-rest.js`) decide
-which screen and what it says (every line is tested); the page only copies that into the HML.
-The screens are the Garmin's and Wear OS's, fitted to a touch screen with no crown and no side-button
-handling: every control is a button on the screen, and the look is the Apple Watch app's (see "The look" below). Besides the ones in the table there is a "could
-not read the saved workout" screen with a Retry button: when the watch's files cannot be read it
-changes and saves nothing, rather than start over on top of them.
+The watch app is **the Garmin watch's app on Huawei's engine**, with the Garmin's features and no
+more (docs/GARMIN.md, "What it does"). It has four pages, `index` (the home page), `lift`, `rest`
+and `over` (the Overview), and shows one screen at a time. `common/view-common.js` (and
+`view-home.js`, `view-lift.js`, `view-rest.js`, `view-over.js`) decide which screen and what it
+says (every line is tested); the page only copies that into the HML. The app switches page when the
+screen changes (Start on `index`, 3-2-1, Set and Hold on `lift`, Rest and Metrics on `rest`, the
+Overview on `over`; `app.js` keeps the workout across the switch, see "Size and memory").
+
+Every control is a button on the screen: no crown, no side-button handling. Besides the ones in the
+table there is a "could not read the saved workout" screen with a Retry button: when the watch's
+files cannot be read it changes and saves nothing, rather than start over on top of them.
 
 | Screen | What you see | Taps |
 | --- | --- | --- |
-| Check-in | before a start, when the phone has its daily check-in on and today's is not answered: sleep, energy and soreness, one question at a time, five dots from low to high, "1/3" | a dot answers and moves on, Skip, Cancel |
-| Weigh-in | before a start, when the phone has it on: the weight big (kg or lb, as the phone has it), -1, +1, -0.1, +0.1 | Save and start, Start without weighing, Cancel |
-| Start | "Today" (or "Rest day" when the first routine is not today's; "Not synced yet" or "No workout running" when there is nothing), the routine's name, "5 exercises · 17 sets", the week streak when there is nothing else to hint at (in the accent once this week's workout is done), Start, and along the bottom "Phone connected" or "Phone away" (nothing when the watch cannot tell) with "Waiting to sync 3" | Start (Quick start on a day without a plan), Routines when there are more |
-| Routines | three routines a page, "Today" on today's and the folder's name under the others (routines without a folder first, then each folder's together) | tap one to start it, Cancel, `>` for the next page |
+| Start | today's routine (or "Not synced yet" or nothing to start), its name and size, Start, and along the bottom the phone and sync state ("Waiting to sync 3") | Start (Quick start on a day without a plan), Routines when there are more |
+| Routines | three routines a page, "Today" on today's | tap one to start it, Cancel, `>` for the next page |
 | 3-2-1 | a big 3, 2, 1, then "Go!" (3.7 s in all) | a tap on the number starts at once, Cancel |
-| Set | the heart rate and sync line, the exercise, "Set 2 of 4" (warm-up, left or right, "Edit" while fixing), the resistance band tag when the phone names one ("Red + Yellow"), the superset partner ("+ Lateral Raise"), weight and reps as two tiles with − and + under each ("Added weight" for a bodyweight exercise), last time, Done | − and + on each tile (the exercise's own plate step, one rep, five seconds for holds), Done, `<` fixes the last logged set, Menu |
-| Hold | the exercise, the seconds left big (orange for the last five), a bar, Stop | Stop logs the seconds held; at zero it logs itself |
-| Rest | a ring that empties (or a plain countdown when the phone's rest style is plain), the time, "Up next" with its numbers, four effort chips (RIR or RPE, the phone's setting) until one is picked, −15, Skip, +15 | the chips, −15, Skip, +15, Menu |
-| Menu | Previous set, Overview, Add set, Remove set, Skip set, Next exercise, Finish and save, Discard workout, Continue workout (a list, it scrolls) | each one |
-| Finish, discard or remove | the question, Cancel, and the action | Finish, Discard and Remove set always ask first |
-| Overview | "7 of 17 sets", the phone's session note at the top when there is one (read only), four exercises a page with their sets done ("> " marks the one up now, a "Superset" heading above the first exercise of each superset), "+3 exercises" still to come from the phone, "Waiting to sync 3" or "All synced", Finish | an exercise with sets left takes you there, `>`, Finish, Continue workout |
+| Set | the heart rate and sync line, the exercise, "Set 2 of 4" (warm-up, left or right, "Edit" while fixing), the superset partner, weight and reps as two tiles with − and + under each, last time, Done | − and + on each tile, Done, `<` fixes the last logged set, Menu |
+| Hold | the exercise, the seconds left big, a bar, Stop | Stop logs the seconds held; at zero it logs itself |
+| Rest | a ring that empties, the time, "Up next" with its numbers, effort chips until one is picked, −15, Skip, +15 | the chips, −15, Skip, +15, Menu |
+| Menu | Previous set, Overview, Skip set, Next exercise, Finish and save, Discard workout, Continue workout | each one |
+| Finish or discard | the question, Cancel, and the action | Finish and Discard always ask first |
+| Overview | "7 of 17 sets", four exercises a page with their sets done, "Waiting to sync 3" or "All synced", Finish | an exercise with sets left takes you there, `>`, Finish, Continue workout |
+| Metrics | one page: time, sets, volume and the heart rate (average and maximum), reached by a swipe left from Set or Rest | a swipe right or the small `<` button goes back |
 | All sets done | "All sets done", the count, Finish | Finish |
 | Cardio, or a timed exercise with nothing left | "Log this one on your phone." or "All sets done", Next exercise | Next exercise |
 | Waiting for the phone | the workout's name and "Next exercise is on its way from your phone" (or "Waiting for the phone") | Menu |
-| Still training? | after 20 minutes without a set ("No set for 23 min. Still at it?"), or at once when the phone says you left the gym | Keep going (the phone hears it, a `stillHere` event) or Finish (the Overview) |
-| Summary | "Workout saved" (or "Ended on your phone"), the name, a still medal (gold on a records day, steel otherwise) with the minutes big, a diamond per record and the set count or record count under it, up to four record plates ("Bench 60 to 62.5 kg", "+2 more" past four), the time, sets and volume, average and maximum heart rate, the sync line | scroll, Done (a tap in its first second is ignored) |
-| Metrics | five pages, reached by a swipe left from Set or Rest: the numbers (time big, heart rate in red, "5/13 Sets", volume), Pulse (average, lowest, highest and twelve bars), Effort (RIR or RPE, the mean per exercise rated here, the latest five, "+n more"), Zones (the five bands, the time in each, the zone now marked; "Add your birth year" without one) and Muscles (sets done per muscle, most first). Pulse is left out without heart-rate readings or when the phone's heart-rate switch is off, and Zones also when its zones switch is off | a swipe left for the next page, a swipe right or the small `<` button at the top left for the one before (from the first, back to the workout) |
+| Still training? | after 20 minutes without a set, or at once when the phone says you left the gym | Keep going (the phone hears it, a `stillHere` event) or Finish (the Overview) |
+| Summary | "Workout saved" (or "Ended on your phone"), the name, time, sets and volume, average and maximum heart rate, the sync line | scroll, Done (a tap in its first second is ignored) |
 
-Things that are the same as on the other watches, taken from the Garmin's `Core.mc` as a port
-(`common/core.js`): the phone's workout window, today's routine started by the watch with the phone
-away, warm-ups, per-side sets, supersets, timed holds (and "Timed holds start by themselves" when
-the phone has it on), one rest for the phone and the watch (protocol 2, docs/WATCH_SYNC.md), the
-clock offset sent as `off`, the outbox until the phone acknowledges, a set ticked on the phone
-moving the watch on, "Still training?", fixing a set and the effort chips. Event ids start with
-"h" (the Garmin's with "g") so two watches cannot clash. Taken from Wear OS and the Apple Watch
-instead: the check-in and weigh-in before a start, Add set and Remove set, and the heart rate of a
-set ticked on the phone.
+What it does, taken from the Garmin's `Core.mc` as a port (`common/core.js`): the phone's workout
+window, today's routine started by the watch with the phone away, warm-ups, per-side sets,
+supersets, timed holds (and "Timed holds start by themselves" when the phone has it on), one rest
+for the phone and the watch (protocol 2, docs/WATCH_SYNC.md), the clock offset sent as `off`, the
+outbox until the phone acknowledges, a set ticked on the phone moving the watch on, "Still
+training?", fixing a set and the effort chips. Event ids start with "h" (the Garmin's with "g") so
+two watches cannot clash.
 
 - Buzzes: a short one ten seconds before a rest ends, two long ones at the end of a rest and of a
-  hold, a tick for each number of a 3-2-1 and for a hold's last three seconds, one for Done, and one when
-  a workout is finished (short, long on a records day). The
-  phone's "rest haptics" setting turns them all off. The watch has only `short` and `long` (no
-  pattern, no strength), so `view.js` turns each of the core's patterns into some of those.
+  hold, a tick for each number of a 3-2-1 and for a hold's last three seconds, one for Done, and one
+  when a workout is finished. The phone's "rest haptics" setting turns them all off. The watch has
+  only `short` and `long` (no pattern, no strength), so `app.js` turns each of the core's patterns
+  into some of those.
 - The screen is kept on during a rest and a hold (`setKeepScreenOn`), and only then. Huawei says
   this only stops the inactivity timeout, not the screen going off because you cover it or lower
   your wrist.
@@ -104,73 +113,103 @@ set ticked on the phone.
   set logged on the watch carries `hr: { avg, max }`, as on the other watches. Huawei says the
   sensor reports every five seconds; the watch lets the last reading count for 15 seconds and then
   counts none. Needs the `READ_HEALTH_DATA` permission, which the app asks for in its manifest.
-  Whether the watch grants it is not verified. The watch keeps the workout's readings in memory
-  (5-second buckets, so a long workout thins out but each average and maximum stays exact), so it
-  can also send a `setHr` event with the heart rate of a set that was ticked **on the phone**, and
-  the heart rate of the rest after a set (`restHr`). A watch that has done nothing for three hours
-  may stop the sensor (`sensorShouldRest`) and starts it again at the next action.
-- **Add set and Remove set** in the Menu change the lifter's own workout at once and go to the phone
-  as `addSet` and `removeSet` events. Until the phone names the event in `acked`, the watch lays its
-  own edits over every snapshot, so an older snapshot does not undo them; after that the phone's
-  snapshot is the truth (a removal the phone refused, because the set was ticked there meanwhile,
-  is simply back). Remove asks first and has no undo: a set that can be removed is not done, so
-  nothing logged is lost. The watch is more careful than the phone: no add or remove on cardio or
-  on a timed exercise done per side, and a remove only when every set of the exercise has an id.
+  Whether the watch grants it is not verified. The watch keeps only running sums (count, total,
+  maximum) for the Metrics page and the summary, not the readings, so a set ticked **on the phone**
+  gets no heart rate from the watch (the Garmin's rule).
 - **Watch status**: at start the watch tells the phone its app version (`watchStatus`, only the
   newest waits in the outbox). The phone stores it as it does the Apple Watch's. What the phone
   shows with it for a Huawei watch was not checked.
-- **The session note** is the phone's, read only: the watch cannot type.
-- **Records** are found on the watch by Wear OS's rules, from the sets it saw (`records.js`, keyed by the
-  exercise's place and id, so an exercise the phone moves keeps one line).
 - **The phone's look**: the accent colour (`settings.accent`) and the ink on it, otherwise openGym's
-  lime. The phone's "show" switches (heart rate, last time, up next, zones, and the rest style ring or plain) are followed; the others the
-  phone sends (kcal, clip) are stored and not used yet.
-- **Language**: the phone's (`settings.lang`), else the watch's own language when it is one of ours,
-  else English. The words are the Wear OS watch's and the Garmin's, plus a few of its own, in the
-  26 languages (the app's, except Japanese, which the Wear OS watch has no words for yet, so it shows
-  English). Arabic, Bengali, Persian, Hindi and Thai are in the file but shown in English, because
-  the watch's one font (SourceHanSansSC-Regular) may not draw them. See "Honest limits".
+  lime. The phone's "show" switches (heart rate, last time, up next) are followed; the others the
+  phone sends are stored and not used.
+- **Language**: the watch's own, not the phone's (see "The language rule").
 - **Saving**: the watch keeps its state in files, so closing the app, the watch running out of
-  battery or Huawei ending the app does not lose a set (see "How it talks to the phone").
+  battery or Huawei ending the app does not lose a set (see "Where it differs from the Garmin").
 
 No exercise media goes to the watch: text and numbers only (and the licence would not allow it).
 
 ### The look
 
-The whole UI now follows the Apple Watch app's current look (the open 1.4.6 Apple Watch pull requests, for example #1139, #1314 and
-#1198): black ground, the accent on Done and Start, weight and reps as two tiles, the heart rate in red, the effort colours by band,
-the summary as a medal. The Huawei watch cannot copy all of it:
+The screens follow the Apple Watch app's look (black ground, the accent on Done and Start, weight
+and reps as two tiles, the heart rate in red, the effort colours by band), cut to what the Garmin
+level needs. The Huawei watch cannot copy all of it:
 
 - one font, so no bold;
 - no glass and no blur;
 - no icons such as the heart or the tick (words and plain characters only);
-- no crown, so the − and + buttons stay;
-- no curved lettering on the medal rim (the legend sits under the medal instead).
+- no crown, so the − and + buttons stay.
 
-Left out because the Huawei core has no logic for it yet: the set types Warm-up, Failure and Drop, half-step effort, the ±15 circle on
-the rest, the session note (read only here) and re-rating a set. The Set page's `>` is drawn dimmed and takes no tap outside fixing,
-because the core has no "look at the next set" action.
+### The round-safe rule
+
+The simulator does not apply `@media screen and (round-screen: true)`, and says "rectangle" even
+when it runs a circle (measured), so a media query cannot be proven there. So **there are no `@media`
+blocks**. Every layout is safe on a round screen by default: text is centred and every row is
+inset so it fits the circle at its height, which also works on the square-ish Fit (336 × 480).
+`test/layout.test.js` adds the boxes up for a 466 px circle and a 336 × 480 rectangle: explicit
+sizes, targets of at least 56 px with 8 px between them, nothing wider than the circle at its
+height, down to the last row of a list. A new screen must pass it.
+
+### The language rule
+
+The words are the **watch's language**, as on the Garmin. Each language is one framework file,
+`i18n/<lang>-<REGION>.json` (`{"strings": {...}}`, about 2 to 3 KB, 22 files today), written by
+`huawei-strings.mjs`. The pages read it with the framework's `$t` through one helper, `t(key, a, b)`
+in `view-common.js`:
+
+- the English words are also in code (`common/en.js`) as the fallback, because on a real watch a
+  missing language file is not replaced by English (only the simulator does that) and `$t` then
+  gives nothing back;
+- a missing key makes `$t` return the key's **path** (for example `strings.zz`), so the helper
+  treats a path coming back as "missing" and uses the English word;
+- `$t` **blanks a `{0}` that was not given a value**, so the helper passes the values to `$t`
+  itself; never build a word with numbers from `$t`'s answer afterwards;
+- the phone's language is ignored. A language the watch has no file for shows English.
+
+Which region codes Huawei watches report is not known. One file ships for the main region of each
+language (de-DE, fr-FR, es-ES, pt-PT, pt-BR, zh-CN, zh-TW, zh-HK and so on); a watch on another
+region shows English.
+
+### What was dropped, and why
+
+The first Huawei app (the Wear OS and Apple Watch level) was 222 KB in one page file and needed
+about 385 KB of JavaScript memory in the simulator. Huawei's engine refuses a built file over 48 KB
+and a real watch's memory is small and unknown, so the app was cut to the Garmin's level. What went, with its code, screens, strings and tests:
+
+| Dropped | Why | Tests removed |
+| --- | --- | --- |
+| Metrics pages Pulse, Effort, Zones, Muscles (one Metrics page stays) | the Garmin has one; about 17 KB | 19 |
+| The summary's medal and the records | the Garmin has none; about 12 KB | 26 |
+| Check-in and weigh-in before a start | the Garmin has none; about 9 KB | 16 |
+| Add set and Remove set | the Garmin has none; about 5 KB | 27 |
+| Heart-rate readings buffer, the `setHr` and `restHr` events | the Garmin keeps sums only; memory | 16 |
+| Week streak and reach mark, plain rest style, band tag, session note, routine folders | the Garmin shows none of them | 8 |
+| The phone's language and the 26-language table in code | the Garmin follows the watch's language; the table was about 58 KB | 1 |
+| Huawei's own snapshot (up to 12,000 characters, the whole workout) | the watch reads the Garmin's snapshot now (3 KB, a window of the workout) | 12 (on the phone) |
+| The outbox of 100 and 160 events | the Garmin's 60 and 90 | 0 |
+
+That is **113 tests removed in `watch-huawei`** with the features, plus 3 link tests that only held
+with the fuller snapshot. The suite went from 390 to 317 tests, with new ones added for the size
+gate, the pages, the heap rule and the words. On the phone side 16 tests went: 12 with
+`huawei-snapshot.js` and 4 in the link end-to-end test.
 
 ### What it leaves out
 
 Compared with the Garmin app, and with Wear OS and the Apple Watch:
 
-- The medal's animation, its back face, its rim lettering and notches, calories, and a Metrics page for the clip or the
-  kcal.
+- Everything in the table above, and set types, half-step effort, and re-rating a set.
 - Buttons, the crown and swipes. There is no way to step a number with the crown or to pick a box
-  by touch and then turn it; the − and + under each number do it. A swipe left opens the Metrics pages from the Set or the Rest and a swipe right goes back through them; a swipe right
-  leaves the app from the Start screen only, never in the middle of a workout.
+  by touch and then turn it; the − and + under each number do it. A swipe left opens Metrics from the
+  Set or the Rest and a swipe right goes back; a swipe right leaves the app from the Start screen
+  only, never in the middle of a workout.
 - The keypad, typing a session note, music, exercise pictures, the glance or widget.
 - Finishing a workout by holding a button (Wear OS has it). Finish takes a tap and a confirmation.
-- Undo after Remove set (Wear OS has it). Here Remove asks first instead.
 - A workout recorded in Huawei Health. The Garmin app can save its workout to Garmin Connect; this
   watch app writes nothing to Huawei Health, so there are no Huawei activity records and no
   double-counting to worry about. (Health Service Kit for lite watches exists from HarmonyOS 6.1.1 and
   needs its own Huawei application; it is not used.)
 - Cardio is logged on the phone (the watch says so and moves on).
-- The memory tricks the Garmin app needs for its smallest watches (a held-back tick, a short
-  outbox). The outbox holds 100 events (160 when nothing has been sent at all). Huawei's docs give
-  no memory figure for a lite app; see "Honest limits".
+- Languages the font may not draw (Arabic, Bengali, Persian, Hindi, Thai) and Japanese: no file, so
+  English.
 
 ## How it talks to the phone
 
@@ -200,12 +239,13 @@ watch app  --frames-->  Wear Engine  -->  Huawei Health  -->  HuaweiLink  -->  q
 | Piece | Where | What |
 | --- | --- | --- |
 | `watch-huawei/.../common/core.js` | watch | the logic, a port of the Garmin's Core, Actions and Link as plain JavaScript |
-| `watch-huawei/.../common/view-*.js` | watch | which screen, every line of text, what each tap does |
-| `watch-huawei/.../pages/index/` | watch | the one page: `index.hml`, `index.css`, `index.js` (glue only, the only file that touches Huawei's APIs besides `wearengine.js`) |
+| `watch-huawei/.../common/view-*.js` | watch | which screen, every line of text, what each tap does (a shared part and one file per page) |
+| `watch-huawei/.../pages/{index,lift,rest,over}/` | watch | the four pages: `index.hml`, `index.css`, `index.js` (glue only) |
+| `watch-huawei/.../common/page-glue.js` | watch | the link to the phone, the redraw and the page switch, used by every page; with `app.js` and `wearengine.js` the only files that touch Huawei's APIs |
 | `watch-huawei/.../common/frames.js`, `radio.js` | watch | the framing, and the sending and receiving through Huawei's `P2pClient` |
 | `watch-huawei/.../common/store.js` | watch | the state in the watch's files, safe against being killed |
-| `watch-huawei/.../common/texts.js` | watch | the words, generated by `huawei-strings.mjs` |
-| `watch-huawei/.../common/wearengine.js` | watch | Huawei's own SDK file, unchanged (Apache-2.0) |
+| `watch-huawei/.../common/en.js`, `i18n/` | watch | the words (English in code, one file per watch language), generated by `huawei-strings.mjs` |
+| `watch-huawei/.../common/wearengine.js` | watch | Huawei's own SDK file, trimmed to the calls openGym makes (Apache-2.0) |
 | `frontend/android/app/src/hms/.../HuaweiLink.java` | phone | the link: Huawei Health, permission, watches, receivers, sending |
 | `frontend/android/app/src/main/.../HuaweiFrames.java`, `HuaweiSend.java`, `HuaweiForget.java` | phone | the framing (same vectors as the watch), one-snapshot-at-a-time sending, and when a watch is forgotten (two lists in a row leave it out; an empty list forgets nothing), JVM-tested |
 | `frontend/android/app/huawei.gradle` | phone | everything of Huawei's for the build |
@@ -332,8 +372,8 @@ the SDK answers that for a lite watch).
   handling.
 - **Two buttons under each number**, not a box you pick and then step. There is no "outlined box"
   state to remember.
-- **The phone's language**, not the watch's. Connect IQ picks resources by the watch's system language,
-  so the Garmin cannot follow the phone; the Huawei watch can, because its words are in one file.
+- **The language** is the watch's, as on the Garmin (see "The language rule"). The Huawei watch
+  could follow the phone, because its words are plain files; it does not, to stay small.
 - **Saved in files** (`store.js`). The lite engine reads at most 4 KB of text per call and writes
   about 4 KB, so the state is escaped to ASCII and cut into parts of 3,000 characters. A save never
   touches what the last complete save wrote: the new parts first, then a small head file
@@ -349,31 +389,32 @@ the SDK answers that for a lite watch).
   a Wear Engine notification (the `NOTIFY` permission is open to individual developers); that is not
   built.
 - **No recorded activity**, see above.
-- **Before a start.** The Garmin has no check-in or weigh-in. The Huawei watch has both, as Wear OS
-  does, and the weigh-in is four buttons (-1, +1, -0.1, +0.1) rather than a keypad. Add set and
-  Remove set are here and not on the Garmin.
+- **Pages.** The Garmin app is one program. Huawei's engine cannot load a file over 48 KB, so the
+  Huawei app is four pages and an `app.js` that keeps the workout between them (see "Size and
+  memory"). A page switch is a new thing for the watch to get right, and is unproven on hardware.
+- **Before a start and while training.** The same as the Garmin: no check-in, no weigh-in, no Add set
+  or Remove set (see "What was dropped, and why").
 
 ### Where it differs from Wear OS
 
 The Wear OS app is the model for the behaviour; these are the places this watch does it otherwise.
 
-- **No undo on Remove set, but a confirmation.** A removed set was never done, so nothing logged is
-  lost; Wear OS lets you undo, this watch asks first.
+- **No Add set or Remove set**, no check-in or weigh-in, no records, medal or extra Metrics pages
+  (see "What was dropped, and why").
 - **No finish by holding.** Finish and Discard are a menu entry and a confirmation.
 - **No typing a note.** The phone's note shows read only on the Overview.
 - **Touch only, no crown**, and the screen is a lite JavaScript page, not Compose.
 - **Messages only while the app is on screen** (see above). Wear OS's Data Layer queues; Huawei does not.
-- **Stricter Add and Remove.** No add or remove on cardio or a timed exercise done per side, and a
-  remove only when every set of the exercise has an id.
-- **The pages.** The Metrics pages and the summary's medal are built, as still pictures: no animation, no back face, no rim lettering.
 - **Ids.** Events are `h…`, the Garmin's `g…`, so two watches cannot clash. The two fingerprints are
   placeholders until the owner has the Huawei accounts (see "What the owner does").
 
 ## What is planned next
 
-The phone-and-watch parity was built in two steps, and both are in this guide: the first is the workout itself, the second is the
-Metrics pages, the records, the medal, the streak and the Apple look. What is left is what "The look" lists as left out (it needs
-new core logic first) and everything the first run on a real watch will show.
+The watch app is now at the Garmin's level on purpose. The next thing is the first run on a real
+watch: the heap it gives a JavaScript app, whether a page switch flashes, and the points listed
+in "Honest limits". Only after that is there a reason to bring back anything from "What was dropped,
+and why" (they were cut for size, not because they are wrong), or to try the options for the heap in
+"Size and memory".
 
 Exercise pictures are out until the owner decides a licence question. The pictures and animations
 are Gym visual's, not AGPL, and its notice in `NOTICE.md` says they are "provided strictly for use
@@ -427,11 +468,119 @@ from Huawei's own Maven repository. So, as with Garmin's SDK:
   (`huawei.gradle` says so). Huawei's guide asks for `-keep class com.huawei.wearengine.**{*;}` the
   day they are, so that rule must be added then.
 - The watch app's `wearengine.js` is **Huawei's file, Apache-2.0, Copyright (c) 2021 Huawei Device
-  Co., Ltd.**, version 5.0.2.306, copied unchanged. It is the SDK for lite watches that Huawei tells
+  Co., Ltd.**, version 5.0.2.306, trimmed to the calls openGym makes (text send, register,
+  unregister, set peer) with its notice kept. It is the SDK for lite watches that Huawei tells
   developers to copy into their project. NOTICE.md lists it. Everything else in `watch-huawei` and
   the phone code is openGym's, AGPL. Whether the AGPL needs an explicit additional permission for
   Huawei's closed phone SDK, as for Garmin's and for Google Play services, is the owner's call.
 - The licence of the exercise media does not come into it: no media goes to the watch.
+
+## Size and memory
+
+Two limits shape the watch app, and both are why it is cut to the Garmin's level.
+
+1. **The file limit.** Huawei's lite engine reads a file of at most 48 KB (49,152 bytes: its
+   `FILE_CONTENT_LENGTH_MAX`). This covers `app.js`, each page's `.js`, `manifest.json` and each
+   `i18n/*.json`. The project's rule is **45 KB (46,080 bytes) in the release build**, and 40 KB as the
+   aim for a page. Only the release build counts: a debug build is far bigger, and the simulator
+   allows oversize files, so the gate and not the simulator is the check.
+2. **The JavaScript heap.** The simulator takes `-hs <bytes>` and reports the heap. What a real
+   watch gives a JavaScript app is **not known**. DevEco Studio starts the simulator with 512 KB and
+   ACELite's own default is 48 KB.
+
+### The files
+
+Release build, from `node watch-huawei/huawei-size.mjs --report` (bytes, limit 46,080, none over):
+
+| File | Holds | Bytes |
+| --- | --- | --- |
+| `app.js` | the core, the clock, the heart-rate sensor, the buzz, the store, which page is up | 42,775 |
+| `pages/rest/index.js` | Rest, Still training?, menu, Metrics, confirm | 40,824 |
+| `pages/lift/index.js` | 3-2-1, Set, Hold, fixing a set, all sets done, cardio card | 36,728 |
+| `pages/index/index.js` | Start, routines, waiting, lost data, Summary | 34,102 |
+| `pages/over/index.js` | the Overview | 29,041 |
+| `i18n/<lang>-<REGION>.json` (22 files) | one language each | 2,292 (en-US) to 3,318 (ru-RU) |
+| `manifest.json` | | 266 |
+
+`app.js` is the tightest file (3.3 KB under the gate). The page files each carry the link to the
+phone (`wearengine.js` trimmed to what is used, `radio.js`, `frames.js`) and the page glue. A fourth
+page, `over`, exists because the rest page did not fit with the Overview in it.
+
+### How the pages share the workout
+
+`app.js` is the only file every page shares, so it holds what must outlive a page switch: the core
+(`common/core.js`, imported only there), the screen state, the clock (1 s, 250 ms in a 3-2-1), the
+sensor, the buzz and the store. A page reaches it with `getApp().data` (`this.$app` is `undefined` on
+lite), calls the core through `data.k()` and registers one redraw function, `A.cb`, which it clears
+when it is hidden or destroyed. `app.js`'s `data` holds **functions only**: a state object there
+crashed the engine with `JS REF LIMIT`. When the screen changes, `pageOf` names the page that draws
+it and the app switches with `router.replace` (5 to 25 ms in the simulator).
+`common/page-glue.js` is the one module every page uses for the link, the redraw and the switch; a
+page only declares the names its HML binds and its own taps.
+
+### The heap
+
+Measured in the simulator, release build, one driven workout (home, lift, rest, over, rest, menu,
+finish, summary):
+
+| Heap (`-hs`) | Result |
+| --- | --- |
+| 196,608 (192 KB) | **passes**, peak about 192.5 KB |
+| 180,224 (176 KB) | fails: out of memory on the rest page |
+| 163,840 (160 KB) | fails: out of memory on the lift page during the 3-2-1, peak 158.2 KB |
+
+The engine collects garbage only under pressure, so the peak follows the limit. What is really in
+use at any one time is about 150 to 180 KB, with the rest page the largest. `app.js` plus an empty
+page is already about 76 KB.
+
+**The 160 KB target is not met.** It was the architect's estimate, not a known limit. A real
+watch's limit is unknown, so reaching 160 KB would need a cut of 20 to 30 KB of live memory for a
+payoff that is a guess. The bar for this work is: a whole workout passes at 192 KB. If a real watch
+gives less than about 190 KB, the first run on it will show it. Options for after that test:
+
+- more and smaller pages (Metrics off the rest page, for a start);
+- the link (wearengine, radio, frames, glue) moved from every page into `app.js`, which has 3.3 KB
+  of file room left;
+- `.bc` (bytecode) files on a device that runs them, which keeps the code outside the heap. Whether
+  a watch runs `.bc` or the `.js` is not known (see "Honest limits").
+
+**The heap rule for future code.** Heap grew with every page visited until the cause was found: the
+store's `load` and `save` were made by the home page and held by `app.js` (`A.store`), and a function
+a page made and `app.js` holds **keeps that page's whole bundle in the heap**, long after the page
+is gone. A timer a page leaves running does the same. So:
+
+- `app.js` must hold no function made by a page (a callback, a store, a radio, a timer). If it needs
+  one, make it in `app.js` (the store is made by `A.newStore()`), or have the page clear it when it
+  is hidden.
+- A page clears only what it put there itself (`A.cb`, `A.radio`).
+- `test/page.test.js` enforces it: after each page switch it walks everything reachable from the app
+  and fails on any function whose source is only in a page file. The simulator smoke script keeps
+  its own driver out of the pages for the same reason.
+
+### Running the checks
+
+Both scripts need DevEco Studio's command line tools:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17
+export DEVECO_SDK_HOME=/Applications/DevEco-Studio.app/Contents/sdk
+node watch-huawei/huawei-size.mjs            # release build, prints every file, exits 1 if one is over 45 KB
+node watch-huawei/huawei-size.mjs --report   # the same table without failing
+node watch-huawei/huawei-sim.mjs             # simulator smoke at -hs 196608 (--hs BYTES, or --hs none)
+```
+
+`huawei-size.mjs` clears the build folder first, so a stale file cannot hide a result. `huawei-sim.mjs`
+builds a **temporary copy** of the app in release mode with a fake phone (`sim/debugphone.js`) and a
+timed driver, runs it in the lite wearable simulator, calls the pages' own handlers (the simulator
+ignores taps), saves a screenshot per step and prints the heap peak. It exits 1 on `JS HEAP OOM`,
+`Eval JS file failed` or `JS REF LIMIT`. The debug phone never reaches the product (a test checks
+`entry/` for any trace of it). On a small Mac run one build and one simulator at a time; the script
+kills the simulator at the end.
+
+Two facts from the simulator: its language is fixed to zh-CN (so the screenshots show Chinese words),
+and it needs its `config` folder next to the binary or all text is invisible (the script does it).
+Also, `watch-huawei/entry/src/main/js/package.json` (`{}`) must stay: without it the nearest
+`package.json` says `"type": "module"` and the build leaves `require()` calls unbundled.
 
 ## Building and testing
 
@@ -439,37 +588,37 @@ The tests need only Node (no install, no dependencies):
 
 ```bash
 cd watch-huawei
-npm test                          # 390 tests, see below
-node huawei-strings.mjs           # regenerates common/texts.js after the words change
+npm test                          # 317 tests, see below
+node huawei-strings.mjs           # regenerates common/en.js and i18n/ after the words change
 ```
 
 CI runs `npm test` in `watch-huawei` (job `huawei` in `.github/workflows/test.yml`) when
-`watch-huawei/**` changes or one of the files its tests import or read does: the Garmin and Huawei
-snapshot code (`garmin-snapshot.js`), `watch-sync.js`, `watch-settings.js`,
-`daily-form.js` and the Garmin fixture `frontend/garmin/test/snapshot.json`. The filter is in one
-place, the `huawei:` list of the `changes` job. **It leaves out the words on purpose**: the app's
-locale packs and the Wear OS and Garmin strings files do not start it, so a translation pull request
-never waits on this job. That is how the repo treats the other watches' words too: nothing checks
-`wear-strings.mjs`, `garmin-strings.mjs` or `zepp-strings.mjs` output against the packs
-(`garmin/check.mjs` only checks the Garmin's own files agree with each other). The price is the
-same: `texts.js` can be a little behind a new translation until someone regenerates it, and the next
-pull request that touches `watch-huawei` then fails `strings.test.js` ("texts.js is what the generator
-writes now"). The job's failure message says to run `node watch-huawei/huawei-strings.mjs` and commit
-`common/texts.js`.
+`watch-huawei/**` changes or one of the files its tests import or read does: the Garmin snapshot code
+(`garmin-snapshot.js`), `watch-sync.js`, `watch-settings.js`, `daily-form.js` and the Garmin fixture
+`frontend/garmin/test/snapshot.json`. The filter is in one place, the `huawei:` list of the `changes`
+job. **It leaves out the words on purpose**: the app's locale packs and the Wear OS and Garmin strings
+files do not start it, so a translation pull request never waits on this job. That is how the repo
+treats the other watches' words too. The price is the same: `en.js` and `i18n/` can be a little behind
+a new translation until someone regenerates them, and the next pull request that touches
+`watch-huawei` then fails `strings.test.js` ("is what the generator writes now"). The job's failure
+message says to run `node watch-huawei/huawei-strings.mjs` and commit the result. CI does not run
+the size gate or the simulator: they need DevEco Studio.
 
-What the tests cover (15 test files): `core.test.js` the logic against the Garmin's own fixture; `view.test.js` every
-screen, taps and the data the HML binds to; `metrics.test.js`, `medal.test.js` and `records.test.js` the Metrics numbers, the
-medal's data and the record lines (ported from Wear OS's tests); `frames.test.js` and `HuaweiFramesTest` the same
+What the tests cover (18 test files): `core.test.js` the logic against the Garmin's own fixture;
+`view-common.test.js`, `view-home.test.js`, `view-lift.test.js` and `view-rest.test.js` every screen,
+taps and the data the HML binds to (and that each view file attaches every core name it uses);
+`metrics.test.js` the one Metrics page's numbers; `frames.test.js` and `HuaweiFramesTest` the same
 vectors; `radio.test.js` sending and receiving with a fake client; `store.test.js` saving with a
 torn write; `link.test.js` the whole wire with the phone's real snapshot code and a page that
 applies events as `watch-sync.js` does, over a radio that drops, fails or never answers;
-`page.test.js` the page file run under Node with fake Huawei APIs; `strings.test.js` that `texts.js`
-is what the generator writes now and that every language has every word; `syntax.test.js` and
-`methods.test.js` that no file uses what Huawei's engine does not promise (classes, spread, template
-strings, `for...of`, `Promise`, `find`, `includes` and the like) or a method outside a short list;
-`labels.test.js` that no button label is wider than its button (an estimate, not a render);
-`layout.test.js` the page's boxes added up (explicit sizes, targets of at least 56 px with 8 px
-between them, nothing wider than the circle on a round screen). The fixture is `frontend/garmin/test/snapshot.json`.
+`page.test.js` the page files run under Node with fake Huawei APIs, the page switches, and the heap
+rule; `strings.test.js` that `en.js` and `i18n/` are what the generator writes now and that every
+language has every word; `size.test.js` the size gate's check; `sim.test.js` the simulator script
+and that the debug phone is not in the product; `syntax.test.js` and `methods.test.js` that no file
+uses what Huawei's engine does not promise (classes, spread, template strings, `for...of`,
+`Promise`, `find`, `includes` and the like), that no page imports `core.js`, or a method outside a
+short list; `labels.test.js` that no button label is wider than its button (an estimate, not a
+render); `layout.test.js` the round-safe rule. The fixture is `frontend/garmin/test/snapshot.json`.
 
 The strings come from the Wear OS watch's (`frontend/android/wear/src/main/res`), the Garmin's and
 the app's packs, so run `frontend/android/wear/wear-strings.mjs` and `frontend/garmin/garmin-strings.mjs`
@@ -478,17 +627,16 @@ first when those change, then `node watch-huawei/huawei-strings.mjs`.
 **The watch app.** You need Huawei's DevEco Studio (a free HUAWEI developer account for the signing).
 Open `watch-huawei` as a project. The layout is the one of Huawei's current sample for lite wearables
 (`apiType` `faMode`, hvigor model 5.1.0, compatible SDK 4.0.0(10), target 5.1.0(18)). From the
-command line Huawei's "Command Line Tools" give `hvigorw`; the task is `assembleHap`, usually
-`hvigorw assembleHap --mode module -p product=default -p buildMode=debug`. The exact flags for a
-lite project are **not verified**. Wear Engine needs "Compile SDK 10" in DevEco Studio, per Huawei.
+command line, DevEco's `hvigorw` runs `assembleHap --mode module -p product=default -p buildMode=release`
+(that is what `huawei-size.mjs` does, with `--no-daemon`); an unsigned `.hap` needs no signing
+config. Wear Engine needs "Compile SDK 10" in DevEco Studio, per Huawei.
 
 **The simulator.** In DevEco Studio pick "Huawei Lite Wearable Simulator" in the device list, press
-Run and choose the shape and resolution (it can also set heart rate, screen on and off and the
-language). Huawei documents that it runs signed and unsigned apps. Whether it provides
-`@system.wearengine` is not documented; the page guards every Wear Engine call, so without it the
-app should come up and say "Not synced yet" and nothing more, because only the phone can give it
-a workout. This has not been tried. A phone side cannot be tried in a simulator at all; that needs
-the real Huawei Health and a real watch.
+Run and choose the shape and resolution (it can also set heart rate and screen on and off).
+`huawei-sim.mjs` is the repeatable version. The simulator has no phone: the page guards every Wear
+Engine call, so without a phone the app comes up and says "Not synced yet", and the smoke script's
+fake phone gives it a workout. A phone side cannot be tried in a simulator at all; that needs the
+real Huawei Health and a real watch.
 
 **The phone app.** The sideload and play builds with the two properties:
 
@@ -552,7 +700,7 @@ sample code; "not verified" means a blog, a third-party project or a guess.
    and the exact format of the underscore part I read as characters: not verified.
 7. **Give the phone's fingerprint to the watch app, in two places.** The SHA-256 of the phone's release
    certificate from step 2 (hex, no colons), in:
-   - `PHONE_FINGERPRINT` in `watch-huawei/entry/src/main/js/MainAbility/pages/index/index.js` (the
+   - `PHONE_FINGERPRINT` in `watch-huawei/entry/src/main/js/MainAbility/common/page-glue.js` (the
      placeholder is `REPLACE_WITH_SHA256_OF_SIGNING_CERT`), and
    - `supportLists` in `watch-huawei/entry/src/main/config.json`, as
      `ch.duartesantos.opengym:<the same value>` (the same placeholder; at most 255 characters).
@@ -563,9 +711,9 @@ sample code; "not verified" means a blog, a third-party project or a guess.
    (a debug build) will not match. Confirmed.
 8. **Build the watch app, first in the simulator**, then a signed `.hap`:
    DevEco Studio → Build → Build Hap(s), or `hvigorw assembleHap` (see "Building and testing").
-   Look at every screen at 466 × 466 and 454 × 454 round and a rectangular one. The first build is
-   where the project files, which were written by hand from Huawei's sample and never opened in
-   DevEco Studio, will show what is wrong with them.
+   Look at every screen at 466 × 466 and 454 × 454 round and a rectangular one. The release build
+   and the simulator smoke already pass from the command line (`huawei-size.mjs`, `huawei-sim.mjs`);
+   DevEco Studio's own project import has not been tried.
 9. **Install it on a real watch** for the first test. Huawei Health and DevEco Assistant: build a signed
    `.hap`; copy it to `/sdcard/haps/` on the phone; pair the watch in Huawei Health; open DevEco
    Assistant (from AppGallery) and tap "Install watch app". This is from a Huawei DevRel article
@@ -601,7 +749,8 @@ sample code; "not verified" means a blog, a third-party project or a guess.
       set, Finish, Discard, the summary.
     - [ ] The words: the watch's language and the phone's, and the five languages that show
       English (Arabic, Bengali, Persian, Hindi, Thai): try a letter of each in the font, and if the
-      watch draws them empty `NO_GLYPHS` in `view.js`.
+      watch draws them, add a language file for it. The region code the watch reports (does `de-DE`
+      match a German watch?).
     - [ ] The date and the timers: `Date.now`, `setTimeout` and the file calls work (Huawei's lite docs do
       not list `Date` or timers).
     - [ ] The layout on each watch you can get: text that fits, buttons that can be hit, the Done
@@ -627,11 +776,23 @@ sample code; "not verified" means a blog, a third-party project or a guess.
 
 ## Honest limits
 
-- **Never built, never run.** The project files (`config.json`, `build-profile.json5`,
-  `hvigorfile.ts`, `oh-package.json5`, `hvigor/`) were written from Huawei's current sample and the
-  documentation. No DevEco Studio has opened them, no simulator has run the app, no watch has shown
-  it. Everything about how the screens look, how the touch feels and whether the text fits is
-  unseen. The tests run the logic and the screens' data under Node, not Huawei's engine.
+- **Never run on a watch.** The release build passes the 45 KB gate and a whole workout runs in
+  the lite simulator, but the simulator is not a watch: it ignores taps, says "rectangle" for a
+  round screen, is fixed to zh-CN and has no phone. Everything about how the screens look on a
+  real screen, how the touch feels and whether the text fits is unseen. The project files were
+  written from Huawei's sample and have not been imported into DevEco Studio's own window. The
+  tests run the logic and the screens' data under Node, not Huawei's engine.
+- **The four points to learn first on a real watch.**
+  1. **The memory.** What heap a watch gives a JavaScript app is unknown. The app needs about 192 KB
+     in the simulator and misses its 160 KB target (see "Size and memory").
+  2. **`.js` or `.bc`.** The release build makes `.bc` (bytecode) files where it can, and the
+     package ships them beside the `.js`. The simulator loads the `.js`. Which one a watch runs, and
+     whether bytecode takes less heap, is unknown. The size gate checks both kinds of file.
+  3. **The page switch on hardware.** A switch takes 5 to 25 ms in the simulator, and no blank frame
+     was caught, but the simulator's frame stream is not every frame. It happens at every Done
+     (Set to Rest), so a flash or a slow switch on a real watch would be seen at once.
+  4. **The region codes.** Which `<lang>-<REGION>` names Huawei watches report is unknown; a watch
+     on a code with no file shows English.
 - **The language subset is Huawei's promise, not a test.** Huawei's docs list ten ECMAScript 6
   features lite watches run (let and const, arrow functions, classes, default values, destructuring
   and destructuring patterns, enhanced object literals, `for...of`, rest parameters, template
@@ -640,21 +801,21 @@ sample code; "not verified" means a blog, a third-party project or a guess.
   `Object.assign`, which `syntax.test.js` and `methods.test.js` enforce. The core's header says the
   build must turn what is used into what the engine runs, and that nothing checks that. Whether the
   real engine, with its build switches, runs even this is not verified.
-- **`Date`, `setTimeout` and `setInterval` are in no Huawei lite page.** The page uses `Date.now()` for
-  the clock and `setTimeout` for its one-second loop, and the core needs both. The code comment
-  says so (`// unsure: Date is not in Huawei's lite docs; check on a real watch`). If either is
-  missing, the app cannot run its clock.
+- **`Date`, `setTimeout` and `setInterval` are in no Huawei lite page.** The app uses `Date.now()`
+  for the clock and `setTimeout` for its clock loop, and the core needs both. They work in the
+  simulator and the code comment says so (`// unsure: Date is not in Huawei's lite docs; check on a
+  real watch`). If either is missing on a watch, the app cannot run its clock.
 - **What happens to the page when the screen sleeps is undocumented.** Huawei describes no background
   running for lite JavaScript apps. The watch app assumes the page stops (no clock, no messages)
-  when hidden, ends its timers on `onHide`, and works the rest and hold times out from the clock on
-  `onShow`. No rest buzz is promised while the screen is off. The vibrator has `short` and `long`
+  when hidden, stops its clock, the sensor and the screen lock when the page is hidden (`A.hide` in
+  `app.js`), and works the rest and hold times out from the clock when it is shown again. No rest buzz is promised while the screen is off. The vibrator has `short` and `long`
   only, and Huawei documents it for a live app.
 - **The heart-rate permission** (`READ_HEALTH_DATA`) and the `reqPermissions` block in `config.json`
   were assembled from Huawei's field list and a third-party project's real file, not copied from a
   sample that reads heart rate. The sensor, the permission prompt and whether the app can read
   heart rate on every watch model are not verified.
-- **Languages the font may not draw.** Arabic, Bengali, Persian, Hindi and Thai show English until
-  someone looks (`NO_GLYPHS` in `view.js`: "check on a real watch and empty this list if it does").
+- **Languages the font may not draw.** Arabic, Bengali, Persian, Hindi and Thai have no language
+  file, so they show English, until someone checks on a real watch whether the font draws them.
   Huawei says the lite text component supports only the SourceHanSansSC-Regular font. Japanese has no
   watch words yet (the Wear OS watch has none).
 - **Text across the link.** Frames are ASCII-escaped because how Huawei carries other text is not
@@ -679,8 +840,8 @@ sample code; "not verified" means a blog, a third-party project or a guess.
   for a session if Huawei Health's first list of watches is empty or fails; every hello makes the
   page resend to every link; and the page's `build` words are wrong for a Play or GitHub build
   without ids.
-- **Memory and size.** No limit on a lite app's size or memory is documented; the Garmin app's tricks
-  for small watches are left out. Saving is cut into parts of 3,000 characters because Huawei's docs say the file
+- **Memory and size.** The 48 KB file limit is from Huawei's engine source, the heap size of a real
+  watch is not documented (see "Size and memory"). Saving is cut into parts of 3,000 characters because Huawei's docs say the file
   API reads at most 4 KB per call; one write near 4 KB is from a blog (not verified). A failed delete of an old
   part leaves the file behind (`// lean:` in `store.js`: nothing reads it, and a new save under the
   same generation overwrites it; add a sweep if the folder is ever seen to fill up).

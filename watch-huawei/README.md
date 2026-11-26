@@ -25,12 +25,13 @@ huawei-sim.mjs                                simulator smoke: builds a temp cop
 test/                                         Node tests for everything above except wearengine.js
 ```
 
-Everything that can be plain JavaScript is, and runs under Node. Only `pages/index/index.js` and
-`wearengine.js` touch Huawei's APIs.
+Everything that can be plain JavaScript is, and runs under Node. Huawei's APIs are touched only in
+`app.js` (the clock, the sensor, the buzz, the files), `common/page-glue.js` (the link, the router;
+every page uses it) and `wearengine.js`.
 
 ## The phone's package
 
-`PHONE_PACKAGE` in `pages/index/index.js` is the release phone app (`ch.duartesantos.opengym`). A debug
+`PHONE_PACKAGE` in `common/page-glue.js` is the release phone app (`ch.duartesantos.opengym`). A debug
 phone build is `ch.duartesantos.opengym.test`: set that, and the same pair in `config.json`'s
 `supportLists` (a test checks they agree), to try the watch against one.
 
@@ -39,6 +40,17 @@ phone build is `ch.duartesantos.opengym.test`: set that, and the same pair in `c
 ```bash
 cd watch-huawei && npm test      # node's own runner, no install needed
 ```
+
+The built files must stay under 45 KB each and a workout must run in the simulator's 192 KB heap.
+Neither runs in `npm test`; both need DevEco Studio (the setup is in the guide):
+
+```bash
+node watch-huawei/huawei-size.mjs   # release build, fails over 45 KB (--report only prints)
+node watch-huawei/huawei-sim.mjs    # simulator smoke, prints the heap peak
+```
+
+Rule for new code: nothing `app.js` holds may be a function a page made (it keeps that page in the
+heap). The guide's "Size and memory" has the sizes and the reason.
 
 `test/syntax.test.js` holds every source file to the language subset the lite engine promises
 (no classes, spread, destructuring, template strings, `find`, `includes`, ...).
