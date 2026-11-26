@@ -169,9 +169,11 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
 
   const viewNow = () => fixedView || views.view
   const level = () => (elbowRow == null ? null : Math.abs(elbowRow - 0.5) <= DROP_LEVEL_ROW && Math.abs(roll) <= DROP_LEVEL_ROLL)
-  // A view the drill cannot judge, or one off the side with the phone not at elbow height: refused.
-  const supported = v => !v || (drill.views.includes(v) && (v === 'side' || level() !== false))
-  const judged = v => v != null
+  // A view the drill cannot judge: refused. Off the side with the phone not at elbow height and
+  // level, the reps are counted and timed (the drop is the shoulder's against the arm's own length)
+  // but the depth, the shoulder against the elbow, is not judged.
+  const supported = v => !v || drill.views.includes(v)
+  const judged = v => v != null && (v === 'side' || level() !== false)
   const count = () => reps.filter(r => r.counted).length
   const reachedNow = () => !!acc && acc.rec.rawPeak >= DROP_PHASES.minRep && dropMeets(acc.judged ? dropDepthOf(acc.maxHd) : null, std)
 
