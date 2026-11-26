@@ -315,21 +315,14 @@ export async function explainHelp(uid, body) {
       const ids = unprivilegedIds();
       if (ids) shareJobDir(jobDir, ids);
     }
-    const send = fetchFor(TIMEOUT_MS);
-    let sent = false;
-    const fetchOnce = async (...args) => {
-      if (sent) throw new Error('app help allows one provider request');
-      sent = true;
-      return send(...args);
-    };
     const response = await adapter.invoke({
       cfg, model: cfgStore.modelFor(cfg), jobDir, env: cfgStore.jobEnv(jobDir || os.tmpdir(), cfgStore.credentialFor(uid)),
-      timeoutMs: TIMEOUT_MS, fetch: fetchOnce, signal: ctl.signal,
+      timeoutMs: TIMEOUT_MS, fetch: fetchFor(TIMEOUT_MS), singleInference: true, signal: ctl.signal,
       maxTokens: Math.min(cfg.maxOutputTokens || 512, 512),
       prompt: adapter.spawns === false ? input : system + '\n' + input, system
     });
     if (ctl.signal.aborted || response.code !== 0) return null;
-    const answer = JSON.parse(response.text);
+    const { value: answer } = extractJSON(response.text);
     return answer && Object.keys(answer).length === 1 && Number.isInteger(answer.index) &&
       answer.index >= 0 && answer.index < entries.length ? answer.index : null;
   } catch {

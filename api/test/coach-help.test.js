@@ -8,7 +8,7 @@ const jobs = await import('../coach/jobs.js');
 const { coachRoutes } = await import('../coach/routes.js');
 const { adapterFor } = await import('../coach/adapters/index.js');
 const { forcePrivilegeVerdict } = await import('../coach/adapters/spawn.js');
-cfg.save({ enabled: true, provider: 'fixture', caps: { perProfileDaily: 3, instanceDaily: 0 } });
+cfg.save({ enabled: true, provider: 'fixture', caps: { perProfileDaily: 4, instanceDaily: 0 } });
 forcePrivilegeVerdict({ ok: true, dropped: false });
 
 test('app help sends only the question and visible steps once; keeps training and pending proposals intact', async t => {
@@ -47,13 +47,37 @@ test('app help sends only the question and visible steps once; keeps training an
   assert.deepEqual(reply1, { status: 200, body: { index: 0 } });
   assert.deepEqual(JSON.parse(calls[0].prompt.split('\n').at(-1)), body);
   assert.equal(calls[0].web, undefined);
-  await assert.rejects(calls[0].fetch('data:text/plain,first').then(() => calls[0].fetch('data:text/plain,again')), /one provider request/);
+  // Authentication and model discovery are distinct from the one generation request.
+  await calls[0].fetch('data:text/plain,refresh');
+  await calls[0].fetch('data:text/plain,models');
+  assert.equal(calls[0].singleInference, true);
+  reply = '<think>{internal}</think>\n' + '```json\n{"index":0}\n```';
+  assert.deepEqual(await request(), { status: 200, body: { index: 0 } });
   for (reply of ['{"index":0,"link":"https://untrusted.example"}', '{"index":9}']) {
     assert.deepEqual(await request(), { status: 200, body: { index: null } });
   }
   assert.equal((await request()).status, 429);
-  assert.equal(calls.length, 3);
-  assert.equal(jobs.capState(uid).used, 3);
+  assert.equal(calls.length, 4);
+  assert.equal(jobs.capState(uid).used, 4);
   assert.deepEqual(jobs.readState(uid), state);
   assert.deepEqual(jobs.readUser(uid).pending, pending);
+});
+
+test('single inference on a compatible provider uses one plain request, even on gateway errors', async () => {
+  const adapter = adapterFor('compatible');
+  const opts = { cfg: { providerOptions: { compatible: { baseUrl: 'https://gateway.example/v1' } } },
+    prompt: 'Choose an entry', model: 'example', singleInference: true, retryDelayMs: 0 };
+  for (const status of [200, 404, 429, 503]) {
+    const calls = [];
+    const result = await adapter.invoke({ ...opts, fetch: async (url, init) => {
+      const body = JSON.parse(init.body);
+      calls.push(body);
+      const refused = body.response_format || body.stream;
+      return Response.json(refused ? { error: { message: 'Unsupported response_format or stream' } }
+        : { choices: [{ message: { content: '{"index":0}' }, finish_reason: 'stop' }] }, { status: refused ? 400 : status });
+    } });
+    assert.equal(calls.length, 1, String(status));
+    assert.equal(result.code === 0, status === 200);
+    if (status === 200) assert.equal(result.text, '{"index":0}');
+  }
 });
