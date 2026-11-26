@@ -73,7 +73,7 @@ const violations = (src, file) => RULES.filter(([name, re]) => !(file === 'app.j
 
 test('every watch source file stays inside the lite engine\'s language subset', () => {
   const files = sources('')
-  ;['app.js', 'common/core.js', 'common/frames.js', 'common/radio.js', 'common/store.js', 'common/en.js', 'common/view-common.js', 'common/view-home.js', 'common/view-lift.js', 'common/view-rest.js', 'pages/index/index.js', 'pages/lift/index.js', 'pages/rest/index.js']
+  ;['app.js', 'common/core.js', 'common/frames.js', 'common/radio.js', 'common/store.js', 'common/en.js', 'common/page-glue.js', 'common/view-common.js', 'common/view-home.js', 'common/view-lift.js', 'common/view-rest.js', 'pages/index/index.js', 'pages/lift/index.js', 'pages/rest/index.js']
     .forEach(f => assert.ok(files.indexOf(f) >= 0, f + ' is checked'))
   files.forEach(f => assert.deepEqual(violations(readFileSync(join(root, f), 'utf8'), f), [], f))
 })

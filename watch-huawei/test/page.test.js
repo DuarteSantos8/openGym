@@ -107,17 +107,22 @@ const modules = {
 }
 const appJs = readFileSync(new URL('../entry/src/main/js/MainAbility/app.js', import.meta.url), 'utf8')
 const common = new URL('../entry/src/main/js/MainAbility/common/', import.meta.url)
+const glueJs = readFileSync(new URL('page-glue.js', common), 'utf8')
 let loads = 0
 // The page and the app (app.js) are loaded the way the framework does: the Huawei modules are fakes, the
 // page reaches the app through getApp(). The app is made again with each page: a new boot of the watch.
 async function loadFrom (src, W) {
   // the number keeps each load's fake modules apart: Node caches a data: module by its text
-  Object.keys(modules).forEach(m => { src = src.replace("'" + m + "'", "'data:text/javascript,export%20default%20globalThis.__W." + modules[m] + "%3B//" + loads + "'") })
-  src = src.replace("'../../common/wearengine.js'", "'data:text/javascript,export%20const%20P2pClient%3DglobalThis.__W.P2pClient%3Bexport%20const%20Message%3DglobalThis.__W.Message%3Bexport%20const%20Builder%3DglobalThis.__W.Builder%3B//" + loads + "'")
-  src = src.replace(/'(?:\.\.\/\.\.\/common|\.\/common)\/([a-z-]+\.js)'/g, (_, f) => "'" + new URL(f, common).href + "'")
+  const fake = t => {
+    Object.keys(modules).forEach(m => { t = t.replace("'" + m + "'", "'data:text/javascript,export%20default%20globalThis.__W." + modules[m] + "%3B//" + loads + "'") })
+    t = t.replace(/'(?:\.\.\/\.\.\/common|\.\/common|\.)\/wearengine\.js'/, "'data:text/javascript,export%20const%20P2pClient%3DglobalThis.__W.P2pClient%3Bexport%20const%20Message%3DglobalThis.__W.Message%3Bexport%20const%20Builder%3DglobalThis.__W.Builder%3B//" + loads + "'")
+    return t.replace(/'(?:\.\.\/\.\.\/common|\.\/common|\.)\/([a-z-]+\.js)'/g, (_, f) => f === 'page-glue.js' ? "'./glue.mjs'" : "'" + new URL(f, common).href + "'")
+  }
   const tmp = mkdtempSync(join(tmpdir(), 'og-page-'))
   const f = join(tmp, 'page.mjs')
-  writeFileSync(f, src)
+  // the page glue is a module of each page's bundle: a copy for each load, with the fakes, as the framework builds it
+  writeFileSync(join(tmp, 'glue.mjs'), fake(glueJs))
+  writeFileSync(f, fake(src))
   try { return (await import(pathToFileURL(f).href + '?' + Math.random())).default } finally { rmSync(tmp, { recursive: true }) }
 }
 async function loadPage (W, sameApp, name) {
@@ -669,9 +674,9 @@ test('page: the 3-2-1 ticks every quarter second, and the count buzzes', async (
 
 test('config.json: the supportLists pair is the page\'s package and fingerprint, and the bundle name is the phone link\'s', () => {
   const cfg = JSON.parse(readFileSync(new URL('../entry/src/main/config.json', import.meta.url), 'utf8'))
-  const pair = src => src.match(/const PHONE_PACKAGE = '([^']+)'/)[1] + ':' + src.match(/const PHONE_FINGERPRINT = '([^']+)'/)[1]
-  assert.equal(cfg.module.metaData.customizeData[0].value, pair(js))
-  assert.equal(pair(PG.lift.js), pair(js)) // each page links on its own, with the same pair
+  const pair = glueJs.match(/const PHONE_PACKAGE = '([^']+)'/)[1] + ':' + glueJs.match(/const PHONE_FINGERPRINT = '([^']+)'/)[1]
+  assert.equal(cfg.module.metaData.customizeData[0].value, pair)
+  Object.keys(PG).forEach(n => assert.doesNotMatch(PG[n].js, /PHONE_FINGERPRINT|PHONE_PACKAGE/, n + ' has no pair of its own: the glue has the one')) // one place
   assert.equal(cfg.app.bundleName, 'ch.duartesantos.opengym.huawei')
 })
 
@@ -801,4 +806,37 @@ test('config.json lists the home page first and a folder with an hml, css and js
   const cfg = JSON.parse(readFileSync(new URL('../entry/src/main/config.json', import.meta.url), 'utf8'))
   assert.deepEqual(cfg.module.js[0].pages, ['pages/index/index', 'pages/lift/index', 'pages/rest/index'])
   cfg.module.js[0].pages.forEach(p => ['js', 'hml', 'css'].forEach(ext => assert.doesNotThrow(() => readFileSync(new URL('../entry/src/main/js/MainAbility/' + p + '.' + ext, import.meta.url)), p + '.' + ext)))
+})
+
+/* ---------- task 9, fix round 1 ---------- */
+
+test('a page keeps only the names it declared: the screens\' other flags and fields are not written into it', async () => {
+  const W = world(new Map())
+  try {
+    let page = await boot(W)
+    fromPhone(W, snap())
+    let name = 'index'
+    const stray = () => Object.keys(page).filter(k => ['$t', '$refs', 'def'].indexOf(k) < 0 && typeof page[k] !== 'function' && fieldsIn(PG[name]).indexOf(k) < 0)
+    assert.deepEqual(stray(), [])
+    page.start(); page = await follow(W, page); name = 'lift'; W.advance(4)
+    assert.equal(page.s_set, true)
+    assert.deepEqual(stray(), []) // no s_count or s_summary on the lift page
+    assert.equal('s_idle' in page, false)
+  } finally { restore() }
+})
+
+test('a page that is about to leave neither links nor says hello', async () => {
+  const W = world(new Map())
+  try {
+    let page = await boot(W)
+    fromPhone(W, snap())
+    page.start(); page = await follow(W, page); W.advance(4)
+    const [regs, sent] = [W.registers, W.sent.length]
+    const home = await nextPage(W, 'index') // a home page made while the workout is on the lift page's screen
+    page.def.onHide.call(page); page.def.onDestroy.call(page)
+    home.def.onInit.call(home); home.def.onShow.call(home); W.settle(); W.advance(2)
+    assert.deepEqual([W.registers, W.sent.length], [regs, sent])
+    assert.equal(globalThis.getApp().data.get().radio, null)
+    assert.deepEqual(W.replaced, ['pages/lift/index'])
+  } finally { restore() }
 })

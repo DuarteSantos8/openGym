@@ -31,16 +31,16 @@ export const heapPeak = (pipe) => Math.max(0, ...[...pipe.matchAll(/"peakAllocBy
 
 // every page copy tells the driver which page is up (A.pg), because the workout switches pages and a tap goes to the one showing
 export function hook(src) {
-  const at = 'K = getApp().data.k()'
+  const at = 'attach(G.init());'
   if (!src.includes(at)) throw new Error('hook: anchor not found in the page, update huawei-sim.mjs')
-  return src.replace(at, at + '\n    A.pg = this')
+  return src.replace(at, at + ' G.A.pg = this;')
 }
 // hook the debug phone into the home page copy (the first page, which makes the core): the import, and a call right after it is made
 export function inject(src) {
   const imp = "import { blank,"
   const make = 'A.make(stored)'
   if (!src.includes(imp) || !src.includes(make)) throw new Error('inject: anchor not found in the page, update huawei-sim.mjs')
-  return hook(src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(page, A, K)'))
+  return hook(src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(page, A, G.K)'))
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
