@@ -13,8 +13,7 @@ const rule = c => { const m = css.match(new RegExp('\\.' + c + '\\s*\\{([^}]*)\\
 const USES = {
   skip: 'capMid', cancel: 'pill', menu: 'menuS', done: 'done', save: 'done', start_hold: 'done', finish_workout: 'wide', next_exercise: 'wide',
   start_workout: 'btn', quick_start: 'btn', routines: 'btn', keep_going: 'btn', finish_and_save: 'btn', discard_workout: 'btn',
-  previous_set: 'btn', overview: 'btn', skip_set: 'btn', continue_workout: 'btn', stop: 'btn', try_again: 'btnA',
-  checkin_skip: 'longS', save_and_start: 'longA', add_set: 'btn', remove_set: 'btn'
+  previous_set: 'btn', overview: 'btn', skip_set: 'btn', continue_workout: 'btn', stop: 'btn', try_again: 'btnA'
 }
 const NO_GLYPHS = ['ar', 'bn', 'fa', 'hi', 'th'] // shown in English: see view.js
 const wide = ch => /[ᄀ-ᇿ⺀-鿿가-힯豈-﫿＀-￯]/.test(ch)
@@ -31,26 +30,6 @@ test('labels fit their buttons on the round screen (block 70% of 466) and the re
       ;[466 * 0.7, 336].forEach(scr => {
         const label = words[KEYS.indexOf(k)]
         if (need(label, fs) > frac * scr - 8) over.push(lang + ' ' + k + ' (' + USES[k] + ' ' + Math.round(frac * scr) + 'px): "' + label + '" ~' + Math.round(need(label, fs)))
-      })
-    })
-  })
-  assert.deepEqual(over, [])
-})
-
-// The check-in's title is one line, its scale words (1 = lo, 5 = hi) may take two.
-test('the check-in\'s title fits one line and its scale words two, on both screens', () => {
-  const over = []
-  const lines = (label, fs, box) => Math.ceil(need(label, fs) / (box - 8))
-  Object.keys(TEXTS).filter(l => NO_GLYPHS.indexOf(l) < 0).forEach(lang => {
-    const words = TEXTS[lang].split('\n')
-    const word = k => words[KEYS.indexOf(k)]
-    ;[466 * 0.7, 336].forEach(scr => {
-      const head = rule('head')
-      if (lines(word('checkin_title'), parseFloat(head['font-size']), parseFloat(head.width) / 100 * scr) > 1) over.push(lang + ' title')
-      ;['lo', 'hi'].forEach(c => {
-        const p = rule(c)
-        const rows = Math.floor(parseFloat(p.height) / (parseFloat(p['font-size']) + 4))
-        ;['sleep', 'energy', 'sore'].forEach(q => { if (lines(word('checkin_' + q + '_' + c), parseFloat(p['font-size']), parseFloat(p.width) / 100 * scr) > rows) over.push(lang + ' ' + q + ' ' + c) })
       })
     })
   })

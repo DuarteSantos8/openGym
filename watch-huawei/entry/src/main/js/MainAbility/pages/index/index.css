@@ -28,11 +28,6 @@
 .name { width: 100%; height: 30px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .small { width: 90%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .tiny { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.lo { width: 48%; height: 44px; font-size: 18px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
-.hi { width: 48%; height: 44px; font-size: 18px; text-align: right; color: #a1a1a6; text-overflow: ellipsis; }
-.note { width: 90%; height: 96px; font-size: 20px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
-.head { width: 100%; height: 32px; font-size: 20px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
-.headW { width: 80%; height: 32px; font-size: 20px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .hint { width: 100%; height: 70px; font-size: 22px; text-align: center; color: #a1a1a6; }
 .wrap { width: 100%; height: 80px; font-size: 26px; text-align: center; color: #a1a1a6; }
 
@@ -54,14 +49,9 @@
 .done { width: 140px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
 .done:active { background-color: #7aad28; }
 .doneOff { width: 140px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #ffffff; background-color: #1c1c1e; }
-.longA { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 16px; color: #0c0e12; background-color: #a3e635; }
-.longA:active { background-color: #7aad28; }
-.dot { width: 17.2%; height: 56px; margin-top: 4px; margin-left: 1.25%; margin-right: 1.25%; border-radius: 28px; border-width: 2px; border-color: #a3e635; font-size: 24px; color: #ffffff; background-color: #000000; }
-.dot:active { background-color: #2c2c2e; }
 .arrowOff { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #48484a; background-color: #1c1c1e; }
 .arrow { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #ffffff; background-color: #1c1c1e; }
 .step { width: 40%; height: 56px; margin-top: 4px; margin-left: 6%; border-radius: 28px; font-size: 28px; color: #a3e635; background-color: #0a0f04; }
-.chip { width: 21%; height: 56px; margin-top: 4px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 22px; color: #ffffff; background-color: #1c1c1e; }
 /* the rest, as the Apple Watch's: grey capsules, chips outlined in their effort colour */
 .menuS { width: 64px; height: 56px; margin-top: 0px; border-radius: 28px; font-size: 14px; color: #ffffff; background-color: #1c1c1e; }
 .hrTop { width: 40%; height: 26px; font-size: 22px; text-align: right; color: #ff453a; }
@@ -93,71 +83,34 @@
 .row2s { width: 100%; height: 66px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
 .row3 { width: 100%; height: 56px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
 .row4 { width: 100%; height: 60px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
-.row5 { width: 100%; height: 60px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
-.pair { width: 100%; height: 44px; margin-top: 0px; flex-direction: row; align-items: flex-start; justify-content: space-between; }
 .pick { width: 88%; height: 68px; margin-top: 8px; border-radius: 16px; background-color: #1c1c1e; flex-direction: column; align-items: center; justify-content: center; }
 
-/* Metrics pages: a heading, rows of 38 px, "n/total" at the foot. The bars of Pulse take their height from the
-   data (style="height: {{pb0}};"), 8 px when it is not bound. */
+/* the Metrics page: a back arrow, the time big, the heart rate, sets and volume */
 .mbar { width: 100%; height: 56px; flex-direction: row; align-items: center; justify-content: flex-start; }
-.mHeadB { width: 66%; height: 26px; font-size: 20px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.mHeadBR { width: 66%; height: 26px; font-size: 20px; text-align: left; color: #ff453a; text-overflow: ellipsis; }
 .tinyC { width: 60%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .bigY { width: 100%; height: 64px; font-size: 56px; text-align: left; color: #ffd60a; }
-.bigR { width: 100%; height: 64px; font-size: 56px; text-align: left; color: #ff453a; }
 .midR { width: 100%; height: 40px; font-size: 32px; text-align: left; color: #ff453a; }
 .midL { width: 100%; height: 40px; font-size: 32px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .tinyL { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.tinyY { width: 60%; height: 26px; font-size: 22px; text-align: center; color: #ffd60a; text-overflow: ellipsis; }
 .colL { width: 46%; height: 66px; flex-direction: column; align-items: flex-start; justify-content: center; }
 .tRow { width: 100%; height: 32px; flex-direction: row; align-items: center; justify-content: flex-start; }
 .tick { width: 22px; height: 22px; margin-right: 8px; border-radius: 11px; background-color: #a3e635; }
-.pos { width: 40%; height: 26px; font-size: 20px; text-align: center; color: #a1a1a6; }
-.mrow { width: 100%; height: 38px; margin-bottom: 4px; border-radius: 12px; background-color: #1e2a0b; flex-direction: row; align-items: center; justify-content: center; }
-.mrName { width: 62%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.mrVal { width: 30%; height: 26px; font-size: 22px; text-align: right; color: #ffffff; }
-.zName { width: 20%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; }
-.zRange { width: 50%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
-.zTime { width: 28%; height: 26px; font-size: 22px; text-align: right; color: #ffffff; }
-.mEmpty { width: 80%; height: 52px; font-size: 22px; text-align: center; color: #a1a1a6; }
-.mMore { width: 60%; height: 26px; font-size: 22px; text-align: center; color: #a1a1a6; }
-.pbars { width: 100%; height: 64px; margin-bottom: 8px; flex-direction: row; align-items: flex-end; justify-content: center; }
-.pbar { width: 16px; height: 8px; margin-left: 4px; margin-right: 4px; border-radius: 4px; background-color: #a3e635; }
 
-/* the summary: a list, the still medal first (stacked divs: a rim, a face, the text; features-spec 2.3). The
-   metal colours are bound from the data and are never the accent. */
+/* the summary: a list, the time big, sets and volume, heart rate, sync */
 .sumList { width: 100%; height: 84%; }
 .liT { width: 100%; height: 72px; }
 .liTi { width: 76%; margin-left: 12%; height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; }
 .sTitle { width: 80%; height: 32px; font-size: 26px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .sName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
-.liM { width: 100%; height: 262px; }
-.liMi { width: 100%; height: 262px; flex-direction: row; align-items: center; justify-content: center; }
-.medal { width: 250px; height: 250px; }
-.rim { width: 250px; height: 250px; left: 0px; top: 0px; border-radius: 125px; border-width: 3px; border-color: #7a5a1e; background-color: #d9b45f; }
-.face { width: 210px; height: 210px; left: 20px; top: 20px; border-radius: 105px; border-width: 2px; border-color: #bb9545; background-color: #f2d791; }
-.medIn { width: 210px; height: 210px; left: 20px; top: 20px; flex-direction: column; align-items: center; justify-content: center; }
-.mTime { width: 100%; height: 64px; font-size: 56px; text-align: center; color: #2a1c07; }
-.mUnit { width: 100%; height: 26px; font-size: 20px; letter-spacing: 2px; text-align: center; color: #2a1c07; }
-.mVol { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #2a1c07; text-overflow: ellipsis; }
-.gems { width: 100%; height: 24px; flex-direction: row; align-items: center; justify-content: center; }
-.gem { width: 18px; height: 18px; margin-left: 3px; margin-right: 3px; border-radius: 4px; border-width: 2px; border-color: #7a5a1e; background-color: #fff3cf; }
 .liS { width: 100%; height: 40px; }
 .liSi { width: 100%; height: 40px; flex-direction: row; align-items: center; justify-content: center; }
-.liP { width: 100%; height: 68px; }
-.liPi { width: 100%; height: 68px; flex-direction: row; align-items: center; justify-content: center; }
-.plate { width: 76%; height: 60px; border-radius: 12px; background-color: #dcb45e; flex-direction: column; align-items: center; justify-content: center; }
-.pName { width: 92%; height: 24px; font-size: 22px; text-align: center; color: #2a1c07; text-overflow: ellipsis; }
-.pNums { width: 92%; height: 24px; font-size: 22px; text-align: center; color: #2a1c07; text-overflow: ellipsis; }
 .liD { width: 100%; height: 100px; }
 .liDi { width: 100%; height: 100px; flex-direction: column; align-items: flex-start; justify-content: center; }
 
-/* the set, as the Apple Watch's: a dark-lime pill and tiles, the band a yellow chip, the partner in the accent */
+/* the set, as the Apple Watch's: a dark-lime pill and tiles, the partner in the accent */
 .pill { width: 138px; height: 56px; border-radius: 28px; font-size: 18px; color: #a3e635; background-color: #1e2a0b; }
 .hrSet { width: 130px; height: 26px; font-size: 20px; text-align: right; color: #ff453a; text-overflow: ellipsis; }
 .hrC { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ff453a; }
-.chipY { width: 56%; height: 26px; border-radius: 13px; background-color: #ffd60a; flex-direction: row; align-items: center; justify-content: center; }
-.chipYt { width: 100%; height: 22px; font-size: 18px; text-align: center; color: #000000; text-overflow: ellipsis; }
 .partnerT { width: 40%; height: 26px; font-size: 20px; text-align: center; text-overflow: ellipsis; }
 .tLabel { width: 100%; height: 22px; margin-top: 4px; font-size: 18px; text-align: center; color: #a3e635; text-overflow: ellipsis; }
 .numRow { width: 100%; height: 48px; flex-direction: row; align-items: flex-end; justify-content: center; }
@@ -165,8 +118,7 @@
 .unitT { width: 30%; height: 26px; margin-left: 4%; font-size: 18px; text-align: left; color: #a3e635; }
 .numC { width: 100%; height: 48px; font-size: 42px; text-align: center; color: #d9f99d; }
 
-/* the workout menu and the confirms: Add set in the dark lime, what throws something away outlined red */
-.btnG { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 20px; color: #a3e635; background-color: #1e2a0b; }
+/* the workout menu and the confirms: what throws something away outlined red */
 .btnR { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ff453a; font-size: 20px; color: #ff453a; background-color: #000000; }
 .btnO { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ffffff; font-size: 20px; color: #ffffff; background-color: #000000; }
 
@@ -177,7 +129,7 @@
 .oName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .oCnt { width: 100%; height: 22px; font-size: 18px; text-align: left; color: #a1a1a6; }
 
-/* before the workout, as the Apple Watch's: the big name, the lime-outlined 3-2-1 ring, the weight in an outlined box, a round X to leave */
+/* before the workout, as the Apple Watch's: the big name, the lime-outlined 3-2-1 ring, a round X to leave */
 .nameBig { width: 100%; height: 46px; font-size: 40px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
 .cRing { width: 200px; height: 200px; margin-top: 8px; margin-bottom: 8px; }
 .cArc { width: 100%; height: 100%; start-angle: 0; total-angle: 360; stroke-width: 12px; background-color: #2c2c2e; color: #a3e635; }
@@ -185,13 +137,6 @@
 .cGo { width: 100%; height: 44px; font-size: 36px; text-align: center; color: #a3e635; }
 .cNum { width: 100%; height: 100px; font-size: 88px; text-align: center; color: #a3e635; }
 .rowX { width: 100%; height: 64px; margin-top: 8px; flex-direction: row; align-items: center; justify-content: center; }
-.longS { width: 74%; height: 56px; margin-left: 8px; border-radius: 28px; font-size: 16px; color: #ffffff; background-color: #1c1c1e; }
-.longS:active { background-color: #2c2c2e; }
-.bwBox { width: 90%; height: 76px; margin-top: 4px; margin-bottom: 4px; border-radius: 20px; border-width: 3px; border-color: #a3e635; background-color: #0a0f04; flex-direction: row; align-items: center; justify-content: center; }
-.bwNum { width: 62%; height: 64px; font-size: 52px; text-align: right; color: #ffffff; }
-.hdrRow { width: 100%; height: 40px; flex-direction: row; align-items: center; justify-content: space-between; }
-.qL { width: 68%; height: 36px; font-size: 30px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
-.qS { width: 28%; height: 26px; font-size: 22px; text-align: right; color: #a1a1a6; }
 .rName { width: 88%; height: 30px; font-size: 26px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
 .rSub { width: 88%; height: 22px; font-size: 18px; text-align: left; color: #a3e635; text-overflow: ellipsis; }
 .topR { width: 56%; height: 26px; font-size: 20px; text-align: right; color: #a1a1a6; text-overflow: ellipsis; }
@@ -204,8 +149,6 @@
 .menuList { width: 100%; height: 72%; }
 .overList { width: 100%; height: 60%; }
 .li { width: 100%; height: 72px; }
-.liNote { width: 100%; height: 100px; }
-.noteBox { width: 100%; height: 100px; flex-direction: row; align-items: center; justify-content: center; }
 .liIn { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
 
 /* last, so a grey label stays grey whatever size class it has */

@@ -52,7 +52,6 @@ test('the dimmed arrow beside Done is as wide as an arrow and has no tap handler
   assert.equal(rule('arrowOff').match(/width:\s*(\d+)px/)[1], rule('arrow').match(/width:\s*(\d+)px/)[1])
   ;[...hml.matchAll(/<input[^>]*class="arrowOff"[^>]*>/g)].forEach(m => assert.doesNotMatch(m[0], /onclick/))
   assert.doesNotMatch(hml, /<div else class="arrow"/)
-  assert.match(rule('pbars'), /margin-bottom:\s*\d+px/) // a gap between the bars and the "2/5" under them
 })
 
 test('buttons are at least 56 px tall and text boxes have a size', () => {
@@ -159,13 +158,13 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
     assert.match(W.sent[0], /^[0-9a-z]+\.0\.1\|\{"events":\[\{"id":"h[^"]*","type":"hello"/)
 
     fromPhone(W, snap())
-    assert.deepEqual([page.title, page.name, page.startLabel], ['Today', 'Push day', 'Start workout']) // the snapshot says English
+    assert.deepEqual([page.title, page.name, page.startLabel], ['Heute', 'Push day', 'Training starten']) // the phone's language is not used: the watch's own
 
     page.start()
     assert.equal(page.s_count, true)
     W.advance(4)
     assert.equal(page.s_set, true)
-    assert.deepEqual([page.name, page.tag, page.wNum, page.doneLabel], ['Bench', 'Set 1 of 2', '60', 'Done'])
+    assert.deepEqual([page.name, page.tag, page.wNum, page.doneLabel], ['Bench', 'Satz 1 von 2', '60', 'Fertig'])
     assert.ok(W.hr, 'the heart-rate sensor runs during a workout')
     W.hr.success({ heartRate: 130 })
     W.advance(2)
@@ -205,7 +204,7 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
     const W2 = world(disk)
     const page2 = await boot(W2)
     assert.equal(page2.s_rest, true)
-    assert.equal(page2.nextName, 'Bench, set 2/2')
+    assert.equal(page2.nextName, 'Bench, Satz 2/2')
     assert.match(W2.sent[0], /"type":"hello"/)
     page2.def.onDestroy.call(page2)
     W2.settle()
@@ -233,7 +232,7 @@ test('page: a tap before the state is loaded does nothing, and a swipe right lea
   } finally { restore() }
 })
 
-test('page: in a workout a swipe left opens the Metrics pages and a swipe right goes back; it never leaves the app', async () => {
+test('page: in a workout a swipe left opens the Metrics page and a swipe right goes back; it never leaves the app', async () => {
   const W = world(new Map())
   try {
     const page = await boot(W)
@@ -243,10 +242,9 @@ test('page: in a workout a swipe left opens the Metrics pages and a swipe right 
     page.def.swipe.call(page, { direction: 'right' })
     assert.deepEqual([page.s_set, W.terminated], [true, 0])
     page.def.swipe.call(page, { direction: 'left' })
-    assert.deepEqual([page.s_mnum, page.s_set, page.mPos], [true, false, '1/3'])
-    page.def.swipe.call(page, { direction: 'left' })
-    assert.deepEqual([page.s_meffort, page.mPos], [true, '2/3'])
-    page.def.swipe.call(page, { direction: 'right' })
+    assert.deepEqual([page.s_mnum, page.s_set], [true, false])
+    page.def.swipe.call(page, { direction: 'left' }) // the one page stays
+    assert.equal(page.s_mnum, true)
     page.def.swipe.call(page, { direction: 'right' })
     assert.deepEqual([page.s_set, W.terminated], [true, 0])
     // an up or down swipe (a list scrolling) does not redraw
@@ -491,31 +489,6 @@ test('page: the first message after hello is the watch status with the app versi
     const page = await boot(W)
     const wire = W.sent.join('\n')
     assert.match(wire, /"type":"watchStatus"[^}]*"version":"1\.4\.6"/)
-    page.def.onDestroy.call(page)
-  } finally { restore() }
-})
-
-test('page: the weigh-in and check-in screens are wired: a flow from Start to the first set', async () => {
-  const W = world(new Map())
-  try {
-    const page = await boot(W)
-    fromPhone(W, snap({ settings: { lang: 'en', weighIn: true, lastBw: 80, checkin: true, checkinDay: '2000-01-01' } }))
-    page.start()
-    assert.equal(page.s_checkin, true)
-    page.ci3(); page.ci3(); page.ci3()
-    assert.equal(page.s_weighin, true)
-    assert.equal(page.bwNum, '80')
-    page.bwP01()
-    assert.equal(page.bwNum, '80.1')
-    page.bwSave()
-    assert.equal(page.s_count, true)
-    W.advance(4)
-    assert.equal(page.s_set, true)
-    W.advance(2)
-    const wire = W.sent.join('\n')
-    assert.match(wire, /"type":"dailyForm"/)
-    assert.match(wire, /"type":"weighIn"/)
-    assert.match(wire, /"bw":80\.1/)
     page.def.onDestroy.call(page)
   } finally { restore() }
 })

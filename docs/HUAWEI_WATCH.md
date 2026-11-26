@@ -673,9 +673,8 @@ sample code; "not verified" means a blog, a third-party project or a guess.
 - **`isAppInstalled` for a lite watch** may not be answered by the SDK. The link treats a watch that has
   ever spoken to it as having the app (`HuaweiLink`: "lean: unsure the SDK answers this for a lite
   watch").
-- **Known gaps from the phone review, not fixed when this was written.** The cut can jump from the
-  whole workout to the Garmin's window for a very large workout; the cut order drops fields the
-  watch reads (`last`) before fields it never reads (`muscles`, `best`, `healthType`); ids cut from
+- **Known gaps from the phone review, not fixed when this was written.** The Huawei watch gets the
+  Garmin snapshot, so its cut order is the Garmin's (`lib/garmin-snapshot.js`); ids cut from
   `acked` leave the phone's "still to name" list unnamed (a delay, no loss); the link can stay deaf
   for a session if Huawei Health's first list of watches is empty or fails; every hello makes the
   page resend to every link; and the page's `build` words are wrong for a Play or GitHub build

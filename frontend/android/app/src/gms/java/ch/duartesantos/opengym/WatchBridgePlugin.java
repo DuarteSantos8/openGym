@@ -59,8 +59,8 @@ import org.json.JSONObject;
  * with the openGym app is there, the page then adds its cut-down snapshot (`garmin`) to each
  * sendSnapshot, and the Garmin's events land in the same queue file. A Huawei watch (HuaweiLink,
  * src/hms, watch-huawei) rides along the same way: `huawei` says a Huawei watch with the app is
- * there (`garmin` is the Garmins alone), the page then adds the Huawei's own snapshot (`huawei`, fuller
- * than the Garmin's, up to 13 frames on the wire), and the `wear` object
+ * there (`garmin` is the Garmins alone), the page then adds the same cut-down snapshot for it
+ * (`huawei`, lib/garmin-snapshot.js, up to 16 frames on the wire), and the `wear` object
  * stays the Wear OS link by itself.
  *
  *   status()             { supported, activated, paired, installed, reachable, garmin, huawei, wear }
@@ -187,8 +187,8 @@ public class WatchBridgePlugin extends Plugin {
     public void sendSnapshot(PluginCall call) {
         String json = call.getString("json");
         if (json == null) { call.reject("json is required"); return; }
-        // The cut-down snapshot (lib/garmin-snapshot.js) for the Garmins, and the Huawei watches' own
-        // (lib/garmin-snapshot.js, for both); the page makes each only when status says such a watch is there.
+        // The cut-down snapshot (lib/garmin-snapshot.js) for the Garmins and the same one for the Huawei
+        // watches; the page makes each only when status says such a watch is there.
         String garmin = call.getString("garmin");
         String huawei = call.getString("huawei");
         boolean garminSent = false;

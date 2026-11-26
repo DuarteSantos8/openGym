@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 // The size gate: Huawei's lite engine refuses a file over 48 KB, so no built file may pass 45 KB.
-// Runs the release build, lists the built JS/JSON files and exits 1 if one is over the limit.
+// Clears the build's output folder, runs the release build, lists the built JS/JSON files and exits 1 if one is over the limit.
 //   node watch-huawei/huawei-size.mjs            fails when a file is too big
 //   node watch-huawei/huawei-size.mjs --report   prints the table, never fails
 // Needs DevEco Studio's command line tools (JAVA_HOME and DEVECO_SDK_HOME, docs/HUAWEI_WATCH.md).
 import { execFileSync } from 'node:child_process'
-import { readdirSync, statSync } from 'node:fs'
+import { readdirSync, rmSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const LIMIT = 46080
 const here = dirname(fileURLToPath(import.meta.url))
-const OUT = join(here, 'entry', 'build', 'default', 'intermediates', 'loader_out_lite', 'default', 'js', 'MainAbility')
+const LOADER = join(here, 'entry', 'build', 'default', 'intermediates', 'loader_out_lite')
+const OUT = join(LOADER, 'default', 'js', 'MainAbility')
 const DEVECO = '/Applications/DevEco-Studio.app/Contents'
 
 // [name, bytes] list -> the ones over the limit
@@ -21,6 +22,7 @@ const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)])
 
 function build() {
+  rmSync(LOADER, { recursive: true, force: true }) // the build does not clean it: a deleted file must not trip or hide the gate
   const env = {
     ...process.env,
     JAVA_HOME: process.env.JAVA_HOME || '/opt/homebrew/opt/openjdk@17',

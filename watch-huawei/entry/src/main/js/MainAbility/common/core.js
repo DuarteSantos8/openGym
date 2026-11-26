@@ -12,13 +12,12 @@
 //
 // SHAPE. One object `c` holds everything (the model's way, not a class):
 //   c.s     the persisted state (Garmin's field names: w, rd, set, u, rs, sy, sh, fh, p, pos, sk,
-//           rest, ob, obn, ra, rh, ck, stk; added: pl = the phone's language, ca = the day the check-in
-//           was asked here, ws = [time, version] of the last watchStatus). Plain JSON. `c.s.ob` is the
+//           rest, ob, obn, ra, rh, ck; added: ws = [time, version] of the last watchStatus). Plain JSON. `c.s.ob` is the
 //           outbox of packed events. `s.sk` (skipped sets) holds set ids 's:<sid>' (or 'exId#si' without one).
 //   c.g     what lives only until the app closes: page, lock, last, rated, fix, hold, hcd, hfor,
-//           ask, askLeft, snooze, ended, endedAt, awayAt, bpm, pre (the start flow), activityAt, ...
+//           ask, askLeft, snooze, ended, endedAt, awayAt, bpm, activityAt, ...
 //           c.g.last / c.g.fix are [exId, setIndex, side, setId]: the set is found by its id when it has one.
-//   c.hr    heart-rate sums and the workout's buffer (memory only, see "heart rate" below)
+//   c.hr    heart-rate sums (memory only, see "heart rate" below)
 //   c.link  the Link: busy, quiet, ask, began, lastTry, gen
 //   c.env   the outside world (below)
 // Every function takes `c` first when it needs the clock or the radio, `s` (= c.s) when it only
@@ -31,7 +30,6 @@
 //   env.save(s)    called after each change with c.s; the page layer stores JSON.stringify(s)
 //   env.tick()     optional monotonic milliseconds (locks, holds, link waits); default env.now()
 //   env.version    optional string: the app's version, for watchStatus (none: none is sent)
-//   env.today()    optional 'YYYY-MM-DD' of the watch's own day (check-in); default from env.now()
 //   env.buzz(p)    optional; p = [[intensity %, ms], ...]; never called when the phone's
 //                  settings.restHaptics is off
 // stored: what env.save last gave (parsed), or null/undefined for a fresh install.
@@ -49,7 +47,7 @@
 //   stepOf(s,e) unitOf(s,e) isTimed(e) isCardio(e) logged(s,pos,si,side) fixList(s)
 // WHAT THE LIFTER DOES (each returns nothing unless said)
 //   startWorkout(c, session) -> start event      finishWorkout(c, discard) -> summary|null
-//   summary(c,w,ended) -> the medal's numbers; it folds the window's records into c.s.rc (not a pure read)
+//   summary(c,w,ended) -> the summary's numbers {name, unit, dur, sets, vol, ended}
 //   pressDone(c, w, r) -> 'none'|'confirmFinish'|'next'|'hold'|'tick'|'fix'   (w, r = boxes; on a set
 //                         being fixed it saves the fix and returns 'fix')
 //   tickSet(c,pos,si,side,w,r,sec,restSec)       skipSet(c)   nextExercise(c)
@@ -58,49 +56,29 @@
 //   restAdd(c, +15|-15)  restSkip(c)             rate(c, v) (effort chip)
 //   fixLast(c) fixStep(c, by) fixSave(c, w, r) fixCancel(c)
 //   keepGoing(c, tell)                           reset(c)
-//   addSet(c, pos) -> event|null     removeSet(c, pos, si, sid?) -> event|null   (canAdd(s,pos), canRemove(s,pos,si,sid?))
-//     setId(s,pos,si) -> the row's set id|null: read it when the page offers a removal and pass it back as `sid`;
-//     with it removeSet / canRemove refuse (null / false) when that place is not that set any more.
-//     findSet(s,sid) -> [pos, si]|null.
-//   c.g.up: a number that moves on every addSet / removeSet and every snapshot that changes the set up (its place,
-//     id or numbers): a page that cached the boxes or a confirm for an older value drops it.
+//   c.g.up: a number that moves on every snapshot that changes the set up (its place, id or numbers): a page that
+//     cached the boxes for an older value loads them again.
 //   stop(c): switch a replaced core off for good (late callbacks, timers and messages do nothing, it never saves).
 //   lockFor(c, ms): the button lock, on the clock locked() reads.
-// BEFORE A START (weigh-in and check-in; the flow is in c.g.pre, not saved; section "before a start" below)
-//   startFlow(c, session) -> 'checkin'|'weighin'|'count'|null   preState(c)   preCancel(c)
-//   checkinDue(c)  checkinAnswer(c, 1..5|null) -> kind   checkinSkip(c) -> kind
-//   weighInStep(c, tenths)  weighInSet(c, w)  weighInDone(c, save) -> 'count'
-//   then startWorkout(c, preState(c).session, preState(c).bw)
 // HEART RATE (section "heart rate" below)
-//   hrSample(c, bpm) once a second   hrSamples(c)  hrStats(c, from?, to?)  hrDownsample(c, n)  hrClear(c)
+//   hrSample(c, bpm) once a second   hrSoFar(c) -> [avg, max]|null   (sums only, no buffer)
 //   sensorShouldRest(c)  (3 hours idle: the page may stop the sensor; ask again after each action)
 // WATCH STATUS: launch(c) sends it when env.version is set and it is due; watchStatus(c) does it on demand
-// SHOW AND MEASURE (step 2). Pure modules beside this one read c.s / the heart-rate buffer: records.js (the PR rules),
-//   medal.js (what the summary's medal shows: medalOf(summary, opts)), metrics.js (numbers, pulse, zones, effort, muscles,
-//   metricPages, streak, restStyle, bandOf; headers there). Here: summary(c, w, ended) now also returns `recs`, the records
-//   [[name, 'w'|'r'|'h', old, new, unit], ...] in workout order; workoutTotals(w) -> [sets, volume]; reach(c) -> 'near' |
-//   'away' | 'unknown' (REACH_MS). Saved state added: rc (records so far), ef (effort ratings given here, set key ->
-//   [value, entry place, name, id]), mu (muscles of exercises that left the window). All reset with the workout.
-// THE NOTE, THE OVERVIEW: sessionNote(c) -> '' or the phone's note (read-only)  noteOn(c)  supersetStart(s,pos)
+// SUMMARY AND METRICS: metrics.js has the one Metrics page's numbers; workoutTotals(w) -> [sets, volume].
+// OVERVIEW: supersetStart(s,pos)
 // THE PHONE
 //   onPhone(c, data) -> summary|null (a workout the phone ended while the watch had it)
 // Cardio is logged on the phone: the page offers nextExercise for it, never tickSet.
 
-import { foldRecords, recordList } from './records.js'
-
 export const EV_KEYS = ['id', 'type', 'at', 'wid', 'exId', 'entryIdx', 'setIdx', 'w', 'r', 'sec', 'side', 'hr', 'rir', 'rpe', 'routineIds', 'sid', 'restEnd', 'endsAt', 'off',
   // appended: the layout of the keys above is what an outbox stored by an older watch holds
-  'restHr', 'version', 'sleep', 'energy', 'sore', 'bw']
+  'restHr', 'version']
 export const PLACES = 9
 export const BATCH = 4
 // The outbox: `MAX` events when the phone is there (the oldest sent one goes), `HARD` when nothing has been sent (the
-// phone away the whole time). A set with a rest is two events (its setDone, then a setHr for the rest), so 160 is
-// about 80 such sets, or 160 without heart-rate events. Stored size, worst case: a setDone with a heart rate, id,
-// set id, rest end and offset is about 150 characters as JSON, a setHr about 130, so 160 events are about 23 KB
-// (8 parts of the store's 3,000 characters), on top of the workout and routines (about 15 to 20 KB): well under
-// 50 KB, 17 parts. (The old 60 / 90 held 30 / 45 such sets.)
-export const MAX = 100
-export const HARD = 160
+// phone away the whole time): the Garmin's 60 / 90, so the heap stays small and the phone's 16 acked ids keep up.
+export const MAX = 60
+export const HARD = 90
 export const NEED = 10000
 export const RETRY_UNSENT_MS = 30000
 export const RETRY_UNACKED_MS = 60000
@@ -125,7 +103,6 @@ const toF = v => (isNum(v) ? v : null)
 const strOf = v => (typeof v === 'string' ? v : v == null ? '' : String(v))
 const has = (a, x) => a.indexOf(x) >= 0
 const clone = v => JSON.parse(JSON.stringify(v))
-const assign = (a, b) => { Object.keys(b).forEach(k => { a[k] = b[k] }); return a }
 const ms = c => c.env.now()
 // A monotonic clock for durations (locks, holds, link waits): env.tick() when the page has one, so a
 // watch clock that is set mid-workout cannot stretch or cut them; else the wall clock.
@@ -136,12 +113,9 @@ export const isCardio = e => !!e && same(e.mode, 'cardio')
 
 /* ---------- state ---------- */
 export const emptyState = () => ({
-  w: null, rd: null, set: {}, u: 'kg', rs: 90, stk: null, sy: false,
+  w: null, rd: null, set: {}, u: 'kg', rs: 90, sy: false,
   sh: null, fh: [], p: {}, pos: 0, sk: [], rest: null, ob: [], obn: 0, ra: 0, rh: null, ck: [],
-  pl: null, ca: null, ws: null, // the phone's language, the day the check-in was asked, [time, version] of the last watchStatus
-  rc: {}, // records so far (records.js), by the exercise's place in the workout
-  ef: {}, // effort ratings given here: set key -> [value, entry place, exercise name, exercise id] (metrics.js effort)
-  mu: {} // sets done per muscle by exercises that left the window: entry place -> [work sets done, muscles]
+  ws: null // [time, version] of the last watchStatus
 })
 
 // What storage gave back, with anything missing filled in.
@@ -157,12 +131,11 @@ export function createCore (env, stored) {
   const c = {
     env: env,
     s: normalize(stored ? clone(stored) : null),
-    link: { busy: false, quiet: 0, ask: true, began: -1e12, lastTry: -1e12, gen: 0, fly: [], okAt: -1e12 },
+    link: { busy: false, quiet: 0, ask: true, began: -1e12, lastTry: -1e12, gen: 0, fly: [] },
     g: { page: 'set', lock: null, last: null, rated: null, fix: null, hold: null, hcd: null, hfor: null, hsec: null,
       ask: false, askLeft: false, snooze: null, ended: null, endedAt: null, awayAt: null, bpm: null, askN: 0,
-      restTotal: null, restNudged: false, restOver: false, restFor: null, n: 0, hcdN: null, activityAt: env.now(), pre: null, up: 0 },
-    hr: { setSum: 0, setN: 0, setMax: 0, allSum: 0, allN: 0, allMax: 0, from: 0, buckets: [], span: 5000, after: null },
-    ptlist: [],
+      restTotal: null, restNudged: false, restOver: false, restFor: null, n: 0, hcdN: null, activityAt: env.now(), up: 0 },
+    hr: { setSum: 0, setN: 0, setMax: 0, allSum: 0, allN: 0, allMax: 0 },
     rx: false,
     ptick: null
   }
@@ -265,16 +238,10 @@ export function ackOutbox (s, acked) {
 
 // Room for one more. Everything in the outbox is unnamed by the phone, so when it is full something unconfirmed
 // must go. Least valuable first (oldest first within a kind); each line goes only when the ones above are gone:
-//  1. a setHr (a heart rate, the set itself stays)   2. a watchStatus   3. a rest change   4. a stillHere
-//  5. a dailyForm (the check-in)   6. a correction (a fix or effort of a set: the set stays)
-//  7. an addSet or removeSet that no setDone in the outbox names (a removal leaves a planned set, nothing logged;
-//     the phone makes a row itself for a setDone with an unknown set id)   8. a weighIn
-//  9. a logged set that is not on a row the watch added   10. any logged set   11. an addSet or removeSet
-//     (only after every set, so none is kept whose row the phone would never hear was added)
-// 12. anything else but start, finish, discard   13. a finish or discard   14. a start (without it the phone holds
-// back every event of a watch workout: it goes last). Below `max` nothing goes; with none sent it grows to `hard`
-// first. A logged set is therefore the last data to go, and what goes before it is, in this order, heart rate,
-// status, rest, check-in, corrections, set edits, the weigh-in.
+//  1. a watchStatus   2. a rest change   3. a stillHere   4. a correction (a fix or effort of a set: the set stays)
+//  5. a logged set   6. anything else but start, finish, discard   7. a finish or discard   8. a start (without it the
+// phone holds back every event of a watch workout: it goes last). Below `max` nothing goes; with none sent it grows to
+// `hard` first. A logged set is therefore the last data to go.
 export function room (s, max, hard) {
   const ob = s.ob
   const sent = toI(s.obn, 0)
@@ -283,26 +250,11 @@ export function room (s, max, hard) {
   const type = i => evField(ob[i], 1)
   const isType = name => i => same(type(i), name)
   const first = test => { for (let i = 0; i < ob.length && k < 0; i++) if (test(i)) k = i }
-  const named = {} // set ids that a setDone names, and that an addSet made
-  const added = {}
-  ob.forEach((e, i) => {
-    const id = evField(e, 15)
-    if (typeof id !== 'string') return
-    if (same(type(i), 'setDone')) named[id] = true
-    if (same(type(i), 'addSet')) added[id] = true
-  })
-  const edit = i => same(type(i), 'addSet') || same(type(i), 'removeSet')
-  first(isType('setHr'))
   first(isType('watchStatus'))
   first(isType('rest'))
   first(isType('stillHere'))
-  first(isType('dailyForm'))
   first(i => same(type(i), 'setDone') && again(ob, i))
-  first(i => edit(i) && !named[evField(ob[i], 15)])
-  first(isType('weighIn'))
-  first(i => same(type(i), 'setDone') && !added[evField(ob[i], 15)])
   first(isType('setDone'))
-  first(edit)
   first(i => !same(type(i), 'start') && !same(type(i), 'finish') && !same(type(i), 'discard'))
   first(i => !same(type(i), 'start'))
   if (k < 0) k = 0
@@ -561,7 +513,7 @@ export function progress (s) {
   return [done, all]
 }
 
-// The workout as the summary shows it: name, seconds, sets, volume, unit. There is no PR here.
+// The workout as the summary shows it: name, seconds, sets, volume, unit.
 // Work sets done and the volume (in the workout's unit) over the window, or the phone's totals when they are larger
 // (the window is only part of the workout): [sets, volume]. Warm-ups, timed and cardio sets add no volume.
 export function workoutTotals (w) {
@@ -600,148 +552,42 @@ export function elapsed (c, w) {
   return Math.max(0, Math.floor(((pausedAt != null && pausedAt > 0 ? pausedAt : now) - start) / 1000))
 }
 export function summary (c, w, endedOnPhone) {
-  foldRecords(c.s.rc, w) // the window now, with the sets ticked here: what left it was folded before
   const tot = workoutTotals(w)
   const sets = tot[0]
   const volume = tot[1]
   const unit = strOf(w.unit)
-  return { name: strOf(w.name), unit: unit, dur: elapsed(c, w), sets: sets, vol: volume, ended: endedOnPhone, recs: recordList(c.s.rc) }
+  return { name: strOf(w.name), unit: unit, dur: elapsed(c, w), sets: sets, vol: volume, ended: endedOnPhone }
 }
 
 /* ---------- heart rate ----------
  * One reading a second from the page: hrSample(c, bpm). Readings outside 25..250 are no reading (the phone drops
- * a set's heart rate outside that: lib/heart-rate.js sanitizeHr). Two uses:
- *  - the sums a watch-ticked set carries (`hr` of its setDone): since the last tick, rest end or hold start;
- *  - the workout's buffer, for a set ticked on the phone (setHr) and for the rest's heart rate, and for the
- *    Pulse and Zones pages. The buffer keeps 5 s buckets [start, sum, count, max, min], at most HR_BUCKETS of
- *    them: past that neighbours merge and the bucket gets twice as long, so a long workout thins out but every
- *    average and maximum stays exact. It is in memory only (Wear's is too), one workout's, and empties when
- *    the workout ends or another starts.
- * Read it with hrSamples(c) -> [[time, bpm], ...] (a bucket's start and mean), hrStats(c, from?, to?) ->
- * {avg, max, min, n} or null (readings with a bucket start in from..to, ms on the watch's clock),
- * hrDownsample(c, n) -> at most n [time, bpm] points for a chart. */
+ * a set's heart rate outside that: lib/heart-rate.js sanitizeHr). The sums a watch-ticked set carries (`hr` of its
+ * setDone, since the last tick, rest end or hold start) and the workout's own, for the Metrics page and the summary.
+ * No buffer: a set ticked on the phone gets no heart rate from here (the Garmin's level). */
 export const HR_MIN = 25
 export const HR_MAX = 250
-export const HR_BUCKETS = 1500
-const HR_BUCKET_MS = 5000
 export function hrSample (c, bpm) {
   const h = c.hr
   c.g.bpm = bpm
   if (!(bpm >= HR_MIN && bpm <= HR_MAX) || !dictOf(c.s.w)) return
   h.setSum += bpm; h.setN += 1; if (bpm > h.setMax) h.setMax = bpm
   h.allSum += bpm; h.allN += 1; if (bpm > h.allMax) h.allMax = bpm
-  const t = ms(c)
-  const b = h.buckets
-  const last = b.length ? b[b.length - 1] : null
-  if (last && t - last[0] < h.span) {
-    last[1] += bpm; last[2] += 1
-    if (bpm > last[3]) last[3] = bpm
-    if (bpm < last[4]) last[4] = bpm
-    return
-  }
-  b.push([t, bpm, 1, bpm, bpm])
-  if (b.length > HR_BUCKETS) {
-    const merged = []
-    for (let i = 0; i < b.length; i += 2) {
-      const x = b[i]
-      const y = b[i + 1]
-      merged.push(y ? [x[0], x[1] + y[1], x[2] + y[2], Math.max(x[3], y[3]), Math.min(x[4], y[4])] : x)
-    }
-    h.buckets = merged
-    h.span *= 2
-  }
 }
-export function hrClear (c) { c.hr.buckets = []; c.hr.span = HR_BUCKET_MS; c.hr.after = null }
-export function hrSamples (c) { return c.hr.buckets.map(x => [x[0], Math.round(x[1] / x[2])]) }
-export function hrStats (c, from, to) {
-  const lo = from == null ? -Infinity : from
-  const hi = to == null ? Infinity : to
-  let sum = 0
-  let n = 0
-  let max = 0
-  let min = 1e9
-  c.hr.buckets.forEach(x => {
-    if (x[0] < lo || x[0] > hi) return
-    sum += x[1]; n += x[2]
-    if (x[3] > max) max = x[3]
-    if (x[4] < min) min = x[4]
-  })
-  return n ? { avg: Math.round(sum / n), max: Math.round(max), min: Math.round(min), n: n } : null
-}
-export function hrDownsample (c, n) {
-  const b = c.hr.buckets
-  if (!(n > 0)) return []
-  if (b.length <= n) return hrSamples(c)
-  const out = []
-  for (let i = 0; i < n; i++) {
-    let t = 0
-    let sum = 0
-    let cnt = 0
-    const from = Math.floor(i * b.length / n)
-    const to = Math.floor((i + 1) * b.length / n)
-    for (let j = from; j < to; j++) { t += b[j][0]; sum += b[j][1]; cnt += b[j][2] }
-    out.push([Math.round(t / (to - from)), Math.round(sum / cnt)])
-  }
-  return out
-}
-export function newSet (c) { c.hr.setSum = 0; c.hr.setN = 0; c.hr.setMax = 0; c.hr.from = ms(c) }
+export function newSet (c) { c.hr.setSum = 0; c.hr.setN = 0; c.hr.setMax = 0 }
 export function hrForSet (c) {
   const h = c.hr
   const out = h.setN > 0 ? [trunc(h.setSum / h.setN), h.setMax] : null
   newSet(c)
   return out
 }
+// [average, max] of the workout so far, or null.
+export function hrSoFar (c) { const h = c.hr; return h.allN > 0 ? [trunc(h.allSum / h.allN), h.allMax] : null }
 export function hrTotals (c) {
   const h = c.hr
-  const out = h.allN > 0 ? [trunc(h.allSum / h.allN), h.allMax] : null
+  const out = hrSoFar(c)
   h.allSum = 0; h.allN = 0; h.allMax = 0
   newSet(c)
   return out
-}
-// phone: watch-sync.js applyEach 'setHr' -> patchSet(by wid, exId, entryIdx, setIdx, sid) with `hr` and `restHr`,
-// each only when sanitizeHr holds (avg and max whole, 25..250, max >= avg: hrStats rounds, so it does). No `side`:
-// the phone puts it on the row. `at` lets the phone hold it back for a watch workout whose start is still on its
-// way (the phone waits for `watch-` workouts' events, a heart rate with an `at` for up to 2 days).
-function setHrEvent (c, wid, t, key, hr) {
-  const ev = { id: newId(c), type: 'setHr', wid: wid, exId: t.exId, entryIdx: t.entryIdx, setIdx: t.setIdx, at: ms(c) }
-  if (typeof t.sid === 'string' && t.sid) ev.sid = t.sid
-  ev[key] = { avg: hr.avg, max: hr.max }
-  return withOff(c, ev)
-}
-// The rest after a set is over: its heart rate goes to that set (restHr), and the next set counts from here.
-function closeRest (c, end) {
-  const h = c.hr
-  const r = h.after
-  if (!r) return
-  h.after = null
-  h.from = end
-  const hr = hrStats(c, r.from, end)
-  if (hr) send(c, setHrEvent(c, r.wid, r, 'restHr', hr))
-}
-// Sets ticked on the phone since the last snapshot (c.ptlist, oldest first): measured here like a tick on the
-// wrist, from when the set started up to the phone's tick, and sent as a setHr. As Wear's phoneTicked: not for a
-// tick from before this set's window (made while the watch was away) or one more than a minute in the watch's
-// future; a rest the phone started after it is that set's rest.
-function phoneTicksHr (c) {
-  const w = dictOf(c.s.w)
-  const list = c.ptlist
-  c.ptlist = []
-  if (!w || !list.length) return
-  const resting = !!dictOf(w.rest)
-  const o = off(c)
-  const h = c.hr
-  list.sort((a, b) => a.at - b.at)
-  list.forEach(t => {
-    const at = t.at + o // the phone's time on this clock
-    if (at <= h.from || at > ms(c) + 60000) return
-    const from = h.from // before closeRest moves it: this set's window starts where the last one ended (Wear's phoneTicked)
-    closeRest(c, at)
-    const hr = hrStats(c, from, at)
-    if (hr) send(c, setHrEvent(c, strOf(w.id), t, 'hr', hr))
-    newSet(c)
-    h.from = at
-    if (resting) h.after = { wid: strOf(w.id), exId: t.exId, entryIdx: t.entryIdx, setIdx: t.setIdx, sid: t.sid, from: at }
-  })
 }
 // Whether the heart-rate sensor may rest: three hours with nothing happening in the workout (a set done on
 // either side, a rest's end, a start, an action here), no rest or hold running. The next action wakes it: ask
@@ -818,7 +664,6 @@ export function tickSet (c, pos, si, side, w, r, sec, restSec) {
   const g = c.g
   const e = entryAt(s, pos)
   if (!e) return
-  closeRest(c, ms(c)) // the last set's rest ends here
   const ev = tickAt(c, pos, si, side, w, r, sec, hrForSet(c), ms(c), null)
   if (!ev) return
   touch(c)
@@ -836,7 +681,6 @@ export function tickSet (c, pos, si, side, w, r, sec, restSec) {
     if (!(rs > 0)) rs = toF(s.rs)
   }
   restBegin(c, tickRest(c, ev, rs), rs)
-  if (s.rest != null) c.hr.after = { wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, sid: ev.sid, from: ev.at }
   send(c, ev)
   buzz(c, [[40, 60]])
   if (atEnd && !hasMore(s)) g.page = 'over'
@@ -1038,49 +882,11 @@ export function rate (c, v) {
   if (!n) return
   const ev = fix(c, ref[0], ref[1], l[2], n[0], n[1], n[2], [kind, v])
   send(c, ev)
-  if (ev) { // for the Effort page; a rating from before the set had an id (kept by place) is replaced, not added
-    const e = entryAt(s, ref[0])
-    delete s.ef[placeKey(e, ref[0], ref[1], null)]
-    s.ef[pkey(e, ref[0], ref[1], null)] = [v, toI(e.i, ref[0]), strOf(e.name), strOf(e.id)]
-  }
   c.g.rated = v
   buzz(c, [[40, 60]])
   save(c)
 }
 
-/* ---------- the set menu: add a set, take one out ----------
- * Both change the lifter's own workout at once and go to the phone as an event; until the phone names the event
- * in `acked` it stays in the outbox, and every snapshot is shown with those events laid over it (replayEdits), so
- * an older snapshot does not undo them. After the ack the snapshot is the truth: a removal the phone refused (the
- * set was ticked there meanwhile) is simply back. No undo: a removable set is not done, so nothing logged is lost.
- * phone: watch-sync.js addWatchSet / removeWatchSet (applyEach 'addSet' / 'removeSet', only for the running workout
- * `ours`). A refused or repeated event is still acked, and the ack makes the phone send a fresh snapshot.
- *   addSet    needs `sid` matching /^[A-Za-z0-9_-]{1,40}$/ (sidOk) and not on any row of the workout yet; the exercise
- *             is A.entries[entryIdx] when its id is exId, else the first with that exId; at most 100 rows; the new row
- *             is a copy of the last (rowLike: w, r, sec, and both sides of a per-side row, never done, never a
- *             warm-up) with `w` (converted by storedWeight), `r`, `sec` of the event over it; it goes at the end
- *             (`after` is not sent).
- *   removeSet finds the row by `sid` only (exId, entryIdx and setIdx are sent for old phones, ignored); refused for a
- *             set done on either side or the exercise's only row.
- * The watch is more careful than the phone where the phone would break a pair: no add or remove on cardio or on a
- * timed per-side exercise (its two rows read as one set), and a remove only when every row of the exercise has a
- * set id (a pending tick kept by place would otherwise shift). */
-const newSid = c => { c.g.n += 1; return 'h' + ms(c).toString(36) + c.g.n.toString(36) + Math.floor(c.env.random() * 46656).toString(36) }
-const sideDone = (row, k) => { const sd = dictOf(row.sides); const o = sd ? dictOf(sd[k]) : null; return !!o && isTrue(o.done) }
-const anyDone = row => isTrue(row.done) || sideDone(row, 'L') || sideDone(row, 'R')
-const paired = e => isTimed(e) && (isTrue(e.perSide) || arrOf(e.sets).some(r => dictOf(r) && (r.side === 'L' || r.side === 'R')))
-export function canAdd (s, pos) {
-  const e = entryAt(s, pos)
-  return !!e && !!dictOf(s.w) && typeof s.w.id === 'string' && !isCardio(e) && !paired(e) && Array.isArray(e.sets) && e.sets.length < 100
-}
-export function canRemove (s, pos, si, sid) {
-  const e = entryAt(s, pos)
-  if (!e || !dictOf(s.w) || isCardio(e) || paired(e)) return false
-  const sets = arrOf(e.sets)
-  const row = dictOf(sets[si])
-  if (sid != null && !(row && same(row.sid, sid))) return false // not the set the page offered
-  return !!row && sets.length > 1 && !anyDone(row) && sets.every(r => dictOf(r) && typeof r.sid === 'string')
-}
 // [entry index, set index] of the row with this id in workout `w`, or null
 function rowAt (w, sid) {
   const es = arrOf(w.entries)
@@ -1090,98 +896,8 @@ function rowAt (w, sid) {
   }
   return null
 }
-// One addSet or removeSet over workout `w` (the watch's own, or the phone's snapshot): the phone's rules. Returns
-// whether it changed anything. The total of work sets (`w.progress[1]`) moves with it until the phone's own comes.
-function applyEdit (w, ev) {
-  const es = arrOf(w.entries)
-  let k = -1
-  es.forEach((e, i) => { if (k < 0 && dictOf(e) && toI(e.i, i) === ev.entryIdx && same(e.id, ev.exId)) k = i }) // where it was made,
-  es.forEach((e, i) => { if (k < 0 && dictOf(e) && same(e.id, ev.exId)) k = i }) // else the exercise (the phone: entryIndexOf)
-  const pr = arrOf(w.progress)
-  if (ev.type === 'addSet') {
-    if (k < 0 || !same(ev.sid, ev.sid) || rowAt(w, ev.sid) || !Array.isArray(es[k].sets) || es[k].sets.length >= 100) return false
-    const sets = es[k].sets
-    const last = sets.length ? dictOf(sets[sets.length - 1]) : null
-    const row = { sid: ev.sid }
-    if (toF(ev.w) != null) row.w = ev.w
-    if (toF(ev.r) != null) row.r = ev.r
-    if (toF(ev.sec) != null) row.sec = ev.sec
-    const sd = last ? dictOf(last.sides) : null
-    if (sd) {
-      const half = o => ({ w: dictOf(o) ? o.w : null, r: dictOf(o) ? o.r : null })
-      row.sides = { L: half(sd.L), R: half(sd.R) }
-      if (toF(ev.w) == null && last.w != null) row.w = last.w
-      if (toF(ev.r) == null && last.r != null) row.r = last.r
-    }
-    sets.push(row)
-    if (pr.length === 2) pr[1] = toI(pr[1], 0) + 1
-    return true
-  }
-  if (ev.type !== 'removeSet') return false
-  const at = rowAt(w, ev.sid)
-  if (!at) return false
-  const sets = es[at[0]].sets
-  const row = dictOf(sets[at[1]])
-  if (anyDone(row) || sets.length <= 1) return false
-  sets.splice(at[1], 1)
-  if (pr.length === 2 && !isTrue(row.warmup)) pr[1] = Math.max(0, toI(pr[1], 0) - 1)
-  return true
-}
-// What the watch added or took out that the phone has not named yet (those events are still in the outbox: the
-// snapshot's `acked` was taken out first), over the phone's snapshot, in the order made.
-function replayEdits (s, nx) {
-  s.ob.forEach(ev => {
-    const type = evField(ev, 1)
-    if ((same(type, 'addSet') || same(type, 'removeSet')) && same(evField(ev, 3), nx.id)) applyEdit(nx, unpack(ev))
-  })
-}
-// Add a set (a copy of the exercise's last, at its end). Returns the event, or null when it is not allowed.
-// A per-side row is sent without numbers: the phone copies both sides itself.
-export function addSet (c, pos) {
-  const s = c.s
-  if (!canAdd(s, pos)) return null
-  const e = entryAt(s, pos)
-  const sets = arrOf(e.sets)
-  const last = sets.length ? dictOf(sets[sets.length - 1]) : null
-  const ev = { id: newId(c), type: 'addSet', wid: strOf(s.w.id), exId: strOf(e.id), entryIdx: entryIdx(s, pos), sid: newSid(c), at: ms(c) }
-  if (last && !dictOf(last.sides)) {
-    if (toF(last.w) != null) ev.w = last.w
-    if (toF(last.r) != null) ev.r = last.r
-    if (toF(last.sec) != null) ev.sec = last.sec
-  }
-  withOff(c, ev)
-  applyEdit(s.w, ev)
-  touch(c)
-  c.g.up += 1
-  send(c, ev)
-  return ev
-}
-// Take a set out (not done, not the only one). Returns the event, or null.
-// The set id of a row, to read when the page offers a removal and to pass back to removeSet / canRemove.
-export function setId (s, pos, si) { return rowSidOf(entryAt(s, pos), si) }
-// [pos, set index] of the row with this set id in the window now, or null.
-export function findSet (s, sid) { const w = dictOf(s.w); const at = w ? rowAt(w, sid) : null; return at }
-// `sid`: the set id the page read when it offered the removal (setId). With it, the removal is refused (null) when
-// that place is not the same set any more: it was ticked, or another set sits there now. Without it, as before.
-export function removeSet (c, pos, si, sid) {
-  const s = c.s
-  if (!canRemove(s, pos, si, sid)) return null
-  const e = entryAt(s, pos)
-  const gone = e.sets[si].sid
-  const ev = withOff(c, { id: newId(c), type: 'removeSet', wid: strOf(s.w.id), exId: strOf(e.id), entryIdx: entryIdx(s, pos), setIdx: si, sid: gone, at: ms(c) })
-  applyEdit(s.w, ev)
-  s.sk = s.sk.filter(k => k !== 's:' + gone) // a skip goes with its set (skips, the last tick and a fix are known by set id)
-  touch(c)
-  c.g.up += 1
-  send(c, ev)
-  return ev
-}
 
-/* ---------- the note, the overview ---------- */
-// The phone's session note (read-only: the watch cannot type, so it sends no workoutNote). '' for none; the phone
-// carries at most 280 characters. noteOn: the phone's settings.workoutNote (it understands the note at all).
-export function sessionNote (c) { const w = dictOf(c.s.w); return w && typeof w.note === 'string' ? w.note : '' }
-export function noteOn (c) { const st = dictOf(c.s.set); return !!st && st.workoutNote === true }
+/* ---------- the overview ---------- */
 // The first exercise of a superset of two or more (the Overview's "Superset" heading goes above it).
 export function supersetStart (s, pos) {
   const es = entries(s)
@@ -1210,7 +926,6 @@ export function restLeft (c) {
 export const restPaused = c => c.s.rest == null && c.s.rh != null
 // The rest ended (ran out, Skip, ended on the phone): nothing is sent from here.
 function restStop (c) {
-  closeRest(c, ms(c))
   c.s.rest = null
   c.s.rh = null
   c.g.restTotal = null
@@ -1310,9 +1025,8 @@ function followRest (c, nx) {
     s.rest = null
     c.rx = was
   }
-  // the watch's rest ended here (the phone's end is past, or it skipped it): its heart rate ends now, and the
-  // next set's counts from now (Wear's endRestFromPhone)
-  if (was && s.rest == null && s.rh == null) { closeRest(c, now); newSet(c) }
+  // the watch's rest ended here (the phone's end is past, or it skipped it): the next set's heart rate counts from now
+  if (was && s.rest == null && s.rh == null) newSet(c)
 }
 
 /* ---------- holds (timed sets) ---------- */
@@ -1367,7 +1081,6 @@ export function holdStart (c) {
     sec = row ? toF(row.sec) : null
   }
   g.hold = [mono(c), sec == null || sec < 1 ? 30 : sec]
-  closeRest(c, ms(c))
   newSet(c)
 }
 export function holdCancel (c) { c.g.hcd = null; c.g.hold = null; c.g.hfor = null; c.g.hsec = null }
@@ -1454,111 +1167,6 @@ export function keepGoing (c, tell) {
   c.g.snooze = ms(c)
 }
 
-/* ---------- before a start: the check-in, the weigh-in ----------
- * A routine started here goes through up to two questions first, as on Wear and the phone: startFlow(c, session)
- * says which comes first ('checkin', 'weighin' or 'count' = straight to the 3-2-1) and keeps the session in
- * c.g.pre; preState(c) says what to draw; the answers move it on; at 'count' the page runs its 3-2-1 and calls
- * startWorkout(c, pre.session, pre.bw). The flow is not saved (a restart in the middle starts over); only the day
- * the check-in was asked is (s.ca). preCancel(c) drops it: nothing starts, the check-in is asked again next time.
- * preState(c) -> null | { kind: 'checkin', step, steps, key } | { kind: 'weighin', w, whole, tenth, unit, min, max }
- *                    | { kind: 'count', session, bw } */
-const OKBW = w => typeof w === 'number' && isFinite(w) && w > 0 && w < 700 // phone: okBw (watch-sync.js)
-const okBw = OKBW
-export const CHECKIN_KEYS = ['sleep', 'energy', 'sore'] // Wear's; the phone's FORM_KEYS also has `stress`, never asked here
-export const WEIGH_MIN = 20
-const weighTop = c => (c.s.u === 'lb' ? 699.9 : 320.9)
-// The watch's own day, YYYY-MM-DD, as the phone writes `checkinDay` (its local date). env.today() when the page has one.
-export function today (c) {
-  if (c.env.today) return c.env.today()
-  const d = new Date(ms(c))
-  const two = n => (n < 10 ? '0' : '') + n
-  return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate())
-}
-// phone: settings.checkin is true only when the check-in is on there; `checkinDay` is the newest day it has answers
-// for (lib/daily-form.js lastFormDay). Asked when on, not answered today on the phone, and not asked here today.
-export function checkinDue (c) {
-  const st = dictOf(c.s.set)
-  const day = today(c)
-  return !!st && st.checkin === true && st.checkinDay !== day && c.s.ca !== day
-}
-function afterCheckin (c) {
-  const st = dictOf(c.s.set)
-  const pre = c.g.pre
-  if (st && st.weighIn === false) { pre.kind = 'count'; return 'count' } // missing = asked, as Wear
-  const lb = toF(st ? st.lastBw : null)
-  const top = weighTop(c)
-  pre.w = Math.min(top, Math.max(WEIGH_MIN, Math.round((lb != null ? lb : c.s.u === 'lb' ? 160 : 70) * 10) / 10))
-  pre.kind = 'weighin'
-  return 'weighin'
-}
-export function startFlow (c, session) {
-  if (dictOf(c.s.w)) return null
-  c.g.pre = { session: session, kind: 'checkin', i: 0, answers: {}, w: null, bw: undefined }
-  if (checkinDue(c)) return 'checkin'
-  return afterCheckin(c)
-}
-export function preState (c) {
-  const p = c.g.pre
-  if (!p) return null
-  if (p.kind === 'checkin') return { kind: 'checkin', step: p.i, steps: CHECKIN_KEYS.length, key: CHECKIN_KEYS[p.i] }
-  if (p.kind === 'weighin') {
-    const tenths = Math.round(p.w * 10)
-    return { kind: 'weighin', w: p.w, whole: trunc(tenths / 10), tenth: tenths % 10, unit: c.s.u === 'lb' ? 'lb' : 'kg', min: WEIGH_MIN, max: weighTop(c) }
-  }
-  return { kind: 'count', session: p.session, bw: p.bw }
-}
-export function preCancel (c) { c.g.pre = null }
-function finishCheckin (c, skip) {
-  const p = c.g.pre
-  c.s.ca = today(c)
-  const ev = { id: newId(c), type: 'dailyForm', at: ms(c) }
-  let any = false
-  CHECKIN_KEYS.forEach(k => { if (p.answers[k] != null) { ev[k] = p.answers[k]; any = true } })
-  // phone: formFromWatch keeps each of sleep / energy / sore / stress that is a whole number 1 to 5, drops the rest;
-  // with none left nothing is stored, so none is sent
-  if (!skip && any) send(c, withOff(c, ev))
-  save(c)
-  return afterCheckin(c)
-}
-// One question answered (1 to 5; anything else passes it over); after the last, the weigh-in or the 3-2-1.
-export function checkinAnswer (c, value) {
-  const p = c.g.pre
-  if (!p || p.kind !== 'checkin') return p ? p.kind : null
-  if (typeof value === 'number' && value >= 1 && value <= 5 && Math.floor(value) === value) p.answers[CHECKIN_KEYS[p.i]] = value
-  if (p.i + 1 < CHECKIN_KEYS.length) { p.i += 1; return 'checkin' }
-  return finishCheckin(c, false)
-}
-// "Skip for today": nothing sent (answers already given go too), not asked again today.
-export function checkinSkip (c) {
-  const p = c.g.pre
-  if (!p || p.kind !== 'checkin') return p ? p.kind : null
-  return finishCheckin(c, true)
-}
-// The weight on the tenth's grid, inside 20 .. 320.9 kg / 699.9 lb (under the phone's 700).
-export function weighInSet (c, w) {
-  const p = c.g.pre
-  if (!p || p.kind !== 'weighin' || !isNum(w)) return
-  p.w = Math.min(weighTop(c), Math.max(WEIGH_MIN, Math.round(w * 10) / 10))
-}
-export function weighInStep (c, tenths) {
-  const p = c.g.pre
-  if (!p || p.kind !== 'weighin' || !isNum(tenths)) return
-  weighInSet(c, (Math.round(p.w * 10) + trunc(tenths)) / 10)
-}
-// phone: applyEach 'weighIn' needs okBw(ev.w) (a number, 0 < w < 700), then logWeighIn on the event's day (a day's
-// second weigh-in replaces the first). Saved: the event goes and the weight rides on the start as `bw`.
-export function weighInDone (c, saveIt) {
-  const p = c.g.pre
-  if (!p || p.kind !== 'weighin') return p ? p.kind : null
-  const w = Math.round(p.w * 10) / 10
-  if (saveIt && okBw(w)) {
-    send(c, withOff(c, { id: newId(c), type: 'weighIn', w: w, at: ms(c) }))
-    p.bw = w
-  }
-  p.kind = 'count'
-  return 'count'
-}
-
 /* ---------- start, finish, the phone's snapshot ---------- */
 export function reset (c) {
   const g = c.g
@@ -1566,7 +1174,7 @@ export function reset (c) {
   g.ask = false; g.askLeft = false; g.snooze = null
 }
 // A ready session (today's or another routine); by name only (entries []) the watch waits for the phone.
-export function startWorkout (c, session, bw) {
+export function startWorkout (c, session) {
   const s = c.s
   const at = ms(c)
   const wid = 'watch-' + at
@@ -1575,64 +1183,38 @@ export function startWorkout (c, session, bw) {
   s.sh = wid
   const rd = dictOf(s.rd)
   if (rd && rd.today === session) rd.today = { name: strOf(session.name), routineIds: arrOf(session.routineIds), entries: [] }
-  s.p = {}; s.sk = []; s.pos = 0; s.rest = null; s.rh = null; s.ra = 0; s.rc = {}; s.ef = {}; s.mu = {}
-  closeRest(c, at)
-  hrClear(c)
+  s.p = {}; s.sk = []; s.pos = 0; s.rest = null; s.rh = null; s.ra = 0
   newSet(c)
   touch(c)
   reset(c)
   c.g.ended = null
-  c.g.pre = null
   const ev = { id: newId(c), type: 'start', routineIds: arrOf(session.routineIds), wid: wid, at: at }
-  // phone: watch-sync.js applyEach 'start' reads `bw` only when 0 < bw < 700 (okBw): the weight the lifter just gave
-  if (okBw(bw)) ev.bw = Math.round(bw * 10) / 10
   withOff(c, ev)
   send(c, ev)
   save(c)
   return ev
 }
-// The buzz of a finished workout: long on a records day, short otherwise.
-const finishBuzz = sm => (sm.recs.length ? [[60, 250]] : [[40, 60]])
+const FINISH_BUZZ = [[40, 60]]
 // Finished here, or discarded (the phone drops it unsaved: no summary). A running hold is logged first.
 export function finishWorkout (c, discard) {
   const s = c.s
   const w = dictOf(s.w)
   if (!w) return null
   if (!discard && c.g.hold) holdStop(c)
-  closeRest(c, ms(c))
   const sm = discard ? null : summary(c, w, false)
   const at = ms(c)
   const wid = strOf(w.id)
-  s.w = null; s.p = {}; s.sk = []; s.sh = null; s.rest = null; s.rh = null; s.ra = 0; s.pos = 0; s.rc = {}; s.ef = {}; s.mu = {}
+  s.w = null; s.p = {}; s.sk = []; s.sh = null; s.rest = null; s.rh = null; s.ra = 0; s.pos = 0
   s.fh.push(wid)
   if (s.fh.length > FINISHED_KEPT) s.fh = s.fh.slice(s.fh.length - FINISHED_KEPT)
   send(c, withOff(c, { id: newId(c), type: discard ? 'discard' : 'finish', wid: wid, at: at }))
   const hr = hrTotals(c)
-  hrClear(c)
-  if (sm) { sm.hr = hr; buzz(c, finishBuzz(sm)) }
+  if (sm) { sm.hr = hr; buzz(c, FINISH_BUZZ) }
   reset(c)
   c.g.ended = sm
   c.g.endedAt = ms(c)
   save(c)
   return sm
-}
-
-// The working sets done per exercise that left the window are kept (their muscles with them), so the Muscles page
-// counts the whole workout when the phone sends only part of it; one that is back in the window is read from there.
-function foldMuscles (s, cur, next) {
-  const key = (e, i) => toI(e.i, i) + ':' + strOf(e.id)
-  const places = {}
-  const ids = {}
-  next.forEach((e, i) => { if (dictOf(e)) { places[toI(e.i, i)] = true; ids[strOf(e.id)] = true } })
-  // what the window shows now is read from there: a line at one of its places, or of an exercise in it (the phone moved it)
-  Object.keys(s.mu).forEach(k => { if (places[parseInt(k, 10)] || ids[k.slice(k.indexOf(':') + 1)]) delete s.mu[k] })
-  arrOf(cur.entries).forEach((e, i) => {
-    if (!dictOf(e)) return
-    if (places[toI(e.i, i)] || ids[strOf(e.id)] || !dictOf(e.muscles)) return
-    let n = 0
-    arrOf(e.sets).forEach(r => { if (dictOf(r) && isTrue(r.done) && !isTrue(r.warmup)) n += 1 })
-    if (n > 0) s.mu[key(e, i)] = [n, e.muscles]
-  })
 }
 
 // A phone-ticked set the watch has not seen: [pos, si, at] of the newest, in c.ptick.
@@ -1661,26 +1243,14 @@ export function applySnapshot (c, snap) {
   const s = c.s
   c.rx = false
   c.ptick = null
-  c.ptlist = []
   ackOutbox(s, arrOf(snap.acked))
   noteClock(c, toF(snap.now))
   s.rd = dictOf(snap.ready)
   s.sy = true
-  if (dictOf(snap.settings) && typeof snap.settings.lang === 'string') s.pl = snap.settings.lang // kept until the phone gives another
   if (typeof snap.unit === 'string') s.u = snap.unit
   const rs = toF(snap.restSec)
   if (rs != null && rs > 0) s.rs = rs
-  if (dictOf(snap.settings)) {
-    // the ratings follow the phone's scale: RIR = 10 - RPE (lib/effort.js); any other change drops them (Wear's applySnapshot)
-    const was = dictOf(s.set) ? s.set.effort : undefined
-    s.set = snap.settings
-    if (was !== s.set.effort) {
-      const ef = {}
-      if ((was === 'rpe' && s.set.effort === 'rir') || (was === 'rir' && s.set.effort === 'rpe')) Object.keys(s.ef).forEach(k => { ef[k] = [10 - s.ef[k][0], s.ef[k][1], s.ef[k][2], s.ef[k][3]] })
-      s.ef = ef
-    }
-  }
-  if (dictOf(snap.streak)) s.stk = snap.streak
+  if (dictOf(snap.settings)) s.set = snap.settings
 
   const cur = dictOf(s.w)
   const wid = cur ? cur.id : null
@@ -1694,9 +1264,7 @@ export function applySnapshot (c, snap) {
     // no workout on the phone, or one the watch has finished already
     if (unconfirmed || !cur) return null
     const ended = droppedThere ? null : summary(c, cur, true)
-    closeRest(c, ms(c))
-    hrClear(c)
-    s.w = null; s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0; s.rc = {}; s.ef = {}; s.mu = {}
+    s.w = null; s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0
     return ended
   }
   const sameOne = nid != null && same(nid, wid)
@@ -1706,14 +1274,13 @@ export function applySnapshot (c, snap) {
   const onScreen = entryAt(s, s.pos)
   const onId = onScreen ? onScreen.id : null
   const atEnd = !!cur && entries(s).length > 0 && s.pos >= entries(s).length
-  if (!sameOne) { closeRest(c, ms(c)); hrClear(c); newSet(c); touch(c); s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0; s.rc = {}; s.ef = {}; s.mu = {} }
+  if (!sameOne) { newSet(c); touch(c); s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0 }
 
   let es = arrOf(nx.entries)
   // the phone behind a drain: until it has every set logged here, its window without the exercise
   // on screen is the phone behind, not moved on
   const held2 = sameOne && onId != null && waiting(s) > 0 && findOn(es, onScreen) == null
   if (held2) { es = entries(s); nx.entries = es }
-  if (!held2) replayEdits(s, nx)
   const old = sameOne && !held2 ? doneKeys(s) : null
 
   const p = s.p
@@ -1749,27 +1316,9 @@ export function applySnapshot (c, snap) {
         else if (sd) markSide(row, side, ts[0], ts[1], ts[2])
         else delete p[ks]
       })
-      // a set (or a side of it) done on the phone since the last snapshot: its heart rate is the watch's (setHr)
-      if (old && old[onKey(e, ei)] && toF(row.at) != null) {
-        const sd = dictOf(row.sides)
-        let fresh = isTrue(row.done) && !old[k]
-        ;['L', 'R'].forEach(side => { const one = sd ? dictOf(sd[side]) : null; if (one && isTrue(one.done) && !old[pkey(e, ei, si, side)]) fresh = true })
-        if (fresh) c.ptlist.push({ exId: strOf(e.id), entryIdx: toI(e.i, ei), setIdx: si, sid: row.sid, at: row.at })
-      }
     })
   })
-  if (sameOne && cur) foldRecords(s.rc, cur) // the window that is about to go, with its local ticks
-  if (sameOne && cur) foldMuscles(s, cur, es)
   s.w = nx
-  // a set unticked on the phone loses its rating, so a later unrated tick does not bring it back
-  es.forEach((e, ei) => {
-    if (!dictOf(e)) return
-    arrOf(e.sets).forEach((row, si) => {
-      if (!dictOf(row)) return
-      const k = pkey(e, ei, si, null)
-      if (s.ef[k] && !isTrue(row.done) && !sideDone(row, 'L') && !sideDone(row, 'R')) delete s.ef[k]
-    })
-  })
   // ticks of sets this snapshot no longer has: the phone has them (it moved the window on). Not while their
   // setDone is still in the outbox: the phone may only be behind, and an older whole-workout snapshot would
   // show the set open again.
@@ -1840,7 +1389,7 @@ export function onPhone (c, data) {
   const ended = applySnapshot(c, data)
   if (ended) {
     ended.hr = hrTotals(c)
-    buzz(c, finishBuzz(ended))
+    buzz(c, FINISH_BUZZ)
     reset(c)
     c.g.ended = ended
     c.g.endedAt = ms(c)
@@ -1850,8 +1399,6 @@ export function onPhone (c, data) {
   } else {
     restFollowed(c, r0)
     followTick(c)
-    phoneTicksHr(c)
-    c.g.pre = null // a workout runs: no start to prepare
   }
   if (upKey(c) !== up0) c.g.up += 1
   save(c)
@@ -1925,7 +1472,6 @@ export function flush (c) {
 function sent (c, ids, gen) {
   if (gen !== c.link.gen) return
   c.link.busy = false
-  c.link.okAt = ms(c) // a message got through: the phone is in reach
   c.g.awayAt = null
   if (ids.length) {
     const s = c.s
@@ -1940,16 +1486,6 @@ function failed (c, gen) {
   if (gen !== c.link.gen) return
   c.link.busy = false
   c.g.awayAt = ms(c) // "Phone out of reach"
-}
-// Whether the phone is in reach, from what the link already knows: 'near' when a message got through or the phone
-// spoke less than REACH_MS ago and nothing failed since, 'away' when the last send failed (and nothing since got
-// through), else 'unknown' (nothing sent lately: the watch cannot tell).
-export const REACH_MS = 10 * 60000
-export function reach (c) {
-  const ok = c.link.okAt
-  const bad = c.g.awayAt
-  if (bad != null && bad >= ok) return 'away'
-  return ms(c) - ok < REACH_MS ? 'near' : 'unknown'
 }
 // What was not sent goes after 30 s, what the phone has not confirmed after a minute; a transmit
 // that never called back is given up after 45 s. All doubling while the phone stays silent.
@@ -1972,7 +1508,6 @@ export function heard (c) {
   const s = c.s
   l.ask = false
   l.quiet = 0
-  l.okAt = ms(c)
   if (!l.busy && s.ob.length > 0 && unsent(s) === 0 && mono(c) - l.lastTry > HEARD_RESEND_MS) s.obn = 0
   flush(c)
 }

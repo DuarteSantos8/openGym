@@ -603,8 +603,7 @@ test('End: the last set done lands on the Overview; Finish asks, Yes saves and t
   assert.equal(w.screen(), 'summary')
   const d = w.d()
   assert.deepEqual([d.title, d.name, d.dur, d.durLabel, d.setsNum, d.setsLabel, d.volNum, d.volLabel, d.hrLine, d.doneLabel],
-    ['Workout saved', 'Push day', '1 min', 'Time', '2', 'Sets', '960 kg', 'Volume', '', 'Done']) // the medal's minutes, as the medal says them
-  assert.equal(d.dur, d.mTimeNum + ' ' + d.mUnit.toLowerCase())
+    ['Workout saved', 'Push day', '0:36', 'Time', '2', 'Sets', '960 kg', 'Volume', '', 'Done'])
   assert.equal(d.sync, 'Waiting to sync 2')
   assert.equal(w.evs().pop().type, 'finish')
 })
@@ -762,31 +761,16 @@ test('Look: the lime unless the phone gives an accent; the ink follows', () => {
   assert.deepEqual([w.d().accent, w.d().ink], ['#A3E635', '#0C0E12'])
 })
 
-test('Words: the phone\'s language, else the watch\'s, else English', () => {
+test('Words: the watch\'s language, else English; the phone\'s is not used', () => {
   const w = mk({ lang: 'fr' })
-  assert.equal(V.langOf(w.c, w.ui), 'fr')
+  assert.equal(V.langOf(w.ui), 'fr')
   w.snap(null, { settings: { lang: 'de' } })
-  assert.equal(V.langOf(w.c, w.ui), 'de')
-  w.snap(null, { settings: { lang: 'xx' } })
-  assert.equal(V.langOf(w.c, w.ui), 'en')
-  w.snap(null, { settings: { lang: 'ar' } })
-  assert.equal(V.langOf(w.c, w.ui), 'en') // not drawable by the font, for now
+  assert.equal(V.langOf(w.ui), 'fr') // the phone's language is ignored, as on the Garmin
+  assert.equal(V.langOf(mk({ lang: 'xx' }).ui), 'en')
+  assert.equal(V.langOf(mk({ lang: 'ar' }).ui), 'en') // not drawable by the font, for now
   assert.equal(V.translator('de')('set_of', 2, 4), 'Satz 2 von 4')
   assert.equal(V.translator('de')('no_such_key'), 'no_such_key')
   assert.equal(V.translator('xx')('done'), 'Done')
-})
-
-test('Words: the phone leaving settings.lang out of a snapshot does not change the language back', () => {
-  const w = mk({ lang: 'fr' })
-  w.snap(null, { settings: { lang: 'de' } })
-  assert.equal(V.langOf(w.c, w.ui), 'de')
-  w.snap(null, { settings: {} }) // cut to fit its size
-  assert.equal(V.langOf(w.c, w.ui), 'de')
-  w.snap(null, { settings: { lang: 'es' } })
-  assert.equal(V.langOf(w.c, w.ui), 'es')
-  // and it is kept with the state: a restart before the next snapshot still speaks Spanish
-  const v = mk({ lang: 'fr', stored: JSON.parse(JSON.stringify(w.c.s)) })
-  assert.equal(V.langOf(v.c, v.ui), 'es')
 })
 
 test('deviceLang maps the watch\'s locale onto the app\'s languages', () => {
@@ -900,79 +884,6 @@ const types = w => w.evs().map(e => e.type)
 // rows with set ids, as the phone sends them, for the set menu
 const rows = (e, plans) => Object.assign(e, { sets: plans.map((p, k) => Object.assign({ sid: e.id + k }, p)) })
 
-test('Start with the check-in on: three questions, then the weigh-in, then the 3-2-1; both events go with the start', () => {
-  const w = ready(null, TODAY(), [], ASKING)
-  w.tap('start')
-  assert.equal(w.screen(), 'checkin')
-  let d = w.d()
-  assert.deepEqual([d.title, d.qLabel, d.qLo, d.qHi, d.qStep, d.skipLabel], ['How are you today?', 'Sleep', 'Barely slept', 'Slept like a log', '1/3', 'Skip for today'])
-  w.tap('ci4')
-  d = w.d()
-  assert.deepEqual([d.qLabel, d.qStep], ['Energy', '2/3'])
-  w.tap('ci2'); w.tap('ci5')
-  assert.equal(w.screen(), 'weighin')
-  d = w.d()
-  assert.deepEqual([d.title, d.bwNum, d.bwUnit, d.saveLabel, d.skipLabel], ['Body weight', '72.5', 'kg', 'Save & start workout', 'Skip'])
-  w.tap('bwP1'); w.tap('bwP01'); w.tap('bwP01')
-  assert.equal(w.d().bwNum, '73.7')
-  w.tap('bwM1'); w.tap('bwM01')
-  assert.equal(w.d().bwNum, '72.6')
-  w.tap('bwSave')
-  assert.equal(w.screen(), 'count')
-  w.wait(4)
-  assert.equal(w.screen(), 'set')
-  assert.deepEqual(types(w), ['dailyForm', 'weighIn', 'start'])
-  const [form, weigh, start] = w.evs()
-  assert.deepEqual([form.sleep, form.energy, form.sore, weigh.w, start.bw], [4, 2, 5, 72.6, 72.6])
-})
-
-test('Check-in: Skip for today sends nothing and is not asked again today; back cancels and it is asked again', () => {
-  const w = ready(null, TODAY(), [], ASKING)
-  w.tap('start'); w.tap('ci3')
-  w.tap('ciSkip')
-  assert.equal(w.screen(), 'weighin')
-  assert.deepEqual(types(w), [])
-  w.tap('bwSkip'); w.wait(4)
-  assert.deepEqual(types(w), ['start'])
-  assert.equal(w.evs()[0].bw, undefined)
-  const v = ready(null, TODAY(), [], ASKING)
-  v.tap('start'); v.tap('ciBack')
-  assert.equal(v.screen(), 'idle')
-  assert.deepEqual(types(v), [])
-  v.tap('start')
-  assert.equal(v.screen(), 'checkin') // asked again
-  v.tap('ciSkip'); v.tap('bwCancel')
-  assert.equal(v.screen(), 'idle')
-  v.tap('start')
-  assert.equal(v.screen(), 'weighin') // today's check-in was skipped, only the weigh-in is asked
-})
-
-test('Weigh-in: pounds, the grid and the limits; the phone not asking goes straight to the 3-2-1', () => {
-  const w = mk()
-  w.snap(null, { unit: 'lb', settings: { weighIn: true, lastBw: 160 }, ready: { today: TODAY(), others: [] } })
-  w.tap('start')
-  assert.deepEqual([w.screen(), w.d().bwNum, w.d().bwUnit], ['weighin', '160', 'lb'])
-  for (let i = 0; i < 30; i++) w.tap('bwP1')
-  assert.equal(w.d().bwNum, '190')
-  const v = ready(null, TODAY())
-  v.tap('start')
-  assert.equal(v.screen(), 'count')
-  const u = ready(null, TODAY(), [], { weighIn: true })
-  u.tap('start')
-  assert.equal(u.d().bwNum, '70') // no last weight: the core's default
-})
-
-test('The 3-2-1 after the flow can be cancelled: nothing starts', () => {
-  const w = ready(null, TODAY(), [], ASKING)
-  w.tap('start'); w.tap('ciSkip'); w.tap('bwSave')
-  assert.equal(w.screen(), 'count')
-  w.tap('cancelCount')
-  assert.equal(w.screen(), 'idle')
-  assert.ok(!w.c.s.w)
-  w.tap('start')
-  assert.equal(w.screen(), 'weighin')
-})
-
 test('A workout the phone starts during the flow drops the flow', () => {
   const w = ready(null, TODAY(), [], ASKING)
   w.tap('start')
@@ -986,74 +897,12 @@ test('A workout the phone starts during the flow drops the flow', () => {
 
 const sid = (e, i) => Object.assign(e, { sets: e.sets.map((r, k) => Object.assign(r, { sid: 's' + i + k })) })
 
-test('Menu: Add set and Remove set follow canAdd and canRemove; Remove asks first', () => {
+test('Overview: a Superset heading above the first of a superset', () => {
   const w = mk()
-  w.snap(act([sid(ent('Bench', 0, [row(60, 8), row(60, 8)]), 1)], { id: 'w1' }))
-  w.tap('menu')
-  let d = w.d()
-  assert.deepEqual([d.hasAdd, d.hasRemove, d.lAdd, d.lRemove], [true, true, 'Add set', 'Remove set'])
-  w.tap('mAdd')
-  assert.equal(w.screen(), 'set')
-  assert.equal(w.c.s.w.entries[0].sets.length, 3)
-  assert.ok(types(w).indexOf('addSet') >= 0)
-  w.tap('menu'); w.tap('mRemove')
-  assert.equal(w.screen(), 'confirm')
-  d = w.d()
-  assert.deepEqual([d.title, d.yesLabel, d.noLabel], ['Remove set', 'Remove set', 'Cancel'])
-  w.tap('no')
-  assert.equal(w.c.s.w.entries[0].sets.length, 3)
-  w.tap('menu'); w.tap('mRemove'); w.tap('yes')
-  assert.equal(w.c.s.w.entries[0].sets.length, 2)
-  assert.equal(types(w).pop(), 'removeSet')
-  assert.equal(w.screen(), 'set')
-})
-
-test('Menu: no Remove for the only set, for a cardio exercise or while fixing; no Add on cardio', () => {
-  const w = mk()
-  w.snap(act([sid(ent('Bench', 0, [row(60, 8)]), 1)]))
-  w.tap('menu')
-  assert.deepEqual([w.d().hasAdd, w.d().hasRemove], [true, false])
-  const v = mk()
-  v.snap(act([sid(ent('Run', 0, [row(null, null)], { mode: 'cardio' }), 2)]))
-  v.tap('menu')
-  assert.deepEqual([v.d().hasAdd, v.d().hasRemove], [false, false])
-  const u = mk()
-  u.snap(act([sid(ent('Bench', 0, [row(60, 8), row(60, 8), row(60, 8)]), 3)]))
-  u.tap('done'); u.wait(2)
-  u.tap('menu'); u.tap('mPrev')
-  assert.equal(u.d().fixing, true)
-  u.ui.menu = true // even if the menu were up, a set being fixed offers no add or remove
-  assert.deepEqual([u.d().hasAdd, u.d().hasRemove], [false, false])
-})
-
-test('Routines: grouped by folder, folder-less first, the folder under the name', () => {
-  const o = (n, f) => Object.assign({ name: n, routineIds: [n], entries: [] }, f ? { folder: f } : {})
-  const w = ready(null, TODAY(), [o('A', 'Push'), o('B'), o('C', 'Push'), o('D', 'Legs'), o('E')])
-  w.tap('routines')
-  let d = w.d()
-  assert.deepEqual([d.ro0, d.rs0, d.ro1, d.rs1, d.ro2, d.rs2], ['Push day', 'Today', 'B', '', 'E', ''])
-  w.tap('rnext')
-  d = w.d()
-  assert.deepEqual([d.ro0, d.rs0, d.ro1, d.rs1, d.ro2, d.rs2], ['A', 'Push', 'C', 'Push', 'D', 'Legs'])
-  w.tap('pick2')
-  assert.equal(w.ui.cd.session.name, 'D')
-})
-
-test('Overview: a Superset heading above the first of a superset, the phone\'s note read-only', () => {
-  const w = mk()
-  w.snap(act([ent('A', 0, [row(10, 10)]), ent('B', 1, [row(10, 10)], { group: 'g' }), ent('C', 2, [row(10, 10)], { group: 'g' }), ent('D', 3, [row(10, 10)])], { note: 'Go easy on the knee' }), { settings: { workoutNote: true } })
+  w.snap(act([ent('A', 0, [row(10, 10)]), ent('B', 1, [row(10, 10)], { group: 'g' }), ent('C', 2, [row(10, 10)], { group: 'g' }), ent('D', 3, [row(10, 10)])]))
   w.tap('menu'); w.tap('mOver')
   const d = w.d()
   assert.deepEqual([d.ss0, d.ss1, d.ss2, d.ss3, d.ssLabel], [false, true, false, false, 'Superset'])
-  assert.deepEqual([d.noteOn, d.note], [true, 'Go easy on the knee'])
-  const v = mk()
-  v.snap(act([ent('A', 0, [row(10, 10)])], { note: 'x' }), { settings: {} })
-  v.tap('menu'); v.tap('mOver')
-  assert.equal(v.d().noteOn, false) // the phone does not use notes
-  const u = mk()
-  u.snap(act([ent('A', 0, [row(10, 10)])]), { settings: { workoutNote: true } })
-  u.tap('menu'); u.tap('mOver')
-  assert.equal(u.d().noteOn, false) // nothing to show
 })
 
 test('Added weight: a bodyweight exercise says so', () => {
@@ -1079,74 +928,6 @@ test('the heart-rate sensor rests after three idle hours and wakes with the next
 
 /* ---------- the review of step 1: boxes, the pinned remove, the menu on the rest, the lock ---------- */
 
-test('Remove the set that is up: the boxes show the next set\'s plan, and Done logs it', () => {
-  const w = mk()
-  w.snap(act([rows(ent('a', 0, []), [{ w: 60, r: 8, warmup: true }, { w: 100, r: 5 }, { w: 100, r: 5 }])], { id: 'w1' }))
-  assert.deepEqual([w.d().wNum, w.d().rNum], ['60', '8'])
-  w.tap('menu'); w.tap('mRemove'); w.tap('yes')
-  const d = w.d()
-  assert.deepEqual([d.tag, d.wNum, d.rNum], ['Set 1 of 2', '100', '5'])
-  w.tap('done')
-  const logged = w.evs().filter(e => e.type === 'setDone').map(e => [e.sid, e.w, e.r])
-  assert.deepEqual(logged, [['a1', 100, 5]])
-})
-
-test('Add a set, or a snapshot that changes the set up: the boxes follow the new plan', () => {
-  const w = mk()
-  w.snap(act([rows(ent('a', 0, []), [{ w: 60, r: 8 }, { w: 60, r: 8 }])], { id: 'w1' }))
-  w.tap('wPlus')
-  assert.equal(w.d().wNum, '62.5')
-  w.tap('menu'); w.tap('mAdd')
-  assert.equal(w.d().wNum, '62.5') // the set up is the same one: the edit stays
-  w.snap(act([rows(ent('a', 0, []), [{ w: 70, r: 6 }, { w: 60, r: 8 }])], { id: 'w1' })) // the phone changed the set up
-  assert.deepEqual([w.d().wNum, w.d().rNum], ['70', '6'])
-})
-
-test('The Remove confirm removes the set it offered; if that set changed under it, nothing is removed and it closes', () => {
-  const mkw = () => { const w = mk(); w.snap(act([rows(ent('a', 0, []), [{ w: 60, r: 8 }, { w: 60, r: 8 }, { w: 60, r: 8 }])], { id: 'w1' })); return w }
-  const w = mkw()
-  w.tap('menu'); w.tap('mRemove')
-  assert.equal(w.screen(), 'confirm')
-  // the phone ticks the set offered (a0) while the confirm is up
-  const a = act([rows(ent('a', 0, []), [{ w: 60, r: 8, done: true, at: T0 }, { w: 60, r: 8 }, { w: 60, r: 8 }])], { id: 'w1' })
-  w.snap(a)
-  assert.notEqual(w.screen(), 'confirm') // it closed by itself
-  assert.equal(w.c.s.w.entries[0].sets.length, 3)
-  assert.equal(types(w).indexOf('removeSet'), -1)
-  // a Yes that arrives anyway removes nothing
-  w.ui.confirm = 'remove'
-  w.tap('yes')
-  assert.equal(w.c.s.w.entries[0].sets.length, 3)
-  assert.equal(w.ui.confirm, null)
-  // the normal case removes exactly the offered set
-  const v = mkw()
-  v.tap('menu'); v.tap('mRemove'); v.tap('yes')
-  assert.deepEqual(v.c.s.w.entries[0].sets.map(r => r.sid), ['a1', 'a2'])
-  assert.equal(v.evs().pop().sid, 'a0')
-})
-
-test('The Remove confirm closes when the exercise moved on under it', () => {
-  const w = mk()
-  w.snap(act([rows(ent('a', 0, []), [{ w: 60, r: 8 }, { w: 60, r: 8 }]), rows(ent('b', 1, []), [{ w: 10, r: 10 }, { w: 10, r: 10 }])], { id: 'w1' }))
-  w.tap('menu'); w.tap('mRemove')
-  w.c.s.pos = 1 // the watch moved to the next exercise (a tick followed from the phone)
-  w.c.g.up += 1
-  w.tap('yes')
-  assert.deepEqual(w.c.s.w.entries.map(e => e.sets.length), [2, 2])
-})
-
-test('Menu from the rest: no Add set or Remove set (the position has moved on)', () => {
-  const w = mk()
-  w.snap(act([rows(ent('a', 0, []), [{ w: 60, r: 8 }]), rows(ent('b', 1, []), [{ w: 10, r: 10 }, { w: 10, r: 10 }])], { id: 'w1' }))
-  w.tap('done'); w.wait(2)
-  assert.equal(w.screen(), 'rest')
-  w.tap('menu')
-  assert.deepEqual([w.d().hasAdd, w.d().hasRemove], [false, false])
-  w.tap('mBack'); w.tap('restSkip')
-  w.tap('menu')
-  assert.deepEqual([w.d().hasAdd, w.d().hasRemove], [true, true]) // from the set page they are offered
-})
-
 test('Closing the summary locks for a second by the core\'s own clock, not the wall clock', () => {
   const clk = { now: T0, tick: 5000 }
   const env = { radio: { transmit: () => {} }, now: () => clk.now, tick: () => clk.tick, random: () => 0.5, save: () => {}, today: () => '2026-11-25' }
@@ -1169,17 +950,13 @@ const live = (entries, settings, extra) => { const w = mk(); w.snap(act(entries,
 const dn = (id, i, n, extra) => ent(id, i, Array.apply(null, Array(n)).map((_, k) => row(60, 8, { done: true, sid: id + k })), extra)
 const startedWith = settings => { const w = ready(null, TODAY(), [], Object.assign({ weighIn: false }, settings)); w.tap('start'); w.wait(4); return w }
 
-test('Metrics: a swipe left from the set or the rest opens the pages in order, a swipe right goes back, and from the first to the workout', () => {
+test('Metrics: a swipe left from the set or the rest opens the page, a swipe right goes back to the workout', () => {
   const w = startedWith()
   swipe(w, 'right')
   assert.equal(w.screen(), 'set') // nothing to go back to
   swipe(w, 'left')
   assert.equal(w.screen(), 'mnum')
-  swipe(w, 'left'); assert.equal(w.screen(), 'meffort')
-  swipe(w, 'left'); assert.equal(w.screen(), 'mmuscles')
-  swipe(w, 'left'); assert.equal(w.screen(), 'mmuscles') // the last page stays
-  swipe(w, 'right'); assert.equal(w.screen(), 'meffort')
-  swipe(w, 'right'); assert.equal(w.screen(), 'mnum')
+  swipe(w, 'left'); assert.equal(w.screen(), 'mnum') // the one page stays
   swipe(w, 'right'); assert.equal(w.screen(), 'set')
   w.tap('done')
   assert.equal(w.screen(), 'rest')
@@ -1187,11 +964,10 @@ test('Metrics: a swipe left from the set or the rest opens the pages in order, a
   swipe(w, 'right'); assert.equal(w.screen(), 'rest')
 })
 
-test('Metrics: the back button goes back a page, and from the first page to the workout', () => {
+test('Metrics: the back button goes back to the workout', () => {
   const w = startedWith()
-  swipe(w, 'left'); swipe(w, 'left')
-  assert.equal(w.screen(), 'meffort')
-  w.tap('mpBack'); assert.equal(w.screen(), 'mnum')
+  swipe(w, 'left')
+  assert.equal(w.screen(), 'mnum')
   w.tap('mpBack'); assert.equal(w.screen(), 'set')
   w.tap('mpBack'); assert.equal(w.screen(), 'set') // nothing to go back to
   w.tap('done')
@@ -1199,20 +975,16 @@ test('Metrics: the back button goes back a page, and from the first page to the 
   w.tap('mpBack'); assert.equal(w.screen(), 'rest')
 })
 
-test('Metrics: not from Start, the menu or a confirm; the workout ending closes them; a page that goes away is not left on', () => {
+test('Metrics: not from Start, the menu or a confirm; the workout ending closes it', () => {
   const idle = ready(null, TODAY())
   swipe(idle, 'left')
   assert.equal(idle.screen(), 'idle')
   const w = startedWith({ show: { hr: true } })
-  beat(w, 100)
   w.tap('menu'); swipe(w, 'left'); w.tap('mBack')
   assert.equal(w.screen(), 'set')
   w.tap('menu'); w.tap('mFinish'); swipe(w, 'left'); assert.equal(w.screen(), 'confirm'); w.tap('no') // a confirm stays on top
   assert.equal(w.screen(), 'set')
-  swipe(w, 'left'); swipe(w, 'left'); assert.equal(w.screen(), 'mpulse')
-  w.c.s.set.show.hr = false // the pages shrink under the lifter: pulse and zones are gone
-  V.tick(w.c, w.ui)
-  assert.equal(w.screen(), 'mnum') // back to the first page, as on Wear
+  swipe(w, 'left'); assert.equal(w.screen(), 'mnum')
   swipe(w, 'right')
   w.tap('finish'); w.tap('yes')
   assert.equal(w.screen(), 'summary')
@@ -1226,7 +998,7 @@ test('Metrics numbers: the time, the sets, the volume and the heart rate; the ti
   w.wait(30)
   swipe(w, 'left')
   let d = w.d()
-  assert.deepEqual([d.mTime, d.mSub, d.setsNum, d.setsLabel, d.volNum, d.volLabel, d.mHr, d.hrLine, d.mPos], ['0:30', 'Time', '0/3', 'Sets', '0 kg', 'Volume', '', '', '1/3'])
+  assert.deepEqual([d.mTime, d.mSub, d.setsNum, d.setsLabel, d.volNum, d.volLabel, d.mHr, d.hrLine], ['0:30', 'Time', '0/3', 'Sets', '0 kg', 'Volume', '', ''])
   beat(w, 100); beat(w, 140)
   d = w.d()
   assert.deepEqual([d.mHr, d.hrLine], ['140 bpm', '120 avg · 140 max'])
@@ -1237,135 +1009,9 @@ test('Metrics numbers: the time, the sets, the volume and the heart rate; the ti
   assert.equal(p.d().mTime, '1:00')
 })
 
-test('Metrics Pulse: the average, lowest and highest, and a bar for each reading, the lowest shortest and the highest tallest', () => {
-  const w = startedWith()
-  ;[100, 110, 120, 130, 140].forEach(b => beat5(w, b))
-  swipe(w, 'left'); swipe(w, 'left')
-  assert.equal(w.screen(), 'mpulse')
-  const d = w.d()
-  assert.deepEqual([d.mTitle, d.mAvg, d.mAvgLabel, d.mMin, d.mMinLabel, d.mMax, d.mMaxLabel, d.mPos], ['Heart rate', '120', 'avg', '100', 'min', '140', 'max', '2/5'])
-  assert.deepEqual([d.pb0, d.pb2, d.pb4, d.pb5, d.pb11], ['8px', '36px', '64px', '0px', '0px'])
-  const flat = startedWith()
-  beat5(flat, 100); beat5(flat, 100)
-  swipe(flat, 'left'); swipe(flat, 'left')
-  assert.equal(flat.d().pb0, '36px') // no spread: all the same height
-})
-
-test('Metrics Effort: one row for each exercise rated, the mean, "+n more" past five, and a line when nothing was rated', () => {
-  const w = live([ent('Bench', 0, [row(60, 8), row(60, 8)])], { effort: 'rir' })
-  w.wait(2); w.tap('done'); w.wait(2); w.tap('chip0')
-  swipe(w, 'left'); swipe(w, 'left')
-  assert.equal(w.screen(), 'meffort')
-  let d = w.d()
-  assert.deepEqual([d.mTitle, d.mrOn0, d.mr0, d.mv0, d.mrOn1, d.mEmptyOn], ['Effort RIR', true, 'Bench', String(K.chips('rir')[0]), false, false])
-  const none = live([ent('A', 0, [row(60, 8, { done: true }), row(60, 8)])], { effort: 'rir' })
-  swipe(none, 'left'); swipe(none, 'left')
-  d = none.d()
-  assert.deepEqual([d.mrOn0, d.mEmptyOn, d.mEmpty], [false, true, 'No effort rated yet'])
-  const many = live([ent('A', 0, [row(60, 8)])], { effort: 'rpe' })
-  for (let i = 0; i < 7; i++) many.c.s.ef['k' + i] = [8.5, i, 'Ex' + i, 'x' + i]
-  swipe(many, 'left'); swipe(many, 'left')
-  d = many.d()
-  // the latest five (the exercise in hand is never behind "+n more"), the earlier two counted
-  assert.deepEqual([d.mTitle, d.mr0, d.mv0, d.mr4, d.mMore], ['Effort RPE', 'Ex2', '8.5', 'Ex6', '+2 more'])
-})
-
-test('Metrics Zones: five bands with the time in each, the zone now marked, and a hint without a birth year', () => {
-  const w = startedWith({ birthYear: 1986 })
-  ;[100, 130, 170, 170].forEach(b => beat5(w, b))
-  swipe(w, 'left'); swipe(w, 'left'); swipe(w, 'left'); swipe(w, 'left')
-  assert.equal(w.screen(), 'mzones')
-  const d = w.d()
-  assert.deepEqual([d.mTitle, d.zNeed, d.zOn, d.mPos], ['Zones', false, true, '4/5'])
-  assert.deepEqual([d.zn0, d.zn2, d.zn4], ['Z1', 'Z3', '> Z5'])
-  assert.deepEqual([d.zr0, d.zr1, d.zr4], ['under 108', '108 to 125', '162 and up'])
-  assert.deepEqual([d.zt0, d.zt1, d.zt2, d.zt4], ['0:05', '0:00', '0:05', '0:05'])
-  assert.deepEqual([d.zc0, d.zc2, d.zc4], ['#40c8e0', '#ffd60a', '#ff453a']) // Apple's zone colours
-  const none = startedWith()
-  beat(none, 100)
-  swipe(none, 'left'); swipe(none, 'left'); swipe(none, 'left'); swipe(none, 'left')
-  assert.equal(none.screen(), 'mzones')
-  assert.deepEqual([none.d().zNeed, none.d().zOn, none.d().mNeed], [true, false, 'No age set. Add your birth year on the phone'])
-})
-
-test('Metrics Muscles: sets done for each muscle, most first, "+n more", and a line without any', () => {
-  const w = live([dn('Bench', 0, 2, { muscles: { chest: 1, triceps: 0.5 } }), ent('Row', 1, [row(40, 10)])], {}, { muscleNames: { chest: 'Chest' } })
-  swipe(w, 'left'); swipe(w, 'left'); swipe(w, 'left')
-  assert.equal(w.screen(), 'mmuscles')
-  let d = w.d()
-  assert.deepEqual([d.mTitle, d.mr0, d.mv0, d.mr1, d.mv1, d.mrOn2, d.mEmptyOn, d.mMore, d.mPos], ['Muscles', 'Chest', '2', 'triceps', '1', false, false, '', '3/3'])
-  const m = {}
-  for (let i = 0; i < 7; i++) m['m' + i] = 1
-  const many = live([dn('Bench', 0, 1, { muscles: m }), ent('Row', 1, [row(40, 10)])])
-  swipe(many, 'left'); swipe(many, 'left'); swipe(many, 'left')
-  assert.equal(many.d().mMore, '+2 more')
-  const none = live([ent('Bench', 0, [row(60, 8)])])
-  swipe(none, 'left'); swipe(none, 'left'); swipe(none, 'left')
-  d = none.d()
-  assert.deepEqual([d.mrOn0, d.mEmptyOn, d.mEmpty], [false, true, 'No sets yet'])
-})
-
 /* ---------- step 2: the medal, the small touches ---------- */
 function finished (entries) {
   const w = live(entries)
   w.tap('finish'); w.wait(30); w.tap('yes')
   return w
 }
-
-test('Summary medal: a records day is gold with a diamond and a plate for each record, and the old lines stay', () => {
-  const w = finished([dn('Bench', 0, 2, { best: { w: 55, r: 8 } }), dn('Row', 1, 1, { best: { w: 60, r: 7 } })])
-  assert.equal(w.screen(), 'summary')
-  const d = w.d()
-  assert.deepEqual([d.gold, d.mRim, d.mFace, d.mInk, d.gem0, d.gem1, d.gem2, d.gemPx], [true, '#D9B45F', '#F2D791', '#2A1C07', true, true, false, '18px'])
-  assert.deepEqual([d.legend, d.pn0, d.pnum0, d.pv0, d.pn1, d.pnum1, d.pv1, d.pv2, d.rMore], ['2 Records', 'Bench', '55 to 60 kg', true, 'Row', '7 to 8 Reps', true, false, ''])
-  assert.deepEqual([d.title, d.name, d.setsNum, d.volNum, d.doneLabel], ['Workout saved', 'Push', '3', '1440 kg', 'Done'])
-  assert.deepEqual([d.mTimeNum, d.mUnit], ['11', 'MIN']) // started 10 min ago, 30 s of waiting: 10 min 30 s, rounded
-  assert.deepEqual([d.rMoreOn, d.hrOn], [false, false]) // nothing to say: no empty rows between the plates and Done
-})
-
-test('Summary medal: a plain day is steel with the volume under the time, and more than four records say how many are left', () => {
-  const w = finished([dn('Bench', 0, 2)])
-  const d = w.d()
-  assert.deepEqual([d.gold, d.mRim, d.mFace, d.mInk, d.gem0, d.mVol, d.legend, d.pv0, d.rMore], [false, '#B0B8C2', '#D4DAE1', '#13171C', false, '960 kg', '2 sets', false, ''])
-  const es = [0, 1, 2, 3, 4, 5].map(i => dn('E' + i, i, 1, { best: { w: 50, r: 8 } }))
-  const big = finished(es).d()
-  assert.deepEqual([big.legend, big.pv3, big.pn3, big.rMore, big.gem5, big.gem6, big.gemPx], ['6 Records', true, 'E3', '+2 more', true, false, '14px'])
-  assert.equal(finished([dn('Bench', 0, 1, { best: { w: 55, r: 8 } })]).d().legend, 'New record')
-  assert.deepEqual([big.rMoreOn, finished(es).d().hrOn], [true, false])
-})
-
-test('Start: the week streak where the hint goes, and the phone in reach or away along the bottom', () => {
-  const w = mk()
-  w.snap(null, { settings: { weighIn: false }, streak: { weeks: 12, thisWeekDone: true }, ready: { today: TODAY(), others: [] } })
-  let d = w.d()
-  assert.deepEqual([d.hint, d.hintColor], ['Week streak 12', d.accent])
-  w.c.s.stk.thisWeekDone = false
-  assert.equal(w.d().hintColor, '#a1a1a6')
-  w.c.s.stk.weeks = 0 // a new lifter: no "Week streak 0"
-  assert.equal(w.d().hint, '')
-  w.c.link.okAt = w.clk.now
-  assert.equal(w.d().top, 'Phone connected')
-  w.c.link.okAt = w.clk.now - 3600000
-  assert.equal(w.d().top, '') // nothing heard for a long time: the watch cannot tell
-  w.c.link.okAt = w.clk.now - 1; w.c.g.awayAt = w.clk.now
-  assert.equal(w.d().top, 'Phone away')
-  const n = mk()
-  n.snap(null, { ready: null })
-  assert.deepEqual([n.d().hint, n.d().hintColor], ['Start one on your phone and it shows up here.', '#a1a1a6'])
-})
-
-test('Rest: the bar unless the phone asks for a plain countdown', () => {
-  const w = startedWith()
-  w.tap('done')
-  assert.equal(w.d().barOn, true)
-  const p = startedWith({ show: { rest: 'plain' } })
-  p.tap('done')
-  assert.deepEqual([p.screen(), p.d().barOn, p.d().restTime], ['rest', false, '1:00'])
-})
-
-test('Set: the resistance band shows ahead of the partner exercise', () => {
-  const w = live([ent('Pull', 0, [row(0, 8, { band: 'Red + Yellow' })]), ent('Row', 1, [row(40, 10)])], {}, {})
-  assert.deepEqual([w.d().band, w.d().bandOn, w.d().partner, w.d().partnerOn], ['Red + Yellow', true, '', false])
-  const x = live([ent('Pull', 0, [row(0, 8)])])
-  assert.deepEqual([x.d().band, x.d().bandOn, x.d().partner], ['', false, ''])
-})

@@ -83,7 +83,7 @@ function devices (c) {
 function refresh (page) {
   const c = S.core
   if (!c) return
-  const lang = langOf(c, S.ui)
+  const lang = langOf(S.ui)
   if (lang !== S.lang) { S.lang = lang; S.t = translator(lang) }
   const d = build(c, S.ui, S.t)
   Object.keys(d).forEach(function (k) { if (page[k] !== d[k]) page[k] = d[k] })
@@ -239,7 +239,7 @@ export default {
   onDestroy: function () { S.shown = false; S.sum = false; S.boot += 1; pause() },
   retry: function () { boot(this) },
   // Swipe right leaves the app, from the Start screen only: not by accident in the middle of a workout.
-  // In a workout a swipe left opens the Metrics pages and a swipe right steps back through them (view.js swipeTo).
+  // In a workout a swipe left opens the Metrics page and a swipe right steps back (view.js swipeTo).
   swipe: function (e) {
     if (e.direction !== 'left' && e.direction !== 'right') return // a list scrolling is not ours
     if (e.direction === 'right' && (!S.core || this.s_idle)) { app.terminate(); return }
@@ -295,21 +295,5 @@ export default {
   ovBack: function () { go(this, 'ovBack') },
   finish: function () { go(this, 'finish') },
   nextEx: function () { go(this, 'nextEx') },
-  close: function () { go(this, 'close') },
-  ci1: function () { go(this, 'ci1') },
-  ci2: function () { go(this, 'ci2') },
-  ci3: function () { go(this, 'ci3') },
-  ci4: function () { go(this, 'ci4') },
-  ci5: function () { go(this, 'ci5') },
-  ciSkip: function () { go(this, 'ciSkip') },
-  ciBack: function () { go(this, 'ciBack') },
-  bwP1: function () { go(this, 'bwP1') },
-  bwM1: function () { go(this, 'bwM1') },
-  bwP01: function () { go(this, 'bwP01') },
-  bwM01: function () { go(this, 'bwM01') },
-  bwSave: function () { go(this, 'bwSave') },
-  bwSkip: function () { go(this, 'bwSkip') },
-  bwCancel: function () { go(this, 'bwCancel') },
-  mAdd: function () { go(this, 'mAdd') },
-  mRemove: function () { go(this, 'mRemove') }
+  close: function () { go(this, 'close') }
 }

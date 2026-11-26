@@ -32,22 +32,16 @@ export const LANGS = {
 
 // What the screens say, in the order the table keeps them.
 const FROM_WEAR = [
-  'all_sets_done', 'all_synced', 'cancel', 'continue_workout', 'discard_workout', 'discard_workout_q', 'done', 'edit', 'effort',
-  'ended_on_phone', 'exercises', 'finish_and_save', 'finish_workout', 'finish_workout_q', 'go', 'hold', 'hr_avg_max', 'how_hard',
-  'keep_going', 'last_time', 'left', 'left_gym', 'log_on_phone', 'next_set_btn', 'no_set_for', 'no_workout', 'not_synced', 'overview',
-  'phone_out_of_reach', 'previous_set', 'quick_start', 'reps', 'rest', 'rest_day', 'right', 'routines', 'save', 'set_of', 'sets',
-  'sets_of', 'skip', 'skip_set', 'start_hold', 'start_on_phone', 'start_workout', 'still_training', 'stop', 'time', 'today',
-  'up_next', 'up_next_set', 'volume', 'waiting_sync', 'warmup', 'workout_saved',
-  // step 1: the weigh-in, the check-in, "Added weight", the Overview's superset heading
-  'added_weight', 'weight', 'body_weight', 'save_and_start', 'start_without_weighin', 'superset',
-  'checkin_title', 'checkin_skip', 'checkin_sleep', 'checkin_sleep_lo', 'checkin_sleep_hi', 'checkin_energy', 'checkin_energy_lo', 'checkin_energy_hi',
-  'checkin_sore', 'checkin_sore_lo', 'checkin_sore_hi',
-  // step 2: the Metrics pages, the medal, the streak, the phone's reach
-  'add_birth_year', 'avg', 'band_over', 'band_to', 'band_under', 'heart_rate', 'hours', 'max', 'min', 'min_minutes', 'muscles', 'n_more',
-  'n_sets', 'new_record', 'no_age_set', 'no_effort_yet', 'no_sets_yet', 'phone_connected', 'phone_gone', 'records', 'week_streak', 'zones',
+  'all_sets_done', 'all_synced', 'cancel', 'continue_workout', 'discard_workout', 'discard_workout_q', 'done', 'edit',
+  'ended_on_phone', 'exercises', 'finish_and_save', 'finish_workout', 'finish_workout_q', 'go', 'hold', 'hr_avg_max',
+  'keep_going', 'last_time', 'left', 'left_gym', 'log_on_phone', 'no_set_for', 'no_workout', 'not_synced', 'overview',
+  'phone_out_of_reach', 'previous_set', 'quick_start', 'reps', 'rest', 'rest_day', 'right', 'routines', 'save', 'set_of',
+  'sets', 'sets_of', 'skip', 'skip_set', 'start_hold', 'start_on_phone', 'start_workout', 'still_training', 'stop', 'time',
+  'today', 'up_next', 'up_next_set', 'volume', 'waiting_sync', 'warmup', 'workout_saved', 'added_weight', 'weight', 'superset',
+  'phone_gone'
 ]
-// (the app's packs have the set menu's words in every language; the Wear OS strings of this branch do not yet)
-const FROM_APP = { next_exercise: 'Next exercise', paused: 'Paused', add_set: 'Add set', remove_set: 'Remove set' }
+// (the app's packs have these words in every language; the Wear OS strings of this branch do not yet)
+const FROM_APP = { next_exercise: 'Next exercise', paused: 'Paused' }
 const FROM_GARMIN = ['next_on_phone', 'waiting_phone']
 export const KEYS = FROM_WEAR.concat(Object.keys(FROM_APP), FROM_GARMIN, ['menu', 'open_phone_once', 'read_failed', 'try_again']).sort()
 

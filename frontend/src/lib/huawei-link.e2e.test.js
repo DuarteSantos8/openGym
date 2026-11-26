@@ -105,7 +105,7 @@ function world (S = S0()) {
     sendSnapshot: async ({ huawei, garmin }) => {
       expect(garmin).toBeUndefined()
       if (huawei) {
-        expect(huawei.length).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+        expect(new TextEncoder().encode(huawei).length).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
         w.last = JSON.parse(huawei)
         deliver(w.last)
       }
@@ -273,80 +273,6 @@ describe('a workout started on the watch with the phone away', () => {
   })
 })
 
-describe('the set menu: add and remove', () => {
-  it('a set added and a set removed on the watch are on the phone, and the watch keeps the phone\'s answer', async () => {
-    const w = world()
-    await w.launch()
-    w.startOnPhone()
-    await w.run(2)
-    const before = w.S().active.entries[0].sets.length
-    const add = K.addSet(w.c, 0)
-    expect(add.type).toBe('addSet')
-    await w.run(4)
-    expect(w.S().active.entries[0].sets).toHaveLength(before + 1)
-    expect(w.S().active.entries[0].sets.at(-1).sid).toBe(add.sid)
-    expect(w.c.s.w.entries[0].sets).toHaveLength(before + 1)
-    // remove the second exercise's last set
-    const e1 = w.c.s.w.entries[1]
-    const rm = K.removeSet(w.c, 1, e1.sets.length - 1, K.setId(w.c.s, 1, e1.sets.length - 1))
-    expect(rm.type).toBe('removeSet')
-    await w.run(4)
-    expect(w.S().active.entries[1].sets).toHaveLength(e1.sets.length)
-    expect(w.c.s.w.entries[1].sets).toHaveLength(e1.sets.length)
-    expect(w.c.s.ob).toEqual([])
-    // the work-set total moved with both
-    expect(w.c.s.w.progress[1]).toBe(7)
-  })
-
-  it('a removal the phone refuses (the set was ticked there meanwhile): the set stays, done, and the watch shows it again', async () => {
-    const w = world()
-    await w.launch()
-    w.startOnPhone()
-    await w.run(2)
-    w.inRange = false
-    const gone = K.setId(w.c.s, 0, 2)
-    // on the phone the set is ticked while the watch, out of reach, takes it out
-    w.update(s => { Object.assign(s.active.entries[0].sets[2], { done: true, at: Date.now(), r: 8 }) })
-    expect(K.removeSet(w.c, 0, 2, gone)).not.toBe(null)
-    await w.run(5)
-    w.reconnect()
-    await w.run(60)
-    expect(w.S().active.entries[0].sets).toHaveLength(3)
-    expect(w.S().active.entries[0].sets[2]).toMatchObject({ done: true, sid: gone })
-    // the phone's snapshot brought it back on the watch, ticked
-    expect(w.c.s.w.entries[0].sets).toHaveLength(3)
-    expect(w.c.s.w.entries[0].sets[2]).toMatchObject({ done: true })
-    expect(w.c.s.ob).toEqual([])
-  })
-})
-
-describe('heart rate', () => {
-  it('a set ticked on the phone gets the watch\'s heart rate, and a rest heart rate after the rest', async () => {
-    const w = world()
-    await w.launch()
-    w.startOnPhone()
-    await w.run(2)
-    w.bpm = 120
-    await w.run(10)
-    // ticked on the phone: the watch, which measured, sends setHr for it
-    w.update(s => { Object.assign(s.active.entries[0].sets[0], { done: true, at: Date.now(), w: 60, r: 8 }) })
-    w.bpm = 130
-    await w.run(30)
-    const set0 = w.S().active.entries[0].sets[0]
-    expect(set0.hr).toMatchObject({ avg: expect.any(Number), max: expect.any(Number) })
-    expect(set0.hr.avg).toBeGreaterThanOrEqual(25)
-    expect(w.c.s.ob).toEqual([])
-    // a set ticked on the watch: its rest's heart rate follows once the rest is over
-    w.bpm = 110
-    w.tick()
-    await w.run(100)
-    const set1 = w.S().active.entries[0].sets[1]
-    expect(set1.done).toBe(true)
-    expect(set1.restHr).toBeTruthy()
-    expect(w.c.s.ob).toEqual([])
-  })
-})
-
 describe('the same event twice', () => {
   it('a message delivered two times is applied once, and named', async () => {
     const w = world()
@@ -423,7 +349,7 @@ describe('a workout too big for one snapshot', () => {
     expect(w.last.active.entries.length).toBeLessThan(70)
     expect(w.c.s.w.count).toBe(70)
     expect(w.c.s.w.entries.every(e => w.S().active.entries[e.i].id === e.id)).toBe(true)
-    expect(JSON.stringify(w.last).length).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
+    expect(new TextEncoder().encode(JSON.stringify(w.last)).length).toBeLessThanOrEqual(GARMIN_MAX_BYTES)
     // log the first 12 sets at the wrist: each one lands on the right row of the phone
     for (let i = 0; i < 12; i++) { expect(w.tick()).toBe('tick'); await w.run(4) }
     await w.run(10)

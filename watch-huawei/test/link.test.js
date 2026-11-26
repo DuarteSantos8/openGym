@@ -26,7 +26,7 @@ const newActive = (id, start) => ({ id: id, name: 'Push', start: start, unit: 'k
 function world (skew) {
   const w = {
     t: T0, skew: skew || 0,
-    inRange: true, alive: true, swallow: 0, loseSnapshots: 0, huawei: false, settings: {}, weighIns: [], forms: [], statuses: [], starts: [],
+    inRange: true, alive: true, swallow: 0, loseSnapshots: 0, settings: {}, weighIns: [], forms: [], statuses: [], starts: [],
     pending: [], toWatch: [], transmits: [],
     A: null, workouts: [], discarded: [], acked: [], applied: {}, applyCount: {}, restEvents: [], stillHere: 0,
     watch: null
@@ -442,22 +442,3 @@ test('everything the watch queued reaches the phone: ids unique, each set once, 
   assert.ok(w.transmits.every(m => m.events.length <= 4 && !JSON.stringify(m).includes('null')))
   assert.equal(c.s.ob.length, 0)
 })
-
-/* ---------- the Huawei snapshot and the new events, both ends ---------- */
-const huaweiWorld = settings => { const w = world(); w.huawei = true; w.settings = settings || {}; return w }
-
-test('a set ticked on the phone gets the watch\'s heart rate (setHr), and the rest\'s once it is over', () => {
-  const w = huaweiWorld()
-  w.newWatch()
-  startOnPhone(w)
-  w.run(2)
-  const c = w.watch
-  for (let i = 0; i < 30; i++) { w.t += 1000; K.hrSample(c, 100 + i); K.second(c); w.settle() }
-  const row = w.A.entries[0].sets[0]
-  Object.assign(row, { done: true, at: w.phoneNow() - 5000 })
-  w.send()
-  w.run(3)
-  assert.ok(row.hr, 'the phone has a heart rate for the set')
-  assert.ok(row.hr.avg >= 100 && row.hr.max <= 130 && row.hr.max >= row.hr.avg)
-})
-
