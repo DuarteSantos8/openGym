@@ -10,7 +10,8 @@
 //
 // All of it in the app's language, through lib/speech.js (the phone's voice, which turns music
 // down for a moment and never pauses it; the browser's elsewhere). Only while a workout runs and
-// the page is on screen: a locked phone keeps the end tone and the notification it always had.
+// the page is on screen; a locked iPhone gets the rest-over line baked into the rest notification
+// (restOverCue), the rest keep the end tone and the notification they always had.
 // useUI calls these at the moments above; what to say is worked out here, from the state.
 //
 // Settings → Timer alerts → Voice (v1.4.5) adds a voice, a speed and a pitch (lib/speech.js), a
@@ -25,7 +26,7 @@ import { fmtNum } from './format.js'
 import { t, tn, tnf, exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
-import { speak, voiceOpts } from './speech.js'
+import { speak, voiceOpts, speechLang } from './speech.js'
 import { pickLine, linesFor } from './voice-styles.js'
 import { pickClip, voiceClipsOf } from './voice-clips.js'
 import { MOBILE } from './mobile.js'
@@ -200,6 +201,18 @@ function moment(S, name) {
   say(S, pickLine(S, name))
 }
 const hasSomething = (S, name) => voiceClipsOf(S, name).length > 0 || linesFor(S, name).length > 0
+
+/**
+ * What a locked iPhone says at the end of a rest (booked with the rest, lib/rest-alert.js): the
+ * person's own clip, else the style's line with the voice settings, else null. Plain rests only.
+ */
+export function restOverCue(S) {
+  if (!cuesOn(S)) return null
+  const clip = pickClip(S, 'restOver')
+  if (clip) return { clip: clip.m.hash }
+  const text = pickLine(S, 'restOver')
+  return text ? { text, lang: speechLang(), ...voiceOpts(S) } : null
+}
 
 export const cues = {
   /** A rest began after a set of entry `forIdx`: the next set, then the style's line for it. */

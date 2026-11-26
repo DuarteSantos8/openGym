@@ -52,6 +52,14 @@ afterEach(() => {
 })
 
 describe('the rest the app starts, pauses and ends', () => {
+  it('books the rest-over line with a plain rest when spoken cues are on, and not with a switch-sides pause', () => {
+    const S = useStore.getState().S
+    useStore.setState({ S: { ...S, spokenCues: true, active: { cur: 0, entries: [] } } })
+    useUI.getState().startRest(90)
+    expect(armRestAlert.mock.calls.at(-1)[1].line).toMatchObject({ text: 'Rest is over' })
+    useUI.getState().startRest(10, null, { kind: 'switch' })
+    expect(armRestAlert.mock.calls.at(-1)[1]).not.toHaveProperty('line')
+  })
   it('arms when the rest starts and rearms when time is added, with the whole rest', () => {
     useUI.getState().startRest(90)
     const first = armRestAlert.mock.calls.at(-1)[0]

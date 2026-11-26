@@ -12,7 +12,7 @@ import { useStore } from './useStore.js'
 import { REST_MAX } from '../lib/duration.js'
 import { accentValue } from '../lib/accent.js'
 import { COUNT_IN_SEC, chainCues, heldSec, phaseLeft, resumedEnd, shouldWait } from '../lib/auto-holds.js'
-import { cues, bindCueState } from '../lib/spoken-cues.js'
+import { cues, bindCueState, restOverCue } from '../lib/spoken-cues.js'
 import { restNextLine, restOverTitle } from '../lib/rest-next.js'
 
 // Timed holds that run themselves (lib/auto-holds.js): the workout screen hands in what comes
@@ -67,7 +67,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   // it (go, hold done, the next ones) are booked with it, for a phone that stays locked.
   const next = autoPeek()
   const chain = next ? chainCues({ start: 'rest', at: endsAt, name: next.label, plan: next.plan, forecast: autoForecast(next), words: autoWords }) : null
-  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}) })
+  armRestAlert(endsAt, { title: chain ? chain.title : switching ? t('Switch sides') : restOverTitle(line), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, ...alertPrefs(S, switching ? null : useUI.getState().timer?.rk), ...(chain ? { cues: chain.cues } : {}), ...(switching || chain ? {} : { line: restOverCue(S) }) })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
