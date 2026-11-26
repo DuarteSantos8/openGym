@@ -1324,7 +1324,7 @@ export default {
   "Before the Coach’s plan": "Ennen valmentajan suunnitelmaa",
   "Before the Coach’s changes": "Ennen valmentajan muutoksia",
   "Add {0}": "Lisää {0}",
-  "Drop {0}": "Poista {0}",
+  "Drop {0}": "Pudotus {0}",
   "Swap {0} for {1}": "Korvaa {0} liikkeellä {1}",
   "{0}: sets": "{0}: sarjat",
   "{0}: reps": "{0}: toistot",

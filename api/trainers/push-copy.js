@@ -241,6 +241,36 @@ export const TRAINER_COPY = {
       "body": "خصوصی با هم تمرین را ادامه دهید؟ ۳۰ روز وقت داری تصمیم بگیری."
     }
   },
+  "fi": {
+    "connected": {
+      "title": "{0} on nyt valmentajasi",
+      "body": "Hän näkee sen, mitä jaoit, ei muuta. Voit muuttaa tätä milloin tahansa kohdassa Valmentaja ja sali."
+    },
+    "scopes": {
+      "title": "Jakamisasetuksesi muuttuivat",
+      "body": "Se, mitä {0} näkee, muuttui juuri. Etkö tehnyt sitä sinä? Tarkista Valmentaja ja sali."
+    },
+    "joined": {
+      "title": "Tervetuloa: {0}",
+      "body": "Salivastaavasi näkee vain rastittamasi asiat."
+    },
+    "change": {
+      "title": "{0} päivitti treenisi",
+      "body": "Tutustu ensin. Jos se ei sovi sinulle, voit perua sen yhdellä napautuksella kohdasta Valmentaja ja sali."
+    },
+    "suggest": {
+      "title": "{0}:lla on sinulle idea",
+      "body": "Hyväksy tai hylkää kohdassa Valmentaja ja sali."
+    },
+    "comment": {
+      "title": "{0} jätti sinulle muistiinpanon",
+      "body": ""
+    },
+    "offer": {
+      "title": "{0} lähti salilta {1}",
+      "body": "Jatketaanko treenaamista yhdessä yksityisesti? Sinulla on 30 päivää aikaa päättää."
+    }
+  },
   "fr": {
     "connected": {
       "title": "{0} est maintenant ton coach",

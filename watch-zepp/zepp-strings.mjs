@@ -25,6 +25,7 @@ export const LANGS = {
   hu: ['values-hu', 'hu-HU'], tr: ['values-tr', 'tr-TR'], ru: ['values-ru', 'ru-RU'], uk: ['values-uk', 'uk-UA'],
   ar: ['values-ar', 'ar-EG'], hi: ['values-hi', 'hi-IN'], bn: ['values-bn', 'bn-BD'], th: ['values-th', 'th-TH'],
   ko: ['values-ko', 'ko-KR'], sv: ['values-sv', 'sv-SE'], zh: ['values-zh', 'zh-CN'], 'zh-TW': ['values-zh-rTW', 'zh-TW'],
+  fi: ['values-fi', 'fi-FI'],
 }
 
 // Only this watch says these: on the watch...
@@ -148,6 +149,10 @@ const SETTING = {
     bn: 'এখনও যুক্ত হয়নি।', th: 'ยังไม่ได้จับคู่', ko: '아직 페어링되지 않았어요.', sv: 'Inte parkopplad än.', zh: '还没有配对。', 'zh-TW': '還沒有配對。',
   },
 }
+
+// Finnish: the lines only this watch says (translated with Gemini, reviewed by a native speaker).
+for (const [k, v] of Object.entries({"not_paired":"Yhdistä ensin: Zepp-sovellus, openGym, Asetukset.","syncing":"Otetaan yhteys palvelimeen…","discard_confirm":"Hylkää napauttamalla uudelleen"})) OWN[k].fi = v
+for (const [k, v] of Object.entries({"server":"Palvelimen osoite","code":"Pariliitoskoodi","how":"Avaa openGymissä Asetukset, Zepp OS -kello, Parita kello ja kirjoita sen näyttämä osoite ja koodi tähän.","pair":"Parita","pairing":"Paritetaan…","paired":"Paritettu: {0}. Avaa openGym kellossa.","failed":"Ei onnistunut. Tarkista osoite ja koodi, koodi on voimassa kymmenen minuuttia.","unpair":"Poista paritus","not_paired_yet":"Ei paritettu vielä."})) SETTING[k].fi = v
 
 // Android's escaping undone, its numbered placeholders as ours ("%2$d" → "{1}").
 function unescapeRes (s) {

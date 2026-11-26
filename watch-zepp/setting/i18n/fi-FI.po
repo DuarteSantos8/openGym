@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Palvelimen osoite"
+
+msgid "code"
+msgstr "Pariliitoskoodi"
+
+msgid "how"
+msgstr "Avaa openGymissä Asetukset, Zepp OS -kello, Parita kello ja kirjoita sen näyttämä osoite ja koodi tähän."
+
+msgid "pair"
+msgstr "Parita"
+
+msgid "pairing"
+msgstr "Paritetaan…"
+
+msgid "paired"
+msgstr "Paritettu: {0}. Avaa openGym kellossa."
+
+msgid "failed"
+msgstr "Ei onnistunut. Tarkista osoite ja koodi, koodi on voimassa kymmenen minuuttia."
+
+msgid "unpair"
+msgstr "Poista paritus"
+
+msgid "not_paired_yet"
+msgstr "Ei paritettu vielä."

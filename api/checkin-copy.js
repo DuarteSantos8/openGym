@@ -49,6 +49,12 @@ export const CHECKIN_COPY = {
     "photos": "روز عکس پیشرفت. همان جا، همان نور، همان چهره سربلند.",
     "both": "وقت اندازه‌گیری و عکس پیشرفت است. حداکثر پنج دقیقه."
   },
+  "fi": {
+    "title": "Tilannekatsauksen aika",
+    "measure": "Tilannekatsauksen aika. Muutama luku, kaksi minuuttia ja päivä jatkuu.",
+    "photos": "Edistymiskuvapäivä. Sama paikka, sama valo, sama ylpeä ilme.",
+    "both": "Tilannekatsauksen ja edistymiskuvan aika. Maksimissaan viisi minuuttia."
+  },
   "fr": {
     "title": "C’est l’heure du bilan",
     "measure": "Ton bilan t’attend. Quelques chiffres, deux minutes, et tu reprends ta journée.",
