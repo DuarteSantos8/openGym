@@ -1,26 +1,26 @@
 # The hosted server (Ironvane Cloud)
 
-Status: prepared 2026-11-23, not deployed yet. This is the runbook for putting the app's own
-server (`api/`) online for the Cloud edition. Self-hosters do not need any of it:
-`docker-compose.yml` and `docs/SELF_HOSTING.md` are theirs.
+Status on November 26, 2026. The cloud preview uses the hosted API on Render. Linked sign-in and
+the AI Coach have been verified on that preview. A production-domain cutover and external MCP
+connector verification are still pending. The observations below identify the build and account
+used for each check. For self-hosting, see `docker-compose.yml` and `docs/SELF_HOSTING.md`.
 
 ## Why a server at all
 
-The Cloud edition's account lives in Supabase (ADR 0010). Three things need the app's own server
-on top of that, and all three are switched off on the preview until it exists:
+Supabase holds the hosted account (ADR 0010). The app's API serves three features:
 
-- **Training tied to the account**, so it follows the person across devices. Today it is stored
-  on the device only.
-- **The AI Coach** (`docs/AI_COACH.md`): a chat that designs and revises plans, on a model
-  provider's API key held by the server.
-- **MCP for Claude and ChatGPT** (`docs/MCP_REMOTE.md`): the assistant apps people already use,
-  reading and changing their own plans through a connector.
+- **Training tied to the account.** A linked server profile stores training on the API disk.
+  A device profile keeps its training on the device.
+- **The AI Coach** (`docs/AI_COACH.md`) uses the server's provider connection to propose workouts
+  and plans. The preview was tested with MiniMax.
+- **MCP for Claude and ChatGPT** (`docs/MCP_REMOTE.md`) lets an authorized connector read and
+  change plans. The MCP service has been provisioned. External read and write checks remain open.
 
 ## Shape
 
 | Part | Where | Notes |
 |---|---|---|
-| Web app (Cloud build) | Vercel | as today |
+| Web app (Cloud build) | Vercel | cloud preview |
 | Server (`api/`) | Render, one Docker web service, `render.yaml` | Starter instance |
 | Data | a 1 GB Render disk mounted at `/data` | the server keeps everything in files (`docs/ARCHITECTURE.md`) |
 | Sign-in | the server's own OIDC, with the Supabase project as provider | ADR 0013: configuration, no new server code |
@@ -275,9 +275,8 @@ data. It excludes photos and videos. See the [WebDAV backup guide](../WEBDAV_BAC
 
 ## Rollback
 
-The server is additive. To back out: remove the `/api/*` rewrite (the Cloud build then behaves
-as it does today, with training on the device), suspend the Render service, and keep the disk
-until its data is no longer wanted.
+To roll back the hosted API, remove the `/api/*` rewrite and suspend the Render service. Device
+profiles can still train locally. Keep the disk to preserve linked profiles and their training.
 
 ## Cost
 
