@@ -4,19 +4,20 @@ import { createStore } from '../entry/src/main/js/MainAbility/common/store.js'
 
 // An in-memory @system.file. Calls queue up and finish when the test says (so a save can be caught
 // half way). `crashAfter`: the number of operations that still take effect; the next write lands
-// torn (half its text) and nothing after it does anything or calls back, as if the app was killed.
+// torn (half its text; with cleanCrash it does not land at all) and nothing after it does anything or calls back, as if the app was killed.
 function fakeFile (disk, opts) {
   // failReads: every read fails (code 300); failFirst: only the first n reads; tear: the nth read returns half its text
-  const o = Object.assign({ crashAfter: Infinity, failWrites: false, failReads: false, failFirst: 0, tear: -1, maxRead: 4096, maxWrite: 4096 }, opts || {})
+  const o = Object.assign({ crashAfter: Infinity, failWrites: false, failReads: false, failFirst: 0, tear: -1, maxRead: 4096, maxWrite: 4096, cleanCrash: false }, opts || {})
   let reads = 0
   const q = []
-  const f = { disk: disk, q: q, ops: 0, dead: false, writes: [], maxOutstanding: 0 }
+  // failWrites may be switched on and off by a test; failOn: only the writes whose uri matches this pattern fail
+  const f = { disk: disk, q: q, ops: 0, dead: false, writes: [], maxOutstanding: 0, failWrites: o.failWrites, failOn: null }
   const queue = fn => { q.push(fn); f.maxOutstanding = Math.max(f.maxOutstanding, q.length) }
   const apply = (kind, uri, text) => {
     if (f.dead) return false
     if (f.ops >= o.crashAfter) {
       f.dead = true
-      if (kind === 'write') disk.set(uri, text.substring(0, Math.floor(text.length / 2)))
+      if (kind === 'write' && !o.cleanCrash) disk.set(uri, text.substring(0, Math.floor(text.length / 2)))
       return false
     }
     f.ops += 1
@@ -38,7 +39,7 @@ function fakeFile (disk, opts) {
       assert.match(p.uri, /^internal:\/\/app\/[a-z0-9]+$/)
       if (!apply('write', p.uri, p.text)) return
       f.writes.push(p.uri)
-      if (o.failWrites) { p.fail('x', 300); return }
+      if (f.failWrites || (f.failOn && f.failOn.test(p.uri))) { p.fail('x', 300); return }
       disk.set(p.uri, p.text)
       p.success()
     }),
@@ -216,16 +217,14 @@ test('a part that fails to read is unreadable even when an older head exists: no
   st.save(state(BIG)); f.settle()
   const keep = new Map(disk)
   st.save(state(10)); f.settle()
-  keep.forEach((v, k) => { if (/g1p/.test(k)) disk.set(k, v) }) // the older generation is still there
-  // reads: head0, head1, then the newest head's first part: fail from the third read on
-  const r = statusOf(disk, { failFirst: 0, failReads: false, tear: -1 })
-  assert.equal(r.got[1], 'ok')
+  keep.forEach((v, k) => { if (/g1p/.test(k)) disk.set(k, v) }) // the older generation is still there, and reads fine
+  // the control runs on a copy: a load that works deletes the older parts
+  assert.deepEqual(statusOf(new Map(disk)).got, [state(10), 'ok'])
+  // only the newest generation's part fails to read (the head reads and the older parts do not)
   const g = fakeFile(disk)
-  let seen = 0
-  const api = { readText: p => { seen += 1; if (seen >= 3) p.fail('x', 300); else g.api.readText(p) }, writeText: g.api.writeText, delete: g.api.delete }
-  const st2 = createStore(api)
+  const api = { readText: p => { if (/g2p0$/.test(p.uri)) p.fail('x', 300); else g.api.readText(p) }, writeText: g.api.writeText, delete: g.api.delete }
   let got
-  st2.load((s, status) => { got = [s, status] }); g.settle()
+  createStore(api).load((s, status) => { got = [s, status] }); g.settle()
   assert.deepEqual(got, [null, 'unreadable'])
 })
 
@@ -306,18 +305,33 @@ test('only one save runs at a time and the newest state asked for wins', () => {
   assert.ok(f.writes.filter(u => /g3p/.test(u)).length === 0)
 })
 
-test('a failed write marks the store failed; the next save tries again and clears it', () => {
+test('a failed write marks the store failed; the next save on the same store tries again and clears it', () => {
   const disk = new Map()
-  const bad = fakeFile(disk, { failWrites: true })
-  const st = open(bad)
-  st.save(state(10)); bad.settle()
+  const f = fakeFile(disk, { failWrites: true })
+  const st = open(f)
+  st.save(state(10)); f.settle()
   assert.equal(st.failed, true)
   assert.equal(loadOf(disk), null)
-  const good = fakeFile(disk)
-  const st2 = open(good)
-  st2.save(state(10)); good.settle()
-  assert.equal(st2.failed, false)
+  f.failWrites = false
+  st.save(state(10)); f.settle()
+  assert.equal(st.failed, false)
   assert.deepEqual(loadOf(disk), state(10))
+})
+
+test('a save whose parts reached the disk but whose head did not keeps the older state, and the next save carries on', () => {
+  const disk = new Map()
+  const f = fakeFile(disk)
+  const st = open(f)
+  st.save(state(20)); f.settle()
+  f.failOn = /head/
+  st.save(state(30)); f.settle()
+  assert.equal(st.failed, true)
+  assert.ok(f.writes.some(u => /g2p0$/.test(u)), 'the parts of the replacement were written')
+  assert.deepEqual(loadOf(disk), state(20))
+  f.failOn = null
+  st.save(state(40)); f.settle()
+  assert.equal(st.failed, false)
+  assert.deepEqual(loadOf(disk), state(40))
 })
 
 test('a failed save keeps the older state; a restart then a save carries on from the newest generation', () => {
@@ -334,4 +348,77 @@ test('a failed save keeps the older state; a restart then a save carries on from
   st2.save(state(40)); f2.settle()
   assert.deepEqual(loadOf(disk), state(40))
   assert.equal([...disk.keys()].filter(k => /p\d+$/.test(k)).length, 1) // one part, nothing left over
+})
+
+test('a head that is there but does not parse is damaged, not fresh; two missing heads are fresh', () => {
+  const disk = new Map([['internal://app/head1', '{"g":1,']])
+  assert.equal(statusOf(disk).got[1], 'damaged')
+  assert.equal(statusOf(new Map()).got[1], 'fresh')
+  // and the folder can be started again
+  const f = fakeFile(disk)
+  const st = createStore(f.api)
+  st.load(() => {}); f.settle()
+  st.save(state(10)); f.settle()
+  assert.deepEqual(loadOf(disk), state(10))
+})
+
+test('a save after a fallback never writes over the parts the damaged head names: killed anywhere it is the older state or the new one', () => {
+  // the same length, so a mix of the damaged generation's parts and the new ones would still read whole
+  const mk = c => ({ a: c.repeat(BIG) })
+  const A = mk('a')
+  const B = mk('b')
+  const C = mk('c')
+  let killed = 0
+  for (let k = 0; k < 40; k++) {
+    const disk = new Map()
+    const f0 = fakeFile(disk)
+    const s0 = open(f0)
+    s0.save(A); f0.settle()
+    const older = new Map(disk)
+    s0.save(B); f0.settle()
+    older.forEach((v, u) => { if (/g1p/.test(u)) disk.set(u, v) }) // the older generation is still there, as if its delete never ran
+    disk.set('internal://app/g2p0', 'junk') // the newest generation is damaged, its head is whole: a load falls back to A
+    const f = fakeFile(disk, { crashAfter: k, cleanCrash: true }) // killed between two writes
+    const st = createStore(f.api)
+    let first
+    st.load((x, status) => { first = [x, status] }); f.settle()
+    assert.deepEqual(first, [A, 'ok'])
+    f.ops = 0
+    st.save(C); f.settle()
+    if (f.dead) killed += 1
+    const got = JSON.stringify(loadOf(disk))
+    assert.ok(got === JSON.stringify(A) || got === JSON.stringify(C), 'crash after ' + k + ': ' + got.slice(0, 40))
+  }
+  assert.ok(killed > 5)
+})
+
+test('after a fallback the damaged generation\'s parts go with the next save, and the folder holds one generation', () => {
+  const disk = new Map()
+  const f0 = fakeFile(disk)
+  const s0 = open(f0)
+  s0.save(state(BIG)); f0.settle()
+  const older = new Map(disk)
+  s0.save(state(BIG + 1)); f0.settle()
+  older.forEach((v, u) => { if (/g1p/.test(u)) disk.set(u, v) })
+  disk.set('internal://app/g2p0', 'junk')
+  const f = fakeFile(disk)
+  const st = open(f)
+  st.save(state(10)); f.settle()
+  assert.deepEqual(loadOf(disk), state(10))
+  assert.equal([...disk.keys()].filter(k => /p\d+$/.test(k)).length, 1)
+})
+
+test('a delete that failed is tried again after the next save', () => {
+  const disk = new Map()
+  const f = fakeFile(disk)
+  const st = open(f)
+  st.save(state(BIG)); f.settle()
+  const realDelete = f.api.delete
+  f.api.delete = p => { p.fail('x', 300) } // the old generation's parts will not delete
+  st.save(state(11)); f.settle()
+  assert.ok([...disk.keys()].some(u => /g1p/.test(u)), 'a leftover part')
+  f.api.delete = realDelete
+  st.save(state(12)); f.settle()
+  assert.equal([...disk.keys()].filter(u => /g1p/.test(u)).length, 0)
+  assert.deepEqual(loadOf(disk), state(12))
 })

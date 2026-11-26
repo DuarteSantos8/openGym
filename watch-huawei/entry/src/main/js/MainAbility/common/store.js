@@ -3,9 +3,11 @@
 // and cut into numbered parts. A save never touches what the last complete save wrote:
 //   1. the parts of the new generation g          (g<g>p<i>)
 //   2. a small head file naming g, the part count and the length   (head<g % 2>)
-//   3. the parts of the generation before are deleted
+//   3. the parts of the generation before are deleted (one that will not delete is tried again after the next save)
 // Two head files take turns, so a save cut off while writing a head leaves the other head, and the
-// parts it names, whole. A load takes the newest head whose parts all read back to the length the
+// parts it names, whole. After a load fell back to the older generation, the next save does not reuse the
+// number of the damaged one (its head still names those parts): it takes the number after, whose head slot
+// is the damaged head's, so the good head stays until the new one is whole. A load takes the newest head whose parts all read back to the length the
 // head names and parse. Only one save runs at a time: a save asked for meanwhile waits, and only the
 // newest of those is written. A read that fails is not "nothing stored": load says which of fresh,
 // damaged and unreadable it found (see load), and a store whose last load was unreadable writes nothing.
@@ -28,6 +30,8 @@ function parseHead (text) {
 
 export function createStore (file) {
   let gen = 0 // newest complete generation
+  let base = 0 // the number a save adds one to: gen, or past a damaged generation a load fell back from
+  let stale = [] // part files that would not delete, and the parts of a damaged generation
   let count = 0 // its parts
   let busy = false
   let want = null // the newest state asked for while a save runs
@@ -59,15 +63,24 @@ export function createStore (file) {
     const req = { uri: uri, text: text, success: () => cb(true), fail: () => cb(false) }
     try { file.writeText(req) } catch (e) { cb(false) }
   }
-  // lean: a delete that fails leaves its file behind; nothing reads it again, and a new save under the
-  // same generation overwrites it. Add a sweep if the folder is ever seen to fill up.
+  // cb(deleted)
   function remove (uri, cb) {
-    const req = { uri: uri, success: () => cb(), fail: () => cb() }
-    try { file.delete(req) } catch (e) { cb() }
+    const req = { uri: uri, success: () => cb(true), fail: () => cb(false) }
+    try { file.delete(req) } catch (e) { cb(false) }
   }
-  function removeParts (g, n, cb) {
-    if (n <= 0) { cb(); return }
-    remove(partUri(g, n - 1), () => removeParts(g, n - 1, cb))
+  // Deletes the files one by one. A failure is no failed save: the file is kept in `stale` and tried again
+  // after the next save (lean: not after a restart; a leftover part is never read, only a few KB).
+  function sweep (uris, cb) {
+    if (uris.length === 0) { cb(); return }
+    remove(uris[0], ok => {
+      if (!ok && stale.indexOf(uris[0]) < 0) stale.push(uris[0])
+      sweep(uris.slice(1), cb)
+    })
+  }
+  function partUris (g, n) {
+    const out = []
+    for (let i = 0; i < n; i++) out.push(partUri(g, i))
+    return out
   }
   // cb('ok', text) | 'error' (a part would not read) | 'bad' (a part is missing or the length is not the head's)
   function readParts (h, i, text, cb) {
@@ -94,8 +107,14 @@ export function createStore (file) {
       gen = heads[k].g
       count = heads[k].n
       last = text
+      if (k === 0) base = gen
+      else {
+        // fell back: the damaged generation is not written over (its head still names it); its parts go after the next save
+        base = heads[0].g + 1
+        stale = stale.concat(partUris(heads[0].g, heads[0].n))
+      }
       const other = heads[1 - k]
-      if (k === 0 && other) removeParts(other.g, other.n, () => cb(s, 'ok')) // the older generation is not needed any more
+      if (k === 0 && other) sweep(partUris(other.g, other.n), () => cb(s, 'ok')) // the older generation is not needed any more
       else cb(s, 'ok')
     })
   }
@@ -114,7 +133,7 @@ export function createStore (file) {
       if (want !== null) run()
     }
     if (text === last) { finish(true); return }
-    const g = gen + 1
+    const g = base + 1
     const n = Math.max(1, Math.ceil(text.length / CHUNK))
     writeParts(g, text, 0, n, ok => {
       if (!ok) { finish(false); return }
@@ -122,10 +141,12 @@ export function createStore (file) {
         if (!ok2) { finish(false); return }
         const was = gen
         const wasN = count
-        gen = g
+        gen = base = g
         count = n
         last = text
-        removeParts(was, wasN, () => finish(true))
+        const old = stale.concat(partUris(was, wasN))
+        stale = []
+        sweep(old, () => finish(true))
       })
     })
   }
@@ -146,7 +167,9 @@ export function createStore (file) {
         gen = heads.length ? heads[0].g : 0
         count = 0
         last = null
-        if (!heads.length) { done(null, 'fresh'); return }
+        base = gen
+        // fresh only when both heads are missing: a head that is there but does not parse is damage, not an empty folder
+        if (!heads.length) { done(null, k0 === 'missing' && k1 === 'missing' ? 'fresh' : 'damaged'); return }
         tryHeads(heads, 0, done)
       }))
     },
