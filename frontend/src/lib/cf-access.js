@@ -35,8 +35,9 @@ let rereading = null
 // Bumped by every save or removal. A read that started before one (the retry above, still waiting
 // on the store) found what is no longer there, so it is dropped rather than put back over it.
 let changes = 0
-// Writes to the stored token run one after another, in the order they were asked for: a binding
-// write from a read that a save or removal then overtook never lands after that save or removal.
+// Reads and writes of the stored token run one after another, in the order they were asked for:
+// a binding write from a read that a save or removal then overtook never lands after that save or
+// removal, and a read asked for while a save or removal is still on its way finds what it wrote.
 let writing = Promise.resolve()
 const inOrder = write => { const done = writing.then(write); writing = done.catch(() => {}); return done }
 const reread = pairedBase => rereading || (rereading = loadCfAccess({ pairedBase }).finally(() => { rereading = null }))
@@ -49,7 +50,7 @@ export async function loadCfAccess({ pairedBase = '' } = {}) {
   let creds = null
   let unread = false
   try {
-    const { value: raw, failed } = await secureRead(KEY)
+    const { value: raw, failed } = await inOrder(() => secureRead(KEY))
     // The store did not answer: not the same as no token. The next request reads it again
     // instead of the phone going on without a token that is still stored.
     unread = failed

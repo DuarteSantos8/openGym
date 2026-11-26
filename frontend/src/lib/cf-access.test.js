@@ -213,3 +213,45 @@ describe('a binding write still on its way when the token is saved or removed', 
     expect(JSON.parse(backing.get('cfAccess'))).toEqual({ clientId: 'new', clientSecret: 'new-secret', origin: GYM })
   })
 })
+
+describe('a read asked for while a save or removal is still on its way', () => {
+  // The save's write reaches the store only after the read was asked for.
+  async function readDuringSlowSave(save) {
+    backing.set('cfAccess', JSON.stringify({ clientId: 'old', clientSecret: 'old-secret' }))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const realSet = SecureStorage.set
+    const realRemove = SecureStorage.remove
+    let land
+    const hold = apply => new Promise(resolve => { land = () => { apply(); resolve() } })
+    SecureStorage.set = (k, v) => { SecureStorage.set = realSet; return hold(() => backing.set(k, v)) }
+    SecureStorage.remove = k => { SecureStorage.remove = realRemove; return hold(() => backing.delete(k)) }
+    try {
+      const saving = save()
+      while (!land) await new Promise(r => setTimeout(r, 0))
+      const reading = loadCfAccess({ pairedBase: GYM })
+      await new Promise(r => setTimeout(r, 0))
+      land()
+      await Promise.all([saving, reading])
+    } finally { SecureStorage.set = realSet; SecureStorage.remove = realRemove }
+  }
+
+  it('does not read and bind the old token over a removal', async () => {
+    await readDuringSlowSave(() => saveCfAccess({}))
+    expect(backing.has('cfAccess')).toBe(false)
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    expect(fetch.mock.calls[0][1].headers['CF-Access-Client-Id']).toBeUndefined()
+  })
+
+  it('reads the new token, not the one the save replaced', async () => {
+    await readDuringSlowSave(() => saveCfAccess({ clientId: 'new', clientSecret: 'new-secret', server: GYM }))
+    expect(JSON.parse(backing.get('cfAccess'))).toEqual({ clientId: 'new', clientSecret: 'new-secret', origin: GYM })
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    expect(fetch.mock.calls[0][1].headers['CF-Access-Client-Id']).toBe('new')
+  })
+})
