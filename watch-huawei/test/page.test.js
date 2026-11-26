@@ -85,10 +85,12 @@ async function loadFrom (src, W) {
   writeFileSync(f, src)
   try { return (await import(pathToFileURL(f).href + '?' + Math.random())).default } finally { rmSync(tmp, { recursive: true }) }
 }
-async function loadPage (W) {
+async function loadPage (W, sameApp) {
   loads += 1
-  const appDef = await loadFrom(appJs, W)
-  globalThis.getApp = () => ({ data: appDef.data })
+  if (!sameApp) {
+    const appDef = await loadFrom(appJs, W)
+    globalThis.getApp = () => ({ data: appDef.data })
+  }
   return loadFrom(js, W)
 }
 
@@ -140,6 +142,14 @@ async function boot (W) {
   def.onInit.call(page)
   def.onShow.call(page) // the page is shown while the state is still loading
   W.settle()
+  return page
+}
+// a second page of the same app (a page switch): the app and its core stay, the page module is new
+async function nextPage (W) {
+  const def = await loadPage(W, true)
+  const page = Object.assign({ $t: dollarT('de-DE') }, def.data)
+  Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
+  page.def = def
   return page
 }
 // the phone's message, framed as Wear Engine carries it
@@ -328,12 +338,57 @@ test('page: a rebuild while the summary is up asks for the crown again', async (
     page.menu(); page.mFinish(); page.yes()
     W.advance(1)
     assert.equal(asked.length, 1)
-    // the app keeps the core, but a page is rebuilt from the store: the summary (not stored) is gone, nothing to focus
-    page.def.onDestroy.call(page)
-    page.def.onInit.call(page); page.def.onShow.call(page); W.settle(); W.advance(1)
-    assert.equal(page.s_summary, false)
-    assert.equal(asked.length, 1)
+    // a page switch: the app keeps the core, so the summary is still up on the new page, and the crown is asked for again
+    const next = await nextPage(W)
+    page.def.onHide.call(page); page.def.onDestroy.call(page) // the old page goes first
+    next.def.onInit.call(next); next.def.onShow.call(next); W.settle(); W.advance(1)
+    assert.equal(next.s_summary, true)
+    assert.equal(asked.length, 1) // the new page has its own $refs: none yet
+    next.$refs = { sum: { rotation: o => asked.push(o) } }
+    next.def.onDestroy.call(next)
+    const again = await nextPage(W)
+    again.$refs = next.$refs
+    again.def.onInit.call(again); again.def.onShow.call(again); W.settle(); W.advance(1)
+    assert.equal(again.s_summary, true)
+    assert.equal(asked.length, 2)
   } finally { restore() }
+})
+
+test('page switch: a rest and the heart-rate totals survive a new page, in either teardown order, and the clock and link keep going', async () => {
+  for (const newFirst of [false, true]) {
+    const W = world(new Map())
+    try {
+      const page = await boot(W)
+      fromPhone(W, snap())
+      page.start(); W.advance(4)
+      W.hr.success({ heartRate: 120 }); W.advance(3)
+      page.done()
+      assert.equal(page.s_rest, true)
+      const A = globalThis.getApp().data.get()
+      const core = A.c
+      const hr = globalThis.getApp().data.k().hrSoFar(core)
+      assert.ok(hr, 'heart-rate totals exist')
+      const next = await nextPage(W)
+      const old = page.def
+      if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
+      W.settle()
+      assert.equal(A.c, core, 'no new core')
+      assert.deepEqual(globalThis.getApp().data.k().hrSoFar(A.c), hr)
+      assert.equal(next.s_rest, true)
+      assert.ok(A.store && A.radio && A.cb, 'the new page is wired: store, radio, redraw')
+      const t = W.timers.length
+      W.advance(2)
+      assert.ok(W.timers.length > 0 || t > 0, 'the clock runs')
+      assert.ok(W.hr, 'the sensor still runs')
+      if (!newFirst) assert.ok(W.receiver, 'the new page listens') // (the fake client has one receiver slot, which the old page's stop frees)
+      next.restSkip()
+      W.advance(1)
+      assert.notEqual(next.s_rest, true)
+      W.advance(1)
+      next.def.onHide.call(next)
+      assert.equal(W.hr, null) // the page that owns the app stops it
+    } finally { restore() }
+  }
 })
 
 test('page: nothing is sent or registered before wearengine.js knows its version; it waits, then goes on', async () => {
@@ -466,7 +521,7 @@ test('page: a load that finishes after the page was hidden starts nothing until 
   } finally { restore() }
 })
 
-test('page: a second onInit drops the first core: only the new one saves, and no write goes into a store that has not loaded', async () => {
+test('page: a second boot (Try again) drops the first core: only the new one saves, and no write goes into a store that has not loaded', async () => {
   const disk = new Map()
   const W0 = world(disk)
   try {
@@ -479,7 +534,7 @@ test('page: a second onInit drops the first core: only the new one saves, and no
   try {
     const page = await boot(W)
     const files = [...disk.keys()].sort().join()
-    page.def.onInit.call(page) // the framework runs onInit again with the module alive
+    page.def.retry.call(page) // Try again: boots once more with the module alive (a later page's onInit adopts the running core instead)
     page.def.onShow.call(page)
     page.restSkip(); page.wPlus(); W.advance(3) // taps and the clock before the new load finishes: no core, nothing happens
     assert.equal([...disk.keys()].sort().join(), files)
@@ -543,7 +598,7 @@ test('page: the heart-rate sensor is stopped after three idle hours of a workout
   } finally { restore() }
 })
 
-test('page: a second onInit while the first core still has a send out: its late answer saves nothing into the new store', async () => {
+test('page: a second boot (Try again) while the first core still has a send out: its late answer saves nothing into the new store', async () => {
   const disk = new Map()
   const W = world(disk)
   try {
@@ -556,7 +611,7 @@ test('page: a second onInit while the first core still has a send out: its late 
     page.done(); W.settle()
     assert.ok(W.pending.length >= 1)
     const late = W.pending.splice(0)
-    page.def.onInit.call(page) // the second boot
+    page.def.retry.call(page) // the second boot
     W.settle()
     W.advance(1)
     const before = JSON.stringify([...disk.entries()].sort())

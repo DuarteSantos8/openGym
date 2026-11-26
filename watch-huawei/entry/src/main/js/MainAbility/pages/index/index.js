@@ -31,7 +31,8 @@ try { client = new P2pClient() } catch (e) { client = {} }
 // A is the app's shared state (app.js), K the core's functions.
 let A = null
 let K = null
-const S = { boot: 0, shown: false, lost: false, t: null, ticks: 0, reg: 'pending', sum: false }
+// rx and cb are this page's own radio and redraw: a page only ever clears what it put there itself.
+const S = { boot: 0, shown: false, lost: false, t: null, ticks: 0, reg: 'pending', sum: false, rx: null, cb: null }
 
 function makeMessage (text) {
   const builder = new Builder()
@@ -59,7 +60,7 @@ function refresh (page) {
 // failure is tried again, and never while a message is half gathered (registering drops frames).
 function listen (page) {
   S.reg = 'pending'
-  A.radio.listen(
+  S.rx.listen(
     function (message) {
       try { K.onPhone(A.c, message); tick(A.c, A.ui) } catch (e) { /* a snapshot the core cannot read must not stop the watch */ }
       refresh(page)
@@ -68,23 +69,24 @@ function listen (page) {
   )
 }
 
+// Only the page that owns the app's redraw may stop the app (a new page may be up before this one is torn down).
 function pause () {
-  if (A.radio) A.radio.stop()
+  if (S.rx) S.rx.stop()
   S.reg = 'pending'
-  A.cb = null
-  A.hide()
+  if (S.cb && A.cb === S.cb) { A.cb = null; A.hide() }
+  S.cb = null
 }
 
 // Shown (again): the receiver, then the app's hello, redraw and clock. The app calls A.cb on each pass of
 // its clock, once a second with sec true.
 function resume (page) {
   listen(page)
-  A.cb = function (sec) {
+  S.cb = A.cb = function (sec) {
     try {
       tick(A.c, A.ui)
       if (sec) {
         S.ticks += 1
-        if (S.reg === 'failed' && S.ticks % 10 === 0 && !A.radio.gathering()) listen(page) // the receiver's retry
+        if (S.reg === 'failed' && S.ticks % 10 === 0 && !S.rx.gathering()) listen(page) // the receiver's retry
       }
     } catch (e) { /* the clock keeps going */ }
     refresh(page)
@@ -115,31 +117,38 @@ function whenVersion (cb) {
   poll()
 }
 
-function start (page, stored) {
-  A.ui = newUi()
+// This page's own link to the phone: the client's peer and a radio the app's core sends through.
+function link () {
   try {
     client.setPeerPkgName(PHONE_PACKAGE)
     client.setPeerFingerPrint(PHONE_FINGERPRINT)
   } catch (e) { /* the failing client stays failing */ }
-  A.radio = createRadio(client, makeMessage, nowMs())
+  S.rx = A.radio = createRadio(client, makeMessage, nowMs())
+}
+
+function start (page, stored) {
+  A.ui = newUi()
+  link()
   A.make(stored)
   if (S.shown) resume(page)
 }
 
-// Loads the stored state and starts the core. A second boot (the page's onInit again, or Try again)
-// drops the first one's core and loop first: only one core may save into one store.
+// Loads the stored state and starts the core: once per app run (the first page, or Try again). It drops
+// any older core first: only one core may save into one store. Later pages find the core running and
+// only adopt it (onInit): its summary, hold, rest, heart-rate totals and screen state carry on.
 function boot (page) {
   S.boot += 1
   S.t = null // the new page's $t, not the old one's
   const mine = S.boot
   A.drop()
+  const gen = A.gen
   S.lost = false
-  const store = createStore(file)
+  const store = createStore(file) // the app's: it holds no page, so a page's end leaves it be
   A.store = store
   store.load(function (stored, status) {
-    if (mine !== S.boot) return
+    if (mine !== S.boot || gen !== A.gen) return
     if (status === 'unreadable') { showLost(page); return }
-    whenVersion(function () { if (mine === S.boot) start(page, stored) })
+    whenVersion(function () { if (mine === S.boot && gen === A.gen) start(page, stored) })
   })
 }
 
@@ -159,15 +168,22 @@ export default {
     A = getApp().data.get()
     K = getApp().data.k()
     attach(K)
-    boot(this)
+    S.t = null
+    if (A.c) link() // the app's core is already running: this page only brings its own link
+    else boot(this)
   },
   onShow: function () {
     S.shown = true
     if (A.c) resume(this)
   },
   onHide: function () { S.shown = false; pause() },
-  // nothing of this page stays in the app: its store and radio go with it
-  onDestroy: function () { S.shown = false; S.sum = false; S.t = null; S.boot += 1; pause(); A.store = null; A.radio = null },
+  // what this page put in the app goes with it (its radio and redraw); the core, the store and the ui stay
+  onDestroy: function () {
+    S.shown = false; S.sum = false; S.t = null; S.boot += 1
+    pause()
+    if (A.radio === S.rx) A.radio = null
+    S.rx = null
+  },
   retry: function () { boot(this) },
   // Swipe right leaves the app, from the Start screen only: not by accident in the middle of a workout.
   // In a workout a swipe left opens the Metrics page and a swipe right steps back (view.js swipeTo).

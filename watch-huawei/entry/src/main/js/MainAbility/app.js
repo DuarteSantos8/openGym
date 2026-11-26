@@ -5,9 +5,9 @@
 // lives in this module and `get` returns it.
 //
 // A.c      the core, made by A.make(stored)        A.ui     the screen-only state (view.js newUi), set by the page
-// A.store  the page's store (saves c.s)           A.radio  the page's radio (frames over Wear Engine)
+// A.store  the store (saves c.s), made with the core   A.radio  the page's radio (frames over Wear Engine)
 // A.cb     the page's redraw, called as cb(sec): sec is true on the once-a-second pass. The page sets it on
-//          show and clears it on hide; A.store and A.radio are cleared on destroy, so no closure of a gone page stays here.
+//          show and clears it on hide; A.radio is cleared on destroy. A page clears only what it set itself.
 import vibrator from '@system.vibrator'
 import sensor from '@system.sensor'
 import brightness from '@system.brightness'
@@ -19,7 +19,7 @@ const nowMs = function () { return Date.now() } // unsure: Date is not in Huawei
 // No env.tick (a monotonic clock) for the core: nothing in Huawei's lite docs gives one, so durations
 // use the watch clock, as core.js falls back to.
 
-const A = { c: null, ui: null, store: null, radio: null, cb: null }
+const A = { c: null, ui: null, store: null, radio: null, cb: null, gen: 0 }
 // gen: which core may save; loop: which clock may run; on: a page is shown; fast: the clock is on its 250 ms beat
 const L = { gen: 0, loop: 0, on: false, lastSec: 0, fast: false, hr: false, bpm: 0, bpmAt: 0, awake: false }
 
@@ -111,6 +111,7 @@ A.make = function (stored) {
 // The old core sends and saves nothing more, and its clock ends.
 A.drop = function () {
   L.gen += 1
+  A.gen = L.gen // a boot's late callbacks check it
   L.loop += 1
   if (A.c) K.stop(A.c)
   A.c = null
