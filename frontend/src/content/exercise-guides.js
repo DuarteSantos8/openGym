@@ -24,6 +24,7 @@
 //     breathing: one sentence
 //     easier?:  catalogue id of a simpler version
 //     harder?:  catalogue id of the next step
+//     sources?: print citations for the coaching cues
 //     review:   'draft' | 'reviewed' (+ reviewer, reviewed)
 //   }
 //
@@ -108,6 +109,13 @@ export const EXERCISE_GUIDES = {
     mistakes: [['The band slipping from under your foot.', 'Stand on it with the arch of your foot, and check it before each set.'], ['Wobbling from side to side.', 'Put your feet hip width apart, not in one line.']],
     feel: 'Thigh and glute of the front leg.', breathing: BREATHE_DOWN_UP, easier: '0781',
   }),
+  '0612': draft({
+    level: 'beginner', pattern: 'lunge',
+    cues: ['Step forward onto your whole foot.', 'Bend both knees to lower your body.', 'Push through your front foot to step back.'],
+    mistakes: [['Front knee turning inward', 'Point your knee in the same direction as your toes.'], ['Feet landing on a single line', 'Leave room between your feet from side to side.']],
+    feel: 'Front thigh and glutes of the leading leg.', breathing: 'Breathe in as you lower and out as you stand.',
+    easier: '0781', sources: ['American Council on Exercise, Forward Lunge (exercise library 94).'],
+  }),
 
   // ───────────────────────────── hinge ─────────────────────────────
   2471: draft({
@@ -145,6 +153,13 @@ export const EXERCISE_GUIDES = {
     cues: ['Stand on the band, feet hip width, and take hold of it low down.', 'Flat back, hips pushed back, a small bend in the knees.', 'Stand up by pushing your hips forward.', 'Lower by sending your hips back again, under control.'],
     mistakes: [['Pulling with the arms.', 'Arms stay long, like ropes. The hips do the work.'], ['The band slack at the bottom.', 'Hold it lower down, or stand wider on it.']],
     feel: 'Glutes and the back of the thighs.', breathing: BREATHE_LIFT, easier: '2471', harder: '1459',
+  }),
+  '0032': draft({
+    level: 'intermediate', pattern: 'hinge',
+    cues: ['Stand with the bar over the middle of your feet.', 'Bend at your hips and knees to grip the bar.', 'Push the floor away and stand tall.'],
+    mistakes: [['Bar moving away from your legs', 'Keep the bar close to your shins and thighs.'], ['Leaning back at the top', 'Finish with your shoulders over your hips.']],
+    feel: 'Glutes, back of your thighs and back muscles.', breathing: 'Breathe out as you stand and in as you reset.',
+    easier: '1459', sources: ['CrossFit, The Deadlift, points of performance.'],
   }),
 
   // ───────────────────────────── horizontal push ─────────────────────────────
@@ -196,6 +211,20 @@ export const EXERCISE_GUIDES = {
     mistakes: [['Elbows pointing out to the sides.', 'Keep them pointing straight behind you.'], ['Shoulders rolling forward.', 'Chest open, shoulders back.']],
     feel: 'Back of the arms.', breathing: BREATHE_PUSH, harder: '3387',
   }),
+  '0289': draft({
+    level: 'intermediate', pattern: 'push-h',
+    cues: ['Lie on a flat bench with feet on the floor.', 'Hold the dumbbells beside your chest.', 'Press up, then lower both weights slowly.'],
+    mistakes: [['Wrists bending back', 'Keep your wrists stacked over your elbows.'], ['Bouncing at the bottom', 'Pause briefly before pressing.']],
+    feel: 'Chest, front shoulders and back of your upper arms.', breathing: 'Breathe out as you press and in as you lower.',
+    easier: '2982', harder: '0025', sources: ['PureGym, How To Do A Dumbbell Bench Press.'],
+  }),
+  '0314': draft({
+    level: 'intermediate', pattern: 'push-h',
+    cues: ['Set the bench to a low incline and plant your feet.', 'Hold the dumbbells beside your upper chest.', 'Press up, then lower both weights slowly.'],
+    mistakes: [['Wrists bending back', 'Keep your wrists stacked over your elbows.'], ['Bouncing at the bottom', 'Pause briefly before pressing.']],
+    feel: 'Chest, front shoulders and back of your upper arms.', breathing: 'Breathe out as you press and in as you lower.',
+    easier: '2982', harder: '0047', sources: ['PureGym, How To Do An Incline Dumbbell Chest Press.'],
+  }),
 
   // ───────────────────────────── vertical push ─────────────────────────────
   '0426': draft({
@@ -215,6 +244,13 @@ export const EXERCISE_GUIDES = {
     cues: ['From a push-up position, walk your feet in and lift your hips high: an upside-down V.', 'Hands shoulder width, head between your arms.', 'Bend your elbows and lower the top of your head towards the floor, a little in front of your hands.', 'Push back up to the V.'],
     mistakes: [['Hips dropping so it turns into a normal push-up.', 'Keep your hips as high as you can.'], ['Elbows flaring wide.', 'Point them back at about 45 degrees.']],
     feel: 'Shoulders and the back of the arms.', breathing: BREATHE_PUSH, easier: '0662', harder: '0471',
+  }),
+  '1162': draft({
+    level: 'intermediate', pattern: 'push-v',
+    cues: ['Start with the bar at your shoulders.', 'Keep your feet flat and your knees still.', 'Press the bar overhead, then lower it slowly.'],
+    mistakes: [['Arching your back', 'Keep your ribs over your hips.'], ['Bar drifting forward', 'Finish with the bar over the middle of your feet.']],
+    feel: 'Shoulders and back of your upper arms.', breathing: 'Breathe out as you press and in as you lower.',
+    easier: '0426', sources: ['CrossFit, The Shoulder Press, points of performance.'],
   }),
   '0334': draft({
     level: 'beginner', pattern: 'isolation',
@@ -260,6 +296,13 @@ export const EXERCISE_GUIDES = {
     mistakes: [['Bending the elbows to make it easier.', 'Keep your arms long and use a lighter band.'], ['Shoulders creeping up.', 'Keep them down, away from your ears.']],
     feel: 'The back of the shoulders and between the shoulder blades.', breathing: BREATHE_PULL,
   }),
+  '5609': draft({
+    level: 'beginner', pattern: 'pull-h',
+    cues: ['Set the pulley at upper chest height and grip the rope ends.', 'Step back until the rope is taut.', 'Pull the rope ends beside your face.'],
+    mistakes: [['Shrugging your shoulders', 'Keep your shoulders away from your ears.'], ['Leaning back to pull', 'Keep your trunk still.']],
+    feel: 'Upper back and rear shoulders.', breathing: 'Breathe out as you pull and in as you return.',
+    easier: '1503', sources: ['PureGym, How To Do Face Pulls.'],
+  }),
 
   // ───────────────────────────── vertical pull ─────────────────────────────
   2330: draft({
@@ -273,6 +316,20 @@ export const EXERCISE_GUIDES = {
     cues: ['Fix the band high up on something that cannot move, such as a closed door with a door anchor.', 'Kneel facing it, arms reaching up.', 'Pull your elbows down to your sides.', 'Let your arms rise slowly.'],
     mistakes: [['An anchor that can give way.', 'Tug it hard before you kneel under it.'], ['Bending forward to pull.', 'Stay tall on your knees.']],
     feel: 'The sides of the back.', breathing: BREATHE_PULL, harder: '2330',
+  }),
+  '0652': draft({
+    level: 'intermediate', pattern: 'pull-v',
+    cues: ['Grip the bar just wider than your shoulders, palms facing away.', 'Hang with straight arms, then pull yourself up.', 'Pull your elbows down toward your ribs.'],
+    mistakes: [['Swinging your legs', 'Let your legs hang still.'], ['Reaching with your chin', 'Keep your neck in line with your back.']],
+    feel: 'Sides of your back and front of your arms.', breathing: 'Breathe out as you pull and in as you return.',
+    easier: '0017', harder: '0841', sources: ['American Council on Exercise, Pull-ups (exercise library 191).'],
+  }),
+  '1326': draft({
+    level: 'intermediate', pattern: 'pull-v',
+    cues: ['Grip the bar at shoulder width, palms facing you.', 'Hang with straight arms, then pull yourself up.', 'Pull your elbows down toward your ribs.'],
+    mistakes: [['Swinging your legs', 'Let your legs hang still.'], ['Reaching with your chin', 'Keep your neck in line with your back.']],
+    feel: 'Sides of your back and front of your arms.', breathing: 'Breathe out as you pull and in as you return.',
+    easier: '0572', sources: ['American Council on Exercise, Chin-ups (exercise library 190).'],
   }),
 
   // ───────────────────────────── arms ─────────────────────────────
@@ -312,6 +369,13 @@ export const EXERCISE_GUIDES = {
     mistakes: [['The upper arm swinging.', 'Hold it still. Only the forearm moves.'], ['The back rounding.', 'Push your hips back and keep your chest long.']],
     feel: 'Back of the upper arms.', breathing: BREATHE_PUSH,
   }),
+  '0200': draft({
+    level: 'beginner', pattern: 'isolation',
+    cues: ['Face a high pulley and hold both rope ends.', 'Keep your upper arms beside your ribs.', 'Straighten your elbows, then bend them slowly.'],
+    mistakes: [['Elbows moving forward', 'Keep your upper arms still.'], ['Rocking your body', 'Keep your trunk still.']],
+    feel: 'Back of your upper arms.', breathing: 'Breathe out as you straighten your arms and in as they bend.',
+    sources: ['PureGym, How To Do A Tricep Rope Pushdown.'],
+  }),
 
   // ───────────────────────────── core ─────────────────────────────
   '0463': draft({
@@ -325,5 +389,12 @@ export const EXERCISE_GUIDES = {
     cues: ['Lie on your side, elbow under your shoulder, feet stacked.', 'Lift your hips until your body is in a straight line.', 'Top shoulder stacked over the bottom one.', 'Hold, then swap sides.'],
     mistakes: [['Hips dropping.', 'Bend your knees and hold from your knees instead of your feet.'], ['Rolling forward.', 'Open your chest to the wall in front of you.']],
     feel: 'The side of your waist nearest the floor.', breathing: 'Breathe steadily throughout. Do not hold your breath.',
+  }),
+  '0276': draft({
+    level: 'beginner', pattern: 'core',
+    cues: ['Lie on your back with arms and knees raised.', 'Reach one arm back and extend the opposite leg.', 'Return to the start and switch sides.'],
+    mistakes: [['Lower back lifting', 'Shorten the reach.'], ['Rushing the switch', 'Bring both limbs back before changing sides.']],
+    feel: 'Muscles around your abdomen.', breathing: 'Breathe out as you reach and in as you return.',
+    easier: '4096', harder: '4127', sources: ['PureGym, How To Do A Deadbug.'],
   }),
 }

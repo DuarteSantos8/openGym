@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { EXERCISE_GUIDES, guideFor, guidedIds, ladderFor, isReviewed, problems, GUIDE_LEVELS, PATTERNS, guidedView } from './exercise-guide.js'
 import { EXIDX } from './exercises.js'
+import linearStrength from '../../../routines/opengym/linear-strength.json'
+import twiceAWeek from '../../../routines/opengym/twice-a-week.json'
+import homeFullBody from '../../../routines/opengym/ganzkoerper-zuhause.json'
 import { STARTER_PLANS } from '../../../api/coach/core/starter-plans.js'
 import { planFor, everyAnswer } from './planner.js'
 
+const localePacks = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
 const exists = id => !!EXIDX[id]
 
 describe('exercise guides', () => {
@@ -17,6 +21,39 @@ describe('exercise guides', () => {
     expect(used.size).toBeGreaterThan(30)
     const missing = [...used].filter(id => !guideFor(id)).map(id => `${id} ${EXIDX[id]?.n}`)
     expect(missing).toEqual([])
+  })
+
+  it.each([linearStrength, twiceAWeek, homeFullBody])('covers every exercise in $title', routine => {
+    const missing = routine.sessions.flatMap(session => session.exercises)
+      .filter(exercise => !guideFor(exercise.id)).map(exercise => EXIDX[exercise.id]?.n || exercise.id)
+    expect(missing).toEqual([])
+  })
+
+  it('provides sourced and translated guides for the first ten routine exercises', () => {
+    expect(Object.keys(localePacks)).toHaveLength(25)
+    const batch = ['0652', '1162', '5609', '0032', '0612', '0276', '1326', '0289', '0314', '0200']
+    for (const id of batch) {
+      const g = guideFor(id)
+      expect(g, EXIDX[id]?.n).toBeTruthy()
+      expect(g.sources?.length, id).toBeGreaterThan(0)
+      for (const [locale, pack] of Object.entries(localePacks)) {
+        for (const key of [...g.cues, ...g.mistakes.flat(), g.feel, g.breathing]) {
+          expect(pack[key], locale + ' ' + id + ' ' + key).toBeTruthy()
+          expect(pack[key]).not.toBe(key)
+        }
+      }
+    }
+  })
+
+  it('keeps the face-pull setup and supported dead-bug regression consistent with the catalogue', () => {
+    expect(guideFor('5609').cues[0]).toContain('upper chest')
+    expect(ladderFor('0276', exists).easier).toBe('4096')
+  })
+
+  it('preserves the pull and press breathing directions in Ukrainian', () => {
+    const uk = localePacks['../locales/uk.js']
+    expect(uk[guideFor('0652').breathing]).toBe('Видихайте, коли тягнете, і вдихайте під час повернення.')
+    expect(uk[guideFor('0289').breathing]).toBe('Видихайте під час жиму і вдихайте під час опускання.')
   })
 
   it('so every plan Find my plan can hand out is covered from its first session', () => {

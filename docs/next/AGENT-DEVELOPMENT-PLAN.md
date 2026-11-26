@@ -391,6 +391,10 @@ exercise, finish, find the plan, Learn, where Settings is.
 
 ### Task D7: 35 more exercise guides (EP23-T03, OWNER reads)
 
+Batch 1 adds 10 sourced drafts for the most reused missing movements. All 25 locale packs
+cover their coaching text. The three fully covered routines have regression tests. Of the 46
+distinct routine IDs that lacked a guide, 36 remain. Named review is pending.
+
 **Files:** Modify `frontend/src/content/exercise-guides.js`. Test:
 `frontend/src/lib/exercise-guide.test.js`.
 
