@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "पुश डे",
+  "Pull Day": "पुल डे",
+  "Leg Day": "लेग डे",
+  "Upper {0}": "अपर बॉडी {0}",
+  "Lower {0}": "लोअर बॉडी {0}",
 }

@@ -5862,4 +5862,10 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Hari push",
+  "Pull Day": "Hari pull",
+  "Leg Day": "Hari kaki",
+  "Upper {0}": "Tubuh atas {0}",
+  "Lower {0}": "Tubuh bawah {0}",
 };

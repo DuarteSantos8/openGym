@@ -5,8 +5,10 @@
 // A routine is [key, name, emoji, [[exerciseId, sets, reps], …]]. A timed exercise (a plank, a
 // hang) is [exerciseId, sets, seconds, 'time'] (#964): three 40 s holds, not three reps. The key is what a plan's
 // schedule points at, so a weekday never depends on the position of a routine in the array.
-// Names stay canonical English — they become ordinary user routines, which are not translated.
+// A routine's name is set once, in the language on screen when the plan is added (routineName
+// below); from then on it is an ordinary user routine, renamed freely and never translated again.
 import { uid } from './format.js'
+import { t } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
 import { defaultConfig } from './history.js'
@@ -24,8 +26,33 @@ export function starterEntry([id, sets, amount, mode]) {
   return { id, sets, reps: amount, weight: 0 }
 }
 
+// The starter routines' names in the language on screen, keyed by routine key, the way a starter
+// programme already takes the name its chooser showed. Literal t() calls so
+// check-source-strings.mjs sees every one; the catalog's English name stays the fallback for a key
+// with no entry here ("5×5 A" has no words to translate). English reads exactly as the catalog.
+const ROUTINE_NAMES = {
+  push: () => t('Push Day'),
+  pull: () => t('Pull Day'),
+  legs: () => t('Leg Day'),
+  'upper-a': () => t('Upper {0}', 'A'),
+  'upper-b': () => t('Upper {0}', 'B'),
+  'lower-a': () => t('Lower {0}', 'A'),
+  'lower-b': () => t('Lower {0}', 'B'),
+  'fb-a': () => t('Full Body') + ' A',
+  'fb-b': () => t('Full Body') + ' B',
+  'fb-c': () => t('Full Body') + ' C',
+  'home-a': () => t('Bodyweight') + ' A',
+  'home-b': () => t('Bodyweight') + ' B',
+  'db-a': () => t('Dumbbells') + ' A',
+  'db-b': () => t('Dumbbells') + ' B',
+  'band-a': () => t('Bands') + ' A',
+  'band-b': () => t('Bands') + ' B',
+  hotel: () => t('Hotel room'),
+}
+export const routineName = (key, name) => ROUTINE_NAMES[key]?.() ?? name
+
 const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(starterEntry) }))
+  routines.map(([key, name, emoji, list]) => ({ id: uid(), name: routineName(key, name), emoji, ex: list.map(starterEntry) }))
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.

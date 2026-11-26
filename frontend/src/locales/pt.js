@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "Pré-visualizar em",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "um pouco mais curto",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Dia de empurrar",
+  "Pull Day": "Dia de puxar",
+  "Leg Day": "Dia de pernas",
+  "Upper {0}": "Parte superior {0}",
+  "Lower {0}": "Parte inferior {0}",
 }

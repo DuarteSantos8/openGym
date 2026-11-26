@@ -5900,4 +5900,10 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Tolónap",
+  "Pull Day": "Húzónap",
+  "Leg Day": "Lábnap",
+  "Upper {0}": "Felsőtest {0}",
+  "Lower {0}": "Alsótest {0}",
 }

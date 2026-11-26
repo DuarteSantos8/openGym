@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "İtme günü",
+  "Pull Day": "Çekme günü",
+  "Leg Day": "Bacak günü",
+  "Upper {0}": "Üst vücut {0}",
+  "Lower {0}": "Alt vücut {0}",
 }

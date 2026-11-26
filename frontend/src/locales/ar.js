@@ -5952,4 +5952,10 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "يوم الدفع",
+  "Pull Day": "يوم السحب",
+  "Leg Day": "يوم الأرجل",
+  "Upper {0}": "علوي {0}",
+  "Lower {0}": "سفلي {0}",
 }

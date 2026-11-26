@@ -5901,4 +5901,10 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "День жимов",
+  "Pull Day": "День тяги",
+  "Leg Day": "День ног",
+  "Upper {0}": "Верх {0}",
+  "Lower {0}": "Низ {0}",
 }

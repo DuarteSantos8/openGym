@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Dzień pchania",
+  "Pull Day": "Dzień przyciągania",
+  "Leg Day": "Dzień nóg",
+  "Upper {0}": "Góra {0}",
+  "Lower {0}": "Dół {0}",
 }

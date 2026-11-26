@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
-import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
+import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme, routineName } from './starter.js'
+import { _setLangState } from './i18n-core.js'
+import de from '../locales/de.js'
 import { normalizeProgramme, programmeRoutineIds } from './programmes.js'
 
 // The approved prescription, written out again rather than imported: a test that reads the
@@ -224,5 +226,38 @@ describe('timed exercises in a starter plan (#964)', async () => {
     const { fitRoutines } = await import('./starter.js')
     const [[, , , list]] = fitRoutines([['k', 'K', 'x', [['0463', 3, 40, 'time'], ['0025', 3, 8]]]], ['body weight']).routines
     expect(list[0]).toEqual(['0463', 3, 40, 'time'])
+  })
+})
+
+describe('starter routine names', () => {
+  afterEach(() => _setLangState('en', {}, null, null))
+
+  it('are written in the language on screen when the plan is added', () => {
+    _setLangState('de', de, null, null)
+    const names = id => buildStarterPlan(id).routines.map(r => r.name)
+    expect(names('ppl')).toEqual(['Push-Tag', 'Pull-Tag', 'Beintag'])
+    expect(names('upper-lower')).toEqual(['Oberkörper A', 'Unterkörper A', 'Oberkörper B', 'Unterkörper B'])
+    expect(names('full-body')).toEqual(['Ganzkörper A', 'Ganzkörper B', 'Ganzkörper C'])
+    expect(names('home-bw')).toEqual(['Körpergewicht A', 'Körpergewicht B'])
+    expect(names('dumbbells')).toEqual(['Kurzhanteln A', 'Kurzhanteln B'])
+    expect(names('bands')).toEqual(['Bänder A', 'Bänder B'])
+    expect(names('hotel')).toEqual(['Hotelzimmer'])
+    // nothing to translate in "5×5 A": the catalog's name stands
+    expect(names('5x5')).toEqual(['5×5 A', '5×5 B', '5×5 C'])
+  })
+
+  it('read exactly as the catalog in English', () => {
+    for (const [id, approved] of Object.entries(APPROVED)) {
+      expect(buildStarterPlan(id).routines.map(r => r.name), id)
+        .toEqual([...new Set(approved.map(([, name]) => name))])
+    }
+  })
+
+  it('stay as they were once added, whatever the language does next', () => {
+    _setLangState('de', de, null, null)
+    const [push] = starterRoutines()
+    _setLangState('en', {}, null, null)
+    expect(push.name).toBe('Push-Tag')
+    expect(routineName('push', 'Push Day')).toBe('Push Day')
   })
 })

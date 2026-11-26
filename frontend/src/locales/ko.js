@@ -5897,4 +5897,10 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "푸시 데이",
+  "Pull Day": "풀 데이",
+  "Leg Day": "레그 데이",
+  "Upper {0}": "상체 {0}",
+  "Lower {0}": "하체 {0}",
 }

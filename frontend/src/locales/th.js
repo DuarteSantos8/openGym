@@ -5908,4 +5908,10 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "วันดัน",
+  "Pull Day": "วันดึง",
+  "Leg Day": "วันขา",
+  "Upper {0}": "ส่วนบน {0}",
+  "Lower {0}": "ส่วนล่าง {0}",
 }

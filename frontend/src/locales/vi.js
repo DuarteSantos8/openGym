@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Ngày đẩy",
+  "Pull Day": "Ngày kéo",
+  "Leg Day": "Ngày chân",
+  "Upper {0}": "Thân trên {0}",
+  "Lower {0}": "Thân dưới {0}",
 };

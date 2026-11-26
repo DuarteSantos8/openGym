@@ -5890,4 +5890,10 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "推日",
+  "Pull Day": "拉日",
+  "Leg Day": "腿日",
+  "Upper {0}": "上半身 {0}",
+  "Lower {0}": "下半身 {0}",
 }

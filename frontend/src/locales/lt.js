@@ -5893,4 +5893,10 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Stūmimo diena",
+  "Pull Day": "Traukimo diena",
+  "Leg Day": "Kojų diena",
+  "Upper {0}": "Viršutinė dalis {0}",
+  "Lower {0}": "Apatinė dalis {0}",
 }

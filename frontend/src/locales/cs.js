@@ -5863,4 +5863,10 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // Starter routine names, set once when a starter plan is added
+  "Push Day": "Den tlaků",
+  "Pull Day": "Den tahů",
+  "Leg Day": "Den nohou",
+  "Upper {0}": "Horní polovina {0}",
+  "Lower {0}": "Dolní polovina {0}",
 }
