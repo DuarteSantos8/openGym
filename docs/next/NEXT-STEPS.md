@@ -70,7 +70,7 @@ Epic status:
 - **Merged (#85): `next/EP19-oidc-origin-guard`.** The Render API advertises the browser OAuth callback origin. A frontend on a different origin keeps its device path and skips the provider sign-in it cannot complete.
 - **OIDC follow-up:** Explain when the current website has no sign-in or guest path, and keep the provider row in native Settings.
 
-### Coach chat acceptance (B2, stubbed provider)
+### Coach chat acceptance (B2)
 
 With a plan already open, a chat message goes to the ask job. A workout action is
 offered for the person to start. New routine and weekday actions become a plan
@@ -90,7 +90,9 @@ With no routines or with a proposed plan open, a message uses the plan builder i
   weekdays. Confirming the chat proposal appends them to those days, keeping Monday,
   existing sessions on Tuesday and Wednesday, and per-date overrides. A repeat reuses
   routines with the same name and prescription. Undo restores the original week even
-  after a repeat confirmation. Full-plan imports keep their replacement behavior.
+  after a repeat confirmation in the stubbed test. Full-plan imports keep their replacement behavior.
+  In the live preview, the first confirmation added Push Day and retained Wednesday’s existing
+  pull routine. The repeat produced a text reply with no changes. See [the schedule and restored daily limit](CLOUD-SERVER.md#live-schedule-check-after-99).
 
 ## 2. Merging (only the owner merges)
 
