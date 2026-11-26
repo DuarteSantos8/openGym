@@ -24,19 +24,20 @@ test('failures: an OOM before the first feed is one line, not also "never ran"',
 })
 
 test('inject puts the debug phone in a page copy and refuses a page it does not recognise', () => {
-  const page = "import x from 'y'\nimport { blank, newUi } from '../../common/view-common.js'\nfunction start () {\n  A.make(stored)\n}\nonInit () {\n    attach(G.init()); attachHome(G.K)\n}\n"
+  const page = "import x from 'y'\nimport { blank, newUi } from '../../common/view-common.js'\nfunction start () {\n  A.make(stored)\n}\nonInit () {\n    attach(G.init()); attachHome(G.K)\n},\nonDestroy: function () { G.destroy() }\n"
   const out = inject(page)
   assert.match(out, /import drive from '\.\.\/\.\.\/common\/debugphone\.js'/)
-  assert.match(out, /A\.make\(stored\); drive\(page, A, G\.K\)/)
+  assert.match(out, /A\.make\(stored\); drive\(A, G\.K\)/)
   assert.throws(() => inject('nothing to hook'), /anchor/)
   assert.match(out, /attach\(G\.init\(\)\); G\.A\.pg = this;/) // the home page tells the driver it is up too
 })
 
-test('hook tells the driver which page is up, in the home page and the lift page copies, and refuses a page it does not recognise', () => {
-  const out = hook('onInit: function () {\n    attach(G.init()); attachLift(G.K)\n  }')
+test('hook tells the driver which page is up, in the copy of every page, and refuses a page it does not recognise', () => {
+  const out = hook('onInit: function () {\n    attach(G.init()); attachLift(G.K)\n  },\n  onDestroy: function () { G.destroy() }')
   assert.match(out, /attach\(G\.init\(\)\); G\.A\.pg = this;/)
+  assert.match(out, /G\.destroy\(\); if \(G\.A\.pg === this\) G\.A\.pg = null/) // a page that is gone is not kept alive
   assert.throws(() => hook('nothing to hook'), /anchor/)
-  ;['index', 'lift'].forEach(n => assert.doesNotThrow(() => hook(readFileSync(new URL('../entry/src/main/js/MainAbility/pages/' + n + '/index.js', import.meta.url), 'utf8')), n))
+  ;['index', 'lift', 'rest', 'over'].forEach(n => assert.doesNotThrow(() => hook(readFileSync(new URL('../entry/src/main/js/MainAbility/pages/' + n + '/index.js', import.meta.url), 'utf8')), n))
 })
 
 test('the debug phone is never inside the app', () => {

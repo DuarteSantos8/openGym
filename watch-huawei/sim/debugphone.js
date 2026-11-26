@@ -10,9 +10,9 @@ const active = () => base({ active: { id: 'w1', name: 'Push day', start: Date.no
 
 // A.pg is the page that is up (huawei-sim.mjs hooks each page copy): the workout goes home -> lift -> home, so a tap goes to the one showing.
 // [ms after the first snapshot, page handler or swipe]: start, set done, an effort chip, the Metrics pages and back, finish, confirm
-export const STEPS = [[2000, 'start'], [8000, 'done'], [10000, 'chip2'], [12000, 'L'], [15000, 'L'], [18000, 'L'], [21000, 'L'], [24000, 'R'], [24500, 'R'], [25000, 'R'], [25500, 'R'], [26000, 'menu'], [29000, 'mFinish'], [32000, 'yes']]
+export const STEPS = [[2000, 'start'], [8000, 'done'], [10000, 'chip2'], [12000, 'L'], [15000, 'L'], [18000, 'L'], [21000, 'L'], [24000, 'R'], [24500, 'R'], [25000, 'R'], [25500, 'R'], [26000, 'menu'], [29000, 'mOver'], [32000, 'ovBack'], [35000, 'menu'], [38000, 'mFinish'], [41000, 'yes']]
 
-export default function drive (page, A, K) {
+export default function drive (A, K) {
   const real = A.radio.transmit
   A.radio.transmit = function (m, l) { // the page's own radio: 'start' is answered with an active workout
     real.call(A.radio, m, l)
@@ -24,7 +24,7 @@ export default function drive (page, A, K) {
     STEPS.forEach(function (st) {
       setTimeout(function () {
         console.log('OGSMOKE step ' + st[1])
-        try { const now = A.pg || page; if (st[1] === 'L' || st[1] === 'R') now.swipe({ direction: st[1] === 'L' ? 'left' : 'right' }); else now[st[1]]() } catch (e) { console.log('OGSMOKE steperr ' + e) }
+        try { const now = A.pg; if (st[1] === 'L' || st[1] === 'R') now.swipe({ direction: st[1] === 'L' ? 'left' : 'right' }); else now[st[1]]() } catch (e) { console.log('OGSMOKE steperr ' + e) }
       }, st[0])
     })
   }, 1500)

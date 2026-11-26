@@ -8,7 +8,7 @@
 //   build(c, ui, t) -> data     the screen's fields (always `s_<screen>`, `top`, the look)
 //   act(c, ui, name)            a tap (ACTIONS lists the names; each is one handler in the page)
 //   translator($t) -> t(key, a, b, c)   the watch's language through the page's $t, English from en.js where it has none
-//   screenOf(c, ui), pageOf(c, ui)      which screen is up, and which page ('index', 'lift' or 'rest') draws it
+//   screenOf(c, ui), pageOf(c, ui)      which screen is up, and which page ('index', 'lift', 'over' or 'rest') draws it
 // Same language subset as core.js (test/syntax.test.js).
 import { EN } from './en.js'
 // core.js stays in app.js (a page that imported it would carry its own copy): the page hands the core's
@@ -39,10 +39,9 @@ export const ROUTINE_ROWS = 3
 export const OVERVIEW_ROWS = 4
 export const SCREENS = ['idle', 'routines', 'count', 'wait', 'ask', 'confirm', 'menu', 'hold', 'set', 'over', 'rest', 'end', 'card', 'summary', 'mnum']
 export const QUIET = '#a1a1a6'
-// the page that draws each screen; a screen not listed is the rest page's, which the lift page still draws until
-// task 11 gives the rest its own page: change REST to 'rest' then
-const REST = 'lift'
-const PAGE = { idle: 'index', routines: 'index', wait: 'index', summary: 'index', count: 'lift', hold: 'lift', set: 'lift', end: 'lift', card: 'lift' }
+// the page that draws each screen; a screen not listed is the rest page's
+const REST = 'rest'
+const PAGE = { idle: 'index', routines: 'index', wait: 'index', summary: 'index', count: 'lift', hold: 'lift', set: 'lift', end: 'lift', card: 'lift', over: 'over' }
 
 /* ---------- small helpers (ES5) ---------- */
 export const dictOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)
@@ -280,8 +279,10 @@ export function build (c, ui, t) {
 }
 
 // The Menu button is on the home page's wait screen as well as on the set (and the rest): one tap for both.
+// Finish is on the lift page's end screen and the rest page's Overview.
 ACT.menu = (c, ui) => { ui.menu = true }
-ACTIONS.push('menu')
+ACT.finish = (c, ui) => { ui.confirm = 'finish' }
+ACTIONS.push('menu', 'finish')
 export function act (c, ui, name) {
   if (Object.prototype.hasOwnProperty.call(ACT, name)) ACT[name](c, ui)
 }

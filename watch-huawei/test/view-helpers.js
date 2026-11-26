@@ -1,14 +1,15 @@
-// What every view test file shares: the core, one V over the four view files, and the builders (a watch, a snapshot, a started workout).
+// What every view test file shares: the core, one V over the five view files, and the builders (a watch, a snapshot, a started workout).
 import { readFileSync } from 'node:fs'
 import * as K from '../entry/src/main/js/MainAbility/common/core.js'
 import * as C from '../entry/src/main/js/MainAbility/common/view-common.js'
 import * as H from '../entry/src/main/js/MainAbility/common/view-home.js'
 import * as Lf from '../entry/src/main/js/MainAbility/common/view-lift.js'
 import * as R from '../entry/src/main/js/MainAbility/common/view-rest.js'
+import * as O from '../entry/src/main/js/MainAbility/common/view-over.js'
 import { dollarT } from './i18n.js'
 
-// One V for the view tests: view-common.js's exports and the attach of all four view files.
-export const V = Object.assign({}, C, { attach: K => { C.attach(K); H.attach(K); Lf.attach(K); R.attach(K) } })
+// One V for the view tests: view-common.js's exports and the attach of all five view files.
+export const V = Object.assign({}, C, { attach: K => { C.attach(K); H.attach(K); Lf.attach(K); R.attach(K); O.attach(K) } })
 export { K }
 
 V.attach(K)

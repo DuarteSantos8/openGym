@@ -1,11 +1,11 @@
-// The rest page's screens: the rest, Still training?, the menu, the Overview, the Metrics page, the Finish and
-// Discard question. Part of the view (see view-common.js): the data each screen shows, and its taps.
+// The rest page's screens: the rest, Still training?, the menu, the Metrics page, the Finish and Discard question.
+// (The Overview is the over page's: view-over.js.) Part of the view (see view-common.js): the data each screen shows, and its taps.
 import { numbers, attach as attachMetrics } from './metrics.js'
-import { OVERVIEW_ROWS, QUIET, add, arrOf, clock, dictOf, fmtW, hrText, isOff, isTrue, join, pagesOf, sideWord, strOf, syncText, toF } from './view-common.js'
+import { QUIET, add, clock, dictOf, fmtW, hrText, isOff, join, sideWord, strOf, syncText, toF } from './view-common.js'
 let
   entries, current, place, locked, restLeft, restPaused, chips, chipLabel, canRate, refSet, rate, unitOf, isTimed,
-  fixList, hasMore, progress, supersetStart, lastSet, finishWorkout, keepGoing, skipSet, nextExercise, fixLast,
-  setIndex, save, restAdd, restSkip
+  fixList, lastSet, finishWorkout, keepGoing, skipSet, nextExercise, fixLast,
+  restAdd, restSkip
 export function attach (K) {
   entries = K.entries
   current = K.current
@@ -21,18 +21,13 @@ export function attach (K) {
   unitOf = K.unitOf
   isTimed = K.isTimed
   fixList = K.fixList
-  hasMore = K.hasMore
-  progress = K.progress
-  supersetStart = K.supersetStart
-  lastSet = K.lastSet
+        lastSet = K.lastSet
   finishWorkout = K.finishWorkout
   keepGoing = K.keepGoing
   skipSet = K.skipSet
   nextExercise = K.nextExercise
   fixLast = K.fixLast
-  setIndex = K.setIndex
-  save = K.save
-  restAdd = K.restAdd
+      restAdd = K.restAdd
   restSkip = K.restSkip
   attachMetrics(K)
 }
@@ -62,13 +57,6 @@ function numbersOf (c, cur, t) {
     out = w != null && w > 0 ? fmtW(w) + ' ' + unitOf(c.s, e) + ' × ' + reps : reps
   }
   return cur.side ? out + ' · ' + sideWord(t, cur.side) : out
-}
-
-function setCount (e) {
-  let done = 0
-  let all = 0
-  arrOf(e.sets).forEach(r => { if (dictOf(r) && !isTrue(r.warmup)) { all += 1; if (isTrue(r.done)) done += 1 } })
-  return [done, all]
 }
 
 const FILL = {
@@ -138,35 +126,6 @@ const FILL = {
     d.skipLabel = t('skip')
     d.locked = locked(c)
   },
-  over: (c, ui, t, d) => {
-    const s = c.s
-    const es = entries(s)
-    const pages = pagesOf(es.length, OVERVIEW_ROWS)
-    const page = Math.min(ui.op, pages - 1)
-    for (let k = 0; k < OVERVIEW_ROWS; k++) {
-      const i = page * OVERVIEW_ROWS + k
-      const e = i < es.length ? dictOf(es[i]) : null
-      const n = e ? setCount(e) : [0, 0]
-      d['on' + k] = e ? strOf(e.name) : ''
-      d['oc' + k] = e ? n[0] + '/' + n[1] : ''
-      d['ol' + k] = e && i === s.pos ? d.accent : '#1c1c1e' // the one up has the accent outline
-      d['ob' + k] = e && n[1] > 0 && n[0] === n[1] ? d.accent : '#2c2c2e' // all its sets done: a filled mark
-      d['ovv' + k] = !!e
-    }
-    for (let k = 0; k < OVERVIEW_ROWS; k++) d['ss' + k] = page * OVERVIEW_ROWS + k < es.length && supersetStart(s, page * OVERVIEW_ROWS + k)
-    d.ssLabel = t('superset')
-    const last = es.length ? dictOf(es[es.length - 1]) : null
-    const more = hasMore(s) && last ? Math.max(1, (toF(s.w.count) == null ? 0 : s.w.count) - (toF(last.i) == null ? es.length : last.i) - 1) : 0
-    d.ovMore = more > 0 ? '+' + more + ' ' + t('exercises') : ''
-    d.ovMoreOn = more > 0
-    d.ovPaged = pages > 1
-    const p = progress(s)
-    d.title = strOf(s.w.name) || t('overview')
-    d.count = t('sets_of', p[0], p[1])
-    d.sync = syncText(c, t, true)
-    d.finishLabel = t('finish_workout')
-    d.backLabel = t('continue_workout')
-  },
   // The Metrics page (metrics.js has the numbers)
   mnum: (c, ui, t, d) => {
     const n = numbers(c)
@@ -201,9 +160,7 @@ const ACT = {
   },
   no: (c, ui) => { ui.confirm = null },
   keep: (c, ui) => { keepGoing(c, true) },
-  askFinish: (c, ui) => { keepGoing(c, false); c.g.page = 'over'; ui.op = 0 },
-  ovNext: (c, ui) => { ui.op = ui.op + 1 >= pagesOf(entries(c.s).length, OVERVIEW_ROWS) ? 0 : ui.op + 1 },
-  ovBack: (c, ui) => { c.g.page = 'set' }
+  askFinish: (c, ui) => { keepGoing(c, false); c.g.page = 'over'; ui.op = 0 }
 }
 for (let k = 0; k < 4; k++) {
   ACT['chip' + k] = (c, ui) => {
@@ -211,16 +168,4 @@ for (let k = 0; k < 4; k++) {
     rate(c, chips(st ? st.effort : null)[k])
   }
 }
-for (let k = 0; k < OVERVIEW_ROWS; k++) {
-  // a row with sets left takes the lifter there
-  ACT['ov' + k] = (c, ui) => {
-    const i = ui.op * OVERVIEW_ROWS + k
-    if (i >= entries(c.s).length || setIndex(c.s, i) == null) return
-    c.s.pos = i
-    c.g.fix = null
-    c.g.page = 'set'
-    save(c)
-  }
-}
-
 add(FILL, ACT)

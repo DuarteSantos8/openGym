@@ -1,0 +1,46 @@
+/* True black, one accent (the phone's, else lime; index.hml binds the colours), quiet text #A1A1A6, two
+   sizes doing the work: big numbers and small labels. Every target is at least 56 px tall with 8 px
+   between targets. Every box has an explicit width and height: dl/oh/js-lite-components-container-div.md
+   and ...-basic-text.md say "If this attribute is not set, the default value 0 is used". Heights are px
+   from the contents; widths are percent of the screen block. No animation.
+   test/layout.test.js adds the heights up for a 466 px round and a 336 x 480 rectangle and checks that
+   nothing sits where the circle is cut off. */
+/* The over page (see index.hml): the rules its screens use. */
+.root {
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.scr {
+  width: 90%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.small { width: 72%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tiny { width: 76%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.btn {
+  width: 88%;
+  height: 56px;
+  margin-top: 8px;
+  border-radius: 28px;
+  font-size: 20px;
+  color: #ffffff;
+  background-color: #1c1c1e;
+}
+.btn:active { background-color: #2c2c2e; }
+.btnA { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
+.btnA:active { background-color: #7aad28; }
+.orow { width: 90%; height: 64px; border-radius: 16px; border-width: 2px; border-color: #1c1c1e; background-color: #1c1c1e; flex-direction: row; align-items: center; justify-content: flex-start; }
+.omark { width: 28px; height: 28px; margin-left: 12px; margin-right: 12px; border-radius: 14px; background-color: #2c2c2e; }
+.ocol { width: 72%; height: 52px; flex-direction: column; align-items: flex-start; justify-content: center; }
+.oName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
+.oCnt { width: 100%; height: 22px; font-size: 18px; text-align: left; color: #a1a1a6; }
+.overList { width: 100%; height: 60%; }
+.li { width: 100%; height: 72px; }
+.liIn { width: 86%; margin-left: 7%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.quiet { color: #a1a1a6; }

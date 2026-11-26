@@ -8,8 +8,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-// the pages that draw screens: the home page and the lift page (the rest page has none yet)
-const PAGES = ['index', 'lift']
+// the pages that draw screens
+const PAGES = ['index', 'lift', 'rest', 'over']
 const file = (p, f) => readFileSync(new URL('../entry/src/main/js/MainAbility/pages/' + p + '/' + f, import.meta.url), 'utf8')
 const hmls = PAGES.map(p => file(p, 'index.hml').replace(/<!--[\s\S]*?-->/g, ''))
 const cssText = PAGES.map(p => file(p, 'index.css').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n')

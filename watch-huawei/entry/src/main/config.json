@@ -33,7 +33,7 @@
       ]
     },
     "js": [
-      { "pages": ["pages/index/index", "pages/lift/index", "pages/rest/index"], "name": ".MainAbility" }
+      { "pages": ["pages/index/index", "pages/lift/index", "pages/rest/index", "pages/over/index"], "name": ".MainAbility" }
     ]
   }
 }

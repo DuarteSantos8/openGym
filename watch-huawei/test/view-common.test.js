@@ -64,7 +64,7 @@ test('the screens speak every language they are given: no key missing, no leftov
 })
 
 test('the view files only ask for words that exist', () => {
-  const src = ['common', 'home', 'lift', 'rest'].map(f => readFileSync(new URL('../entry/src/main/js/MainAbility/common/view-' + f + '.js', import.meta.url), 'utf8')).join('\n')
+  const src = ['common', 'home', 'lift', 'rest', 'over'].map(f => readFileSync(new URL('../entry/src/main/js/MainAbility/common/view-' + f + '.js', import.meta.url), 'utf8')).join('\n')
   const used = [...src.matchAll(/\bt\('([a-z_]+)'/g)].map(m => m[1])
   assert.ok(used.length > 40)
   used.forEach(k => assert.ok(k in FILES['en-US'], k))
@@ -162,9 +162,8 @@ test('the heart-rate sensor rests after three idle hours and wakes with the next
   assert.equal(K.wantHr(w.c), true)
 })
 
-// task 11 makes this 'rest'
-const REST = 'lift'
-test('pageOf: Start, the wait and the summary are the home page; the set, the hold and the 3-2-1 the lift page; the rest, the menu and the confirm the rest page (still drawn by the lift page, until task 11)', () => {
+const REST = 'rest'
+test('pageOf: Start, the wait and the summary are the home page; the set, the hold and the 3-2-1 the lift page; the Overview the over page; the rest, the menu, the Metrics page and the confirm the rest page', () => {
   const pages = w => V.pageOf(w.c, w.ui)
   const w = ready(null, TODAY())
   assert.equal(pages(w), 'index') // idle
@@ -173,6 +172,9 @@ test('pageOf: Start, the wait and the summary are the home page; the set, the ho
   w.wait(4); assert.equal(pages(w), 'lift') // the set
   w.tap('done'); assert.equal(pages(w), REST) // the rest
   w.tap('menu'); assert.equal(pages(w), REST)
+  w.tap('mOver'); assert.equal(w.screen(), 'over'); assert.equal(pages(w), 'over') // the Overview is the over page's
+  w.tap('ovBack'); assert.equal(pages(w), REST); w.tap('menu')
+  w.ui.menu = false; w.ui.mp = 1; assert.equal(w.screen(), 'mnum'); assert.equal(pages(w), REST); w.tap('mpBack'); w.tap('menu')
   w.tap('mFinish'); assert.equal(w.screen(), 'confirm'); assert.equal(pages(w), REST)
   w.tap('yes'); assert.equal(pages(w), 'index') // the summary
   const v = ready(null, null, [{ name: 'Legs', routineIds: ['r2'], entries: [] }]); v.tap('start'); v.tap('skipCount')
@@ -181,10 +183,10 @@ test('pageOf: Start, the wait and the summary are the home page; the set, the ho
   assert.deepEqual([x.screen(), pages(x)], ['card', 'lift'])
 })
 
-// The tests attach the core to all four view files at once and a page attaches only its own; a core name a file
+// The tests attach the core to all five view files at once and a page attaches only its own; a core name a file
 // uses but does not attach would only fail on a device. Each file's `let` list and attach() must cover what its body uses.
 test('each view file attaches every core name it uses', () => {
-  ;['view-common', 'view-home', 'view-lift', 'view-rest'].forEach(f => {
+  ;['view-common', 'view-home', 'view-lift', 'view-rest', 'view-over'].forEach(f => {
     const src = strip(readFileSync(new URL('../entry/src/main/js/MainAbility/common/' + f + '.js', import.meta.url), 'utf8'))
     const from = src.indexOf('\nlet\n')
     const to = src.indexOf('\n}', src.indexOf('export function attach')) + 2

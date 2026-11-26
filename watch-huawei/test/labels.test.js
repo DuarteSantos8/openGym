@@ -6,7 +6,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { FILES } from './i18n.js'
 
-const css = ['index', 'lift'].map(p => readFileSync(new URL('../entry/src/main/js/MainAbility/pages/' + p + '/index.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n')
+const css = ['index', 'lift', 'rest', 'over'].map(p => readFileSync(new URL('../entry/src/main/js/MainAbility/pages/' + p + '/index.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n')
 const rule = c => { const m = css.match(new RegExp('\\.' + c + '\\s*\\{([^}]*)\\}')); const o = {}; m[1].split(';').forEach(p => { const i = p.indexOf(':'); if (i > 0) o[p.slice(0, i).trim()] = p.slice(i + 1).trim() }); return o }
 
 // the word on each button, and the class of that button in the pages' index.hml

@@ -32,15 +32,17 @@ export const heapPeak = (pipe) => Math.max(0, ...[...pipe.matchAll(/"peakAllocBy
 // every page copy tells the driver which page is up (A.pg), because the workout switches pages and a tap goes to the one showing
 export function hook(src) {
   const at = 'attach(G.init());'
-  if (!src.includes(at)) throw new Error('hook: anchor not found in the page, update huawei-sim.mjs')
-  return src.replace(at, at + ' G.A.pg = this;')
+  const end = 'onDestroy: function () { G.destroy() }'
+  if (!src.includes(at) || !src.includes(end)) throw new Error('hook: anchor not found in the page, update huawei-sim.mjs')
+  // a page that is gone is let go: a kept reference would hold its whole module in the heap, which the real app does not
+  return src.replace(at, at + ' G.A.pg = this;').replace(end, 'onDestroy: function () { G.destroy(); if (G.A.pg === this) G.A.pg = null }')
 }
 // hook the debug phone into the home page copy (the first page, which makes the core): the import, and a call right after it is made
 export function inject(src) {
   const imp = "import { blank,"
   const make = 'A.make(stored)'
   if (!src.includes(imp) || !src.includes(make)) throw new Error('inject: anchor not found in the page, update huawei-sim.mjs')
-  return hook(src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(page, A, G.K)'))
+  return hook(src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(A, G.K)'))
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -51,6 +53,8 @@ function prepare(dir) {
   const edit = (name, fn) => { const f = join(dir, PAGES, name, 'index.js'); writeFileSync(f, fn(readFileSync(f, 'utf8'))) }
   edit('index', inject)
   edit('lift', hook)
+  edit('rest', hook)
+  edit('over', hook)
 }
 
 // the simulator draws text only when it runs from a folder with `config` beside its binary
@@ -96,6 +100,7 @@ async function run(dir, out, hs) {
       }
       await sleep(2000)
     }
+    writeFileSync(join(out, 'pipe.txt'), pipe) // the simulator's memoryUsage reports, in order: the heap per step
     return { fed, bad: badLines(log()), peak: heapPeak(pipe), out }
   } finally {
     sim.kill(); if (ws) ws.close(); srv.close()

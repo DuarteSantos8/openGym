@@ -1,0 +1,26 @@
+<!-- The over page: the Overview, a list of the exercises with their sets done (Finish and Continue at its foot).
+     Accent colours are bound as single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
+<div class="root" onswipe="swipe">
+
+  <!-- Overview: a list, it scrolls -->
+  <div class="scr" if="{{s_over}}">
+    <text class="small">{{title}}</text>
+    <text class="tiny quiet">{{count}}</text>
+    <list class="overList">
+      <list-item class="li" if="{{ss0}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv0}}"><div class="liIn"><div class="orow" style="border-color: {{ol0}};" onclick="ov0"><div class="omark" style="background-color: {{ob0}};"></div><div class="ocol"><text class="oName">{{on0}}</text><text class="oCnt">{{oc0}}</text></div></div></div></list-item>
+      <list-item class="li" if="{{ss1}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv1}}"><div class="liIn"><div class="orow" style="border-color: {{ol1}};" onclick="ov1"><div class="omark" style="background-color: {{ob1}};"></div><div class="ocol"><text class="oName">{{on1}}</text><text class="oCnt">{{oc1}}</text></div></div></div></list-item>
+      <list-item class="li" if="{{ss2}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv2}}"><div class="liIn"><div class="orow" style="border-color: {{ol2}};" onclick="ov2"><div class="omark" style="background-color: {{ob2}};"></div><div class="ocol"><text class="oName">{{on2}}</text><text class="oCnt">{{oc2}}</text></div></div></div></list-item>
+      <list-item class="li" if="{{ss3}}"><div class="liIn"><text class="tiny quiet">{{ssLabel}}</text></div></list-item>
+      <list-item class="li" if="{{ovv3}}"><div class="liIn"><div class="orow" style="border-color: {{ol3}};" onclick="ov3"><div class="omark" style="background-color: {{ob3}};"></div><div class="ocol"><text class="oName">{{on3}}</text><text class="oCnt">{{oc3}}</text></div></div></div></list-item>
+      <list-item class="li" if="{{ovPaged}}"><div class="liIn"><input type="button" class="btn" value="{{gt}}" onclick="ovNext" /></div></list-item>
+      <list-item class="li" if="{{ovMoreOn}}"><div class="liIn"><text class="tiny quiet">{{ovMore}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><text class="tiny quiet">{{sync}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{finishLabel}}" onclick="finish" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{backLabel}}" onclick="ovBack" /></div></list-item>
+    </list>
+  </div>
+
+</div>

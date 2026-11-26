@@ -11,14 +11,15 @@ import { blank, ACTIONS, SCREENS } from '../entry/src/main/js/MainAbility/common
 import '../entry/src/main/js/MainAbility/common/view-home.js' // each adds its taps to ACTIONS
 import '../entry/src/main/js/MainAbility/common/view-lift.js'
 import '../entry/src/main/js/MainAbility/common/view-rest.js'
+import '../entry/src/main/js/MainAbility/common/view-over.js'
 import { dollarT } from './i18n.js'
 import { frames } from '../entry/src/main/js/MainAbility/common/frames.js'
 
-// The pages that draw screens: the home page (pages/index) and, until task 10 and 11 split it, the lift page (every other
-// screen). pages/rest is empty and sends the lifter home.
+// The pages that draw screens: the home page (pages/index), the lift page (the 3-2-1, the set, the hold, all sets done,
+// the cardio card) and the rest page (every other screen).
 const pagesDir = new URL('../entry/src/main/js/MainAbility/pages/', import.meta.url)
 const PG = {}
-;['index', 'lift'].forEach(n => {
+;['index', 'lift', 'rest', 'over'].forEach(n => {
   const d = new URL(n + '/', pagesDir)
   PG[n] = {
     hml: readFileSync(new URL('index.hml', d), 'utf8').replace(/<!--[\s\S]*?-->/g, ''),
@@ -26,9 +27,9 @@ const PG = {}
     js: readFileSync(new URL('index.js', d), 'utf8')
   }
 })
-const HOME_SCREENS = ['idle', 'routines', 'wait', 'summary'] // view-common.js PAGE: the screens the home page draws (and its own `lost`)
-const hml = PG.index.hml + PG.lift.hml
-const css = PG.index.css + '\n' + PG.lift.css
+const OWN = { index: ['idle', 'routines', 'wait', 'summary'], lift: ['count', 'hold', 'set', 'end', 'card'], over: ['over'] } // view-common.js PAGE: the screens each page draws, the rest page's are the others (the home page also has its own `lost`)
+const hml = PG.index.hml + PG.lift.hml + PG.rest.hml + PG.over.hml
+const css = PG.index.css + '\n' + PG.lift.css + '\n' + PG.rest.css + '\n' + PG.over.css
 const js = PG.index.js
 const names = (page, re) => [...page.hml.matchAll(re)].map(m => m[1])
 const boundIn = page => names(page, /\{\{\s*([A-Za-z_][\w]*)\s*\}\}/g)
@@ -45,16 +46,14 @@ test('a page\'s data is exactly the names its HML binds (each name costs the eng
     bound.forEach(k => assert.ok(k in data, n + ' HML binds ' + k + ', which is not in data'))
     assert.deepEqual(Object.keys(blank(fieldsIn(PG[n]))).sort(), bound, n)
   })
-  const all = boundIn(PG.index).concat(boundIn(PG.lift))
+  const all = boundIn(PG.index).concat(boundIn(PG.lift), boundIn(PG.rest), boundIn(PG.over))
   Object.keys(data).forEach(k => assert.ok(all.indexOf(k) >= 0, 'data ' + k + ' is never shown'))
 })
 
 test('every screen is a block of the HML of the page that draws it, shown by its own flag', () => {
   SCREENS.forEach(s => {
-    const mine = HOME_SCREENS.indexOf(s) >= 0 ? PG.index : PG.lift
-    const other = mine === PG.index ? PG.lift : PG.index
-    assert.ok(mine.hml.indexOf('if="{{s_' + s + '}}"') >= 0, s)
-    assert.ok(other.hml.indexOf('if="{{s_' + s + '}}"') < 0, s + ' is on one page only')
+    const mine = OWN.index.indexOf(s) >= 0 ? 'index' : OWN.lift.indexOf(s) >= 0 ? 'lift' : OWN.over.indexOf(s) >= 0 ? 'over' : 'rest'
+    Object.keys(PG).forEach(n => assert.equal(PG[n].hml.indexOf('if="{{s_' + s + '}}"') >= 0, n === mine, s + ' is on the ' + mine + ' page only'))
   })
   assert.ok(PG.index.hml.indexOf('if="{{s_lost}}"') >= 0) // the stored workout that could not be read: the first page's
 })
@@ -69,7 +68,7 @@ test('every tap in a page\'s HML has a handler in that page, and every action is
     have.filter(h => ACTIONS.indexOf(h) >= 0).forEach(h => assert.ok(p.js.indexOf('  ' + h + ': function () { go(this, \'' + h + '\') }') >= 0, n + ': ' + h))
     assert.ok(p.hml.indexOf('onswipe="swipe"') >= 0, n)
   })
-  const wired = handlersIn(PG.index).concat(handlersIn(PG.lift))
+  const wired = handlersIn(PG.index).concat(handlersIn(PG.lift), handlersIn(PG.rest), handlersIn(PG.over))
   ACTIONS.forEach(a => assert.ok(wired.indexOf(a) >= 0, a + ' is not wired in the HML of any page'))
 })
 
@@ -243,7 +242,9 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
     assert.equal(page.top.indexOf('130 bpm') >= 0, true)
 
     page.wPlus()
-    page.done()
+    page.done() // the rest is the rest page's screen
+    assert.deepEqual(W.replaced, ['pages/rest/index'])
+    page = await follow(W, page)
     assert.equal(page.s_rest, true)
     assert.deepEqual(W.awake, [true]) // the screen is held on for the rest
     assert.ok(W.buzzes.length >= 1)
@@ -275,7 +276,7 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
     // a new start on the same files: the workout and the rest are still there
     const W2 = world(disk)
     let page2 = await boot(W2)
-    assert.deepEqual(W2.replaced, ['pages/lift/index']) // the home page builds nothing of the rest, it hands over
+    assert.deepEqual(W2.replaced, ['pages/rest/index']) // the home page builds nothing of the rest, it hands over
     assert.equal(page2.s_idle, false)
     page2 = await follow(W2, page2)
     assert.equal(page2.s_rest, true)
@@ -342,12 +343,16 @@ test('page: in a workout a swipe left opens the Metrics page and a swipe right g
     page.start(); page = await follow(W, page); W.advance(4)
     assert.equal(page.s_set, true)
     page.def.swipe.call(page, { direction: 'right' })
-    assert.deepEqual([page.s_set, W.terminated], [true, 0])
-    page.def.swipe.call(page, { direction: 'left' })
-    assert.deepEqual([page.s_mnum, page.s_set], [true, false])
+    assert.deepEqual([page.s_set, W.terminated, W.replaced.length], [true, 0, 0])
+    page.def.swipe.call(page, { direction: 'left' }) // the Metrics page is the rest page's
+    assert.deepEqual(W.replaced, ['pages/rest/index'])
+    page = await follow(W, page)
+    assert.deepEqual([page.s_mnum, 's_set' in page], [true, false])
     page.def.swipe.call(page, { direction: 'left' }) // the one page stays
     assert.equal(page.s_mnum, true)
-    page.def.swipe.call(page, { direction: 'right' })
+    page.def.swipe.call(page, { direction: 'right' }) // and the set is the lift page's
+    assert.deepEqual(W.replaced, ['pages/lift/index'])
+    page = await follow(W, page)
     assert.deepEqual([page.s_set, W.terminated], [true, 0])
     // an up or down swipe (a list scrolling) does not redraw
     page.tag = 'stale' // the Set screen fills the tag: a redraw would rewrite it
@@ -369,7 +374,7 @@ test('page: the summary list gets the crown once when it shows, and a crown that
     let page = await boot(W)
     fromPhone(W, snap())
     page.start(); page = await follow(W, page); W.advance(4)
-    page.menu(); page.mFinish(); page.yes()
+    page.menu(); page = await follow(W, page); page.mFinish(); page.yes()
     page = await follow(W, page) // the summary is the home page's
     assert.equal(page.s_summary, true)
     const asked = []
@@ -378,8 +383,8 @@ test('page: the summary list gets the crown once when it shows, and a crown that
     assert.deepEqual(asked, [{ focus: true }])
     W.advance(3)
     assert.equal(asked.length, 1) // once, not on every redraw
-    page.close(); W.advance(2); page.start(); page = await follow(W, page); W.advance(4)
-    page.menu(); page.mFinish(); page.yes()
+    page.close(); W.advance(2); fromPhone(W, snap()); page.start(); page = await follow(W, page); W.advance(4)
+    page.menu(); page = await follow(W, page); page.mFinish(); page.yes()
     page = await follow(W, page)
     assert.equal(page.s_summary, true)
     page.$refs = {} // a watch whose list has no crown method
@@ -393,7 +398,7 @@ test('page: a rebuild while the summary is up asks for the crown again', async (
     let page = await boot(W)
     fromPhone(W, snap())
     page.start(); page = await follow(W, page); W.advance(4)
-    page.menu(); page.mFinish(); page.yes()
+    page.menu(); page = await follow(W, page); page.mFinish(); page.yes()
     page = await follow(W, page)
     const asked = []
     page.$refs = { sum: { rotation: o => asked.push(o) } }
@@ -423,13 +428,13 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       fromPhone(W, snap())
       page.start(); page = await follow(W, page); W.advance(4)
       W.hr.success({ heartRate: 120 }); W.advance(3)
-      page.done()
+      page.done(); page = await follow(W, page)
       assert.equal(page.s_rest, true)
       const A = globalThis.getApp().data.get()
       const core = A.c
       const hr = globalThis.getApp().data.k().hrSoFar(core)
       assert.ok(hr, 'heart-rate totals exist')
-      const next = await nextPage(W, 'lift')
+      const next = await nextPage(W, 'rest')
       const old = page.def
       if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
       W.settle(); W.advance(1) // the new page's client learns its version, then it links
@@ -444,7 +449,7 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       assert.ok(W.receiver, 'the new page listens')
       next.restSkip()
       W.advance(1)
-      assert.notEqual(next.s_rest, true)
+      assert.deepEqual(W.replaced, ['pages/lift/index']) // the next set is the lift page's
       W.advance(1)
       next.def.onHide.call(next)
       assert.equal(W.hr, null) // the page that owns the app stops it
@@ -594,7 +599,7 @@ test('page: a stored workout that cannot be read is not replaced by an empty one
     W.failReads = false
     p2.def.onShow.call(p2)
     p2.retry(); W.settle(); W.advance(2)
-    assert.deepEqual(W.replaced, ['pages/lift/index']) // the workout is back, on the rest, which is not the home page's
+    assert.deepEqual(W.replaced, ['pages/rest/index']) // the workout is back, on the rest, which is not the home page's
     const p3 = await follow(W, p2)
     assert.equal(p3.s_rest, true)
     p3.def.onDestroy.call(p3)
@@ -756,7 +761,10 @@ test('page switch: a page hands over BEFORE it builds a screen it does not own, 
     assert.equal(page.s_count, true)
     W.advance(3)
     assert.equal(page.s_set, true)
-    page.menu(); page.mFinish(); page.yes() // lift -> home: the summary
+    page.menu() // lift -> rest: the menu
+    assert.deepEqual(W.replaced, ['pages/rest/index'])
+    page = await follow(W, page)
+    page.mFinish(); page.yes() // rest -> home: the summary
     assert.deepEqual(W.replaced, ['pages/index/index'])
     assert.ok(!page.s_summary)
     W.advance(2)
@@ -767,7 +775,7 @@ test('page switch: a page hands over BEFORE it builds a screen it does not own, 
   } finally { restore() }
 })
 
-test('page switch: the Menu on the home page\'s wait screen opens the menu on the lift page', async () => {
+test('page switch: the Menu on the home page\'s wait screen opens the menu on the rest page', async () => {
   const W = world(new Map())
   try {
     let page = await boot(W)
@@ -777,7 +785,7 @@ test('page switch: the Menu on the home page\'s wait screen opens the menu on th
     page = await follow(W, page)
     assert.equal(page.s_wait, true)
     page.menu() // the home page's tap: the shared view has it
-    assert.deepEqual(W.replaced, ['pages/lift/index'])
+    assert.deepEqual(W.replaced, ['pages/rest/index'])
     page = await follow(W, page)
     assert.equal(page.s_menu, true)
     page.mBack()
@@ -796,15 +804,15 @@ test('page switch: a page of its own without the core sends the lifter to the ho
     lift.def.onInit.call(lift)
     assert.deepEqual(W.replaced, ['pages/index/index'])
     W.replaced.length = 0
-    const rest = await loadFrom(readFileSync(new URL('rest/index.js', pagesDir), 'utf8'), W)
-    rest.onShow()
+    const rest = await nextPage(W, 'rest')
+    rest.def.onInit.call(rest)
     assert.deepEqual(W.replaced, ['pages/index/index'])
   } finally { restore() }
 })
 
 test('config.json lists the home page first and a folder with an hml, css and js for every page', () => {
   const cfg = JSON.parse(readFileSync(new URL('../entry/src/main/config.json', import.meta.url), 'utf8'))
-  assert.deepEqual(cfg.module.js[0].pages, ['pages/index/index', 'pages/lift/index', 'pages/rest/index'])
+  assert.deepEqual(cfg.module.js[0].pages, ['pages/index/index', 'pages/lift/index', 'pages/rest/index', 'pages/over/index'])
   cfg.module.js[0].pages.forEach(p => ['js', 'hml', 'css'].forEach(ext => assert.doesNotThrow(() => readFileSync(new URL('../entry/src/main/js/MainAbility/' + p + '.' + ext, import.meta.url)), p + '.' + ext)))
 })
 
@@ -822,6 +830,10 @@ test('a page keeps only the names it declared: the screens\' other flags and fie
     assert.equal(page.s_set, true)
     assert.deepEqual(stray(), []) // no s_count or s_summary on the lift page
     assert.equal('s_idle' in page, false)
+    page.done(); page = await follow(W, page); name = 'rest'
+    assert.equal(page.s_rest, true)
+    assert.deepEqual(stray(), []) // and none of the lift page's on the rest page
+    assert.equal('s_set' in page, false)
   } finally { restore() }
 })
 
@@ -838,5 +850,35 @@ test('a page that is about to leave neither links nor says hello', async () => {
     assert.deepEqual([W.registers, W.sent.length], [regs, sent])
     assert.equal(globalThis.getApp().data.get().radio, null)
     assert.deepEqual(W.replaced, ['pages/lift/index'])
+  } finally { restore() }
+})
+
+/* ---------- the over page ---------- */
+
+test('page switch: the Overview is the over page\'s; Continue and Finish go back across pages', async () => {
+  const W = world(new Map())
+  try {
+    let page = await boot(W)
+    fromPhone(W, snap())
+    page.start(); page = await follow(W, page); W.advance(4)
+    page.done(); page = await follow(W, page) // the rest
+    page.menu(); page.mOver()
+    assert.deepEqual(W.replaced, ['pages/over/index'])
+    page = await follow(W, page)
+    assert.equal(page.s_over, true)
+    assert.equal(page.on0, 'Bench')
+    assert.equal('s_rest' in page, false)
+    page.ovBack() // the rest is still running: back to the rest page
+    assert.deepEqual(W.replaced, ['pages/rest/index'])
+    page = await follow(W, page)
+    assert.equal(page.s_rest, true)
+    page.menu(); page.mOver(); page = await follow(W, page)
+    page.finish() // the confirm is the rest page's
+    assert.deepEqual(W.replaced, ['pages/rest/index'])
+    page = await follow(W, page)
+    assert.equal(page.s_confirm, true)
+    page.yes()
+    page = await follow(W, page)
+    assert.equal(page.s_summary, true)
   } finally { restore() }
 })

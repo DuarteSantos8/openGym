@@ -136,7 +136,6 @@ const ACT = {
   nextFix: (c, ui) => { fixStep(c, 1) },
   cancelFix: (c, ui) => { fixCancel(c) },
   stopHold: (c, ui) => { holdStop(c) },
-  finish: (c, ui) => { ui.confirm = 'finish' },
   nextEx: (c, ui) => { nextExercise(c) }
 }
 add(FILL, ACT)
