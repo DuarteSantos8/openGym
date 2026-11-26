@@ -32,6 +32,28 @@ export const STYLE_COPY = {
   own: ['Your own lines', 'Written by you, said by your phone.'],
 }
 
+// How much the app says (S.cueLevel): only records and the end, one line after each set (the
+// default), or a line about every set and then the style's own.
+export const CUE_LEVELS = ['end', 'rest', 'every']
+export const LEVEL_COPY = {
+  end: ['Records and the end', 'A record, and a line when you finish.'],
+  rest: ['Once per rest', 'One line after each set.'],
+  every: ['After every set', 'A line about the set, then the style’s own.'],
+}
+
+// The lines that know the numbers, English source; callers pass them through t() with their
+// {0}/{1} (locales/*.js hold the translations, which check-source-strings cannot see from here).
+export const NEWS = {
+  intro: 'Last time, {0} for {1}.',
+  beatLast: '{0} more than last time.',
+  beatPlan: 'More than the plan.',
+  short: 'A bit short of the plan. Stay steady on the next one.',
+  hard: 'That one was hard. Take the full rest.',
+  last: 'Last set of {0}.',
+  record: 'That’s a new best on {0}.',
+  closer: 'Done in {0}.',
+}
+
 export const MOMENT_COPY = {
   restStart: 'When a rest starts',
   tenLeft: '10 seconds left',
@@ -81,6 +103,9 @@ export const PACKS = {
 
 /** The style a profile speaks in. */
 export const cueStyleOf = S => (STYLE_IDS.includes(S?.cueStyle) ? S.cueStyle : 'plain')
+
+/** How much a profile has the app say. */
+export const cueLevelOf = S => (CUE_LEVELS.includes(S?.cueLevel) ? S.cueLevel : 'rest')
 
 const cleanLine = l => String(l ?? '').replace(/\s+/g, ' ').trim().slice(0, LINE_MAX)
 
