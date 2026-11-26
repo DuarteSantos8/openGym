@@ -522,7 +522,7 @@
     ]
   },
   "1050": {
-    "name": "Pohjenousu korokkeella smith-laitteessa",
+    "name": "Pohjenousu korokkeella Smith-laitteessa",
     "description": "Seisten tehtävä pohjenousu Smith-tangon alla päkiät korokkeen päällä. Koroke mahdollistaa syvemmän venytyksen.",
     "instructions": [
       "Aseta koroke Smith-tangon alle ja aseta tanko yläselän päälle.",
@@ -1763,7 +1763,7 @@
     ]
   },
   "1164": {
-    "name": "Pohjenousu smith-laitteessa v. 2",
+    "name": "Pohjenousu Smith-laitteessa v. 2",
     "description": "Pohjenousu Smith-laitteen tangon alla. Kiinteä liikerata mahdollistaa vakaan kuormituksen.",
     "instructions": [
       "Aseta tanko hartioille ja seiso päkiät korokkeella.",
@@ -1973,7 +1973,7 @@
     ]
   },
   "1183": {
-    "name": "Potku taakse smith-laitteessa polviltaan",
+    "name": "Potku taakse Smith-laitteessa polviltaan",
     "description": "Polviltaan tehtävä pakarapotku, jossa toinen jalka työntää Smith-laitteen tankoa. Kohdistuu tehokkaasti pakaroihin.",
     "instructions": [
       "Aseta tanko alas ja asetu konttausasentoon sen eteen niin, että toisen jalan jalkapohja on tangon alla.",
@@ -2372,7 +2372,7 @@
     ]
   },
   "1224": {
-    "name": "Pystypunnerrus smith-laitteessa seisten",
+    "name": "Pystypunnerrus Smith-laitteessa seisten",
     "description": "Seisten tehtävä pystypunnerrus Smith-laitteessa. Kiinteä liikerata auttaa keskittymään pelkkään työntöön.",
     "instructions": [
       "Aseta tanko hartiakorkeudelle ja asetu sen alle hartioiden levyisellä otteella.",
@@ -3292,7 +3292,7 @@
     ]
   },
   "1308": {
-    "name": "Leveä penkkipunnerrus smith-laitteessa",
+    "name": "Leveä penkkipunnerrus Smith-laitteessa",
     "description": "Penkkipunnerrus Smith-laitteessa leveällä otteella. Kiinteä liikerata auttaa keskittymään punnertamiseen ja kuormittaa lisäksi rinnan ulko-osaa.",
     "instructions": [
       "Säädä penkki sopivaan kohtaan Smith-laitteen alle.",
@@ -3305,7 +3305,7 @@
     ]
   },
   "1309": {
-    "name": "Leveä alaviistopenkkipunnerrus smith-laitteessa",
+    "name": "Leveä alaviistopenkkipunnerrus Smith-laitteessa",
     "description": "Penkkipunnerrus alaviistopenkillä Smith-laitteessa leveällä otteella. Liike kohdistuu ohjatulla radalla alarintaan.",
     "instructions": [
       "Säädä alaviistopenkki haluttuun kulmaan.",
@@ -3896,7 +3896,7 @@
     ]
   },
   "1359": {
-    "name": "Kulmasoutu smith-laitteessa",
+    "name": "Kulmasoutu Smith-laitteessa",
     "description": "Kulmasoutu Smith-laitteen tangolla myötäotteella. Kiinteä liikerata auttaa keskittymään yläselkään ja leveisiin selkälihaksiin.",
     "instructions": [
       "Aseta Smith-laitteen tanko lantion korkeudelle.",
@@ -3909,7 +3909,7 @@
     ]
   },
   "1360": {
-    "name": "Yhden käden soutu smith-laitteessa",
+    "name": "Yhden käden soutu Smith-laitteessa",
     "description": "Yhden käden soutu Smith-laitteen tangolla. Se treenaa yläselkää ja leveitä selkälihaksia puoli kerrallaan ohjatulla liikeradalla.",
     "instructions": [
       "Säädä Smith-laitteen tangon korkeus vyötärön tasolle.",
@@ -3922,7 +3922,7 @@
     ]
   },
   "1361": {
-    "name": "Kulmasoutu smith-laitteessa vastaotteella",
+    "name": "Kulmasoutu Smith-laitteessa vastaotteella",
     "description": "Kulmasoutu Smith-laitteessa vastaotteella. Se kuormittaa yläselkää, leveitä selkälihaksia ja hauiksia ohjatulla liikeradalla.",
     "instructions": [
       "Aseta Smith-laitteen tanko lantion korkeudelle.",
@@ -4295,7 +4295,7 @@
     ]
   },
   "1393": {
-    "name": "Yhden jalan pohjenousu lattialla smith-laitteessa",
+    "name": "Yhden jalan pohjenousu lattialla Smith-laitteessa",
     "description": "Yhden jalan pohjenousu lattialla Smith-laitteessa. Se treenaa kumpaakin pohjetta erikseen ohjatulla liikeradalla.",
     "instructions": [
       "Aseta Smith-laitteen tanko hartiakorkeudelle ja astu sen alle niin, että se lepää yläselän päällä.",
@@ -4306,7 +4306,7 @@
     ]
   },
   "1394": {
-    "name": "Käänteinen pohjenousu smith-laitteessa",
+    "name": "Käänteinen pohjenousu Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä pohjenousu tanko edessäsi. Se kohdistuu pohkeisiin ja säären alueen lihaksiin.",
     "instructions": [
       "Säädä Smith-laitteen tanko hieman hartioiden alapuolelle.",
@@ -4319,7 +4319,7 @@
     ]
   },
   "1395": {
-    "name": "Istuva yhden jalan pohjenousu smith-laitteessa",
+    "name": "Istuva yhden jalan pohjenousu Smith-laitteessa",
     "description": "Istuen tehtävä yhden jalan pohjenousu Smith-laitteessa. Koukussa oleva polvi kohdistaa työn pohkeen alla olevaan leveään kantalihakseen.",
     "instructions": [
       "Istu laitteeseen selkänojaa vasten jalat jalkatuella.",
@@ -4330,7 +4330,7 @@
     ]
   },
   "1396": {
-    "name": "Varpaiden nosto smith-laitteessa",
+    "name": "Varpaiden nosto Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä pohjenousu, jossa noustaan päkiöille. Liike vahvistaa pohkeita ja nilkkojen voimaa.",
     "instructions": [
       "Säädä Smith-laitteen tanko korkeudelle, jolla voit seistä mukavasti jalkapohjat lattialla.",
@@ -4682,7 +4682,7 @@
     ]
   },
   "1426": {
-    "name": "Ranteen koukistus istuen smith-laitteessa",
+    "name": "Ranteen koukistus istuen Smith-laitteessa",
     "description": "Istu Smith-laitteen edessä ja nosta tankoa ranteita koukistamalla. Liike vahvistaa kyynärvarsia ja kehittää puristusvoimaa.",
     "instructions": [
       "Istu penkillä Smith-laitteen edessä jalkapohjat lattiassa.",
@@ -4764,7 +4764,7 @@
     ]
   },
   "1433": {
-    "name": "Etukyykky rinnalleveto-otteella smith-laitteessa",
+    "name": "Etukyykky rinnalleveto-otteella Smith-laitteessa",
     "description": "Etukyykky Smith-laitteessa rinnalleveto-otteella. Tangon liikerata on ohjattu, joten voit keskittyä etureisiin ja pakaroihin.",
     "instructions": [
       "Säädä Smith-laitteen tanko hartioiden korkeudelle.",
@@ -4779,7 +4779,7 @@
     ]
   },
   "1434": {
-    "name": "Takakyykky matalalla tangolla smith-laitteessa",
+    "name": "Takakyykky matalalla tangolla Smith-laitteessa",
     "description": "Matalatankokyykky Smith-laitteessa, jossa tanko lepää tavallista alempana selässä. Liike kuormittaa pakaroita, etureisiä ja takareisiä kiinteää liikerataa pitkin.",
     "instructions": [
       "Aseta Smith-laitteen tanko korkeudelle, josta saat sen mukavasti yläselällesi.",
@@ -5706,7 +5706,7 @@
     ]
   },
   "1519": {
-    "name": "Good morning pinneiltä smith-laitteessa",
+    "name": "Good morning pinneiltä Smith-laitteessa",
     "description": "Good morning Smith-laitteessa pinneiltä alkaen. Se kehittää takareisiä, pakaroita ja alaselkää.",
     "instructions": [
       "Säädä tanko pinneille ylärinnan korkeudelle ja mene tangon alle.",
@@ -6538,7 +6538,7 @@
     ]
   },
   "1594": {
-    "name": "Frankenstein-kyykky smith-laitteessa",
+    "name": "Frankenstein-kyykky Smith-laitteessa",
     "description": "Etukyykky Smith-laitteessa kädet suorina edessä. Haastaa voimakkaasti etureisiä ja yläselän ryhtiä.",
     "instructions": [
       "Aseta tanko ylärinnan korkeudelle ja anna sen levätä olkapäiden etuosalla.",
@@ -6549,7 +6549,7 @@
     ]
   },
   "1595": {
-    "name": "Etukyykky smith-laitteessa",
+    "name": "Etukyykky Smith-laitteessa",
     "description": "Etukyykky Smith-laitteen ohjaamalla tangolla. Harjoittaa etureisiä vartalon pysyessä pystyssä.",
     "instructions": [
       "Aseta tanko olkapäiden korkeudelle ja laske se etuolkapäiden päälle kyynärpäät ylhäällä.",
@@ -6560,7 +6560,7 @@
     ]
   },
   "1596": {
-    "name": "Kyykky penkille smith-laitteessa v. 2",
+    "name": "Kyykky penkille Smith-laitteessa v. 2",
     "description": "Kyykky Smith-laitteessa taakse asetettuun penkkiin asti. Penkki antaa tasaisen syvyystavoitteen.",
     "instructions": [
       "Aseta penkki taaksesi Smith-tangon alle.",
@@ -6571,7 +6571,7 @@
     ]
   },
   "1597": {
-    "name": "Suorin jaloin maastaveto smith-laitteessa",
+    "name": "Suorin jaloin maastaveto Smith-laitteessa",
     "description": "Suorin jaloin tehtävä maastaveto Smith-laitteen tangolla. Kiinteä liikerata auttaa keskittymään takareisien työhön.",
     "instructions": [
       "Seiso lähellä Smith-tankoa jalat lantion leveydellä ja tartu tankoon myötäotteella.",
@@ -6582,7 +6582,7 @@
     ]
   },
   "1598": {
-    "name": "Zercher-kyykky smith-laitteessa",
+    "name": "Zercher-kyykky Smith-laitteessa",
     "description": "Kyykky, jossa tankoa pidetään kyynärtaipeissa Smith-laitteessa. Harjoittaa jalkoja samalla kun se kuormittaa keskivartaloa ja yläselkää.",
     "instructions": [
       "Aseta tanko vyötärön korkeudelle ja aseta kyynärtaipeet sen alle kädet ristissä.",
@@ -6884,7 +6884,7 @@
     ]
   },
   "1625": {
-    "name": "Kapea alaviistopenkkipunnerrus smith-laitteessa",
+    "name": "Kapea alaviistopenkkipunnerrus Smith-laitteessa",
     "description": "Kapealla otteella tehtävä penkkipunnerrus alaviistopenkillä Smith-laitteessa. Se kehittää ojentajia ja alarintaa.",
     "instructions": [
       "Säädä Smith-laitteen penkki alaviistoon.",
@@ -6897,7 +6897,7 @@
     ]
   },
   "1626": {
-    "name": "Käänteinen kapea alaviistopenkkipunnerrus smith-laitteessa",
+    "name": "Käänteinen kapea alaviistopenkkipunnerrus Smith-laitteessa",
     "description": "Alaviistopenkkipunnerrus Smith-laitteessa kapealla vastaotteella. Liike aktivoi rintaa ja ojentajia.",
     "instructions": [
       "Säädä Smith-laitteen penkki alaviistoon.",
@@ -7589,7 +7589,7 @@
     ]
   },
   "1683": {
-    "name": "Hauiskääntö smith-laitteessa",
+    "name": "Hauiskääntö Smith-laitteessa",
     "description": "Hauiskääntö Smith-laitteessa. Tangon kiinteä rata helpottaa hauikseen keskittymistä.",
     "instructions": [
       "Säädä Smith-laitteen tanko vyötärön korkeudelle.",
@@ -8363,7 +8363,7 @@
     ]
   },
   "1752": {
-    "name": "Ojentajapunnerrus vinopenkillä smith-laitteessa",
+    "name": "Ojentajapunnerrus vinopenkillä Smith-laitteessa",
     "description": "Vinopenkissä tehtävä Smith-laitteen ojentajapunnerrus, jossa tanko lasketaan kohti otsaa. Ohjattu liikerata auttaa keskittymään ojentajiin.",
     "instructions": [
       "Säädä Smith-laitteen penkki niin, että tanko on olkapäiden korkeudella.",
@@ -9768,7 +9768,7 @@
     ]
   },
   "1883": {
-    "name": "Lähentäjien venytys maaten jumppapallolla",
+    "name": "Loitontajien venytys maaten jumppapallolla",
     "description": "Makuulla tehtävä venytys, jossa jumppapallo tukee jalkoja lonkan ulkosyrjän avaamisessa.",
     "instructions": [
       "Asetu selinmakuulle pohkeet jumppapallon päällä.",
@@ -14183,7 +14183,7 @@
     ]
   },
   "2671": {
-    "name": "Kulmasoutu smith-laitteessa kapealla otteella v. 2",
+    "name": "Kulmasoutu Smith-laitteessa kapealla otteella v. 2",
     "description": "Smith-laitteessa tehtävä kulmasoutu kapealla otteella, joka vahvistaa leveitä selkälihaksia ja keskiselkää.",
     "instructions": [
       "Aseta tanko polvien korkeudelle ja ota siitä kiinni kapealla otteella.",
@@ -14651,7 +14651,7 @@
     ]
   },
   "2745": {
-    "name": "Käänteinen selänojennus smith-laitteessa",
+    "name": "Käänteinen selänojennus Smith-laitteessa",
     "description": "Käänteinen selänojennus Smith-laitteessa, joka vahvistaa pakaroita ja takareisiä alaselän avustaessa.",
     "instructions": [
       "Asetu vatsalleen penkille niin, että lantio on reunan kohdalla ja jalat roikkuvat.",
@@ -16234,7 +16234,7 @@
     ]
   },
   "2919": {
-    "name": "Hex-punnerrus smith-laitteessa",
+    "name": "Hex-punnerrus Smith-laitteessa",
     "description": "Punnerrus Smith-laitteessa painoja yhteen puristaen. Jatkuva puristus pitää rasituksen rintalihaksilla.",
     "instructions": [
       "Asetu penkille Smith-tangon alle ja pidä halutessasi levypainoa kämmenten välissä.",
@@ -16586,7 +16586,7 @@
     ]
   },
   "2952": {
-    "name": "Polviasennossa tehtävä potku smith-laitteessa (parin kanssa)",
+    "name": "Polviasennossa tehtävä potku Smith-laitteessa (parin kanssa)",
     "description": "Pakaran potku polviasennossa Smith-laitteessa kaverin avustuksella. Liike aktivoi pakaroita vakaalla liikeradalla.",
     "instructions": [
       "Asetu konttausasentoon ja aseta toisen jalan jalkapohja Smith-tangolle harjoitusparin varmistaessa tarvittaessa.",
@@ -17389,7 +17389,7 @@
     ]
   },
   "3110": {
-    "name": "Lantionnosto smith-laitteessa",
+    "name": "Lantionnosto Smith-laitteessa",
     "description": "Lantionnosto Smith-laitteen tangolla tarjoaa vakaan liikeradan pakaroiden kuormittamiseen.",
     "instructions": [
       "Istu lattialle yläselkä penkkiä vasten ja aseta Smith-laitteen tanko lantiollesi.",
@@ -17617,7 +17617,7 @@
     ]
   },
   "3142": {
-    "name": "Sumokyykky smith-laitteessa",
+    "name": "Sumokyykky Smith-laitteessa",
     "description": "Sumokyykky Smith-laitteessa. Kohdistuu pakaroihin, reiden sisäosiin ja etureisiin.",
     "instructions": [
       "Aseta Smith-laitteen tanko lonkan korkeudelle.",
@@ -18740,7 +18740,7 @@
     ]
   },
   "3281": {
-    "name": "Syvä kyykky smith-laitteessa",
+    "name": "Syvä kyykky Smith-laitteessa",
     "description": "Syvä takakyykky Smith-laitteessa, jossa kiinteä liikerata tuo lisävakautta. Se vahvistaa pakaroita, etureisiä ja reisiä.",
     "instructions": [
       "Säädä Smith-laitteen tanko hartioiden korkeudelle.",
@@ -23859,7 +23859,7 @@
     ]
   },
   "3812": {
-    "name": "Punnerrus jalat koholla v. 2",
+    "name": "Punnerrus kädet koholla v. 2",
     "description": "Etunojapunnerrus, jossa kädet ovat korotetulla alustalla. Se on lattiapunnerrusta helpompi ja hyvä liike rintalihasten voiman kasvattamiseen.",
     "instructions": [
       "Aseta kädet penkille tai laatikolle hieman hartioita leveämmälle.",
@@ -24403,7 +24403,7 @@
     ]
   },
   "3874": {
-    "name": "Lantionnosto polvillaan smith-laitteessa",
+    "name": "Lantionnosto polvillaan Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä lantionnosto polvillaan, joka vahvistaa lonkan ojennusta ja pakaroita.",
     "instructions": [
       "Aseta Smith-laitteen tanko matalalle ja polvistu laitteeseen niin, että selkäsi on tankoon päin.",
@@ -25031,7 +25031,7 @@
     ]
   },
   "3945": {
-    "name": "Yhden käden kulmasoutu smith-laitteessa",
+    "name": "Yhden käden kulmasoutu Smith-laitteessa",
     "description": "Yhden käden soutu Smith-laitteen tangolla vakaalla liikeradalla. Vahvistaa leveitä selkälihaksia ja yläselkää puoli kerrallaan.",
     "instructions": [
       "Säädä tanko matalalle ja taivuta lantiosta eteen suoralla selällä.",
@@ -25427,7 +25427,7 @@
     ]
   },
   "3988": {
-    "name": "Spider-kääntö vastaotteella vinopenkissä rinta tuettuna levytangolla",
+    "name": "Spider-kääntö myötäotteella vinopenkissä rinta tuettuna levytangolla",
     "description": "Myötäotteella tehtävä kääntö rinta vinopenkkiä vasten. Se kohdistuu kyynärvarsiin ja olkalihakseen.",
     "instructions": [
       "Asetu päinmakuulla vinopenkille ja pidä kiinni levytangosta myötäotteella.",
@@ -27400,7 +27400,7 @@
     ]
   },
   "4171": {
-    "name": "Ylämaastaveto smith-laitteessa",
+    "name": "Ylämaastaveto Smith-laitteessa",
     "description": "Osittainen maastaveto polven korkeudelta Smith-laitteessa. Se kuormittaa selkää ja lantiota raskaasti.",
     "instructions": [
       "Aseta tanko polven korkeudelle Smith-laitteessa.",
@@ -27496,7 +27496,7 @@
     ]
   },
   "4179": {
-    "name": "Syvä kyykky smith-laitteessa kuminauhalla",
+    "name": "Syvä kyykky Smith-laitteessa kuminauhalla",
     "description": "Syvä Smith-laitteen kyykky kuminauhalla tehostetulla vastuksella. Se kehittää etureisiä ja pakaroita.",
     "instructions": [
       "Kiinnitä kuminauha Smith-laitteeseen ja aseta tanko selällesi.",
@@ -28996,7 +28996,7 @@
     ]
   },
   "4350": {
-    "name": "Hauiskääntö myötäotteella maaten taljassa",
+    "name": "Hauiskääntö vastaotteella maaten taljassa",
     "description": "Hauiskääntö taljalla selinmakuulla. Makuuasento pitää hauikset jatkuvassa jännityksessä.",
     "instructions": [
       "Asetu selinmakuulle jalat alataljaa kohti ja tartu tankoon vastaotteella.",
@@ -29216,7 +29216,7 @@
     ]
   },
   "4370": {
-    "name": "Istuen tehtävä pohjenousu smith-laitteessa",
+    "name": "Istuen tehtävä pohjenousu Smith-laitteessa",
     "description": "Istuen tehtävä pohjenousu Smith-laitteen tangolla. Kohdistuu pohkeen alempaan lihakseen.",
     "instructions": [
       "Istu penkille tangon alle niin, että päkiät ovat korokkeen päällä.",
@@ -30563,7 +30563,7 @@
     ]
   },
   "4495": {
-    "name": "Hieronta pallolla, kyynärvarren ulkokiertäjä",
+    "name": "Kyynärvarren ulkokiertäjän hieronta pallolla",
     "description": "Itsehieronta pienellä pallolla lievittää jännitystä kyynärvarren yläosassa. Helppo tapa pehmittää kireitä kohtia ennen treeniä tai sen jälkeen.",
     "instructions": [
       "Aseta pallo pöydälle kyynärvarren yläosan alle ja lepuuta kättä sen päällä.",
@@ -30957,7 +30957,7 @@
     ]
   },
   "4546": {
-    "name": "Hauiskääntö vartaloa pitkin smith-laitteessa",
+    "name": "Hauiskääntö vartaloa pitkin Smith-laitteessa",
     "description": "Hauiskääntö, jossa tanko vedetään ylös vartaloa pitkin. Pitää kuorman hauiksissa ja vähentää olkapäiden heilumista.",
     "instructions": [
       "Seiso lähellä Smith-laitteen tankoa ja tartu siihen vastaotteella hartioiden leveydeltä.",
@@ -33349,7 +33349,7 @@
     ]
   },
   "4803": {
-    "name": "Ojentajapunnerrus omalla painolla (korkea tanko)",
+    "name": "Ojentajapunnerrus levytangolla (tanko korkealla)",
     "description": "Makuulla tai istuen tehtävä levytankopunnerrus, jossa tanko liikkuu korkealta pään päältä, kuormittaen ojentajia pitkällä liikeradalla.",
     "instructions": [
       "Ota levytangosta kiinni suorilla käsillä pään yläpuolella, kädet noin hartioiden leveydellä.",
@@ -33360,7 +33360,7 @@
     ]
   },
   "4804": {
-    "name": "Ojentajapunnerrus omalla painolla (matala tanko)",
+    "name": "Ojentajapunnerrus levytangolla (tanko matalalla)",
     "description": "Levytangolla tehtävä ojentajapunnerrus, jossa tanko laskeutuu matalammalle, lähemmäs kasvoja tai rintaa. Se rasittaa ojentajia tehokkaasti liikkeen ala-asennossa.",
     "instructions": [
       "Pidä levytangosta kiinni suorilla käsillä rinnan päällä, kädet noin hartioiden leveydellä.",
@@ -36217,7 +36217,7 @@
     ]
   },
   "5120": {
-    "name": "Ojentajapotku taljassa v. 2",
+    "name": "Pakarapotku taljassa v. 2",
     "description": "Potkaise toista jalkaa suoraan taakse nilkkahihnalla varustetussa taljassa. Eristää pakaralihakset.",
     "instructions": [
       "Kiinnitä nilkkahihna alataljaan ja tukeudu laitteeseen.",
@@ -36379,7 +36379,7 @@
     ]
   },
   "5142": {
-    "name": "Rinnalleveto riipusta smith-laitteessa",
+    "name": "Rinnalleveto riipusta Smith-laitteessa",
     "description": "Vedä Smith-laitteen tanko polvien korkeudelta hartioille. Kiinteä rata auttaa opettelemaan riipusta tehtävän rinnalleveton tekniikan.",
     "instructions": [
       "Seiso tangon ääressä niin, että tanko on polvien korkeudella ja kädet heti jalkojen ulkopuolella.",
@@ -36898,7 +36898,7 @@
     ]
   },
   "5223": {
-    "name": "Leveä olankohautus smith-laitteessa",
+    "name": "Leveä olankohautus Smith-laitteessa",
     "description": "Olankohautus Smith-laitteessa leveällä otteella. Se kehittää yläepäkkäitä.",
     "instructions": [
       "Aseta tanko reiden korkeudelle ja tartu siihen hartioita leveämmällä otteella.",
@@ -36920,7 +36920,7 @@
     ]
   },
   "5225": {
-    "name": "Leveä olankohautus tanko takana smith-laitteessa",
+    "name": "Leveä olankohautus tanko takana Smith-laitteessa",
     "description": "Olankohautus leveällä otteella Smith-tangolla kehon takana. Se siirtää rasitusta epäkkäiden takaosaan.",
     "instructions": [
       "Seiso selkä tankoon päin tangon ollessa reiden korkeudella ja tartu siihen takanasi leveällä otteella.",
@@ -37395,7 +37395,7 @@
     ]
   },
   "5316": {
-    "name": "Kapea kulmasoutu myötäotteella smith-laitteessa",
+    "name": "Kapea kulmasoutu myötäotteella Smith-laitteessa",
     "description": "Kulmasoutu Smith-laitteessa kapealla myötäotteella. Kohdistuu leveisiin selkälihaksiin ja keskiselkään.",
     "instructions": [
       "Säädä tanko polvien korkeudelle ja tartu siihen kapealla myötäotteella.",
@@ -39372,7 +39372,7 @@
     ]
   },
   "5825": {
-    "name": "Askelkyykky taakse smith-laitteessa v. 2",
+    "name": "Askelkyykky taakse Smith-laitteessa v. 2",
     "description": "Taakse tehtävä askelkyykky Smith-laitteessa, joka ohjaa tangon liikerataa. Se vahvistaa pakaroita ja etureisiä lisävakaudella.",
     "instructions": [
       "Aseta tanko yläselän päälle ja seiso suorana.",
@@ -40661,7 +40661,7 @@
     ]
   },
   "6038": {
-    "name": "Donkey kick smith-laitteessa",
+    "name": "Donkey kick Smith-laitteessa",
     "description": "Pakaroille tehtävä potkuliike, jossa Smith-laitteen tanko asetetaan jalan alle.",
     "instructions": [
       "Säädä Smith-laitteen tanko alas.",
@@ -42463,7 +42463,7 @@
     ]
   },
   "6464": {
-    "name": "Samettinen sammakko-lantionnosto omalla painolla",
+    "name": "Sammakko-lantionnosto omalla painolla",
     "description": "Lantionnosto jalkapohjat vastakkain ja polvet auki, mikä siirtää painopisteen pakaroihin.",
     "instructions": [
       "Asetu selinmakuulle siten, että jalkapohjat ovat vastakkain ja polvet aukeavat sivuille.",
@@ -42474,7 +42474,7 @@
     ]
   },
   "6465": {
-    "name": "Sammakko-lantionnosto smith-laitteessa",
+    "name": "Sammakko-lantionnosto Smith-laitteessa",
     "description": "Lantionnosto Smith-laitteessa jalkapohjat vastakkain, mikä kohdistaa rasituksen voimakkaasti pakaroille.",
     "instructions": [
       "Istu lattialle yläselkä penkkiä vasten ja aseta Smith-tanko lantiollesi.",
@@ -42757,7 +42757,7 @@
     ]
   },
   "6550": {
-    "name": "Vinopunnerrus smith-tangolla",
+    "name": "Vinopunnerrus Smith-tangolla",
     "description": "Etunojapunnerrus kädet Smith-laitteen tangolla, mikä tekee liikkeestä lattiapunnerrusta helpomman säilyttäen rintatreenin.",
     "instructions": [
       "Säädä Smith-laitteen tanko noin vyötärön korkeudelle ja lukitse se turvallisesti.",
@@ -42884,7 +42884,7 @@
     ]
   },
   "6584": {
-    "name": "Penkkipunnerrus jalat lattialla levytangolla",
+    "name": "Penkkipunnerrus jalat penkillä levytangolla",
     "description": "Penkkipunnerrus jalat penkillä tai alustalla lattian sijaan, mikä vähentää jalkojen työtä ja kohdistaa rasituksen rintaan.",
     "instructions": [
       "Asetu selinmakuulle penkille ja nosta jalkapohjat penkille polvet koukussa.",
@@ -42928,7 +42928,7 @@
     ]
   },
   "6606": {
-    "name": "Ristiaskelkyykky smith-laitteessa",
+    "name": "Ristiaskelkyykky Smith-laitteessa",
     "description": "Ristiaskelkyykky Smith-laitteessa, jossa toinen jalka viedään taakse ja toisen jalan ohi. Kohdistuu pakaroihin ja lonkan ulkosyrjään vakaalla liikeradalla.",
     "instructions": [
       "Aseta tanko yläselälle, vapauta se telineestä ja seiso jalat lantion leveydellä.",
@@ -43644,7 +43644,7 @@
     ]
   },
   "6796": {
-    "name": "Sumokyykky tuolille smith-laitteessa",
+    "name": "Sumokyykky tuolille Smith-laitteessa",
     "description": "Leveällä jalka-asennolla tehtävä kyykky Smith-laitteessa tuolille. Istuin takaa saman syvyyden joka toistolla.",
     "instructions": [
       "Aseta tuoli taaksesi ja ota tanko yläselällesi.",
@@ -44777,7 +44777,7 @@
     ]
   },
   "7374": {
-    "name": "Sumomaastaveto smith-laitteessa",
+    "name": "Sumomaastaveto Smith-laitteessa",
     "description": "Leveällä asennolla tehtävä maastaveto Smith-laitteessa. Kuormittaa pakaroita ja reisien sisäosia.",
     "instructions": [
       "Seiso jalat leveällä, varpaat ulospäin käännettyinä, ja tartu tankoon polvien sisäpuolelta.",
@@ -46430,7 +46430,7 @@
     ]
   },
   "8399": {
-    "name": "Kylkilankku ja lattian kosketus",
+    "name": "Lankku ja lattian kosketus sivulle",
     "description": "Lankku, jossa kosketetaan kädellä lattiaa sivulla. Se haastaa vinoja vatsalihaksia ja kierron hallintaa.",
     "instructions": [
       "Aloita lankkuasennossa kädet olkapäiden alla ja jalat leveällä.",
@@ -46975,7 +46975,7 @@
     ]
   },
   "8800": {
-    "name": "Romanialainen maastaveto porrasasennossa smith-laitteessa",
+    "name": "Romanialainen maastaveto porrasasennossa Smith-laitteessa",
     "description": "Romanialainen maastaveto porrastetulla jalka-asennolla Smith-laitteessa. Se kuormittaa erityisesti etujalan takareisiä ja pakaraa.",
     "instructions": [
       "Seiso Smith-tangon alla niin, että toinen jalka on hieman toisen takana.",
@@ -47368,7 +47368,7 @@
     ]
   },
   "9041": {
-    "name": "Askelkyykky etujalka korokkeella smith-laitteessa",
+    "name": "Askelkyykky etujalka korokkeella Smith-laitteessa",
     "description": "Kun etujalka on korokkeen päällä ja tanko selässä, teet syvän askelkyykyn. Liike kuormittaa tehokkaasti etureisiä ja pakaroita.",
     "instructions": [
       "Aseta matala koroke Smith-tangon alle ja nosta etujalkasi sen päälle.",
@@ -47380,7 +47380,7 @@
     ]
   },
   "9042": {
-    "name": "Bulgarialainen askelkyykky smith-laitteessa",
+    "name": "Bulgarialainen askelkyykky Smith-laitteessa",
     "description": "Askelkyykky Smith-laitteessa takajalka penkin päällä. Se kohdistuu etureisiin ja pakaroihin, ja laite tuo lisävakautta.",
     "instructions": [
       "Aseta penkki Smith-laitteen taakse ja nosta takajalkasi sen päälle.",
@@ -47824,7 +47824,7 @@
     ]
   },
   "9385": {
-    "name": "Jm penkkipunnerrus smith-laitteessa",
+    "name": "Jm penkkipunnerrus Smith-laitteessa",
     "description": "Kapean penkkipunnerruksen ja ranskalaisen punnerruksen yhdistelmä Smith-laitteessa. Se kuormittaa tehokkaasti ojentajia.",
     "instructions": [
       "Asetu penkille Smith-tangon alle ja tartu tankoon hartioiden levyisellä otteella.",
@@ -49394,7 +49394,7 @@
     ]
   },
   "10097": {
-    "name": "Sivukyykky levypainolla",
+    "name": "Kyykky levypaino rinnan edessä",
     "description": "Kyykky, jossa levypainoa pidetään rinnan edessä. Paino toimii vastapainona ja auttaa pitämään ylävartalon pystyssä.",
     "instructions": [
       "Pidä levypainoa rinnan edessä molemmin käsin.",
@@ -49510,7 +49510,7 @@
     ]
   },
   "10116": {
-    "name": "Kapea vinopenkkipunnerrus smith-laitteessa",
+    "name": "Kapea vinopenkkipunnerrus Smith-laitteessa",
     "description": "Kapean otteen punnerrus vinopenkillä Smith-laitteessa. Kohdistuu ojentajiin ja ylärintaan.",
     "instructions": [
       "Aseta vinopenkki Smith-tangon alle ja asetu makuulle niin, että silmät ovat tangon alla.",
@@ -50733,7 +50733,7 @@
     ]
   },
   "10665": {
-    "name": "Kyynärvarsiplanche",
+    "name": "Kyynärpääplanche",
     "description": "Planche-pito kyynärpäät vyötäröä vasten tuettuina. Tämä on varhainen askel kohti täyttä planchea.",
     "instructions": [
       "Aseta kädet lattialle ja työnnä kyynärpäät kiinni kylkiisi.",
@@ -51564,7 +51564,7 @@
     ]
   },
   "10863": {
-    "name": "Istuva yhden käden pystypunnerrus neutraalilla otteella smith-laitteessa",
+    "name": "Istuva yhden käden pystypunnerrus neutraalilla otteella Smith-laitteessa",
     "description": "Yhden käden istumapunnerrus Smith-laitteessa neutraalilla otteella. Harjoittaa olkapäätä tangon kulkiessa ohjatusti.",
     "instructions": [
       "Aseta penkki Smith-tangon alle ja istu ryhdikkäästi selkä tuettuna.",
@@ -52378,7 +52378,7 @@
     ]
   },
   "11053": {
-    "name": "Lantionnosto porrasasennossa smith-laitteessa",
+    "name": "Lantionnosto porrasasennossa Smith-laitteessa",
     "description": "Lantionnosto Smith-laitteessa jalat porrastetusti. Se rakentaa pakaralihaksia.",
     "instructions": [
       "Istu yläselkä penkkiä vasten ja tanko lantiolla.",
@@ -52976,7 +52976,7 @@
     ]
   },
   "11303": {
-    "name": "Kyykky penkille smith-laitteessa",
+    "name": "Kyykky penkille Smith-laitteessa",
     "description": "Kyykky Smith-laitteessa penkille. Penkki pitää syvyyden samana ja liikeradan vakaana.",
     "instructions": [
       "Aseta penkki taaksesi ja ota tanko yläselällesi.",
@@ -52987,7 +52987,7 @@
     ]
   },
   "11309": {
-    "name": "Yhden käden ylätaljaveto vastaotteella vipuvarrella",
+    "name": "Yhden käden alasveto vastaotteella vipuvarsilaitteessa",
     "description": "Yhden käden alasveto levypainoilla kuormitettavassa laitteessa vastaotteella. Se treenaa leveitä selkälihaksia ja hauiksia puoli kerrallaan.",
     "instructions": [
       "Istu laitteeseen ja tartu yhteen kahvaan vastaotteella.",
@@ -53119,7 +53119,7 @@
     ]
   },
   "11568": {
-    "name": "Bulgarialainen askelkyykky syvennyksestä smith-laitteessa",
+    "name": "Bulgarialainen askelkyykky etujalka korotettuna Smith-laitteessa",
     "description": "Bulgarialainen askelkyykky Smith-laitteessa etujalka korotettuna, mikä antaa lisäsyvyyttä etureisille ja pakaroille.",
     "instructions": [
       "Aseta tanko yläselälle ja seiso etujalka matalan levypainon tai korokkeen päällä.",
@@ -53379,7 +53379,7 @@
     ]
   },
   "11762": {
-    "name": "Kulmasoutu rinta tuettuna smith-laitteessa",
+    "name": "Kulmasoutu rinta tuettuna Smith-laitteessa",
     "description": "Rintatuettu soutu Smith-laitteessa. Penkin tuki keventää alaselän kuormitusta.",
     "instructions": [
       "Aseta vinopenkki tangon alle ja asetu vatsallesi sen päälle.",
@@ -53676,7 +53676,7 @@
     ]
   },
   "11879": {
-    "name": "Askelnousu smith-laitteessa",
+    "name": "Askelnousu Smith-laitteessa",
     "description": "Askelnousu Smith-laitteen tanko yläselällä. Tanko tuo jalkatreeniin lisäkuormaa.",
     "instructions": [
       "Aseta tanko yläselän päälle ja seiso penkin edessä.",
@@ -54584,7 +54584,7 @@
     ]
   },
   "0075": {
-    "name": "Vipunosto taakse levytangolla maaten",
+    "name": "Vipunosto taakse kumarassa levytangolla",
     "description": "Kumarassa asennossa levytankoa nostetaan suorin käsin olkapäiden korkeudelle. Kohdistuu olkapäiden takaosaan.",
     "instructions": [
       "Asetu seisomaan jalat hartioiden leveydellä ja tartu levytankoon myötäotteella kämmenet alaspäin.",
@@ -54989,7 +54989,7 @@
     ]
   },
   "0110": {
-    "name": "Hauiskääntö vastaotteella seisten levytangolla",
+    "name": "Hauiskääntö myötäotteella seisten levytangolla",
     "description": "Hauiskääntö seisten myötäotteella. Treenaa hauiksia, olkalihasta ja kyynärvarsia.",
     "instructions": [
       "Seiso suorana jalat hartioiden leveydellä ja pidä levytankoa vastaotteella, kämmenet ylöspäin.",
@@ -55256,7 +55256,7 @@
     ]
   },
   "0134": {
-    "name": "Polvipunnerrus kyljellään",
+    "name": "Polvipunnerrus polvet sivulle käännettyinä",
     "description": "Polvipunnerrus, jossa polvet ovat koukussa ja käännettyinä toiselle sivulle, mikä tuo vartaloon kevyen kierron. Harjoittaa rintaa ja vinoja vatsalihaksia.",
     "instructions": [
       "Asetu etunojapunnerrusasentoon polvet koukussa ja molemmat kädet olkapäiden alle.",
@@ -55302,7 +55302,7 @@
     ]
   },
   "0139": {
-    "name": "Kapea leuanveto vastaotteella hauispainotteisesti",
+    "name": "Kapea kehonpainosoutu vastaotteella",
     "description": "Kehonpainosoutu matalan tangon alla kapealla vastaotteella. Painottaa hauiksia ja yläselkää.",
     "instructions": [
       "Säädä tanko noin vyötärön korkeudelle ja mene makaamaan sen alle.",
@@ -55657,7 +55657,7 @@
     ]
   },
   "0172": {
-    "name": "Ojentajapunnerrus alas vinopenkillä taljassa",
+    "name": "Taljaveto alas vinopenkillä",
     "description": "Taljaveto yläviistopenkillä takaviistosta ylätaljasta kohti ylärintaa. Kohdistuu leveisiin selkälihaksiin.",
     "instructions": [
       "Aseta vinopenkki ylätaljan eteen ja kiinnitä taljaan suora tanko niin, että vaijeri tulee pääsi takaa.",
@@ -55985,7 +55985,7 @@
     ]
   },
   "0199": {
-    "name": "Ojentajapunnerrus suorin käsin taljassa v. 2",
+    "name": "Suorin käsin alasveto taljassa v. 2",
     "description": "Suorin käsin tehtävä alasveto ylätaljasta, jossa tanko liikkuu pään yläpuolelta reisiin. Eristää leveät selkälihakset ilman kyynärpäiden koukistusta.",
     "instructions": [
       "Kiinnitä suora tanko ylätaljaan.",
@@ -57360,7 +57360,7 @@
     ]
   },
   "0322": {
-    "name": "Hauiskääntö vinopenkillä sisäkierrolla käsipainoilla",
+    "name": "Sisähauiskääntö vinopenkillä käsipainoilla",
     "description": "Vinopenkillä tehtävä hauiskääntö, joka painottuu hauiksen sisäosaan. Käsipainot nostetaan syvästä venytyksestä kehon takaa.",
     "instructions": [
       "Istu vinopenkille pitäen käsipainoja käsissäsi kämmenet vastakkain.",
@@ -58178,7 +58178,7 @@
     ]
   },
   "0393": {
-    "name": "Hauiskääntö sisäkierrolla istuen käsipainoilla",
+    "name": "Sisähauiskääntö istuen käsipainoilla",
     "description": "Istuen tehtävä hauiskääntö, joka painottaa hauiksen sisäosaa. Kyynärpäät pysyvät tiukasti paikoillaan ja kääntö tehdään hallitusti.",
     "instructions": [
       "Istu penkille jalat lattialla ja pidä käsipainoa kummassakin kädessä kämmenet ylöspäin.",
@@ -58924,7 +58924,7 @@
     ]
   },
   "0464": {
-    "name": "Lankku kiertolla",
+    "name": "Lankku kierrolla",
     "description": "Lankku vartalon kierrolla. Se vahvistaa vatsalihaksia, vinoja vatsalihaksia ja olkapäitä samalla kun pysyt vakaana.",
     "instructions": [
       "Aloita punnerrusasennosta kädet suoraan olkapäiden alla ja keho suorana linjana päästä varpaisiin.",
@@ -60444,7 +60444,7 @@
     ]
   },
   "0606": {
-    "name": "Kulmasoutu t-tangolla vipuvarsilaitteessa",
+    "name": "T-tankosoutu rintatuella vipuvarsilaitteessa",
     "description": "Rinta pehmustetta vasten tehtävä T-tankosoutu, jossa vedät kahvoja vartaloa kohti. Kuormittaa leveitä selkälihaksia, selän keskiosaa ja takaolkapäitä.",
     "instructions": [
       "Säädä istuimen korkeus ja jalkalevyn asento sopivaksi.",
@@ -60574,7 +60574,7 @@
     ]
   },
   "0617": {
-    "name": "Lantion- ja jalannosto lattialla",
+    "name": "Jalannosto kylkimakuulla lattialla",
     "description": "Kylkimakuulla lattialla tehtävä jalannosto. Kuormittaa lonkan ulkosyrjää ja pakaroita.",
     "instructions": [
       "Mene kylkimakuulle jalat suorina päällekkäin.",
@@ -60586,7 +60586,7 @@
     ]
   },
   "0619": {
-    "name": "Lantionnosto suorin jaloin maaten",
+    "name": "Suoran jalan nosto selinmakuulla",
     "description": "Selinmakuulla nostat suoraa jalkaa kohti kattoa. Treenaa lonkan lihaksia ja jalan hallintaa.",
     "instructions": [
       "Mene selinmakuulle molemmat jalat suorina.",
@@ -61932,7 +61932,7 @@
     ]
   },
   "0746": {
-    "name": "Olankohautus tanko takana smith-laitteessa",
+    "name": "Olankohautus tanko takana Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä olankohautus, jossa nostat hartiat suoraan ylös tangon kanssa. Kehittää epäkkäiden yläosaa.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
@@ -61944,7 +61944,7 @@
     ]
   },
   "0747": {
-    "name": "Niskapunnerrus smith-laitteessa",
+    "name": "Niskapunnerrus Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä punnerrus niskan takaa ylös. Kuormittaa olkapäitä ja ojentajia, joten tee liike hallitusti.",
     "instructions": [
       "Aseta penkki pystyasentoon Smith-laitteeseen niin, että tanko kulkee juuri pään takaa.",
@@ -61955,7 +61955,7 @@
     ]
   },
   "0748": {
-    "name": "Penkkipunnerrus smith-laitteessa",
+    "name": "Penkkipunnerrus Smith-laitteessa",
     "description": "Penkillä maaten punnerrat Smith-laitteen tankoa rinnalta ylös. Kuormittaa rintaa, olkapäitä ja ojentajia.",
     "instructions": [
       "Säädä Smith-laitteen tangon korkeus rinnan tasolle.",
@@ -61968,7 +61968,7 @@
     ]
   },
   "0749": {
-    "name": "Good morning smith-laitteessa polvet koukussa",
+    "name": "Good morning Smith-laitteessa polvet koukussa",
     "description": "Smith-laitteessa tehtävä eteentaivutus tanko yläselällä ja polvet kevyesti koukussa. Kuormittaa takareisiä, pakaroita ja alaselkää.",
     "instructions": [
       "Aloita seisomalla jalat hartioiden leveydellä, varpaat eteenpäin.",
@@ -61980,7 +61980,7 @@
     ]
   },
   "0750": {
-    "name": "Kyykky tuolille smith-laitteessa",
+    "name": "Kyykky tuolille Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä kyykky, jossa laskeudut, kunnes kosketat tuolia. Kuormittaa etureisiä ja pakaroita, ja tuoli näyttää selvästi kyykyn syvyyden.",
     "instructions": [
       "Säädä Smith-laitteen tangon korkeus mukavaan asentoon.",
@@ -61993,7 +61993,7 @@
     ]
   },
   "0751": {
-    "name": "Kapea penkkipunnerrus smith-laitteessa",
+    "name": "Kapea penkkipunnerrus Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä penkkipunnerrus kapealla otteella. Keskittää rasitusta enemmän ojentajiin ja rinnan sisäosaan.",
     "instructions": [
       "Säädä penkin korkeus ja asetu penkille jalkapohjat lattialla.",
@@ -62004,7 +62004,7 @@
     ]
   },
   "0752": {
-    "name": "Maastaveto smith-laitteessa",
+    "name": "Maastaveto Smith-laitteessa",
     "description": "Nostat Smith-laitteessa tankoa lantion korkeudelta tai alempaa lantiosta taivuttaen. Kuormittaa pakaroita, takareisiä ja alaselkää.",
     "instructions": [
       "Aseta Smith-laitteen tanko lantion korkeudelle.",
@@ -62017,7 +62017,7 @@
     ]
   },
   "0753": {
-    "name": "Alaviistopenkkipunnerrus smith-laitteessa",
+    "name": "Alaviistopenkkipunnerrus Smith-laitteessa",
     "description": "Punnerrat alaviistopenkillä Smith-laitteen tankoa alarinnalta ylös. Kuormittaa rinnan alaosaa ja ojentajia.",
     "instructions": [
       "Säädä alaviistopenkki haluamaasi kulmaan.",
@@ -62029,7 +62029,7 @@
     ]
   },
   "0754": {
-    "name": "Alaviistopenkkipunnerrus vastaotteella smith-laitteessa",
+    "name": "Alaviistopenkkipunnerrus vastaotteella Smith-laitteessa",
     "description": "Punnerrat alaviistopenkillä Smith-laitteen tankoa vastaotteella. Kuormittaa rintaa ja ojentajia.",
     "instructions": [
       "Säädä Smith-laite alaviistoon.",
@@ -62041,7 +62041,7 @@
     ]
   },
   "0755": {
-    "name": "Hack-kyykky smith-laitteessa",
+    "name": "Hack-kyykky Smith-laitteessa",
     "description": "Kyykkäät Smith-laitteessa jalat tangon etupuolella. Kuormittaa etureisiä ja pakaroita.",
     "instructions": [
       "Säädä Smith-laitteen tanko kehollesi sopivalle korkeudelle.",
@@ -62057,7 +62057,7 @@
     ]
   },
   "0756": {
-    "name": "Lantionnosto lattialla smith-laitteessa",
+    "name": "Lantionnosto lattialla Smith-laitteessa",
     "description": "Työnnät Smith-laitteessa lantion ylös tanko lantion päällä. Kuormittaa pakaroita ja takareisiä.",
     "instructions": [
       "Asetu Smith-laitteeseen selkä pehmustetta vasten ja jalat hartioiden leveydelle.",
@@ -62069,7 +62069,7 @@
     ]
   },
   "0757": {
-    "name": "Vinopenkkipunnerrus smith-laitteessa",
+    "name": "Vinopenkkipunnerrus Smith-laitteessa",
     "description": "Punnerrat vinopenkillä Smith-laitteen tankoa ylös. Kuormittaa ylärintaa, olkapäitä ja ojentajia.",
     "instructions": [
       "Säädä penkki 30–45 asteen kulmaan.",
@@ -62081,7 +62081,7 @@
     ]
   },
   "0758": {
-    "name": "Vinopenkkipunnerrus vastaotteella smith-laitteessa",
+    "name": "Vinopenkkipunnerrus vastaotteella Smith-laitteessa",
     "description": "Punnerrat vinopenkillä Smith-laitteen tankoa vastaotteella. Kuormittaa ylärintaa ja ojentajia.",
     "instructions": [
       "Aseta vinopenkki Smith-laitteeseen niin, että tanko on ylärinnan kohdalla.",
@@ -62092,7 +62092,7 @@
     ]
   },
   "0759": {
-    "name": "Olkapäänosto vinopenkillä smith-laitteessa",
+    "name": "Olkapäänosto vinoasennossa Smith-laitteessa",
     "description": "Nostat Smith-laitteen tankoa edessäsi vinoon säädetyssä laitteessa. Kuormittaa etuolkapäitä.",
     "instructions": [
       "Säädä Smith-laite vinoon asentoon.",
@@ -62105,7 +62105,7 @@
     ]
   },
   "0760": {
-    "name": "Jalkaprässi smith-laitteessa",
+    "name": "Jalkaprässi Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä jalkaprässi, jossa työnnät jalkalevyä poispäin molemmilla jaloilla. Vahvistaa reisiä ja pakaroita ohjatulla liikeradalla.",
     "instructions": [
       "Säädä Smith-laitteen istuin ja jalkalevy mukavaan asentoon.",
@@ -62118,7 +62118,7 @@
     ]
   },
   "0761": {
-    "name": "Kapea soutu smith-laitteessa",
+    "name": "Kapea soutu Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä kapea soutu, jossa vedät tankoa kohti vartaloa. Vahvistaa selän keskiosaa ja lapojen välisiä lihaksia.",
     "instructions": [
       "Säädä Smith-laitteen tanko noin polvien korkeudelle ja seiso sen lähellä.",
@@ -62129,7 +62129,7 @@
     ]
   },
   "0762": {
-    "name": "Takaolkapääsoutu smith-laitteessa",
+    "name": "Takaolkapääsoutu Smith-laitteessa",
     "description": "Leveällä otteella tehtävä soutu kohti ylärintaa, joka kohdistuu olkapäiden takaosaan. Kuormittaa takaolkapäitä ja yläselkää.",
     "instructions": [
       "Säädä Smith-laitteen tanko noin polvien korkeudelle ja seiso sen lähellä.",
@@ -62140,7 +62140,7 @@
     ]
   },
   "0763": {
-    "name": "Käänteinen pohjenousu smith-laitteessa v. 2",
+    "name": "Käänteinen pohjenousu Smith-laitteessa v. 2",
     "description": "Pohjenousu päkiät korotetun alustan reunalla, Smith-laitteen tanko tukena. Kehittää pohkeita koko liikeradalla.",
     "instructions": [
       "Säädä Smith-laitteen tanko hieman olkapäiden alapuolelle.",
@@ -62153,7 +62153,7 @@
     ]
   },
   "0764": {
-    "name": "Penkkipunnerrus vastaotteella smith-laitteessa",
+    "name": "Penkkipunnerrus vastaotteella Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä punnerrus vastaotteella, jossa tanko lasketaan rinnalle ja punnerretaan ylös. Liike kuormittaa ylärintaa, olkapäitä ja ojentajia.",
     "instructions": [
       "Aseta tasapenkki Smith-laitteeseen niin, että tanko osuu alarinnan kohdalle.",
@@ -62164,7 +62164,7 @@
     ]
   },
   "0765": {
-    "name": "Istuen tehtävä pystypunnerrus smith-laitteessa",
+    "name": "Istuen tehtävä pystypunnerrus Smith-laitteessa",
     "description": "Istuen tehtävä pystypunnerrus Smith-laitteessa selkä tuettuna. Kehittää olkapäitä ja ojentajia ohjatulla liikeradalla.",
     "instructions": [
       "Säädä istuimen korkeus niin, että kahvat ovat olkapäiden tasolla.",
@@ -62177,7 +62177,7 @@
     ]
   },
   "0766": {
-    "name": "Pystypunnerrus smith-laitteessa",
+    "name": "Pystypunnerrus Smith-laitteessa",
     "description": "Pystypunnerrus Smith-laitteen tangolla olkapäiden korkeudelta kädet suoriksi. Vahvistaa olkapäitä ja ojentajia.",
     "instructions": [
       "Säädä istuimen korkeus ja asetu Smith-laitteeseen jalat hartioiden leveydellä.",
@@ -62189,7 +62189,7 @@
     ]
   },
   "0767": {
-    "name": "Olankohautus smith-laitteessa",
+    "name": "Olankohautus Smith-laitteessa",
     "description": "Olankohautus Smith-laitteen tangolla: nostat hartiat suoraan kohti korvia. Kehittää epäkkäiden yläosaa.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
@@ -62201,7 +62201,7 @@
     ]
   },
   "0768": {
-    "name": "Yhden jalan askelkyykky smith-laitteessa",
+    "name": "Yhden jalan askelkyykky Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä yhden jalan askelkyykky, jossa takajalka on korotetulla alustalla ja tanko tukena. Vahvistaa etureisiä ja pakaroita puoli kerrallaan.",
     "instructions": [
       "Asetu Smith-laitteen eteen jalat hartioiden leveydellä.",
@@ -62213,7 +62213,7 @@
     ]
   },
   "0769": {
-    "name": "Sprinttiaskelkyykky smith-laitteessa",
+    "name": "Sprinttiaskelkyykky Smith-laitteessa",
     "description": "Smith-laitteessa tehtävä askelkyykyn muunnelma, jossa astut taakse ja laskeudut askelkyykkyyn. Vahvistaa pakaroita ja reisiä sekä haastaa tasapainoa.",
     "instructions": [
       "Säädä Smith-laitteen tanko lantion korkeudelle.",
@@ -62226,7 +62226,7 @@
     ]
   },
   "0770": {
-    "name": "Kyykky smith-laitteessa",
+    "name": "Kyykky Smith-laitteessa",
     "description": "Takakyykky Smith-laitteen ohjaamalla tangolla. Kehittää reisiä ja pakaroita tavallista vakaammin.",
     "instructions": [
       "Säädä Smith-laitteen tanko sopivalle korkeudelle kyykkyä varten.",
@@ -62241,7 +62241,7 @@
     ]
   },
   "0771": {
-    "name": "Ranteen koukistus selän takana smith-laitteessa",
+    "name": "Ranteen koukistus selän takana Smith-laitteessa",
     "description": "Ranteiden koukistus Smith-laitteen tangolla kehon takana. Se vahvistaa kyynärvarsia ja puristusvoimaa.",
     "instructions": [
       "Seiso kasvot Smith-laitteeseen päin jalat hartioiden leveydellä.",
@@ -62253,7 +62253,7 @@
     ]
   },
   "0772": {
-    "name": "Pystypunnerrus niskan takaa seisten smith-laitteessa",
+    "name": "Pystypunnerrus niskan takaa seisten Smith-laitteessa",
     "description": "Seisten tehtävä pystypunnerrus, jossa Smith-laitteen tanko lasketaan niskan taakse. Kehittää olkapäitä ja ojentajia ja vaatii hyvää olkapäiden liikkuvuutta.",
     "instructions": [
       "Säädä Smith-laite niin, että tanko on hartioiden tasolla.",
@@ -62268,7 +62268,7 @@
     ]
   },
   "0773": {
-    "name": "Pohjenousu seisten smith-laitteessa",
+    "name": "Pohjenousu seisten Smith-laitteessa",
     "description": "Pohjenousu seisten Smith-laitteen tanko hartioilla. Kuormittaa pohkeita voiman ja koon kasvattamiseksi.",
     "instructions": [
       "Säädä Smith-laitteen tanko korkeudelle, jossa voit seisoa jalkapohjat lattialla ja hartiat tangon alla.",
@@ -62280,7 +62280,7 @@
     ]
   },
   "0774": {
-    "name": "Pystypunnerrus seisten smith-laitteessa",
+    "name": "Pystypunnerrus seisten Smith-laitteessa",
     "description": "Pystypunnerrus seisten Smith-laitteen tangolla hartioiden tasolta alkaen. Se kehittää olkapäitä ja ojentajia.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
@@ -62292,7 +62292,7 @@
     ]
   },
   "0775": {
-    "name": "Pystysoutu smith-laitteessa",
+    "name": "Pystysoutu Smith-laitteessa",
     "description": "Pystysoutu Smith-laitteen tangolla: vedät tankoa kohti leukaa kyynärpäät edellä. Vahvistaa sivuolkapäitä ja epäkkäitä.",
     "instructions": [
       "Seiso Smith-laitteen edessä jalat hartioiden leveydellä.",
@@ -62509,7 +62509,7 @@
     ]
   },
   "0798": {
-    "name": "Kuntopyöräily rauhallisesti",
+    "name": "Kuntopyöräily seisten",
     "description": "Polkemista kuntopyörällä satulasta nousten ja polkimilla seisten, ikään kuin kävelisit ylämäkeen. Liike vahvistaa jalkoja ja nostaa sykettä.",
     "instructions": [
       "Säädä vastus kohtuulliseksi ja ota kiinni ohjaustangosta.",
@@ -62589,7 +62589,7 @@
     ]
   },
   "0807": {
-    "name": "Käänteinen vatsarutistus harjoitushihnoilla",
+    "name": "Käänteinen vatsarutistus roikkuen",
     "description": "Roikkuen tehtävä käänteinen vatsarutistus, jossa polvet ja lantio vedetään ylös kohti rintaa. Se kohdistuu alavatsalihaksiin.",
     "instructions": [
       "Roiku leuanvetotangossa kädet suorina ja kämmenet poispäin sinusta.",
@@ -63134,7 +63134,7 @@
     ]
   },
   "0858": {
-    "name": "Tuulispurtit",
+    "name": "Spurttivedot",
     "description": "Lyhyitä, täysillä tehtäviä juoksuvetoja, joiden välissä pidetään tauko. Ne kehittävät nopeutta, kestävyyttä ja hyvää aerobista pohjaa.",
     "instructions": [
       "Etsi avoin tila tai juoksurata liikkeen suorittamiseen.",
@@ -63378,7 +63378,7 @@
     ]
   },
   "0884": {
-    "name": "Sivuttaisnousu smith-laitteessa",
+    "name": "Sivuttaisnousu Smith-laitteessa",
     "description": "Sivuttain tehtävä nousu penkille Smith-tangon alla. Se kuormittaa etureisiä ja pakaroita yksi jalka kerrallaan.",
     "instructions": [
       "Aseta penkki viereesi ja aseta tanko yläselän päälle.",
@@ -63389,7 +63389,7 @@
     ]
   },
   "0885": {
-    "name": "Lantionnosto maaten smith-laitteessa",
+    "name": "Jalan sivunosto kylkimakuulla Smith-laitteessa",
     "description": "Kylkimakuulla tehtävä jalan nosto, jossa Smith-laitteen tanko antaa vastusta. Se kohdistuu lonkan ulkosivuun ja pakaroihin.",
     "instructions": [
       "Käy kylkimakuulle tangon alle ja säädä tanko sopivalle korkeudelle.",
@@ -63400,7 +63400,7 @@
     ]
   },
   "0886": {
-    "name": "Yhden jalan maastaveto smith-laitteessa",
+    "name": "Yhden jalan maastaveto Smith-laitteessa",
     "description": "Yhden jalan maastaveto Smith-laitteen tangolla. Se kehittää takareisiä, pakaroita ja tasapainoa.",
     "instructions": [
       "Asetu seisomaan yhdelle jalalle ja pidä tankoa lantion korkeudella.",
@@ -63466,7 +63466,7 @@
     ]
   },
   "0901": {
-    "name": "Lantion ojennus kuminauhalla",
+    "name": "Lonkan ojennus kuminauhalla",
     "description": "Jalan potkaisu taakse kuminauhavastuksella. Se vahvistaa pakaroita ja takareisiä.",
     "instructions": [
       "Kierrä kuminauha nilkkojen ympärille tai kiinnitä se matalalle.",
@@ -63532,7 +63532,7 @@
     ]
   },
   "0908": {
-    "name": "Alaviistolevitys kuminauhalla",
+    "name": "Levitys alhaalta ylös kuminauhalla",
     "description": "Levitys, jossa kädet nousevat kaarena alhaalta ylös. Se kohdistuu ylärintaan.",
     "instructions": [
       "Kiinnitä kuminauha matalalle ja asetu porrastettuun asentoon.",
@@ -63642,7 +63642,7 @@
     ]
   },
   "0923": {
-    "name": "Vinopenkkipunnerrus kuminauhalla seisten",
+    "name": "Viisto rintapunnerrus kuminauhalla seisten",
     "description": "Ylöspäin suunnattu punnerrus seisten kuminauhaa käyttäen. Kohdistuu ylärintaan.",
     "instructions": [
       "Kiinnitä kuminauha matalalle taaksesi ja pidä päistä kiinni rinnan kohdalla.",
@@ -63807,7 +63807,7 @@
     ]
   },
   "0947": {
-    "name": "Puolikuuasento",
+    "name": "Kuunsirppiasento",
     "description": "Seiso ja taivuta vartaloa sivulle kädet pään yläpuolella niin, että kehon toinen puoli pitenee. Avaa kylkiluiden välejä, kylkiä ja olkapäitä.",
     "instructions": [
       "Seiso suorana jalat yhdessä ja nosta kädet pään yläpuolelle kämmenet yhteen.",
