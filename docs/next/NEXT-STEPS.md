@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Catalogue level and pattern (D6, prepared).** Rebuild the draft index with `node scripts/catalogue/seed-level.mjs`. All strength, calisthenics, isometric, olympic and plyometric entries count, including unclassified ones. Exercises in mixed categories also count unless text identifies a non-strength activity. The classifier uses the movement name, target and equipment. All 45 authored guides take precedence, and variants inherit their canonical entry. Unknown IDs stay absent. Review the sample before using draft levels in the app.
+
 - **Beginner tour (D4, prepared).** The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
