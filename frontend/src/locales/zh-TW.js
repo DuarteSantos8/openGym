@@ -3958,6 +3958,11 @@ export default {
   "Not in this build": "此版本沒有",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS 手錶透過 Google Play 服務和手機溝通，而 F-Droid 的 App 不包含它。opengym.ch 的 APK 和 Google Play 上的 App 可以連接手錶。",
   // Stats redesign
+  "Collapse": "收合",
+  "bpm": "次/分",
+  "Average {0} · Max {1} bpm": "平均 {0} · 最高 {1} bpm",
+  "Heart rate curve": "心率曲線",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch 測量時，在進度條下方顯示一行。輕點查看整場訓練。",
   "Muscles": "肌肉",
   "Chart": "圖表",
   "Harder": "更難",
@@ -6054,9 +6059,4 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "歸你了。在手機上的 App 裡選擇：設定、外觀與首頁、App 圖示。",
   "Yours. Settings, Look & Home, App icon.": "歸你了。設定、外觀與首頁、App 圖示。",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym 有了一個妹妹。飲食、補充品和體重，像 openGym 一樣放在你自己的伺服器上，沒有廣告，也沒人偷看。目前是私人測試版，你來得很早。",
-  "Collapse": "收合",
-  "bpm": "次/分",
-  "Average {0} · Max {1} bpm": "平均 {0} · 最高 {1} bpm",
-  "Heart rate curve": "心率曲線",
-  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch 測量時，在進度條下方顯示一行。輕點查看整場訓練。",
 }

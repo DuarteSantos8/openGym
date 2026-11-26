@@ -3976,6 +3976,11 @@ export default {
   "Not in this build": "ไม่มีในบิลด์นี้",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "นาฬิกา Wear OS คุยกับโทรศัพท์ผ่านบริการ Google Play ซึ่งแอปใน F-Droid ไม่มี APK จาก opengym.ch และแอปจาก Google Play เชื่อมต่อนาฬิกาได้",
   // Stats redesign
+  "Collapse": "ย่อ",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "เฉลี่ย {0} · สูงสุด {1} bpm",
+  "Heart rate curve": "กราฟอัตราการเต้นของหัวใจ",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "หนึ่งบรรทัดใต้แถบความคืบหน้าขณะที่ Apple Watch วัดอยู่ แตะเพื่อดูทั้งเซสชัน",
   "Muscles": "กล้ามเนื้อ",
   "Chart": "กราฟ",
   "Harder": "หนักขึ้น",
@@ -6072,9 +6077,4 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "เป็นของคุณแล้ว เลือกได้ในแอปบนมือถือ: ตั้งค่า, หน้าตาและหน้าหลัก, ไอคอนแอป",
   "Yours. Settings, Look & Home, App icon.": "เป็นของคุณแล้ว ตั้งค่า, หน้าตาและหน้าหลัก, ไอคอนแอป",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym มีน้องสาวแล้ว อาหาร อาหารเสริม และน้ำหนักตัว บนเซิร์ฟเวอร์ของคุณเองเหมือน openGym ไม่มีโฆษณา ไม่มีใครแอบดู ตอนนี้อยู่ในเบต้าแบบปิด และคุณมาก่อนใคร",
-  "Collapse": "ย่อ",
-  "bpm": "bpm",
-  "Average {0} · Max {1} bpm": "เฉลี่ย {0} · สูงสุด {1} bpm",
-  "Heart rate curve": "กราฟอัตราการเต้นของหัวใจ",
-  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "หนึ่งบรรทัดใต้แถบความคืบหน้าขณะที่ Apple Watch วัดอยู่ แตะเพื่อดูทั้งเซสชัน",
 }

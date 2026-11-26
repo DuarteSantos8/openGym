@@ -3968,6 +3968,11 @@ export default {
   "Not in this build": "Ebben a változatban nincs",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "A Wear OS órák a Google Play-szolgáltatásokon át beszélnek a telefonnal, ezeket pedig az F-Droid appok kihagyják. Az opengym.ch-s APK és a Google Play-es app tud órát csatlakoztatni.",
   // Stats redesign
+  "Collapse": "Összecsukás",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Átlag {0} · Max. {1} bpm",
+  "Heart rate curve": "Pulzusgörbe",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Egy sor a folyamatjelző alatt, amíg az Apple Watch méri. Koppints rá az egész edzésért.",
   "Muscles": "Izmok",
   "Chart": "Diagram",
   "Harder": "Nehezebb",
@@ -6064,9 +6069,4 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "A tiéd. Válaszd ki a telefonos alkalmazásban: Beállítások, Megjelenés és Kezdőlap, Alkalmazásikon.",
   "Yours. Settings, Look & Home, App icon.": "A tiéd. Beállítások, Megjelenés és Kezdőlap, Alkalmazásikon.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "Az openGymnek van egy húga. Étel, étrend-kiegészítők és testsúly, a saját szervereden, mint az openGym, reklám és kíváncsi szemek nélkül. Zárt bétában van, és te korán érkeztél.",
-  "Collapse": "Összecsukás",
-  "bpm": "bpm",
-  "Average {0} · Max {1} bpm": "Átlag {0} · Max. {1} bpm",
-  "Heart rate curve": "Pulzusgörbe",
-  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Egy sor a folyamatjelző alatt, amíg az Apple Watch méri. Koppints rá az egész edzésért.",
 }

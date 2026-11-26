@@ -3969,6 +3969,11 @@ export default {
   "Not in this build": "Non in questa versione",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Gli orologi Wear OS parlano con il telefono tramite i servizi Google Play, che le app di F-Droid lasciano fuori. L’APK di opengym.ch e l’app di Google Play hanno il collegamento con l’orologio.",
   // Stats redesign
+  "Collapse": "Comprimi",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Media {0} · Max {1} bpm",
+  "Heart rate curve": "Curva del battito",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Una riga sotto la barra di avanzamento mentre il tuo Apple Watch lo misura. Toccala per tutta la sessione.",
   "Muscles": "Muscoli",
   "Chart": "Grafico",
   "Harder": "Più duro",
@@ -6071,9 +6076,4 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "È tua. Sceglila nell’app sul telefono: Impostazioni, Aspetto e Home, Icona dell’app.",
   "Yours. Settings, Look & Home, App icon.": "È tua. Impostazioni, Aspetto e Home, Icona dell’app.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym ha una sorellina. Cibo, integratori e peso corporeo, sul tuo server come openGym, senza pubblicità e senza nessuno che legga. È in beta privata, e tu sei tra i primi.",
-  "Collapse": "Comprimi",
-  "bpm": "bpm",
-  "Average {0} · Max {1} bpm": "Media {0} · Max {1} bpm",
-  "Heart rate curve": "Curva del battito",
-  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Una riga sotto la barra di avanzamento mentre il tuo Apple Watch lo misura. Toccala per tutta la sessione.",
 }

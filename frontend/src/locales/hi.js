@@ -3965,6 +3965,11 @@ export default {
   "Not in this build": "इस बिल्ड में नहीं",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS घड़ियाँ Google Play सेवाओं के ज़रिए फ़ोन से बात करती हैं, और F-Droid ऐप्स में ये नहीं होतीं। opengym.ch का APK और Google Play वाला ऐप घड़ी से जुड़ते हैं।",
   // Stats redesign
+  "Collapse": "समेटें",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "औसत {0} · अधिकतम {1} bpm",
+  "Heart rate curve": "हृदय गति वक्र",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "प्रगति पट्टी के नीचे एक पंक्ति, जब तक आपकी Apple Watch इसे मापती है। पूरे सत्र के लिए टैप करें।",
   "Muscles": "मांसपेशियाँ",
   "Chart": "चार्ट",
   "Harder": "ज़्यादा कठिन",
@@ -6061,9 +6066,4 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "यह आपका है। फ़ोन के ऐप में चुनें: सेटिंग्स, दिखावट और होम, ऐप आइकन।",
   "Yours. Settings, Look & Home, App icon.": "यह आपका है। सेटिंग्स, दिखावट और होम, ऐप आइकन।",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "openGym की एक छोटी बहन है। खाना, सप्लीमेंट और शरीर का वज़न, openGym की तरह आपके अपने सर्वर पर, बिना विज्ञापन और बिना किसी के झाँके। यह प्राइवेट बीटा में है, और आप जल्दी आए हैं।",
-  "Collapse": "समेटें",
-  "bpm": "bpm",
-  "Average {0} · Max {1} bpm": "औसत {0} · अधिकतम {1} bpm",
-  "Heart rate curve": "हृदय गति वक्र",
-  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "प्रगति पट्टी के नीचे एक पंक्ति, जब तक आपकी Apple Watch इसे मापती है। पूरे सत्र के लिए टैप करें।",
 }

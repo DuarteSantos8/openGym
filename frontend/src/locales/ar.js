@@ -4020,6 +4020,11 @@ export default {
   "Not in this build": "ليست في هذا الإصدار",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "تتصل ساعات Wear OS بالهاتف عبر خدمات Google Play، وتطبيقات F-Droid لا تتضمنها. ملف APK من opengym.ch وتطبيق Google Play فيهما ربط الساعة.",
   // Stats redesign
+  "Collapse": "طي",
+  "bpm": "نبضة/د",
+  "Average {0} · Max {1} bpm": "المتوسط {0} · الأقصى {1} نبضة/د",
+  "Heart rate curve": "منحنى النبض",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "سطر تحت شريط التقدّم بينما تقيسه Apple Watch. المسه لرؤية الحصة كاملة.",
   "Muscles": "العضلات",
   "Chart": "الرسم البياني",
   "Harder": "أصعب",
@@ -6116,9 +6121,4 @@ export default {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "إنها لك. اخترها في التطبيق على هاتفك: الإعدادات، المظهر والرئيسية، أيقونة التطبيق.",
   "Yours. Settings, Look & Home, App icon.": "إنها لك. الإعدادات، المظهر والرئيسية، أيقونة التطبيق.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "لـ openGym أخت صغيرة. الطعام والمكملات ووزن الجسم، على خادمك الخاص مثل openGym، بلا إعلانات ولا أحد يتطفّل. إنها في نسخة تجريبية خاصة، وأنت من الأوائل.",
-  "Collapse": "طي",
-  "bpm": "نبضة/د",
-  "Average {0} · Max {1} bpm": "المتوسط {0} · الأقصى {1} نبضة/د",
-  "Heart rate curve": "منحنى النبض",
-  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "سطر تحت شريط التقدّم بينما تقيسه Apple Watch. المسه لرؤية الحصة كاملة.",
 }
