@@ -60,8 +60,10 @@ function refresh (page) {
 // failure is tried again, and never while a message is half gathered (registering drops frames).
 function listen (page) {
   S.reg = 'pending'
-  S.rx.listen(
+  const rx = S.rx
+  rx.listen(
     function (message) {
+      if (rx !== S.rx) return // a radio of a page that is gone
       try { K.onPhone(A.c, message); tick(A.c, A.ui) } catch (e) { /* a snapshot the core cannot read must not stop the watch */ }
       refresh(page)
     },
@@ -71,7 +73,7 @@ function listen (page) {
 
 // Only the page that owns the app's redraw may stop the app (a new page may be up before this one is torn down).
 function pause () {
-  if (S.rx) S.rx.stop()
+  if (S.rx && A.radio === S.rx) S.rx.stop() // a newer page's receiver is not ours to unregister
   S.reg = 'pending'
   if (S.cb && A.cb === S.cb) { A.cb = null; A.hide() }
   S.cb = null
@@ -80,7 +82,7 @@ function pause () {
 // Shown (again): the receiver, then the app's hello, redraw and clock. The app calls A.cb on each pass of
 // its clock, once a second with sec true.
 function resume (page) {
-  listen(page)
+  if (S.rx) listen(page) // a later page has no radio until its client knows the version (onInit)
   S.cb = A.cb = function (sec) {
     try {
       tick(A.c, A.ui)
@@ -169,8 +171,15 @@ export default {
     K = getApp().data.k()
     attach(K)
     S.t = null
-    if (A.c) link() // the app's core is already running: this page only brings its own link
-    else boot(this)
+    if (A.c) { // the app's core is already running: this page only brings its own link, once its client knows the version
+      const mine = S.boot
+      const page = this
+      whenVersion(function () {
+        if (mine !== S.boot || !A.c) return
+        link()
+        if (S.shown && S.cb) { listen(page); K.launch(A.c) } // hello, as a shown page does
+      })
+    } else boot(this)
   },
   onShow: function () {
     S.shown = true

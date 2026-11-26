@@ -371,7 +371,7 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       const next = await nextPage(W)
       const old = page.def
       if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
-      W.settle()
+      W.settle(); W.advance(1) // the new page's client learns its version, then it links
       assert.equal(A.c, core, 'no new core')
       assert.deepEqual(globalThis.getApp().data.k().hrSoFar(A.c), hr)
       assert.equal(next.s_rest, true)
@@ -380,7 +380,7 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       W.advance(2)
       assert.ok(W.timers.length > 0 || t > 0, 'the clock runs')
       assert.ok(W.hr, 'the sensor still runs')
-      if (!newFirst) assert.ok(W.receiver, 'the new page listens') // (the fake client has one receiver slot, which the old page's stop frees)
+      assert.ok(W.receiver, 'the new page listens')
       next.restSkip()
       W.advance(1)
       assert.notEqual(next.s_rest, true)
@@ -389,6 +389,56 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       assert.equal(W.hr, null) // the page that owns the app stops it
     } finally { restore() }
   }
+})
+
+test('page switch: a hold survives a new page, in either teardown order', async () => {
+  for (const newFirst of [false, true]) {
+    const W = world(new Map())
+    try {
+      const page = await boot(W)
+      fromPhone(W, Object.assign(snap(), { ready: { today: { routineIds: ['r1'], name: 'Core', entries: [{ id: 'p', name: 'Plank', i: 0, mode: 'time', sets: [{ sec: 45 }, { sec: 45 }] }] }, others: [] } }))
+      page.start(); W.advance(4)
+      page.done(); W.advance(5) // the 3-2-1, then the hold counts
+      assert.equal(page.s_hold, true)
+      const A = globalThis.getApp().data.get()
+      const core = A.c
+      const next = await nextPage(W)
+      const old = page.def
+      if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
+      W.settle(); W.advance(3)
+      assert.equal(A.c, core)
+      assert.equal(next.s_hold, true)
+      assert.ok(core.g.hold, 'the hold is still running')
+      assert.deepEqual(W.awake[W.awake.length - 1], true)
+    } finally { restore() }
+  }
+})
+
+test('page switch: a later page does not register or send before its own client knows the version, and the core and clock do not wait', async () => {
+  const W = world(new Map())
+  try {
+    const page = await boot(W)
+    fromPhone(W, snap())
+    page.start(); W.advance(4)
+    const A = globalThis.getApp().data.get()
+    const core = A.c
+    W.holdVersion = true // the next page's client does not learn its version yet
+    const next = await nextPage(W)
+    page.def.onHide.call(page); page.def.onDestroy.call(page); W.settle()
+    const [regs, sent] = [W.registers, W.sent.length]
+    next.def.onInit.call(next); next.def.onShow.call(next); W.settle()
+    W.advance(2)
+    assert.deepEqual([W.registers, W.sent.length, W.early], [regs, sent, []])
+    assert.equal(A.c, core)
+    assert.equal(next.s_set, true) // the screen draws and the clock runs meanwhile
+    W.holdVersion = false
+    W.client.version = '401' // the callback comes
+    W.advance(1)
+    assert.ok(W.registers > regs, 'registered once the version was known')
+    assert.ok(W.sent.slice(sent).join('').indexOf('"type":"hello"') >= 0, 'and said hello')
+    assert.deepEqual(W.early, [])
+    next.def.onHide.call(next)
+  } finally { restore() }
 })
 
 test('page: nothing is sent or registered before wearengine.js knows its version; it waits, then goes on', async () => {
