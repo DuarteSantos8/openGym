@@ -5,13 +5,16 @@
 // lives in this module and `get` returns it.
 //
 // A.c      the core, made by A.make(stored)        A.ui     the screen-only state (view-common.js newUi), set by the page
-// A.store  the store (saves c.s), made with the core   A.radio  the page's radio (frames over Wear Engine)
+// A.store  the store (saves c.s), made here by A.newStore   A.radio  the page's radio (frames over Wear Engine)
 // A.cb     the page's redraw, called as cb(sec): sec is true on the once-a-second pass. The page sets it on
 //          show and clears it on hide; A.radio is cleared on destroy. A page clears only what it set itself.
+// Nothing a page made may stay in A after the page is gone: one of its functions keeps all its code in the heap.
 import vibrator from '@system.vibrator'
 import sensor from '@system.sensor'
 import brightness from '@system.brightness'
 import app from '@system.app'
+import file from '@system.file'
+import { createStore } from './common/store.js'
 import * as K from './common/core.js'
 
 const noop = function () {}
@@ -134,6 +137,8 @@ A.hide = function () {
   if (A.c && A.store) A.store.save(A.c.s) // the store skips it when nothing changed
 }
 A.dev = devices
+// A new store for a boot. It outlives every page, so it is made here: a store the home page made kept that page in the heap.
+A.newStore = function () { A.store = createStore(file); return A.store }
 // A tap may have begun a 3-2-1: do not wait out a slow tick.
 A.poke = function () {
   if (L.on && isCounting() && !L.fast) { L.loop += 1; loop() }

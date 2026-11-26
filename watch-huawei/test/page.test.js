@@ -882,3 +882,53 @@ test('page switch: the Overview is the over page\'s; Continue and Finish go back
     assert.equal(page.s_summary, true)
   } finally { restore() }
 })
+
+// A function a page made, kept by the app, holds that page's whole bundle in the engine heap after the page is gone
+// (the simulator ran out of heap at the first page switch while the store the home page made sat in A.store). So once a
+// page is destroyed, nothing the app's state reaches may be a function from a file only the pages load.
+const MA = new URL('../entry/src/main/js/MainAbility/', import.meta.url)
+const appFiles = (file, seen) => {
+  if (seen.indexOf(file) >= 0) return seen
+  seen.push(file)
+  readFileSync(new URL(file, MA), 'utf8').replace(/^import [^'\n]*'(\.[^']+)'/gm, (m, spec) => { appFiles(new URL(spec, new URL(file, MA)).href.slice(MA.href.length), seen) })
+  return seen
+}
+const inApp = appFiles('app.js', [])
+const pageOnly = ['pages/index/index.js', 'pages/lift/index.js', 'pages/rest/index.js', 'pages/over/index.js']
+  .reduce((all, p) => appFiles(p, all), []).filter(f => inApp.indexOf(f) < 0)
+const srcOf = files => files.map(f => readFileSync(new URL(f, MA), 'utf8')).join('\n')
+const appSrc = srcOf(inApp)
+const pageSrc = srcOf(pageOnly)
+const pageFunctionsIn = (root) => {
+  const seen = new Set()
+  const out = []
+  const visit = (v, path) => {
+    if (!v || (typeof v !== 'object' && typeof v !== 'function') || seen.has(v)) return
+    seen.add(v)
+    if (typeof v === 'function') { const s = v.toString(); if (pageSrc.indexOf(s) >= 0 && appSrc.indexOf(s) < 0) out.push(path) }
+    Object.keys(v).forEach(k => visit(v[k], path + '.' + k))
+  }
+  visit(root, 'A')
+  return out
+}
+// the router asked for a new page: the old one is hidden and destroyed (the framework's order), nothing new is up yet
+const tearDown = (W, page) => { const uri = W.replaced.shift(); page.def.onHide.call(page); page.def.onDestroy.call(page); return uri.split('/')[1] }
+
+test('page switch: a destroyed page leaves no function of its own in the app (it would keep the page\'s code in the heap)', async () => {
+  assert.ok(pageOnly.indexOf('common/page-glue.js') >= 0 && inApp.indexOf('common/core.js') >= 0)
+  const W = world(new Map())
+  try {
+    let page = await boot(W)
+    fromPhone(W, snap())
+    const A = globalThis.getApp().data.get()
+    page.start()
+    for (const tap of ['done', 'restSkip', 'menu']) {
+      const to = tearDown(W, page)
+      assert.deepEqual(pageFunctionsIn(A), [], 'after the ' + to + ' switch')
+      page = await nextPage(W, to)
+      page.def.onInit.call(page); page.def.onShow.call(page); W.settle(); W.advance(4)
+      page[tap]()
+      if (!W.replaced.length) W.advance(1)
+    }
+  } finally { restore() }
+})

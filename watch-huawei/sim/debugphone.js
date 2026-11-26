@@ -1,6 +1,7 @@
 // SMOKE TEST ONLY. A fake phone and a timed driver for the simulator, which cannot tap. huawei-sim.mjs copies this file into a
-// temp copy of the project and hooks it into that copy's page; it is never under entry/, so the product build cannot include it.
-// It imports nothing (the page already carries the core: K comes from the page).
+// temp copy of the project and hooks it into that copy's app.js; it is never under entry/, so the product build cannot include it.
+// It imports nothing (app.js carries the core: K comes from it). It runs from app.js, not a page: its timers would keep that page
+// in the heap for the whole run, which the real app does not do.
 const SETTINGS = { lang: 'en', effort: 'rpe', restHaptics: true, weighIn: false, show: { hr: true, last: true, next: true }, crown: 'reps' }
 const ent = (id, name, i, sets, extra) => Object.assign({ id: id, name: name, i: i, sets: sets, mode: 'reps', restSec: 90, step: 2.5 }, extra || {})
 const row = (w, r) => ({ w: w, r: r, sec: null, done: false, warmup: false })
@@ -12,12 +13,19 @@ const active = () => base({ active: { id: 'w1', name: 'Push day', start: Date.no
 // [ms after the first snapshot, page handler or swipe]: start, set done, an effort chip, the Metrics pages and back, finish, confirm
 export const STEPS = [[2000, 'start'], [8000, 'done'], [10000, 'chip2'], [12000, 'L'], [15000, 'L'], [18000, 'L'], [21000, 'L'], [24000, 'R'], [24500, 'R'], [25000, 'R'], [25500, 'R'], [26000, 'menu'], [29000, 'mOver'], [32000, 'ovBack'], [35000, 'menu'], [38000, 'mFinish'], [41000, 'yes']]
 
-export default function drive (A, K) {
-  const real = A.radio.transmit
-  A.radio.transmit = function (m, l) { // the page's own radio: 'start' is answered with an active workout
-    real.call(A.radio, m, l)
+// The page's own radio: 'start' is answered with an active workout. In a function of its own, so the driver's timers do not
+// hold the page's transmit (and with it the page) after the page is gone.
+function answerStart (A, K) {
+  const radio = A.radio
+  const real = radio.transmit
+  radio.transmit = function (m, l) {
+    real.call(radio, m, l)
     if (((m && m.events) || []).some(function (e) { return e.type === 'start' })) setTimeout(function () { K.onPhone(A.c, active()) }, 500)
   }
+}
+
+export default function drive (A, K) {
+  answerStart(A, K)
   setTimeout(function () {
     K.onPhone(A.c, base({ ready: { today: today(), others: [] } }))
     console.log('OGSMOKE feed')

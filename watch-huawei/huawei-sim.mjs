@@ -37,12 +37,11 @@ export function hook(src) {
   // a page that is gone is let go: a kept reference would hold its whole module in the heap, which the real app does not
   return src.replace(at, at + ' G.A.pg = this;').replace(end, 'onDestroy: function () { G.destroy(); if (G.A.pg === this) G.A.pg = null }')
 }
-// hook the debug phone into the home page copy (the first page, which makes the core): the import, and a call right after it is made
+// hook the debug phone into the app.js copy, right after a core is made: in a page, its timers would keep that page in the heap
 export function inject(src) {
-  const imp = "import { blank,"
-  const make = 'A.make(stored)'
-  if (!src.includes(imp) || !src.includes(make)) throw new Error('inject: anchor not found in the page, update huawei-sim.mjs')
-  return hook(src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(A, G.K)'))
+  const made = '}, stored)\n'
+  if (!src.includes(made)) throw new Error('inject: anchor not found in app.js, update huawei-sim.mjs')
+  return "import drive from './common/debugphone.js'\n" + src.replace(made, made + '  drive(A, K)\n')
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -51,7 +50,9 @@ function prepare(dir) {
   cpSync(here, dir, { recursive: true, filter: (f) => !/\/(entry\/build|\.hvigor|file_system|node_modules|test|sim)$/.test(f) })
   copyFileSync(join(here, 'sim', 'debugphone.js'), join(dir, 'entry/src/main/js/MainAbility/common/debugphone.js'))
   const edit = (name, fn) => { const f = join(dir, PAGES, name, 'index.js'); writeFileSync(f, fn(readFileSync(f, 'utf8'))) }
-  edit('index', inject)
+  const app = join(dir, PAGES, '..', 'app.js')
+  writeFileSync(app, inject(readFileSync(app, 'utf8')))
+  edit('index', hook)
   edit('lift', hook)
   edit('rest', hook)
   edit('over', hook)

@@ -5,9 +5,7 @@
 // nothing from core.js (a page that did would carry a second copy of it): the core's functions come through
 // getApp().data.k(). When the workout is on a screen another page draws (view-common.js pageOf), it switches
 // page BEFORE it builds anything: this page's view files have no such screen.
-import file from '@system.file'
 import app from '@system.app'
-import { createStore } from '../../common/store.js'
 import { createGlue } from '../../common/page-glue.js'
 import { blank, newUi, tick, lostData, swipeTo, attach } from '../../common/view-common.js'
 import { attach as attachHome } from '../../common/view-home.js'
@@ -52,8 +50,7 @@ function boot (page) {
   const mine = S.boot
   A.drop()
   const gen = A.gen
-  const store = createStore(file) // the app's: it holds no page, so a page's end leaves it be
-  A.store = store
+  const store = A.newStore() // made by the app: a store made here would keep this page in the heap after it is gone
   store.load(function (stored, status) {
     if (mine !== S.boot || gen !== A.gen) return
     if (status === 'unreadable') { showLost(page); return }

@@ -23,13 +23,12 @@ test('failures: an OOM before the first feed is one line, not also "never ran"',
   assert.deepEqual(failures({ fed: true, bad: ['JS REF LIMIT'] }), ['FAIL JS REF LIMIT'])
 })
 
-test('inject puts the debug phone in a page copy and refuses a page it does not recognise', () => {
-  const page = "import x from 'y'\nimport { blank, newUi } from '../../common/view-common.js'\nfunction start () {\n  A.make(stored)\n}\nonInit () {\n    attach(G.init()); attachHome(G.K)\n},\nonDestroy: function () { G.destroy() }\n"
-  const out = inject(page)
-  assert.match(out, /import drive from '\.\.\/\.\.\/common\/debugphone\.js'/)
-  assert.match(out, /A\.make\(stored\); drive\(A, G\.K\)/)
+test('inject puts the debug phone in the app.js copy, after the core is made, and refuses an app.js it does not recognise', () => {
+  const app = readFileSync(new URL('../entry/src/main/js/MainAbility/app.js', import.meta.url), 'utf8')
+  const out = inject(app)
+  assert.match(out, /^import drive from '\.\/common\/debugphone\.js'\n/)
+  assert.match(out, /\}, stored\)\n {2}drive\(A, K\)\n/)
   assert.throws(() => inject('nothing to hook'), /anchor/)
-  assert.match(out, /attach\(G\.init\(\)\); G\.A\.pg = this;/) // the home page tells the driver it is up too
 })
 
 test('hook tells the driver which page is up, in the copy of every page, and refuses a page it does not recognise', () => {
