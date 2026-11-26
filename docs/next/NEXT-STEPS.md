@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
+
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
   is available. A tap fills the editable chat box, including after first-time setup. The person
   chooses when to send. After #102, a fresh three-day profile confirmed Tuesday push and Wednesday

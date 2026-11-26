@@ -103,3 +103,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/coach/core/ask-actions.js` | `next/EP19-coach-starter-fixes` | Core | Apply the equipment restriction to chat proposals. |
 | `api/coach/core/validate.js` | `next/EP19-coach-starter-fixes` | Core | Check proposed exercise choices against the equipment restriction. |
 | `api/test/coach-ask.test.js` | `next/EP19-coach-starter-fixes` | Tests | Exercise translated requests and unsafe proposals with a simulated provider. |
+| `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-guest-workouts` | E2E | Verify ten guest workouts in the linked server profile and in History on both devices. |
