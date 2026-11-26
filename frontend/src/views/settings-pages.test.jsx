@@ -43,6 +43,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 
 import Settings from './Settings.jsx'
+import { CONSENT_VERSION } from '../lib/coach.js'
 import { FLOWS } from '../lib/tour.js'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
@@ -97,6 +98,22 @@ const guestWeb = {
 }
 
 describe('the root', () => {
+  it('keeps app help local until the signed-in user has completed Coach consent', () => {
+    mocks.user = { id: 'tester' }
+    mocks.config = { coach: { enabled: true } }
+    const render = () => act(() => root.render(<Settings appHelp />))
+    render()
+    const input = host.querySelector('input[type=search]')
+    act(() => {
+      Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set.call(input, 'rest timer')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(rowTitled('Rest timer')).toBeTruthy()
+    expect(host.textContent).not.toContain('Ask Coach to pick a result')
+    mocks.S.coach = { consent: { agreedAt: '2026-01-01', version: CONSENT_VERSION } }
+    render()
+    expect(host.textContent).toContain('Ask Coach to pick a result')
+  })
   it('is an account card and one row per page, in the four groups, with value previews', () => {
     mount()
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
