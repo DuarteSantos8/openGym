@@ -8,6 +8,11 @@
 //     (hip to ankle), over DEPTH_FULL (about the drop at parallel), so 0 at the top and about 1
 //     at parallel whatever the view;
 //   - depth: the hip's height against the knee's, in standing thigh lengths (positive below).
+//     Vision's hip is not the hip crease: it sits on the pelvis, and at the bottom of a squat about
+//     HIP_MARK thigh lengths above the crease (side-on, a squat with the crease level with the top of
+//     the knee reads the hip 0.2 above the knee, a half squat 0.6), so that is added first. Side-on
+//     it is read on the leg nearer the camera: Vision guesses the far one, hidden behind it, and a
+//     far knee put halfway up the thigh would make a shallow squat look deep.
 // Where this breaks: perspective. Facing the camera the knees come towards it at the bottom and
 // the hips go away, so a camera above or below them makes the knees look lower or higher than
 // they are (about 0.2 thigh lengths with the phone at standing hip height, more than the parallel
@@ -27,6 +32,7 @@ export const DEPTH_FULL = 0.55        // the hip's drop at parallel, in standing
 export const STRAIGHT = 0.9           // thigh over shin (image-vertical) at least this: standing tall
 export const TOP_S = 0.06             // signal under this: at the top, where the standing figure is read
 export const PARALLEL_BAND = 0.1      // hip within this many thigh lengths of the knee: parallel
+export const HIP_MARK = 0.2           // Vision's hip above the hip crease at the bottom, in standing thigh lengths
 export const LEVEL_ROW = 0.12         // standing knees at most this far from the middle row: camera at knee height
 export const LEVEL_ROLL = 10          // degrees the standing body may lean in the image: camera upright
 export const FAST_DOWN_SEC = 1        // an average way down under this: "slow the way down"
@@ -110,7 +116,8 @@ function create({ standard, view: fixedView } = {}) {
   const views = createViewDetector()
   const side = createSidePicker(CHAIN)
   const reps = []                 // { rec, acc, counted, reason }
-  let legRef = null, thighRef = null
+  let legRef = null
+  const thighRef = { mid: null, left: null, right: null }   // standing thigh, both legs' middle and each leg
   let levelRow = null, levelRoll = null
   let lastS = null
   let acc = null                  // the rep under way's measures
@@ -126,7 +133,7 @@ function create({ standard, view: fixedView } = {}) {
     const aspect = frame.aspect > 0 ? frame.aspect : 1
     if (f.hd != null && (a.maxHd == null || f.hd > a.maxHd)) a.maxHd = f.hd
     if (a.view === 'side') {
-      const sd = side(frame.joints)
+      const sd = f.side
       const k = angleAt(seen(frame.joints, sd + 'Hip'), seen(frame.joints, sd + 'Knee'), seen(frame.joints, sd + 'Ankle'), aspect)
       if (k != null && (a.minKnee == null || k < a.minKnee)) a.minKnee = k
       const l = torsoLean(frame.joints, sd, aspect)
@@ -161,19 +168,39 @@ function create({ standard, view: fixedView } = {}) {
     return counted
   }
 
-  // The figure's image-vertical facts, null without hip, knee and ankle.
+  // The figure's image-vertical facts, null without hip, knee and ankle. `thighs`: each leg's
+  // thigh where its hip and knee are seen, for the depth side-on.
   function figure(joints) {
     const hip = mid(joints, 'Hip'), knee = mid(joints, 'Knee'), ankle = mid(joints, 'Ankle')
     if (!hip || !knee || !ankle) return null
     const leg = ankle[1] - hip[1], thigh = knee[1] - hip[1], shin = ankle[1] - knee[1]
     if (!(leg > 0) || !(shin > 0)) return null
-    return { hip, knee, ankle, leg, thigh, straight: thigh / shin >= STRAIGHT }
+    const thighs = {}
+    for (const sd of ['left', 'right']) {
+      const h = seen(joints, sd + 'Hip'), k = seen(joints, sd + 'Knee')
+      if (h && k && k[1] - h[1] > 0) thighs[sd] = { hip: h, knee: k, thigh: k[1] - h[1] }
+    }
+    return { hip, knee, ankle, leg, thigh, thighs, straight: thigh / shin >= STRAIGHT }
+  }
+
+  // The hip's height against the knee in standing thigh lengths, positive below, Vision's hip
+  // mark taken off: side-on on the nearer leg (both legs' middle when its standing thigh is not
+  // known yet), otherwise on both legs' middle. null before a standing thigh was read.
+  function hipDepth(f, sd, sideOn) {
+    const own = sideOn && f.thighs[sd] && thighRef[sd] > 0 ? f.thighs[sd] : null
+    const ref = own ? thighRef[sd] : thighRef.mid
+    if (!(ref > 0)) return null
+    const hip = own ? own.hip : f.hip, knee = own ? own.knee : f.knee
+    return (hip[1] - knee[1]) / ref + HIP_MARK
   }
 
   // Standing tall at the top: the leg and thigh it is measured against, the view, the camera.
+  // The leg leans to the longer readings, so the first frames of a slow descent, still under
+  // TOP_S, do not shorten it: a quarter squat that starts slowly would read as a wobble.
   function readStanding(frame, f) {
-    legRef = legRef == null || f.leg > legRef * 1.1 ? f.leg : ema(legRef, f.leg, 0.15)
-    thighRef = thighRef == null ? f.thigh : ema(thighRef, f.thigh, 0.15)
+    legRef = legRef == null || f.leg > legRef * 1.1 ? f.leg : ema(legRef, f.leg, f.leg > legRef ? 0.15 : 0.05)
+    thighRef.mid = ema(thighRef.mid, f.thigh, 0.15)
+    for (const sd of ['left', 'right']) if (f.thighs[sd]) thighRef[sd] = ema(thighRef[sd], f.thighs[sd].thigh, 0.15)
     if (!fixedView) views.push(frame, true)
     const sh = mid(frame.joints, 'Shoulder')
     const aspect = frame.aspect > 0 ? frame.aspect : 1
@@ -201,7 +228,10 @@ function create({ standard, view: fixedView } = {}) {
     const phase0 = machine.phase
     if (f && f.straight && (phase0 === 'waiting' || phase0 === 'standing') && (lastS == null || lastS < TOP_S)) readStanding(fr, f)
     const s = f && legRef ? (legRef - f.leg) / legRef / DEPTH_FULL : null
-    if (f && thighRef > 0) f.hd = (f.hip[1] - f.knee[1]) / thighRef
+    if (f) {
+      f.side = side(joints)
+      f.hd = hipDepth(f, f.side, viewNow() === 'side')
+    }
     if (s != null) lastS = s
     const ev = machine.push(at, s, { canStart: !!f && f.straight })
     let justCounted = false, justMissed = false, reason = null

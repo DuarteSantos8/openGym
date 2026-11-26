@@ -145,7 +145,8 @@ Rules every drill keeps:
 
 ## The test kit (`test-kit.js`)
 
-A 3D stick figure (`BODY`, metres), posed per drill (`squatPose(knee, { cave, shift })`; write a
+A 3D stick figure (`BODY`, metres) with the hip where Vision puts it (`markHip`: up the torso as
+the hip bends, as real squats read it), posed per drill (`squatPose(knee, { cave, shift })`; write a
 `<movement>Pose` for a new drill), turned by a camera `yaw` (0 side-on, 90 facing the camera, any
 value) and filmed through a pinhole camera (`CAMERA`: 2.6 m away, at knee height, level, 64°
 vertical field, 3:4 portrait) into the frames the plugin emits. `project()` films one pose,
@@ -157,6 +158,9 @@ The far side's confidence falls the more side-on the view, as Vision's does.
 
 Counted from image-vertical signals that turning about the vertical axis leaves alone: the hip's
 drop from standing over the standing leg, and the hip's height against the knee's for depth.
+Vision's hip sits on the pelvis, above the hip crease (about 0.2 thigh lengths at the bottom of
+a squat, `HIP_MARK`), so a squat to parallel reads the hip above the knee; side-on depth is read
+on the nearer leg, since Vision guesses the far one.
 Side-on it adds the knee angle, its spread and the torso lean; from the front, knees caving in
 and the hips shifting sideways; at an angle, count, depth and tempo only. Facing the camera,
 perspective makes a camera above or below the knees misjudge depth, so outside a side view depth

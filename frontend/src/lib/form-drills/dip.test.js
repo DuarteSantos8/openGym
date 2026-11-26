@@ -148,11 +148,14 @@ describe('the dip, whatever the angle', () => {
     expect(res.note).toBe('Filmed from the side: depth, tempo and elbow angle.')
   })
 
-  it('outside a side view, asks for the phone at elbow height and counts nothing until it is', () => {
+  it('outside a side view, asks for the phone at elbow height, and till it is counts the reps without judging depth', () => {
     for (const yaw of [45, 90]) {
-      const { outs, res } = run(dipSet(same(3, DEEP), { yaw, height: 0.5 }))
-      expect(outs.slice(10).every(o => o.hint === 'Put the phone at elbow height and level')).toBe(true)
-      expect(res).toMatchObject({ count: 0, missed: 0, cueId: 'none' })
+      const { outs, res } = run(dipSet([DEEP, LEVEL, DEEP], { yaw, height: 0.5 }))
+      const top = outs.slice(10).filter(o => o.phase === 'standing')
+      expect(top.length).toBeGreaterThan(10)
+      expect(top.every(o => o.hint === 'Put the phone at elbow height and level')).toBe(true)
+      expect(res).toMatchObject({ count: 3, missed: 0 })
+      expect(res.reps.map(r => r.measures.depth)).toEqual([null, null, null])
     }
     const side = run(dipSet([SHALLOW], { yaw: 0, height: 0.5 }))
     expect(side.res.missed).toBe(1)

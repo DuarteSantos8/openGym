@@ -197,11 +197,14 @@ describe('the push-up, whatever the angle', () => {
     expect(hipLine({}, 'right', 1)).toBe(null)
   })
 
-  it('outside a side view, asks for the phone at elbow height and counts nothing until it is', () => {
+  it('outside a side view, asks for the phone at elbow height, and till it is counts the reps without judging depth', () => {
     for (const cam of [{ height: 1.0 }, { pitch: 15 }]) {
-      const { outs, res } = run(pushUpSet(same(3, DEEP), { yaw: 90, ...cam }))
-      expect(outs.slice(10).every(o => o.hint === 'Put the phone at elbow height and level')).toBe(true)
-      expect(res).toMatchObject({ count: 0, missed: 0, cueId: 'none' })
+      const { outs, res } = run(pushUpSet([DEEP, SHALLOW, DEEP], { yaw: 90, ...cam }))
+      const top = outs.slice(10).filter(o => o.phase === 'standing')
+      expect(top.length).toBeGreaterThan(10)
+      expect(top.every(o => o.hint === 'Put the phone at elbow height and level')).toBe(true)
+      expect(res).toMatchObject({ count: 3, missed: 0 })
+      expect(res.reps.map(r => r.measures.depth)).toEqual([null, null, null])
     }
     const side = run(pushUpSet([SHALLOW], { yaw: 0, height: 1.0 }))
     expect(side.res.missed).toBe(1)
