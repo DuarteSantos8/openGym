@@ -1,22 +1,52 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Coach App Help daily-limit guidance is prepared. Local search remains available after a refused request.
+## Status on November 26, 2026
 
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin and the numeric HTTP status after sign-out. Two-tab sign-in was verified on the hosted preview. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). Task A5 passed in isolated browsers with ten guest workouts. Hosted verification is pending. Read after `NEXT-STEPS.md`.
-Status 2026-11-26. Task A3 verified one hosted disk snapshot. A restore test awaits the owner’s decision. See [Backups](CLOUD-SERVER.md#backups). The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin and the numeric HTTP status after sign-out. Two-tab sign-in was verified on the hosted preview. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). Task A5 passed in isolated browsers with ten guest workouts. Hosted verification is pending. Read after `NEXT-STEPS.md`.
+Read after `NEXT-STEPS.md`. What is left, in order and as tasks for a coding agent, is in
+`AGENT-DEVELOPMENT-PLAN.md` (merged in #93).
 
-D2 status: English glossary access is prepared on Workout, Plan and Progress. Complete glossary translations and native review are pending.
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin and the numeric HTTP status after sign-out. Two-tab sign-in was verified on the hosted preview. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). The G2 usability kit is prepared; five owner-run sessions are pending. Read after `NEXT-STEPS.md`.
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin and the numeric HTTP status after sign-out. Two-tab sign-in was verified on the hosted preview. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). The owner accepted [ADR 0015](adr/0015-coach-app-help.md). Read after `NEXT-STEPS.md`.
+The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the
+repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one
+linked deletion are verified there. The three findings left open on #88 are merged in #92. Task
+A2 merged in #94.
 
-B4 app help is prepared in a separate implementation PR after owner approval. Hosted verification is pending.
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. A1 observed disposable-account admin denial and signed-out API behavior on the preview. Two-tab sign-in was verified on the hosted preview. The two preview HTTP statuses and owner dashboard remain pending. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). Task A5 passed in isolated browsers with ten guest workouts. Hosted verification is pending. Read after `NEXT-STEPS.md`.
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. A1 observed disposable-account admin denial and signed-out API behavior on the preview. Two-tab sign-in was verified on the hosted preview. The two preview HTTP statuses and owner dashboard remain pending. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). The G2 usability kit is prepared; five owner-run sessions are pending. Read after `NEXT-STEPS.md`.
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. A1 observed disposable-account admin denial and signed-out API behavior on the preview. Two-tab sign-in was verified on the hosted preview. The two preview HTTP statuses and owner dashboard remain pending. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). Coach app help awaits the owner’s decision on [ADR 0015](adr/0015-coach-app-help.md). Read after `NEXT-STEPS.md`.
+**Hosted account checks (A1).** On the preview, the owner opened the Admin dashboard.
+The OIDC configuration showed the provider was enabled and reachable. The browser did not
+expose the HTTP status. The health response reported a writable server.
+
+The disposable account saw no Admin dashboard. `GET /api/admin/oidc` returned a forbidden
+response. After sign-out, `GET /api/me` reported that the user was signed out.
+Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview.
+A separate anonymous request directly to the API returned 401. Two-tab sign-in was verified
+on the hosted preview. See [the hosted account checks](CLOUD-SERVER.md#before-real-users).
+
+Task A3 verified one hosted disk snapshot. A restore test awaits the owner’s decision. See
+[Backups](CLOUD-SERVER.md#backups).
+
+Task A5 passed in isolated browsers with ten guest workouts. Hosted verification is pending.
+
+The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the
+test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101.
+The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights
+starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach
+checks](CLOUD-SERVER.md#live-coach-checks-after-102).
 
 Coach B2 status: the two chat prompts have stubbed-provider coverage, including confirmation.
-The scheduling follow-up preserves other days and reuses matching routines on repeat confirmation.
-The hosted preview also kept Monday and added just one routine across two identical requests. See [the live schedule check](CLOUD-SERVER.md#live-schedule-check-after-99).
+The scheduling follow-up preserves other days and reuses matching routines on repeat
+confirmation. The hosted preview also kept Monday and added just one routine across two
+identical requests. See [the live schedule check](CLOUD-SERVER.md#live-schedule-check-after-99).
+
+The owner accepted [ADR 0015](adr/0015-coach-app-help.md). B4 app help is prepared in a separate
+implementation PR after owner approval. Hosted verification is pending. Coach App Help
+daily-limit guidance is prepared. Local search remains available after a refused request.
+
+D2 status: English glossary access is prepared on Workout, Plan and Progress. Complete glossary
+translations and native review are pending. D3 status: the short Beginner Settings root and
+reversible full-list preference are prepared. D4 prepares an eight-stop beginner tour with
+offline keyboard replay.
+
+Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content
+is draft. The G2 usability kit is prepared; five owner-run sessions are pending.
 
 ## Why
 

@@ -6308,4 +6308,6 @@ export default {
   "Ask Coach to pick a result": "Požádat trenéra o výběr výsledku",
   "App help": "Nápověda aplikace",
   "No matching help found.": "Žádná odpovídající nápověda.",
+  "Show all settings": "Zobrazit všechna nastavení",
+  "Show fewer": "Zobrazit méně",
 }

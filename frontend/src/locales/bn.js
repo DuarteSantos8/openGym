@@ -6421,4 +6421,6 @@ export default {
   "Ask Coach to pick a result": "কোচকে একটি ফলাফল বেছে নিতে বলুন",
   "App help": "অ্যাপের সহায়তা",
   "No matching help found.": "কোনো মিল পাওয়া যায়নি।",
+  "Show all settings": "সব সেটিংস দেখান",
+  "Show fewer": "কম দেখান",
 }

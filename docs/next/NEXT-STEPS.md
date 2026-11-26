@@ -4,10 +4,12 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Beginner tour (D4, prepared).** The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
+
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 
 - D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
-- **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm the two preview HTTP statuses and the owner dashboard. See [Before real users](CLOUD-SERVER.md#before-real-users).
+- **Hosted account checks (A1, partial).** The owner opened the Admin dashboard. The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
@@ -169,3 +171,5 @@ npm run test:e2e                         # Playwright + axe; starts API and prev
 D2 follow-up bundles the 13 training-screen definitions for offline use and leaves the full Learn library on demand. The full-screen accessibility check covers Workout, Plan and Progress.
 
 Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
+
+D3 prepares a short Beginner Settings root; full search, App help and Account stay available. The two new navigation labels in all locale packs await native review.

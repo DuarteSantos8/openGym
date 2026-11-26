@@ -6335,4 +6335,6 @@ export default {
   "Ask Coach to pick a result": "請教練選擇一個結果",
   "App help": "應用程式說明",
   "No matching help found.": "找不到相符的說明。",
+  "Show all settings": "顯示所有設定",
+  "Show fewer": "顯示較少",
 }

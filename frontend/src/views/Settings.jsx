@@ -90,7 +90,7 @@ import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
-import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
+import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, rootPagesFor, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
@@ -965,7 +965,7 @@ export default function Settings({ appHelp = false, page = null, find = null, vi
           value={experienceOf(S) || ''}
           options={[...(experienceOf(S) ? [] : [{ value: '', label: t('Not set') }]), ...LEVELS.map(l => ({ value: l, label: levelName(l) }))]}
           onChange={v => { if (v) update(s => { applyExperience(s, v) }) }} />
-        <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
+        <Row tour="settings-learn" icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
       </Section>
       {/* Cloud edition only (lib/edition.js): the hosted account. Nothing in a default build. */}
       {isCloud() && <Section>
@@ -1488,7 +1488,8 @@ export default function Settings({ appHelp = false, page = null, find = null, vi
   }
 
   /* ---------------- the root ---------------- */
-  return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
+  return <SettingsRoot level={experienceOf(S)} showAll={!!S.settingsAll}
+    toggleAll={() => update(s => { s.settingsAll = !s.settingsAll })} ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
     home={() => nav('/home')} go={(hit) => {
       if (hit.page === 'coach') { nav('/coach/setup'); return }
       if (hit.route) { nav(hit.route); return }
@@ -1496,12 +1497,13 @@ export default function Settings({ appHelp = false, page = null, find = null, vi
     }} />
 }
 
-function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
+function SettingsRoot({ level, showAll, toggleAll, ctx, preview, open, user, sync, home, go, entryKey }) {
   // The router's key for this history entry, taken once. From the router rather than
   // window.history: drawn under an edge swipe back the page is the entry before the current one.
   const [key] = useState(() => (entryKey && entryKey !== 'default' && entryKey !== 'back-preview' ? entryKey : window.history.state?.key || null))
   const [q, setQ] = useState(() => (key && lastQuery.key === key ? lastQuery.q : ''))
   const set = v => { lastQuery = { q: v, key }; setQ(v) }
+  const rootPages = rootPagesFor(level, showAll, ctx)
   const hits = q.trim() ? searchSettings(q, ctx) : null
   const cloudWho = useCloudAccount()
   const cloudCard = isCloud() ? badgeCard(cloudWho, t) : null
@@ -1544,7 +1546,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
           <Icon name="chevronRight" className="lrow-c" />
         </button>
       </Section>
-      {ROOT_GROUPS.map(g => ({ ...g, ids: g.ids.filter(id => onRoot(id, ctx)) })).filter(g => g.ids.length).map(g => (
+      {ROOT_GROUPS.map(g => ({ ...g, ids: g.ids.filter(id => rootPages.includes(id)) })).filter(g => g.ids.length).map(g => (
         <Section key={g.ids[0]} title={g.title && t(g.title)}>
           {g.ids.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" tour={'settings-' + id} />)}
@@ -1559,6 +1561,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
+      {level === 'beginner' && <Section><Row title={showAll ? t('Show fewer') : t('Show all settings')}
+        onClick={toggleAll} /></Section>}
       <Section><Row icon="magnifier" title={t('App help')} accessory="chevron" onClick={() => nav('/app-help')} /></Section>
       <div className="dim small sp-version">{APP_NAME} v{__APP_VERSION__}</div>
     </>}

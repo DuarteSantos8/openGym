@@ -6389,4 +6389,6 @@ export default {
   "Ask Coach to pick a result": "Be coachen välja ett resultat",
   "App help": "Apphjälp",
   "No matching help found.": "Ingen matchande hjälp hittades.",
+  "Show all settings": "Visa alla inställningar",
+  "Show fewer": "Visa färre",
 }

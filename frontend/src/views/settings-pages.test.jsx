@@ -141,7 +141,7 @@ describe('the root', () => {
     expect(rule).toMatch(/line-clamp:3/)
     expect(rule).toMatch(/min-width:min-content/)
     // P10 (redesign 1.4.5): on every phone width the preview is the row's subtitle, under the title
-    const phone = css.match(/@media \(max-width:430px\)\{\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
+    const phone = css.match(/@media \(max-width:430px\)\{\r?\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
     expect(phone).toMatch(/display:grid/)
     expect(css).toMatch(/\.lrow\.sp-root-row \.lrow-v\{grid-column:2;grid-row:2;[^}]*text-align:start/)
     // the sub-page title takes a second line rather than an ellipsis ("Alertas do temporizador")
@@ -717,4 +717,15 @@ describe('the equipment page with two gyms', () => {
     expect(mocks.toast).toHaveBeenCalledWith('Using Big gym equipment')
     act(() => r.unmount()); h.remove()
   })
+})
+
+it('returns the ordered beginner subset while other profiles retain the visible root', async () => {
+  const { rootPagesFor, BEGINNER_ROOT } = await import('./settings-pages.js')
+  expect(BEGINNER_ROOT.length).toBeLessThanOrEqual(8)
+  expect(BEGINNER_ROOT.every(id => PAGE_IDS.includes(id))).toBe(true)
+  const ctx = { mobile: false, offline: true }
+  const all = ROOT_GROUPS.flatMap(group => group.ids).filter(id => onRoot(id, ctx))
+  expect(rootPagesFor('beginner', false, ctx)).toEqual(BEGINNER_ROOT.filter(id => onRoot(id, ctx)))
+  for (const level of ['intermediate', 'advanced', null]) expect(rootPagesFor(level, false, ctx)).toEqual(all)
+  expect(rootPagesFor('beginner', true, ctx)).toEqual(all)
 })

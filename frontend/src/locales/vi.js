@@ -6308,4 +6308,6 @@ export default {
   "Ask Coach to pick a result": "Nhờ huấn luyện viên chọn một kết quả",
   "App help": "Trợ giúp ứng dụng",
   "No matching help found.": "Không tìm thấy trợ giúp phù hợp.",
+  "Show all settings": "Hiện tất cả cài đặt",
+  "Show fewer": "Hiện ít hơn",
 };
