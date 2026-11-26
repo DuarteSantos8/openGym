@@ -14,7 +14,7 @@ import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
 import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, nutritionOf, rotationOf } from './context.js';
 import { shareOf } from './categories.js';
-import { asksForBodyweight, cleanHits } from './routine-library.js';
+import { asksForBodyweight, asksForNoWeights, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -739,6 +739,7 @@ export function build(S, opts = {}) {
     // it to exercises that need nothing.
     const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
     p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    if (asksForNoWeights(p.question)) p.library = p.library.filter(e => LIB_BY_ID.get(e.id)?.eq === 'body weight');
     // Routines from the library (core/routine-library.js) the app found for this question.
     const hits = cleanHits(opts.routines);
     if (hits.length) p.routineLibrary = hits;

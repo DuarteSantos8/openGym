@@ -2,6 +2,10 @@
 
 Status 2026-11-25. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin, sign-out ending the server session, and two tabs. Read after `NEXT-STEPS.md`.
 
+Coach B2 status: the two chat prompts have stubbed-provider coverage, including confirmation.
+Preserving the rest of the week and avoiding duplicate routines on a repeat are open.
+See the B2 acceptance notes in `NEXT-STEPS.md`.
+
 ## Why
 
 An audit of `main` (1.4.5, 2e9c802e) from a first-time lifter's point of view found a strong engine that reads like a tool for people who already train:

@@ -125,7 +125,8 @@ export function builtinIndex() {
 const WORDS = s => (String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
 // Words that ask for a no-equipment plan, in the languages people asked in.
 const BODYWEIGHT = /\b(body ?weight|calisthenics?|no equipment|without equipment|at home|home workout|eigengewicht|ohne gerate|sans materiel|poids du corps|peso corporal|peso corporeo|senza attrezzi|sin equipo|sem equipamento|pull[- ]?up bar|klimmzugstange)\b/i;
-export const asksForBodyweight = text => BODYWEIGHT.test(String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, ''));
+export const asksForNoWeights = text => /\b(?:no|without) weights\b/i.test(String(text || ''));
+export const asksForBodyweight = text => asksForNoWeights(text) || BODYWEIGHT.test(String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, ''));
 
 /**
  * The few entries worth showing the model for this question: word overlap with the title, split,
