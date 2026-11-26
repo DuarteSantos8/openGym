@@ -2,7 +2,7 @@
 // a pretend project (./pretend-project.mjs). Every step is scanned with axe, and the shared
 // fixture fails the test if any request leaves this machine.
 import AxeBuilder from '@axe-core/playwright'
-import { test, expect, workout } from '../fixtures.mjs'
+import { test, expect, workout, enterAsGuest } from '../fixtures.mjs'
 import { pretendProject, PROJECT } from './pretend-project.mjs'
 
 async function serious(page) {
@@ -198,6 +198,53 @@ test('the first screen offers the account and this device; signed in, Continue g
 // The app's own server, once it exists (docs/next/CLOUD-SERVER.md): a real API here, whose one
 // way in is an identity provider (./linked-server.mjs). The provider is a stand-in that signs the
 // person straight in; the hosted one shows our consent page first, which the test above covers.
+test('ten guest workouts survive linked sign-in and reach a clean browser', async ({ page, browser, baseURL }) => {
+  const workouts = Array.from({ length: 10 }, (_, i) => ({ ...workout(i, '0662', 2), id: 'guest-workout-' + i }))
+  const ids = workouts.map(w => w.id).sort()
+  const savedIds = p => p.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1') || '{}').workouts?.map(w => w.id).sort() || [])
+  const link = async p => {
+    await open(p)
+    await signIn(p)
+    await expect(mode(p)).toHaveAttribute('data-mode', 'account')
+    await p.click('[data-continue]')
+    await expect(p.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
+  }
+
+  await pretendProject(page)
+  await enterAsGuest(page, workouts)
+  await expect.poll(() => savedIds(page)).toEqual(ids)
+  await link(page)
+  await expect.poll(async () => {
+    const response = await page.request.get('/api/data')
+    expect(response.ok()).toBe(true)
+    return (await response.json()).state?.workouts?.map(w => w.id).sort() || []
+  }, { timeout: 15_000 }).toEqual(ids)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible()
+  await expect.poll(() => savedIds(page)).toEqual(ids)
+
+  const second = await browser.newContext({ baseURL })
+  try {
+    const other = await second.newPage()
+    const external = []
+    await second.route(/^https?:/, route => {
+      const host = new URL(route.request().url()).hostname
+      if (host === 'localhost' || host === '127.0.0.1') return route.continue()
+      external.push(host)
+      return route.abort()
+    })
+    await pretendProject(other)
+    await other.goto('/')
+    expect(await savedIds(other)).toEqual([])
+    expect((await other.request.get('/api/me')).status()).toBe(401)
+    await link(other)
+    await expect.poll(() => savedIds(other)).toEqual(ids)
+    expect(external).toEqual([])
+  } finally {
+    await second.close()
+  }
+})
+
 test("where the app's own server signs people in with the account, Continue makes them a profile there", async ({ page }) => {
   await pretendProject(page)
   await page.emulateMedia({ reducedMotion: 'reduce' })
