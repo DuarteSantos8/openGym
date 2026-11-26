@@ -3877,6 +3877,7 @@ export default {
   "Rest is over": "Dinlenme bitti",
   "Spoken cues": "Sesli uyarılar",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Sadece uygulama ekrandayken. Müzik bir anlığına kısılır, asla durmaz.",
+  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "iPhone kilitliyken de dinlenmenin bittiği söylenir, ancak sessiz moddaysa söylenmez. Müzik bir an kısılır, asla durmaz.",
   "This browser can’t speak. Try another one.": "Bu tarayıcı konuşamıyor. Başka birini dene.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Sonraki setini, “10 saniye”yi ve “Dinlenme bitti”yi söyler, sabit duruşlarda geri sayar.",
   "Speaking rate": "Konuşma hızı",

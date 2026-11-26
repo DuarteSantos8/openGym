@@ -3881,6 +3881,7 @@ export default {
   "Rest is over": "Riposo finito",
   "Spoken cues": "Avvisi vocali",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Solo con l’app sullo schermo. La musica si abbassa un attimo, non si ferma mai.",
+  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Con l’iPhone bloccato, la fine del recupero viene comunque detta, a meno che sia in silenzioso. La musica si abbassa per un momento, non si ferma mai.",
   "This browser can’t speak. Try another one.": "Questo browser non sa parlare. Provane un altro.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Dice la prossima serie, «10 secondi» e «Riposo finito», e fa il conto alla rovescia delle tenute.",
   "Speaking rate": "Velocità della voce",

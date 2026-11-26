@@ -3881,6 +3881,7 @@ export default {
   "Rest is over": "Отдых окончен",
   "Spoken cues": "Голосовые подсказки",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Только пока приложение на экране. Музыка ненадолго стихает и никогда не останавливается.",
+  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Когда iPhone заблокирован, конец отдыха всё равно озвучивается, если не включён беззвучный режим. Музыка на миг становится тише, но никогда не останавливается.",
   "This browser can’t speak. Try another one.": "Этот браузер не умеет говорить. Попробуйте другой.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Называет следующий подход, «10 секунд» и «Отдых окончен» и ведёт обратный отсчёт в статике.",
   "Speaking rate": "Скорость речи",

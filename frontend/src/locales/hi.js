@@ -3877,6 +3877,7 @@ export default {
   "Rest is over": "आराम ख़त्म",
   "Spoken cues": "बोलकर संकेत",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "सिर्फ़ जब ऐप स्क्रीन पर हो। म्यूज़िक पल भर धीमा होता है, रुकता नहीं।",
+  "With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "iPhone लॉक होने पर भी आराम का अंत बोला जाता है, बशर्ते वह साइलेंट पर न हो। संगीत थोड़ी देर के लिए धीमा होता है, कभी रुकता नहीं।",
   "This browser can’t speak. Try another one.": "यह ब्राउज़र बोल नहीं सकता। कोई और आज़माएँ।",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "अगला सेट, “10 सेकंड” और “आराम ख़त्म” बोलता है, और होल्ड की उलटी गिनती करता है।",
   "Speaking rate": "बोलने की रफ़्तार",
