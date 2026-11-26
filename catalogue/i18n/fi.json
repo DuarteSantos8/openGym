@@ -16,7 +16,7 @@
     "instructions": [
       "Asetu seisomaan jalat lantion leveydelle ja aseta vastuskuminauha nilkkojen ympärille.",
       "Ota iso askel eteenpäin oikealla jalalla ja lyhyempi askel taakse vasemmalla jalalla.",
-      "Koukista polvia ja laske vartaloasi, kunnes oikea reisi on maan kanssa surkeassa asennossa, pitäen vasemman polven hieman maan yläpuolella.",
+      "Koukista polvia ja laske vartaloasi, kunnes oikea reisi on lattian suuntainen ja vasen polvi hieman lattian yläpuolella.",
       "Ponnista oikealla kantapäällä takaisin lähtöasentoon.",
       "Toista toisella puolella."
     ]
@@ -1242,7 +1242,7 @@
     "instructions": [
       "Tartu kahvoihin ja seiso kasvot kiinnityspistettä kohti.",
       "Ota toisella jalalla askel taakse ja toisen jalan taakse ristiin.",
-      "Laskeudu alas, kunnes etureisi on lähes suorassa kulmassa lattiaan nähden.",
+      "Laskeudu, kunnes etureisi on lähes lattian suuntainen.",
       "Pidä rintakehä ylhäällä ja etupolvi nilkan päällä.",
       "Paina etujalan kantapää maahan ja nouse seisomaan.",
       "Tee halutut toistot ja vaihda puolta."
@@ -4372,7 +4372,7 @@
     "instructions": [
       "Istu penkin tai tuolin reunalle kädet reunasta kiinni, sormet eteenpäin suunnattuina.",
       "Liu'u peppu irti penkistä ja tue paino käsiesi varaan.",
-      "Laske kehoa koukistamalla kyynärpäitä, kunnes olkavarret ovat suorassa kulmassa lattiaan nähden.",
+      "Laske kehoa koukistamalla kyynärpäitä, kunnes olkavarret ovat lattian suuntaiset.",
       "Punnerra itsesi takaisin lähtöasentoon suoristamalla kädet.",
       "Toista halutun toistomäärän ajan."
     ]
@@ -8404,7 +8404,7 @@
       "Istu penkin tai tuolin reunalle kädet reunan ympärillä lantion vieressä.",
       "Liu'uta takapuoli irti penkin reunasta jalat suorina edessäsi.",
       "Pidä selkä lähellä penkkiä ja kyynärpäät kevyesti koukussa.",
-      "Laske kehoasi koukistamalla kyynärpäitä, kunnes olkavarret ovat suorassa kulmassa lattiaan nähden.",
+      "Laske kehoasi koukistamalla kyynärpäitä, kunnes olkavarret ovat lattian suuntaiset.",
       "Ponnista itsesi takaisin aloitusasentoon suoristamalla kädet.",
       "Toista halutun toistomäärän ajan."
     ]
@@ -8454,7 +8454,7 @@
       "Nosta oikea jalka irti maasta ja ojenna se eteen.",
       "Laske kehoasi hitaasti alaspäin koukistamalla vasenta polvea ja työntämällä lantiota taakse.",
       "Pidä rintakehä ylhäällä ja selkä suorana laskeutuessasi.",
-      "Laskeudu, kunnes vasen reisi on suorassa kulmassa maahan nähden tai niin alas kuin pääset mukavasti.",
+      "Laskeudu, kunnes vasen reisi on lattian suuntainen tai niin alas kuin pääset mukavasti.",
       "Pysähdy hetkeksi alhaalla ja ponnista vasemman kantapään kautta aloitusasentoon.",
       "Toista haluttu toistomäärä ja vaihda sitten jalkaa."
     ]
@@ -13128,7 +13128,7 @@
       "Seiso jalat hartioiden leveydellä.",
       "Ota toisella jalalla pitkä askel eteenpäin noin kahden jalan mitan päähän toisesta.",
       "Laske kehoasi koukistamalla polvia ja lantiota pitäen selkä suorana.",
-      "Jatka laskemista, kunnes etureisi on maan kanssa suorassa ja takapolvi leijuu juuri maan yläpuolella.",
+      "Jatka laskemista, kunnes etureisi on lattian suuntainen ja takapolvi juuri lattian yläpuolella.",
       "Pysäytä liike hetkeksi, työnnä sitten etukantapään kautta itsesi takaisin aloitusasentoon.",
       "Toista haluttu määrä toistoja, vaihda sitten jalkaa ja toista."
     ]
@@ -15358,7 +15358,7 @@
     "instructions": [
       "Aloita seisomalla jalat hartioiden leveydellä pitäen levytankoa yläselällä.",
       "Ota pitkä askel eteenpäin oikealla jalalla pitäen vartalo pystyssä.",
-      "Laske kehoasi koukistamalla polvia ja lantiota, kunnes oikea reisi on suorassa kulmassa maahan nähden.",
+      "Laske kehoasi koukistamalla polvia ja lantiota, kunnes oikea reisi on lattian suuntainen.",
       "Pysähdy hetkeksi ja työnnä sitten oikean kantapään kautta itsesi takaisin aloitusasentoon.",
       "Toista vasen jalka edessä halutun toistomäärän ajan."
     ]
@@ -21445,7 +21445,7 @@
     "instructions": [
       "Säädä vinopenkki 45 asteen kulmaan ja istu siihen käsipaino kummassakin kädessä, kämmenet sisäänpäin.",
       "Nojaa hieman eteenpäin ja anna käsien roikkua suoraan alaspäin pitäen kyynärpäissä pieni koukistus.",
-      "Nosta käsivarsia sivuille ja ylöspäin Y-muodossa, kunnes ne ovat maan kanssa suorassa.",
+      "Nosta käsivarsia sivuille ja ylöspäin Y-muodossa, kunnes ne ovat lattian suuntaiset.",
       "Pysähdy hetkeksi ylhäällä ja laske kädet hitaasti takaisin aloitusasentoon.",
       "Toista halutun toistomäärän ajan."
     ]
@@ -22154,7 +22154,7 @@
     "instructions": [
       "Seiso jalat hartioiden leveydellä pitäen käsipainoa kummassakin kädessä.",
       "Ota askel eteenpäin oikealla jalalla pitäen selkä suorana ja keskivartalo tiukkana.",
-      "Laske kehoasi koukistamalla molempia polvia, kunnes oikea reisi on suorassa kulmassa maahan nähden.",
+      "Laske kehoasi koukistamalla molempia polvia, kunnes oikea reisi on lattian suuntainen.",
       "Ponnista oikean kantapään kautta takaisin aloitusasentoon.",
       "Toista vasemmalla jalalla.",
       "Vuorottele jalkoja halutun toistomäärän ajan."
@@ -22236,7 +22236,7 @@
     "instructions": [
       "Seiso jalat hartioiden leveydellä.",
       "Ota oikealla jalalla askel eteenpäin pitäen selkä suorana.",
-      "Laske kehoa koukistamalla polvia, kunnes oikea reisi on suorassa kulmassa maahan nähden.",
+      "Laske kehoa koukistamalla polvia, kunnes oikea reisi on lattian suuntainen.",
       "Ponnista oikean kantapään kautta takaisin aloitusasentoon.",
       "Toista vasemmalla jalalla.",
       "Jatka jalkojen vuorottelua halutun toistomäärän verran."
@@ -23442,7 +23442,7 @@
       "Säädä istuimen korkeus niin, että lantiollesi tulee hieman polvia korkeampi asento.",
       "Istu koneeseen selkänojaa vasten ja aseta jalkasi tasaisesti jalkatuille.",
       "Tartu kahvoihin tai istuimen reunoihin vakauden takaamiseksi.",
-      "Pidä selkä suorana ja taivuta hitaasti lantiosta eteenpäin, kunnes ylävartalosi on suorassa kulmassa maahan nähden.",
+      "Pidä selkä suorana ja taivuta hitaasti lantiosta eteenpäin, kunnes ylävartalosi on lattian suuntainen.",
       "Pysäytä hetkeksi ja palaa sitten hitaasti aloitusasentoon työntämällä pakaroilla ja takareisillä.",
       "Toista halutun toistomäärän verran."
     ]
@@ -24216,7 +24216,7 @@
     "description": "Kuminauhalla tehtävä kulmasoutu, joka vahvistaa lapojen väliin ja ympärille jääviä lihaksia.",
     "instructions": [
       "Asetu kuminauhan keskelle jalat lantion leveydellä ja tartu nauhan päihin.",
-      "Työnnä lantiota taakse ja taivuta ylävartaloa eteen suoralla selällä, kunnes se on lähes suorassa kulmassa lattiaan nähden.",
+      "Työnnä lantiota taakse ja taivuta ylävartaloa eteen suoralla selällä, kunnes se on lähes lattian suuntainen.",
       "Anna käsien roikkua suoraan alaspäin.",
       "Vedä kyynärpäitä taakse kohti lantiota ja purista lapoja yhteen.",
       "Pidä pieni tauko yläasennossa ja laske hallitusti takaisin.",
@@ -24949,7 +24949,7 @@
     "instructions": [
       "Seiso yhdellä jalalla polvi kevyesti koukussa ja kädet riippuvina edessä.",
       "Saranoi lantiosta ja ojenna vapaa jalka suoraan taaksesi.",
-      "Laske ylävartaloa, kunnes se on lähes suorassa kulmassa lattiaan nähden, selkä suorana.",
+      "Laske ylävartaloa, kunnes se on lähes lattian suuntainen, selkä suorana.",
       "Purista pakaraa noustaksesi takaisin suoraksi.",
       "Tee toistot loppuun ja vaihda sitten jalkaa."
     ]
@@ -31178,7 +31178,7 @@
     "instructions": [
       "Kiinnitä köysi alataljaan ja ota toisella päästä kiinni neutraalilla otteella.",
       "Saranoi lantiosta eteenpäin selkä suorana.",
-      "Pidä olkavarsi suorassa kulmassa lattiaan nähden ja tiukasti kyljessä.",
+      "Pidä olkavarsi lattian suuntaisena ja tiukasti kylkeä vasten.",
       "Suorista kyynärpää ja vedä köyttä taaksepäin.",
       "Purista lihasta liikkeen lopussa.",
       "Laske hitaasti alas ja vaihda sitten puolta."
@@ -47386,7 +47386,7 @@
       "Aseta penkki Smith-laitteen taakse ja aseta takajalkasi sen päälle.",
       "Aseta tanko yläselän päälle ja vapauta se telineestä.",
       "Ota etujalalla askel eteenpäin.",
-      "Laske lantiotasi alaspäin, kunnes etureisi on lähes suorassa kulmassa.",
+      "Laske lantiotasi, kunnes etureisi on lähes lattian suuntainen.",
       "Ponnista ylös etujalan kautta.",
       "Tee halutut toistot ja vaihda sitten jalkaa."
     ]
@@ -53124,7 +53124,7 @@
     "instructions": [
       "Aseta tanko yläselälle ja seiso etujalka matalalla levypainolla tai korokkeella.",
       "Aseta takajalka penkille taaksesi.",
-      "Laskeudu suoraan alas, kunnes etureisi on noin suorassa kulmassa tai syvemmällä.",
+      "Laskeudu suoraan alas, kunnes etureisi on suunnilleen lattian suuntainen tai syvemmällä.",
       "Pidä vartalo pystyssä ja etupolvi varpaiden suuntaisesti.",
       "Ponnista etukantapään kautta ylös ja vaihda sitten jalkaa."
     ]
@@ -54226,7 +54226,7 @@
     "instructions": [
       "Aloita seisomalla jalat hartioiden leveydellä ja levytanko yläselällä.",
       "Pidä selkä suorana ja keskivartalo tiukkana, taivuta lantiosta eteenpäin ja työnnä pakaroita taakse ikään kuin yrittäisit koskettaa takana olevaa seinää pakaroilla.",
-      "Laske ylävartaloa, kunnes se on maan kanssa suorassa, ja tunne venytys takareisissä.",
+      "Laske ylävartaloa, kunnes se on lattian suuntainen, ja tunne venytys takareisissä.",
       "Pysähdy hetkeksi ja palaudu aloitusasentoon puristamalla pakaroita ja työntämällä lantiota eteen.",
       "Toista halutun toistomäärän ajan."
     ]
@@ -54250,7 +54250,7 @@
       "Aloita seisomalla jalat hartioiden leveydellä ja varpaat hieman ulospäin käännettyinä.",
       "Pidä levytankoa jalkojen takana reisien yläosaa vasten.",
       "Laske kehoa koukistamalla polvia ja lantiota, pitäen selän suorana ja rinnan ylhäällä.",
-      "Jatka laskeutumista, kunnes reitesi ovat maan kanssa suorassa tai niin syvään kuin pääset.",
+      "Jatka laskeutumista, kunnes reitesi ovat lattian suuntaiset tai niin syvään kuin pääset.",
       "Pysähdy hetkeksi ja ponnista sitten kantapään kautta aloitusasentoon.",
       "Toista halutun toistomäärän ajan."
     ]
@@ -55476,7 +55476,7 @@
     "description": "Taljalla tehtävä maastaveto. Harjoittaa pakaroita, takareisiä ja alaselkää.",
     "instructions": [
       "Seiso kasvot taljalaitteeseen päin jalat hartioiden leveydellä.",
-      "Koukista lantiota ja polvia laskien ylävartaloa, kunnes selkä on suorassa kulmassa maahan nähden.",
+      "Koukista lantiota ja polvia ja laske ylävartaloa, kunnes selkä on lattian suuntainen.",
       "Tartu taljan kahvoihin myötäotteella pitäen kädet suorina ja hartiat takana.",
       "Aktivoi pakarat ja takareidet nostaaksesi taljakahvoja, ojenna lantio ja nouse suoraan seisten.",
       "Pysäytä liike hetkeksi ylhäällä ja laske sitten taljakahvat hitaasti takaisin alas aloitusasentoon.",
@@ -55904,7 +55904,7 @@
     "instructions": [
       "Seiso jalat hartioiden leveydellä kasvot taljaan päin.",
       "Pidä kiinni taljan kahvasta yhdellä kädellä kämmen alaspäin ja seiso tarpeeksi kaukana laitteesta, jotta taljassa on kireyttä.",
-      "Pidä käsi suorana ja nosta se hitaasti sivulle, kunnes se on maan kanssa suorassa.",
+      "Pidä käsi suorana ja nosta se hitaasti sivulle, kunnes se on lattian suuntainen.",
       "Pysäytä hetkeksi ylhäällä ja laske sitten käsi hitaasti alas aloitusasentoon.",
       "Toista halutun toistomäärän verran ja vaihda puolta."
     ]
@@ -56189,7 +56189,7 @@
     "instructions": [
       "Istu penkille kasvot kohti taljalaitetta jalat lattialla.",
       "Tartu taljakahvoihin myötäotteella ja ojenna käsivarret suoraan eteenpäin.",
-      "Pidä kädet suorina ja nosta ne hitaasti sivulle, kunnes ne ovat maan kanssa suorassa.",
+      "Pidä kädet suorina ja nosta ne hitaasti sivuille, kunnes ne ovat lattian suuntaiset.",
       "Pysäytä hetkeksi yläasennossa ja laske sitten kädet hitaasti takaisin aloitusasentoon.",
       "Toista halutun toistomäärän ajan."
     ]
@@ -56778,7 +56778,7 @@
     "description": "Jumppapallolla tehtävä vatsarutistus. Pallo mahdollistaa laajemman liikeradan ja vaatii tasapainoa, mikä tehostaa vatsalihasvaikutusta.",
     "instructions": [
       "Istu jumppapallolle jalat lattiassa ja polvet 90 asteen kulmassa.",
-      "Nojaa taaksepäin pallon päälle, kunnes alaselkäsi on tuettu ja ylävartalo on suorassa kulmassa lattiaan nähden.",
+      "Nojaa taaksepäin pallon päälle, kunnes alaselkäsi on tuettu ja ylävartalo on lattian suuntainen.",
       "Aseta kädet pään taakse tai ristiin rinnalle.",
       "Aktivoi vatsalihakset ja nosta ylävartalo kohti polvia rutistamalla vartaloa eteenpäin.",
       "Pysäytä liike hetkeksi yläasennossa ja laske sitten ylävartalo hitaasti takaisin aloitusasentoon.",
@@ -64315,7 +64315,7 @@
       "Asetu selin kiinnityspisteeseen päin jalat hartioiden leveydellä.",
       "Ota askel eteenpäin kuminauhan jännittämiseksi ja pidä polvet kevyesti koukussa.",
       "Työnnä lantiota taakse saranaliikkeellä ja pidä polvet edelleen kevyesti koukussa.",
-      "Laske ylävartaloa, kunnes se on suorassa kulmassa maahan nähden, ja tunne venytys takareisissä.",
+      "Laske ylävartaloa, kunnes se on lattian suuntainen, ja tunne venytys takareisissä.",
       "Työnnä lantiota eteenpäin ja purista pakaroita palataksesi aloitusasentoon.",
       "Toista haluttu määrä toistoja."
     ]
