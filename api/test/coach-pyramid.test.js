@@ -259,6 +259,18 @@ test('a swap on a pyramid slot carries the movement, not a flat pair', () => {
   assert.equal(after.id, '0002');
   assert.equal('sets' in after, false, 'the pyramid already owns the set count');
   assert.equal('reps' in after, false, 'the pyramid already owns each set');
+  assert.deepEqual(after.pyramidWeight, [], 'the old movement\'s per-set loads do not survive');
+
+  // A load the Coach does supply applies to every set of the pyramid.
+  const weighted = validateReview({
+    coach_contract: 1, summary: 's',
+    changes: [{
+      id: 'c1', type: 'swap-exercise', target: { routineId: 'r1', exId: '0001' },
+      after: { id: '0002', weight: 60 }, why: 'The rack is taken today.'
+    }]
+  }, reviewPlan());
+  assert.equal(weighted.ok, true, (weighted.errors || []).join(' '));
+  assert.deepEqual(weighted.proposal.changes[0].after.pyramidWeight, [60, 60, 60, 60]);
 });
 
 /* ---------------- a refined plan answered as a change list ---------------- */
@@ -302,6 +314,16 @@ test('a change-list swap on a pyramid slot keeps the pyramid, not the model\'s f
   assert.deepEqual(ex.pyramid, [12, 10, 8, 'max']);
   assert.equal(ex.sets, 4, 'the pyramid owns the set count');
   assert.equal(ex.reps, 12, 'the pyramid owns the reps');
+  assert.equal('pyramidWeight' in ex, false, 'the old movement\'s per-set loads are cleared');
+
+  const weighted = changesOntoPlan(plan, {
+    coach_contract: 1, summary: 's',
+    changes: [{
+      id: 'c1', type: 'swap-exercise', target: { routineId: 'r1', exId: '0001' },
+      after: { id: '0002', weight: 60 }, why: 'x'
+    }]
+  });
+  assert.deepEqual(weighted.routines[0].ex[0].pyramidWeight, [60, 60, 60, 60]);
 });
 
 /* ---------------- how a pyramid session is graded ---------------- */

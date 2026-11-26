@@ -563,6 +563,17 @@ const CHANGE_APPLY = {
     // app halve a rep count that was never per-side, so an explicit flag is dropped and the new
     // exercise goes back to whatever the catalogue says about it.
     const { bodyweight, side, ...keep } = old
+    // A pyramid's per-set loads described the old movement, not the new one. The server sends
+    // either the supplied weight on every set or an empty list; an older proposal falls back to
+    // the same rule here.
+    const pyr = Array.isArray(keep.pyramid) && keep.pyramid.length ? keep.pyramid : null
+    if (pyr) {
+      if (Array.isArray(a.pyramidWeight)) {
+        if (a.pyramidWeight.length) keep.pyramidWeight = a.pyramidWeight
+        else delete keep.pyramidWeight
+      } else if (Number(a.weight) > 0) keep.pyramidWeight = Array(pyr.length).fill(Number(a.weight))
+      else delete keep.pyramidWeight
+    }
     r.ex[i] = { ...keep, id: canonicalExId(a.id), ...(a.sets ? { sets: a.sets } : {}), ...(a.reps ? { reps: a.reps } : {}), ...(a.weight > 0 ? { weight: a.weight } : {}) }
   },
   sets: (s, c) => { need(findExIn(s, c)).sets = c.after },

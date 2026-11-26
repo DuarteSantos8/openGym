@@ -65,16 +65,24 @@ export function changesOntoPlan(previous, data) {
       if (!a || typeof a !== 'object' || typeof a.id !== 'string') return null;
       // The new exercise takes the old one's slot and prescription, minus what only described
       // the old one; what the change states itself wins. A pyramid already owns the flat pair,
-      // exactly as validateReview leaves it off a swap on a pyramid slot.
+      // exactly as validateReview leaves it off a swap on a pyramid slot. Its old per-set loads
+      // belonged to the movement being swapped out: a supplied weight becomes every set's
+      // starting load, and without one the loads are cleared to "last time".
       const { id: _old, weight: _w, why: _why, bodyweight: _bw, side: _side, ...kept } = planned;
       const flat = !planned.pyramid;
-      routine.ex[i] = {
+      const next = {
         ...kept, id: a.id,
         ...(flat && a.sets != null ? { sets: a.sets } : {}),
         ...(flat && a.reps != null ? { reps: a.reps } : {}),
         ...(a.weight != null ? { weight: a.weight } : {}),
         ...(typeof c.why === 'string' ? { why: c.why } : {})
       };
+      if (Array.isArray(planned.pyramid) && planned.pyramid.length) {
+        const w = Number(a.weight);
+        if (Number.isFinite(w) && w > 0) next.pyramidWeight = Array(planned.pyramid.length).fill(w);
+        else delete next.pyramidWeight;
+      }
+      routine.ex[i] = next;
       continue;
     }
     // A value of the wrong kind would be quietly defaulted by the plan validator; refuse it here.

@@ -595,11 +595,17 @@ export function validateReview(data, plan, ctx = {}) {
         // `bodyweight`/`side`), so a flat pair copied here would be written over it on apply and
         // leave the entry disagreeing with its own pyramid. The pyramid already says both.
         const flat = !planned?.pyramid;
+        const pyr = Array.isArray(planned?.pyramid) && planned.pyramid.length ? planned.pyramid : null;
+        const weight = isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? a.weight : null;
         out.after = {
           id: aid, name: nameOf(aid, ctx),
           ...(flat && isInt(a.sets, 1, 10) ? { sets: a.sets } : {}),
           ...(flat && isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
-          ...(isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? { weight: a.weight } : {})
+          ...(weight ? { weight } : {}),
+          // The old per-set loads described the movement being swapped out. A weight the Coach
+          // supplied becomes the starting load of every set; without one the sets fall back to
+          // what that set lifted last time.
+          ...(pyr ? { pyramidWeight: weight ? Array(pyr.length).fill(weight) : [] } : {})
         };
         break;
       }

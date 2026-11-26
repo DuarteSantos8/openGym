@@ -275,6 +275,19 @@ describe('applying changes', () => {
     expect(e.reps).toBe(10)     // not silently reset — that would be a change nobody approved
   })
 
+  it('a pyramid swap replaces the old movement\'s per-set loads', () => {
+    const S = state()
+    S.routines[0].ex[0] = {
+      ...S.routines[0].ex[0], sets: 4, reps: 12,
+      pyramid: [12, 10, 8, 'max'], pyramidWeight: [40, 45, 50, 0]
+    }
+    const without = apply(S, proposal([change({ type: 'swap-exercise', after: { id: '0002' } })]), ['c1']).routines[0].ex[0]
+    expect(without.pyramid).toEqual([12, 10, 8, 'max'])
+    expect(without.pyramidWeight).toBeUndefined()
+    const withLoad = apply(S, proposal([change({ type: 'swap-exercise', after: { id: '0002', weight: 60 } })]), ['c1']).routines[0].ex[0]
+    expect(withLoad.pyramidWeight).toEqual([60, 60, 60, 60])
+  })
+
   it('drops flags that described the old movement when swapping', () => {
     const S = state()
     S.routines[0].ex[0] = { ...S.routines[0].ex[0], side: true, reps: 16, bodyweight: true }
