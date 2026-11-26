@@ -2,6 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { strip } from './syntax.test.js'
 import { FILES, dollarT } from './i18n.js'
 import { K, V, T0, mk, ent, row, act, fixture, ready, TODAY } from './view-helpers.js'
 
@@ -161,19 +162,38 @@ test('the heart-rate sensor rests after three idle hours and wakes with the next
   assert.equal(K.wantHr(w.c), true)
 })
 
-test('pageOf: Start, the wait and the summary are the home page; the set, the hold and the 3-2-1 the lift page; the rest, the menu and the confirm the rest page', () => {
+// task 11 makes this 'rest'
+const REST = 'lift'
+test('pageOf: Start, the wait and the summary are the home page; the set, the hold and the 3-2-1 the lift page; the rest, the menu and the confirm the rest page (still drawn by the lift page, until task 11)', () => {
   const pages = w => V.pageOf(w.c, w.ui)
   const w = ready(null, TODAY())
   assert.equal(pages(w), 'index') // idle
   w.tap('routines'); assert.equal(pages(w), 'index')
   w.tap('rback'); w.tap('start'); assert.equal(pages(w), 'lift') // the 3-2-1
   w.wait(4); assert.equal(pages(w), 'lift') // the set
-  w.tap('done'); assert.equal(pages(w), 'rest')
-  w.tap('menu'); assert.equal(pages(w), 'rest')
-  w.tap('mFinish'); assert.equal(w.screen(), 'confirm'); assert.equal(pages(w), 'rest')
+  w.tap('done'); assert.equal(pages(w), REST) // the rest
+  w.tap('menu'); assert.equal(pages(w), REST)
+  w.tap('mFinish'); assert.equal(w.screen(), 'confirm'); assert.equal(pages(w), REST)
   w.tap('yes'); assert.equal(pages(w), 'index') // the summary
   const v = ready(null, null, [{ name: 'Legs', routineIds: ['r2'], entries: [] }]); v.tap('start'); v.tap('skipCount')
   assert.equal(v.screen(), 'wait'); assert.equal(pages(v), 'index')
   const x = mk(); x.snap(act([ent('R', 0, [row(null, null)], { mode: 'cardio' })]))
   assert.deepEqual([x.screen(), pages(x)], ['card', 'lift'])
 })
+
+// The tests attach the core to all four view files at once and a page attaches only its own; a core name a file
+// uses but does not attach would only fail on a device. Each file's `let` list and attach() must cover what its body uses.
+test('each view file attaches every core name it uses', () => {
+  ;['view-common', 'view-home', 'view-lift', 'view-rest'].forEach(f => {
+    const src = strip(readFileSync(new URL('../entry/src/main/js/MainAbility/common/' + f + '.js', import.meta.url), 'utf8'))
+    const from = src.indexOf('\nlet\n')
+    const to = src.indexOf('\n}', src.indexOf('export function attach')) + 2
+    const head = src.slice(from, to)
+    const body = src.slice(0, from) + src.slice(to)
+    const local = n => new RegExp('\\b(const|let|var)\\s+' + n + '\\b').test(body) // a local that shadows a core name
+    const used = Object.keys(K).filter(n => !local(n) && new RegExp('(^|[^.\\w$])' + n + '(?![\\w$]|\\s*:)').test(body))
+    assert.ok(used.length > 0, f + ' uses some core names')
+    used.forEach(n => assert.ok(new RegExp('\\b' + n + ' = K\\.' + n + '\\b').test(head), f + ' uses ' + n + ' but its attach() does not set it'))
+  })
+})
+

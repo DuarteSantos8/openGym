@@ -1,17 +1,18 @@
-// The page: glue between Huawei's APIs, the screens (common/view-*.js) and the app (app.js). The app holds the
-// core, the clock, the sensor and the buzz; the page loads the stored state, wires the radio and the store,
-// and copies the screen's data into `data` when the app says to. It decides nothing about what is shown
-// or what a tap does: the view files do, and have the tests. It imports nothing from core.js (a page that did would
-// carry a second copy of it): the core's functions come through getApp().data.k().
+// The home page: glue between Huawei's APIs, the screens (common/view-common.js, view-home.js) and the app (app.js).
+// The app holds the core, the clock, the sensor and the buzz; this page loads the stored state (the first page of
+// a run does), wires the radio and the store, and copies the screen's data into `data` when the app says to. It
+// decides nothing about what is shown or what a tap does: the view files do, and have the tests. It imports
+// nothing from core.js (a page that did would carry a second copy of it): the core's functions come through
+// getApp().data.k(). When the workout is on a screen another page draws (view-common.js pageOf), it switches
+// page BEFORE it builds anything: this page's view files have no such screen.
 import file from '@system.file'
 import app from '@system.app'
+import router from '@system.router'
 import { P2pClient, Message, Builder } from '../../common/wearengine.js'
 import { createRadio } from '../../common/radio.js'
 import { createStore } from '../../common/store.js'
-import { blank, newUi, tick, build, act, translator, lostData, swipeTo, attach } from '../../common/view-common.js'
+import { blank, newUi, tick, build, act, translator, lostData, swipeTo, pageOf, attach } from '../../common/view-common.js'
 import { attach as attachHome } from '../../common/view-home.js'
-import { attach as attachLift } from '../../common/view-lift.js'
-import { attach as attachRest } from '../../common/view-rest.js'
 
 // The phone app this watch talks to (wire.md section 4). The package is the phone app's release
 // applicationId (a debug phone build is ch.duartesantos.opengym.test: change it to try one).
@@ -35,7 +36,7 @@ try { client = new P2pClient() } catch (e) { client = {} }
 let A = null
 let K = null
 // rx and cb are this page's own radio and redraw: a page only ever clears what it put there itself.
-const S = { boot: 0, shown: false, lost: false, t: null, ticks: 0, reg: 'pending', sum: false, rx: null, cb: null }
+const S = { boot: 0, shown: false, left: false, lost: false, t: null, ticks: 0, reg: 'pending', sum: false, rx: null, cb: null }
 
 function makeMessage (text) {
   const builder = new Builder()
@@ -45,9 +46,19 @@ function makeMessage (text) {
   return message
 }
 
+// The workout is on another page's screen: replace this page with it (once; the app's clock and the radio's callbacks
+// may ask again before the framework has swapped the pages). The core, the clock and the store stay in app.js.
+function leave (to) {
+  if (S.left) return
+  S.left = true
+  try { router.replace({ uri: 'pages/' + to + '/index' }) } catch (e) { S.left = false }
+}
+
 function refresh (page) {
   const c = A.c
   if (!c) return
+  const to = pageOf(c, A.ui)
+  if (to !== 'index') { leave(to); return }
   const d = build(c, A.ui, words(page))
   Object.keys(d).forEach(function (k) { if (page[k] !== d[k]) page[k] = d[k] })
   // the crown scrolls the summary list: ask for it once when the summary comes up (the list draws a turn later)
@@ -167,12 +178,19 @@ function go (page, name) {
   A.poke()
 }
 
+// The names this page's HML binds (a test keeps the list and the HML the same).
+const FIELDS = (
+  's_lost lostText accent ink retryLabel s_idle title name plan hint canStart startLabel showStart ' +
+  'showRoutines routinesLabel top s_routines rv0 ro0 rs0 rv1 ro1 rs1 rv2 ro2 rs2 rPaged gt s_wait menuLabel ' +
+  'body s_summary durLabel dur setsLabel setsNum volLabel volNum hrOn hrLine syncOn sync doneLabel'
+).split(' ')
+
 export default {
-  data: blank(),
+  data: blank(FIELDS),
   onInit: function () {
     A = getApp().data.get()
     K = getApp().data.k()
-    attach(K); attachHome(K); attachLift(K); attachRest(K)
+    attach(K); attachHome(K)
     S.t = null
     if (A.c) { // the app's core is already running: this page only brings its own link, once its client knows the version
       const mine = S.boot
@@ -186,6 +204,7 @@ export default {
   },
   onShow: function () {
     S.shown = true
+    S.left = false
     if (A.c) resume(this)
   },
   onHide: function () { S.shown = false; pause() },
@@ -215,44 +234,6 @@ export default {
   pick0: function () { go(this, 'pick0') },
   pick1: function () { go(this, 'pick1') },
   pick2: function () { go(this, 'pick2') },
-  skipCount: function () { go(this, 'skipCount') },
-  cancelCount: function () { go(this, 'cancelCount') },
-  done: function () { go(this, 'done') },
-  wMinus: function () { go(this, 'wMinus') },
-  wPlus: function () { go(this, 'wPlus') },
-  rMinus: function () { go(this, 'rMinus') },
-  rPlus: function () { go(this, 'rPlus') },
-  prev: function () { go(this, 'prev') },
-  nextFix: function () { go(this, 'nextFix') },
-  cancelFix: function () { go(this, 'cancelFix') },
   menu: function () { go(this, 'menu') },
-  restMinus: function () { go(this, 'restMinus') },
-  restPlus: function () { go(this, 'restPlus') },
-  restSkip: function () { go(this, 'restSkip') },
-  chip0: function () { go(this, 'chip0') },
-  chip1: function () { go(this, 'chip1') },
-  chip2: function () { go(this, 'chip2') },
-  chip3: function () { go(this, 'chip3') },
-  stopHold: function () { go(this, 'stopHold') },
-  mpBack: function () { go(this, 'mpBack') },
-  mPrev: function () { go(this, 'mPrev') },
-  mOver: function () { go(this, 'mOver') },
-  mSkip: function () { go(this, 'mSkip') },
-  mNext: function () { go(this, 'mNext') },
-  mFinish: function () { go(this, 'mFinish') },
-  mDiscard: function () { go(this, 'mDiscard') },
-  mBack: function () { go(this, 'mBack') },
-  yes: function () { go(this, 'yes') },
-  no: function () { go(this, 'no') },
-  keep: function () { go(this, 'keep') },
-  askFinish: function () { go(this, 'askFinish') },
-  ov0: function () { go(this, 'ov0') },
-  ov1: function () { go(this, 'ov1') },
-  ov2: function () { go(this, 'ov2') },
-  ov3: function () { go(this, 'ov3') },
-  ovNext: function () { go(this, 'ovNext') },
-  ovBack: function () { go(this, 'ovBack') },
-  finish: function () { go(this, 'finish') },
-  nextEx: function () { go(this, 'nextEx') },
   close: function () { go(this, 'close') }
 }

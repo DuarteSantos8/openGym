@@ -8,9 +8,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const dir = new URL('../entry/src/main/js/MainAbility/pages/index/', import.meta.url)
-const hml = readFileSync(new URL('index.hml', dir), 'utf8').replace(/<!--[\s\S]*?-->/g, '')
-const cssText = readFileSync(new URL('index.css', dir), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+// the pages that draw screens: the home page and the lift page (the rest page has none yet)
+const PAGES = ['index', 'lift']
+const file = (p, f) => readFileSync(new URL('../entry/src/main/js/MainAbility/pages/' + p + '/' + f, import.meta.url), 'utf8')
+const hmls = PAGES.map(p => file(p, 'index.hml').replace(/<!--[\s\S]*?-->/g, ''))
+const cssText = PAGES.map(p => file(p, 'index.css').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n')
 
 /* ---------- css ---------- */
 function rules (text) {
@@ -47,8 +49,7 @@ function parse (text) {
   }
   return root.kids[0]
 }
-const tree = parse(hml)
-const screens = tree.kids.filter(n => n.attrs.class === 'scr')
+const screens = hmls.flatMap(h => parse(h).kids.filter(n => n.attrs.class === 'scr'))
 
 /* ---------- a model of the documented layout ---------- */
 const R = 233 // a 466 px round screen

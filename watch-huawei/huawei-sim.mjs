@@ -21,7 +21,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const PREVIEWER = (process.env.DEVECO_SDK_HOME || '/Applications/DevEco-Studio.app/Contents/sdk') + '/default/hms/previewer/liteWearable'
 const WS = 'ws://127.0.0.1:40003' // the simulator's picture socket: a client must stay connected or its timers stop
 const BAD = /JS HEAP OOM|Eval JS file failed|JS REF LIMIT/
-const PAGE = 'entry/src/main/js/MainAbility/pages/index/index.js'
+const PAGES = 'entry/src/main/js/MainAbility/pages/'
 
 export const badLines = (log) => log.split('\n').filter((l) => BAD.test(l))
 // what a run failed on; "never ran" only when no bad line explains it
@@ -29,12 +29,18 @@ export const failures = ({ fed, bad }) => [...(!fed && !bad.length ? ['FAIL the 
 // the simulator reports memoryUsage on the pipe as JSON ending in a NUL byte
 export const heapPeak = (pipe) => Math.max(0, ...[...pipe.matchAll(/"peakAllocBytes":\s*(\d+)/g)].map((m) => +m[1]))
 
-// hook the debug phone into the page copy: the import, and a call right after the core is made
+// every page copy tells the driver which page is up (A.pg), because the workout switches pages and a tap goes to the one showing
+export function hook(src) {
+  const at = 'K = getApp().data.k()'
+  if (!src.includes(at)) throw new Error('hook: anchor not found in the page, update huawei-sim.mjs')
+  return src.replace(at, at + '\n    A.pg = this')
+}
+// hook the debug phone into the home page copy (the first page, which makes the core): the import, and a call right after it is made
 export function inject(src) {
   const imp = "import { blank,"
   const make = 'A.make(stored)'
   if (!src.includes(imp) || !src.includes(make)) throw new Error('inject: anchor not found in the page, update huawei-sim.mjs')
-  return src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(page, A, K)')
+  return hook(src.replace(imp, "import drive from '../../common/debugphone.js'\n" + imp).replace(make, 'A.make(stored); drive(page, A, K)'))
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -42,8 +48,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 function prepare(dir) {
   cpSync(here, dir, { recursive: true, filter: (f) => !/\/(entry\/build|\.hvigor|file_system|node_modules|test|sim)$/.test(f) })
   copyFileSync(join(here, 'sim', 'debugphone.js'), join(dir, 'entry/src/main/js/MainAbility/common/debugphone.js'))
-  const page = join(dir, PAGE)
-  writeFileSync(page, inject(readFileSync(page, 'utf8')))
+  const edit = (name, fn) => { const f = join(dir, PAGES, name, 'index.js'); writeFileSync(f, fn(readFileSync(f, 'utf8'))) }
+  edit('index', inject)
+  edit('lift', hook)
 }
 
 // the simulator draws text only when it runs from a folder with `config` beside its binary

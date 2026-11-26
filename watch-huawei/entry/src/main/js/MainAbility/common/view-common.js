@@ -39,7 +39,9 @@ export const ROUTINE_ROWS = 3
 export const OVERVIEW_ROWS = 4
 export const SCREENS = ['idle', 'routines', 'count', 'wait', 'ask', 'confirm', 'menu', 'hold', 'set', 'over', 'rest', 'end', 'card', 'summary', 'mnum']
 export const QUIET = '#a1a1a6'
-// the page that draws each screen; a screen not listed is the rest page's
+// the page that draws each screen; a screen not listed is the rest page's, which the lift page still draws until
+// task 11 gives the rest its own page: change REST to 'rest' then
+const REST = 'lift'
 const PAGE = { idle: 'index', routines: 'index', wait: 'index', summary: 'index', count: 'lift', hold: 'lift', set: 'lift', end: 'lift', card: 'lift' }
 
 /* ---------- small helpers (ES5) ---------- */
@@ -156,7 +158,7 @@ export function screenOf (c, ui) {
   if (cur.si == null || isCardio(cur.e)) return 'card'
   return 'set'
 }
-export function pageOf (c, ui) { return PAGE[screenOf(c, ui)] || 'rest' }
+export function pageOf (c, ui) { return PAGE[screenOf(c, ui)] || REST }
 
 /* ---------- the weight and reps boxes ---------- */
 // Loaded again only when the set up changes, so a lifter's edits survive redraws.
@@ -227,8 +229,9 @@ export function tick (c, ui) {
 
 export const sideWord = (t, side) => (side === 'L' ? t('left') : side === 'R' ? t('right') : '')
 
-// Everything the HML binds to, as the page starts with it. build() only ever returns these keys.
-export function blank () {
+// Everything the HML binds to, as the page starts with it. build() only ever returns these keys. A page keeps only
+// `keys`, the names its own HML binds: each name in `data` costs the engine heap, and a page binds a third of them.
+export function blank (keys) {
   const d = {
     top: '', menuLabel: '', accent: LIME, ink: ON_LIME,
     canStart: false, showStart: false, showRoutines: false, routinesLabel: '', startLabel: '', title: '', name: '', plan: '', hint: '',
@@ -249,7 +252,10 @@ export function blank () {
   for (let k = 0; k < ROUTINE_ROWS; k++) { d['ro' + k] = ''; d['rs' + k] = ''; d['rv' + k] = false }
   for (let k = 0; k < OVERVIEW_ROWS; k++) { d['on' + k] = ''; d['oc' + k] = ''; d['ol' + k] = '#1c1c1e'; d['ob' + k] = '#2c2c2e'; d['ovv' + k] = false }
   for (let k = 0; k < 4; k++) { d['c' + k] = ''; d['ss' + k] = false }
-  return d
+  if (!keys) return d
+  const mine = {}
+  keys.forEach(k => { mine[k] = d[k] })
+  return mine
 }
 
 // The state the page shows when the stored workout could not be read (store.js 'unreadable'): no core,
@@ -273,6 +279,9 @@ export function build (c, ui, t) {
   return d
 }
 
+// The Menu button is on the home page's wait screen as well as on the set (and the rest): one tap for both.
+ACT.menu = (c, ui) => { ui.menu = true }
+ACTIONS.push('menu')
 export function act (c, ui, name) {
   if (Object.prototype.hasOwnProperty.call(ACT, name)) ACT[name](c, ui)
 }

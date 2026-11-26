@@ -1,0 +1,112 @@
+/* True black, one accent (the phone's, else lime; index.hml binds the colours), quiet text #A1A1A6, two
+   sizes doing the work: big numbers and small labels. Every target is at least 56 px tall with 8 px
+   between targets. Every box has an explicit width and height: dl/oh/js-lite-components-container-div.md
+   and ...-basic-text.md say "If this attribute is not set, the default value 0 is used". Heights are px
+   from the contents; widths are percent of the screen block. No animation.
+   test/layout.test.js adds the heights up for a 466 px round and a 336 x 480 rectangle and checks that
+   nothing sits where the circle is cut off. */
+/* The lift page for now (see index.hml): the rules its screens use. */
+.root {
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.scr {
+  width: 90%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.hero { width: 80%; height: 100px; font-size: 88px; text-align: center; color: #ffffff; }
+.big { width: 80%; height: 64px; font-size: 56px; text-align: center; color: #ffffff; }
+.mid { width: 80%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.name { width: 80%; height: 30px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.small { width: 72%; height: 32px; font-size: 26px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tiny { width: 76%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.wrap { width: 80%; height: 80px; font-size: 26px; text-align: center; color: #a1a1a6; }
+.btn {
+  width: 88%;
+  height: 56px;
+  margin-top: 8px;
+  border-radius: 28px;
+  font-size: 20px;
+  color: #ffffff;
+  background-color: #1c1c1e;
+}
+.btn:active { background-color: #2c2c2e; }
+.btnA { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
+.btnA:active { background-color: #7aad28; }
+.wide { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
+.wide:active { background-color: #7aad28; }
+.done { width: 128px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
+.done:active { background-color: #7aad28; }
+.doneOff { width: 128px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 20px; color: #ffffff; background-color: #1c1c1e; }
+.arrowOff { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #48484a; background-color: #1c1c1e; }
+.arrow { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #ffffff; background-color: #1c1c1e; }
+.step { width: 56px; height: 56px; margin-top: 4px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #a3e635; background-color: #0a0f04; }
+.menuS { width: 64px; height: 56px; margin-top: 0px; border-radius: 28px; font-size: 14px; color: #ffffff; background-color: #1c1c1e; }
+.hrTop { width: 40%; height: 26px; font-size: 22px; text-align: right; color: #ff453a; }
+.slot { width: 100%; height: 26px; flex-direction: column; align-items: center; justify-content: center; }
+.restBar { width: 92%; height: 12px; }
+.cap { width: 22%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 22px; color: #ffffff; background-color: #2c2c2e; }
+.capOff { width: 22%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 22px; color: #a1a1a6; background-color: #1c1c1e; }
+.capMid { width: 40%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 18px; color: #ffffff; background-color: #3a3a3c; }
+.capMidOff { width: 40%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 18px; color: #a1a1a6; background-color: #1c1c1e; }
+.chipR { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; border-width: 2px; border-color: #a1a1a6; font-size: 22px; color: #ffffff; background-color: #000000; }
+.rate { width: 100%; height: 86px; margin-top: 8px; flex-direction: column; align-items: center; justify-content: flex-start; }
+.rated { width: 120px; height: 40px; margin-top: 4px; border-radius: 20px; border-width: 2px; border-color: #a1a1a6; background-color: #000000; flex-direction: row; align-items: center; justify-content: center; }
+.ratedTx { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; }
+.up { width: 100%; height: 78px; flex-direction: column; align-items: center; justify-content: center; }
+.upOne { width: 86%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
+.upL { width: 34%; height: 26px; font-size: 22px; text-align: left; color: #a3e635; }
+.upR { width: 62%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
+.syncLn { width: 50%; height: 26px; font-size: 18px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
+.bar { width: 78%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
+.doneRow { width: 100%; height: 56px; margin-top: 4px; flex-direction: row; align-items: center; justify-content: center; }
+.barS { width: 92%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
+.subRow { width: 100%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
+.tiles { width: 100%; height: 142px; margin-top: 4px; flex-direction: row; align-items: flex-start; justify-content: center; }
+.tile { width: 48%; height: 138px; margin-left: 1%; margin-right: 1%; border-radius: 20px; background-color: #1e2a0b; flex-direction: column; align-items: center; justify-content: flex-start; }
+.steps { width: 100%; height: 64px; flex-direction: row; align-items: center; justify-content: center; }
+.row2s { width: 88%; height: 66px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.row3 { width: 100%; height: 56px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.row4 { width: 100%; height: 60px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.mbar { width: 100%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
+.bigY { width: 100%; height: 64px; font-size: 56px; text-align: center; color: #ffd60a; }
+.midR { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ff453a; }
+.midL { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tinyL { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.colL { width: 46%; height: 66px; flex-direction: column; align-items: center; justify-content: center; }
+.pill { width: 138px; height: 56px; border-radius: 28px; font-size: 18px; color: #a3e635; background-color: #1e2a0b; }
+.hrSet { width: 100px; height: 26px; font-size: 20px; text-align: right; color: #ff453a; text-overflow: ellipsis; }
+.hrC { width: 80%; height: 26px; font-size: 22px; text-align: center; color: #ff453a; }
+.partnerT { width: 40%; height: 26px; font-size: 20px; text-align: center; text-overflow: ellipsis; }
+.tLabel { width: 100%; height: 22px; margin-top: 4px; font-size: 17px; text-align: center; color: #a3e635; text-overflow: ellipsis; }
+.numRow { width: 100%; height: 48px; flex-direction: row; align-items: flex-end; justify-content: center; }
+.numT { width: 66%; height: 48px; font-size: 42px; text-align: right; color: #d9f99d; }
+.unitT { width: 30%; height: 26px; margin-left: 4%; font-size: 18px; text-align: left; color: #a3e635; }
+.numC { width: 100%; height: 48px; font-size: 42px; text-align: center; color: #d9f99d; }
+.btnR { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ff453a; font-size: 20px; color: #ff453a; background-color: #000000; }
+.btnO { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ffffff; font-size: 20px; color: #ffffff; background-color: #000000; }
+.orow { width: 90%; height: 64px; border-radius: 16px; border-width: 2px; border-color: #1c1c1e; background-color: #1c1c1e; flex-direction: row; align-items: center; justify-content: flex-start; }
+.omark { width: 28px; height: 28px; margin-left: 12px; margin-right: 12px; border-radius: 14px; background-color: #2c2c2e; }
+.ocol { width: 72%; height: 52px; flex-direction: column; align-items: flex-start; justify-content: center; }
+.oName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #ffffff; text-overflow: ellipsis; }
+.oCnt { width: 100%; height: 22px; font-size: 18px; text-align: left; color: #a1a1a6; }
+.cRing { width: 200px; height: 200px; margin-top: 8px; margin-bottom: 8px; }
+.cArc { width: 100%; height: 100%; start-angle: 0; total-angle: 360; stroke-width: 12px; background-color: #2c2c2e; color: #a3e635; }
+.cIn { width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
+.cGo { width: 100%; height: 44px; font-size: 36px; text-align: center; color: #a3e635; }
+.cNum { width: 100%; height: 100px; font-size: 88px; text-align: center; color: #a3e635; }
+.rowX { width: 100%; height: 64px; margin-top: 8px; flex-direction: row; align-items: center; justify-content: center; }
+.topR { width: 56%; height: 26px; font-size: 20px; text-align: right; color: #a1a1a6; text-overflow: ellipsis; }
+.holdBar { width: 60%; height: 12px; margin-top: 8px; margin-bottom: 8px; }
+.menuList { width: 100%; height: 72%; }
+.overList { width: 100%; height: 60%; }
+.li { width: 100%; height: 72px; }
+.liIn { width: 86%; margin-left: 7%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.quiet { color: #a1a1a6; }

@@ -14,41 +14,73 @@ import '../entry/src/main/js/MainAbility/common/view-rest.js'
 import { dollarT } from './i18n.js'
 import { frames } from '../entry/src/main/js/MainAbility/common/frames.js'
 
-const dir = new URL('../entry/src/main/js/MainAbility/pages/index/', import.meta.url)
-const hml = readFileSync(new URL('index.hml', dir), 'utf8').replace(/<!--[\s\S]*?-->/g, '')
-const css = readFileSync(new URL('index.css', dir), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
-const js = readFileSync(new URL('index.js', dir), 'utf8')
+// The pages that draw screens: the home page (pages/index) and, until task 10 and 11 split it, the lift page (every other
+// screen). pages/rest is empty and sends the lifter home.
+const pagesDir = new URL('../entry/src/main/js/MainAbility/pages/', import.meta.url)
+const PG = {}
+;['index', 'lift'].forEach(n => {
+  const d = new URL(n + '/', pagesDir)
+  PG[n] = {
+    hml: readFileSync(new URL('index.hml', d), 'utf8').replace(/<!--[\s\S]*?-->/g, ''),
+    css: readFileSync(new URL('index.css', d), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''),
+    js: readFileSync(new URL('index.js', d), 'utf8')
+  }
+})
+const HOME_SCREENS = ['idle', 'routines', 'wait', 'summary'] // view-common.js PAGE: the screens the home page draws (and its own `lost`)
+const hml = PG.index.hml + PG.lift.hml
+const css = PG.index.css + '\n' + PG.lift.css
+const js = PG.index.js
+const names = (page, re) => [...page.hml.matchAll(re)].map(m => m[1])
+const boundIn = page => names(page, /\{\{\s*([A-Za-z_][\w]*)\s*\}\}/g)
+const handlersIn = page => names(page, /\bonclick="([A-Za-z_]\w*)"/g)
+const haveIn = page => [...page.js.matchAll(/^ {2}([A-Za-z_]\w*): function/gm)].map(m => m[1])
 
-const bound = [...hml.matchAll(/\{\{\s*([A-Za-z_][\w]*)\s*\}\}/g)].map(m => m[1])
-const handlers = [...hml.matchAll(/\bonclick="([A-Za-z_]\w*)"/g)].map(m => m[1])
-const classes = [...hml.matchAll(/\bclass="([^"]*)"/g)].flatMap(m => m[1].split(/\s+/))
+const fieldsIn = page => page.js.match(/const FIELDS = \(([\s\S]*?)\)\.split/)[1].match(/'([^']*)'/g).map(x => x.slice(1, -1)).join('').split(' ')
 
-test('every name the HML binds is data the page starts with, and every data name is used', () => {
+test('a page\'s data is exactly the names its HML binds (each name costs the engine heap), and every name is a field the view fills', () => {
   const data = blank()
-  bound.forEach(k => assert.ok(k in data, 'HML binds ' + k + ', which is not in data'))
-  Object.keys(data).forEach(k => assert.ok(bound.indexOf(k) >= 0, 'data ' + k + ' is never shown'))
+  Object.keys(PG).forEach(n => {
+    const bound = [...new Set(boundIn(PG[n]))].sort()
+    assert.deepEqual(fieldsIn(PG[n]).slice().sort(), bound, n)
+    bound.forEach(k => assert.ok(k in data, n + ' HML binds ' + k + ', which is not in data'))
+    assert.deepEqual(Object.keys(blank(fieldsIn(PG[n]))).sort(), bound, n)
+  })
+  const all = boundIn(PG.index).concat(boundIn(PG.lift))
+  Object.keys(data).forEach(k => assert.ok(all.indexOf(k) >= 0, 'data ' + k + ' is never shown'))
 })
 
-test('every screen is a block of the HML, shown by its own flag', () => {
-  SCREENS.forEach(s => assert.ok(hml.indexOf('if="{{s_' + s + '}}"') >= 0, s))
+test('every screen is a block of the HML of the page that draws it, shown by its own flag', () => {
+  SCREENS.forEach(s => {
+    const mine = HOME_SCREENS.indexOf(s) >= 0 ? PG.index : PG.lift
+    const other = mine === PG.index ? PG.lift : PG.index
+    assert.ok(mine.hml.indexOf('if="{{s_' + s + '}}"') >= 0, s)
+    assert.ok(other.hml.indexOf('if="{{s_' + s + '}}"') < 0, s + ' is on one page only')
+  })
+  assert.ok(PG.index.hml.indexOf('if="{{s_lost}}"') >= 0) // the stored workout that could not be read: the first page's
 })
 
-test('every tap in the HML has a handler in the page, and every action is reachable from the HML', () => {
-  const have = [...js.matchAll(/^ {2}([A-Za-z_]\w*): function/gm)].map(m => m[1])
-  handlers.forEach(h => assert.ok(have.indexOf(h) >= 0, 'no handler ' + h))
-  ACTIONS.forEach(a => { assert.ok(have.indexOf(a) >= 0, 'no handler ' + a); assert.ok(handlers.indexOf(a) >= 0, a + ' is not wired in the HML') })
-  have.forEach(h => assert.ok(ACTIONS.indexOf(h) >= 0 || ['onInit', 'onShow', 'onHide', 'onDestroy', 'swipe', 'retry'].indexOf(h) >= 0, 'stray ' + h))
-  // each handler forwards its own name
-  ACTIONS.forEach(a => assert.ok(js.indexOf('  ' + a + ': function () { go(this, \'' + a + '\') }') >= 0, a))
-  assert.ok(hml.indexOf('onswipe="swipe"') >= 0)
+test('every tap in a page\'s HML has a handler in that page, and every action is reachable from some page', () => {
+  Object.keys(PG).forEach(n => {
+    const p = PG[n]
+    const have = haveIn(p)
+    handlersIn(p).forEach(h => assert.ok(have.indexOf(h) >= 0, n + ': no handler ' + h))
+    have.forEach(h => assert.ok(ACTIONS.indexOf(h) >= 0 || ['onInit', 'onShow', 'onHide', 'onDestroy', 'swipe', 'retry'].indexOf(h) >= 0, n + ': stray ' + h))
+    // each handler forwards its own name
+    have.filter(h => ACTIONS.indexOf(h) >= 0).forEach(h => assert.ok(p.js.indexOf('  ' + h + ': function () { go(this, \'' + h + '\') }') >= 0, n + ': ' + h))
+    assert.ok(p.hml.indexOf('onswipe="swipe"') >= 0, n)
+  })
+  const wired = handlersIn(PG.index).concat(handlersIn(PG.lift))
+  ACTIONS.forEach(a => assert.ok(wired.indexOf(a) >= 0, a + ' is not wired in the HML of any page'))
 })
 
-test('every class the HML uses is in the CSS, and only components the research file confirms are used', () => {
-  classes.forEach(c => assert.ok(new RegExp('\\.' + c + '\\b').test(css), 'no style for .' + c))
-  const tags = [...hml.matchAll(/<([a-z-]+)[\s>]/g)].map(m => m[1])
-  tags.forEach(t => assert.ok(['div', 'text', 'input', 'progress', 'stack', 'list', 'list-item'].indexOf(t) >= 0, t))
-  ;[...hml.matchAll(/<input\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="button"/))
-  ;[...hml.matchAll(/<progress\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="(arc|horizontal)"/))
+test('every class a page\'s HML uses is in its CSS, and only components the research file confirms are used', () => {
+  Object.keys(PG).forEach(n => {
+    const p = PG[n]
+    ;[...p.hml.matchAll(/\bclass="([^"]*)"/g)].flatMap(m => m[1].split(/\s+/)).forEach(c => assert.ok(new RegExp('\\.' + c + '\\b').test(p.css), n + ': no style for .' + c))
+    ;[...p.hml.matchAll(/<([a-z-]+)[\s>]/g)].map(m => m[1]).forEach(t => assert.ok(['div', 'text', 'input', 'progress', 'stack', 'list', 'list-item'].indexOf(t) >= 0, t))
+    ;[...p.hml.matchAll(/<input\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="button"/))
+    ;[...p.hml.matchAll(/<progress\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="(arc|horizontal)"/))
+  })
 })
 
 test('the dimmed arrow beside Done is as wide as an arrow and has no tap handler', () => {
@@ -71,7 +103,7 @@ test('buttons are at least 56 px tall and text boxes have a size', () => {
 
 const modules = {
   '@system.file': 'file', '@system.vibrator': 'vibrator', '@system.sensor': 'sensor', '@system.brightness': 'brightness',
-  '@system.app': 'app'
+  '@system.app': 'app', '@system.router': 'router'
 }
 const appJs = readFileSync(new URL('../entry/src/main/js/MainAbility/app.js', import.meta.url), 'utf8')
 const common = new URL('../entry/src/main/js/MainAbility/common/', import.meta.url)
@@ -88,13 +120,13 @@ async function loadFrom (src, W) {
   writeFileSync(f, src)
   try { return (await import(pathToFileURL(f).href + '?' + Math.random())).default } finally { rmSync(tmp, { recursive: true }) }
 }
-async function loadPage (W, sameApp) {
+async function loadPage (W, sameApp, name) {
   loads += 1
   if (!sameApp) {
     const appDef = await loadFrom(appJs, W)
     globalThis.getApp = () => ({ data: appDef.data })
   }
-  return loadFrom(js, W)
+  return loadFrom(PG[name || 'index'].js, W)
 }
 
 // fake Huawei: files that answer later (flush), a P2P client that records, a sensor, a clock and timers
@@ -108,6 +140,8 @@ function world (disk) {
   W.vibrator = { vibrate: p => { W.buzzes.push(p.mode); p.success() } }
   W.sensor = { subscribeHeartRate: p => { W.hr = p }, unsubscribeHeartRate: () => { W.hr = null } }
   W.brightness = { setKeepScreenOn: p => { W.awake.push(p.keepScreenOn); p.success() } }
+  W.replaced = [] // the pages the app asked the router for, oldest first
+  W.router = { replace: o => { W.replaced.push(o.uri) } }
   W.app = { terminate: () => { W.terminated += 1 }, getInfo: () => ({ appName: 'openGym', versionName: '1.4.6', versionCode: 1004006 }) }
   W.Builder = function () {}
   W.Builder.prototype.setDescription = function (d) { this.messageInfo = d }
@@ -148,12 +182,22 @@ async function boot (W) {
   return page
 }
 // a second page of the same app (a page switch): the app and its core stay, the page module is new
-async function nextPage (W) {
-  const def = await loadPage(W, true)
+async function nextPage (W, name) {
+  const def = await loadPage(W, true, name)
   const page = Object.assign({ $t: dollarT('de-DE') }, def.data)
   Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
   page.def = def
   return page
+}
+// the router replaced the page: what the framework does next. The new page is made, the old one goes (first, unless
+// `keep`: then it stays up and the new one is shown beside it), and the new page's client learns its version.
+async function follow (W, page, keep) {
+  const uri = W.replaced.shift()
+  assert.ok(uri, 'the page asked the router for a new page')
+  const next = await nextPage(W, uri.split('/')[1])
+  if (!keep) { page.def.onHide.call(page); page.def.onDestroy.call(page) }
+  next.def.onInit.call(next); next.def.onShow.call(next); W.settle()
+  return next
 }
 // the phone's message, framed as Wear Engine carries it
 const fromPhone = (W, obj) => frames(JSON.stringify(obj), 'p').forEach(f => W.receiver.onReceiveMessage(f))
@@ -164,11 +208,11 @@ const restore = () => { globalThis.setTimeout = realTimeout; Date.now = realNow 
 
 const snap = (extra) => Object.assign({ v: 1, unit: 'kg', restSec: 90, settings: { lang: 'en', weighIn: false }, active: null, ready: { today: { routineIds: ['r1'], name: 'Push day', entries: [{ id: 'b', name: 'Bench', i: 0, sets: [{ w: 60, r: 8 }, { w: 60, r: 8 }] }] }, others: [] } }, extra || {})
 
-test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs a workout, survives a restart', async () => {
+test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs a workout across the pages, survives a restart', async () => {
   const disk = new Map()
   const W = world(disk)
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     assert.deepEqual(W.early, []) // nothing was sent or registered before the version was known
     assert.equal(W.pkg, 'ch.duartesantos.opengym')
     assert.ok(W.fp)
@@ -181,7 +225,9 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
     fromPhone(W, snap())
     assert.deepEqual([page.title, page.name, page.startLabel], ['Heute', 'Push day', 'Training starten']) // the phone's language is not used: the watch's own
 
-    page.start()
+    page.start() // the 3-2-1 is the lift page's screen: the home page switches to it
+    assert.deepEqual(W.replaced, ['pages/lift/index'])
+    page = await follow(W, page)
     assert.equal(page.s_count, true)
     W.advance(4)
     assert.equal(page.s_set, true)
@@ -223,7 +269,10 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
 
     // a new start on the same files: the workout and the rest are still there
     const W2 = world(disk)
-    const page2 = await boot(W2)
+    let page2 = await boot(W2)
+    assert.deepEqual(W2.replaced, ['pages/lift/index']) // the home page builds nothing of the rest, it hands over
+    assert.equal(page2.s_idle, false)
+    page2 = await follow(W2, page2)
     assert.equal(page2.s_rest, true)
     assert.equal(page2.nextName, 'Bench, Satz 2/2')
     assert.match(W2.sent[0], /"type":"hello"/)
@@ -267,7 +316,7 @@ test('page: a tap before the state is loaded does nothing, and a swipe right lea
     const page = Object.assign({ $t: dollarT('de-DE') }, def.data) // the framework's $t, for a watch set to German
     Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
     def.onInit.call(page) // the framework starts the page first; its files have not answered yet
-    assert.doesNotThrow(() => page.done.call(page))
+    assert.doesNotThrow(() => page.start.call(page))
     def.swipe.call(page, { direction: 'left' })
     assert.equal(W.terminated, 0)
     def.swipe.call(page, { direction: 'right' })
@@ -283,9 +332,9 @@ test('page: a tap before the state is loaded does nothing, and a swipe right lea
 test('page: in a workout a swipe left opens the Metrics page and a swipe right goes back; it never leaves the app', async () => {
   const W = world(new Map())
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     fromPhone(W, snap())
-    page.start(); W.advance(4)
+    page.start(); page = await follow(W, page); W.advance(4)
     assert.equal(page.s_set, true)
     page.def.swipe.call(page, { direction: 'right' })
     assert.deepEqual([page.s_set, W.terminated], [true, 0])
@@ -312,20 +361,23 @@ test('page: in a workout a swipe left opens the Metrics page and a swipe right g
 test('page: the summary list gets the crown once when it shows, and a crown that is not there breaks nothing', async () => {
   const W = world(new Map())
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     fromPhone(W, snap())
-    page.start(); W.advance(4)
+    page.start(); page = await follow(W, page); W.advance(4)
+    page.menu(); page.mFinish(); page.yes()
+    page = await follow(W, page) // the summary is the home page's
+    assert.equal(page.s_summary, true)
     const asked = []
     page.$refs = { sum: { rotation: o => asked.push(o) } }
-    page.menu(); page.mFinish(); page.yes()
-    assert.equal(page.s_summary, true)
     W.advance(1)
     assert.deepEqual(asked, [{ focus: true }])
     W.advance(3)
     assert.equal(asked.length, 1) // once, not on every redraw
-    page.close(); page.start(); W.advance(4)
-    page.$refs = {} // a watch whose list has no crown method
+    page.close(); W.advance(2); page.start(); page = await follow(W, page); W.advance(4)
     page.menu(); page.mFinish(); page.yes()
+    page = await follow(W, page)
+    assert.equal(page.s_summary, true)
+    page.$refs = {} // a watch whose list has no crown method
     assert.doesNotThrow(() => W.advance(1))
   } finally { restore() }
 })
@@ -333,23 +385,24 @@ test('page: the summary list gets the crown once when it shows, and a crown that
 test('page: a rebuild while the summary is up asks for the crown again', async () => {
   const W = world(new Map())
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     fromPhone(W, snap())
-    page.start(); W.advance(4)
+    page.start(); page = await follow(W, page); W.advance(4)
+    page.menu(); page.mFinish(); page.yes()
+    page = await follow(W, page)
     const asked = []
     page.$refs = { sum: { rotation: o => asked.push(o) } }
-    page.menu(); page.mFinish(); page.yes()
     W.advance(1)
     assert.equal(asked.length, 1)
     // a page switch: the app keeps the core, so the summary is still up on the new page, and the crown is asked for again
-    const next = await nextPage(W)
+    const next = await nextPage(W, 'index')
     page.def.onHide.call(page); page.def.onDestroy.call(page) // the old page goes first
     next.def.onInit.call(next); next.def.onShow.call(next); W.settle(); W.advance(1)
     assert.equal(next.s_summary, true)
     assert.equal(asked.length, 1) // the new page has its own $refs: none yet
     next.$refs = { sum: { rotation: o => asked.push(o) } }
     next.def.onDestroy.call(next)
-    const again = await nextPage(W)
+    const again = await nextPage(W, 'index')
     again.$refs = next.$refs
     again.def.onInit.call(again); again.def.onShow.call(again); W.settle(); W.advance(1)
     assert.equal(again.s_summary, true)
@@ -361,9 +414,9 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
   for (const newFirst of [false, true]) {
     const W = world(new Map())
     try {
-      const page = await boot(W)
+      let page = await boot(W)
       fromPhone(W, snap())
-      page.start(); W.advance(4)
+      page.start(); page = await follow(W, page); W.advance(4)
       W.hr.success({ heartRate: 120 }); W.advance(3)
       page.done()
       assert.equal(page.s_rest, true)
@@ -371,7 +424,7 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       const core = A.c
       const hr = globalThis.getApp().data.k().hrSoFar(core)
       assert.ok(hr, 'heart-rate totals exist')
-      const next = await nextPage(W)
+      const next = await nextPage(W, 'lift')
       const old = page.def
       if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
       W.settle(); W.advance(1) // the new page's client learns its version, then it links
@@ -398,14 +451,14 @@ test('page switch: a hold survives a new page, in either teardown order', async 
   for (const newFirst of [false, true]) {
     const W = world(new Map())
     try {
-      const page = await boot(W)
+      let page = await boot(W)
       fromPhone(W, Object.assign(snap(), { ready: { today: { routineIds: ['r1'], name: 'Core', entries: [{ id: 'p', name: 'Plank', i: 0, mode: 'time', sets: [{ sec: 45 }, { sec: 45 }] }] }, others: [] } }))
-      page.start(); W.advance(4)
+      page.start(); page = await follow(W, page); W.advance(4)
       page.done(); W.advance(5) // the 3-2-1, then the hold counts
       assert.equal(page.s_hold, true)
       const A = globalThis.getApp().data.get()
       const core = A.c
-      const next = await nextPage(W)
+      const next = await nextPage(W, 'lift')
       const old = page.def
       if (newFirst) { next.def.onInit.call(next); next.def.onShow.call(next); old.onHide.call(page); old.onDestroy.call(page) } else { old.onHide.call(page); old.onDestroy.call(page); next.def.onInit.call(next); next.def.onShow.call(next) }
       W.settle(); W.advance(3)
@@ -420,13 +473,13 @@ test('page switch: a hold survives a new page, in either teardown order', async 
 test('page switch: a later page does not register or send before its own client knows the version, and the core and clock do not wait', async () => {
   const W = world(new Map())
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     fromPhone(W, snap())
-    page.start(); W.advance(4)
+    page.start(); page = await follow(W, page); W.advance(4)
     const A = globalThis.getApp().data.get()
     const core = A.c
     W.holdVersion = true // the next page's client does not learn its version yet
-    const next = await nextPage(W)
+    const next = await nextPage(W, 'lift')
     page.def.onHide.call(page); page.def.onDestroy.call(page); W.settle()
     const [regs, sent] = [W.registers, W.sent.length]
     next.def.onInit.call(next); next.def.onShow.call(next); W.settle()
@@ -514,7 +567,7 @@ test('page: a stored workout that cannot be read is not replaced by an empty one
   try {
     page = await boot(W0)
     fromPhone(W0, snap())
-    page.start(); W0.advance(4)
+    page.start(); page = await follow(W0, page); W0.advance(4)
     page.done(); W0.settle()
     page.def.onHide.call(page); W0.settle()
     page.def.onDestroy.call(page)
@@ -529,16 +582,17 @@ test('page: a stored workout that cannot be read is not replaced by an empty one
     assert.match(p2.lostText, /Training konnte nicht gelesen werden/) // the watch's language: German
     assert.equal(p2.s_idle, false)
     assert.equal(W.sent.length, 0)
-    p2.done() // taps do nothing without a core
+    p2.start() // taps do nothing without a core
     p2.def.onHide.call(p2); W.settle()
     assert.equal(JSON.stringify([...disk.entries()].sort()), files, 'nothing was written')
     // the files read again: Try again starts the workout as it was
     W.failReads = false
     p2.def.onShow.call(p2)
     p2.retry(); W.settle(); W.advance(2)
-    assert.equal(p2.s_lost, false)
-    assert.equal(p2.s_rest, true)
-    p2.def.onDestroy.call(p2)
+    assert.deepEqual(W.replaced, ['pages/lift/index']) // the workout is back, on the rest, which is not the home page's
+    const p3 = await follow(W, p2)
+    assert.equal(p3.s_rest, true)
+    p3.def.onDestroy.call(p3)
   } finally { restore() }
 })
 
@@ -546,9 +600,9 @@ test('page: a load that finishes after the page was hidden starts nothing until 
   const disk = new Map()
   const W0 = world(disk)
   try {
-    const p0 = await boot(W0)
+    let p0 = await boot(W0)
     fromPhone(W0, snap())
-    p0.start(); W0.advance(4); p0.done(); W0.settle()
+    p0.start(); p0 = await follow(W0, p0); W0.advance(4); p0.done(); W0.settle()
     p0.def.onHide.call(p0); W0.settle(); p0.def.onDestroy.call(p0)
   } finally { restore() }
   const W = world(disk)
@@ -578,9 +632,9 @@ test('page: a second boot (Try again) drops the first core: only the new one sav
   const disk = new Map()
   const W0 = world(disk)
   try {
-    const p0 = await boot(W0)
+    let p0 = await boot(W0)
     fromPhone(W0, snap())
-    p0.start(); W0.advance(4); p0.done(); W0.settle()
+    p0.start(); p0 = await follow(W0, p0); W0.advance(4); p0.done(); W0.settle()
     p0.def.onHide.call(p0); W0.settle(); p0.def.onDestroy.call(p0)
   } finally { restore() }
   const W = world(disk)
@@ -589,10 +643,11 @@ test('page: a second boot (Try again) drops the first core: only the new one sav
     const files = [...disk.keys()].sort().join()
     page.def.retry.call(page) // Try again: boots once more with the module alive (a later page's onInit adopts the running core instead)
     page.def.onShow.call(page)
-    page.restSkip(); page.wPlus(); W.advance(3) // taps and the clock before the new load finishes: no core, nothing happens
+    page.start(); page.routines(); W.advance(3) // taps and the clock before the new load finishes: no core, nothing happens
     assert.equal([...disk.keys()].sort().join(), files)
     W.settle(); W.advance(2)
-    assert.equal(page.s_rest || page.s_set, true) // the stored workout is back
+    const A = globalThis.getApp().data.get()
+    assert.ok(A.c && A.c.s.w, 'the stored workout is back')
     page.def.onDestroy.call(page)
   } finally { restore() }
 })
@@ -600,11 +655,12 @@ test('page: a second boot (Try again) drops the first core: only the new one sav
 test('page: the 3-2-1 ticks every quarter second, and the count buzzes', async () => {
   const W = world(new Map())
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     fromPhone(W, snap())
     page.start()
     const delays = W.timers.map(t => t.ms)
     assert.ok(delays.indexOf(250) >= 0, 'the loop speeds up for the count: ' + delays)
+    page = await follow(W, page)
     W.advance(1)
     assert.equal(page.big, '2')
     page.def.onDestroy.call(page)
@@ -613,9 +669,9 @@ test('page: the 3-2-1 ticks every quarter second, and the count buzzes', async (
 
 test('config.json: the supportLists pair is the page\'s package and fingerprint, and the bundle name is the phone link\'s', () => {
   const cfg = JSON.parse(readFileSync(new URL('../entry/src/main/config.json', import.meta.url), 'utf8'))
-  const pkg = js.match(/const PHONE_PACKAGE = '([^']+)'/)[1]
-  const fp = js.match(/const PHONE_FINGERPRINT = '([^']+)'/)[1]
-  assert.equal(cfg.module.metaData.customizeData[0].value, pkg + ':' + fp)
+  const pair = src => src.match(/const PHONE_PACKAGE = '([^']+)'/)[1] + ':' + src.match(/const PHONE_FINGERPRINT = '([^']+)'/)[1]
+  assert.equal(cfg.module.metaData.customizeData[0].value, pair(js))
+  assert.equal(pair(PG.lift.js), pair(js)) // each page links on its own, with the same pair
   assert.equal(cfg.app.bundleName, 'ch.duartesantos.opengym.huawei')
 })
 
@@ -641,9 +697,9 @@ test('page: the first message after hello is the watch status with the app versi
 test('page: the heart-rate sensor is stopped after three idle hours of a workout', async () => {
   const W = world(new Map())
   try {
-    const page = await boot(W)
+    let page = await boot(W)
     fromPhone(W, snap())
-    page.start(); W.advance(4)
+    page.start(); page = await follow(W, page); W.advance(4)
     assert.ok(W.hr)
     W.advance(3 * 3600 + 30)
     assert.equal(W.hr, null)
@@ -655,16 +711,18 @@ test('page: a second boot (Try again) while the first core still has a send out:
   const disk = new Map()
   const W = world(disk)
   try {
-    const page = await boot(W)
+    const home = await boot(W)
     fromPhone(W, snap())
-    page.start(); W.advance(4)
+    home.start()
+    const page = await follow(W, home, true) // the lift page is up beside the home page, which is where Try again is
+    W.advance(4)
     // a set is done; its message is sent and the phone has not answered yet
     const noAnswer = W.settle
     W.settle = () => { while (W.io.length) W.io.shift()() }
     page.done(); W.settle()
     assert.ok(W.pending.length >= 1)
     const late = W.pending.splice(0)
-    page.def.retry.call(page) // the second boot
+    home.def.retry.call(home) // the second boot
     W.settle()
     W.advance(1)
     const before = JSON.stringify([...disk.entries()].sort())
@@ -674,4 +732,73 @@ test('page: a second boot (Try again) while the first core still has a send out:
     W.settle = noAnswer
     page.def.onDestroy.call(page)
   } finally { restore() }
+})
+
+/* ---------- task 9: the pages switch ---------- */
+
+test('page switch: a page hands over BEFORE it builds a screen it does not own, once, and each page draws only its own', async () => {
+  const W = world(new Map())
+  try {
+    let page = await boot(W)
+    fromPhone(W, snap())
+    assert.equal(page.s_idle, true)
+    page.start() // home -> lift: the 3-2-1
+    assert.deepEqual(W.replaced, ['pages/lift/index'])
+    assert.ok(!page.s_count) // the home page built nothing of the lift page's screen (its view files have none)
+    W.advance(2) // the clock asks again before the framework swaps the pages: still one replace
+    assert.deepEqual(W.replaced, ['pages/lift/index'])
+    page = await follow(W, page)
+    assert.equal(page.s_count, true)
+    W.advance(3)
+    assert.equal(page.s_set, true)
+    page.menu(); page.mFinish(); page.yes() // lift -> home: the summary
+    assert.deepEqual(W.replaced, ['pages/index/index'])
+    assert.ok(!page.s_summary)
+    W.advance(2)
+    assert.equal(W.replaced.length, 1)
+    page = await follow(W, page)
+    assert.equal(page.s_summary, true)
+    assert.ok(!page.s_set) // nothing of the old page is left on the new one
+  } finally { restore() }
+})
+
+test('page switch: the Menu on the home page\'s wait screen opens the menu on the lift page', async () => {
+  const W = world(new Map())
+  try {
+    let page = await boot(W)
+    fromPhone(W, snap({ ready: { today: { routineIds: ['r2'], name: 'Legs', entries: [] }, others: [] } }))
+    page.start(); page = await follow(W, page)
+    page.skipCount() // no exercise yet: the watch waits for the phone, which is the home page's screen
+    page = await follow(W, page)
+    assert.equal(page.s_wait, true)
+    page.menu() // the home page's tap: the shared view has it
+    assert.deepEqual(W.replaced, ['pages/lift/index'])
+    page = await follow(W, page)
+    assert.equal(page.s_menu, true)
+    page.mBack()
+    page = await follow(W, page)
+    assert.equal(page.s_wait, true)
+  } finally { restore() }
+})
+
+test('page switch: a page of its own without the core sends the lifter to the home page, and the rest page does too', async () => {
+  const W = world(new Map())
+  try {
+    await boot(W) // the home page makes the core
+    const A = globalThis.getApp().data.get()
+    A.drop()
+    const lift = await nextPage(W, 'lift')
+    lift.def.onInit.call(lift)
+    assert.deepEqual(W.replaced, ['pages/index/index'])
+    W.replaced.length = 0
+    const rest = await loadFrom(readFileSync(new URL('rest/index.js', pagesDir), 'utf8'), W)
+    rest.onShow()
+    assert.deepEqual(W.replaced, ['pages/index/index'])
+  } finally { restore() }
+})
+
+test('config.json lists the home page first and a folder with an hml, css and js for every page', () => {
+  const cfg = JSON.parse(readFileSync(new URL('../entry/src/main/config.json', import.meta.url), 'utf8'))
+  assert.deepEqual(cfg.module.js[0].pages, ['pages/index/index', 'pages/lift/index', 'pages/rest/index'])
+  cfg.module.js[0].pages.forEach(p => ['js', 'hml', 'css'].forEach(ext => assert.doesNotThrow(() => readFileSync(new URL('../entry/src/main/js/MainAbility/' + p + '.' + ext, import.meta.url)), p + '.' + ext)))
 })

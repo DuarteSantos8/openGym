@@ -135,7 +135,6 @@ const ACT = {
   prev: (c, ui) => { if (current(c) && current(c).fixing) fixStep(c, -1); else fixLast(c) },
   nextFix: (c, ui) => { fixStep(c, 1) },
   cancelFix: (c, ui) => { fixCancel(c) },
-  menu: (c, ui) => { ui.menu = true },
   stopHold: (c, ui) => { holdStop(c) },
   finish: (c, ui) => { ui.confirm = 'finish' },
   nextEx: (c, ui) => { nextExercise(c) }
