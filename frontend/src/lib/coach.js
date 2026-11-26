@@ -26,7 +26,7 @@ import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
-import { normalizePyramid, normalizePyramidRest, normalizePyramidWeight } from './pyramid.js'
+import { normalizePyramid, normalizePyramidRest, normalizePyramidWeight, PYRAMID_MAX, MAX_PYRAMID_SETS } from './pyramid.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
@@ -343,13 +343,24 @@ export const logEntry = (S, id) => (S?.coach?.log || []).find(e => e.id === id) 
  * rationale text. The full bundle was merged into the plan already; this is what the chat
  * shows back when someone opens an old proposal months later.
  */
+// The source index of each target normalizePyramid keeps, so per-set rest and load stay beside
+// their own set when an invalid target in the middle is dropped.
+function pyramidIndexes(list) {
+  const idx = []
+  ;(Array.isArray(list) ? list : []).forEach((v, i) => {
+    if (v === PYRAMID_MAX || (v != null && v !== '' && Number.isFinite(Number(v)))) idx.push(i)
+  })
+  return idx.slice(0, MAX_PYRAMID_SETS)
+}
 function pyramidOf(e) {
   const pyramid = normalizePyramid(e.pyramid)
   if (!pyramid.length) return {}
   // Bounded exactly as the editor writes them: an all-zero rest or load is no field at all, so a
-  // logged proposal keeps the prescription it was accepted with and nothing invented.
-  const rest = normalizePyramidRest(e.pyramidRest, pyramid.length)
-  const weight = normalizePyramidWeight(e.pyramidWeight, pyramid.length)
+  // logged proposal keeps the prescription it was accepted with and nothing invented. The index
+  // mapping keeps each accepted target's own rest and load.
+  const idx = pyramidIndexes(e.pyramid)
+  const rest = normalizePyramidRest(Array.isArray(e.pyramidRest) ? idx.map(i => e.pyramidRest[i]) : [], pyramid.length)
+  const weight = normalizePyramidWeight(Array.isArray(e.pyramidWeight) ? idx.map(i => e.pyramidWeight[i]) : [], pyramid.length)
   return {
     pyramid,
     ...(rest.length ? { pyramidRest: rest } : {}),

@@ -355,6 +355,23 @@ test('a pyramid target of zero still asks for one rep', () => {
   assert.equal(row.stalls, 1);
 });
 
+test('a pyramid target drops an invalid entry before grading', () => {
+  // The history normaliser already drops "bad" from [12, "bad", 8]; grading has to drop it too,
+  // or the session is held to three sets it never had and reads as a miss.
+  const ex = { id: '0001', sets: 3, reps: 12, mode: 'reps', pyramid: [12, 'bad', 8] };
+  const S = sampleState({
+    routines: [{ id: 'r1', name: 'Push', emoji: '💪', ex: [ex] }],
+    week: { 1: 'r1' },
+    workouts: ['2026-07-10', '2026-07-13', '2026-07-16'].map(d => ({
+      id: 'w' + d, d: D(d), name: 'Push', start: 1000, end: 1000 + 45 * 60000,
+      entries: [{ id: '0001', target: ex, sets: [12, 8].map(r => ({ w: 40, r, done: true })) }]
+    }))
+  });
+  const row = payload.build(S, { handle: H, kind: 'review' }).aggregates.exercises.find(e => e.id === '0001');
+  assert.equal(row.lastOk, true);
+  assert.equal(row.stalls, 0);
+});
+
 /* ---------------- a logged session keeps its target ---------------- */
 
 test('a logged pyramid target keeps its per-set aims, in full and compact sessions', () => {

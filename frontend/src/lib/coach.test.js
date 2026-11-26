@@ -849,6 +849,13 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(bounded.pyramid).toHaveLength(10)
     expect(bounded).not.toHaveProperty('pyramidRest')
     expect(bounded).not.toHaveProperty('pyramidWeight')
+
+    // A dropped target keeps the rest and load that belong to the sets that remain.
+    const aligned = lightBundle(withEx({
+      id: '0001', sets: 3, reps: 12, mode: 'reps',
+      pyramid: [12, 'bad', 8], pyramidRest: [60, 300, 90], pyramidWeight: [40, 80, 50]
+    })).routines[0].ex[0]
+    expect(aligned).toMatchObject({ pyramid: [12, 8], pyramidRest: [60, 90], pyramidWeight: [40, 50] })
   })
 })
 

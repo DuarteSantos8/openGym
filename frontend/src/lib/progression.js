@@ -22,7 +22,7 @@ import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet, isRestPauseSet 
 import { normalizeRepRange } from './rep-range.js'
 import { nextRung } from './ladders.js'
 import { gymSplitView } from './gym-split.js'
-import { isPyramid, PYRAMID_MAX, MAX_PYRAMID_SETS } from './pyramid.js'
+import { isPyramid, normalizePyramid, PYRAMID_MAX } from './pyramid.js'
 import { backoffAt } from './backoff.js'
 import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
 
@@ -314,11 +314,12 @@ export function readSession(entry, fallback) {
     ? target.rowReps.map(r => Math.max(0, Number(r) || 0)) : null
   // A pyramid owns one target per set too, so it has to be read before the flat `reps`: grading a
   // 12-10-8-6 session against 12 counts every lower set as a miss and invents a stall. "max" has
-  // no fixed goal; a numeric target is at least one rep, as the plan and history normalisers
-  // write it, so a corrupt zero cannot make a zero-rep set a hit. The coach payload
-  // (api/coach/core/payload.js) mirrors this read.
-  const pyrGoals = mode === 'reps' && entry && entry.target && isPyramid(target)
-    ? target.pyramid.slice(0, MAX_PYRAMID_SETS).map(v => (v === PYRAMID_MAX ? 0 : Math.max(1, Number(v) || 0))) : null
+  // no fixed goal. Normalise first, exactly as the plan and history do, so an invalid entry is
+  // ignored rather than becoming a goal of its own and shifting the set count; a numeric target
+  // is held to at least one rep, so a corrupt zero cannot make a zero-rep set a hit. The coach
+  // payload (api/coach/core/payload.js) mirrors this read.
+  const pyr = mode === 'reps' && entry && entry.target && isPyramid(target) ? normalizePyramid(target.pyramid) : []
+  const pyrGoals = pyr.length ? pyr.map(v => (v === PYRAMID_MAX ? 0 : v)) : null
   const setGoals = rowGoals || (pyrGoals && pyrGoals.length ? pyrGoals : null)
   const plannedRows = setGoals ? setGoals.length : (target.sets || logged.length)
   const planned = mode === 'time' && isPerSide(target) ? plannedRows * 2 : plannedRows

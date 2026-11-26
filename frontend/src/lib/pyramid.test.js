@@ -190,6 +190,11 @@ describe('a pyramid session is graded against its own targets', () => {
     const zero = pyramidCfg({ sets: 1, reps: 0, pyramid: [0] })
     expect(readSession({ id: LIFT, target: zero, sets: [{ w: 60, r: 0, done: true }] }, zero).ok).toBe(false)
   })
+
+  it('an invalid target is not a set of its own', () => {
+    const bad = pyramidCfg({ sets: 3, reps: 12, pyramid: [12, 'bad', 8] })
+    expect(readSession({ id: LIFT, target: bad, sets: [12, 8].map(r => ({ w: 60, r, done: true })) }, bad).ok).toBe(true)
+  })
 })
 
 describe('a planned session builds the pyramid with useTarget (progression off)', () => {
