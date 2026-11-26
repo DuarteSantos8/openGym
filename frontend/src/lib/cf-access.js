@@ -8,7 +8,7 @@
 // file, together with the origin of the server they were entered for, and are handed to
 // lib/api.js, which adds them to requests to that origin and to nothing else: a token typed for
 // one server never travels to another one, not even to a pairing typed in by mistake.
-import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
+import { secureRead, secureSet, secureRemove } from './coach-secrets.js'
 import { setAccessHeaders } from './api.js'
 
 const KEY = 'cfAccess'
@@ -31,20 +31,38 @@ export function accessHeaders(creds) {
   return { 'CF-Access-Client-Id': id, 'CF-Access-Client-Secret': secret }
 }
 
+let rereading = null
+// Bumped by every save or removal. A read that started before one (the retry above, still waiting
+// on the store) found what is no longer there, so it is dropped rather than put back over it.
+let changes = 0
+// Reads and writes of the stored token run one after another, in the order they were asked for:
+// a binding write from a read that a save or removal then overtook never lands after that save or
+// removal, and a read asked for while a save or removal is still on its way finds what it wrote.
+let writing = Promise.resolve()
+const inOrder = write => { const done = writing.then(write); writing = done.catch(() => {}); return done }
+const reread = pairedBase => rereading || (rereading = loadCfAccess({ pairedBase }).finally(() => { rereading = null }))
+
 // `pairedBase`: the server this phone is paired with. A token saved before tokens knew their
 // server has no origin; it is bound to that server on the first start that has one. Without a
 // pairing it is kept but sent nowhere until it is entered again with its address.
 export async function loadCfAccess({ pairedBase = '' } = {}) {
+  const seen = changes
   let creds = null
+  let unread = false
   try {
-    const raw = await secureGet(KEY)
+    const { value: raw, failed } = await inOrder(() => secureRead(KEY))
+    // The store did not answer: not the same as no token. The next request reads it again
+    // instead of the phone going on without a token that is still stored.
+    unread = failed
     const v = raw ? JSON.parse(raw) : null
     if (v && typeof v === 'object') creds = { clientId: clean(v.clientId), clientSecret: clean(v.clientSecret), origin: originOf(v.origin) }
   } catch { /* unreadable: as if never set */ }
-  if (!creds || !creds.clientId || !creds.clientSecret) { setAccessHeaders({}, ''); return null }
+  if (changes !== seen) return null
+  if (!creds || !creds.clientId || !creds.clientSecret) { setAccessHeaders({}, '', unread ? () => reread(pairedBase) : null); return null }
   if (!creds.origin && originOf(pairedBase)) {
     creds.origin = originOf(pairedBase)
-    try { await secureSet(KEY, JSON.stringify(creds)) } catch { /* bound again on the next start */ }
+    try { await inOrder(() => secureSet(KEY, JSON.stringify(creds))) } catch { /* bound again on the next start */ }
+    if (changes !== seen) return null
   }
   setAccessHeaders(accessHeaders(creds), creds.origin)
   return creds
@@ -54,13 +72,14 @@ export async function loadCfAccess({ pairedBase = '' } = {}) {
 // refused by the caller (CfAccessSheet), and here as well.
 export async function saveCfAccess({ clientId, clientSecret, server } = {}) {
   const creds = { clientId: clean(clientId), clientSecret: clean(clientSecret), origin: originOf(server) }
+  changes++
   if (!creds.clientId || !creds.clientSecret) {
-    await secureRemove(KEY)
+    await inOrder(() => secureRemove(KEY))
     setAccessHeaders({}, '')
     return null
   }
   if (!creds.origin) throw new Error('A Cloudflare Access token needs the server it is for')
-  await secureSet(KEY, JSON.stringify(creds))
+  await inOrder(() => secureSet(KEY, JSON.stringify(creds)))
   setAccessHeaders(accessHeaders(creds), creds.origin)
   return creds
 }

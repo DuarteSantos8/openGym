@@ -120,3 +120,138 @@ describe('the Cloudflare Access token on the phone', () => {
     expect(fetch.mock.calls[0][1].headers['CF-Access-Client-Id']).toBeUndefined()
   })
 })
+
+describe('a secure storage that does not answer at start', () => {
+  it('still sends the stored token once it answers: the next request reads it again', async () => {
+    backing.set('cfAccess', JSON.stringify({ clientId: 'id', clientSecret: 'secret', origin: GYM }))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const real = SecureStorage.get
+    SecureStorage.get = async () => { throw new Error('keychain locked') }
+    try { expect(await loadCfAccess({ pairedBase: GYM })).toBe(null) } finally { SecureStorage.get = real }
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    expect(fetch.mock.calls[0][1].headers).toMatchObject({ 'CF-Access-Client-Id': 'id', 'CF-Access-Client-Secret': 'secret' })
+  })
+})
+
+describe('a read still waiting on the store when the token is saved or removed', () => {
+  // The read finds what was stored before the save; it answers only after the save is done.
+  async function slowRead(stored, change) {
+    backing.set('cfAccess', JSON.stringify(stored))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const real = SecureStorage.get
+    let answer
+    SecureStorage.get = () => new Promise(resolve => { answer = resolve })
+    try {
+      const reading = loadCfAccess({ pairedBase: GYM })
+      await change()
+      answer(JSON.stringify(stored))
+      return await reading
+    } finally { SecureStorage.get = real }
+  }
+
+  async function sentHeaders() {
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    return fetch.mock.calls[0][1].headers
+  }
+
+  it('does not put the old token back over the new one', async () => {
+    const old = { clientId: 'old', clientSecret: 'old-secret', origin: GYM }
+    expect(await slowRead(old, () => saveCfAccess({ clientId: 'new', clientSecret: 'new-secret', server: GYM }))).toBe(null)
+    expect(await sentHeaders()).toMatchObject({ 'CF-Access-Client-Id': 'new', 'CF-Access-Client-Secret': 'new-secret' })
+  })
+
+  it('does not bring back a token that was removed', async () => {
+    const old = { clientId: 'old', clientSecret: 'old-secret', origin: GYM }
+    expect(await slowRead(old, () => saveCfAccess({}))).toBe(null)
+    expect((await sentHeaders())['CF-Access-Client-Id']).toBeUndefined()
+  })
+
+  it('does not bind and send a token saved before tokens knew their server once it was removed', async () => {
+    const old = { clientId: 'old', clientSecret: 'old-secret' }
+    expect(await slowRead(old, () => saveCfAccess({}))).toBe(null)
+    expect((await sentHeaders())['CF-Access-Client-Id']).toBeUndefined()
+    expect(backing.has('cfAccess')).toBe(false)
+  })
+})
+
+describe('a binding write still on its way when the token is saved or removed', () => {
+  // A token saved before tokens knew their server is bound to the paired one on load; that write
+  // reaches the store only after the save or removal was asked for.
+  async function slowBinding(change) {
+    backing.set('cfAccess', JSON.stringify({ clientId: 'old', clientSecret: 'old-secret' }))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const real = SecureStorage.set
+    let land
+    SecureStorage.set = (k, v) => {
+      SecureStorage.set = real
+      return new Promise(resolve => { land = () => { backing.set(k, v); resolve() } })
+    }
+    try {
+      const reading = loadCfAccess({ pairedBase: GYM })
+      while (!land) await new Promise(r => setTimeout(r, 0))
+      const changing = change()
+      await new Promise(r => setTimeout(r, 0))
+      land()
+      await Promise.all([reading, changing])
+    } finally { SecureStorage.set = real }
+  }
+
+  it('does not put the old token back in the store over a removal', async () => {
+    await slowBinding(() => saveCfAccess({}))
+    expect(backing.has('cfAccess')).toBe(false)
+    expect(await loadCfAccess({ pairedBase: GYM })).toBe(null)
+  })
+
+  it('does not put the old token back in the store over a new one', async () => {
+    await slowBinding(() => saveCfAccess({ clientId: 'new', clientSecret: 'new-secret', server: GYM }))
+    expect(JSON.parse(backing.get('cfAccess'))).toEqual({ clientId: 'new', clientSecret: 'new-secret', origin: GYM })
+  })
+})
+
+describe('a read asked for while a save or removal is still on its way', () => {
+  // The save's write reaches the store only after the read was asked for.
+  async function readDuringSlowSave(save) {
+    backing.set('cfAccess', JSON.stringify({ clientId: 'old', clientSecret: 'old-secret' }))
+    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage')
+    const realSet = SecureStorage.set
+    const realRemove = SecureStorage.remove
+    let land
+    const hold = apply => new Promise(resolve => { land = () => { apply(); resolve() } })
+    SecureStorage.set = (k, v) => { SecureStorage.set = realSet; return hold(() => backing.set(k, v)) }
+    SecureStorage.remove = k => { SecureStorage.remove = realRemove; return hold(() => backing.delete(k)) }
+    try {
+      const saving = save()
+      while (!land) await new Promise(r => setTimeout(r, 0))
+      const reading = loadCfAccess({ pairedBase: GYM })
+      await new Promise(r => setTimeout(r, 0))
+      land()
+      await Promise.all([saving, reading])
+    } finally { SecureStorage.set = realSet; SecureStorage.remove = realRemove }
+  }
+
+  it('does not read and bind the old token over a removal', async () => {
+    await readDuringSlowSave(() => saveCfAccess({}))
+    expect(backing.has('cfAccess')).toBe(false)
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    expect(fetch.mock.calls[0][1].headers['CF-Access-Client-Id']).toBeUndefined()
+  })
+
+  it('reads the new token, not the one the save replaced', async () => {
+    await readDuringSlowSave(() => saveCfAccess({ clientId: 'new', clientSecret: 'new-secret', server: GYM }))
+    expect(JSON.parse(backing.get('cfAccess'))).toEqual({ clientId: 'new', clientSecret: 'new-secret', origin: GYM })
+    const fetch = ok({ rev: 1 })
+    vi.stubGlobal('fetch', fetch)
+    setRemoteAuth(GYM, 'TOKEN')
+    await api('/api/data/rev')
+    expect(fetch.mock.calls[0][1].headers['CF-Access-Client-Id']).toBe('new')
+  })
+})

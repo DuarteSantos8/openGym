@@ -38,12 +38,17 @@ export const withTimeout = (promise, ms = NATIVE_TIMEOUT_MS) => new Promise((res
 
 // Any small secret under a key of its own, with the same fallbacks: lib/cf-access.js keeps the
 // Cloudflare Access service token here, beside the Coach's API key.
-export async function secureGet(key) {
+export async function secureGet(key) { return (await secureRead(key)).value }
+// The same read, saying whether the platform store failed to answer (a throw, or the timeout:
+// the Keychain can refuse a read at a cold start) rather than answering "nothing stored".
+export async function secureRead(key) {
   const { store: p } = await plugin()
+  let failed = false
   if (p) {
-    try { const v = await withTimeout(p.get(key)); return typeof v === 'string' && v ? v : null } catch { /* fall through */ }
+    try { const v = await withTimeout(p.get(key)); return { value: typeof v === 'string' && v ? v : null, failed: false } } catch { failed = true }
   }
-  return memory.get(key) || null
+  const value = memory.get(key) || null
+  return { value, failed: failed && !value }
 }
 export async function secureSet(key, value) {
   const v = String(value || '').trim()
