@@ -169,3 +169,63 @@ test('a back workout with resistance bands but no weights keeps band rows availa
     assert.equal(attempts, 2);
   }
 });
+
+test('all translated starters constrain the catalogue for chat and first plans', async () => {
+  const packs = new URL('../../frontend/src/locales/', import.meta.url);
+  const { readdir } = await import('node:fs/promises');
+  const files = (await readdir(packs)).filter(name => name.endsWith('.js'));
+  assert.equal(files.length, 25);
+  for (const file of files) {
+    const pack = (await import(new URL(file, packs))).default;
+    const text = pack['Build me a back workout with no weights'];
+    assert.ok(text, file);
+    for (const opts of [{ kind: 'ask', note: text }, { kind: 'create', refine: text }]) {
+      const payload = payloadLib.build(S, { ...opts, handle: 'test' });
+      assert.ok(payload.library.length, file);
+      assert.ok(payload.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'), file);
+      assert.ok(!payload.library.some(e => ['0002', '1770', '3495'].includes(e.id)), file);
+      assert.ok(!payload.library.some(e => /bench|chin-up|pull-up|inverted row|doorway/.test(e.n)), file);
+    }
+  }
+});
+
+for (const [kind, question] of [['ask', 'Une séance courte pour le dos sans poids.'], ['create', '背部训练，不用负重。']]) {
+  test(`${kind}: a translated equipment constraint repairs an apparatus exercise`, async () => {
+    const payload = payloadLib.build(kind === 'ask' ? S : {}, { handle: 'test', kind, note: question, refine: question });
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke() {
+      const id = ++attempts === 1 ? '0499' : '3225'; // inverted row needs a bar; floor T raise needs none.
+      const action = { type: 'workout', name: 'Back', items: [{ id }] };
+      const bundle = { name: 'Back', summary: 'Back', week: { 2: 'r0' }, routines: [{ id: 'r0', name: 'Back', ex: [{ id, subs: ['0499'] }] }] };
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, ...(kind === 'ask' ? { answer: 'Back', actions: [action] } : bundle) }) };
+    } };
+    const result = await runPipeline({ adapter, kind, cfg: {}, payload });
+    assert.equal(result.ok, true, JSON.stringify(result.errors));
+    assert.equal(attempts, 2);
+    const items = kind === 'ask' ? result.result.actions[0].items : result.result.bundle.routines[0].ex;
+    assert.deepEqual(items.map(({ id, subs }) => [id, subs]), [['3225', undefined]]);
+  });
+}
+
+test('editing a French prompt to request a cable workout removes the no-weights restriction', () => {
+  const payload = payloadLib.build(S, { handle: 'test', kind: 'ask', note: 'Une séance de dos avec poulie' });
+  assert.ok(payload.library.some(e => LIB_BY_ID.get(e.id)?.eq === 'cable'));
+});
+
+test('unsafe existing routines, imports, swaps and exercise cards cannot bypass a translated constraint', () => {
+  const items = id => [{ id, sets: 2, reps: 8 }];
+  const profile = { routines: [{ id: 'gym', name: 'Gym', ex: items('0499') }, { id: 'floor', name: 'Floor', ex: items('3225') }] };
+  const hit = { id: 'gym/row', title: 'Row', equipment: [], sessions: [{ name: 'Back', ex: ['0499'] }] };
+  const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: 'Eine Einheit ohne Gewichte', routines: [hit] });
+  assert.equal(payload.routineLibrary, undefined);
+  const check = action => validateAsk({ coach_contract: 1, answer: 'Back', actions: [action] }, payload);
+  for (const action of [
+    { type: 'workout', name: 'Back', items: items('0007') },
+    { type: 'start', routineId: 'gym' }, { type: 'schedule', day: 2, routineId: 'gym' },
+    { type: 'target', routineId: 'gym', exId: '0499', sets: 3 }, { type: 'exercise', name: 'Row' },
+    { type: 'import', libraryId: hit.id }, { type: 'show', exId: '0499' },
+    { type: 'swap', routineId: 'floor', exId: '3225', to: '0499' },
+  ]) assert.equal(check(action).ok, false, action.type);
+  assert.equal(check({ type: 'show', exId: '3225' }).ok, true);
+  assert.equal(check({ type: 'start', routineId: 'floor' }).ok, true);
+});

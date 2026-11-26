@@ -18,7 +18,7 @@
  *
  * One kind per answer: new routines win, then plan edits, then the rest, so the screen is always
  * one coherent thing to say yes or no to. */
-import { libraryHas, LIB_BY_ID, equipmentAllows, isDumbbellLift, machineAllows } from './library.js';
+import { libraryHas, needsNoEquipment, LIB_BY_ID, equipmentAllows, isDumbbellLift, machineAllows } from './library.js';
 import { validatePlan, validateReview } from './validate.js';
 import { asksForBodyweightOnly, asksForNoAddedWeight } from './routine-library.js';
 
@@ -49,7 +49,7 @@ function itemsOf(a, where, ctx, errors) {
     const it = list[i] || {};
     const id = known.has(it.id) ? it.id : libId(it.id);
     if (!libraryHas(id) && !known.has(id)) { errors.push(`${where}.items[${i}].id ${JSON.stringify(it.id)} is not in the exercise library — copy an id exactly as the library lists it`); return null; }
-    if (ctx.bodyweightOnly && LIB_BY_ID.get(id)?.eq !== 'body weight') {
+    if (ctx.bodyweightOnly && !needsNoEquipment(id)) {
       errors.push(`${where}.items[${i}] needs a bodyweight exercise for this request`); return null;
     }
     if (ctx.noAddedWeight && isNum(it.weight) && it.weight > 0) {
@@ -85,11 +85,15 @@ export function sortActions(data, payload, answer, ctx = {}) {
   const acts = [];
   raw.slice(0, MAX_ACTIONS).forEach((a, i) => {
     if (!a || typeof a !== 'object' || !ACTION_TYPES.includes(a.type)) errors.push(`actions[${i}].type ${JSON.stringify(a && a.type)} is not one of: ${ACTION_TYPES.join(', ')}`);
+    else if (ctx.bodyweightOnly && a.type === 'exercise')
+      errors.push(`actions[${i}] must list the equipment-free exercises in a routine or workout for this request`);
     else acts.push({ ...a, _i: i });
   });
   if (errors.length) return { ok: false, errors };
   const plan = payload.plan || { routines: [], week: {} };
   const routineIds = new Set((plan.routines || []).map(r => r.id));
+  const canUseRoutine = id => !ctx.bodyweightOnly || plan.routines?.find(r => r.id === id)?.ex
+    ?.every(e => needsNoEquipment(e.id) && !(e.weight > 0));
 
   /* ---- new routines: a created plan ---- */
   const made = acts.filter(a => a.type === 'routine');
@@ -125,6 +129,7 @@ export function sortActions(data, payload, answer, ctx = {}) {
       const target = { routineId: a.routineId, exId: libId(a.exId) };
       if (a.type === 'swap') changes.push({ id: 'a' + a._i, type: 'swap-exercise', target, after: { id: libId(a.to) }, why });
       else if (a.type === 'target') {
+        if (ctx.bodyweightOnly && !canUseRoutine(a.routineId)) { errors.push(`actions[${a._i}] targets a routine that needs equipment`); return; }
         if (isInt(a.sets, 1, 10)) changes.push({ id: 'a' + a._i + 's', type: 'sets', target, after: a.sets, why });
         if (isInt(a.reps, 1, 100)) changes.push({ id: 'a' + a._i + 'r', type: 'reps', target, after: a.reps, why });
         if (isInt(a.sec, 5, 3600)) changes.push({ id: 'a' + a._i + 't', type: 'sec', target, after: a.sec, why });
@@ -132,7 +137,7 @@ export function sortActions(data, payload, answer, ctx = {}) {
       } else {
         if (!isInt(a.day, 0, 6)) { errors.push(`actions[${a._i}].day must be a weekday number 0-6 (0 is Sunday)`); return; }
         const rest = a.routineId === 'rest' || a.routineId == null;
-        if (!rest && !routineIds.has(a.routineId)) { errors.push(`actions[${a._i}].routineId "${a.routineId}" is not one of their routines (or "rest")`); return; }
+        if (!rest && (!routineIds.has(a.routineId) || !canUseRoutine(a.routineId))) { errors.push(`actions[${a._i}].routineId "${a.routineId}" is not one of their routines (or "rest")`); return; }
         changes.push({ id: 'a' + a._i, type: 'week', target: { weekday: a.day }, after: rest ? 'rest' : a.routineId, why });
       }
     });
@@ -156,7 +161,7 @@ export function sortActions(data, payload, answer, ctx = {}) {
         break;
       }
       case 'start':
-        if (!routineIds.has(a.routineId)) errors.push(`${where}.routineId "${a.routineId}" is not one of their routines`);
+        if (!routineIds.has(a.routineId) || !canUseRoutine(a.routineId)) errors.push(`${where}.routineId "${a.routineId}" is not one of their routines`);
         else out.push({ type: 'start', routineId: a.routineId });
         break;
       case 'note':
@@ -172,6 +177,7 @@ export function sortActions(data, payload, answer, ctx = {}) {
       case 'show': {
         const id = libId(a.exId);
         if (!libraryHas(id)) errors.push(`${where}.exId ${JSON.stringify(a.exId)} is not in the exercise library`);
+        else if (ctx.bodyweightOnly && !needsNoEquipment(id)) errors.push(`${where}.exId must be an equipment-free exercise`);
         else if (!out.some(x => x.type === 'show' && x.exId === id)) out.push({ type: 'show', exId: id, name: LIB_BY_ID.get(id).n });
         break;
       }
