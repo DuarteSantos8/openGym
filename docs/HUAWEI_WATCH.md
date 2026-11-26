@@ -649,6 +649,24 @@ A debug build has the package `ch.duartesantos.opengym.test`, which is not the o
 Huawei, so Huawei will most likely refuse it (the code comment says so, and it is not verified). Test
 with a release-signed build of the real package.
 
+### Testing on your own watch before Huawei approves Wear Engine
+
+Anyone with a Watch GT or Fit can help before the owner's steps below are done, but only with the watch
+half. Until Huawei approves openGym for Wear Engine (step 3 below), the phone cannot talk to the watch,
+and until the watch has synced once it shows only **Not synced yet** with a line to open openGym on the
+phone. Start is not offered, so a workout cannot be run yet.
+
+What such a test still answers, and only a real watch can:
+
+- the app installs and opens (each built file is under the 48 KB a real watch accepts);
+- it opens without running out of memory (a real watch's limit for an app is not known);
+- the Not synced yet screen fits the round or square screen and the text is drawn in your language.
+
+How: build the watch app (see "Building and testing"), sign it with a debug certificate and profile
+from your own Huawei developer account (step 5 below, with your own account), and install it with
+DevEco Assistant (step 9 below). Report on the pull request or issue #1070: watch model, firmware
+version, what you saw, a photo of the screen if you can.
+
 ## What the owner does
 
 Only the project owner can do these. In this order; the first three take Huawei up to two weeks.
