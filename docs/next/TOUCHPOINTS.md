@@ -110,3 +110,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/coach/jobs.js`, `api/coach/routes.js` | `next/EP19-coach-app-navigation` | API | Bound and rate-limit a help request with only a question and visible directions. |
 | `api/openapi.yaml`, `website/api.html` | `next/EP19-coach-app-navigation` | API docs | Document the read-only explanation endpoint and update its generated reference. |
 | `frontend/src/views/settings-pages.test.jsx` | `next/EP19-coach-app-navigation` | Test | Verify the app-help entry after the existing Settings root rows. |
+| `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-guest-workouts` | E2E | Verify ten guest workouts in the linked server profile and in History on both devices. |
