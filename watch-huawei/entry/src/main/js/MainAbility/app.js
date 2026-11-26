@@ -4,7 +4,7 @@
 // `data` holds functions only: a state object there died with JS REF LIMIT (split-design.md section 8), so A
 // lives in this module and `get` returns it.
 //
-// A.c      the core, made by A.make(stored)        A.ui     the screen-only state (view.js newUi), set by the page
+// A.c      the core, made by A.make(stored)        A.ui     the screen-only state (view-common.js newUi), set by the page
 // A.store  the store (saves c.s), made with the core   A.radio  the page's radio (frames over Wear Engine)
 // A.cb     the page's redraw, called as cb(sec): sec is true on the once-a-second pass. The page sets it on
 //          show and clears it on hide; A.radio is cleared on destroy. A page clears only what it set itself.

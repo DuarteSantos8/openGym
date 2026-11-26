@@ -24,6 +24,8 @@ const BAD = /JS HEAP OOM|Eval JS file failed|JS REF LIMIT/
 const PAGE = 'entry/src/main/js/MainAbility/pages/index/index.js'
 
 export const badLines = (log) => log.split('\n').filter((l) => BAD.test(l))
+// what a run failed on; "never ran" only when no bad line explains it
+export const failures = ({ fed, bad }) => [...(!fed && !bad.length ? ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'] : []), ...bad.map((l) => 'FAIL ' + l.slice(0, 160))]
 // the simulator reports memoryUsage on the pipe as JSON ending in a NUL byte
 export const heapPeak = (pipe) => Math.max(0, ...[...pipe.matchAll(/"peakAllocBytes":\s*(\d+)/g)].map((m) => +m[1]))
 
@@ -66,28 +68,31 @@ async function run(dir, out, hs) {
     '-lws', '40003', '-s', 'ogsmoke', '-url', 'pages/index/index', '-l', 'en_US']
   if (hs) args.push('-hs', String(hs))
   const sim = spawn(join(bin, 'Simulator'), args, { cwd: bin, stdio: ['ignore', openSync(logPath, 'w'), openSync(join(out, 'sim.err'), 'w')] })
-  await sleep(1500)
-  let last = null
-  const ws = new WebSocket(WS)
-  ws.binaryType = 'arraybuffer'
-  ws.onmessage = (e) => { const b = Buffer.from(e.data); const j = b.indexOf(Buffer.from([0xff, 0xd8, 0xff])); if (j >= 0) last = b.subarray(j) }
-  ws.onerror = () => {}
-  const log = () => readFileSync(logPath, 'utf8')
-  // wait for the driver's first line, then take a shot 800 ms after each step
-  let fed = false
-  for (let i = 0; i < 150 && !fed && !badLines(log()).length; i++) { await sleep(200); fed = log().includes('OGSMOKE feed') }
-  const t0 = Date.now()
-  if (fed) {
-    for (const [ms, name] of STEPS) {
-      await sleep(ms + 800 - (Date.now() - t0))
-      if (last) writeFileSync(join(out, `${String(ms).padStart(5, '0')}-${name}.jpg`), last)
+  let ws
+  try { // whatever happens, the simulator dies with the run: it is heavy for an 8 GB Mac
+    await sleep(1500)
+    let last = null
+    ws = new WebSocket(WS)
+    ws.binaryType = 'arraybuffer'
+    ws.onmessage = (e) => { const b = Buffer.from(e.data); const j = b.indexOf(Buffer.from([0xff, 0xd8, 0xff])); if (j >= 0) last = b.subarray(j) }
+    ws.onerror = () => {}
+    const log = () => readFileSync(logPath, 'utf8')
+    // wait for the driver's first line, then take a shot 800 ms after each step
+    let fed = false
+    for (let i = 0; i < 150 && !fed && !badLines(log()).length; i++) { await sleep(200); fed = log().includes('OGSMOKE feed') }
+    const t0 = Date.now()
+    if (fed) {
+      for (const [ms, name] of STEPS) {
+        await sleep(ms + 800 - (Date.now() - t0))
+        if (last) writeFileSync(join(out, `${String(ms).padStart(5, '0')}-${name}.jpg`), last)
+        if (badLines(log()).length) break // an OOM mid-run: no point waiting out the rest of the steps
+      }
+      await sleep(2000)
     }
-    await sleep(2000)
+    return { fed, bad: badLines(log()), peak: heapPeak(pipe), out }
+  } finally {
+    sim.kill(); if (ws) ws.close(); srv.close()
   }
-  const bad = badLines(log())
-  const peak = heapPeak(pipe)
-  sim.kill(); ws.close(); srv.close()
-  return { fed, bad, peak, out }
 }
 
 async function main() {
@@ -103,9 +108,9 @@ async function main() {
   const r = await run(dir, arg('--out') || join(dir, 'shots'), hs)
   console.log(`copy ${dir}`)
   console.log(`heap limit ${hs || 'simulator default'}, peak ${r.peak ? r.peak + ' bytes' : 'not reported (the simulator died or gave none)'}, shots in ${r.out}`)
-  if (!r.fed) console.log('FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)')
-  for (const l of r.bad) console.log('FAIL ' + l.slice(0, 160))
-  if (!r.fed || r.bad.length) process.exit(1)
+  const fails = failures(r)
+  fails.forEach((l) => console.log(l))
+  if (fails.length) process.exit(1)
   console.log('ok')
   process.exit(0)
 }

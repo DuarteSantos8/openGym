@@ -1,14 +1,17 @@
-// The page: glue between Huawei's APIs, the screens (common/view.js) and the app (app.js). The app holds the
+// The page: glue between Huawei's APIs, the screens (common/view-*.js) and the app (app.js). The app holds the
 // core, the clock, the sensor and the buzz; the page loads the stored state, wires the radio and the store,
 // and copies the screen's data into `data` when the app says to. It decides nothing about what is shown
-// or what a tap does: view.js does, and has the tests. It imports nothing from core.js (a page that did would
+// or what a tap does: the view files do, and have the tests. It imports nothing from core.js (a page that did would
 // carry a second copy of it): the core's functions come through getApp().data.k().
 import file from '@system.file'
 import app from '@system.app'
 import { P2pClient, Message, Builder } from '../../common/wearengine.js'
 import { createRadio } from '../../common/radio.js'
 import { createStore } from '../../common/store.js'
-import { blank, newUi, tick, build, act, translator, lostData, swipeTo, attach } from '../../common/view.js'
+import { blank, newUi, tick, build, act, translator, lostData, swipeTo, attach } from '../../common/view-common.js'
+import { attach as attachHome } from '../../common/view-home.js'
+import { attach as attachLift } from '../../common/view-lift.js'
+import { attach as attachRest } from '../../common/view-rest.js'
 
 // The phone app this watch talks to (wire.md section 4). The package is the phone app's release
 // applicationId (a debug phone build is ch.duartesantos.opengym.test: change it to try one).
@@ -154,7 +157,7 @@ function boot (page) {
   })
 }
 
-// One tap: view.js does it, then the screen is drawn again. An error must not take the page down;
+// One tap: the view files do it, then the screen is drawn again. An error must not take the page down;
 // the core saves after each change, so nothing already done is lost.
 function go (page, name) {
   const c = A.c
@@ -169,7 +172,7 @@ export default {
   onInit: function () {
     A = getApp().data.get()
     K = getApp().data.k()
-    attach(K)
+    attach(K); attachHome(K); attachLift(K); attachRest(K)
     S.t = null
     if (A.c) { // the app's core is already running: this page only brings its own link, once its client knows the version
       const mine = S.boot
@@ -195,7 +198,7 @@ export default {
   },
   retry: function () { boot(this) },
   // Swipe right leaves the app, from the Start screen only: not by accident in the middle of a workout.
-  // In a workout a swipe left opens the Metrics page and a swipe right steps back (view.js swipeTo).
+  // In a workout a swipe left opens the Metrics page and a swipe right steps back (view-common.js swipeTo).
   swipe: function (e) {
     if (e.direction !== 'left' && e.direction !== 'right') return // a list scrolling is not ours
     if (e.direction === 'right' && (!A.c || this.s_idle)) { app.terminate(); return }

@@ -55,7 +55,7 @@ United States is not on Huawei's list; Spain, Switzerland, Germany, the UK and m
 
 ## What it does
 
-One page in the watch app, `pages/index`, shows one screen at a time. `common/view.js` decides
+One page in the watch app, `pages/index`, shows one screen at a time. `common/view-common.js` (and `view-home.js`, `view-lift.js`, `view-rest.js`) decide
 which screen and what it says (every line is tested); the page only copies that into the HML.
 The screens are the Garmin's and Wear OS's, fitted to a touch screen with no crown and no side-button
 handling: every control is a button on the screen, and the look is the Apple Watch app's (see "The look" below). Besides the ones in the table there is a "could
@@ -200,7 +200,7 @@ watch app  --frames-->  Wear Engine  -->  Huawei Health  -->  HuaweiLink  -->  q
 | Piece | Where | What |
 | --- | --- | --- |
 | `watch-huawei/.../common/core.js` | watch | the logic, a port of the Garmin's Core, Actions and Link as plain JavaScript |
-| `watch-huawei/.../common/view.js` | watch | which screen, every line of text, what each tap does |
+| `watch-huawei/.../common/view-*.js` | watch | which screen, every line of text, what each tap does |
 | `watch-huawei/.../pages/index/` | watch | the one page: `index.hml`, `index.css`, `index.js` (glue only, the only file that touches Huawei's APIs besides `wearengine.js`) |
 | `watch-huawei/.../common/frames.js`, `radio.js` | watch | the framing, and the sending and receiving through Huawei's `P2pClient` |
 | `watch-huawei/.../common/store.js` | watch | the state in the watch's files, safe against being killed |

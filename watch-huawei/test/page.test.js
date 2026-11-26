@@ -1,5 +1,5 @@
 // The page file, which nothing here can run on a watch: its HML, its handlers and its data checked
-// against view.js, then the page itself run under Node with fake Huawei APIs (the imports are rewritten
+// against the view files, then the page itself run under Node with fake Huawei APIs (the imports are rewritten
 // to fakes), through a workout and a restart.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -7,7 +7,10 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { blank, ACTIONS, SCREENS } from '../entry/src/main/js/MainAbility/common/view.js'
+import { blank, ACTIONS, SCREENS } from '../entry/src/main/js/MainAbility/common/view-common.js'
+import '../entry/src/main/js/MainAbility/common/view-home.js' // each adds its taps to ACTIONS
+import '../entry/src/main/js/MainAbility/common/view-lift.js'
+import '../entry/src/main/js/MainAbility/common/view-rest.js'
 import { dollarT } from './i18n.js'
 import { frames } from '../entry/src/main/js/MainAbility/common/frames.js'
 
@@ -79,7 +82,7 @@ async function loadFrom (src, W) {
   // the number keeps each load's fake modules apart: Node caches a data: module by its text
   Object.keys(modules).forEach(m => { src = src.replace("'" + m + "'", "'data:text/javascript,export%20default%20globalThis.__W." + modules[m] + "%3B//" + loads + "'") })
   src = src.replace("'../../common/wearengine.js'", "'data:text/javascript,export%20const%20P2pClient%3DglobalThis.__W.P2pClient%3Bexport%20const%20Message%3DglobalThis.__W.Message%3Bexport%20const%20Builder%3DglobalThis.__W.Builder%3B//" + loads + "'")
-  src = src.replace(/'(?:\.\.\/\.\.\/common|\.\/common)\/([a-z]+\.js)'/g, (_, f) => "'" + new URL(f, common).href + "'")
+  src = src.replace(/'(?:\.\.\/\.\.\/common|\.\/common)\/([a-z-]+\.js)'/g, (_, f) => "'" + new URL(f, common).href + "'")
   const tmp = mkdtempSync(join(tmpdir(), 'og-page-'))
   const f = join(tmp, 'page.mjs')
   writeFileSync(f, src)

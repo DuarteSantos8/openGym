@@ -5,7 +5,7 @@
 //                   elapsed seconds (null without a start; stands still at `pausedAt` while the phone has the workout
 //                   paused), hr { now, avg, max } or null (none, or the phone's show.hr is off)
 
-// core.js is not imported (see view.js attach): app.js holds the only copy.
+// core.js is not imported (see view-common.js attach): app.js holds the only copy.
 let workoutTotals, progress, hrSoFar, elapsed
 export function attach (K) { workoutTotals = K.workoutTotals; progress = K.progress; hrSoFar = K.hrSoFar; elapsed = K.elapsed }
 

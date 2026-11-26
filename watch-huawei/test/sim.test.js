@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { badLines, heapPeak, inject } from '../huawei-sim.mjs'
+import { badLines, heapPeak, inject, failures } from '../huawei-sim.mjs'
 
 test('badLines finds the three failures and nothing else', () => {
   const log = ['[INFO] fine', 'JS HEAP OOM', 'x Eval JS file failed y', 'JS REF LIMIT', 'view model is undefined'].join('\n')
@@ -14,6 +14,13 @@ test('heapPeak is the largest peakAllocBytes the pipe reported', () => {
   const m = n => `{"property":"memoryUsage","result":{"totalBytes":1,"allocBytes":2,"peakAllocBytes":${n}}}\0`
   assert.equal(heapPeak(m(100) + m(129584) + m(5000)), 129584)
   assert.equal(heapPeak(''), 0)
+})
+
+test('failures: an OOM before the first feed is one line, not also "never ran"', () => {
+  assert.deepEqual(failures({ fed: true, bad: [] }), [])
+  assert.deepEqual(failures({ fed: false, bad: [] }), ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'])
+  assert.deepEqual(failures({ fed: false, bad: ['JS HEAP OOM'] }), ['FAIL JS HEAP OOM'])
+  assert.deepEqual(failures({ fed: true, bad: ['JS REF LIMIT'] }), ['FAIL JS REF LIMIT'])
 })
 
 test('inject puts the debug phone in a page copy and refuses a page it does not recognise', () => {

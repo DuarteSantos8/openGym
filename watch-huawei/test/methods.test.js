@@ -11,7 +11,7 @@ const es5 = 'forEach map filter some every indexOf lastIndexOf slice concat push
 const own = 'onError onComplete accept busy gathering listen stop save load send registerReceiver unregisterReceiver readText writeText delete buzz now random transmit get k'.split(' ')
 const huawei = 'getInfo setDescription vibrate subscribeHeartRate unsubscribeHeartRate setKeepScreenOn $t setPeerPkgName setPeerFingerPrint terminate rotation'.split(' ')
 
-;['app.js', 'common/frames.js', 'common/radio.js', 'common/store.js', 'common/view.js', 'pages/index/index.js'].forEach(f => {
+;['app.js', 'common/frames.js', 'common/radio.js', 'common/store.js', 'common/view-common.js', 'common/view-home.js', 'common/view-lift.js', 'common/view-rest.js', 'pages/index/index.js'].forEach(f => {
   test(f + ' calls only ES5 methods, its own names and Huawei\'s documented calls', () => {
     const src = strip(readFileSync(new URL(f, root), 'utf8'))
     const called = []

@@ -1,4 +1,4 @@
-<!-- One page, every screen a block shown by `if` on one value (view.js decides which): the lite
+<!-- One page, every screen a block shown by `if` on one value (view-common.js decides which): the lite
      router can only replace a page, and a replaced page loses its state. Accent colours are bound as
      single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
 <div class="root" onswipe="swipe">
