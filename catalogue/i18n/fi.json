@@ -715,7 +715,7 @@
     ]
   },
   "1070": {
-    "name": "Hauiskääntö ripustushihnoilla",
+    "name": "Hauiskääntö harjoitushihnoilla",
     "description": "Käännä itsesi kohti hihnoja nojaten samalla taaksepäin. Liike kohdistuu hauiksiin.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taaksepäin käsivarret ojennettuina.",
@@ -726,7 +726,7 @@
     ]
   },
   "1071": {
-    "name": "Vaakasoutu polvet koukussa ripustushihnoilla",
+    "name": "Vaakasoutu polvet koukussa harjoitushihnoilla",
     "description": "Souda itsesi ylös hihnojen alla polvet koukussa. Liike vahvistaa selkää.",
     "instructions": [
       "Asetu hihnojen alle ja tartu kahvoihin.",
@@ -737,7 +737,7 @@
     ]
   },
   "1072": {
-    "name": "Rintadippi ripustushihnoilla",
+    "name": "Rintadippi harjoitushihnoilla",
     "description": "Tee dippi hihnojen varassa. Liike kohdistuu rintaan ja ojentajiin.",
     "instructions": [
       "Tue itsesi hihnojen varaan käsivarret suorina.",
@@ -748,7 +748,7 @@
     ]
   },
   "1073": {
-    "name": "Rintapunnerrus ripustushihnoilla",
+    "name": "Rintapunnerrus harjoitushihnoilla",
     "description": "Punnerrus poispäin hihnoista. Liike aktivoi rintalihaksia.",
     "instructions": [
       "Seiso selkä kiinnityspistettä kohti ja pidä kahvoista kiinni rinnan korkeudella.",
@@ -759,7 +759,7 @@
     ]
   },
   "1074": {
-    "name": "Aukaisu ripustushihnoilla",
+    "name": "Aukaisu harjoitushihnoilla",
     "description": "Avaa käsivarret leveästi hihnoja vasten. Se venyttää ja vahvistaa rintalihaksia.",
     "instructions": [
       "Seiso selkä kiinnityspisteeseen päin kädet rinnan korkeudella.",
@@ -770,7 +770,7 @@
     ]
   },
   "1075": {
-    "name": "Etunosto ripustushihnoilla",
+    "name": "Etunosto harjoitushihnoilla",
     "description": "Nosta kehoasi hihnojen varassa kädet edessä. Tämä liike kohdistuu etuolkapäihin.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taakse kädet alhaalla.",
@@ -781,7 +781,7 @@
     ]
   },
   "1076": {
-    "name": "Takareisijuoksija ripustushihnoilla",
+    "name": "Takareisijuoksija harjoitushihnoilla",
     "description": "Takareisien koukistus kantapäät lenkeissä, vuorotellen jaloilla kuin juosten. Liike kehittää takareisiä ja keskivartalon hallintaa.",
     "instructions": [
       "Asetu selinmakuulle kantapäät molemmissa lenkeissä ja nosta lantio ylös.",
@@ -793,7 +793,7 @@
     ]
   },
   "1077": {
-    "name": "Lonkan loitonnus ripustushihnoilla",
+    "name": "Lonkan loitonnus harjoitushihnoilla",
     "description": "Seisten tehtävä jalan nosto sivulle toinen jalka lenkissä. Se vahvistaa lonkan ulkosyrjää ja tukilihaksia.",
     "instructions": [
       "Aseta toinen jalka lenkkiin ja seiso tukevasti toisen jalan varassa pitäen kiinni ankkuripisteestä tasapainon vuoksi.",
@@ -805,7 +805,7 @@
     ]
   },
   "1078": {
-    "name": "Lantionnosto ripustushihnoilla",
+    "name": "Lantionnosto harjoitushihnoilla",
     "description": "Pakarasilta kantapäät lenkeissä, mikä tuo mukaan epävakautta. Liike vahvistaa pakaroita ja takareisiä.",
     "instructions": [
       "Asetu selinmakuulle kantapäät lenkeissä ja polvet koukussa.",
@@ -817,7 +817,7 @@
     ]
   },
   "1079": {
-    "name": "Selänojennus ripustushihnoilla",
+    "name": "Selänojennus harjoitushihnoilla",
     "description": "Lantion ojennus jalkojen ollessa kiinni nauhoissa tai lenkeissä. Vahvistaa alaselkää ja pakaroita.",
     "instructions": [
       "Asetu vatsallesi niin, että jalkasi ovat lenkeissä ja kädet niskan takana tai ristiin rinnalla.",
@@ -829,7 +829,7 @@
     ]
   },
   "1080": {
-    "name": "Vaakasoutu ripustushihnoilla",
+    "name": "Vaakasoutu harjoitushihnoilla",
     "description": "Kehonpainolla tehtävä soutu roikkuen lenkeistä. Rakentaa yläselkää ja hauiksia.",
     "instructions": [
       "Tartu kahvoihin, ojenna käsivarret ja nojaa taaksepäin pitäen vartalon suorana.",
@@ -841,7 +841,7 @@
     ]
   },
   "1081": {
-    "name": "Pike ripustushihnoilla",
+    "name": "Pike harjoitushihnoilla",
     "description": "Lankkuasennosta tehtävä lantioveto jalkojen ollessa lenkeissä. Haastaa vatsalihakset ja olkapäät tehokkaasti.",
     "instructions": [
       "Aloita lankkuasennosta jalat lenkeissä ja kädet olkapäiden alla.",
@@ -853,7 +853,7 @@
     ]
   },
   "1082": {
-    "name": "Linkkuveitsi ripustushihnoilla",
+    "name": "Linkkuveitsi harjoitushihnoilla",
     "description": "Lankkuasennosta jalkojen ollessa lenkeissä vedät polvia rintaa kohti. Se vahvistaa vatsalihaksia ja keskivartalon hallintaa.",
     "instructions": [
       "Asetu lankkuun jalat lenkeissä ja kädet olkapäiden alla.",
@@ -865,7 +865,7 @@
     ]
   },
   "1083": {
-    "name": "Reiden koukistus ripustushihnoilla",
+    "name": "Reiden koukistus harjoitushihnoilla",
     "description": "Takareisien koukistus kantapäiden ollessa lenkeissä samalla kun pidät lantiota ylhäällä. Tämä liike aktivoi takareisiä ja pakaroita.",
     "instructions": [
       "Asetu selinmakuulle kantapäät lenkeissä ja jalat ojennettuina.",
@@ -877,7 +877,7 @@
     ]
   },
   "1084": {
-    "name": "Vuorikiipeilijä ripustushihnoilla",
+    "name": "Vuorikiipeilijä harjoitushihnoilla",
     "description": "Vuorikiipeilijä jalat lenkeissä, mikä tuo harjoitukseen epävakautta. Se kehittää keskivartaloa ja kestävyyskuntoa.",
     "instructions": [
       "Asetu lankkuun jalat lenkeissä.",
@@ -889,7 +889,7 @@
     ]
   },
   "1086": {
-    "name": "Voimaveto ripustushihnoilla",
+    "name": "Voimaveto harjoitushihnoilla",
     "description": "Voimakas veto pitkästä asennosta hihnojen alta. Kehittää leveitä selkälihaksia ja yläselkää.",
     "instructions": [
       "Tartu kahvoihin suorin käsin ja nojaa taaksepäin.",
@@ -901,7 +901,7 @@
     ]
   },
   "1087": {
-    "name": "Veto jalkojen välistä ripustushihnoilla",
+    "name": "Veto jalkojen välistä harjoitushihnoilla",
     "description": "Lantion saranaliike jalkojen välistä pidettävillä hihnoilla. Se vahvistaa pakaroita ja takareisiä.",
     "instructions": [
       "Seiso poispäin ankkuripisteestä ja pidä kahvoja jalkojesi välissä.",
@@ -913,8 +913,8 @@
     ]
   },
   "1088": {
-    "name": "Leuanveto ripustushihnoilla",
-    "description": "Leuanveto ripustushihnoilla. Se kehittää leveitä selkälihaksia ja käsivarsia.",
+    "name": "Leuanveto harjoitushihnoilla",
+    "description": "Leuanveto harjoitushihnoilla. Se kehittää leveitä selkälihaksia ja käsivarsia.",
     "instructions": [
       "Ripustaudu kahvoihin käsivarret suorina.",
       "Jännitä keskivartalo.",
@@ -925,8 +925,8 @@
     ]
   },
   "1090": {
-    "name": "Käänteinen aukaisu ripustushihnoilla",
-    "description": "Takaolkapääsoutu ripustushihnoilla. Se treenaa takaolkapäitä ja yläselkää.",
+    "name": "Käänteinen aukaisu harjoitushihnoilla",
+    "description": "Takaolkapääsoutu harjoitushihnoilla. Se treenaa takaolkapäitä ja yläselkää.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taakse kädet suorina.",
       "Pidä keho suorana.",
@@ -937,8 +937,8 @@
     ]
   },
   "1091": {
-    "name": "Vatsarullaus ripustushihnoilla v. 3",
-    "description": "Vartalorullaus ripustushihnoilla. Se haastaa tehokkaasti vatsalihakset ja olkapäät.",
+    "name": "Vatsarullaus harjoitushihnoilla v. 3",
+    "description": "Vartalorullaus harjoitushihnoilla. Se haastaa tehokkaasti vatsalihakset ja olkapäät.",
     "instructions": [
       "Polvistu ja pidä kahvoja lähellä rintaasi.",
       "Jännitä keskivartalo.",
@@ -949,7 +949,7 @@
     ]
   },
   "1093": {
-    "name": "Itseavusteinen rintadippi ripustushihnoilla",
+    "name": "Itseavusteinen rintadippi harjoitushihnoilla",
     "description": "Rinnalla tehtävä dippi, jossa jalat ovat tukena lattialla. Se vahvistaa rintaa ja ojentajia.",
     "instructions": [
       "Tartu kahvoihin kädet suorina ja jalat lattiassa.",
@@ -961,7 +961,7 @@
     ]
   },
   "1094": {
-    "name": "Itseavusteinen leuanveto ripustushihnoilla",
+    "name": "Itseavusteinen leuanveto harjoitushihnoilla",
     "description": "Leuanveto jalkojen tuella. Kehittää selkää ja käsivarsia.",
     "instructions": [
       "Tartu kahvoihin jalat lattialla.",
@@ -973,7 +973,7 @@
     ]
   },
   "1095": {
-    "name": "Itseavusteinen ojentajadippi ripustushihnoilla",
+    "name": "Itseavusteinen ojentajadippi harjoitushihnoilla",
     "description": "Ojentajadippi jalat lattiassa tuoden kevennystä. Se vahvistaa ojentajia.",
     "instructions": [
       "Tartu kahvoihin käsivarsien ollessa suorina ja pidä jalat lattiassa.",
@@ -985,7 +985,7 @@
     ]
   },
   "1096": {
-    "name": "Olkapään ulkokierto ripustushihnoilla",
+    "name": "Olkapään ulkokierto harjoitushihnoilla",
     "description": "Ulkokierto hihnojen avulla. Se vahvistaa kiertäjäkalvosinta.",
     "instructions": [
       "Tartu kahvoihin kyynärpäät 90 asteen kulmassa koukussa.",
@@ -997,7 +997,7 @@
     ]
   },
   "1097": {
-    "name": "Kylkitaivutus ripustushihnoilla",
+    "name": "Kylkitaivutus harjoitushihnoilla",
     "description": "Kylkitaivutus hihnaa käyttäen. Se aktivoi vatsan vinoja lihaksia.",
     "instructions": [
       "Tartu kahvaan ja seiso sivuttain kiinnityspisteeseen nähden.",
@@ -1009,7 +1009,7 @@
     ]
   },
   "1098": {
-    "name": "Kylkilankku ripustushihnoilla",
+    "name": "Kylkilankku harjoitushihnoilla",
     "description": "Sivulankku jalat hihnoissa. Se vahvistaa vatsan vinoja lihaksia ja keskivartalon tukea.",
     "instructions": [
       "Asetu kylkimakuulle jalat hihnoissa ja kyynärpää olkapään alapuolella.",
@@ -1021,7 +1021,7 @@
     ]
   },
   "1099": {
-    "name": "Yhden jalan askelkyykky ripustushihnoilla (itseavusteinen)",
+    "name": "Yhden jalan askelkyykky harjoitushihnoilla (itseavusteinen)",
     "description": "Askelkyykky kahvoista kiinni pitäen. Liike kehittää jalkoja ja tasapainoa.",
     "instructions": [
       "Tartu kahvoihin ja aseta toinen jalka taakse.",
@@ -1033,7 +1033,7 @@
     ]
   },
   "1100": {
-    "name": "Yhden jalan askelkyykky ripustushihnoilla",
+    "name": "Yhden jalan askelkyykky harjoitushihnoilla",
     "description": "Askelkyykky, jossa takajalka on hihnassa. Se vahvistaa etujalkaa ja parantaa tasapainoa.",
     "instructions": [
       "Aseta takajalka hihnaan ja astu eteenpäin.",
@@ -1045,7 +1045,7 @@
     ]
   },
   "1101": {
-    "name": "Yhden jalan kyykky ripustushihnoilla",
+    "name": "Yhden jalan kyykky harjoitushihnoilla",
     "description": "Yhden jalan kyykky kahvoista kiinni pitäen. Se kehittää jalkojen voimaa.",
     "instructions": [
       "Tartu kahvoihin ja seiso yhdellä jalalla.",
@@ -1057,7 +1057,7 @@
     ]
   },
   "1102": {
-    "name": "Reiden koukistus lantio suorana ripustushihnoilla",
+    "name": "Reiden koukistus lantio suorana harjoitushihnoilla",
     "description": "Reiden koukistus siten, että lantio pysyy suorana. Se rasittaa takareisiä.",
     "instructions": [
       "Asetu selinmakuulle kantapäät lenkeissä.",
@@ -1069,8 +1069,8 @@
     ]
   },
   "1103": {
-    "name": "Ojentajadippi ripustushihnoilla",
-    "description": "Dippi ripustushihnoista. Se vahvistaa ojentajia.",
+    "name": "Ojentajadippi harjoitushihnoilla",
+    "description": "Dippi harjoitushihnoista. Se vahvistaa ojentajia.",
     "instructions": [
       "Tartu kahvoihin kädet suorina.",
       "Pidä keho pystyssä.",
@@ -1081,7 +1081,7 @@
     ]
   },
   "1104": {
-    "name": "Ojentajapunnerrus ripustushihnoilla v. 3",
+    "name": "Ojentajapunnerrus harjoitushihnoilla v. 3",
     "description": "Ojentajapunnerrus nojaten hihnoihin. Se eristää tehokkaasti ojentajat.",
     "instructions": [
       "Tartu kahvoihin ja nojaa eteenpäin.",
@@ -1093,7 +1093,7 @@
     ]
   },
   "1105": {
-    "name": "Kierto ripustushihnoilla",
+    "name": "Kierto harjoitushihnoilla",
     "description": "Lankusta jalkojen ollessa hihnoissa kierretään lantiota puolelta toiselle. Se vahvistaa vinoja vatsalihaksia.",
     "instructions": [
       "Asetu lankkuasentoon jalat hihnoissa.",
@@ -1105,7 +1105,7 @@
     ]
   },
   "1106": {
-    "name": "Kiertävä linkkuveitsi ripustushihnoilla",
+    "name": "Kiertävä linkkuveitsi harjoitushihnoilla",
     "description": "Lankkuasennosta jalkojen ollessa hihnoissa vedät polvia kohti rintakehän toista puolta, mikä ottaa tehokkaasti vatsalihaksiin ja vinoihin vatsalihaksiin.",
     "instructions": [
       "Aseta jalkasi hihnoihin ja ota suorien käsien lankkuasento.",
@@ -1117,7 +1117,7 @@
     ]
   },
   "1107": {
-    "name": "Y-vipunosto ripustushihnoilla",
+    "name": "Y-vipunosto harjoitushihnoilla",
     "description": "Nojaa taaksepäin nauhojen varassa ja vedä kädet ylös Y-muotoon olkapäiden ja yläselän vahvistamiseksi.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taaksepäin suorin käsin niin, että vartalo muodostaa suoran linjan.",
@@ -1129,7 +1129,7 @@
     ]
   },
   "1108": {
-    "name": "Hauiskääntö korville ripustushihnoilla",
+    "name": "Hauiskääntö korville harjoitushihnoilla",
     "description": "Kehonpainolla tehtävä hauiskääntö, jossa vedät kehosi käsien luo nauhojen ollessa pään korkeudella.",
     "instructions": [
       "Tartu kahvoihin kämmenet ylöspäin ja nojaa taaksepäin kädet ojennettuina.",
@@ -1141,7 +1141,7 @@
     ]
   },
   "1109": {
-    "name": "Hauispuristus ripustushihnoilla",
+    "name": "Hauispuristus harjoitushihnoilla",
     "description": "Nauhoilla tehtävä hauiskääntö, jossa pidot pidetään lähellä päätä. Erinomainen hauiksen huipulle ja käsivarsien hallinnalle.",
     "instructions": [
       "Tartu kahvoihin kämmenet ylöspäin ja nojaa taaksepäin kädet suorina.",
@@ -1153,7 +1153,7 @@
     ]
   },
   "1110": {
-    "name": "Vartalosaha ripustushihnoilla",
+    "name": "Vartalosaha harjoitushihnoilla",
     "description": "Kyynärvarsilankussa jalat hihnoissa keinutat kehoasi edestakaisin kuin sahaa, mikä haastaa keskivartaloa.",
     "instructions": [
       "Aseta jalkasi hihnoihin ja asetu kyynärvarsilankkuun.",
@@ -1165,7 +1165,7 @@
     ]
   },
   "1111": {
-    "name": "Kapea rintapunnerrus ripustushihnoilla",
+    "name": "Kapea rintapunnerrus harjoitushihnoilla",
     "description": "Kapealla otteella tehtävä punnerrus hihnoissa siirtää rasitusta ojentajille ja rinnan sisäosaan.",
     "instructions": [
       "Pidä kahvat lähellä toisiaan ja nojaa eteenpäin kädet suorina.",
@@ -1177,7 +1177,7 @@
     ]
   },
   "1112": {
-    "name": "Vatsarutistus ripustushihnoilla",
+    "name": "Vatsarutistus harjoitushihnoilla",
     "description": "Lankkuasennosta jalat hihnoissa vedät polvet rintaan ja pyöristät lantiota ylöspäin, mikä on suora vatsaliike.",
     "instructions": [
       "Aseta jalkasi hihnoihin ja muodosta suorien käsien lankku.",
@@ -1189,7 +1189,7 @@
     ]
   },
   "1113": {
-    "name": "Face pull ripustushihnoilla",
+    "name": "Face pull harjoitushihnoilla",
     "description": "Soudun tapainen liike kasvojen korkeudelle hihnoilla korkeilla kyynärpäillä, mikä kohdistuu takaolkapäihin ja yläselkään.",
     "instructions": [
       "Tartu kahvoihin kämmenet vastakkain ja nojaa taaksepäin.",
@@ -1201,7 +1201,7 @@
     ]
   },
   "1115": {
-    "name": "Käsilläseisontapunnerrus ripustushihnoilla",
+    "name": "Käsilläseisontapunnerrus harjoitushihnoilla",
     "description": "Edistynyt ylösalainen punnerrus kädet hihnoissa, joka kuormittaa voimakkaasti ojentajia ja olkapäitä.",
     "instructions": [
       "Aseta hihnat matalalle ja vie kädet kahvoihin pituussuunnassa.",
@@ -1213,7 +1213,7 @@
     ]
   },
   "1116": {
-    "name": "Vinopunnerrus ripustushihnoilla",
+    "name": "Vinopunnerrus harjoitushihnoilla",
     "description": "Etunojapunnerrus, jossa kädet ovat hihnoissa ja vartalo on viistossa ylöspäin. Hellävaraisempi rintaliike.",
     "instructions": [
       "Tartu kahvoihin ja ota jaloilla taaksepäin askeleita, jotta vartalosi on viistossa.",
@@ -1225,7 +1225,7 @@
     ]
   },
   "1117": {
-    "name": "Hyppykyykky ripustushihnoilla",
+    "name": "Hyppykyykky harjoitushihnoilla",
     "description": "Pidä kiinni hihnoista tasapainon vuoksi, kyykkää ja hyppää räjähtävästi kehittääksesi jalkojen voimaa.",
     "instructions": [
       "Tartu kahvoihin hieman koukussa olevilla käsillä ja seiso suorana.",
@@ -1237,7 +1237,7 @@
     ]
   },
   "1119": {
-    "name": "Ristikkäinen askelkyykky taakse ripustushihnoilla",
+    "name": "Ristikkäinen askelkyykky taakse harjoitushihnoilla",
     "description": "Takakyykky, jossa takajalka astutaan etujalan taakse ristiin. Liike kohdistuu pakaroihin ja ulkoreisiin.",
     "instructions": [
       "Tartu kahvoihin ja seiso kasvot kiinnityspistettä kohti.",
@@ -1249,7 +1249,7 @@
     ]
   },
   "1120": {
-    "name": "Keskisoutu ripustushihnoilla",
+    "name": "Keskisoutu harjoitushihnoilla",
     "description": "Kehonpainolla tehtävä soutu hihnoilla keskirinnan korkeudelle, mikä vahvistaa yläselkää ja käsivarsia.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taakse kädet suorina.",
@@ -1261,7 +1261,7 @@
     ]
   },
   "1121": {
-    "name": "Punnerrus ja vuorikiipeilijä ripustushihnoilla",
+    "name": "Punnerrus ja vuorikiipeilijä harjoitushihnoilla",
     "description": "Vaativa kuntoliike, jossa yhdistyvät punnerrus ja vuorikiipeilijä jalkojen ollessa ripustettuina.",
     "instructions": [
       "Asetu lankkuasentoon jalkaterät lenkeissä.",
@@ -1273,7 +1273,7 @@
     ]
   },
   "1122": {
-    "name": "Vino vatsarullaus ripustushihnoilla",
+    "name": "Vino vatsarullaus harjoitushihnoilla",
     "description": "Rullaamalla hihnoilla loivassa sivukulmassa aktivoit vinoja vatsalihaksia ja syvää keskivartaloa.",
     "instructions": [
       "Tartu kahvoihin polvillaan tai seisten kädet edessä.",
@@ -1285,7 +1285,7 @@
     ]
   },
   "1123": {
-    "name": "Yhden käden hauiskääntö ripustushihnoilla",
+    "name": "Yhden käden hauiskääntö harjoitushihnoilla",
     "description": "Käännät itsesi ylös yhdellä kädellä pitäen kiinni yhdestä hihnasta, mikä on haastava yksipuolinen hauisliike.",
     "instructions": [
       "Tartu yhteen kahvaan kämmen ylöspäin ja nojaa taaksepäin sopivassa kulmassa.",
@@ -1297,7 +1297,7 @@
     ]
   },
   "1124": {
-    "name": "Yhden käden rintapunnerrus ripustushihnoilla",
+    "name": "Yhden käden rintapunnerrus harjoitushihnoilla",
     "description": "Yhden käden punnerrus hihnassa, joka treenaa rintaa keskivartalon vastustaessa kiertoa.",
     "instructions": [
       "Tartu yhteen kahvaan, nojaa eteenpäin ja aseta jalkasi leveälle tasapainon vuoksi.",
@@ -1309,7 +1309,7 @@
     ]
   },
   "1125": {
-    "name": "Yhden käden ja jalan punnerrus ripustushihnoilla",
+    "name": "Yhden käden ja jalan punnerrus harjoitushihnoilla",
     "description": "Punnerruksen vaativa versio, jossa jalat ovat ripustettuina ja toinen käsi on ilmassa. Tämä liike kehittää rintalihasten voimaa ja koko kehon hallintaa.",
     "instructions": [
       "Asetu lankkuasentoon jalkojen ollessa lenkeissä ja toinen käsi lattialla.",
@@ -1321,7 +1321,7 @@
     ]
   },
   "1126": {
-    "name": "Yhden jalan rintapunnerrus ripustushihnoilla",
+    "name": "Yhden jalan rintapunnerrus harjoitushihnoilla",
     "description": "Rintapunnerrus jousitetuilla hihnoilla toinen jalka ilmassa, mikä tuo punnerrukseen tasapainohaasteen.",
     "instructions": [
       "Tartu kahvoihin, nojaa eteenpäin ja nosta toinen jalka irti lattiasta.",
@@ -1333,7 +1333,7 @@
     ]
   },
   "1127": {
-    "name": "Leuanveto ripustushihnoilla v. 2",
+    "name": "Leuanveto harjoitushihnoilla v. 2",
     "description": "Rintaremmeillä tai hihnoilla tehtävä soutuliike, joka kehittää leveitä selkälihaksia ja käsiä kulmaa säätämällä.",
     "instructions": [
       "Tartu kahvoihin yläviistosta ja roiku suorin käsin.",
@@ -1345,7 +1345,7 @@
     ]
   },
   "1128": {
-    "name": "Punnerrus ripustushihnoilla v. 2",
+    "name": "Punnerrus harjoitushihnoilla v. 2",
     "description": "Etunojapunnerrus epävakaissa hihnoissa, mikä tehostaa rinnan, käsivarsien ja keskivartalon työtä.",
     "instructions": [
       "Tartu kahvoihin ja ota lankkuasento kädet hartioiden alla.",
@@ -1357,7 +1357,7 @@
     ]
   },
   "1129": {
-    "name": "Askelkyykky taakse ripustushihnoilla",
+    "name": "Askelkyykky taakse harjoitushihnoilla",
     "description": "Taaksepäin tehtävä askelkyykky käsillä kahvoista tukea ottaen, mikä kohdistuu reisiin ja pakaroihin.",
     "instructions": [
       "Tartu kahvoihin ja seiso suorana ankkurointipistettä kohti.",
@@ -1369,7 +1369,7 @@
     ]
   },
   "1130": {
-    "name": "Herätyskäänteinen aukaisu ripustushihnoilla",
+    "name": "Herätyskäänteinen aukaisu harjoitushihnoilla",
     "description": "Hihnojen avulla tehtävä vipunosto taakse, joka aktivoi takaolkapäitä ja yläselkää parantaen ryhtiä.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taakse kädet suorina edessäsi.",
@@ -1381,7 +1381,7 @@
     ]
   },
   "1131": {
-    "name": "Ristiaskelkyykky sivulle ripustushihnoilla",
+    "name": "Ristiaskelkyykky sivulle harjoitushihnoilla",
     "description": "Sivulle ja ristiin astuttava askelkyykky hihnojen tuella, mikä kehittää pakaroita ja lähentäjiä.",
     "instructions": [
       "Tartu kahvoihin ja seiso suorana.",
@@ -1393,7 +1393,7 @@
     ]
   },
   "1132": {
-    "name": "Sivuaskelkyykky ripustushihnoilla",
+    "name": "Sivuaskelkyykky harjoitushihnoilla",
     "description": "Ottamalla pitkän askeleen sivulle kahvoista pitäen kuormitat reisiä, pakaroita ja lähentäjiä.",
     "instructions": [
       "Tartu kahvoihin ja seiso jalat yhdessä.",
@@ -1405,7 +1405,7 @@
     ]
   },
   "1133": {
-    "name": "Yhden käden takaolkapääsoutu ripustushihnoilla",
+    "name": "Yhden käden takaolkapääsoutu harjoitushihnoilla",
     "description": "Yhden käden soutu hihnassa kyynärpää ulkona, suunnaten takaolkapäille.",
     "instructions": [
       "Tartu yhteen kahvaan ja nojaa taaksepäin kulmassa.",
@@ -1417,7 +1417,7 @@
     ]
   },
   "1134": {
-    "name": "Yhden jalan lankku suorin käsin ripustushihnoilla",
+    "name": "Yhden jalan lankku suorin käsin harjoitushihnoilla",
     "description": "Suorien käsien lankku jalat hihnoissa ja toinen jalka ilmassa, mikä haastaa keskivartalon hallintaa.",
     "instructions": [
       "Aseta jalat hihnoihin ja ota korkea lankkuasento.",
@@ -1429,7 +1429,7 @@
     ]
   },
   "1135": {
-    "name": "Yhden jalan lankku ripustushihnoilla",
+    "name": "Yhden jalan lankku harjoitushihnoilla",
     "description": "Kyynärvarsilankku jalat hihnoissa ja toinen jalka nostettuna, mikä vastustaa kiertoa ja alaselännotkoa.",
     "instructions": [
       "Aseta jalat hihnoihin ja laskeudu kyynärvarsien varaan.",
@@ -1441,7 +1441,7 @@
     ]
   },
   "1136": {
-    "name": "Yhden jalan kyykky ripustushihnoilla v. 2",
+    "name": "Yhden jalan kyykky harjoitushihnoilla v. 2",
     "description": "Yhden jalan kyykky kahvoista tukea ottaen, mikä kehittää jalkojen voimaa ja tasapainoa.",
     "instructions": [
       "Tartu kahvoihin ja seiso yhdellä jalalla toinen jalka edessä.",
@@ -1453,7 +1453,7 @@
     ]
   },
   "1137": {
-    "name": "Istumaannousu ripustushihnoilla",
+    "name": "Istumaannousu harjoitushihnoilla",
     "description": "Selinmakuulta jalat hihnoissa tehtävä istumaan nousu vatsalihasten treenaamiseen.",
     "instructions": [
       "Asetu selinmakuulle jalat hihnoissa ja polvet koukussa.",
@@ -1465,7 +1465,7 @@
     ]
   },
   "1138": {
-    "name": "Spiderman-punnerrus ripustushihnoilla",
+    "name": "Spiderman-punnerrus harjoitushihnoilla",
     "description": "Etunojapunnerrus, jossa jalat ovat lenkeissä ja toinen polvi tuodaan kohti kyynärpäätä alas laskeuduttaessa.",
     "instructions": [
       "Aseta jalat lenkkeihin ja ota lankkuasento.",
@@ -1477,7 +1477,7 @@
     ]
   },
   "1139": {
-    "name": "Saksiaukaisu ripustushihnoilla",
+    "name": "Saksiaukaisu harjoitushihnoilla",
     "description": "Levitys hihnoissa hajatuella, jossa käsiä avataan olkapäiden ja rinnan työstämiseksi.",
     "instructions": [
       "Tartu kahvoihin, astu askelasentoon ja nojaa hieman eteenpäin.",
@@ -1489,7 +1489,7 @@
     ]
   },
   "1140": {
-    "name": "Sprintteri ripustushihnoilla",
+    "name": "Sprintteri harjoitushihnoilla",
     "description": "Pitelet hihnoja ja viet polvia eteenpäin kuin juoksija, mikä on nopea jalka- ja kuntoliike.",
     "instructions": [
       "Tartu kahvoihin ja nojaa hieman eteenpäin.",
@@ -1501,7 +1501,7 @@
     ]
   },
   "1141": {
-    "name": "Kyykky kädet ylhäällä ripustushihnoilla",
+    "name": "Kyykky kädet ylhäällä harjoitushihnoilla",
     "description": "Kyykky hihnoja pään päällä pitäen, mikä aktivoi jalkoja sekä hartioiden ja ylävartalon liikkuvuutta.",
     "instructions": [
       "Pidä kahvoja pään yläpuolella kädet suorina.",
@@ -1513,7 +1513,7 @@
     ]
   },
   "1143": {
-    "name": "Kyykky ripustushihnoilla",
+    "name": "Kyykky harjoitushihnoilla",
     "description": "Kehonpainokyykky, jossa pidät hihnoista kiinni tasapainon vuoksi ja voit nojata taakse syvyyden saavuttamiseksi.",
     "instructions": [
       "Tartu kahvoihin kädet ojennettuina.",
@@ -1525,7 +1525,7 @@
     ]
   },
   "1144": {
-    "name": "Vatsarullaus seisten ripustushihnoilla",
+    "name": "Vatsarullaus seisten harjoitushihnoilla",
     "description": "Pidä kiinni kahvoista seisten, nojaa eteenpäin ja rullaa eteenpäin suorin käsin haastavassa keskivartaloliikkeessä.",
     "instructions": [
       "Tartu kahvoihin edessäsi ja nojaa eteenpäin.",
@@ -1537,7 +1537,7 @@
     ]
   },
   "1145": {
-    "name": "Tähtilankku ripustushihnoilla",
+    "name": "Tähtilankku harjoitushihnoilla",
     "description": "Lankku jalkojen ollessa leveällä kahvoissa tähtiasennossa, mikä haastaa keskivartaloa ja lantiota.",
     "instructions": [
       "Aseta jalat kahvoihin ja ota lankkuasento käsien varaan.",
@@ -1549,7 +1549,7 @@
     ]
   },
   "1146": {
-    "name": "Tähtipunnerrus ripustushihnoilla",
+    "name": "Tähtipunnerrus harjoitushihnoilla",
     "description": "Etunojapunnerrus jalat leveällä kahvoissa, mikä tuo tehokkaan haasteen keskivartalolle ja lantiolle.",
     "instructions": [
       "Aseta jalat kahvoihin leveälle lankkuasentoon.",
@@ -1561,7 +1561,7 @@
     ]
   },
   "1147": {
-    "name": "Vatsarutistus selinmakuulla ripustushihnoilla",
+    "name": "Vatsarutistus selinmakuulla harjoitushihnoilla",
     "description": "Selällään maaten jalat kahvoissa nostat lantiota ylös alavatsalihasten aktivoimiseksi.",
     "instructions": [
       "Asetu selinmakuulle jalat kahvoissa ja nostettuna ylös.",
@@ -1573,7 +1573,7 @@
     ]
   },
   "1148": {
-    "name": "Käänteinen lankku ripustushihnoilla",
+    "name": "Käänteinen lankku harjoitushihnoilla",
     "description": "Taaksepäin suuntautuva lankku kantapäät kahvoissa, joka vahvistaa pakaroita, selkää ja keskivartaloa.",
     "instructions": [
       "Asetu selinmakuulle kantapäät kahvoissa.",
@@ -1585,7 +1585,7 @@
     ]
   },
   "1149": {
-    "name": "Ojentajapunnerrus ripustushihnoilla",
+    "name": "Ojentajapunnerrus harjoitushihnoilla",
     "description": "Laske pää kahvojen suuntaan ja punnerra ylös. Tehokas ojentajaliike vastuskuminauhoilla tai hihnalla.",
     "instructions": [
       "Tartu kahvoihin ja nojaa eteenpäin kädet suorina.",
@@ -1597,7 +1597,7 @@
     ]
   },
   "1150": {
-    "name": "Ojentajapotku ripustushihnoilla",
+    "name": "Ojentajapotku harjoitushihnoilla",
     "description": "Nojaa eteenpäin hihnojen varassa ja ojenna kyynärpää taakse ojentajan eristämiseksi.",
     "instructions": [
       "Tartu kahvoihin ja saranoita lantio eteenpäin kyynärpäät kyljissä.",
@@ -1609,7 +1609,7 @@
     ]
   },
   "1151": {
-    "name": "Vartalonkierto sivulle ripustushihnoilla",
+    "name": "Vartalonkierto sivulle harjoitushihnoilla",
     "description": "Sivuttaisasennosta lankusta hihnojen varassa kierretään vartaloa vinojen vatsalihasten aktivoimiseksi.",
     "instructions": [
       "Aseta jalkasi hihnoihin ja ota korkea lankkuasento.",
@@ -1621,7 +1621,7 @@
     ]
   },
   "1152": {
-    "name": "Vartalonkierto ylös ripustushihnoilla",
+    "name": "Vartalonkierto ylös harjoitushihnoilla",
     "description": "Vedä polvet ylös ja kierrä vartaloa lankusta, kun jalat ovat hihnoissa.",
     "instructions": [
       "Aseta jalkasi hihnoihin ja ota korkea lankkuasento.",
@@ -1633,7 +1633,7 @@
     ]
   },
   "1153": {
-    "name": "Yläselän venytys ripustushihnoilla",
+    "name": "Yläselän venytys harjoitushihnoilla",
     "description": "Nojaa taaksepäin hihnojen varassa kädet suorina, jotta yläselkä ja olkapäät venyvät.",
     "instructions": [
       "Tartu kahvoihin ja ota askel taakse, jotta kätesi ovat suorina.",
@@ -1645,7 +1645,7 @@
     ]
   },
   "1154": {
-    "name": "Pohjenousu ripustushihnoilla",
+    "name": "Pohjenousu harjoitushihnoilla",
     "description": "Pidä kiinni hihnoista tasapainon vuoksi ja nouse varpaille pohkeiden treenaamiseksi.",
     "instructions": [
       "Tartu kahvoihin ja seiso jalat lantiollisen leveydellä.",
@@ -1657,7 +1657,7 @@
     ]
   },
   "1155": {
-    "name": "Yhden jalan maastaveto ripustushihnoilla",
+    "name": "Yhden jalan maastaveto harjoitushihnoilla",
     "description": "Yhden jalan lantiosarana hihnojen tuella, mikä treenaa takareisiä ja pakaroita.",
     "instructions": [
       "Tartu kahvoihin ja seiso yhdellä jalalla.",
@@ -1669,7 +1669,7 @@
     ]
   },
   "1156": {
-    "name": "Heiluri ripustushihnoilla",
+    "name": "Heiluri harjoitushihnoilla",
     "description": "Lankkuasennossa tai maaten jalat hihnoissa heiluttelet jalkoja puolelta toiselle kuin heiluria vinojen vatsalihasten treenaamiseksi.",
     "instructions": [
       "Aseta jalat hihnoihin ja ota korkea lankkuasento.",
@@ -1681,7 +1681,7 @@
     ]
   },
   "1157": {
-    "name": "Lonkkasarana ripustushihnoilla",
+    "name": "Lonkkasarana harjoitushihnoilla",
     "description": "Pidä kiinni hihnoista ja tee lantiosaranaa edestakaisin pakaroiden ja takareisien treenaamiseksi.",
     "instructions": [
       "Tartu kahvoihin käsien ollessa suorina ja jalkojen lantion leveydellä.",
@@ -1693,7 +1693,7 @@
     ]
   },
   "1158": {
-    "name": "Sivuvenytys ripustushihnoilla",
+    "name": "Sivuvenytys harjoitushihnoilla",
     "description": "Käytä hihnoja tukena ja vajoa leveään sivuasentoon venyttämään reiden sisäosia.",
     "instructions": [
       "Tartu kahvoihin ja ota leveä haara-asento.",
@@ -1705,7 +1705,7 @@
     ]
   },
   "1159": {
-    "name": "Loitontava askelkyykky ripustushihnoilla",
+    "name": "Loitontava askelkyykky harjoitushihnoilla",
     "description": "Sivuttaissuuntainen askelkyykky hihnojen tuella, joka kuormittaa ulkoisia lonkkia ja jalkoja.",
     "instructions": [
       "Tartu kahvoihin ja seiso suorassa.",
@@ -15443,8 +15443,8 @@
     ]
   },
   "2834": {
-    "name": "Painotettu vaakasoutu ripustushihnoilla",
-    "description": "Kulmasoutu ripustushihnoilla kehoon lisätyllä painolla. Vahvistaa selkää ja hauiksia.",
+    "name": "Painotettu vaakasoutu harjoitushihnoilla",
+    "description": "Kulmasoutu harjoitushihnoilla kehoon lisätyllä painolla. Vahvistaa selkää ja hauiksia.",
     "instructions": [
       "Tartu hihnojen kahvoihin ja nojaa taaksepäin vartalo suorana, jolloin vartalollasi on lisäpainoa.",
       "Pidä kädet suorina ja kantapäät lattiassa.",
@@ -26538,8 +26538,8 @@
     ]
   },
   "4094": {
-    "name": "Askelkyykky eteen ja vipunosto taakse ripustushihnoilla",
-    "description": "Askelkyykyn ja vipunoston yhdistelmä ripustushihnoilla. Työstää jalkoja, hartioita ja yläselkää samanaikaisesti.",
+    "name": "Askelkyykky eteen ja vipunosto taakse harjoitushihnoilla",
+    "description": "Askelkyykyn ja vipunoston yhdistelmä harjoitushihnoilla. Työstää jalkoja, hartioita ja yläselkää samanaikaisesti.",
     "instructions": [
       "Tartu hihnoihin molemmin käsin nojaten kevyesti taaksepäin kädet suorina.",
       "Ota toisella jalalla askel eteenpäin ja laskeudu askelkyykkyyn.",
@@ -30050,7 +30050,7 @@
     ]
   },
   "4450": {
-    "name": "Leveä vaakasoutu ripustushihnoilla",
+    "name": "Leveä vaakasoutu harjoitushihnoilla",
     "description": "Kehonpainolla tehtävä soutu hihnojen varassa leveällä otteella. Vahvistaa yläselkää ja leveitä selkälihaksia keskivartalon pitäessä paketin kasassa.",
     "instructions": [
       "Tartu jousitreenin kahvoihin leveällä myötäotteella ja nojaa taakse käsivarret suorina.",
@@ -30062,7 +30062,7 @@
     ]
   },
   "4451": {
-    "name": "Leveä vaakasoutu lattialta ripustushihnoilla",
+    "name": "Leveä vaakasoutu lattialta harjoitushihnoilla",
     "description": "Kehonpainolla tehtävä soutu roikkuvien hihnojen varassa leveällä otteella. Kehittää yläselkää ja olkapäitä.",
     "instructions": [
       "Tartu kahvoihin leveällä myötäotteella ja käy selinmakuulle vartalo suorana.",
@@ -33292,10 +33292,10 @@
     ]
   },
   "4798": {
-    "name": "Vuorottainen superman ripustushihnoilla",
-    "description": "Superman-liike jalkojen ollessa ripustushihnoissa, jolloin nostat vuorotellen vastakkaista kättä ja jalkaa. Se treenaa alaosaa selästä ja keskivartaloa.",
+    "name": "Vuorottainen superman harjoitushihnoilla",
+    "description": "Superman-liike jalkojen ollessa harjoitushihnoissa, jolloin nostat vuorotellen vastakkaista kättä ja jalkaa. Se treenaa alaosaa selästä ja keskivartaloa.",
     "instructions": [
-      "Aseta jalat ripustushihnoihin ja ota lankkuasento päinmakuulla.",
+      "Aseta jalat harjoitushihnoihin ja ota lankkuasento päinmakuulla.",
       "Jännitä keskivartalo ja pidä lantio suorana.",
       "Nosta toinen käsi eteen pitäen vartalon vakaana.",
       "Laske se alas ja nosta toinen käsi.",
@@ -33304,10 +33304,10 @@
     ]
   },
   "4799": {
-    "name": "Vatsarullaus ripustushihnoilla v. 2",
-    "description": "Vartalon ojennus eli rollout ripustushihnoilla, toinen variaatio. Se haastaa vatsalihaksia, kun työnnät kehoa eteenpäin ja vedät takaisin.",
+    "name": "Vatsarullaus harjoitushihnoilla v. 2",
+    "description": "Vartalon ojennus eli rollout harjoitushihnoilla, toinen variaatio. Se haastaa vatsalihaksia, kun työnnät kehoa eteenpäin ja vedät takaisin.",
     "instructions": [
-      "Polvistu kiinnityspistettä kohti ja pidä kiinni ripustushihnoista olkapäiden alla.",
+      "Polvistu kiinnityspistettä kohti ja pidä kiinni harjoitushihnoista olkapäiden alla.",
       "Jännitä keskivartalo ja työnnä lantiota hieman alle.",
       "Rullaa käsivarsia eteenpäin vartalon kallistuessa suorassa linjassa eteen.",
       "Mene vain niin pitkälle kuin pystyt pitämään selän suorana.",
@@ -35243,7 +35243,7 @@
     ]
   },
   "5004": {
-    "name": "Sumokyykky ripustushihnoilla",
+    "name": "Sumokyykky harjoitushihnoilla",
     "description": "Leveällä jalka-asennolla tehtävä kyykky pitäen kiinni joustohihnoista tuena. Se vahvistaa reiden sisäosia ja pakaroita.",
     "instructions": [
       "Seiso kasvot kiinnityskohtaan päin pitäen kahvoista leveässä haara-asennossa.",
@@ -35266,8 +35266,8 @@
     ]
   },
   "5006": {
-    "name": "Vaakasoutu vastaotteella ripustushihnoilla",
-    "description": "Vaakasoutu ripustushihnoilla vastaotteella tehtynä. Se vahvistaa selkää ja hauiksia.",
+    "name": "Vaakasoutu vastaotteella harjoitushihnoilla",
+    "description": "Vaakasoutu harjoitushihnoilla vastaotteella tehtynä. Se vahvistaa selkää ja hauiksia.",
     "instructions": [
       "Tartu kahvoihin kämmenet ylöspäin ja nojaa taakse vartalo suorana.",
       "Jännitä keskivartalo.",
@@ -35278,8 +35278,8 @@
     ]
   },
   "5007": {
-    "name": "Vasarakääntö ripustushihnoilla",
-    "description": "Hauiskääntö ripustushihnoilla kämmenet vastakkain. Se kuormittaa hauiksia ja niiden ympäristön lihaksia.",
+    "name": "Vasarakääntö harjoitushihnoilla",
+    "description": "Hauiskääntö harjoitushihnoilla kämmenet vastakkain. Se kuormittaa hauiksia ja niiden ympäristön lihaksia.",
     "instructions": [
       "Tartu kahvoihin kämmenet vastakkain ja nojaa taakse.",
       "Pidä vartalosi suorassa linjassa.",
@@ -35290,8 +35290,8 @@
     ]
   },
   "5008": {
-    "name": "Leuanveto vastaotteella ripustushihnoilla",
-    "description": "Leuanveto ripustushihnoilla. Se vahvistaa leveitä selkälihaksia ja käsivarsia luonnollisella liikeradalla.",
+    "name": "Leuanveto vastaotteella harjoitushihnoilla",
+    "description": "Leuanveto harjoitushihnoilla. Se vahvistaa leveitä selkälihaksia ja käsivarsia luonnollisella liikeradalla.",
     "instructions": [
       "Tartu kahvoihin kämmenet itseesi päin ja nojaa taakse.",
       "Jännitä keskivartalo ja pidä vartalo suorana.",
@@ -39119,8 +39119,8 @@
     ]
   },
   "5737": {
-    "name": "Aukaisu ripustushihnoilla v. 2",
-    "description": "Rintalihasten levitysliike ripustushihnoilla omalla painolla. Avaa käsivarsia leveälle nojaten samalla eteenpäin rintakehän venyttämiseksi ja kuormittamiseksi.",
+    "name": "Aukaisu harjoitushihnoilla v. 2",
+    "description": "Rintalihasten levitysliike harjoitushihnoilla omalla painolla. Avaa käsivarsia leveälle nojaten samalla eteenpäin rintakehän venyttämiseksi ja kuormittamiseksi.",
     "instructions": [
       "Tartu kahvoihin ja nojaa eteenpäin vartalo suorana.",
       "Aloita siten, että kätesi ovat edessäsi hieman koukussa.",
@@ -39130,8 +39130,8 @@
     ]
   },
   "5738": {
-    "name": "Rintapunnerrus ripustushihnoilla v. 2",
-    "description": "Etunojapunnerrusta muistuttava liike ripustushihnoilla. Epävakaat kahvat saavat rinnan, käsivarret ja keskivartalon tekemään töitä yhdessä.",
+    "name": "Rintapunnerrus harjoitushihnoilla v. 2",
+    "description": "Etunojapunnerrusta muistuttava liike harjoitushihnoilla. Epävakaat kahvat saavat rinnan, käsivarret ja keskivartalon tekemään töitä yhdessä.",
     "instructions": [
       "Tartu kahvoihin ja nojaa eteenpäin suoralla vartalolla.",
       "Aloita käsivarret koukussa kädet rintakehän vieressä.",
@@ -39614,7 +39614,7 @@
     ]
   },
   "5876": {
-    "name": "Ojentajapunnerrus ripustushihnoilla v. 2",
+    "name": "Ojentajapunnerrus harjoitushihnoilla v. 2",
     "description": "Nojaa vastuskuminauhoihin tai hihnoihin ja suorista kädet koukistetusta asennosta. Se treenaa ojentajia kehonpainolla.",
     "instructions": [
       "Ota kiinni kahvoista ja nojaa eteenpäin suoralla keholla.",
@@ -41605,8 +41605,8 @@
     ]
   },
   "6220": {
-    "name": "Soutu ripustushihnoilla v. 2",
-    "description": "Kehonpainosoutu ripustushihnoilla. Se vahvistaa selkää ja hauiksia.",
+    "name": "Soutu harjoitushihnoilla v. 2",
+    "description": "Kehonpainosoutu harjoitushihnoilla. Se vahvistaa selkää ja hauiksia.",
     "instructions": [
       "Tartu nauhoihin ja nojaa taaksepäin.",
       "Pidä vartalo suorassa linjassa.",
@@ -41629,8 +41629,8 @@
     ]
   },
   "6222": {
-    "name": "Hyppykyykky ripustushihnoilla v. 2",
-    "description": "Kyykkyhyppy ripustushihnoista tukea ottaen. Se kehittää räjähtävää jalkojen voimaa.",
+    "name": "Hyppykyykky harjoitushihnoilla v. 2",
+    "description": "Kyykkyhyppy harjoitushihnoista tukea ottaen. Se kehittää räjähtävää jalkojen voimaa.",
     "instructions": [
       "Tartu nauhoihin kädet ojennettuina.",
       "Laskeudu kyykkyyn.",
@@ -41653,8 +41653,8 @@
     ]
   },
   "6232": {
-    "name": "Hauiskääntö ripustushihnoilla v. 2",
-    "description": "Omalla painolla tehtävä hauiskääntö ripustushihnoissa. Se kasvattaa hauiksia.",
+    "name": "Hauiskääntö harjoitushihnoilla v. 2",
+    "description": "Omalla painolla tehtävä hauiskääntö harjoitushihnoissa. Se kasvattaa hauiksia.",
     "instructions": [
       "Tartu hihnoihin ja nojaa taaksepäin.",
       "Ojenna kätesi suoriksi.",
@@ -44576,7 +44576,7 @@
     ]
   },
   "7274": {
-    "name": "Pike ripustushihnoilla v. 2",
+    "name": "Pike harjoitushihnoilla v. 2",
     "description": "Lankku jalkalenkeissä, jossa lantio nostetaan ylös vatsalihasten ja olkapäiden vahvistamiseksi.",
     "instructions": [
       "Aseta jalkasi lenkkeihin ja ota lankkuasento kädet lattiassa.",
@@ -44587,7 +44587,7 @@
     ]
   },
   "7275": {
-    "name": "Lankku ripustushihnoilla",
+    "name": "Lankku harjoitushihnoilla",
     "description": "Etulankku jalkalenkeissä, mikä tekee pidosta epävakaan ja vaativan koko keskivartalolle.",
     "instructions": [
       "Aseta jalkasi lenkkeihin ja laskeudu kyynärvarsien tai käsien varaan lattialle.",
@@ -44620,7 +44620,7 @@
     ]
   },
   "7278": {
-    "name": "Leveiden selkälihasten venytys ripustushihnoilla",
+    "name": "Leveiden selkälihasten venytys harjoitushihnoilla",
     "description": "Riippuva venytys nauhojen avulla, joka avaa selän sivuja ja olkapäitä.",
     "instructions": [
       "Tartu nauhoihin ja nojaa taakse kädet suorina.",
@@ -44631,7 +44631,7 @@
     ]
   },
   "7279": {
-    "name": "Kyykky ja voimaveto ripustushihnoilla",
+    "name": "Kyykky ja voimaveto harjoitushihnoilla",
     "description": "Kyykky yhdistettynä räjähtävään vetoon nauhoista, mikä yhdistää jalat ja selän yhdeksi liikkeeksi.",
     "instructions": [
       "Tartu nauhoihin kädet ojennettuina ja laskeudu kyykkyyn.",
@@ -48038,7 +48038,7 @@
     ]
   },
   "9503": {
-    "name": "Takaolkapääsoutu ripustushihnoilla",
+    "name": "Takaolkapääsoutu harjoitushihnoilla",
     "description": "Vastuskuminauhalla tai hihnoilla tehtävä soutu leveillä kyynärpäillä, joka kohdistuu takaolkapäihin ja yläselkään.",
     "instructions": [
       "Tartu kahvoihin ja nojaa taakse kädet suorina kehon muodostaessa suoran linjan.",
@@ -48497,7 +48497,7 @@
     ]
   },
   "9704": {
-    "name": "Päälläseisonta ripustushihnoilla",
+    "name": "Päälläseisonta harjoitushihnoilla",
     "description": "Pääseisonta-muunnelma vastuskuminauhojen tai joustavien hihnojen tuella. Kehittää tasapainoa ja olkapäiden voimaa.",
     "instructions": [
       "Säädä hihnat matalalle korkeudelle.",
@@ -59263,7 +59263,7 @@
     "name": "Vaakasoutu v. 2",
     "description": "Tangon alla roikkuen vedät rintaa ylös vartalo suorana. Tämä versio muuttaa otetta tai kulmaa. Kehittää yläselkää ja hauiksia.",
     "instructions": [
-      "Aseta tanko vyötärön korkeudelle Smith-laitteeseen tai käytä ripustushihnoja.",
+      "Aseta tanko vyötärön korkeudelle Smith-laitteeseen tai käytä harjoitushihnoja.",
       "Seiso tankoa tai nauhoja kohti ja ota kiinni myötäotteella, kädet hartioiden leveydellä.",
       "Kävele jaloilla eteenpäin ja nojaa taakse, kunnes vartalosi on loivassa kulmassa.",
       "Pidä vartalo suorana ja vedä rintaa kohti tankoa tai kahvoja puristaen lapoja yhteen.",
@@ -59275,7 +59275,7 @@
     "name": "Vaakasoutu hihnoilla",
     "description": "Riippuen hihnoista suoralla vartalolla vedät rintasi ylös. Se vahvistaa yläselkää ja hauiksia.",
     "instructions": [
-      "Kiinnitä ripustushihnat tai vastuskuminauhat rinnan korkeudelle.",
+      "Kiinnitä harjoitushihnat tai vastuskuminauhat rinnan korkeudelle.",
       "Seiso ankkuripistettä kohti ja tartu kahvoihin myötäotteella.",
       "Kävele jaloillasi eteenpäin ja nojaa taaksepäin, kunnes vartalosi on kulmassa.",
       "Pidä vartalo suorana ja jännitä keskivartalo.",
@@ -59288,7 +59288,7 @@
     "name": "Vaakasoutu",
     "description": "Maaten tangon alla suoralla vartalolla vedät rintasi tankoon. Se rakentaa yläselkää ja hauiksia.",
     "instructions": [
-      "Aseta tanko vyötärön korkeudelle tai käytä ripustushihnoja.",
+      "Aseta tanko vyötärön korkeudelle tai käytä harjoitushihnoja.",
       "Seiso tankoa tai hihnoja kohti jalat hartioiden leveydellä.",
       "Tartu tankoon tai kahvoihin myötäotteella hieman hartioita leveämmällä otteella.",
       "Nojaa taaksepäin, pidä vartalo suorana ja kantapäät lattiassa.",
@@ -62565,7 +62565,7 @@
     ]
   },
   "0805": {
-    "name": "Vatsarullaus ripustushihnoilla",
+    "name": "Vatsarullaus harjoitushihnoilla",
     "description": "Vatsarutistus vastustuskainhoilla tai hihnoilla nojautumalla eteenpäin suorin käsin. Se rakentaa syvää voimaa keskivartaloon.",
     "instructions": [
       "Kiinnitä hihnat korkeaan ankkuripisteeseen ja säädä ne vyötärön korkeudelle.",
@@ -62577,10 +62577,10 @@
     ]
   },
   "0806": {
-    "name": "Punnerrus ripustushihnoilla",
-    "description": "Etunojapunnerrus käsien ollessa ripustushihnoissa, jolloin vartalon on pysyttävä vakaana. Se harjoittaa rintaa, olkapäitä, ojentajia ja keskivartaloa.",
+    "name": "Punnerrus harjoitushihnoilla",
+    "description": "Etunojapunnerrus käsien ollessa harjoitushihnoissa, jolloin vartalon on pysyttävä vakaana. Se harjoittaa rintaa, olkapäitä, ojentajia ja keskivartaloa.",
     "instructions": [
-      "Ota käyttöön ripustushihnat ja säädä ne sopivalle korkeudelle.",
+      "Ota käyttöön harjoitushihnat ja säädä ne sopivalle korkeudelle.",
       "Seiso selkä ankkuripisteeseen päin ja tartu kahvoihin myötäotteella.",
       "Kävele jaloillasi eteenpäin ja nojaa vartaloa eteenpäin, kunnes painosi on hihnojen varassa.",
       "Pidä vartalo suorana päästä kantapäihin, jännitä keskivartalo ja laske rintaa kohti kahvoja.",
@@ -62589,7 +62589,7 @@
     ]
   },
   "0807": {
-    "name": "Käänteinen vatsarutistus ripustushihnoilla",
+    "name": "Käänteinen vatsarutistus harjoitushihnoilla",
     "description": "Roikkuen tehtävä käännös, jossa polvet ja lantio vedetään ylös kohti rintaa. Se kohdistuu alavatsalihaksiin.",
     "instructions": [
       "Roiku leuanvetotangossa kädet suorina ja kämmenet poispäin sinusta.",
@@ -62599,10 +62599,10 @@
     ]
   },
   "0808": {
-    "name": "Soutu ripustushihnoilla",
-    "description": "Kehonpainosoutu ripustushihnoilla nojaten taakse ja vetäen rintaa kohti käsiä. Se harjoittaa selkää ja hauiksia.",
+    "name": "Soutu harjoitushihnoilla",
+    "description": "Kehonpainosoutu harjoitushihnoilla nojaten taakse ja vetäen rintaa kohti käsiä. Se harjoittaa selkää ja hauiksia.",
     "instructions": [
-      "Säädä ripustushihnat sopivalle korkeudelle.",
+      "Säädä harjoitushihnat sopivalle korkeudelle.",
       "Seiso kasvot ankkuripisteeseen päin jalat hartioiden leveydellä.",
       "Tartu kahvoihin myötäotteella niin, että kämmenet osoittavat toisiinsa.",
       "Nojaa taakse pitäen vartalon suorana ja kantapääsi lattiassa.",
@@ -62612,10 +62612,10 @@
     ]
   },
   "0809": {
-    "name": "Askelkyykky paikallaan ripustushihnoilla",
-    "description": "Askelkyykky takajalka ripustushihnassa. Se kasvattaa etureisiä ja pakaroita sekä haastaa tasapainoa.",
+    "name": "Askelkyykky paikallaan harjoitushihnoilla",
+    "description": "Askelkyykky takajalka harjoitushihnassa. Se kasvattaa etureisiä ja pakaroita sekä haastaa tasapainoa.",
     "instructions": [
-      "Seiso selkä ripustushihnaan päin jalat hartioiden leveydellä.",
+      "Seiso selkä harjoitushihnaan päin jalat hartioiden leveydellä.",
       "Ojenna toinen jalka eteenpäin ja aseta jalkaterän yläosa hihnan lenkkiin.",
       "Koukista etujalkaa ja laske vartaloa alaspäin askelkyykkyasentoon pitäen rinnan ylhäällä ja polven linjassa varpaiden kanssa.",
       "Punnerra kantapään kautta takaisin aloitusasentoon.",
