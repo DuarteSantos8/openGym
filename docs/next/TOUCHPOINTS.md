@@ -93,3 +93,13 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/CoachChat.jsx`, `frontend/src/views/CoachIntake.jsx` and their tests | `next/EP19-beginner-coach-card` | UI and tests | Keep the starter editable through consent and intake until the person sends it. |
 | `frontend/src/components/AskCoach.jsx` and its tests | `next/EP19-beginner-coach-card` | UI and tests | Show three translated prompts when the Coach is reachable. |
 | All 25 locale packs | `next/EP19-beginner-coach-card` | UI and tests | Translate the card heading and starter prompts. |
+| `frontend/src/views/CoachChat.jsx` | `next/EP19-coach-starter-fixes` | UI | Send first-use scheduling questions through Coach actions and keep full-plan retries. |
+| `frontend/src/views/CoachChat.test.jsx` | `next/EP19-coach-starter-fixes` | Tests | Confirm Tuesday push and Wednesday pull on a new three-day profile in English and French. |
+| `frontend/src/views/CoachChat.refusal.test.jsx` | `next/EP19-coach-starter-fixes` | Tests | Cover a typed scheduling request and a failed full-plan retry on an empty profile. |
+| `api/coach/core/routine-library.js` | `next/EP19-coach-starter-fixes` | Core | Recognize translated no-weights requests. |
+| `api/coach/core/library.js` | `next/EP19-coach-starter-fixes` | Core | Limit equipment-free choices to known catalogue exercises. |
+| `api/coach/core/payload.js` | `next/EP19-coach-starter-fixes` | Core | Offer equipment-free exercises when the request calls for them. |
+| `api/coach/core/pipeline.js` | `next/EP19-coach-starter-fixes` | Core | Pass the equipment restriction into first-plan validation. |
+| `api/coach/core/ask-actions.js` | `next/EP19-coach-starter-fixes` | Core | Apply the equipment restriction to chat proposals. |
+| `api/coach/core/validate.js` | `next/EP19-coach-starter-fixes` | Core | Check proposed exercise choices against the equipment restriction. |
+| `api/test/coach-ask.test.js` | `next/EP19-coach-starter-fixes` | Tests | Exercise translated requests and unsafe proposals with a simulated provider. |

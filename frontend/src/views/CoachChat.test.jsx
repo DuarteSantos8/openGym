@@ -4,6 +4,8 @@ import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
 import { CONSENT_VERSION, revertLast } from '../lib/coach.js'   // fixtures grant the current consent version
+import { askCoach, refinePlan } from '../lib/coach-api.js'
+import fr from '../locales/fr.js'
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { build } from '../../../api/coach/core/payload.js'
@@ -39,6 +41,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
 vi.mock('../lib/coach-api.js', () => ({
   useCoachStatus: () => ({ pending: mocks.pending, job: mocks.job, cap: null, loading: false, lastError: null, last: null, refresh: mocks.refresh, maxMessageLen: mocks.maxMessageLen }),
   resolvePending: vi.fn(() => Promise.resolve({})),
+  askCoach: vi.fn(),
   refinePlan: vi.fn(() => Promise.resolve({})),
   requestReview: vi.fn(() => Promise.resolve({})),
   requestDebrief: vi.fn(() => Promise.resolve({})),
@@ -71,8 +74,8 @@ const bundle = week => ({
 })
 const everyDay = Object.fromEntries([0, 1, 2, 3, 4, 5, 6].map(d => [d, 'x1']))
 
-async function pushPullProposal(S, id) {
-  const note = 'add a push day on Tuesday and a pull day on Wednesday'
+const pushPull = 'Add a push day on Tuesday and a pull day on Wednesday'
+async function pushPullProposal(S, id, note = pushPull) {
   const payload = build(S, { handle: 'test', kind: 'ask', note })
   const adapter = { spawns: false, async invoke({ prompt }) {
     expect(prompt).toContain(note)
@@ -155,6 +158,22 @@ describe('the Coach chat', () => {
     await mount(null, null, { S, starter: 'Make today shorter' })
     expect(mocks.nav).toHaveBeenCalledWith('/coach/intake', { replace: true, state: { coachStarter: 'Make today shorter' } })
     expect(container.querySelector('.composer')).toBeNull()
+  })
+
+  it.each([pushPull, fr[pushPull]])('schedules only the two requested days on a new three-day profile: %s', async starter => {
+    const S = state()
+    askCoach.mockImplementationOnce(async note => { mocks.pending = await pushPullProposal(S, 'first', note) })
+    await mount(null, null, { S, starter })
+    await click(container.querySelector('.send'))
+    expect(askCoach).toHaveBeenCalledWith(starter)
+    expect(refinePlan).not.toHaveBeenCalled()
+    await act(async () => { root.render(<CoachChat />) })
+    expect(S.week).toEqual({})
+    expect(S.routines).toEqual([])
+    await click(byText(/Import this plan/))
+    expect(S.routines.map(r => r.name)).toEqual(['Push', 'Pull'])
+    expect(S.week).toEqual({ 2: [S.routines[0].id], 3: [S.routines[1].id] })
+    expect(S.coach.profile.daysPerWeek).toBe(3)
   })
 
   it('previews Tuesday push and Wednesday pull, then schedules both on confirmation', async () => {
