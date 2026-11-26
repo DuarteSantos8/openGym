@@ -1,5 +1,6 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Für zwei Mobilitätseinheiten an Ruhetagen hast du einen Freeze erhalten.",
   "Draft": "Entwurf",
   "Move gently and switch sides when comfortable.": "Bewege dich sanft und wechsle die Seite, wenn es sich angenehm anfühlt.",
   "Slow down gradually and release each stretch when comfortable.": "Werde allmählich langsamer und löse jede Dehnung, wenn es sich angenehm anfühlt.",

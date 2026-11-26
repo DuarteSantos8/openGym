@@ -8,6 +8,11 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `api/coach/core/streak.js` | `next/EP25-mobility-freeze` | Streak | Bank one freeze for two verified mobility sessions in a week under the active rule. |
+| `frontend/src/lib/finish-workout.js` | `next/EP25-mobility-freeze` | Workout | Preserve the rest-day date only for a completed Learn circuit. |
+| `frontend/src/lib/streak.js`, `streak-explain.js` | `next/EP25-mobility-freeze` | Calendar | Document the shared rule and explain a mobility award. |
+| `frontend/src/lib/streak.test.js`, `streak-parity.test.js`, `streak-explain.test.js` | `next/EP25-mobility-freeze` | Tests | Check weekly limits, history, trainer parity and calendar wording. |
+| `frontend/src/locales/*.js` | `next/EP25-mobility-freeze` | Copy | Translate the mobility award in all 25 packs. |
 | `frontend/e2e/cloud/account.e2e.mjs` | #120 | +12 −1 | Check member access on the first Account visit and after reload against the local training server. |
 | `frontend/src/lib/tour.js` | `next/EP22-beginner-tour` | +12 −3 | Register eight beginner stops and select the existing walk for other levels. |
 | `frontend/src/lib/tour.test.js` | `next/EP22-beginner-tour` | +21 −2 | Check the beginner targets, default walk, named tutorials and replay. |

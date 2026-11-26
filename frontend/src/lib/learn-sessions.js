@@ -1,4 +1,5 @@
 import { todayISO, uid } from './format.js'
+import { effectiveRoutineIds, nextTrainingDay } from './history.js'
 import { t } from './i18n.js'
 import { useCircuit } from '../store/useCircuit.js'
 import { useUI } from '../store/useUI.js'
@@ -23,7 +24,11 @@ export function startLearnSession(id, store) {
     sets: Array.from({ length: sets }, () => ({ sec, w: 0, done: false })),
   }))
   store.getState().update(s => {
-    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineIds: [], name: t(session.title),
+    const d = todayISO()
+    const restDay = session.kind === 'mobility' && !effectiveRoutineIds(s, d).length &&
+      (s.dayPlan[d] === 'rest' || nextTrainingDay(s, d))
+    s.active = { id: uid(), d, start: Date.now(), routineIds: [], name: t(session.title),
+      ...(restDay ? { restDayMobility: d } : {}),
       learnSession: id, cur: 0, entries, workoutView: s.workoutView || 'cards' }
   })
   useUI.getState().stopRest()

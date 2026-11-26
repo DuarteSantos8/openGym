@@ -1,5 +1,6 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "Dua sesi mobilitas pada hari istirahat memberimu satu freeze.",
   "Draft": "Draf",
   "Move gently and switch sides when comfortable.": "Bergeraklah perlahan dan ganti sisi saat terasa nyaman.",
   "Slow down gradually and release each stretch when comfortable.": "Kurangi kecepatan secara bertahap dan akhiri setiap peregangan saat terasa nyaman.",

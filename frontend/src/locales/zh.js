@@ -1,5 +1,6 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Two rest-day mobility sessions earned a freeze.": "在休息日完成两次灵活性训练，获得一张冻结卡。",
   "Draft": "草稿",
   "Move gently and switch sides when comfortable.": "动作轻柔，感觉舒适时再换边。",
   "Slow down gradually and release each stretch when comfortable.": "逐渐放慢动作，每次拉伸都在感觉舒适时放松回到原位。",

@@ -4,6 +4,7 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Two rest-day mobility sessions earned a freeze.": "Duas sessões de mobilidade em dias de descanso renderam um congelamento.",
   "Two chairs": "Duas cadeiras",
   "Draft": "Rascunho",
   "Move gently and switch sides when comfortable.": "Faça movimentos suaves e troque de lado quando se sentir à vontade.",
