@@ -1478,7 +1478,7 @@
   },
   "1139": {
     "name": "Saksiaukaisu harjoitushihnoilla",
-    "description": "Hihnoilla tehtävä aukaisu porrastetussa asennossa. Treenaa olkapäitä ja rintaa.",
+    "description": "Hihnoilla tehtävä aukaisu käyntiasennossa. Treenaa olkapäitä ja rintaa.",
     "instructions": [
       "Tartu kahvoihin, astu askelasentoon ja nojaa hieman eteenpäin.",
       "Pidä kädet kevyesti koukussa ja edessäsi.",
@@ -2255,7 +2255,7 @@
     "description": "Seisten tehtävä korkea taljasoutu vartalon kierrolla. Se kohdistuu yläselkään ja takaolkapäihin.",
     "instructions": [
       "Säädä talja pään korkeudelle, seiso kasvot kohti laitetta ja pidä kahvasta kiinni yhdellä kädellä.",
-      "Ota porrastettu asento ja nojaa kevyesti taaksepäin.",
+      "Ota käyntiasento ja nojaa kevyesti taaksepäin.",
       "Vedä kahva kohti ylärintaa ja kierrä vartaloasi liikkeen mukana.",
       "Vedä lapaluuta taakse ja palaa sitten hitaasti lähtöasentoon.",
       "Tee sarja loppuun ja vaihda puolta."
@@ -5197,7 +5197,7 @@
     "description": "Klassinen kylkilankku, joka vahvistaa vinoja vatsalihaksia ja lantion tukilihaksia.",
     "instructions": [
       "Asetu kylkimakuulle kyynärvarsi olkapään alle ja jalat suorina.",
-      "Aseta jalat päällekkäin tai porrastetusti tasapainon vuoksi.",
+      "Aseta jalat päällekkäin tai käyntiasennossa tasapainon vuoksi.",
       "Nosta lantio niin, että vartalosi muodostaa suoran linjan päästä jalkoihin.",
       "Pidä keskivartalo tiukkana äläkä päästä lantiota painumaan.",
       "Pidä asento suunnitellun ajan ja vaihda sitten puolta."
@@ -5929,10 +5929,10 @@
     "name": "Saksihyppy levytangolla",
     "description": "Hyppy levytanko yläselällä, jossa vaihdat etu- ja takajalkaa ilmassa. Se kehittää jalkojen voimaa.",
     "instructions": [
-      "Aseta kevyt tanko yläselän päälle ja ota haara-asento.",
+      "Aseta kevyt tanko yläselän päälle ja ota käyntiasento.",
       "Laskeudu pieneen askelkyykkyyn.",
       "Hyppää räjähtävästi ja vaihda jalat ilmassa keskenään.",
-      "Laskeudu pehmeästi vastakkaiseen haara-asentoon.",
+      "Laskeudu pehmeästi vastakkaiseen käyntiasentoon.",
       "Pidä vartalo pystyssä ja jatka vuorottelua."
     ]
   },
@@ -10506,7 +10506,7 @@
     "name": "Lonkan koukistajan venytys seisten",
     "description": "Seisten askelkyykkyasennossa tehtävä venytys lonkan ja reiden etuosaan.",
     "instructions": [
-      "Asetu porrastettuun asentoon: toinen jalka eteen ja toinen taakse.",
+      "Asetu askelkyykkyasentoon: toinen jalka eteen ja toinen taakse.",
       "Kallista lantiota taakse ja jännitä takajalan pakara.",
       "Siirrä lantiota kevyesti eteenpäin, kunnes tunnet venytyksen takajalan lonkan etuosassa.",
       "Pidä ylävartalo pystyssä.",
@@ -13123,7 +13123,7 @@
   },
   "2368": {
     "name": "Askelkyykky paikallaan v. 3",
-    "description": "Omalla painolla tehtävä askelkyykky paikallaan pitkässä haara-asennossa. Kehittää etureisiä ja pakaroita yksi jalka kerrallaan.",
+    "description": "Omalla painolla tehtävä askelkyykky paikallaan pitkässä askelasennossa. Kehittää etureisiä ja pakaroita yksi jalka kerrallaan.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä.",
       "Ota toisella jalalla askel eteen niin, että se on noin 60 cm toisen jalan edessä.",
@@ -17209,7 +17209,7 @@
     "instructions": [
       "Kiinnitä tanko ylätaljaan ja seiso selkä laitteeseen päin.",
       "Pidä tangosta kiinni pään takana kyynärpäät eteenpäin osoittaen.",
-      "Ota askel eteenpäin ja asetu porrastettuun asentoon.",
+      "Ota askel eteenpäin ja asetu käyntiasentoon.",
       "Ojenna kädet ja punnerra tanko pään yläpuolelle.",
       "Laske hitaasti takaisin ja pidä kyynärpäät paikoillaan."
     ]
@@ -19211,7 +19211,7 @@
     "description": "Yläviistoon tehtävä vuorottainen punnerrus vastuskuminauhalla, johon on lisätty vartalon kierto. Se treenaa rinnan yläosaa ja keskivartaloa yhdessä.",
     "instructions": [
       "Kiinnitä kuminauha matalalle taaksesi ja ota kahvoista kiinni rinnan korkeudella.",
-      "Asetu porrastettuun asentoon keskivartalo tiukkana.",
+      "Asetu käyntiasentoon keskivartalo tiukkana.",
       "Punnerra toista kättä ylös ja eteen samalla kiertäen kevyesti ylävartaloa.",
       "Palaa hallitusti aloitusasentoon ja punnerra toisella kädellä.",
       "Pidä lantio vakaana ja vuorottele puolia koko sarjan ajan."
@@ -19222,7 +19222,7 @@
     "description": "Vuorottainen soutu vastuskuminauhalla ja kierrolla, joka treenaa selkää ja vartaloa kiertäviä lihaksia.",
     "instructions": [
       "Kiinnitä kuminauha eteesi alas ja tartu molempiin kahvoihin.",
-      "Asetu porrastettuun asentoon kädet ojennettuina.",
+      "Asetu käyntiasentoon kädet ojennettuina.",
       "Vedä toista kahvaa taakse kohti lantiotasi samalla ylävartaloasi kiertäen.",
       "Purista lapaluuta kohti selkärankaa ja palaa hitaasti takaisin.",
       "Toista toisella kädellä ja jatka vuorottelua."
@@ -19233,7 +19233,7 @@
     "description": "Seisten tehtävä alasveto kuminauhalla yksi käsi kerrallaan vartalon kierrolla. Se vahvistaa leveitä selkälihaksia ja aktivoi keskivartaloa.",
     "instructions": [
       "Kiinnitä kuminauha ylös eteesi ja ota molemmista kahvoista kiinni kädet pään yläpuolella.",
-      "Seiso suorana porrastetussa asennossa.",
+      "Seiso suorana käyntiasennossa.",
       "Vedä toista kahvaa alas kohti kylkeä samalla ylävartaloasi kiertäen.",
       "Pidä kyynärpää lähellä kylkeä ja olkapää alhaalla.",
       "Palaa hitaasti takaisin ja vaihda kättä."
@@ -19521,7 +19521,7 @@
     "description": "Yhden käden ojennus ylätaljasta pään yläpuolelta, joka venyttää ja kuormittaa ojentajan pitkää päätä.",
     "instructions": [
       "Seiso selkä kohti ylätaljaa ja pidä kahvasta kiinni pään yläpuolella yhdellä kädellä.",
-      "Asetu haara-asentoon kyynärpään osoittaessa ylöspäin.",
+      "Asetu käyntiasentoon kyynärpään osoittaessa ylöspäin.",
       "Ojenna käsi eteen ja ylös, kunnes se on suora.",
       "Pidä olkavarsi paikallaan.",
       "Palaa hitaasti lähtöasentoon ja vaihda kättä sarjan jälkeen."
@@ -19587,7 +19587,7 @@
     "description": "Seisten tehtävä taljapunnerrus, joka treenaa rintaa keskivartalon pitäessä asennon vakaana.",
     "instructions": [
       "Säädä taljat rinnan korkeudelle ja ota kahva kumpaankin käteen.",
-      "Astu porrastettuun asentoon.",
+      "Astu käyntiasentoon.",
       "Punnerra kahvoja eteenpäin, kunnes kädet ovat suorina.",
       "Supista rintalihaksia liikkeen lopussa.",
       "Palaa hitaasti ja hallitusti alkuasentoon."
@@ -19634,7 +19634,7 @@
     "description": "Seisten tehtävä kapean otteen taljapunnerrus, joka keskittyy ojentajiin.",
     "instructions": [
       "Säädä talja rinnan korkeudelle ja tartu kahvaan kapealla otteella.",
-      "Seiso haara-asennossa keskivartalo tiukkana.",
+      "Seiso käyntiasennossa keskivartalo tiukkana.",
       "Punnerra eteenpäin, kunnes kädet ovat suorina.",
       "Pidä kyynärpäät lähellä kylkiä.",
       "Palaa hitaasti alkuasentoon."
@@ -19798,7 +19798,7 @@
     "name": "Saksihyppy köysillä",
     "description": "Askelkyykkyhyppyjä köysiä heiluttaen, vaativa yhdistelmä räjähtävyyttä ja sykettä.",
     "instructions": [
-      "Tartu köysien päihin ja seiso haara-asennossa.",
+      "Tartu köysien päihin ja seiso askelkyykkyasennossa.",
       "Aloita aaltojen tekeminen käsilläsi.",
       "Hyppää ja vaihda jalkojen paikkaa ilmassa.",
       "Laskeudu pehmeästi askelkyykkyyn.",
@@ -20773,7 +20773,7 @@
     "name": "Korkea askelkyykky sprinterin asennossa",
     "description": "Korkea askelkyykky, jossa kädet liikkuvat juoksijan tavoin. Se kehittää jalkojen voimaa, tasapainoa ja lantion vakautta.",
     "instructions": [
-      "Seiso suorana ja vie toinen jalka pitkälle taakse porrastettuun asentoon.",
+      "Seiso suorana ja vie toinen jalka pitkälle taakse askelkyykkyasentoon.",
       "Koukista molempia polvia ja laskeudu askelkyykkyyn niin, että takakantapää on ilmassa.",
       "Heilauta etujalan vastakkainen käsi eteen ja toinen taakse kuin juostessa.",
       "Pidä vartalo pystyssä ja etupolvi nilkan päällä.",
@@ -21323,7 +21323,7 @@
     "name": "Vuorottaiset iskut",
     "description": "Vuorottaisia iskuja tasaisessa tahdissa sykkeen nostamiseksi.",
     "instructions": [
-      "Ota porrastettu asento ja nosta nyrkit ylös.",
+      "Ota käyntiasento ja nosta nyrkit ylös.",
       "Lyö eteenpäin toisella kädellä kiertäen vartaloa kevyesti.",
       "Vedä käsi taakse samalla kun isket toisella.",
       "Pidä keskivartalo tiukkana.",
@@ -22300,7 +22300,7 @@
   },
   "3652": {
     "name": "Romanialainen maastaveto porrasasennossa trap barilla",
-    "description": "Romanialainen maastaveto porrastetussa asennossa trap barilla takareisien ja pakaroiden vahvistamiseen.",
+    "description": "Romanialainen maastaveto käyntiasennossa trap barilla takareisien ja pakaroiden vahvistamiseen.",
     "instructions": [
       "Seiso trap barin sisällä toinen jalka hieman takana.",
       "Työnnä lantiota taakse pitäen selkä suorana.",
@@ -22745,7 +22745,7 @@
     "name": "Goblet-askelkyykky paikallaan käsipainolla",
     "description": "Askelkyykky, jossa pidetään yhtä käsipainoa rinnalla. Erinomainen liike jalkojen erilliseen työstöön, ja etupaino auttaa pitämään ylävartalon pystyssä.",
     "instructions": [
-      "Pidä yhtä käsipainoa pystyasennossa rintaasi vasten ja asetu porrastettuun asentoon.",
+      "Pidä yhtä käsipainoa pystyasennossa rintaasi vasten ja asetu askelkyykkyasentoon.",
       "Pidä ylävartalo suorana ja laske takimmainen polvi kohti lattiaa.",
       "Pysäytä liike, kun etureisi on suunnilleen lattian suuntainen.",
       "Ponnista etujalan kautta takaisin pystyyn.",
@@ -23586,7 +23586,7 @@
     "description": "Paikallaan tehtävä askelkyykky kuminauha edessä ojennettuna. Se kasvattaa yhden jalan voimaa ja keskivartalon hallintaa.",
     "instructions": [
       "Kiinnitä kuminauha rinnan korkeudelle ja seiso kylki kiinnityskohtaan päin.",
-      "Ota haara-asento ja työnnä kahva molemmin käsin suoraan eteen.",
+      "Ota askelkyykkyasento ja työnnä kahva molemmin käsin suoraan eteen.",
       "Laske takapolvi kohti lattiaa ilman, että kuminauha vääntää sinua.",
       "Ponnista etummaisen jalan kautta ylös.",
       "Tee toistot loppuun, vaihda jalkaa ja käänny niin, että kiinnityskohta on toisella puolella."
@@ -23641,7 +23641,7 @@
     "description": "Seisten tehtävä punnerrus kuminauhan vastusta vastaan. Liike kehittää rintaa, olkapäitä ja ojentajia.",
     "instructions": [
       "Kiinnitä vastuskuminauha taaksesi rinnan korkeudelle ja pidä kahvat rinnan edessä.",
-      "Asetu porrastettuun asentoon ja jännitä keskivartalo.",
+      "Asetu käyntiasentoon ja jännitä keskivartalo.",
       "Punnerra kädet eteen, kunnes ne ovat suorat.",
       "Pysähdy hetkeksi ja tuo kädet hitaasti takaisin rinnalle.",
       "Pidä hartiat alhaalla ja selkä liikkumattomana."
@@ -23785,9 +23785,9 @@
     "description": "Räjähtävä saksihyppy yhdistettynä yhden käden kuminauhasoutuun. Tämä kehittää jalkojen räjähtävää voimaa ja vahvistaa selkää.",
     "instructions": [
       "Kiinnitä kuminauha alas ja ota kahvasta kiinni yhdellä kädellä.",
-      "Asetu haara-asentoon polvet kevyesti koukussa.",
+      "Asetu käyntiasentoon polvet kevyesti koukussa.",
       "Hyppää ylös ja vaihda jalkojen paikkaa ilmassa.",
-      "Laskeudu pehmeästi vastakkaiseen haara-asentoon ja vedä kuminauhan kahva kylkeesi.",
+      "Laskeudu pehmeästi vastakkaiseen käyntiasentoon ja vedä kuminauhan kahva kylkeesi.",
       "Vuorottele jalkoja ja vaihda soutavaa kättä seuraavaan sarjaan."
     ]
   },
@@ -23830,7 +23830,7 @@
     "description": "Paikallaan tehtävä askelkyykky kuminauha edessä ojennettuna. Tämä kehittää yhden jalan voimaa ja keskivartalon hallintaa.",
     "instructions": [
       "Kiinnitä kuminauha rinnan korkeudelle ja seiso kylki kuminauhaan päin.",
-      "Asetu haara-asentoon ja työnnä kahva suoraan eteen molemmin käsin.",
+      "Asetu askelkyykkyasentoon ja työnnä kahva suoraan eteen molemmin käsin.",
       "Laske takapolvea kohti lattiaa ilman, että kuminauha kiertää vartaloasi.",
       "Ponnista etujalan kautta takaisin ylös.",
       "Tee toistot loppuun, vaihda jalkaa ja kuminauhan puolta."
@@ -23841,7 +23841,7 @@
     "description": "Seisten tehtävä eteenpäin suuntautuva lyönti vastuskuminauhaa vastaan. Tämä treenaa rintaa, olkapäitä ja ojentajia.",
     "instructions": [
       "Kiinnitä kuminauha taaksesi ja pidä kahvaa kummassakin kädessä hartioiden kohdalla.",
-      "Asetu porrastettuun asentoon keskivartalo tiukkana.",
+      "Asetu käyntiasentoon keskivartalo tiukkana.",
       "Lyö toisella kädellä eteenpäin ja kierrä ylävartaloa kevyesti.",
       "Palauta käsi ja lyö toisella kädellä.",
       "Pidä liike nopeana mutta hallittuna."
@@ -25551,7 +25551,7 @@
     "name": "Staattinen askelkyykky",
     "description": "Paikoillaan tehtävä askelkyykky ilman askellusta. Tämä kehittää jalkoja ja tasapainoa.",
     "instructions": [
-      "Ota toisella jalalla askel eteen ja jää haara-asentoon.",
+      "Ota toisella jalalla askel eteen ja jää askelkyykkyasentoon.",
       "Laske takimmaista polvea kohti lattiaa.",
       "Pidä etummainen polvi nilkan yläpuolella.",
       "Punnerra ylös etujalan kantapään kautta.",
@@ -26035,7 +26035,7 @@
     "name": "Samanpuoleinen askelkyykky paikallaan käsipainolla",
     "description": "Askelkyykky paikallaan, jossa käsipainoa pidetään työtä tekevän etujalan puolella. Se haastaa tasapainoa ja jalkojen voimaa.",
     "instructions": [
-      "Ota käsipaino toiseen käteen ja astu haara-asentoon niin, että paino on etujalan puolella.",
+      "Ota käsipaino toiseen käteen ja astu askelkyykkyasentoon niin, että paino on etujalan puolella.",
       "Pidä ylävartalo pystyssä.",
       "Laske takimmainen polvi kohti lattiaa.",
       "Ponnista etujalan kautta ylös.",
@@ -26156,7 +26156,7 @@
     "name": "Askelkyykky paikallaan kahvakuulalla",
     "description": "Askelkyykky paikallaan kahvakuulaa pidellen. Se kuormittaa reisiä ja pakaroita jalka kerrallaan.",
     "instructions": [
-      "Pidä kahvakuulaa rinnan edessä ja asetu pitkään haara-asentoon.",
+      "Pidä kahvakuulaa rinnan edessä ja asetu pitkään askelkyykkyasentoon.",
       "Pidä vartalo pystyssä.",
       "Laske takapolvi kohti lattiaa.",
       "Punnerra etujalan kantapään kautta ylös.",
@@ -26707,7 +26707,7 @@
     "description": "Askelkyykky paikallaan, jossa kuminauha vetää jalkaa ulospäin. Se tehostaa sisäreisien työskentelyä.",
     "instructions": [
       "Kiinnitä kuminauha sivulle ja pujota se työtä tekevän jalan ympärille.",
-      "Asetu haara-asentoon.",
+      "Asetu askelkyykkyasentoon.",
       "Laske takimmaista polvea kohti lattiaa.",
       "Punnerra takaisin ylös vastustaen kuminauhaa.",
       "Tee kaikki toistot loppuun ja vaihda jalkaa."
@@ -26992,7 +26992,7 @@
     "name": "Split-kyykky vastuskuminauhalla",
     "description": "Askelkyykky paikallaan, jossa vastuskuminauha tuo jaloille lisävastusta.",
     "instructions": [
-      "Seiso kuminauhan päällä haara-asennossa ja pidä nauhan päitä hartioiden kohdalla.",
+      "Seiso kuminauhan päällä askelkyykkyasennossa ja pidä nauhan päitä hartioiden kohdalla.",
       "Laske takapolvea kohti lattiaa.",
       "Pidä etusääri pystysuorassa.",
       "Ponnista takaisin ylös.",
@@ -27163,7 +27163,7 @@
     "name": "Yhden käden matala aukaisu käsipainolla",
     "description": "Yhden käden levitys, jossa käsipaino nostetaan alhaalta ylös kohti rintaa. Se aktivoi ylärintaa ja etuolkapäätä.",
     "instructions": [
-      "Seiso porrastetussa asennossa ja pidä käsipainoa sivullasi kyynärpää kevyesti koukussa.",
+      "Seiso käyntiasennossa ja pidä käsipainoa sivullasi kyynärpää kevyesti koukussa.",
       "Jännitä keskivartalo ja pidä rinta ylhäällä.",
       "Nosta käsipaino kaarella sivun kautta ylös eteesi rinnan korkeudelle.",
       "Purista rintaa yläasennossa.",
@@ -27869,11 +27869,11 @@
   },
   "4210": {
     "name": "Tempaus saksiasentoon kahvakuulalla",
-    "description": "Tempaus, jossa laskeudut haara-asentoon kahvakuulan noustessa pään yläpuolelle. Kehittää lantion voimaa, olkapäiden vakautta ja koordinaatiota.",
+    "description": "Tempaus, jossa laskeudut käyntiasentoon kahvakuulan noustessa pään yläpuolelle. Kehittää lantion voimaa, olkapäiden vakautta ja koordinaatiota.",
     "instructions": [
       "Seiso kahvakuulan yllä lantiosaranassa selkä suorana.",
       "Heilauta kuula taakse ja työnnä sitten lantio eteen.",
-      "Kuulan noustessa astu haara-asentoon ja työnnä kuula pään yläpuolelle.",
+      "Kuulan noustessa astu käyntiasentoon ja työnnä kuula pään yläpuolelle.",
       "Lukitse käsi suoraksi kuulan levätessä ranteen takana.",
       "Nouse ylös, tuo jalat yhteen ja laske kuula alas heilautukseen.",
       "Vaihda kättä toistojen jälkeen."
@@ -28561,9 +28561,9 @@
   },
   "4290": {
     "name": "Staattinen askelkyykky käsipainoilla",
-    "description": "Haara-asennossa tehtävä askelkyykky paikallaan käsipainot käsissä. Kehittää etureiden ja pakaroiden voimaa ilman askeleita.",
+    "description": "Askelkyykkyasennossa tehtävä askelkyykky paikallaan käsipainot käsissä. Kehittää etureiden ja pakaroiden voimaa ilman askeleita.",
     "instructions": [
-      "Pidä käsipaino kummassakin kädessä ja asetu pitkään haara-asentoon takakantapää ilmassa.",
+      "Pidä käsipaino kummassakin kädessä ja asetu pitkään askelkyykkyasentoon takakantapää ilmassa.",
       "Pidä vartalo pystyssä ja keskivartalo tiukkana.",
       "Koukista molempia polvia ja laskeudu, kunnes takapolvi melkein koskettaa lattiaa.",
       "Ponnista etukantapään kautta takaisin ylös siirtämättä jalkoja.",
@@ -29517,7 +29517,7 @@
     "description": "Askelkyykky paikallaan levytanko etuteline-asennossa. Kehittää jalkojen voimaa ja keskivartalon hallintaa.",
     "instructions": [
       "Aseta levytanko etuhartioille kyynärpäät korkealla.",
-      "Asetu haara-asentoon niin, että toinen jalka on reilusti toisen edessä.",
+      "Asetu askelkyykkyasentoon niin, että toinen jalka on reilusti toisen edessä.",
       "Laske takapolvi kohti lattiaa pitäen ylävartalo pystyssä.",
       "Ponnista etujalan kautta ylös.",
       "Tee toistot loppuun ja vaihda sitten jalkaa."
@@ -31200,7 +31200,7 @@
     "name": "Yhden käden kulmasoutu kuminauhalla",
     "description": "Yhden käden soutu vastuskuminauhalla. Vahvistaa leveitä selkälihaksia ja keskiselkää.",
     "instructions": [
-      "Seiso kuminauhan päällä porrastetussa asennossa ja taivuta lantiosta eteenpäin.",
+      "Seiso kuminauhan päällä käyntiasennossa ja taivuta lantiosta eteenpäin.",
       "Tartu kahvaan toisella kädellä käsi suorana.",
       "Jännitä keskivartalo ja pidä selkä suorana.",
       "Vedä kyynärpäätä kohti lantiota.",
@@ -32079,7 +32079,7 @@
     "description": "Askelkyykky kuminauhan vastusta vastaan. Kuormittaa etureisiä ja pakaroita jalka kerrallaan.",
     "instructions": [
       "Seiso etujalalla kuminauhan päällä ja pidä nauhan toista päätä olkapäillä.",
-      "Astu toisella jalalla taakse haara-asentoon.",
+      "Astu toisella jalalla taakse askelkyykkyasentoon.",
       "Laske takimmaista polvea kohti lattiaa.",
       "Pidä vartalo pystyssä ja etupolvi vakaana.",
       "Ponnista etujalan kautta ylös ja vaihda jalkaa sarjan jälkeen."
@@ -32188,7 +32188,7 @@
     "name": "Askelkyykky paikallaan vastuskuminauhalla",
     "description": "Askelkyykky vastuskuminauhalla, joka vahvistaa etureisiä ja pakaroita puoli kerrallaan.",
     "instructions": [
-      "Asetu haara-asentoon niin, että kuminauha on etujalan alla ja kahvat olkapäillä.",
+      "Asetu askelkyykkyasentoon niin, että kuminauha on etujalan alla ja kahvat olkapäillä.",
       "Pidä vartalo pystyssä.",
       "Laske takapolvea kohti lattiaa.",
       "Ponnista ylös etujalan kantapään kautta.",
@@ -35901,7 +35901,7 @@
     "description": "Punnerra vinossa olevan, toisesta päästä kiinnitetyn levytangon päätä ylös ja eteen. Kaareva liikerata on olkapääystävällinen ja kehittää punnerrusvoimaa sekä keskivartalon tukea.",
     "instructions": [
       "Kiinnitä levytangon toinen pää ja pitele toista päätä olkapäällä molemmin käsin.",
-      "Asetu porrastettuun asentoon ja jännitä keskivartalo.",
+      "Asetu käyntiasentoon ja jännitä keskivartalo.",
       "Punnerra tankoa ylös ja eteenpäin, kunnes kädet ovat suorina.",
       "Laske se hallitusti takaisin olkapäälle.",
       "Pidä kylkiluut alhaalla äläkä nojaa taaksepäin."
@@ -36066,7 +36066,7 @@
     "description": "Punnerra landmine-tangon päätä yhdellä kädellä. Viisto liikerata on olkapääystävällinen ja haastaa keskivartaloa.",
     "instructions": [
       "Kiinnitä levytangon toinen pää ja pidä vapaata päätä yhdellä kädellä olkapäällä.",
-      "Seiso porrastetussa asennossa keskivartalo tiukkana.",
+      "Seiso käyntiasennossa keskivartalo tiukkana.",
       "Punnerra tankoa ylös ja eteenpäin, kunnes kätesi on suora.",
       "Laske se takaisin olkapäälle.",
       "Tee toistot loppuun ja vaihda sitten kättä."
@@ -36245,7 +36245,7 @@
       "Asetu tangon yläpuolelle selkä suorana, kädet polvien ulkopuolella.",
       "Vedä tanko lattiasta ja ota se vastaan hartioille kyykyssä.",
       "Nouse ylös tangon ollessa hartioilla.",
-      "Notkista hieman polvia ja työnnä tanko pään yläpuolelle siirtäen samalla jalat haara-asentoon.",
+      "Notkista hieman polvia ja työnnä tanko pään yläpuolelle siirtäen samalla jalat käyntiasentoon.",
       "Tuo jalat takaisin rinnakkain, seiso suorana ja laske tanko hallitusti alas."
     ]
   },
@@ -36726,7 +36726,7 @@
       "Ota tangosta ote juuri polvien ulkopuolelta selkä suorana.",
       "Vedä räjähtävästi ja pudottaudu tangon alle ottaen se vastaan hartioilla.",
       "Nouse kokonaan ylös ja korjaa jalkojen asentoa.",
-      "Notkista polvia, ponnista ja siirrä jalat haara-asentoon samalla, kun työnnät tangon ylös.",
+      "Notkista polvia, ponnista ja siirrä jalat käyntiasentoon samalla, kun työnnät tangon ylös.",
       "Tuo jalat rinnakkain ja laske tanko hallitusti alas."
     ]
   },
@@ -36880,7 +36880,7 @@
     "description": "Lyhyitä, täysillä tehtäviä juoksuvetoja. Se kehittää nopeutta ja kuntoa.",
     "instructions": [
       "Lämmittele huolellisesti hölkällä ja dynaamisilla venytyksillä.",
-      "Asetu lähtöasentoon jalat porrastetusti ja nojaa hieman eteenpäin.",
+      "Asetu lähtöasentoon jalat käyntiasennossa ja nojaa hieman eteenpäin.",
       "Vie käsiä ja polvia voimakkaasti kiihdyttäessäsi.",
       "Juokse maksimiteholla 10–30 sekuntia.",
       "Hidasta vauhtia vähitellen ja lepää kunnolla ennen seuraavaa sprinttiä."
@@ -38639,7 +38639,7 @@
     "description": "Rintapunnerrus seisten taakse kiinnitettyä kuminauhaa vastaan.",
     "instructions": [
       "Kiinnitä kuminauha taaksesi ja pidä päistä kiinni rinnan korkeudella.",
-      "Seiso porrastetussa asennossa tasapainon vuoksi.",
+      "Seiso käyntiasennossa tasapainon vuoksi.",
       "Punnerra käsiä eteenpäin, kunnes käsivarret ovat suorat.",
       "Palaa rauhallisesti alkuasentoon.",
       "Pidä keskivartalo tiukkana."
@@ -39266,7 +39266,7 @@
     "description": "Seisten tehtävä taljapunnerrus, jossa kahvat lähtevät alhaalta ja liikkuvat ylöspäin. Vahvistaa ylärintaa ja etuolkapäitä.",
     "instructions": [
       "Säädä taljat alas ja ota kahva kumpaankin käteen.",
-      "Astu eteen haara-asentoon kyynärpäät koukussa.",
+      "Astu eteen käyntiasentoon kyynärpäät koukussa.",
       "Punnerra kahvoja ylös ja eteenpäin kaaressa.",
       "Purista rintaa, kun kädet kohtaavat.",
       "Palaa hitaasti lähtöasentoon."
@@ -40730,7 +40730,7 @@
     "name": "Askelkyykky paikallaan pullolla",
     "description": "Paikallaan tehtävä askelkyykky pullot käsissä vartalon vieressä. Kasvattaa yhden jalan voimaa etureisissä ja pakaroissa.",
     "instructions": [
-      "Pidä kummassakin kädessä pulloa ja ota pitkä askel eteenpäin haara-asentoon.",
+      "Pidä kummassakin kädessä pulloa ja ota pitkä askel eteenpäin askelkyykkyasentoon.",
       "Pidä ylävartalo pystyssä.",
       "Laske taaempaa polvea kohti lattiaa.",
       "Ponnista etukantapään kautta ylös.",
@@ -42044,7 +42044,7 @@
     "name": "Matala askelkyykky paikallaan omalla painolla",
     "description": "Syvä split-kyykky, joka haastaa etureittä ja pakaroita samalla kun se kehittää tasapainoa ja lonkkien liikkuvuutta.",
     "instructions": [
-      "Astu toinen jalka eteen pitkään haara-asentoon.",
+      "Astu toinen jalka eteen pitkään askelkyykkyasentoon.",
       "Pidä ylävartalo pystyssä ja kädet lantiolla.",
       "Laske takimmaista polvea kohti lattiaa niin alas kuin pystyt hallitsemaan.",
       "Ponnista etujalan kautta takaisin ylös.",
@@ -42055,7 +42055,7 @@
     "name": "Matala askelkyykky paikallaan käsipainoilla",
     "description": "Syvä split-kyykky käsipainot käsissä, erinomainen etureisien ja pakaroiden kuormittamiseen yksi jalka kerrallaan.",
     "instructions": [
-      "Pidä käsipainoa kummassakin kädessä ja astu pitkään haara-asentoon.",
+      "Pidä käsipainoa kummassakin kädessä ja astu pitkään askelkyykkyasentoon.",
       "Pidä rinta ylhäällä ja etujalkapohja tiiviisti lattiassa.",
       "Laske takimmaista polvea kohti lattiaa hallitusti.",
       "Ponnista etukantapään kautta ylös.",
@@ -42066,7 +42066,7 @@
     "name": "Matala split-kyykky levytangolla",
     "description": "Syvä split-kyykky levytanko yläselällä, joka rakentaa vahvoja etureisiä ja pakaroita sekä testaa tasapainoa.",
     "instructions": [
-      "Aseta levytanko yläselän päälle ja astu pitkään haara-asentoon.",
+      "Aseta levytanko yläselän päälle ja astu pitkään askelkyykkyasentoon.",
       "Jännitä keskivartalo ja pidä ylävartalo suorassa.",
       "Laske takimmaista polvea kohti lattiaa hallitusti.",
       "Ponnista etujalalla ylös.",
@@ -43508,7 +43508,7 @@
     "description": "Yhden käden taljasoutu korkealla kyynärpäällä. Keskittyy takaolkapäihin ja yläselkään.",
     "instructions": [
       "Säädä talja rinnan korkeudelle ja tartu kahvaan yhdellä kädellä.",
-      "Asetu porrastettuun asentoon ja pidä keskivartalo kevyesti jännitettynä.",
+      "Asetu käyntiasentoon ja pidä keskivartalo kevyesti jännitettynä.",
       "Vedä kahvaa kohti itseäsi kyynärpää sivulle suunnattuna.",
       "Purista takaolkapäätä liikkeen lopussa.",
       "Ojenna käsi rauhallisesti ja vaihda kättä sarjan jälkeen."
@@ -44883,7 +44883,7 @@
     "description": "Seisten tehtävä aukaisu taljassa kämmenet vastakkain. Supistaa rintalihaksia tehokkaasti.",
     "instructions": [
       "Säädä taljat rinnan korkeudelle ja ota kahvoista kiinni.",
-      "Astu eteen porrastettuun asentoon ja pidä kyynärpäissä pieni koukku.",
+      "Astu eteen käyntiasentoon ja pidä kyynärpäissä pieni koukku.",
       "Tuo kädet yhteen rinnan eteen.",
       "Purista rintalihaksia hetken ajan.",
       "Palaa hitaasti, kunnes tunnet venytyksen."
@@ -45214,9 +45214,9 @@
   },
   "7564": {
     "name": "Yhden käden alataljasoutu askelkyykkyasennossa",
-    "description": "Yhden käden soutu taljassa porrastetussa asennossa, joka antaa vedolle vakaan alustan.",
+    "description": "Yhden käden soutu taljassa käyntiasennossa, joka antaa vedolle vakaan alustan.",
     "instructions": [
-      "Asetu porrastettuun asentoon kasvot matalaan taljaan päin.",
+      "Asetu käyntiasentoon kasvot matalaan taljaan päin.",
       "Tartu kahvaan yhdellä kädellä.",
       "Souda kohti lonkkaa ja purista lapaa taakse.",
       "Pidä vartalo vakaana.",
@@ -46646,7 +46646,7 @@
     "description": "Yhden käden ojentajapunnerrus taljassa vaakasuoralla radalla. Se eristää ojentajat.",
     "instructions": [
       "Säädä talja rinnan korkeudelle, seiso selkä taljaan päin ja pidä kahvaa olkapään vieressä.",
-      "Ota porrastettu asento tasapainon vuoksi.",
+      "Ota käyntiasento tasapainon vuoksi.",
       "Ojenna kättä eteenpäin, kunnes se on suora.",
       "Palaa hitaasti pitäen kyynärpää paikallaan.",
       "Tee toistot loppuun ja vaihda sitten kättä."
@@ -46888,7 +46888,7 @@
     "name": "Köysiveto",
     "description": "Köysiveto, jossa köyttä vedetään itseä kohti. Se kuormittaa selkää, käsivarsia ja otetta ja kehittää kuntoa.",
     "instructions": [
-      "Kiinnitä köysi ja ota päistä kiinni porrastetussa asennossa.",
+      "Kiinnitä köysi ja ota päistä kiinni käyntiasennossa.",
       "Nojaa hieman taaksepäin keskivartalo tiukkana.",
       "Vedä köyttä itseäsi kohti vuorokäsin.",
       "Pidä rinta ylhäällä ja käytä jalkoja voiman tuottamiseen.",
@@ -46943,7 +46943,7 @@
     "name": "Askelkyykky pohjenousulla",
     "description": "Askelkyykky, jonka yläasennossa tehdään pohjenousu. Vahvistaa etureisiä, pakaroita ja pohkeita yhdessä.",
     "instructions": [
-      "Asetu haara-asentoon niin, että toinen jalka on reilusti edessä.",
+      "Asetu askelkyykkyasentoon niin, että toinen jalka on reilusti edessä.",
       "Laskeudu askelkyykkyyn pitäen vartalo pystyssä.",
       "Ponnista etujalan kautta ylös pystyyn.",
       "Nouse taemman jalan tai molempien jalkojen varpaille.",
@@ -47084,7 +47084,7 @@
     "description": "Nopea isku taljan vastusta vastaan kehittää räjähtävää työntövoimaa. Se opettaa myös keskivartaloa vastustamaan kiertoa.",
     "instructions": [
       "Seiso selkä taljaan päin kahva toisessa kädessä rinnan korkeudella.",
-      "Ota porrastettu asento ja pidä keskivartalo tiukkana.",
+      "Ota käyntiasento ja pidä keskivartalo tiukkana.",
       "Lyö kahva nopeasti eteenpäin ja kierrä lantiota hieman mukana.",
       "Pysäytä liike juuri ennen kuin kyynärpää suoristuu kokonaan.",
       "Tuo käsi hallitusti takaisin leuan eteen.",
@@ -47129,7 +47129,7 @@
   },
   "8892": {
     "name": "Maastaveto porrasasennossa kahvakuulalla",
-    "description": "Maastaveto porrastetussa asennossa kahvakuulalla. Se kuormittaa toista jalkaa enemmän kuin toista.",
+    "description": "Maastaveto käyntiasennossa kahvakuulalla. Se kuormittaa toista jalkaa enemmän kuin toista.",
     "instructions": [
       "Seiso toinen jalka hieman toisen takana.",
       "Pidä kahvakuulaa reisien edessä.",
@@ -47192,7 +47192,7 @@
     "description": "Taljalyönnin toinen muunnelma, joka kehittää työntävien lihasten nopeaa voimaa. Keskivartalo työskentelee pitääkseen asennon vakaana.",
     "instructions": [
       "Asetu seisomaan selkä taljaan päin ja pidä kiinni kahvasta rinnan korkeudella.",
-      "Ota porrastettu asento ja jännitä keskivartalo.",
+      "Ota käyntiasento ja jännitä keskivartalo.",
       "Lyö nopeasti eteenpäin ja kierrä vartaloa hieman.",
       "Pysäytä liike ennen kyynärpään täyttä ojennusta.",
       "Vedä käsi hallitusti takaisin.",
@@ -49179,7 +49179,7 @@
   },
   "10047": {
     "name": "Romanialainen maastaveto porrasasennossa levytangolla",
-    "description": "Romanialainen maastaveto porrasasennossa, jossa suurin osa kuormasta on etujalalla. Vahvistaa takareisiä ja pakaroita sekä testaa tasapainoa.",
+    "description": "Romanialainen maastaveto käyntiasennossa, jossa suurin osa kuormasta on etujalalla. Vahvistaa takareisiä ja pakaroita sekä testaa tasapainoa.",
     "instructions": [
       "Pidä levytankoa reisien edessä ja seiso toinen jalka askeleen verran toisen edessä.",
       "Siirrä suurin osa painostasi etujalalle.",
@@ -49266,7 +49266,7 @@
     "description": "Paikallaan pysyvä askelkyykky levytanko selässä, jolloin jalat pysyvät paikoillaan laskeutumisen ja nousun ajan.",
     "instructions": [
       "Aseta levytanko yläselän päälle.",
-      "Ota askel haara-asentoon toinen jalka edessä.",
+      "Ota askel askelkyykkyasentoon toinen jalka edessä.",
       "Laskeudu suoraan alaspäin, kunnes takimmainen polvi melkein koskettaa lattiaa.",
       "Pidä rintakehä ylhäällä ja vartalo suorassa.",
       "Ponnista etukantapäällä ylös.",
@@ -49290,7 +49290,7 @@
     "description": "Landmine-punnerrus kuminauhalla tehostettuna, jolloin vastus kasvaa ylöspäin mentäessä.",
     "instructions": [
       "Kiinnitä vastuskuminauha landmine-tankoon ja pidä tangon päästä kiinni olkapään kohdalla.",
-      "Asetu porrasasentoon ja jännitä keskivartalo.",
+      "Asetu käyntiasentoon ja jännitä keskivartalo.",
       "Punnerra tankoa ylös ja eteen, kunnes käsi on suora.",
       "Laske se hallitusti takaisin olkapäälle.",
       "Tee sarja loppuun ja vaihda sitten kättä.",
@@ -49371,7 +49371,7 @@
   },
   "10095": {
     "name": "Yhden käden karhuaukaisu taljassa",
-    "description": "Yhden käden aukaisu taljassa tukevassa porrasasennossa. Kohdistuu rintaan ja pitää vartalon vakaana.",
+    "description": "Yhden käden aukaisu taljassa tukevassa käyntiasennossa. Kohdistuu rintaan ja pitää vartalon vakaana.",
     "instructions": [
       "Säädä talja rinnan korkeudelle ja asetu askelasentoon.",
       "Tartu kahvaan yhdellä kädellä ja jännitä keskivartalo.",
@@ -49643,9 +49643,9 @@
   },
   "10184": {
     "name": "Vuorottainen pallof-punnerrus porrasasennossa vastuskuminauhalla",
-    "description": "Pallof-punnerrus porrasasennossa. Vastustat kuminauhan vetoa ja kehität kiertoa vastustavaa voimaa.",
+    "description": "Pallof-punnerrus käyntiasennossa. Vastustat kuminauhan vetoa ja kehität kiertoa vastustavaa voimaa.",
     "instructions": [
-      "Kiinnitä kuminauha rinnan korkeudelle ja seiso sivuttain siihen nähden porrasasennossa.",
+      "Kiinnitä kuminauha rinnan korkeudelle ja seiso sivuttain siihen nähden käyntiasennossa.",
       "Pidä kahvasta kiinni rinnan kohdalla molemmin käsin.",
       "Punnerra kuminauhaa suoraan eteenpäin antamatta vartalon kiertyä.",
       "Pidä sekunti ja tuo kädet takaisin rinnalle.",
@@ -50292,9 +50292,9 @@
   },
   "10552": {
     "name": "Vartalonkierto porrasasennossa kuntopallolla",
-    "description": "Kierrä vartaloa puolelta toiselle kuntopallon kanssa porrasasennossa. Harjoittaa keskivartalon kiertäviä lihaksia.",
+    "description": "Kierrä vartaloa puolelta toiselle kuntopallon kanssa käyntiasennossa. Harjoittaa keskivartalon kiertäviä lihaksia.",
     "instructions": [
-      "Asetu porrasasentoon ja pidä kuntopalloa rinnan korkeudella.",
+      "Asetu käyntiasentoon ja pidä kuntopalloa rinnan korkeudella.",
       "Jännitä keskivartalo.",
       "Kierrä vartaloa toiselle puolelle pitäen lantion vakaana.",
       "Palaa keskelle ja kierrä toiseen suuntaan.",
@@ -50306,7 +50306,7 @@
     "description": "Vedä vastuskuminauhaa ylhäältä alas eteesi lyövällä liikkeellä. Kehittää rinnan ja keskivartalon voimaa.",
     "instructions": [
       "Kiinnitä kuminauha ylös ja tartu kahvoihin molemmin käsin.",
-      "Asetu porrasasentoon kädet ylhäällä.",
+      "Asetu käyntiasentoon kädet ylhäällä.",
       "Vedä kahvat alas ja eteen hallitulla lyöntiliikkeellä.",
       "Jännitä keskivartalo liikkeen lopussa.",
       "Palaa hitaasti aloitusasentoon ja toista."
@@ -51352,9 +51352,9 @@
   },
   "10819": {
     "name": "Yhden jalan pohjenousu porrasasennossa",
-    "description": "Pohjenousu porrastetussa asennossa, jossa pääpaino on etujalalla. Takajalka tukee tasapainoa.",
+    "description": "Pohjenousu käyntiasennossa, jossa pääpaino on etujalalla. Takajalka tukee tasapainoa.",
     "instructions": [
-      "Asetu haara-asentoon niin, että etujalka on kokonaan maassa ja takajalan varpaat koskevat kevyesti lattiaan.",
+      "Asetu käyntiasentoon niin, että etujalka on kokonaan maassa ja takajalan varpaat koskevat kevyesti lattiaan.",
       "Siirrä suurin osa painosta etujalalle.",
       "Nouse etujalan päkiälle.",
       "Pysäytä liike yläasennossa.",
@@ -51805,7 +51805,7 @@
     "name": "Askelkyykkypito omalla painolla",
     "description": "Pidettävä askelkyykkyasento, joka avaa lonkan etuosan ja kuormittaa etureittä.",
     "instructions": [
-      "Ota toisella jalalla pitkä askel eteen ja toisella taakse haara-asentoon.",
+      "Ota toisella jalalla pitkä askel eteen ja toisella taakse askelkyykkyasentoon.",
       "Laske lantiota, kunnes etupolvi on noin 90 asteen kulmassa.",
       "Pidä vartalo pystyssä ja etukantapää lattiassa.",
       "Pidä asentoa 20–30 sekuntia hengitellen tasaisesti.",
@@ -52379,10 +52379,10 @@
   },
   "11053": {
     "name": "Lantionnosto porrasasennossa Smith-laitteessa",
-    "description": "Lantionnosto Smith-laitteessa jalat porrastetusti. Se rakentaa pakaralihaksia.",
+    "description": "Lantionnosto Smith-laitteessa jalat käyntiasennossa. Se rakentaa pakaralihaksia.",
     "instructions": [
       "Istu yläselkä penkkiä vasten ja tanko lantiolla.",
-      "Aseta jalat porrastetusti, toinen hieman edempänä.",
+      "Aseta jalat käyntiasennossa, toinen hieman edempänä.",
       "Ponnista kantapäiden kautta.",
       "Nosta lantiota, kunnes lonkat ovat täysin ojentuneet.",
       "Purista pakaroita.",
@@ -52391,10 +52391,10 @@
   },
   "11054": {
     "name": "Lantionnosto epäsymmetrisellä asennolla vipuvarrella",
-    "description": "Levypainoilla kuormitettavassa laitteessa tehtävä lantionnosto jalat porrastetusti. Kohdistuu pakaroihin.",
+    "description": "Levypainoilla kuormitettavassa laitteessa tehtävä lantionnosto toinen jalka toista edempänä. Kohdistuu pakaroihin.",
     "instructions": [
       "Istu laitteeseen niin, että pehmuste on lantion päällä.",
-      "Aseta jalat porrastetusti.",
+      "Aseta toinen jalka hieman toista edemmäs.",
       "Ponnista kantapäiden kautta.",
       "Nosta lantio täysin ylös.",
       "Purista pakaroita.",
@@ -52494,7 +52494,7 @@
     "name": "Selkärangan rullaus haara-asennossa",
     "description": "Istuen haara-asennossa tehtävä selkärangan rullausliike. Rentouttaa selkää ja reisien sisäosia.",
     "instructions": [
-      "Istu lattialla jalat leveällä mukavassa haara-asennossa.",
+      "Istu lattialla jalat mukavasti leveällä haara-asennossa.",
       "Istu suorana ja kurkota käsillä eteenpäin.",
       "Pyöristä selkäranka ja rullaa alas hitaasti nikama nikamalta.",
       "Rullaa hitaasti takaisin ylös pystyasentoon.",
@@ -52561,7 +52561,7 @@
     "description": "Taljassa tehtävä rintaliike, joka haastaa rintalihaksia laajalla kaarella. Tasainen taljan vastus pitää lihakset työssä koko liikkeen ajan.",
     "instructions": [
       "Säädä molemmat taljat hartiakorkeudelle ja ota kahva kumpaankin käteen.",
-      "Ota askel eteenpäin porrastettuun asentoon ja nojaa hieman eteenpäin.",
+      "Ota askel eteenpäin käyntiasentoon ja nojaa hieman eteenpäin.",
       "Pidä kyynärpäät kevyesti koukussa ja vedä kädet yhteen rinnan eteen.",
       "Jännitä rintalihaksia hetki.",
       "Avaa käsiä hitaasti takaisin, kunnes tunnet venytyksen."
@@ -52648,7 +52648,7 @@
     "name": "Punnerrus ja veto seisten taljassa v. 3",
     "description": "Seisten tehtävä liike, jossa toinen käsi punnertaa ja toinen soutaa. Tämä kehittää työntö- ja vetoliikkeitä yhdessä ja testaa keskivartaloa.",
     "instructions": [
-      "Asetu kahden taljan väliin haara-asentoon, yksi kahva kummassakin kädessä.",
+      "Asetu kahden taljan väliin käyntiasentoon, yksi kahva kummassakin kädessä.",
       "Jännitä keskivartalo ja pidä lantio suoraan eteenpäin.",
       "Punnerra toista kahvaa eteenpäin samalla kun vedät toista taakse kylkeä kohti.",
       "Vaihda käsien liikesuuntaa hitaasti.",
@@ -52704,7 +52704,7 @@
     "description": "Yhden käden taljasoutu, johon yhdistetään vartalon kierto. Se treenaa selkää ja keskivartalon kiertäviä lihaksia.",
     "instructions": [
       "Seiso rinnan korkeudella olevan taljan edessä yksi kahva toisessa kädessä.",
-      "Ota porrastettu asento ja jännitä keskivartalo.",
+      "Ota käyntiasento ja jännitä keskivartalo.",
       "Vedä kahva kylkeen kiertäen samalla vartaloa kevyesti.",
       "Jännitä selkälihakset liikkeen lopussa.",
       "Palaa hitaasti, tee toistot loppuun ja vaihda kättä."
@@ -52824,7 +52824,7 @@
     "name": "Vuorottainen vino rintapunnerrus seisten taljassa v. 3",
     "description": "Seisten tehtävä diagonaalinen taljapunnerrus yhdellä kädellä kerrallaan. Se treenaa rintaa ja haastaa keskivartaloa.",
     "instructions": [
-      "Asetu porrastettuun asentoon ja pidä ylätaljan kahvaa kummassakin kädessä.",
+      "Asetu käyntiasentoon ja pidä ylätaljan kahvaa kummassakin kädessä.",
       "Jännitä keskivartalo.",
       "Punnerra toista kahvaa eteen ja alas viistosti.",
       "Palaa hitaasti ja punnerra toisella kädellä.",
@@ -53405,7 +53405,7 @@
     "description": "Seisten tehtävä yhden käden punnerrus vastaotteella. Se vahvistaa rintaa ja haastaa keskivartalon hallintaa.",
     "instructions": [
       "Säädä talja rinnan korkeudelle ja tartu kahvaan vastaotteella.",
-      "Seiso selkä taljaan päin porrastetussa asennossa.",
+      "Seiso selkä taljaan päin käyntiasennossa.",
       "Punnerra kahvaa eteenpäin, kunnes käsi on suora.",
       "Pidä vartalo paikoillaan äläkä anna sen kiertyä.",
       "Palaa hitaasti lähtöasentoon ja vaihda kättä toistojen jälkeen."
@@ -53501,7 +53501,7 @@
   },
   "11789": {
     "name": "Suorin jaloin maastaveto porrasasennossa levytangolla",
-    "description": "Suorin jaloin tehtävä maastaveto porrastetussa asennossa. Se kuormittaa takareisiä ja pakaroita ja siirtää painoa etujalalle.",
+    "description": "Suorin jaloin tehtävä maastaveto käyntiasennossa. Se kuormittaa takareisiä ja pakaroita ja siirtää painoa etujalalle.",
     "instructions": [
       "Pitele levytankoa reisien edessä ja vie toinen jalka hieman taakse niin, että takajalka on lähinnä päkiän varassa.",
       "Pidä suurin osa painosta etujalalla ja polvi kevyesti koukussa.",
@@ -62342,7 +62342,7 @@
   },
   "0781": {
     "name": "Askelkyykky paikallaan",
-    "description": "Kyykky porrastetussa asennossa, jossa takajalka pysyy paikallaan. Kuormittaa etureisiä ja pakaroita puoli kerrallaan.",
+    "description": "Kyykky askelkyykkyasennossa, jossa takajalka pysyy paikallaan. Kuormittaa etureisiä ja pakaroita puoli kerrallaan.",
     "instructions": [
       "Asetu pitkään askeleeseen niin, että toinen jalka on edessä ja toinen takana.",
       "Pidä vartalo pystyssä ja keskivartalo tiukkana.",
@@ -62397,12 +62397,12 @@
   },
   "0786": {
     "name": "Kyykkytyöntö",
-    "description": "Painonnoston liike, jossa levytanko ponnistetaan jalkojen joustolla pään yläpuolelle ja otetaan vastaan haara-asennossa. Kehittää räjähtävää voimaa ja vakautta pään yläpuolella.",
+    "description": "Painonnoston liike, jossa levytanko ponnistetaan jalkojen joustolla pään yläpuolelle ja otetaan vastaan käyntiasennossa. Kehittää räjähtävää voimaa ja vakautta pään yläpuolella.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä levytanko hartioillasi.",
       "Laskeudu kyykkyyn pitäen rinnan ylhäällä ja polvet varpaiden suuntaisesti.",
       "Kun olet kyykyn alaosassa, ponnista räjähtävästi jaloilla ja työnnä levytanko ylös.",
-      "Kun tanko saavuttaa korkeimman kohtansa, siirry nopeasti haara-asentoon eli split-asentoon, jossa toinen jalka on edessä ja toinen takana.",
+      "Kun tanko saavuttaa korkeimman kohtansa, siirry nopeasti käyntiasentoon eli split-asentoon, jossa toinen jalka on edessä ja toinen takana.",
       "Ota tanko vastaan pään yläpuolelle käsivarret täysin suorina ja takapolvi kevyesti maata koskettaen.",
       "Nouse ylös split-asennosta tuoden jalat takaisin yhteen.",
       "Laske tanko takaisin hartioille ja tee haluamasi määrä toistoja."
@@ -63535,7 +63535,7 @@
     "name": "Levitys alhaalta ylös kuminauhalla",
     "description": "Levitys, jossa kädet nousevat kaarena alhaalta ylös. Se kohdistuu ylärintaan.",
     "instructions": [
-      "Kiinnitä kuminauha matalalle ja asetu porrastettuun asentoon.",
+      "Kiinnitä kuminauha matalalle ja asetu käyntiasentoon.",
       "Tartu päihin kyynärpäät hieman koukussa.",
       "Nosta kädet kaarena ylös ja yhteen rinnan eteen.",
       "Purista rintaa yläasennossa.",
@@ -63646,7 +63646,7 @@
     "description": "Ylöspäin suunnattu punnerrus seisten kuminauhaa käyttäen. Kohdistuu ylärintaan.",
     "instructions": [
       "Kiinnitä kuminauha matalalle taaksesi ja pidä päistä kiinni rinnan kohdalla.",
-      "Asetu porrastettuun asentoon.",
+      "Asetu käyntiasentoon.",
       "Punnerra käsiä ylös ja eteenpäin.",
       "Purista rintaa yläasennossa.",
       "Palaa hitaasti lähtöasentoon."
