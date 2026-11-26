@@ -66,6 +66,7 @@ import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } f
 import { layoutSheet } from '../components/PageLayout.jsx'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
+import { openWhatsNew } from '../components/WhatsNew.jsx'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { bugReportUrl, environmentOf } from '../lib/bug-report.js'
@@ -1329,6 +1330,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           : <Row icon="download" iconTint="var(--green)" title={t('Get the Android app')}
               subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
               onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
+      </Section>
+      {/* The notes the app showed once after this update (components/WhatsNew.jsx), to read again. */}
+      <Section>
+        <Row icon="sparkles" iconTint="var(--orange)" title={t('What’s new in this version')} accessory="chevron"
+          onClick={() => openWhatsNew()} />
       </Section>
       {/* Report a problem (#1482): GitHub's bug form with the version and the device filled in
           (lib/bug-report.js). Only a link: the app sends nothing, and nothing from the profile. */}

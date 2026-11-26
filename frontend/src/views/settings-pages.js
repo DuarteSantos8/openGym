@@ -341,6 +341,7 @@ export const SEARCH = [
   { page: 'about', title: 'Create your own exercise', icon: 'plusCircle', tint: 'var(--yellow)', kw: 'tutorial guide custom exercise own new help how to' },
   { page: 'about', title: 'Edit your data', icon: 'pencil', tint: 'var(--yellow)', kw: 'tutorial guide edit fix change workout weigh-in history correct help how to' },
   { page: 'about', title: 'Export & import', icon: 'folder', tint: 'var(--yellow)', kw: 'tutorial guide export import backup restore csv strong hevy sync help how to' },
+  { page: 'about', title: 'What’s new in this version', icon: 'sparkles', tint: 'var(--orange)', kw: 'whats new what is new changelog release notes changes update version features' },
   { page: 'about', title: 'Report a problem', icon: 'flag', tint: 'var(--red)', kw: 'bug issue report problem crash broken github feedback' },
   { page: 'about', title: 'Version', icon: 'info', tint: 'var(--grey)', kw: 'version about licence license source code open source' },
   { page: 'about', title: 'In Chrome: ⋮ menu → Add to Home screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && c.androidWeb },

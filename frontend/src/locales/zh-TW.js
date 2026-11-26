@@ -1,4 +1,14 @@
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} 新功能",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "十二月搖一搖手機，雪花就會像雪花球裡一樣狂舞。",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "訓練會用你真正擁有的啞鈴開始。啞鈴架只到 28 公斤，就不會再出現 30 公斤。",
+  "Log a past workout by typing it out, the way it sits in your notes.": "照著筆記裡的樣子直接輸入，記錄過去的訓練。",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "你自己的熱身階梯：在設定裡定一次，之後每次熱身都照著來。",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "手錶會在開始前快速問問你的狀態，結束時還會頒給你一面獎牌。",
+  "What’s new in this version": "此版本新功能",
+  "openGym {0} is out": "openGym {0} 已推出",
+  "Update": "更新",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "訓練要怎麼顯示？",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "選你順手的。隨時可以在 ⋯ → 畫面佈局 裡切換，或在 設定 → 訓練 裡固定下來。",

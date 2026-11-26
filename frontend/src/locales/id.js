@@ -1,5 +1,15 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Baru di {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Guncang ponselmu di bulan Desember dan saljunya mengamuk, seperti di bola salju.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Latihan dibuka dengan dumbel yang benar-benar kamu punya. Tak ada lagi 30 kg kalau rakmu berhenti di 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Catat latihan yang sudah lewat dengan mengetiknya persis seperti di catatanmu.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Tangga pemanasanmu sendiri: atur sekali di Pengaturan, setiap pemanasan mengikutinya.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Jammu menanyakan kabarmu sebentar sebelum mulai dan memberimu medali di akhir.",
+  "What’s new in this version": "Yang baru di versi ini",
+  "openGym {0} is out": "openGym {0} sudah keluar",
+  "Update": "Perbarui",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Latihanmu mau tampil seperti apa?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Pilih yang terasa pas. Bisa diganti kapan saja di ⋯ → Tata letak, atau permanen di Pengaturan → Latihan.",

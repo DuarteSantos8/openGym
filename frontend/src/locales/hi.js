@@ -1,5 +1,15 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} में नया",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "दिसंबर में फ़ोन हिलाइए और बर्फ़ बर्फ़ीले गोले की तरह झूम उठेगी।",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "वर्कआउट उन्हीं डम्बल से शुरू होते हैं जो आपके पास सच में हैं। रैक 28 पर खत्म हो तो अब 30 किलो नहीं।",
+  "Log a past workout by typing it out, the way it sits in your notes.": "पिछला वर्कआउट वैसे ही टाइप करके दर्ज करें जैसा आपके नोट्स में लिखा है।",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "आपकी अपनी वार्म-अप सीढ़ी: सेटिंग्स में एक बार सेट करें, हर वार्म-अप उसी पर चलेगा।",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "आपकी घड़ी शुरू करने से पहले झटपट हाल पूछती है और आख़िर में मेडल देती है।",
+  "What’s new in this version": "इस वर्शन में नया क्या है",
+  "openGym {0} is out": "openGym {0} आ गया है",
+  "Update": "अपडेट करें",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "आपका वर्कआउट कैसा दिखे?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "जो ठीक लगे चुनें। कभी भी ⋯ → लेआउट से बदल सकते हैं, या हमेशा के लिए सेटिंग्स → वर्कआउट में।",

@@ -1,5 +1,15 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} sürümünde yeni",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Aralıkta telefonunu salla, kar tıpkı bir kar küresindeki gibi çılgına dönsün.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Antrenmanlar gerçekten sahip olduğun dambıllarla açılır. Rafın 28’de bitiyorsa artık 30 kg yok.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Geçmiş bir antrenmanı notlarındaki gibi yazarak kaydet.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Kendi ısınma rampan: Ayarlar’da bir kez belirle, her ısınma ona uysun.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Saatin başlamadan önce kısa bir durum sorar ve sonunda sana bir madalya verir.",
+  "What’s new in this version": "Bu sürümde neler yeni",
+  "openGym {0} is out": "openGym {0} çıktı",
+  "Update": "Güncelle",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Antrenmanın nasıl görünsün?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Sana uygun olanı seç. İstediğin an ⋯ → Düzen’den değiştirebilir, kalıcı olarak Ayarlar → Antrenman’dan ayarlayabilirsin.",

@@ -1,5 +1,15 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "มีอะไรใหม่ใน {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "เขย่ามือถือในเดือนธันวาคม แล้วหิมะจะหมุนวนเหมือนในลูกแก้วหิมะ",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "การฝึกเริ่มด้วยดัมเบลที่คุณมีจริง ไม่มี 30 กก. อีกแล้วเมื่อชั้นวางของคุณมีถึงแค่ 28",
+  "Log a past workout by typing it out, the way it sits in your notes.": "บันทึกการฝึกที่ผ่านมาโดยพิมพ์ตามที่จดไว้ในโน้ต",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "ขั้นวอร์มอัปของคุณเอง: ตั้งครั้งเดียวในการตั้งค่า แล้วทุกการวอร์มอัปจะทำตาม",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "นาฬิกาจะถามความพร้อมสั้นๆ ก่อนเริ่ม และมอบเหรียญให้ตอนจบ",
+  "What’s new in this version": "มีอะไรใหม่ในเวอร์ชันนี้",
+  "openGym {0} is out": "openGym {0} มาแล้ว",
+  "Update": "อัปเดต",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "อยากให้หน้าการฝึกเป็นแบบไหน?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "เลือกแบบที่ถูกใจ เปลี่ยนได้ทุกเมื่อที่ ⋯ → เลย์เอาต์ หรือตั้งถาวรที่ ตั้งค่า → การฝึก",

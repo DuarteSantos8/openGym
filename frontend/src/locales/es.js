@@ -1,5 +1,15 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Novedades de la {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Agita el móvil en diciembre y la nieve se vuelve loca, como en una bola de nieve.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Los entrenos empiezan con las mancuernas que tienes. Se acabaron los 30 kg cuando tu rack llega a 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Registra un entreno pasado escribiéndolo tal cual está en tus notas.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Tu propia rampa de calentamiento: ajústala una vez en Ajustes y todo calentamiento la sigue.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Tu reloj te hace un check-in rápido antes de empezar y te da una medalla al final.",
+  "What’s new in this version": "Novedades de esta versión",
+  "openGym {0} is out": "Ya está aquí openGym {0}",
+  "Update": "Actualizar",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "¿Cómo quieres ver tu entreno?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Elige lo que te encaje. Puedes cambiarlo cuando quieras en ⋯ → Diseño, o para siempre en Ajustes → Entreno.",

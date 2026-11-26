@@ -1,5 +1,15 @@
 // Japanese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0}の新機能",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "12月にスマホを振ると、スノードームのように雪が舞い上がります。",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "トレーニングは実際に持っているダンベルで始まります。ラックが28 kgまでなら、もう30 kgは出てきません。",
+  "Log a past workout by typing it out, the way it sits in your notes.": "過去のトレーニングを、メモにある通りに打ち込んで記録できます。",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "自分だけのウォームアップの段階：設定で一度決めれば、すべてのウォームアップがそれに従います。",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "ウォッチが開始前にさっと体調を聞き、最後にメダルをくれます。",
+  "What’s new in this version": "このバージョンの新機能",
+  "openGym {0} is out": "openGym {0} が出ました",
+  "Update": "アップデート",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "トレーニング画面の見た目は？",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "しっくりくる方を選んでください。⋯ → レイアウトでいつでも切り替えられ、設定 → トレーニングで固定もできます。",

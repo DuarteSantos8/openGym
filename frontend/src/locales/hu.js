@@ -1,5 +1,15 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Újdonságok: {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Rázd meg decemberben a telefonod, és megvadul a hó, mint egy hógömbben.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Az edzés azokkal a kézisúlyzókkal indul, amik tényleg megvannak. Nincs több 30 kg, ha az állványod 28-nál véget ér.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Rögzíts egy korábbi edzést úgy, hogy begépeled, ahogy a jegyzeteidben áll.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Saját bemelegítő lépcső: egyszer állítsd be a Beállításokban, és minden bemelegítés ezt követi.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Az órád indulás előtt gyorsan rákérdez, hogy vagy, a végén pedig érmet ad.",
+  "What’s new in this version": "Újdonságok ebben a verzióban",
+  "openGym {0} is out": "Megjelent az openGym {0}",
+  "Update": "Frissítés",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Hogy nézzen ki az edzésed?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Válaszd, ami jólesik. Bármikor átválthatsz a ⋯ → Elrendezés alatt, vagy végleg a Beállítások → Edzés részben.",

@@ -1,5 +1,15 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Có gì mới trong {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Lắc điện thoại vào tháng Mười Hai và tuyết sẽ quay cuồng như trong quả cầu tuyết.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Buổi tập mở bằng đúng những quả tạ đơn bạn có. Không còn 30 kg khi giá tạ của bạn chỉ tới 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Ghi lại một buổi tập cũ bằng cách gõ đúng như trong ghi chú của bạn.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Thang khởi động của riêng bạn: đặt một lần trong Cài đặt, mọi phần khởi động đều theo nó.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Đồng hồ hỏi nhanh tình trạng của bạn trước khi bắt đầu và trao huy chương khi kết thúc.",
+  "What’s new in this version": "Có gì mới trong phiên bản này",
+  "openGym {0} is out": "openGym {0} đã ra mắt",
+  "Update": "Cập nhật",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Bạn muốn buổi tập hiển thị thế nào?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Chọn kiểu bạn thấy hợp. Có thể đổi bất cứ lúc nào ở ⋯ → Bố cục, hoặc cố định trong Cài đặt → Buổi tập.",

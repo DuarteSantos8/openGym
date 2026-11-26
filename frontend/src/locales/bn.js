@@ -1,5 +1,15 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0}-এ নতুন",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "ডিসেম্বরে ফোন ঝাঁকান, আর তুষার স্নো গ্লোবের মতো পাগলের মতো ঘুরবে।",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "ওয়ার্কআউট শুরু হয় আপনার আসলেই থাকা ডাম্বেল দিয়ে। র‍্যাক ২৮-এ থামলে আর ৩০ কেজি নয়।",
+  "Log a past workout by typing it out, the way it sits in your notes.": "আগের কোনো ওয়ার্কআউট আপনার নোটে যেমন আছে তেমনই টাইপ করে লিখে রাখুন।",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "আপনার নিজের ওয়ার্ম-আপ র‍্যাম্প: সেটিংসে একবার ঠিক করুন, প্রতিটি ওয়ার্ম-আপ সেটাই মানবে।",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "শুরু করার আগে আপনার ঘড়ি দ্রুত খোঁজ নেয় আর শেষে একটা মেডেল দেয়।",
+  "What’s new in this version": "এই সংস্করণে নতুন কী",
+  "openGym {0} is out": "openGym {0} এসে গেছে",
+  "Update": "আপডেট করুন",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "আপনার ওয়ার্কআউট দেখতে কেমন হবে?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "যেটা ভালো লাগে বেছে নিন। যেকোনো সময় ⋯ → লেআউট থেকে বদলাতে পারবেন, বা স্থায়ীভাবে সেটিংস → ওয়ার্কআউট থেকে।",

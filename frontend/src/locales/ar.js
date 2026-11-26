@@ -1,5 +1,15 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "الجديد في {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "هزّ هاتفك في ديسمبر وسيجنّ الثلج، تمامًا مثل كرة الثلج.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "تبدأ التمارين بالدمبلز التي تملكها فعلًا. لا مزيد من 30 كغ عندما يتوقف حاملك عند 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "سجّل تمرينًا سابقًا بكتابته كما هو في ملاحظاتك.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "منحدر الإحماء الخاص بك: اضبطه مرة واحدة في الإعدادات وسيتبعه كل إحماء.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "تسألك ساعتك سؤالًا سريعًا عن حالك قبل البدء وتمنحك ميدالية في النهاية.",
+  "What’s new in this version": "الجديد في هذا الإصدار",
+  "openGym {0} is out": "صدر openGym {0}",
+  "Update": "تحديث",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "كيف تريد أن يبدو تمرينك؟",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "اختر ما يناسبك. يمكنك التبديل في أي وقت من ⋯ ← التخطيط، أو نهائيًا من الإعدادات ← التمرين.",
