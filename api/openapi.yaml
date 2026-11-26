@@ -4375,6 +4375,52 @@ paths:
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
 
+  /api/coach/help:
+    post:
+      tags: [coach]
+      operationId: explainCoachHelp
+      summary: Select a visible app-help entry
+      description: Uses the configured Coach and one daily allowance. The provider receives only the question and visible entry text. Links and training data stay in the app.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question, entries]
+              properties:
+                question: { type: string, minLength: 1, maxLength: 1000 }
+                entries:
+                  type: array
+                  minItems: 1
+                  maxItems: 3
+                  items:
+                    type: object
+                    required: [title, steps]
+                    properties:
+                      title: { type: string, minLength: 1, maxLength: 160 }
+                      steps:
+                        type: array
+                        minItems: 1
+                        maxItems: 4
+                        items: { type: string, minLength: 1, maxLength: 300 }
+      responses:
+        '200':
+          description: Zero-based index of a visible entry, or null to keep the local results.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [index]
+                properties:
+                  index: { type: [integer, 'null'], minimum: 0, maximum: 2 }
+        '400': { description: Invalid question or entries. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
   /api/coach/ask:
     post:
       tags: [coach]

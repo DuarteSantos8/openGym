@@ -409,9 +409,9 @@ export function pageTrail(page, tr = t) {
  * that starts with the query ranks first, then a title containing it, then the rest. Pages
  * themselves are hits too ("units" finds Units & language).
  */
-export function searchSettings(query, ctx, tr = t) {
+export function searchSettings(query, ctx, tr = t, { includeAll = false } = {}) {
   const words = fold(query).trim().split(/\s+/).filter(Boolean)
-  if (!words.length) return []
+  if (!words.length && !includeAll) return []
   const q = words.join(' ')
   const hits = []
   const consider = (entry, isPage) => {

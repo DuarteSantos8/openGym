@@ -453,6 +453,7 @@ function Shell() {
       {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}
       <Route path="/assistants" element={<Assistants />} />
       <Route path="/settings" element={<SettingsRoute />} />
+      <Route path="/app-help" element={<SettingsRoute appHelp />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
           AI Coach module is on, so a deep link from a notification lands somewhere sane rather

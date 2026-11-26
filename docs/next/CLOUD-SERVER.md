@@ -139,10 +139,18 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   `VITE_CLOUD_SERVER=off`.
 - **Signing in a second time** works on the hosted service since #91 (three sign-ins on
   2026-11-24 went through with no consent step, as the hosted project's log shows).
-- **The two sessions end together** (`frontend/src/lib/cloud/server-link.js`). Still to be seen
-  on the real service, by a person: the API does not log requests, so it cannot be read from
-  outside. Sign out of the account, and `/api/me` no longer answers. And once with two
-  tabs: one left open signed out, the other signing in; the first must not end the profile.
+- **Hosted account checks (A1), November 26, 2026.** On the preview, a disposable linked
+  profile showed no Admin dashboard in Settings > Account. Opening `GET /api/admin/oidc`
+  returned `{"error":"forbidden"}`. Choosing Sign out on the account screen brought back
+  Sign in. Opening `GET /api/me` in that same browser returned `{"error":"not signed in"}`.
+  The preview browser did not expose either HTTP status. Confirm the expected 403 and 401
+  from the preview response headers. The Render request-log query found no matching entries
+  at the time of the check.
+- **Direct API check.** A separate anonymous curl to the live Render service's `/api/me`
+  returned HTTP 401 with `{"error":"not signed in"}`.
+- **Pending with the owner.** Verify the Admin dashboard on the owner's preview account.
+  To check two tabs, leave one signed out, sign in with the owner's password in the other,
+  then focus the first tab and verify the linked profile stays signed in.
   Known wart: an admin who opened their own profile through the account, signed out, and within
   two minutes uses their passkey on that same profile is signed out once and has to try again.
 - Backups, below. Sign-in throttling, above.

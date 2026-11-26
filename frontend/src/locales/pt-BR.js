@@ -4749,6 +4749,8 @@ export const PT_BR_OVERRIDES = {
   "Build me a back workout with no weights": "Monte um treino de costas sem pesos para mim",
   "Add a push day on Tuesday and a pull day on Wednesday": "Adicione um treino de empurrar na terça e um de puxar na quarta",
   "Make today shorter": "Encurte o treino de hoje",
+  "Ask Coach to pick a result": "Pedir ao treinador que escolha um resultado",
+  "App help": "Ajuda do aplicativo",
+  "No matching help found.": "Nenhum tópico de ajuda encontrado.",
 }
-
 export default { ...pt, ...PT_BR_OVERRIDES }
