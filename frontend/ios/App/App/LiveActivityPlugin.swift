@@ -100,13 +100,14 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         // send). Nil from Settings' "Try it" and from a page before this: then nothing is checked.
         let seen = (call.getArray("seen") as? [String]).map { Set($0) }
         Task {
-            let content = ActivityContent(state: state, staleDate: nil)
+            let content = ActivityContent(state: state, staleDate: state.staleDate)
             let all = Activity<WorkoutActivityAttributes>.activities
             // Another workout's activity (a session that ended while the app was gone) goes first.
             for other in all where other.attributes.wid != attributes.wid {
                 await other.end(nil, dismissalPolicy: .immediate)
             }
-            if let mine = all.first(where: { $0.attributes.wid == attributes.wid && $0.activityState == .active }) {
+            // A rest past its staleDate leaves the activity .stale; it is still this workout's, so update it, not a second one.
+            if let mine = all.first(where: { $0.attributes.wid == attributes.wid && ($0.activityState == .active || $0.activityState == .stale) }) {
                 // This state's turn, for a button only the page can draw that waits for its answer
                 // (WorkoutActivity.swift LiveAnswer). Counted before the check below, and such a
                 // button reads the count after it queued its tap: a state counted later than that
