@@ -8,7 +8,7 @@ import { TOOLS } from './tools.js'
 import { WRITE_TOOLS } from './write-tools.js'
 import { ROUTINE_TOOLS } from './routine-tools.js'
 
-export const VERSION = '0.2.0'
+export const VERSION = '0.3.0'
 export const ALL_TOOLS = [...TOOLS, ...WRITE_TOOLS, ...ROUTINE_TOOLS]
 
 // What each tool needs of a scoped token: [category, level] (api/tokens.js TOKEN_CATEGORIES).
@@ -17,8 +17,10 @@ export const TOOL_NEEDS = {
   get_week_plan: ['plans', 'view'], get_programme: ['plans', 'view'],
   list_workouts: ['workouts', 'view'], get_workout: ['workouts', 'view'], estimate_1rm: ['workouts', 'view'],
   muscle_balance: ['workouts', 'view'], get_bodyweight: ['bodyweight', 'view'],
-  // The library is not the user's data: any token that may see workouts or plans gets it.
+  // The library is not the user's data, and the starred shortlist is chosen from it: any token
+  // that may see workouts or plans gets both.
   search_exercises: [['workouts', 'view'], ['plans', 'view']],
+  list_favourites: [['workouts', 'view'], ['plans', 'view']],
   log_workout: ['workouts', 'apply'],
   create_routine: ['plans', 'apply'], update_routine: ['plans', 'apply'], delete_routine: ['plans', 'apply'],
 }
@@ -39,7 +41,7 @@ export function toolAllowed(name, scopes) {
    so Claude, ChatGPT or Gemini plan with the library's ids and ask before they write. */
 export const INSTRUCTIONS = [
   'openGym is the user\'s own gym tracker: their routines, weekly plan, logged workouts and body weight.',
-  'Read before you advise: list_routines and get_week_plan for the plan, list_workouts and estimate_1rm for how training went, muscle_balance for what is under- or over-trained.',
+  'Read before you advise: list_routines and get_week_plan for the plan, list_workouts and estimate_1rm for how training went, muscle_balance for what is under- or over-trained, list_favourites for the exercises the user starred.',
   'To build or change a plan, find each exercise with search_exercises and pass its id, then call create_routine or update_routine with dry_run: true, show the user the preview and save only after they agree.',
   'To log a session the user describes, use log_workout (dry_run first if you had to guess anything).',
   'Weights are in the profile\'s unit (kg or lb) unless you say otherwise. Deleting needs the user\'s explicit yes.',

@@ -24,6 +24,7 @@ import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/sess
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
+import { favIds } from '../../frontend/src/lib/favourites.js'
 
 /* ---------- helpers ---------- */
 
@@ -794,8 +795,36 @@ export const searchExercises = {
   }
 }
 
+/* ---------- list_favourites ---------- */
+
+/** list_favourites — the exercises the user starred, in the order they starred them. */
+export const listFavourites = {
+  name: 'list_favourites',
+  description: 'List the exercises the user starred as favourites in openGym, in the order they starred them: id, name, body part, target muscle, equipment and category. The app floats these to the top of its exercise picker; use their ids with create_routine, update_routine and log_workout to build a session around what the user already likes. An id the library no longer has comes back with missing: true.',
+  schema: {},
+  handler: () => {
+    const S = getState()
+    if (!S) return noState()
+    const exercises = favIds(S).map(id => {
+      const ex = exerciseOf(id, S)
+      return {
+        id: ex.id,
+        name: ex.n,
+        body_part: ex.bp || null,
+        target: ex.tg || null,
+        equipment: ex.eq || null,
+        category: ex.cat || 'strength',
+        ...(ex.hd ? { mode: 'time' } : ex.bp === 'cardio' ? { mode: 'cardio' } : {}),
+        ...((S.customEx || []).some(c => c && c.id === ex.id) ? { own: true } : {}),
+        ...(ex.missing ? { missing: true } : {}),
+      }
+    })
+    return { total: exercises.length, exercises }
+  }
+}
+
 export const TOOLS = [
-  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme, searchExercises
+  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme, searchExercises, listFavourites
 ]
 
 function noState() {

@@ -1484,3 +1484,43 @@ describe('search_exercises (sub-connect-146)', () => {
     expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'off', bodyweight: 'view' })).toBe(false)
   })
 })
+
+/* ---------- list_favourites ---------- */
+
+describe('list_favourites', () => {
+  test('returns the starred exercises in star order, resolving catalogue and custom ids', () => {
+    const custom = { id: 'cx-fav-sled', n: 'Sled drag', bp: 'upper legs' }
+    S.customEx = [custom]
+    S.favEx = ['0739', custom.id, '0025']
+    const r = call('list_favourites')
+    expect(r.total).toBe(3)
+    expect(r.exercises.map(e => e.id)).toEqual(['0739', custom.id, '0025'])
+    expect(r.exercises[0]).toMatchObject({ id: '0739', name: 'sled 45° leg press', body_part: 'upper legs', target: 'quads', equipment: 'sled machine', category: 'strength' })
+    expect(r.exercises[1]).toMatchObject({ id: custom.id, name: 'Sled drag', own: true })
+    expect('own' in r.exercises[0]).toBe(false)
+    expect(r.exercises[2].name).toBe('barbell bench press')
+  })
+
+  test('a synced profile with no favourites is an empty list, not an error', () => {
+    S.favEx = []
+    expect(call('list_favourites')).toEqual({ total: 0, exercises: [] })
+  })
+
+  test('keeps a starred id the library no longer has, marked missing', () => {
+    S.customEx = []
+    S.favEx = ['zzz-gone', 'cx-gone']
+    const r = call('list_favourites')
+    expect(r.exercises).toHaveLength(2)
+    expect(r.exercises[0]).toMatchObject({ id: 'zzz-gone', missing: true })
+    // A custom exercise deleted from the profile keeps its slot too, and is not claimed as own.
+    expect(r.exercises[1]).toMatchObject({ id: 'cx-gone', missing: true })
+    expect('own' in r.exercises[1]).toBe(false)
+  })
+
+  test('is offered to tokens that can see workouts or plans, not to a bodyweight-only token', async () => {
+    const { toolAllowed } = await import('../src/server.js')
+    expect(toolAllowed('list_favourites', { workouts: 'view', plans: 'off' })).toBe(true)
+    expect(toolAllowed('list_favourites', { workouts: 'off', plans: 'view' })).toBe(true)
+    expect(toolAllowed('list_favourites', { workouts: 'off', plans: 'off', bodyweight: 'view' })).toBe(false)
+  })
+})

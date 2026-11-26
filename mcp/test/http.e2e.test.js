@@ -29,7 +29,7 @@ const DOC = name => ({
   routines: [{ id: 'r1', name: name + ' push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100, mode: 'reps', restSec: 180 }], _ts: 1000 }],
   week: { 1: ['r1'] },
   workouts: [{ id: 'w-old', d: '2026-10-13', start: 1760371200000, end: 1760374800000, routineIds: ['r1'], routineId: 'r1', name: name + ' day', prs: [], entries: [{ id: '0025', sets: [{ w: 100, r: 5, done: true }], topW: 100, target: null }] }],
-  exWeights: {}, customEx: [], bodyweight: [{ d: '2026-10-13', w: 80, t: 1000 }],
+  exWeights: {}, customEx: [], favEx: ['0025'], bodyweight: [{ d: '2026-10-13', w: 80, t: 1000 }],
   coach: { chat: [{ text: 'private' }] }, _rev: 5, _wid: 'w-seed', _ts: 1000,
 })
 
@@ -107,10 +107,12 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     const { token } = await makeToken(A, { workouts: 'view' })
     const client = await connect(token)
     const names = (await client.listTools()).tools.map(t => t.name).sort()
-    expect(names).toEqual(['estimate_1rm', 'get_workout', 'list_workouts', 'muscle_balance', 'search_exercises'])
+    expect(names).toEqual(['estimate_1rm', 'get_workout', 'list_favourites', 'list_workouts', 'muscle_balance', 'search_exercises'])
     const w = await call(client, 'list_workouts')
     expect(JSON.stringify(w)).toContain('Ana day')
     expect(JSON.stringify(w)).not.toContain('Bo day')
+    const favs = await call(client, 'list_favourites')
+    expect(favs.exercises.map(e => e.id)).toEqual(['0025'])
     // A tool it was not given is not there to call.
     const r = await client.callTool({ name: 'log_workout', arguments: { exercises: [{ exercise: 'squat', sets: [{ reps: 5 }] }] } }).catch(e => ({ thrown: e.message }))
     expect(JSON.stringify(r)).toMatch(/not found|Tool log_workout/i)
