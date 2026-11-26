@@ -1,6 +1,6 @@
 {
   "name": "opengym-mcp",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "MCP (Model Context Protocol) bridge for openGym — lets an external LLM read your routines, workouts, body-weight log, estimated 1RMs and muscle balance from your self-hosted data, and log a workout you describe through your own server. Stdio transport; no extra container.",
