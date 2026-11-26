@@ -112,3 +112,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/settings-pages.test.jsx` | `next/EP19-coach-app-navigation` | Test | Verify the app-help entry after the existing Settings root rows. |
 | `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-guest-workouts` | E2E | Verify ten guest workouts in the linked server profile and in History on both devices. |
 | `api/coach/core/adapters/http.js`, `api/test/chatgpt-plan.test.js` | `next/EP19-coach-app-navigation` | API and tests | Allow provider discovery and credential refresh within a single generation request. |
+| `frontend/src/views/settings-pages.js` | `next/EP19-coach-app-navigation` | Search | Expose the visible Settings index to app help to rank full translated labels in a question. |

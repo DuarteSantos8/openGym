@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import zh from '../locales/zh.js'
+import th from '../locales/th.js'
 import { helpMatches } from './app-help.js'
 
 const ctx = { offline: true, mod: () => false }
@@ -11,6 +13,12 @@ describe('local app help', () => {
     expect(helpMatches('System', ctx).map(h => h.title)).toContain('Theme')
     const tr = text => text === 'Text size' ? '文字大小' : text
     expect(helpMatches('如何调整文字大小？', ctx, tr)[0].title).toBe('文字大小')
+  })
+  it.each([
+    [zh, '我刚开始用这个应用，不太清楚在哪里可以找到设置里的 文字大小', 'Text size'],
+    [th, 'ต้องการทราบวิธีการเปลี่ยน ธีม', 'Theme'],
+  ])('ranks the named setting first in a full localized question', (pack, question, title) => {
+    expect(helpMatches(question, ctx, text => pack[text] || text)[0].title).toBe(pack[title])
   })
   it('resolves the Learn guide and the tour destination', () => {
     expect(helpMatches('Your first week', ctx).map(hit => hit.route)).toContain('/learn?g=first-week')
