@@ -1530,7 +1530,6 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
       <SearchField value={q} onChange={e => set(e.target.value)} onClear={() => set('')}
         placeholder={t('Search…')} aria-label={t('Search settings')} inputMode="search" enterKeyHint="search" autoComplete="off" />
     </div>
-    {!hits && <Section><Row icon="magnifier" title={t('App help')} accessory="chevron" onClick={() => nav('/app-help')} /></Section>}
     {hits ? (hits.length ? <Section title={tn('{0} result', '{0} results', hits.length)}>
       {hits.slice(0, 40).map(h => (
         <Row key={h.page + ':' + h.title} icon={h.icon} iconTint={h.tint} title={h.label} subtitle={h.trail} accessory="chevron" onClick={() => go(h)} />
@@ -1560,6 +1559,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
+      <Section><Row icon="magnifier" title={t('App help')} accessory="chevron" onClick={() => nav('/app-help')} /></Section>
       <div className="dim small sp-version">{APP_NAME} v{__APP_VERSION__}</div>
     </>}
   </div>
