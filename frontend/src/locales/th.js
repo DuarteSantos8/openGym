@@ -5480,6 +5480,7 @@ export default {
   "Handstand ladder": "บันไดแฮนด์สแตนด์",
   "Hinge ladder": "บันไดฮินจ์",
   "Hotel room": "ห้องโรงแรม",
+  "Two chairs": "เก้าอี้สองตัว",
   "It stays out of your progression, so nothing goes up or down.": "ไม่นับรวมในความก้าวหน้าของคุณ จึงไม่มีอะไรขึ้นหรือลง",
   "Ladder name": "ชื่อบันได",
   "Ladders": "บันได",

@@ -5548,6 +5548,7 @@ export default {
   "Handstand ladder": "হ্যান্ডস্ট্যান্ড মই",
   "Hinge ladder": "হিঞ্জ মই",
   "Hotel room": "হোটেলের ঘর",
+  "Two chairs": "দুটি চেয়ার",
   "It stays out of your progression, so nothing goes up or down.": "এটা আপনার অগ্রগতিতে গোনা হয় না, তাই কিছুই বাড়ে বা কমে না।",
   "Ladder name": "মইয়ের নাম",
   "Ladders": "মই",

@@ -46,7 +46,8 @@ daily-limit guidance is prepared. Local search remains available after a refused
 D2 status: English glossary access is prepared on Workout, Plan and Progress. Complete glossary
 translations and native review are pending. D3 status: the short Beginner Settings root and
 reversible full-list preference are prepared. D4 prepares an eight-stop beginner tour with
-offline keyboard replay.
+offline keyboard replay. D5 prepares goal-led starter cards that show weekly frequency, session
+length, experience level and equipment. The local chooser works offline.
 
 Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content
 is draft. The G2 usability kit is prepared; five owner-run sessions are pending.
@@ -129,7 +130,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP21-T03 | Level in Settings | `views/Settings.jsx`, `settings-pages.js` | **part**: the row, searchable. Still open: a shorter Settings root for a Beginner |
 | EP22-T01 | Planner | `frontend/src/lib/planner.js`, `lib/starter.js` `buildPlanFrom` | all 1,200 answer combinations give a valid plan, deterministic, equipment respected, within the minutes | done, same branch. Draws on the 8 starter plans; `routines/opengym/` is not used yet |
 | EP22-T02 | Find my plan | `views/Onboarding.jsx`, `App.jsx` `/start` | six questions, a plan with reasons, "Use this plan"; limitations never stored; E2E with axe | done, same branch |
-| EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | **part**: the chooser now opens with Find my plan (`next/EP23-exercise-guidance`). The cards themselves are unchanged |
+| EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | **prepared**: all eight cards show these facts and adapt to the selected equipment profile |
 | EP22-T04 | First-session load finder | NEW `lib/load-finder.js`, `components/LoadFinder.jsx`, `Workout.jsx` | an exercise with no history offers "Find my weight": up to three test sets, a fifth up or down each time, and the weight found fills the open sets | **done** (#60), with review fixes in `next/EP22-load-finder-fixes`: it starts on the athlete's own bar and never suggests less, names only owned dumbbells or stack weights when those are listed, uses the column's own heading (each or both dumbbells), and writes to the first set still open. Test sets are not logged. Not offered for bodyweight, band, assisted-machine or per-side rows |
 | EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **part**: the first-run question no longer opens over the quiz. Still open: a Beginner tour of 8 stops or fewer |
 | EP23-T01 | Exercise guidance: level, pattern, cues, mistakes, feel, breathing, easier and harder | `frontend/src/content/exercise-guides.js`, `lib/exercise-guide.js` | `problems()` is empty: fields complete, ids real, ladders never circular, review status valid | done, `next/EP23-exercise-guidance`. **Kept out of `catalogue/` on purpose for now**: the generated catalogue files stay untouched and the text loads on demand. Moving it into `catalogue/exercises/*.json` is a mechanical step once upstream settles its own "top three mistakes" field |

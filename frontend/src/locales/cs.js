@@ -5365,6 +5365,7 @@ export default {
   "Handstand ladder": "Žebřík stojky",
   "Hinge ladder": "Žebřík předklonů",
   "Hotel room": "Hotelový pokoj",
+  "Two chairs": "Dvě židle",
   "It stays out of your progression, so nothing goes up or down.": "Do progrese se nepočítá, takže nic nejde nahoru ani dolů.",
   "Ladder name": "Název žebříku",
   "Ladders": "Žebříky",

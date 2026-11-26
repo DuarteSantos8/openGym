@@ -5469,6 +5469,7 @@ export default {
   "Handstand ladder": "Drabinka stania na rękach",
   "Hinge ladder": "Drabinka zawiasu biodrowego",
   "Hotel room": "Pokój hotelowy",
+  "Two chairs": "Dwa krzesła",
   "It stays out of your progression, so nothing goes up or down.": "Nie wlicza się do progresji, więc nic nie idzie w górę ani w dół.",
   "Ladder name": "Nazwa drabinki",
   "Ladders": "Drabinki",
