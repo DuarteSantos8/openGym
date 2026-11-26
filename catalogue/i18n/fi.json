@@ -7663,14 +7663,14 @@
     ]
   },
   "1689": {
-    "name": "Punnerrus ja veto omalla painolla",
-    "description": "Kehonpainoliike, jossa työnnetään ja vedetään omaa kehonpainoa vastuksena. Se harjoittaa rintaa ja käsivarsia.",
+    "name": "Työntö ja veto seisten",
+    "description": "Seisten tehtävä kehonpainoliike, jossa kädet työntyvät vuorotellen eteen ja vetäytyvät takaisin kylkien viereen. Se harjoittaa rintaa ja käsivarsia.",
     "instructions": [
-      "Asetu punnerrusasentoon kädet hieman hartioita leveämmälle ja vartalo suorana.",
-      "Laske rintaa kohti lattiaa koukistamalla kyynärpäitä ja pitäen vartalon suorana.",
-      "Punnerra kämmenillä takaisin aloitusasentoon ojentamalla kädet.",
-      "Laskeudu uudelleen alas punnerrusasennosta vetämällä rintaa kohti lattiaa kyynärpäitä koukistamalla ja vartalo suorana pitäen.",
-      "Punnerra kämmenillä takaisin ylös aloitusasentoon.",
+      "Seiso suorana jalat hartioiden leveydellä ja pidä keskivartalo tiukkana.",
+      "Koukista kädet kylkien viereen kämmenet ylöspäin.",
+      "Työnnä toinen käsi suoraksi eteen kämmen ylöspäin.",
+      "Vedä ojennettu käsi takaisin kyljen viereen ja työnnä samalla toinen käsi eteen.",
+      "Jatka käsiä vuorotellen niin, että toinen on aina koukussa kyljen vieressä ja toinen ojennettuna.",
       "Tee haluamasi määrä toistoja."
     ]
   },
