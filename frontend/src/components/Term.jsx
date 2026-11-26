@@ -6,6 +6,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { termById } from '../lib/learn.js'
 import { Button } from './ui.jsx'
+import './term.css'
 
 function TermCard({ entry, close, onLearn }) {
   return <div className="iv-term-card">
@@ -33,4 +34,11 @@ export default function Term({ id, children }) {
   return <button type="button" className="iv-term" aria-haspopup="dialog" onClick={() => openTerm(id, () => nav('/learn'))}>
     {children ?? t(entry.term)}
   </button>
+}
+
+export function ScreenGlossary({ ids }) {
+  return <details className="iv-screen-glossary">
+    <summary>{t('Glossary')}</summary>
+    <div>{ids.map(id => <Term key={id} id={id} />)}</div>
+  </details>
 }

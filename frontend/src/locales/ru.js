@@ -6343,4 +6343,7 @@ export default {
   "Build me a back workout with no weights": "Составь мне тренировку для спины без отягощений",
   "Add a push day on Tuesday and a pull day on Wednesday": "Добавь тренировку с жимовыми упражнениями на вторник, а с тяговыми на среду",
   "Make today shorter": "Сократи сегодняшнюю тренировку",
+  "Ask Coach to pick a result": "Попросить тренера выбрать результат",
+  "App help": "Справка по приложению",
+  "No matching help found.": "Подходящие разделы справки не найдены.",
 }

@@ -6305,4 +6305,7 @@ export default {
   "Build me a back workout with no weights": "برایم یک برنامهٔ تمرین عضلات پشت بدون وزنه بچین",
   "Add a push day on Tuesday and a pull day on Wednesday": "برای سه‌شنبه یک جلسه تمرین با حرکات فشار دادن و برای چهارشنبه یک جلسه تمرین با حرکات کشیدن اضافه کن",
   "Make today shorter": "تمرین امروز را کوتاه‌تر کن",
+  "Ask Coach to pick a result": "از مربی بخواه یک نتیجه را انتخاب کند",
+  "App help": "راهنمای برنامه",
+  "No matching help found.": "راهنمایی مرتبطی پیدا نشد.",
 }

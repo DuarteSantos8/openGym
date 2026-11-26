@@ -43,6 +43,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 
 import Settings from './Settings.jsx'
+import { CONSENT_VERSION } from '../lib/coach.js'
 import { FLOWS } from '../lib/tour.js'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
@@ -97,13 +98,29 @@ const guestWeb = {
 }
 
 describe('the root', () => {
+  it('keeps app help local until the signed-in user has completed Coach consent', () => {
+    mocks.user = { id: 'tester' }
+    mocks.config = { coach: { enabled: true } }
+    const render = () => act(() => root.render(<Settings appHelp />))
+    render()
+    const input = host.querySelector('input[type=search]')
+    act(() => {
+      Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set.call(input, 'rest timer')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(rowTitled('Rest timer')).toBeTruthy()
+    expect(host.textContent).not.toContain('Ask Coach to pick a result')
+    mocks.S.coach = { consent: { agreedAt: '2026-01-01', version: CONSENT_VERSION } }
+    render()
+    expect(host.textContent).toContain('Ask Coach to pick a result')
+  })
   it('is an account card and one row per page, in the four groups, with value previews', () => {
     mount()
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
     // #1105: what you change each week, then what you set once, then connections (option C)
-    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates', 'App help'])
     expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')

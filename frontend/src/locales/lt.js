@@ -6335,4 +6335,7 @@ export default {
   "Build me a back workout with no weights": "Sudaryk man nugaros treniruotę be svarmenų",
   "Add a push day on Tuesday and a pull day on Wednesday": "Pridėk stūmimo pratimų treniruotę antradieniui ir traukimo pratimų treniruotę trečiadieniui",
   "Make today shorter": "Sutrumpink šiandienos treniruotę",
+  "Ask Coach to pick a result": "Paprašyti trenerio pasirinkti rezultatą",
+  "App help": "Programėlės pagalba",
+  "No matching help found.": "Atitinkamos pagalbos nerasta.",
 }

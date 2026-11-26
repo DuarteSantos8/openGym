@@ -6332,4 +6332,7 @@ export default {
   "Build me a back workout with no weights": "幫我安排一次不用負重的背部訓練",
   "Add a push day on Tuesday and a pull day on Wednesday": "幫我在週二加一堂推的訓練，週三加一堂拉的訓練",
   "Make today shorter": "縮短今天的訓練時間",
+  "Ask Coach to pick a result": "請教練選擇一個結果",
+  "App help": "應用程式說明",
+  "No matching help found.": "找不到相符的說明。",
 }
