@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Coach app help (B4, proposed).** The owner can accept, reject or defer [ADR 0015](adr/0015-coach-app-help.md). Implementation follows acceptance.
+
 - **Beginner Coach entry (B3, merged in #101).** Home offers three starter questions when the Coach
   is available. A tap fills the editable chat box, including after first-time setup. The person
   chooses when to send. After #102, a fresh three-day profile confirmed Tuesday push and Wednesday
