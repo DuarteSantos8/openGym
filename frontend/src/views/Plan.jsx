@@ -1,4 +1,4 @@
-import { ScreenGlossary } from '../components/Term.jsx'
+import ScreenGlossary from '../components/ScreenGlossary.jsx'
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'

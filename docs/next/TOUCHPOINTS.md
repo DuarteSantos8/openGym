@@ -112,6 +112,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/settings-pages.test.jsx` | `next/EP19-coach-app-navigation` | Test | Verify the app-help entry after the existing Settings root rows. |
 | `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-guest-workouts` | E2E | Verify ten guest workouts in the linked server profile and in History on both devices. |
 | `frontend/src/views/Workout.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain terms for sets and effort before and during a session. |
+| `frontend/src/views/week-start.test.jsx` | `next/EP24-glossary-accessibility` | Test | Check reordered weekdays by their full accessible descriptions. |
 | `frontend/src/views/Plan.day-rows.test.jsx` | `next/EP24-glossary-workout-plan-progress` | Test | Check that the weekday button names its visible routine. |
 | `frontend/src/views/Plan.routine-count.test.jsx` | `next/EP24-glossary-workout-plan-progress` | Test | Find weekday buttons with their routine details. |
 | `frontend/src/views/Plan.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain terms for the weekly schedule. |
