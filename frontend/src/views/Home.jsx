@@ -1,5 +1,6 @@
 import TrainerNotice from '../components/TrainerNotice.jsx'
-import { useMemo, useState } from 'react'
+import { lookOnStart } from '../components/WhatsNew.jsx'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive } from '../lib/history.js'
@@ -47,6 +48,10 @@ export default function Home() {
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
+  // Once per app start: What's new after an update, or that a newer APK is out (components/WhatsNew.jsx).
+  // Only once the profile is in: before that an upgrade looks like a fresh install and its notes are lost.
+  const ready = useStore(s => s.ready)
+  useEffect(() => { if (ready) lookOnStart(useStore.getState().S, () => nav('/settings/about')) }, [ready])
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the

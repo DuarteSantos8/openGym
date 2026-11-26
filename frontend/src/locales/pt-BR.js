@@ -15,6 +15,16 @@ export const PT_BR_OVERRIDES = {
   "Yours. Pick it in the app on your phone: Settings, Look & Home, App icon.": "É seu. Escolha no app do celular: Configurações, Aparência e Início, Ícone do app.",
   "Yours. Settings, Look & Home, App icon.": "É seu. Configurações, Aparência e Início, Ícone do app.",
   "openGym has a little sister. Food, supplements and body weight, on your own server like openGym, no ads, nobody reading along. It is in private beta, and you are early.": "O openGym tem uma irmã mais nova. Comida, suplementos e peso, no seu próprio servidor como o openGym, sem anúncios e sem ninguém bisbilhotando. Está em beta privado, e você chegou cedo.",
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Novidades da {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Chacoalhe o celular em dezembro e a neve fica louca, como num globo de neve.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Os treinos abrem com os halteres que você tem. Nada de 30 kg quando seu suporte para nos 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Registre um treino passado digitando do jeito que está nas suas anotações.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Sua própria rampa de aquecimento: defina uma vez nas Configurações e todo aquecimento segue ela.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Seu relógio faz um check-in rápido antes de começar e te dá uma medalha no final.",
+  "What’s new in this version": "Novidades desta versão",
+  "openGym {0} is out": "Saiu o openGym {0}",
+  "Update": "Atualizar",
   // --- Christmas: the snow globe ---
   "Shake for a snow globe": "Chacoalhe para um globo de neve",
   "Shake your phone hard and the snow goes wild. It settles again on its own.": "Chacoalhe o celular com força e a neve enlouquece. Depois ela assenta sozinha.",

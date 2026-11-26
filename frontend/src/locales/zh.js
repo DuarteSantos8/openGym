@@ -1,5 +1,15 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0} 新功能",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "十二月摇一摇手机，雪花就会像水晶球里一样狂舞。",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "训练会用你真正拥有的哑铃开始。哑铃架只到 28 公斤，就不会再出现 30 公斤。",
+  "Log a past workout by typing it out, the way it sits in your notes.": "按笔记里的样子直接输入，记录过去的训练。",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "你自己的热身阶梯：在设置里定一次，之后每次热身都照着来。",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "手表会在开始前快速问问你的状态，结束时还会颁给你一枚奖牌。",
+  "What’s new in this version": "此版本新功能",
+  "openGym {0} is out": "openGym {0} 已发布",
+  "Update": "更新",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "训练要怎么显示？",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "选你顺手的。随时可以在 ⋯ → 布局 里切换，或在 设置 → 训练 里固定下来。",

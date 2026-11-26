@@ -2,6 +2,16 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Novità della {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Scuoti il telefono a dicembre e la neve impazzisce, come in una palla di neve.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Gli allenamenti partono con i manubri che hai davvero. Niente più 30 kg se la tua rastrelliera arriva a 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Registra un allenamento passato scrivendolo così com’è nei tuoi appunti.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "La tua rampa di riscaldamento: impostala una volta nelle Impostazioni e ogni riscaldamento la segue.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Il tuo orologio ti fa un check-in veloce prima di iniziare e alla fine ti consegna una medaglia.",
+  "What’s new in this version": "Novità di questa versione",
+  "openGym {0} is out": "È uscito openGym {0}",
+  "Update": "Aggiorna",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Come vuoi vedere il tuo allenamento?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Scegli quello che ti va. Puoi cambiare quando vuoi da ⋯ → Layout, o per sempre in Impostazioni → Allenamento.",

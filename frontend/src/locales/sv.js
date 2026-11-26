@@ -1,5 +1,15 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Nytt i {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Skaka telefonen i december så går snön bananas, som i en snöglob.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Passen börjar med hantlarna du faktiskt har. Inga 30 kg när ditt ställ slutar på 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Logga ett tidigare pass genom att skriva det som det står i dina anteckningar.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Din egen uppvärmningstrappa: ställ in den en gång i Inställningar, varje uppvärmning följer den.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Klockan gör en snabb incheckning innan du börjar och ger dig en medalj på slutet.",
+  "What’s new in this version": "Nytt i den här versionen",
+  "openGym {0} is out": "openGym {0} är här",
+  "Update": "Uppdatera",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Hur ska ditt pass se ut?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Välj det som känns rätt. Du kan byta när som helst under ⋯ → Layout, eller för gott i Inställningar → Pass.",

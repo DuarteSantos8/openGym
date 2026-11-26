@@ -1,5 +1,15 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "تازه‌های {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "در دسامبر گوشی‌ات را تکان بده تا برف دیوانه‌وار بچرخد، درست مثل گوی برفی.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "تمرین‌ها با دمبل‌هایی شروع می‌شوند که واقعاً داری. دیگر خبری از ۳۰ کیلو نیست وقتی جای دمبلت تا ۲۸ است.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "یک تمرین گذشته را همان‌طور که در یادداشت‌هایت هست تایپ کن و ثبت کن.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "رمپ گرم‌کردن خودت: یک بار در تنظیمات تعیینش کن، هر گرم‌کردنی از آن پیروی می‌کند.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "ساعتت قبل از شروع یک بررسی کوتاه می‌پرسد و در پایان به تو مدال می‌دهد.",
+  "What’s new in this version": "تازه‌های این نسخه",
+  "openGym {0} is out": "openGym {0} منتشر شد",
+  "Update": "به‌روزرسانی",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "تمرینت چطور نمایش داده شود؟",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "هر کدام راحت‌تر است انتخاب کن. هر وقت خواستی از ⋯ → چیدمان عوضش کن، یا برای همیشه در تنظیمات → تمرین.",

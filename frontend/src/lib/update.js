@@ -31,7 +31,7 @@ export const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`
  * "1.3.7" are the same version here. Dropped on both operands, so it holds whichever side
  * carries it.
  */
-function compareSemver(a, b) {
+export function compareSemver(a, b) {
   const pa = a.replace(/^v/, '').split('+')[0].split('.').map(Number)
   const pb = b.replace(/^v/, '').split('+')[0].split('.').map(Number)
   for (let i = 0; i < 3; i++) {

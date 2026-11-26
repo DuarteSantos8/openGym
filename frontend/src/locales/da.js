@@ -1,6 +1,16 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Nyt i {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Ryst telefonen i december, og sneen går amok, som i en snekugle.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Træningen starter med de håndvægte, du rent faktisk har. Ingen 30 kg, når dit stativ stopper ved 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Log en tidligere træning ved at skrive den, som den står i dine noter.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Din egen opvarmningstrappe: indstil den én gang i Indstillinger, og al opvarmning følger den.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Dit ur laver et hurtigt check-in, før du starter, og giver dig en medalje til sidst.",
+  "What’s new in this version": "Nyt i denne version",
+  "openGym {0} is out": "openGym {0} er ude",
+  "Update": "Opdater",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Hvordan skal din træning se ud?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vælg det, der føles rigtigt. Du kan skifte når som helst under ⋯ → Layout, eller for altid i Indstillinger → Træning.",

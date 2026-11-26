@@ -1,5 +1,15 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Новое в {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Встряхните телефон в декабре, и снег закружится, как в снежном шаре.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Тренировка начинается с гантелей, которые у вас есть. Никаких 30 кг, если ваша стойка заканчивается на 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Добавьте прошлую тренировку, просто написав её так, как она записана в заметках.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Своя разминочная лесенка: задайте её один раз в настройках, и ей следует каждая разминка.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Часы перед стартом коротко спросят о самочувствии, а в конце вручат медаль.",
+  "What’s new in this version": "Что нового в этой версии",
+  "openGym {0} is out": "Вышел openGym {0}",
+  "Update": "Обновить",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Как показывать тренировку?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Выбери, как удобнее. Переключить можно в любой момент через ⋯ → Вид, а насовсем в Настройки → Тренировка.",

@@ -1,5 +1,15 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Kas naujo {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Gruodį pakratyk telefoną ir sniegas pasiutiškai sukasi, kaip sniego rutulyje.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Treniruotės prasideda nuo hantelių, kuriuos tikrai turi. Jokių 30 kg, kai tavo stovas baigiasi ties 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Įrašyk buvusią treniruotę tiesiog ją surašydamas, kaip ji parašyta tavo užrašuose.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Tavo apšilimo laiptai: nustatyk kartą Nustatymuose ir kiekvienas apšilimas jų laikysis.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Laikrodis prieš pradedant greitai pasiteirauja, kaip jautiesi, o pabaigoje įteikia medalį.",
+  "What’s new in this version": "Kas naujo šioje versijoje",
+  "openGym {0} is out": "Išėjo openGym {0}",
+  "Update": "Atnaujinti",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Kaip turi atrodyti tavo treniruotė?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Rinkis, kas patinka. Perjungti gali bet kada per ⋯ → Išdėstymas, arba visam laikui Nustatymai → Treniruotė.",

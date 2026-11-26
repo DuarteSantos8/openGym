@@ -1,5 +1,15 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "{0}의 새로운 기능",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "12월에 휴대폰을 흔들면 스노볼처럼 눈이 휘몰아쳐요.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "운동이 실제로 가진 덤벨로 시작돼요. 랙이 28 kg까지면 이제 30 kg은 없어요.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "지난 운동을 메모에 적힌 그대로 입력해서 기록하세요.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "나만의 워밍업 단계: 설정에서 한 번 정하면 모든 워밍업이 그대로 따라요.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "워치가 시작 전에 컨디션을 짧게 묻고, 끝나면 메달을 줘요.",
+  "What’s new in this version": "이번 버전의 새로운 기능",
+  "openGym {0} is out": "openGym {0} 출시",
+  "Update": "업데이트",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "운동 화면을 어떻게 볼까요?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "마음에 드는 쪽을 고르세요. ⋯ → 레이아웃에서 언제든 바꿀 수 있고, 설정 → 운동에서 아예 정할 수도 있어요.",

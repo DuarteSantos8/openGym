@@ -1,5 +1,15 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- What's new after an update, and the update nudge ---
+  "New in {0}": "Novinky ve {0}",
+  "Shake your phone in December and the snow goes wild, like a snow globe.": "Zatřes v prosinci telefonem a sníh se rozběsní jako ve sněžítku.",
+  "Workouts open on the dumbbells you own. No more 30 kg when your rack stops at 28.": "Tréninky začínají s jednoručkami, které opravdu máš. Žádných 30 kg, když tvůj stojan končí na 28.",
+  "Log a past workout by typing it out, the way it sits in your notes.": "Zapiš starší trénink tak, že ho napíšeš, jak ho máš v poznámkách.",
+  "Your own warm-up ramp: set it once in Settings, every warm-up follows it.": "Vlastní rozcvičovací rampa: nastav ji jednou v Nastavení a každá rozcvička se jí řídí.",
+  "Your watch asks a quick check-in before you start and hands you a medal at the end.": "Hodinky se před startem krátce zeptají, jak na tom jsi, a na konci ti dají medaili.",
+  "What’s new in this version": "Co je nového v této verzi",
+  "openGym {0} is out": "Vyšel openGym {0}",
+  "Update": "Aktualizovat",
   // --- First workout: layout question, tour's ⋯ stop ---
   "How should your workout look?": "Jak má tvůj trénink vypadat?",
   "Pick what feels right. You can switch any time under ⋯ → Layout, or for good in Settings → Workout.": "Vyber, co ti sedí. Přepnout můžeš kdykoli přes ⋯ → Rozložení, nebo natrvalo v Nastavení → Trénink.",
