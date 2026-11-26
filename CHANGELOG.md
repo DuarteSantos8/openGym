@@ -6,6 +6,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+- Christmas: the snow on the cards' top edges comes in five shapes instead of one, so no two cards next to each other look alike.
 - Coach: automatic reviews switched on before 1.4.6 keep running after the update. They waited for the Coach to be opened first; the app now carries over the yes this device already gave. The server log says why someone's automatic review was held back.
 - Coach: a connection that drops before the AI answers is tried again, up to twice. On an iPhone, Gemini could fail at once with "The network connection was lost" (Discord).
 - Coach: local models that refuse a JSON answer while thinking now get asked again with thinking off, and that is remembered for the model (thanks @nathancashion for #1546).
