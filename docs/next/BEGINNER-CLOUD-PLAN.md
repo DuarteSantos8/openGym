@@ -1,6 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
-Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin, sign-out ending the server session, and two tabs. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). Read after `NEXT-STEPS.md`.
+Status 2026-11-26. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin, sign-out ending the server session, and two tabs. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). The G2 usability kit is prepared; five owner-run sessions are pending. Read after `NEXT-STEPS.md`.
 
 Coach B2 status: the two chat prompts have stubbed-provider coverage, including confirmation.
 The scheduling follow-up preserves other days and reuses matching routines on repeat confirmation.
@@ -118,7 +118,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|
 | EP27-T01 | Cloud E2E suite | open |
 | EP27-T02 | Stripe test clocks: trial, renewal, failed payment, cancel | open |
-| EP27-T03 | Usability kit: five first-time lifters, task script, metrics sheet | open; this is what the grades below wait for |
+| EP27-T03 | Usability kit: five first-time lifters, task script, metrics sheet | [English study kit](usability/script.md) prepared; five owner-run sessions and grading pending |
 
 ## Order from here
 
