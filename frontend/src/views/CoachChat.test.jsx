@@ -120,13 +120,13 @@ function installDom() {
   root = createRoot(container)
 }
 
-async function mount(pending, job = null, { community = false, S = state() } = {}) {
+async function mount(pending, job = null, { community = false, S = state(), starter } = {}) {
   mocks.S = S
   mocks.pending = pending
   mocks.job = job
   mocks.community = community
   installDom()
-  await act(async () => { root.render(React.createElement(CoachChat)) })
+  await act(async () => { root.render(React.createElement(CoachChat, { starter })) })
 }
 
 const byText = re => [...container.querySelectorAll('button')].find(b => re.test(b.textContent || ''))
@@ -142,6 +142,21 @@ afterEach(async () => {
 })
 
 describe('the Coach chat', () => {
+  it('opens the editable composer with the Home starter and sends nothing', async () => {
+    const starter = 'Make today shorter'
+    await mount(null, null, { starter })
+    expect(container.querySelector('.composer textarea').defaultValue).toBe(starter)
+    expect(mocks.S.coach.chat.some(m => m.text === starter)).toBe(false)
+  })
+
+  it('takes a first-time starter through intake before opening the composer', async () => {
+    const S = state()
+    S.coach.profile = null
+    await mount(null, null, { S, starter: 'Make today shorter' })
+    expect(mocks.nav).toHaveBeenCalledWith('/coach/intake', { replace: true, state: { coachStarter: 'Make today shorter' } })
+    expect(container.querySelector('.composer')).toBeNull()
+  })
+
   it('previews Tuesday push and Wednesday pull, then schedules both on confirmation', async () => {
     const S = withMonday()
     const before = structuredClone({ routines: S.routines, week: S.week })

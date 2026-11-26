@@ -14,6 +14,7 @@ import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
+import AskCoach from '../components/AskCoach.jsx'
 import CardHead from '../components/CardHead.jsx'
 import MetricCard from '../components/MetricCard.jsx'
 import QueueRow from '../components/QueueRow.jsx'
@@ -250,6 +251,8 @@ export default function Home() {
         <div style={{ height: 8 }} /><Button variant="ghost" icon="lightbulb" onClick={() => nav('/learn')}>{t('Learn the basics')}</Button>
       </div>
     )}
+
+    <AskCoach level={experienceOf(S)} />
 
     {/* Ironvane: tap your photo or the drawn body where you want to get stronger (Settings → Modules). */}
     {on('bodyfocus') && <BodyFocus />}

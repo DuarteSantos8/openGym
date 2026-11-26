@@ -29,17 +29,28 @@ afterEach(() => { act(() => root.unmount()); host.remove() })
 // The app's own local date: the UTC date is a day ahead on an evening west of Greenwich, and on
 // a Sunday that put this workout in next week.
 const today = todayISO()
-const mountWith = (modules, extra = {}) => {
+const mountWith = (modules, extra = {}, session = {}) => {
   useStore.setState(s => ({
     S: { ...s.S, routines: [{ id: 'r1', name: 'Push', ex: [] }], workouts: [{ id: 'w1', d: today, start: Date.now() - 4e6, end: Date.now() - 3e6, entries: [{ id: '0025', sets: [{ w: 20, r: 8, done: true }] }] }],
       bodyweight: [{ d: today, w: 80, t: Date.now() }], dayPlan: {}, week: {}, active: null, modules, homeMuscleSets: false, ...extra },
-    user: null,
+    user: null, ...session,
   }))
   act(() => root.render(<Home />))
 }
 const heads = () => [...host.querySelectorAll('.card-head-title')].map(el => el.textContent)
 
 describe('Home follows the modules', () => {
+  it('offers the beginner Coach card after today only when the server enables it', () => {
+    const session = { user: { id: 'test' }, config: { coach: { enabled: true } } }
+    mountWith({}, { experience: 'beginner' }, session)
+    const today = host.querySelector('[data-tour="today"]').closest('.card')
+    expect(today.nextElementSibling?.textContent).toContain('Ask your Coach')
+    mountWith({ coach: false }, { experience: 'beginner' }, session)
+    expect(host.textContent).not.toContain('Ask your Coach')
+    mountWith({}, { experience: 'intermediate' }, session)
+    expect(host.textContent).not.toContain('Ask your Coach')
+  })
+
   it('Everything: the weight card, the check-in and the streak are there', () => {
     mountWith(undefined)
     expect(heads()).toContain('Body weight')
