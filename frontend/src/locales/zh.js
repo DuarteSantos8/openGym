@@ -6342,4 +6342,6 @@ export default {
   "Ask Coach to pick a result": "请教练选择一个结果",
   "App help": "应用帮助",
   "No matching help found.": "未找到匹配的帮助。",
+  "Show all settings": "显示所有设置",
+  "Show fewer": "收起",
 }

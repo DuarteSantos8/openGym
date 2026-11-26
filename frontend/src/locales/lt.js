@@ -6338,4 +6338,6 @@ export default {
   "Ask Coach to pick a result": "Paprašyti trenerio pasirinkti rezultatą",
   "App help": "Programėlės pagalba",
   "No matching help found.": "Atitinkamos pagalbos nerasta.",
+  "Show all settings": "Rodyti visus nustatymus",
+  "Show fewer": "Rodyti mažiau",
 }

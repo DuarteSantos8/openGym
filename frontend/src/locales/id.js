@@ -6307,4 +6307,6 @@ export default {
   "Ask Coach to pick a result": "Minta Pelatih memilih hasil",
   "App help": "Bantuan aplikasi",
   "No matching help found.": "Tidak ditemukan bantuan yang cocok.",
+  "Show all settings": "Tampilkan semua pengaturan",
+  "Show fewer": "Tampilkan lebih sedikit",
 };

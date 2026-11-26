@@ -6342,4 +6342,6 @@ export default {
   "Ask Coach to pick a result": "Demander au coach de choisir un résultat",
   "App help": "Aide de l’application",
   "No matching help found.": "Aucune aide correspondante trouvée.",
+  "Show all settings": "Afficher tous les réglages",
+  "Show fewer": "Afficher moins",
 }

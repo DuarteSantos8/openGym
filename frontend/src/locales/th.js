@@ -6353,4 +6353,6 @@ export default {
   "Ask Coach to pick a result": "ให้โค้ชช่วยเลือกผลลัพธ์",
   "App help": "ความช่วยเหลือในแอป",
   "No matching help found.": "ไม่พบหัวข้อความช่วยเหลือที่ตรงกัน",
+  "Show all settings": "แสดงการตั้งค่าทั้งหมด",
+  "Show fewer": "แสดงน้อยลง",
 }

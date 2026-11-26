@@ -6339,4 +6339,6 @@ export default {
   "Ask Coach to pick a result": "Попросити тренера вибрати результат",
   "App help": "Довідка застосунку",
   "No matching help found.": "Відповідної довідки не знайдено.",
+  "Show all settings": "Показати всі налаштування",
+  "Show fewer": "Показати менше",
 }
