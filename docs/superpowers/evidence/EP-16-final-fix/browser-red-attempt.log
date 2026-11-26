@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/usr/local/lib/cloudroom/browser-harness/venv/bin/browser-harness", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/run.py", line 255, in main
+    _run(args)
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/run.py", line 406, in _run
+    snippet = __import__("types").ModuleType("browser_harness_snippet"); snippet.__dict__.update(globals(), __name__=snippet.__name__); sys.modules[snippet.__name__] = snippet; exec(code, snippet.__dict__)
+                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 17, in <module>
+  File "<string>", line 40, in fill
+  File "<string>", line 38, in focus
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/run.py", line 168, in wrapper
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/helpers.py", line 77, in cdp
+    return _send(
+           ^^^^^^
+  File "/usr/local/lib/cloudroom/browser-harness/venv/lib/python3.12/site-packages/browser_harness/helpers.py", line 68, in _send
+    if "error" in r: raise RuntimeError(r["error"])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: {'code': -32000, 'message': 'Could not find node with given id'}

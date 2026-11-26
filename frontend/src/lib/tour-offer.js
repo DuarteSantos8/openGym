@@ -46,6 +46,11 @@ const dialogOpen = () => typeof document !== 'undefined' && !!document.querySele
 export function offerBlocked(touch, now = Date.now()) {
   if (tourState()) return 'tour'
   if (useStore.getState().S?.active || /^#\/workout/.test(globalThis.location?.hash || '')) return 'workout'
+  // Find my plan (views/Onboarding.jsx) is someone answering what they want: the question about
+  // how much app they want waits until they are back on Home with a plan.
+  if (/^#\/start(\?|$)/.test(globalThis.location?.hash || '')) return 'quiz'
+  // Nor over the account screen: someone following a link from an email is in the middle of that.
+  if (/^#\/account(\?|$)/.test(globalThis.location?.hash || '')) return 'account'
   if (useUI.getState().sheets.length) return 'sheet'
   if (dialogOpen()) return 'dialog'
   if (inField()) return 'field'

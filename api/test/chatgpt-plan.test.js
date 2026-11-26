@@ -107,6 +107,12 @@ test('the adapter renews a session about to run out (once, the rotated refresh t
   assert.deepEqual((await adapter.models(null, null, { fetch: fetchImpl })).models, ['gpt-x']);
   const r = await adapter.invoke({ prompt: 'hi', model: 'gpt-x', fetch: fetchImpl });
   assert.deepEqual({ code: r.code, text: r.text }, { code: 0, text: '{"ok":true}' });
+  // A one-shot app-help response may first need another refresh and automatic model selection.
+  cfgStore.saveAuth('chatgpt', { type: 'oauth', data: cfgStore.encrypt(cred), connectedAt: new Date().toISOString() });
+  const beforeHelp = calls.length;
+  const help = await adapter.invoke({ prompt: 'choose an entry', fetch: fetchImpl, singleInference: true });
+  assert.equal(help.code, 0);
+  assert.deepEqual(calls.slice(beforeHelp).map(c => new URL(c[0]).pathname.split('/').at(-1)), ['token', 'models', 'responses']);
   const sent = JSON.parse(calls.at(-1)[2]);
   assert.equal(sent.store, false);
   assert.equal(calls.at(-1)[3], 'Bearer new-access');

@@ -6,6 +6,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { lazyAssets, stampSw } from './scripts/sw-stamp.mjs'
 import { mobileViewport } from './src/lib/viewport-zoom.js'
+import { noMediapipeTelemetry } from './scripts/vite-no-mediapipe-telemetry.mjs'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 // The API refuses a state-changing request that a browser sent from anywhere other than its own
@@ -107,7 +108,10 @@ export default defineConfig({
   // __SEASON_CLOCK__: the seasonal QA date hook (src/lib/season-clock.js), only in a build made
   // with VITE_SEASON_CLOCK=1 for screenshots. false everywhere else, so the hook is compiled out.
   define: { __APP_VERSION__: JSON.stringify(appVersion), __SEASON_CLOCK__: JSON.stringify(process.env.VITE_SEASON_CLOCK === '1') },
-  plugins: [react(), umami, flavor, swStamp, catalogueMedia],
+  plugins: [react(), umami, flavor, swStamp, catalogueMedia, noMediapipeTelemetry()],
+  // The Movement Lab's MediaPipe bundle goes through the plugins in dev too (no pre-bundling), so its
+  // usage logging is stripped there as well (scripts/vite-no-mediapipe-telemetry.mjs).
+  optimizeDeps: { exclude: ['@mediapipe/tasks-vision'] },
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core

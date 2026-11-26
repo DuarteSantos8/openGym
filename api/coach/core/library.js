@@ -13,6 +13,26 @@ export const LIB_BY_ID = new Map(LIBRARY.map(e => [e.id, e]));
 // the newer lifts, then stretches, mobility, yoga and the like. 0 / 1 / 2.
 const TIER_OF = new Map(LIBRARY.map((e, i) => [e.id, i < (TIER_STARTS?.[0] ?? Infinity) ? 0 : i < (TIER_STARTS?.[1] ?? Infinity) ? 1 : 2]));
 
+// Catalogue "body weight" also covers bars, benches, straps and assisted movements.
+// For an explicit no-kit request offer only known floor or standing movements.
+const WITHOUT_KIT = new Set([
+  // Back
+  '1772', '4702', '4715', '4935', '5800', '3225', '7217', '11648', '4117', '4924',
+  '3228', '3229', '6019', '5040', '5041', '5042', '5043', '5044', '6350', '8585', '3230', '3226',
+  // Core
+  '0001', '0003', '0006', '3204', '0260', '1468', '0262', '0267', '0274', '3016',
+  '0276', '0443', '0456', '0457', '2429', '0464', '3202', '0484', '1471', '0507', '3640', '3239', '1688', '2312', '0635',
+  // Chest, shoulders and arms
+  '3294', '3216', '1273', '0258', '1297', '3211', '3217', '0662', '3145', '3021', '0699',
+  '1311', '3488', '2890', '3947', '4172', '2921', '3404', '3405', '3403', '3905', '6754',
+  '1771', '1769', '0259', '2398', '0283', '0717', '1174', '1428',
+  // Legs and cardio
+  '1473', '3769', '0459', '1472', '3470', '3561', '0514', '0513', '3013', '3582', '1476',
+  '1774', '0710', '3667', '1759', '2368', '1685', '1686', '1460', '3948', '4714',
+  '1373', '1387', '3534', '5700', '5153', '3361', '4258', '3532', '3004', '3037', '3556', '3091',
+]);
+export const needsNoEquipment = id => WITHOUT_KIT.has(id) && LIB_BY_ID.get(id)?.eq === 'body weight';
+
 export const libraryHas = id => LIB_BY_ID.has(id);
 export const libraryName = id => LIB_BY_ID.get(id)?.n || null;
 
@@ -197,7 +217,7 @@ function laneOrder(entries, muscles) {
    slots stay for exercises outside `keep` however much the plan and history pin, so a review has
    something to swap in (#829). It can take the slice past `max`, never past MAX_LIBRARY unless
    `keep` alone does. */
-export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus = [], fresh = 0 } = {}) {
+export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus = [], fresh = 0, equipmentFree = false } = {}) {
   const wanted = (equipment || []).map(x => String(x).toLowerCase());
   // A custom exercise's name and body part are whatever the person typed, and its id is
   // whatever the client wrote; all three ride into every prompt. Cut to the bounds payload.js
@@ -214,7 +234,7 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus
   const bench = benchKind(S);
   const filtered = (wanted.length ? LIBRARY.filter(e => equipmentAllows(wanted, e.id)) : LIBRARY)
     .filter(e => (!noDumbbells || !isDumbbellLift(e.id)) && machineAllows(machines, e.id) && benchAllows(bench, e.id));
-  const equipped = filtered.length ? filtered : LIBRARY;
+  const equipped = equipmentFree ? filtered.filter(e => needsNoEquipment(e.id)) : filtered.length ? filtered : LIBRARY;
   // Same reasoning as the equipment fallback: a filter that removed everything is not a filter
   // worth honouring. Someone whose only kit reaches nothing but stretches gets the stretches.
   const lifts = equipped.filter(e => !isStretch(e));
@@ -225,7 +245,7 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus
   const taken = new Set();
   const add = e => { if (!taken.has(e.id)) { taken.add(e.id); out.push(e); } };
   // What the user already trains comes first, filter or no filter.
-  for (const id of pinned) add(LIB_BY_ID.get(id));
+  for (const id of pinned) if (!equipmentFree || needsNoEquipment(id)) add(LIB_BY_ID.get(id));
   const limit = Math.max(max, Math.min(out.length + Math.max(0, fresh | 0), MAX_LIBRARY));
   const named = focusOf(...(Array.isArray(focus) ? focus : [focus]));
   if (base.length + out.length <= limit) {
@@ -257,7 +277,7 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus
       }
     }
   }
-  return [...customs, ...out].map(slim);
+  return (equipmentFree ? out : [...customs, ...out]).map(slim);
 }
 
 /* ---------- candidates for a swap in the middle of a workout (the `adapt` job) ----------

@@ -33,6 +33,7 @@ import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent, NEW_ACCENT } from '../lib/accent.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
+import { forgetBodyFocus } from '../lib/body-photo.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -69,6 +70,13 @@ const LOGOUT_OWED_KEY = 'gym_logout_owed'
 // question was open). Kept in storage so an app killed with the question open asks it again on
 // the next start instead of pushing the copy it still holds.
 const ADOPT_KEY = 'gym_adopt'
+// Ironvane: how long, all told, the browser's boot waits for the server (config, an owed sign-out,
+// /api/me) when nobody is signed in here. The boot screen gives up at 10 s (index.html); a server
+// that never answers, down behind a proxy that holds the connection open, used to cost 20 s per
+// request, so the sign-in screen came up after 40 s behind that error. A signed-in copy or a guest
+// is on screen at once (App hides the boot screen), so their boot keeps lib/api.js's timeouts.
+const BOOT_WAIT_MS = 5000
+const BOOT_WAIT_MIN_MS = 1500   // what a later request still gets once an earlier one used it all
 // Reads the mark with no argument, sets or clears it with one. Storage that cannot be read owes nothing.
 function logoutOwed(on) {
   try {
@@ -94,7 +102,7 @@ export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   // accent: the old iOS green on purpose. A loaded copy that never picked one (saved before accents,
   // a server document, a backup) keeps the green it always had; a new profile starts on the
-  // brand's green instead (freshState, lib/accent.js NEW_ACCENT).
+  // app's own colour instead (freshState, lib/accent.js NEW_ACCENT: Ironvane orange).
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
   rateGoal: null,
@@ -352,7 +360,7 @@ export function freshState() {
   // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
   // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
   s.streakRuleAsk = true
-  // The brand's green (1.4.5). DEF stays on the old green, so only a copy made here gets this.
+  // The app's own colour (Ironvane orange). DEF stays on the old green, so only a copy made here gets this.
   s.accent = NEW_ACCENT
   return s
 }
@@ -383,7 +391,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || (st.nutritionEntries || []).length || Object.keys(st.deleted?.nutritionEntries || {}).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -1115,6 +1123,9 @@ export const useStore = create((set, get) => {
     handedOver = false
     // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
     persist(freshState(), false)
+    // Today's body picker keeps a photo and the picks outside the state (lib/body-photo.js): a
+    // shared device keeps nothing of them either.
+    forgetBodyFocus()
     // The openNutrition link (lib/sister-nutrition.js) is this device's, but what it cached is what
     // the signed-out person ate: on a shared device it must not show on the next account's Home,
     // report or month story. Their token goes too; linking again is one code.
@@ -1337,7 +1348,7 @@ export const useStore = create((set, get) => {
     reached()
     let asked = false
     const askAbout = async extras => {
-      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup) || typeof ask !== 'function') return false
+      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup || extras.nutritionEntries) || typeof ask !== 'function') return false
       asked = true
       return !!(await ask(extras))
     }
@@ -1346,7 +1357,7 @@ export const useStore = create((set, get) => {
     // the server's, so the next pull still brings in what changed.
     const reread = async () => {
       if (!asked) return
-      try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
+      try { const r = await api('/api/data'); if (r && Object.hasOwn(r, 'state')) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
       const copy = sanitizeAccent(Object.assign(clone(DEF), state))
@@ -1356,8 +1367,10 @@ export const useStore = create((set, get) => {
       confirmed(get().S)
     }
     const S0 = get().S
-    if (!state) {
-      const push = hasData(S0) && (!alwaysAsk || sameAccount || await askAbout(localExtras(S0, null)))
+    // A device-link decision uses the same inventory split and fresh server read even when
+    // the account has no document yet. Only an unasked/new-account adoption takes this shortcut.
+    if (!state && (!alwaysAsk || sameAccount)) {
+      const push = hasData(S0)
       if (gone()) return STALE
       releaseAdopt()
       if (hasData(get().S) && !push) {
@@ -1443,17 +1456,23 @@ export const useStore = create((set, get) => {
   // A copy's workouts, weigh-ins and custom exercises split by the names a sign-in recorded when it
   // began (`pre`, see setUser): `before` holds what was there then, `later` — null when nothing
   // is — what was logged since, with the custom exercises its workouts use, in this copy's unit.
-  const ADOPT_FIELDS = ['workouts', 'bodyweight', 'customEx']
+  const ADOPT_FIELDS = ['workouts', 'bodyweight', 'customEx', 'nutritionEntries']
   const splitByPre = (S, pre) => {
     const before = { ...S }
     const later = { _ts: S._ts, unit: S.unit, ...(S.unitSet ? { unitSet: S.unitSet } : {}) }
     let any = false
     for (const f of ADOPT_FIELDS) {
+      if (f === 'nutritionEntries' && !Array.isArray(S[f])) continue
       const had = new Set(Array.isArray(pre?.[f]) ? pre[f] : [])
       const xs = Array.isArray(S[f]) ? S[f].filter(x => x != null) : []
-      before[f] = xs.filter(x => had.has(entryKey(f, x)))
-      later[f] = xs.filter(x => !had.has(entryKey(f, x)))
+      const key = x => f === 'nutritionEntries' ? x.id : entryKey(f, x)
+      before[f] = xs.filter(x => had.has(key(x)))
+      later[f] = xs.filter(x => !had.has(key(x)))
       if (later[f].length) any = true
+      if (f === 'nutritionEntries' && later[f].length && S.deleted?.[f]) {
+        const ids = new Set(later[f].map(e => e.id))
+        later.deleted = { [f]: Object.fromEntries(Object.entries(S.deleted[f]).filter(([id]) => ids.has(id))) }
+      }
     }
     if (!any) return { before, later: null }
     const used = new Set(later.workouts.flatMap(w => (Array.isArray(w?.entries) ? w.entries : []).map(e => e?.id)))
@@ -1760,18 +1779,19 @@ export const useStore = create((set, get) => {
     // fetch — the login screen and boot both read it, so it is fetched once and cached here
     // rather than by each screen that happens to need it.
     config: null,
-    async loadConfig() {
+    async loadConfig(opts) {
       if (get().config) return get().config
-      return get().refreshConfig()
+      return get().refreshConfig(opts)
     },
     // Always asks. The cached copy is right for one boot, but an admin can switch the Coach on
     // while a paired phone sits on the setup screen — that screen wants today's answer.
     // Two callers that ask at once get one request: signing in re-asks (setUser) and the pairing
     // flow awaits a refresh of its own immediately after, and there is one answer to have.
-    async refreshConfig() {
+    async refreshConfig(opts) {
       if (configFetch) return configFetch
       configFetch = (async () => {
-        try { const c = await api('/api/config'); rememberDefaultLang(c); set({ config: c }); return c }
+        // `opts` (boot's short timeout) only for a fetch it starts; one in flight is joined as is.
+        try { const c = await (opts ? api('/api/config', opts) : api('/api/config')); rememberDefaultLang(c); set({ config: c }); return c }
         catch { return null }
         finally { configFetch = null }
       })()
@@ -1814,6 +1834,7 @@ export const useStore = create((set, get) => {
           keepForPrevious(owner, wasHeld)
           forgetSync()
           localStorage.removeItem(KEY)
+          forgetBodyFocus()   // nor the previous account's body photo and picks (lib/body-photo.js)
           // The new owner before the new copy, as on a sign-out: another tab still holding the
           // previous account's copy must not join it into this one (QA 2026-10-06).
           localStorage.setItem('gym_owner_name', u.name || '')
@@ -1847,6 +1868,7 @@ export const useStore = create((set, get) => {
         // nothing on this path waits for the answer. A copy that has the key was made for a
         // session and is already the right answer, Coach or no Coach.
         if (get().config && !('coach' in get().config)) get().refreshConfig()
+        else if (configFetch) configFetch.then(c => { if (c && !('coach' in c)) get().refreshConfig() })   // Ironvane: one in flight (boot's re-ask) left before this sign-in
       } else { rejoined = false; adoptHold = false; localStorage.removeItem('gym_user') }
       set({ user: u })
       // Another account, or none: what is in flight was for the previous one (GHSA-656w-p99j-x8hf).
@@ -2137,10 +2159,16 @@ export const useStore = create((set, get) => {
     async deleteAccount(name, proof = {}) {
       const uid = get().user?.id
       await api('/api/account/delete', { method: 'POST', body: JSON.stringify({ name, ...proof }) })
+      await get().forgetDeletedAccount(uid)
+    },
+    // A deletion proof can remove a profile that was never opened on this device.
+    async forgetDeletedAccount(uid) {
+      if (!uid || get().user?.id !== uid) return
       await stopTimers()
       const all = await readStashes()
       const key = stashKey(serverBase(), uid)
       if (all[key]) { delete all[key]; await writeStashes(all) }
+      if (get().user?.id !== uid) return
       await clearLocalSession()
       if (MOBILE) {
         await forgetRemote()
@@ -2257,12 +2285,20 @@ export const useStore = create((set, get) => {
       // refuse — the only way the switch reaches someone already inside is here, on their next
       // boot. Ending the session needs a positive `allow_guest: false`; see lib/guest.js for why
       // an unreachable server must not be allowed to lock anyone out (#42).
-      const cfg = await get().loadConfig()
+      // A provider sign-in arriving (?oidc=) is not hurried either: its /api/me is the sign-in.
+      const hurry = !get().user && !get().isGuest() && !/[?&]oidc(-error)?=/.test(window.location.search || '')
+      const bootBy = Date.now() + BOOT_WAIT_MS
+      const bootOpts = o => (hurry ? { ...o, timeout: Math.max(BOOT_WAIT_MIN_MS, bootBy - Date.now()) } : o)
+      const cfg = await get().loadConfig(hurry ? { timeout: BOOT_WAIT_MS } : undefined)
+      // Past the budget the sign-in screen still wants the answer (SSO, password, guest): asked
+      // again with the usual timeout, and the screen follows the store when it lands. A guest who
+      // went in meanwhile meets the same rule boot applies just below.
+      if (hurry && !cfg) get().refreshConfig().then(c => { if (!guestAllowed(c) && get().isGuest()) get().setGuest(false) })
       if (!guestAllowed(cfg)) get().setGuest(false)
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
-        try { await api('/api/logout', { method: 'POST', body: '{}' }); logoutOwed(false) } catch { /* owed until it is answered */ }
+        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
@@ -2274,7 +2310,7 @@ export const useStore = create((set, get) => {
         // guest's start used to print in the console as an error. Skipped on a plain `false`
         // alone: a server from before the flag, or one that did not answer, is asked as before.
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
-        const me = await api('/api/me')
+        const me = await (hurry ? api('/api/me', bootOpts({})) : api('/api/me'))
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
         get().setUser(me.user, arrived ? { adopt: true } : undefined)
         if (arrived) {

@@ -1,30 +1,32 @@
-// The openGym logo, as in assets/logo: the mark (five plain rectangles on a 352×174 grid, square
-// corners, brand green) and the lockup (mark, then "open" plus "Gym" in brand green). Brand colours,
-// not the accent: the accent is the user's, the logo is not. Never mirrored in RTL.
+// The Ironvane mark is a square-cut IV on a 284×174 grid. Ironvane orange is a brand colour,
+// not the user's accent: the lockup stays itself when the accent changes. Never mirrored in RTL.
+import { APP_NAME } from '../lib/brand.js'
+import './BrandLogo.css'
 
-const RECTS = [[80, 242, 352, 28], [80, 199, 36, 114], [131, 169, 47, 174], [334, 169, 47, 174], [396, 199, 36, 114]]
+const MARK_PATHS = [
+  'M0 0h46v174H0z',
+  'M68 0h64l44 112L220 0h64l-76 174h-64z',
+]
+const BRAND_COLOR = '#ff6b2c'
 
-/** The mark alone, `height` px high (width follows, 352:174). `color` only for a one-colour use. */
-export function BrandMark({ height = 24, color = '#a3e635', className, style }) {
+/** The mark alone, `height` px high (width follows, 284:174). `color` only for a one-colour use. */
+export function BrandMark({ height = 24, color = BRAND_COLOR, className, style }) {
   return (
-    <svg className={className} viewBox="80 169 352 174" width={height * 352 / 174} height={height}
+    <svg className={className} viewBox="0 0 284 174" width={height * 284 / 174} height={height}
       fill={color} aria-hidden="true" focusable="false" style={{ flex: 'none', ...style }}>
-      {RECTS.map(([x, y, w, h]) => <rect key={x + '-' + y} x={x} y={y} width={w} height={h} />)}
+      {MARK_PATHS.map(d => <path key={d} d={d} />)}
     </svg>
   )
 }
 
-/**
- * The lockup at `size` px type: mark 1.07× the type high, a gap of 0.2×, the mark's middle at
- * 0.36× above the baseline (opengym-logo-dark.svg). "open" follows the theme (index.css .brand-lockup).
- */
+/** The lockup at `size` px type at the default root size; user text sizing still scales it. */
 export default function BrandLogo({ size = 34, as: Tag = 'span', className = '', style }) {
   return (
-    <Tag className={('brand-lockup ' + className).trim()} dir="ltr" style={{ fontSize: size, ...style }}>
-      <svg className="brand-lockup-mark" viewBox="80 169 352 174" aria-hidden="true" focusable="false">
-        {RECTS.map(([x, y, w, h]) => <rect key={x + '-' + y} x={x} y={y} width={w} height={h} />)}
+    <Tag className={('ironvane-lockup ' + className).trim()} dir="ltr" style={{ fontSize: `${size / 16}rem`, ...style }}>
+      <svg className="ironvane-lockup-mark" viewBox="0 0 284 174" fill={BRAND_COLOR} aria-hidden="true" focusable="false">
+        {MARK_PATHS.map(d => <path key={d} d={d} />)}
       </svg>
-      <span className="brand-lockup-open">open</span><span className="brand-lockup-gym">Gym</span>
+      <span className="ironvane-lockup-name"><span className="ironvane-lockup-iron">{APP_NAME.slice(0, 4)}</span><span className="ironvane-lockup-vane">{APP_NAME.slice(4)}</span></span>
     </Tag>
   )
 }

@@ -15,7 +15,26 @@ const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChange, counts, legend, countLabel }) {
   const wrapRef = useRef(null)
   const [localMetric, setLocalMetric] = useState(() => normalizeMetric(selectedMetric ?? S?.heatmapMetric))
-  useEffect(() => { if (wrapRef.current) wrapRef.current.scrollLeft = wrapRef.current.scrollWidth }, [])
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    let aligned = false
+    let observer = null
+    // A heatmap mounted inside closed More has no layout yet. Align on its first visible size,
+    // then stop observing so opening More again never undoes the reader's horizontal scroll.
+    const align = () => {
+      if (aligned || !el.clientWidth) return
+      el.scrollLeft = el.scrollWidth
+      aligned = true
+      observer?.disconnect()
+    }
+    align()
+    if (!aligned && typeof ResizeObserver === 'function') {
+      observer = new ResizeObserver(align)
+      observer.observe(el)
+    }
+    return () => observer?.disconnect()
+  }, [])
 
   const metric = normalizeMetric(selectedMetric ?? localMetric)
   const metricValue = counts ? 'n' : metric === 'vol' ? 'vol' : 'min'

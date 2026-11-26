@@ -1,0 +1,763 @@
+{
+ "1080": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-10-8.webp",
+   "caption": "Figure 10-8. ST2.3 Decline Pull-Up",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=146"
+  }
+ ],
+ "1083": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-10-9.webp",
+   "caption": "Figure 10-9. ST2.4 Suspension Hamstring Curl",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=147"
+  }
+ ],
+ "1128": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-10-1.webp",
+   "caption": "Figure 10-1. ST1.1 Suspension Push-Up",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=141"
+  }
+ ],
+ "1143": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-10-4.webp",
+   "caption": "Figure 10-4. ST1.4 Assisted Squat",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=143"
+  }
+ ],
+ "1160": [
+  {
+   "kind": "video",
+   "f": "files/video-1160.mp4",
+   "poster": "files/video-1160.webp",
+   "w": 640,
+   "h": 480,
+   "license": "CC-BY-SA-4.0",
+   "author": "Taco fleur",
+   "source": "https://commons.wikimedia.org/wiki/File:CrossFit_Burpee.webm"
+  }
+ ],
+ "1162": [
+  {
+   "kind": "video",
+   "f": "files/video-1162.mp4",
+   "poster": "files/video-1162.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Shoulder_press_-_exercise_demonstration_video.webm"
+  }
+ ],
+ "1200": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-17.webp",
+   "caption": "Figure 14-17. FW11 Overhead Push-Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=191"
+  }
+ ],
+ "1204": [
+  {
+   "kind": "video",
+   "f": "files/video-1204.mp4",
+   "poster": "files/video-1204.webp",
+   "w": 720,
+   "h": 1280,
+   "license": "CC-BY-SA-4.0",
+   "author": "Your Move",
+   "source": "https://commons.wikimedia.org/wiki/File:Lat_pulldown_exercise_demonstration.webm"
+  }
+ ],
+ "1350": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-11.webp",
+   "caption": "Figure 15-11. STM Seated Row",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=208"
+  }
+ ],
+ "1354": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-9-4.webp",
+   "caption": "Figure 9-4. MB1.4 Slam",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=134"
+  }
+ ],
+ "1398": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-16-7.webp",
+   "caption": "Figure 16-7. RD7 Calf Stretch",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=219"
+  }
+ ],
+ "1511": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-16-8.webp",
+   "caption": "Figure 16-8. RD8 Hamstring Stretch",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=220"
+  }
+ ],
+ "1570": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-5-20.webp",
+   "caption": "Figure 5-20. CD3.5 Tuck Jump",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=88"
+  }
+ ],
+ "1581": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-3-2.webp",
+   "caption": "Figure 3-2. PD2 Rear Lunge",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=42"
+  }
+ ],
+ "1590": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-4.webp",
+   "caption": "Figure 15-4. STM Single-Leg Curl",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=202"
+  }
+ ],
+ "1873": [
+  {
+   "kind": "video",
+   "f": "files/video-1873.mp4",
+   "poster": "files/video-1873.webp",
+   "w": 720,
+   "h": 1280,
+   "license": "CC-BY-SA-4.0",
+   "author": "Your Move",
+   "source": "https://commons.wikimedia.org/wiki/File:Leg_extension_exercise_demonstration.webm"
+  }
+ ],
+ "2267": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-1.webp",
+   "caption": "Figure 15-1. STM Leg Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=200"
+  }
+ ],
+ "2393": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-14.webp",
+   "caption": "Figure 14-14. FW9 Single-Arm Bent-Over Row",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=189"
+  }
+ ],
+ "3225": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-4-7.webp",
+   "caption": "Figure 4-7. SSD2 T raise",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=64"
+  }
+ ],
+ "3622": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-5-2.webp",
+   "caption": "Figure 5-2. CD1.2 V-Up",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=73"
+  }
+ ],
+ "3733": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-13-2.webp",
+   "caption": "Figure 13-2. STC2 Straight-Leg Deadlift",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=169"
+  }
+ ],
+ "3919": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-11-3.webp",
+   "caption": "Figure 11-3. LM1.3 Rear Lunge",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=153"
+  }
+ ],
+ "3928": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-5-17.webp",
+   "caption": "Figure 5-17. CD3.2 Single-Leg Deadlift",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=85"
+  }
+ ],
+ "4051": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-4-1.webp",
+   "caption": "Figure 4-1. HSD1 Lateral Leg Raise",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=59"
+  }
+ ],
+ "4089": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-13-1.webp",
+   "caption": "Figure 13-1. STC1 Sumo Squat",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=168"
+  }
+ ],
+ "4113": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-11-1.webp",
+   "caption": "Figure 11-1. LM1.1 Straight-Leg Deadlift",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=152"
+  }
+ ],
+ "4408": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-16.webp",
+   "caption": "Figure 14-16. FW10 Upright Row—kettlebell",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=190"
+  }
+ ],
+ "5099": [
+  {
+   "kind": "video",
+   "f": "files/video-5099.mp4",
+   "poster": "files/video-5099.webp",
+   "w": 640,
+   "h": 480,
+   "license": "CC-BY-SA-4.0",
+   "author": "Taco fleur",
+   "source": "https://commons.wikimedia.org/wiki/File:Kettlebell_Farmer_Walks.webm"
+  }
+ ],
+ "5631": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-18.webp",
+   "caption": "Figure 14-18. FW12 Bent-Arm Lateral Raise",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=192"
+  }
+ ],
+ "5822": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-4-8.webp",
+   "caption": "Figure 4-8. SSD3 Y Raise",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=65"
+  }
+ ],
+ "6156": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-13-8.webp",
+   "caption": "Figure 13-8. STC7 Bent-Over Row",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=174"
+  }
+ ],
+ "6211": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-5-12.webp",
+   "caption": "Figure 5-12. CD2.2 Supine Bicycle",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=81"
+  }
+ ],
+ "6232": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-10-5.webp",
+   "caption": "Figure 10-5. ST1.5 Decline Biceps Curl",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=144"
+  }
+ ],
+ "9819": [
+  {
+   "kind": "video",
+   "f": "files/video-9819.mp4",
+   "poster": "files/video-9819.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Hanging_crunches_-_exercise_demonstration_video.webm"
+  }
+ ],
+ "11648": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-4-11.webp",
+   "caption": "Figure 4-11. SSD5 W Raise",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=66"
+  }
+ ],
+ "0025": [
+  {
+   "kind": "video",
+   "f": "files/video-0025.mp4",
+   "poster": "files/video-0025.webp",
+   "w": 720,
+   "h": 1280,
+   "license": "CC-BY-SA-4.0",
+   "author": "Your Move",
+   "source": "https://commons.wikimedia.org/wiki/File:Barbell_bench_press_exercise_demonstration.webm"
+  },
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-6.webp",
+   "caption": "Figure 14-6. FW4 Bench Press—straight bar",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=182"
+  }
+ ],
+ "0027": [
+  {
+   "kind": "video",
+   "f": "files/video-0027.mp4",
+   "poster": "files/video-0027.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Bent-over_row_-_exercise_demonstration_video.webm"
+  },
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-13.webp",
+   "caption": "Figure 14-13. FW8 Bent-Over Row",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=188"
+  }
+ ],
+ "0032": [
+  {
+   "kind": "video",
+   "f": "files/video-0032.mp4",
+   "poster": "files/video-0032.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Deadlift_-_exercise_demonstration_video.webm"
+  },
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-3.webp",
+   "caption": "Figure 14-3. FW3 Deadlift—straight bar",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=180"
+  }
+ ],
+ "0033": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-9.webp",
+   "caption": "Figure 14-9. FW4 Bench Press—decline",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=184"
+  }
+ ],
+ "0043": [
+  {
+   "kind": "video",
+   "f": "files/video-0043.mp4",
+   "poster": "files/video-0043.webp",
+   "w": 720,
+   "h": 1280,
+   "license": "CC-BY-SA-4.0",
+   "author": "Your Move",
+   "source": "https://commons.wikimedia.org/wiki/File:Barbell_back_squat_exercise_demonstration.webm"
+  },
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-2.webp",
+   "caption": "Figure 14-2. FW2 Back Squat",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=179"
+  }
+ ],
+ "0047": [
+  {
+   "kind": "video",
+   "f": "files/video-0047.mp4",
+   "poster": "files/video-0047.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Incline_press_-_exercise_demonstration_video.webm"
+  },
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-10.webp",
+   "caption": "Figure 14-10. FW5 Incline Bench",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=184"
+  }
+ ],
+ "0116": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-5.webp",
+   "caption": "Figure 14-5. FW3 Straight-Leg Deadlift",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=181"
+  }
+ ],
+ "0120": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-15.webp",
+   "caption": "Figure 14-15. FW10 Upright Row—straight bar",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=190"
+  }
+ ],
+ "0198": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-9.webp",
+   "caption": "Figure 15-9. STM Lat Pull-Down",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=206"
+  }
+ ],
+ "0289": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-7.webp",
+   "caption": "Figure 14-7. FW4 Bench Press—dumbbell",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=183"
+  }
+ ],
+ "0294": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-23.webp",
+   "caption": "Figure 14-23. FW16 Biceps Curl",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=196"
+  }
+ ],
+ "0375": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-14-21.webp",
+   "caption": "Figure 14-21. FW14 Pull Over—double dumbbells",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=194"
+  }
+ ],
+ "0472": [
+  {
+   "kind": "video",
+   "f": "files/video-0472.mp4",
+   "poster": "files/video-0472.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Leg_raises_-_exercise_demonstration_video.webm"
+  }
+ ],
+ "0514": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-5-1.webp",
+   "caption": "Figure 5-1. CD1.1 Power Jump",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=72"
+  }
+ ],
+ "0528": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-13-9.webp",
+   "caption": "Figure 13-9. STC8 Overhead Push-Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=175"
+  }
+ ],
+ "0576": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-16.webp",
+   "caption": "Figure 15-16. STM Chest Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=212"
+  }
+ ],
+ "0577": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-16.webp",
+   "caption": "Figure 15-16. STM Chest Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=212"
+  }
+ ],
+ "0584": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-5.webp",
+   "caption": "Figure 15-5. STM Lateral Raise",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=203"
+  }
+ ],
+ "0586": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-3.webp",
+   "caption": "Figure 15-3. STM Leg Curl",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=201"
+  }
+ ],
+ "0590": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-8.webp",
+   "caption": "Figure 15-8. STM Single-Arm Overhead Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=205"
+  }
+ ],
+ "0603": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-7.webp",
+   "caption": "Figure 15-7. STM Overhead Press",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=204"
+  }
+ ],
+ "0607": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-15-14.webp",
+   "caption": "Figure 15-14. STM Triceps Extension",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=210"
+  }
+ ],
+ "0612": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-3-10.webp",
+   "caption": "Figure 3-10. PD7 Forward Lunge",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=47"
+  }
+ ],
+ "0630": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-5-3.webp",
+   "caption": "Figure 5-3. CD1.3 Mountain Climber",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=73"
+  }
+ ],
+ "0652": [
+  {
+   "kind": "video",
+   "f": "files/video-0652.mp4",
+   "poster": "files/video-0652.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Pull-ups_-_exercise_demonstration_video.webm"
+  },
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-6-3.webp",
+   "caption": "Figure 6-3. CL1.3 Pull-Up",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=98"
+  }
+ ],
+ "0662": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-3-13.webp",
+   "caption": "Figure 3-13. PD10 Push-Up",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=49"
+  }
+ ],
+ "0739": [
+  {
+   "kind": "video",
+   "f": "files/video-0739.mp4",
+   "poster": "files/video-0739.webp",
+   "w": 1280,
+   "h": 720,
+   "license": "CC-BY-3.0",
+   "author": "FitnessScape",
+   "source": "https://commons.wikimedia.org/wiki/File:Hip_Sled_-_How_to_perform_a_45_degree_leg_press.webm"
+  }
+ ],
+ "0801": [
+  {
+   "kind": "image",
+   "pose": "sequence",
+   "f": "files/atp-13-4.webp",
+   "caption": "Figure 13-4. STC4 8-Count Step-up",
+   "license": "PD-USGov",
+   "author": "U.S. Army (ATP 7-22.02)",
+   "source": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf#page=171"
+  }
+ ]
+}

@@ -110,6 +110,26 @@ describe('the first-run question waits for an idle app', () => {
     expect(offerBlocked(null)).toBe('workout')
   })
 
+  // EP22: Find my plan is the person saying what they want. The question waits until Home.
+  it('never over Find my plan, and it comes once they are back on Home', async () => {
+    window.location.hash = '#/start'
+    stop = watchTourOffer()
+    expect(offerBlocked(null)).toBe('quiz')
+    await tick(20000)
+    expect(tourState()).toBe(null)
+    window.location.hash = '#/home'
+    expect(offerBlocked(null)).toBe('')
+    await tick(OFFER_QUIET_MS + OFFER_SETTLE_MS + 500)
+    expect(tourState()).not.toBe(null)
+  })
+
+  it('a screen that only starts like the quiz is not the quiz', () => {
+    window.location.hash = '#/starters'
+    expect(offerBlocked(null)).toBe('')
+    window.location.hash = '#/start?x=1'
+    expect(offerBlocked(null)).toBe('quiz')
+  })
+
   it('the chunk is fetched first, and a tap during the fetch sends it back to waiting', async () => {
     let done
     const preload = vi.fn(() => new Promise(r => { done = r }))

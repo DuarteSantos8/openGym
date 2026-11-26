@@ -221,3 +221,37 @@ describe('Library gym filter while searching', () => {
     expect(line(host)).toBeUndefined()
   })
 })
+
+// EP23-T05: a Beginner's Library opens on the exercises that come with a form guide, as a chip
+// they can clear; nobody else gets it switched on for them, and a search is never a dead end.
+describe('Library: with form guide', () => {
+  const settle = async () => { await act(async () => { await new Promise(r => setTimeout(r, 0)) }); await act(async () => { await new Promise(r => setTimeout(r, 0)) }) }
+  it('is on for a Beginner and shows only guided exercises until cleared', async () => {
+    const { guidedIds } = await import('../lib/exercise-guide.js')
+    const guided = new Set(guidedIds())
+    mocks.S.experience = 'beginner'
+    const host = render()
+    await settle()
+    const chip = host.querySelector('[data-guided]')
+    expect(chip).not.toBeNull()
+    expect(chip.getAttribute('aria-pressed')).toBe('true')
+    const shown = names(host)
+    expect(shown.length).toBeGreaterThan(10)
+    expect(shown.length).toBeLessThanOrEqual(guided.size)
+    const byName = new Map(EXDB.map(e => [e.n, e.id]))
+    for (const n of shown) expect(guided.has(byName.get(n.toLowerCase()))).toBe(true)
+    act(() => { chip.click() })
+    expect(host.querySelector('[data-guided]').getAttribute('aria-pressed')).toBe('false')
+    expect(names(host).length).toBe(40)
+  })
+
+  it('is offered but off for everyone else', async () => {
+    const host = render()
+    await settle()
+    const chip = host.querySelector('[data-guided]')
+    expect(chip).not.toBeNull()
+    expect(chip.getAttribute('aria-pressed')).toBe('false')
+    expect(names(host).length).toBe(40)
+  })
+})
+

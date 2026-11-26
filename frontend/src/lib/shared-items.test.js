@@ -105,6 +105,28 @@ describe('applyImport: a copy that is yours and says where it came from', () => 
     expect(s.accent).toBe('custom')
     expect(s.accentCustom).toBe('#123456')
   })
+  it('a look keeps Ironvane orange as the preset and carries Bold or Refined', () => {
+    const [item] = ownItems({ accent: 'ironvane', look: 'refined' }, 'look')
+    expect(item.payload).toMatchObject({ accent: '#ff6b2c', preset: 'ironvane', look: 'refined' })
+    const s = { accent: 'sky', look: 'bold' }
+    applyImport(s, { type: 'look', payload: item.payload, origin })
+    expect(s.accent).toBe('ironvane')
+    expect(s.accentCustom).toBeUndefined()
+    expect(s.look).toBe('refined')
+  })
+  it('a preset whose colour is not the one the look shows is ignored: the shown colour is applied', () => {
+    const s = {}
+    applyImport(s, { type: 'look', payload: { accent: '#123456', preset: 'ironvane' }, origin })
+    expect(s.accent).toBe('custom')
+    expect(s.accentCustom).toBe('#123456')
+  })
+  it('an older look (no preset, no look) still comes in as before; a look this app does not draw is left', () => {
+    const s = { look: 'bold' }
+    applyImport(s, { type: 'look', payload: { accent: '#ff6b2c', preset: 'nosuch', look: 'neon' }, origin })
+    expect(s.accent).toBe('custom')
+    expect(s.accentCustom).toBe('#ff6b2c')
+    expect(s.look).toBe('bold')
+  })
   it('a gym profile and the refs to fetch', () => {
     const s = {}
     applyImport(s, { type: 'equipment', payload: { name: 'FitBox', profile: { equipment: ['barbell'] } }, origin })

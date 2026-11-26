@@ -1,0 +1,7 @@
+v22.23.5
+19 locales, 3684 keys each — in sync.
+3030 translated strings in src/, all present in the locale packs.
+catalogue: 5632 exercises, generated files up to date
+api/coach/core/library-data.js in sync (5632 exercises).
+api/coach/core/prompts.js in sync (8 prompts).
+website/api.html in sync: 93 endpoints, 34 schemas, 366.9 KB

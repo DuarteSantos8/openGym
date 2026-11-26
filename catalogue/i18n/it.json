@@ -40614,9 +40614,7 @@
       "Distendi lentamente le braccia finché senti allungare la schiena."
     ]
   },
-  "6033": {
-    "name": "ab tuck"
-  },
+  "6033": {"name": "ab tuck", "description": "Sollevamento delle ginocchia alla stazione verticale: avambracci sui cuscinetti, schiena contro lo schienale, ginocchia portate verso il petto. Allena gli addominali e i flessori dell’anca.", "instructions": ["Appoggia gli avambracci sui cuscinetti e premi la schiena contro lo schienale, con le gambe libere.", "Contrai il core e tieni ferma la parte superiore del corpo.", "Solleva le ginocchia verso il petto, arrotondando leggermente il bacino in alto.", "Fermati un attimo, poi abbassa lentamente le gambe senza oscillare.", "Ripeti per le ripetizioni previste."]},
   "6034": {
     "name": "stacco da terra da blocchi con bilanciere",
     "description": "Uno stacco da terra con il bilanciere sollevato su blocchi, che riduce l'ampiezza del movimento e permette di usare carichi maggiori.",

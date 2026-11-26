@@ -241,7 +241,7 @@ describe('cardPalette', () => {
     expect(light.accText).not.toBe('#30d158')
     expect(parseColor(light.accText)[1]).toBeLessThan(parseColor('#30d158')[1])
     // no usable accent: the brand's green (1.4.5)
-    expect(cardPalette('dark', 'nonsense').acc).toBe('#a3e635')
+    expect(cardPalette('dark', 'nonsense').acc).toBe('#ff6b2c')
   })
   it('accent text on light paper reads at 4.5:1, also for the brand’s light green', () => {
     const ratio = (a, b) => {

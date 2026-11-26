@@ -10,6 +10,7 @@ const { runPipeline } = await import('../coach/core/pipeline.js');
 const { buildPromptParts } = await import('../coach/core/prompt.js');
 const { validateAsk } = await import('../coach/core/validate.js');
 const { SCHEMAS } = await import('../coach/core/schemas.js');
+const { LIB_BY_ID } = await import('../coach/core/library.js');
 
 const set = (w, r, done = true) => ({ w, r, done });
 const S = {
@@ -88,4 +89,151 @@ test('ask pipeline: the ask rules and schema reach the provider, and an answer c
   assert.equal(r.result.answer, 'Due o tre minuti tra le serie pesanti.');
   assert.match(calls[0].system, /# Task: answer a question/);
   assert.equal(calls[0].schema, SCHEMAS.ask);
+});
+
+for (const question of ['a back workout with no weights', 'a back workout without weights',
+  'a back workout with no equipment', 'a back workout without equipment',
+  'a back workout with no equipment instead of my cable routine', 'a back workout with no bands and no weights',
+  'a bodyweight back workout at home with no weights or bands']) {
+  test(`${question}: propose floor exercises even for someone who trains with cables`, async () => {
+    const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0007' }, { id: '3225' }] }] };
+    const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: question });
+    // A trained cable movement is deliberately offered by the stub on its first attempt.
+    // The repair reply picks two real back movements performed on the floor.
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke({ prompt }) {
+      assert.ok(prompt.includes(question));
+      const ids = ++attempts === 1 ? ['0007'] : ['1772', '3225'];
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Back session',
+        actions: [{ type: 'workout', name: 'Back', items: ids.map(id => ({ id, sets: 2, reps: 8 })) }] }) };
+    } };
+    const result = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
+    assert.equal(result.ok, true);
+    const ids = result.result.actions[0].items.map(item => item.id);
+    assert.deepEqual(ids, ['1772', '3225']);
+    assert.deepEqual(ids.map(id => LIB_BY_ID.get(id)?.n), ['elbow lift - reverse push-up', 'floor t raise']);
+    assert.ok(ids.every(id => payload.library.some(e => e.id === id) && LIB_BY_ID.get(id).bp === 'back'));
+    assert.ok(payload.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'));
+    assert.equal(attempts, 2);
+  });
+}
+
+for (const type of ['workout', 'routine']) {
+  test(`a no-equipment ${type} repairs a positive added load on a floor exercise`, async () => {
+    const payload = payloadLib.build(S, { handle: 'test', kind: 'ask', note: 'a back workout with no equipment' });
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke() {
+      const item = { id: '1772', sets: 2, reps: 8 };
+      if (++attempts === 1) item.weight = 10;
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Back session',
+        actions: [{ type, name: 'Back', items: [item] }] }) };
+    } };
+    const r = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
+    assert.equal(r.ok, true);
+    const items = type === 'routine' ? r.result.bundle.routines[0].ex : r.result.actions[0].items;
+    assert.deepEqual(items.map(({ id, weight }) => [id, weight]), [['1772', undefined]]);
+    assert.equal(attempts, 2);
+  });
+}
+
+test('a full library of trained cable exercises still leaves room for an equipment-free back workout', () => {
+  const pins = [...LIB_BY_ID.values()].filter(e => e.eq === 'cable').slice(0, payloadLib.ASK_LIBRARY);
+  assert.equal(pins.length, payloadLib.ASK_LIBRARY);
+  const profile = { ...S, routines: [{ id: 'gym', name: 'Gym', ex: pins.map(({ id }) => ({ id })) }] };
+  const p = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: 'a back workout with no equipment' });
+  assert.equal(p.library.length, payloadLib.ASK_LIBRARY);
+  assert.ok(p.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'));
+  assert.ok(p.library.some(e => e.bp === 'back'));
+});
+
+test('a back workout with resistance bands but no weights keeps band rows available', async () => {
+  const profile = { ...S, routines: [{ id: 'back', name: 'Back', ex: [{ id: '0988' }] }],
+    coach: { ...S.coach, profile: { equipment: ['band'] } } };
+  for (const note of ['a back workout with resistance bands but no weights',
+    'a back workout using bands but no weights',
+    'a back workout at home with resistance bands but no weights',
+    'I have no weights, only resistance bands. Make me a band back workout.']) {
+    const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note });
+    assert.ok(payload.library.some(e => e.id === '0988'), note);
+    assert.ok(payload.library.some(e => e.id !== '0988' && LIB_BY_ID.get(e.id)?.eq === 'band'), note);
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke() {
+      const item = { id: '0988', sets: 2, reps: 8 };
+      if (++attempts === 1) item.weight = 5;
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, answer: 'Band rows',
+        actions: [{ type: 'workout', name: 'Back', items: [item] }] }) };
+    } };
+    const r = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.result.actions[0].items.map(({ id, weight }) => [id, weight]), [['0988', undefined]]);
+    assert.equal(attempts, 2);
+  }
+});
+
+test('all translated starters constrain the catalogue for chat and first plans', async () => {
+  const packs = new URL('../../frontend/src/locales/', import.meta.url);
+  const { readdir } = await import('node:fs/promises');
+  const files = (await readdir(packs)).filter(name => name.endsWith('.js'));
+  assert.equal(files.length, 25);
+  for (const file of files) {
+    const pack = (await import(new URL(file, packs))).default;
+    const text = pack['Build me a back workout with no weights'];
+    assert.ok(text, file);
+    for (const opts of [{ kind: 'ask', note: text }, { kind: 'create', refine: text }]) {
+      const payload = payloadLib.build(S, { ...opts, handle: 'test' });
+      assert.ok(payload.library.length, file);
+      assert.ok(payload.library.every(e => LIB_BY_ID.get(e.id)?.eq === 'body weight'), file);
+      assert.ok(!payload.library.some(e => ['0002', '1770', '3495'].includes(e.id)), file);
+      assert.ok(!payload.library.some(e => /bench|chin-up|pull-up|inverted row|doorway/.test(e.n)), file);
+    }
+  }
+});
+
+for (const [kind, question] of [['ask', 'Une séance courte pour le dos sans poids.'], ['create', '背部训练，不用负重。']]) {
+  test(`${kind}: a translated equipment constraint repairs an apparatus exercise`, async () => {
+    const payload = payloadLib.build(kind === 'ask' ? S : {}, { handle: 'test', kind, note: question, refine: question });
+    let attempts = 0;
+    const adapter = { spawns: false, async invoke() {
+      const id = ++attempts === 1 ? '0499' : '3225'; // inverted row needs a bar; floor T raise needs none.
+      const action = { type: 'workout', name: 'Back', items: [{ id }] };
+      const bundle = { name: 'Back', summary: 'Back', week: { 2: 'r0' }, routines: [{ id: 'r0', name: 'Back', ex: [{ id, subs: ['0499'] }] }] };
+      return { code: 0, text: JSON.stringify({ coach_contract: 1, ...(kind === 'ask' ? { answer: 'Back', actions: [action] } : bundle) }) };
+    } };
+    const result = await runPipeline({ adapter, kind, cfg: {}, payload });
+    assert.equal(result.ok, true, JSON.stringify(result.errors));
+    assert.equal(attempts, 2);
+    const items = kind === 'ask' ? result.result.actions[0].items : result.result.bundle.routines[0].ex;
+    assert.deepEqual(items.map(({ id, subs }) => [id, subs]), [['3225', undefined]]);
+  });
+}
+
+test('editing a French prompt to request a cable workout removes the no-weights restriction', () => {
+  const payload = payloadLib.build(S, { handle: 'test', kind: 'ask', note: 'Une séance de dos avec poulie' });
+  assert.ok(payload.library.some(e => LIB_BY_ID.get(e.id)?.eq === 'cable'));
+});
+
+test('unsafe existing routines, imports, swaps and exercise cards cannot bypass a translated constraint', () => {
+  const items = id => [{ id, sets: 2, reps: 8 }];
+  const profile = { routines: [{ id: 'gym', name: 'Gym', ex: items('0499') }, { id: 'floor', name: 'Floor', ex: items('3225') }] };
+  const hit = { id: 'gym/row', title: 'Row', equipment: [], sessions: [{ name: 'Back', ex: ['0499'] }] };
+  const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: 'Eine Einheit ohne Gewichte', routines: [hit] });
+  assert.equal(payload.routineLibrary, undefined);
+  const check = action => validateAsk({ coach_contract: 1, answer: 'Back', actions: [action] }, payload);
+  for (const action of [
+    { type: 'workout', name: 'Back', items: items('0007') },
+    { type: 'start', routineId: 'gym' }, { type: 'schedule', day: 2, routineId: 'gym' },
+    { type: 'target', routineId: 'gym', exId: '0499', sets: 3 }, { type: 'exercise', name: 'Row' },
+    { type: 'import', libraryId: hit.id }, { type: 'show', exId: '0499' },
+    { type: 'swap', routineId: 'floor', exId: '3225', to: '0499' },
+  ]) assert.equal(check(action).ok, false, action.type);
+  assert.equal(check({ type: 'show', exId: '3225' }).ok, true);
+  assert.equal(check({ type: 'start', routineId: 'floor' }).ok, true);
+});
+
+test('an existing floor routine with a bar substitution cannot start or be scheduled for a no-weights request', () => {
+  const profile = { routines: [{ id: 'back', name: 'Back', ex: [{ id: '3225', subs: ['0499'] }] }] };
+  const payload = payloadLib.build(profile, { handle: 'test', kind: 'ask', note: 'Une séance de dos sans poids' });
+  for (const action of [{ type: 'start', routineId: 'back' }, { type: 'schedule', day: 2, routineId: 'back' }]) {
+    assert.equal(validateAsk({ coach_contract: 1, answer: 'Back', actions: [action] }, payload).ok, false, action.type);
+  }
 });

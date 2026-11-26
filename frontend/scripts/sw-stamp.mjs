@@ -12,6 +12,14 @@ const PACK = /[\\/]src[\\/](?:locales|instr|exercise-names)[\\/]/
 // opened one with a network showed no steps at all offline. exercise-desc/ is not a PACK and
 // stays in the list, English descriptions included.
 const KEEP = /[\\/]src[\\/]instr[\\/]en\.js$/
+// The Extension Lab's heavy optional libraries: ECharts (with zrender) for its one chart, about
+// 490 kB, and sports-lib for the activity-file preview, about 690 kB. Most people never open
+// either, so they are not fetched at every install; the worker's cache-first fetch keeps them
+// after the first use, offline included. Only a chunk that holds one of them and no app code but
+// the chart's own wrapper is left out: anything sharing a bundle with app code stays listed.
+const OPTIONAL = /[\\/]node_modules[\\/](?:echarts|zrender|@sports-alliance[\\/]sports-lib)[\\/]/
+const OPTIONAL_LEAF = /[\\/]src[\\/]components[\\/]AddonTrendChart\.jsx$/
+const appCode = id => !/[\\/]node_modules[\\/]/.test(id) && !OPTIONAL_LEAF.test(id)
 
 /** The built files the worker fetches at install besides what index.html names: every chunk and
  *  stylesheet but the packs, as './assets/…' the way index.html writes them. */
@@ -21,6 +29,7 @@ export function lazyAssets(bundle) {
     if (!/\.(?:js|css)$/.test(file)) continue
     const ids = item.type === 'chunk' ? (item.moduleIds?.length ? item.moduleIds : Object.keys(item.modules || {})) : []
     if (ids.length && ids.every(id => PACK.test(id) && !KEEP.test(id))) continue
+    if (ids.some(id => OPTIONAL.test(id)) && !ids.some(appCode)) continue
     out.push('./' + file)
   }
   return out.sort()

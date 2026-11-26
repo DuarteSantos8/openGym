@@ -8,7 +8,7 @@ import { workoutDay } from '../lib/history.js'
 
 let root, host
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
-afterEach(() => { act(() => root?.unmount()); host?.remove(); root = null; host = null })
+afterEach(() => { act(() => root?.unmount()); host?.remove(); root = null; host = null; vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 it('changes shading and legend by metric while retaining day actions and history', () => {
   const now = new Date(), workouts = [1, 2, 3, 4].map((n, i) => {
@@ -58,6 +58,29 @@ it('leaves malformed history out of the activity map', () => {
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   act(() => root.render(<Heatmap S={{ workouts: [{ d: 'not-a-day', start: NaN, end: NaN, vol: 100 }], unit: 'kg' }} />))
   expect(host.querySelectorAll('.hm-grid .hm-c:not(.l0)')).toHaveLength(0)
+})
+
+it('aligns once when a hidden heatmap first becomes visible, then preserves the reader position', () => {
+  let resize, width = 0
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) { resize = callback }
+    observe() {}
+    disconnect() {}
+  })
+  host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
+  act(() => root.render(<Heatmap S={{ workouts: [], unit: 'kg' }} />))
+  const wrap = host.querySelector('.hm-wrap')
+  Object.defineProperty(wrap, 'clientWidth', { configurable: true, get: () => width })
+  Object.defineProperty(wrap, 'scrollWidth', { configurable: true, get: () => 1200 })
+  // Mount effects have already run in a real hidden disclosure. Re-render once after installing
+  // the geometry probe only if the environment did not observe the initial hidden layout.
+  expect(wrap.scrollLeft).toBe(0)
+  width = 400
+  act(() => resize([{ target: wrap }]))
+  expect(wrap.scrollLeft).toBe(1200)
+  wrap.scrollLeft = 200
+  act(() => resize([{ target: wrap }]))
+  expect(wrap.scrollLeft).toBe(200)
 })
 
 it('honors a saved volume preference on the next render', () => {

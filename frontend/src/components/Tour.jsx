@@ -18,9 +18,10 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { todayISO } from '../lib/format.js'
 import { scheduleModeOf } from '../lib/rotation.js'
+import { experienceOf } from '../lib/experience.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import {
-  useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
+  NAVIGATION_COPY, useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
   openTour, closeTour, placeCard, visiblePart, routeOf, reached, passOver, TUTORIALS, TUTORIAL_COPY, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID,
 } from '../lib/tour.js'
 import { beginWorkout } from '../sheets.jsx'
@@ -32,28 +33,27 @@ import './Tour.css'
 
 // What each stop says. Literal t() calls, so check-source-strings sees every one.
 const COPY = {
+  ...NAVIGATION_COPY,
   today: () => [t('Today at a glance'), t('Today’s session lives here. One tap and you’re lifting. On a rest day it says so, no guilt trip.')],
-  'go-plan': () => [t('Off to Plan'), t('Your routines live behind this tab. Tap Plan.')],
   'plan-mode': () => [t('Week or rotation'), t('Train on fixed weekdays, or run your routines in a loop where the next one waits for you.')],
   'plan-views': () => [t('Your routines'), t('Schedule says when, Routines says what. Build your own or grab a starter plan.')],
   'plan-body': () => [t('Muscles at a glance'), t('The little body shows what each day works, so leg day can’t hide.')],
   'plan-menu': () => [t('Programmes and sharing'), t('Programmes, starter plans and sharing a plan with a friend live behind this button.')],
-  'go-library': () => [t('The exercise library'), t('Every exercise is one tap away. Tap Exercises.')],
   'lib-search': () => [t('Find any exercise'), t('Search thousands of exercises in your language. Star your favourites and they float to the top.')],
   'lib-filters': () => [t('Filter it down'), t('Narrow the list by body part, type or the equipment you have.')],
   start: () => [t('The big Start button'), t('It starts today’s plan, or lets you pick something else. Tap it for a practice run.')],
+  'start-home': () => COPY.start(),
+  swap: () => [t('Swap exercise'), [t('More'), t('Swap exercise')].join(' → ')],
+  learn: () => [t('Learn'), t('The basics, explained plainly. Works offline.')],
   set: () => [t('A practice workout'), t('This one is pretend, nothing gets saved. Each row is a set: weight, then reps. Tap a number to change it.')],
   tick: () => [t('Tick it off'), t('Done with a set? Tick it. Go on, try it.')],
   rest: () => [t('Catch your breath'), t('The rest timer starts by itself. Add time, or skip it if you feel heroic.')],
   swipe: () => [t('Swipe a set'), t('Swipe a set sideways to copy or remove it. Its number opens even more.')],
   more: () => [t('The ⋯ menu'), t('Workout settings, layouts, notes and extra exercises hide in here.')],
   finish: () => [t('Finish line'), t('Finish saves the session and moves your weights along. This practice one just quietly disappears.')],
-  'go-stats': () => [t('Your progress'), t('Back home, practice over. Stats is where the gains pile up. Tap it.')],
   stats: () => [t('Your numbers'), t('Workouts, streaks and everything you’ve lifted. It fills up as you train.')],
   'stats-body': () => [t('Body map'), t('See which muscles got the work and which still need rest. Tap one for details.')],
   'stats-records': () => [t('Records'), t('Pick an exercise to see its best sets, estimated max and where it’s heading.')],
-  'go-home': () => [t('Settings are on Home'), t('Head back to Home first. Tap it.')],
-  'go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
   look: () => [t('Make it yours'), t('Theme, accent colour and what Home shows.')],
   units: () => [t('Units & language'), t('Kilos or pounds, and the language you like best.')],
   data: () => [t('Your data, your backups'), t('Backups, imports and syncing with your own server.')],
@@ -72,10 +72,10 @@ const COPY = {
   'p-sched': () => [t('When do you train it?'), t('Tap Schedule to put it on a day.')],
   'p-day': () => [t('Pick a day'), t('Tap a weekday and choose your new routine. Two on one day works too.')],
   'p-loop': () => [t('Add it to the loop'), t('Tap Add and pick your new routine. The loop runs in that order.')],
-  'p-done': () => [t('That’s a plan'), t('Home shows it on its day and Start opens it. Change it any time right here.')],
+  'p-done': () => [t('That’s a plan'), t('Today shows it on its day and Start opens it. Change it any time right here.')],
 
   'c-intro': () => [t('Your own exercise'), t('Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.')],
-  'c-go': () => [t('The exercise library'), t('Custom exercises live with the rest. Tap Exercises.')],
+  'c-go': () => [t('The exercise library'), t('Custom exercises live with the rest. Tap Library.')],
   'c-new': () => [t('Create your own exercise'), t('It’s the first row of the list. Tap it.')],
   'c-name': () => [t('Name it'), t('Call it what you call it. Other names you add help the search find it.')],
   'c-bp': () => [t('Body part'), t('Pick one. Muscle groups are optional, but they feed the body map and muscle balance.')],
@@ -86,17 +86,17 @@ const COPY = {
   'c-done': () => [t('That’s the lot'), t('Search finds your exercises like any other, and they go into routines and workouts the same way.')],
 
   'e-intro': () => [t('Edit your data'), t('We swapped in a practice copy with a pretend workout and weigh-in. Poke at anything, nothing here sticks.')],
-  'e-go-home': () => [t('Weigh-ins first'), t('They’re on Home. Tap it.')],
+  'e-go-home': () => [t('Weigh-ins first'), t('They’re on Today. Tap it.')],
   'e-weighins': () => [t('Every weigh-in'), t('Tap All weigh-ins.')],
   'e-weighin': () => [t('Fix a weigh-in'), t('The bin deletes one, and Undo pops up right after. Wrong number? Log that day again and the new one wins.')],
-  'e-go-stats': () => [t('Now your workouts'), t('They live under Stats. Tap it.')],
+  'e-go-stats': () => [t('Now your workouts'), t('They live under Progress. Tap it.')],
   'e-history': () => [t('History'), t('Every workout you’ve logged. Tap the clock.')],
   'e-past': () => [t('Forgot one?'), t('Log a past workout with its own date and time. It counts like any other.')],
   'e-row': () => [t('Open a workout'), t('Here’s the pretend one. Tap it.')],
   'e-edit': () => [t('Edit a workout'), t('Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.')],
   'e-note': () => [t('Notes'), t('Rewrite the session note whenever.')],
   'e-options': () => [t('Workout options'), t('Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.')],
-  'e-back': () => [t('Back to Stats'), t('Tap back.')],
+  'e-back': () => [t('Back to Progress'), t('Tap back.')],
   'e-measure': () => [t('Measurements and photos'), t('Open a check-in to change or delete it. Progress photos work the same way.')],
   'e-routines': () => [t('Routines'), t('Change them any time in Plan. Past workouts keep what you actually did.')],
   'e-cant': () => [t('What you can’t edit'), t('An exercise’s history, records and progress are worked out from your workouts. Fix the workout and they follow.')],
@@ -104,7 +104,7 @@ const COPY = {
 
   'b-intro': () => [t('Export & import'), t('Where your data goes in and out. We only point, nothing runs until you tap it yourself.')],
   'b-up': () => [t('Up one level'), t('Tap back to Settings.')],
-  'b-go-home': () => [t('Settings are on Home'), t('Head back to Home first. Tap it.')],
+  'b-go-home': () => [t('Settings are on Today'), t('Head back to Today first. Tap it.')],
   'b-go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
   'b-data': () => [t('Data & backup'), t('Tap it.')],
   'b-export': () => [t('Back it all up'), t('One file with everything. Keep it somewhere safe, Import backup brings it back.')],
@@ -135,6 +135,21 @@ export function findAnchor(name) {
   return null
 }
 
+// A folded section still contains its anchor, but there is nothing to measure or highlight yet.
+// Open it through the same toggle event as a tap so the screen's controlled disclosure state agrees.
+function revealAnchor(el) {
+  const closed = []
+  for (let p = el?.parentElement; p; p = p.parentElement) {
+    if (p.tagName === 'DETAILS' && !p.open) closed.push(p)
+  }
+  if (!closed.length) return false
+  for (const details of closed.reverse()) {
+    details.open = true
+    details.dispatchEvent(new Event('toggle'))
+  }
+  return true
+}
+
 // What a screen reader hears the spotlight is on: the element's own name, kept short.
 const nameOf = el => {
   if (!el) return ''
@@ -145,6 +160,7 @@ const nameOf = el => {
 
 // Which optional stops this profile gets (lib/tour.js tourSteps).
 const profileOf = S => ({
+  level: experienceOf(S),
   plannedDays: scheduleModeOf(S) !== 'rotation' && Object.values(S.week || {}).some(v => [].concat(v || []).some(id => S.routines.some(r => r.id === id))),
   rest: (S.restSec ?? 90) > 0,
   swipe: !!workoutControls(S).swipeSets && (S.workoutView || 'cards') !== 'focus',
@@ -184,6 +200,8 @@ export function startPractice() {
   const st = useStore.getState()
   if (st.tourSandbox) return
   st.enterTourSandbox(s => {
+    // The beginner tour points at controls in Cards, even if the real profile uses Focus.
+    if (experienceOf(s) === 'beginner') s.workoutView = 'cards'
     s.routines = [...s.routines, sampleRoutine(s)]
     s.active = null
   })
@@ -364,7 +382,7 @@ function Run({ at, flow = 'tour' }) {
     // A screen that was only there in a copy (the practice workout, the routine not saved) is not
     // left on screen without its data.
     const gone = /^\/plan\/r\//.test(path) && !useStore.getState().S.routines.some(r => '/plan/r/' + r.id === path)
-    if (path === '/workout' || (!tutorial && completed)) nav('/home', { replace: true })
+    if (path === '/workout' || (!tutorial && completed && !step.go)) nav('/home', { replace: true })
     else if (gone) nav('/plan', { replace: true })
   }
   const go = dir => {
@@ -404,6 +422,8 @@ function Run({ at, flow = 'tour' }) {
       if (step.skip && passOver(step, ctxNow())) { go(dirRef.current); return }
       // Not there after all: an optional stop is passed over, any other one speaks from the middle.
       if (!el && step.anchor && step.optional) { go(dirRef.current); return }
+      // Let the disclosure's controlled state and layout settle before measuring its target.
+      if (el && revealAnchor(el)) { tm = setTimeout(look, 30); return }
       anchorRef.current = el
       if (el && !visiblePart(el.getBoundingClientRect(), bandBox(viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
       shownAt.current = Date.now()
@@ -604,7 +624,7 @@ function Run({ at, flow = 'tour' }) {
         {i > 0 && <Button onClick={() => go(-1)}>{t('Back')}</Button>}
         {step.commit
           ? <Button variant="primary" disabled={!routine?.ex.length} onClick={save}>{t('Save plan')}</Button>
-          : step.go || step.intercept
+          : step.go || step.intercept || (step.tap && experienceOf(S0) === 'beginner' && !tutorial)
             ? <Button variant="primary" onClick={showMe}>{t('Show me')}</Button>
             : <Button variant="primary" onClick={() => go(1)}>{last ? (tutorial ? t('Done') : t('Let’s go')) : t('Next')}</Button>}
       </div>

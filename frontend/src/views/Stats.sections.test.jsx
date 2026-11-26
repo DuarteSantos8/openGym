@@ -22,7 +22,7 @@ const start = Date.now() - 2 * 86400000
 const workout = { id: 'w1', d: new Date(start).toISOString().slice(0, 10), start, end: start + 3600000, name: 'Push',
   entries: [{ id: '0025', target: { id: '0025', sets: 1, reps: 5 }, sets: [{ w: 60, r: 5, done: true }] }] }
 let root, host
-afterEach(() => { act(() => root.unmount()); host.remove(); window.history.replaceState(null, '', '#/') })
+afterEach(() => { act(() => root.unmount()); host.remove(); window.history.replaceState(null, '', '#/'); vi.restoreAllMocks() })
 function mount() {
   mocks.S = { body: 'male', effort: 'none', unit: 'kg', targetW: null, bodyweight: [], routines: [], exWeights: {}, workouts: [workout] }
   host = document.createElement('div'); document.body.appendChild(host)
@@ -36,8 +36,10 @@ describe('Stats sections (P5)', () => {
     mount()
     const parts = index().map(b => b.textContent)
     expect(parts.slice(0, 3)).toEqual(['Overview', 'Body', 'Lifts'])
-    // every part but the first has its heading, and Effort is offered only when its part is there
-    expect([...host.querySelectorAll('.stats-sect-h')].map(h => h.textContent)).toEqual(parts.slice(1))
+    // Lifts leads the approved screen; the other indexed parts keep their headings under More.
+    const headings = [...host.querySelectorAll('.stats-sect-h')].map(h => h.textContent)
+    expect(headings).toHaveLength(parts.length - 1)
+    expect(headings).toEqual(expect.arrayContaining(parts.slice(1)))
     expect(!!host.querySelector('#stats-effort')).toBe(parts.includes('Effort'))
     expect(host.querySelector('#stats-overview [data-tour="stats-tiles"]')).toBeTruthy()
     expect(host.querySelector('#stats-lifts [data-tour="stats-records"]')).toBeTruthy()
@@ -52,7 +54,10 @@ describe('Stats sections (P5)', () => {
     expect(index()[2].getAttribute('aria-pressed')).toBe('true')
     expect(into).toHaveBeenCalled()
     expect(window.location.hash).toBe('#/stats?section=lifts')
+    const overviewInto = vi.fn()
+    host.querySelector('#stats-overview').scrollIntoView = overviewInto
     act(() => index()[0].click())
+    expect(overviewInto).toHaveBeenCalledWith({ block: 'start', behavior: 'smooth' })
     expect(window.location.hash).toBe('#/stats')
   })
   it('opens on the part the address names', () => {
@@ -60,6 +65,23 @@ describe('Stats sections (P5)', () => {
     mount()
     expect(index()[1].getAttribute('aria-pressed')).toBe('true')
   })
+  it('uses document order, not display order, when several sections precede the spy line', async () => {
+    window.history.replaceState(null, '', '#/stats')
+    mount()
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800)
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(100)
+    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(5000)
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      if (this.classList?.contains('stats-index')) return { bottom: 0, top: 0 }
+      const tops = { 'stats-lifts': -500, 'stats-overview': -400, 'stats-body': -300, 'stats-effort': 500 }
+      const top = tops[this.id] ?? 1000
+      return { top, bottom: top + 100 }
+    })
+    await act(async () => { window.dispatchEvent(new Event('scroll')); await new Promise(r => setTimeout(r, 60)) })
+    expect(index()[1].textContent).toBe('Body')
+    expect(index()[1].getAttribute('aria-pressed')).toBe('true')
+  })
+
   it('leaves the highlight alone while a sheet pins the page (it jumped to the last part)', async () => {
     window.history.replaceState(null, '', '#/stats')
     mount()
