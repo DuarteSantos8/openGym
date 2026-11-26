@@ -6301,4 +6301,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "این مرورگر شما را واردشده نگه نمی‌دارد (مرور خصوصی، یا فضای ذخیره‌سازی آن پر است). آنچه اینجا ثبت می‌کنید هم ممکن است نگه داشته نشود.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "این مرورگر چیزی برای این سایت ذخیره نمی‌کند، بنابراین برنامه اینجا باز نمی‌شود. فضای ذخیره‌سازی را خالی کنید یا از مرور خصوصی خارج شوید و دوباره تلاش کنید.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} در این سرور تنها راه ورود به این نمایه است، پس پیوند می‌ماند.",
+  "Ask your Coach": "از مربی‌ات بپرس",
+  "Build me a back workout with no weights": "برایم یک برنامهٔ تمرین عضلات پشت بدون وزنه بچین",
+  "Add a push day on Tuesday and a pull day on Wednesday": "برای سه‌شنبه یک جلسه تمرین با حرکات فشار دادن و برای چهارشنبه یک جلسه تمرین با حرکات کشیدن اضافه کن",
+  "Make today shorter": "تمرین امروز را کوتاه‌تر کن",
 }

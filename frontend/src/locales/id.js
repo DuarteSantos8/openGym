@@ -6300,4 +6300,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Browser ini tidak menjaga kamu tetap masuk (penjelajahan pribadi, atau penyimpanannya penuh). Yang kamu catat di sini mungkin juga tidak tersimpan.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Browser ini tidak menyimpan apa pun untuk situs ini, jadi aplikasi tidak bisa dibuka di sini. Kosongkan penyimpanan atau keluar dari penjelajahan pribadi, lalu coba lagi.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} satu-satunya jalan masuk ke profil ini di server ini, jadi tetap tertaut.",
+  "Ask your Coach": "Tanya pelatihmu",
+  "Build me a back workout with no weights": "Buatkan latihan punggung tanpa beban",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Tambahkan sesi latihan dorong pada hari Selasa dan sesi latihan tarik pada hari Rabu",
+  "Make today shorter": "Persingkat latihan hari ini",
 };

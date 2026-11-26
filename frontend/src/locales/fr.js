@@ -6335,4 +6335,8 @@ export default {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Ce navigateur ne te garde pas connecté (navigation privée, ou son stockage est plein). Ce que tu enregistres ici risque de ne pas être conservé non plus.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Ce navigateur n’enregistre rien pour ce site, donc l’app ne peut pas s’ouvrir ici. Libère de l’espace ou quitte la navigation privée, puis réessaie.",
   "{0} is the only way into this profile on this server, so it stays linked.": "{0} est le seul moyen d'entrer dans ce profil sur ce serveur, il reste donc associé.",
+  "Ask your Coach": "Demande à ton coach",
+  "Build me a back workout with no weights": "Prépare-moi une séance de dos sans poids",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Ajoute une séance de poussée le mardi et une séance de tirage le mercredi",
+  "Make today shorter": "Raccourcis ma séance du jour",
 }

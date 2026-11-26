@@ -4745,6 +4745,10 @@ export const PT_BR_OVERRIDES = {
   "This browser is not keeping you signed in (private browsing, or its storage is full). What you log here may not be kept either.": "Este navegador não está mantendo você conectado (navegação privada, ou o armazenamento dele está cheio). O que você registrar aqui também pode não ser guardado.",
   "This browser will not store anything for this site, so the app cannot open here. Free up storage or leave private browsing, then try again.": "Este navegador não armazena nada para este site, então o app não pode abrir aqui. Libere espaço ou saia da navegação privada e tente de novo.",
   "{0} is the only way into this profile on this server, so it stays linked.": "O {0} é o único jeito de entrar neste perfil neste servidor, então ele continua conectado.",
+  "Ask your Coach": "Pergunte ao seu treinador",
+  "Build me a back workout with no weights": "Monte um treino de costas sem pesos para mim",
+  "Add a push day on Tuesday and a pull day on Wednesday": "Adicione um treino de empurrar na terça e um de puxar na quarta",
+  "Make today shorter": "Encurte o treino de hoje",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
