@@ -759,7 +759,7 @@
     ]
   },
   "1074": {
-    "name": "Aukaisu harjoitushihnoilla",
+    "name": "Aukaisu harjoitushihnoilla taakse nojaten",
     "description": "Avaa käsivarret leveästi hihnoja vasten. Se venyttää ja vahvistaa rintalihaksia.",
     "instructions": [
       "Seiso selkä kiinnityspisteeseen päin kädet rinnan korkeudella.",
@@ -5250,7 +5250,7 @@
     ]
   },
   "1478": {
-    "name": "Lankkuhaarahyppy v. 2",
+    "name": "Lankkuhaarahyppy kyynärvarsien varassa",
     "description": "Lankku, jossa jalat hyppäävät haaraan ja yhteen kuin haarahypyssä. Se yhdistää keskivartalon vakauden ja sykettä nostavan liikkeen.",
     "instructions": [
       "Asetu punnerrusasentoon kädet olkapäiden alla.",
@@ -8398,7 +8398,7 @@
     ]
   },
   "1755": {
-    "name": "Penkkidippi lisäpainolla",
+    "name": "Ojentajadippi laitteessa",
     "description": "Dippi penkiltä tai tuolilta lisäpainolla ja jalat suorina. Rasittaa ojentajia tehokkaammin kuin pelkkä kehonpainoversio.",
     "instructions": [
       "Istu penkin tai tuolin reunalle ja tartu käsillä reunaan lantion vierestä.",
@@ -9923,7 +9923,7 @@
     ]
   },
   "1896": {
-    "name": "Lähentäjien venytys jalka koholla seisten v. 2",
+    "name": "Lähentäjien venytys jalka koholla eteen kumartuen",
     "description": "Seisten tehtävä venytys, jossa toinen jalka on nostettu korokkeelle avaamaan reiden sisäosaa.",
     "instructions": [
       "Seiso ryhdikkäästi ja aseta toinen jalka penkille tai korokkeelle sivullesi.",
@@ -11342,7 +11342,7 @@
     ]
   },
   "2117": {
-    "name": "Kylkivenytys seisten",
+    "name": "Kylkivenytys seisten kädet sivuilla",
     "description": "Seisten tehtävä kylkitaivutus vyötärölle ja kyljille.",
     "instructions": [
       "Seiso ryhdikkäästi jalat lantion leveydellä.",
@@ -11364,7 +11364,7 @@
     ]
   },
   "2119": {
-    "name": "Kylkivenytys seisten v. 2",
+    "name": "Kylkivenytys seisten",
     "description": "Kurota kädellä pään yli ja taivu sivulle venyttääksesi kylkeä, leveitä selkälihaksia ja vinoja vatsalihaksia.",
     "instructions": [
       "Seiso ryhdikkäästi jalat lantion leveydellä.",
@@ -11554,7 +11554,7 @@
     ]
   },
   "2141": {
-    "name": "Kävely crosstrainerilla v. 2",
+    "name": "Kävely crosstrainerilla liikkuvin kahvoin",
     "description": "Pehmeä kävelyä muistuttava liike crosstrainerilla. Nivelystävällinen kardiotreeni, joka kasvattaa kestävyyttä.",
     "instructions": [
       "Säädä laitteen vastus ja kaltevuus haluamiksesi.",
@@ -18357,7 +18357,7 @@
     ]
   },
   "3234": {
-    "name": "Aukaisu käsipainoilla v. 2",
+    "name": "Aukaisu käsipainoilla istuen",
     "description": "Aukaisu käsipainoilla tasapenkillä laajassa kaaressa niin, että rinta venyy. Eristää rintalihakset.",
     "instructions": [
       "Asetu selinmakuulle tasapenkille käsipaino kummassakin kädessä, kämmenet vastakkain.",
@@ -18630,7 +18630,7 @@
     ]
   },
   "3264": {
-    "name": "Kylkilankku ja jalannosto v. 2",
+    "name": "Kylkilankku ja jalannosto suoran käden varassa",
     "description": "Pidä kylkilankkua ja nosta päällimmäistä jalkaa. Vahvistaa lantion ulkosivua ja kylkiä.",
     "instructions": [
       "Asetu kylkimakuulle ja tue itsesi kyynärvarren varaan niin, että kyynärpää on olkapään alla.",
@@ -25196,7 +25196,7 @@
     ]
   },
   "3964": {
-    "name": "Kiertävä punnerrus v. 2",
+    "name": "Kiertävä punnerrus kädet korokkeella",
     "description": "Etunojapunnerrus, johon sisältyy kierto yläasennossa. Se treenaa rintaa ja käsiä sekä tuo mukaan keskivartalotreeniä.",
     "instructions": [
       "Aloita punnerrusasennosta kädet olkapäiden alla.",
@@ -28985,7 +28985,7 @@
     ]
   },
   "4349": {
-    "name": "Yhden jalan kyykky levytangolla v. 2",
+    "name": "Yhden jalan kyykky levytangolla",
     "description": "Yhden jalan kyykky levytanko selässä. Se kehittää jalkojen voimaa ja tasapainoa, joten käytä kevyttä painoa.",
     "instructions": [
       "Aseta levytanko yläselän päälle, seiso yhdellä jalalla ja nosta toinen jalka eteen.",
@@ -39119,7 +39119,7 @@
     ]
   },
   "5737": {
-    "name": "Aukaisu harjoitushihnoilla v. 2",
+    "name": "Aukaisu harjoitushihnoilla eteen nojaten",
     "description": "Rintalihasten levitysliike harjoitushihnoilla omalla painolla. Avaa käsivarsia leveälle nojaten samalla eteenpäin rintakehän venyttämiseksi ja kuormittamiseksi.",
     "instructions": [
       "Tartu kahvoihin ja nojaa eteenpäin vartalo suorana.",
@@ -39614,7 +39614,7 @@
     ]
   },
   "5876": {
-    "name": "Ojentajapunnerrus harjoitushihnoilla v. 2",
+    "name": "Ojentajapunnerrus harjoitushihnoilla seisten",
     "description": "Nojaa harjoitushihnoihin ja suorista kädet koukistetusta asennosta. Treenaa ojentajia kehonpainolla.",
     "instructions": [
       "Ota kiinni kahvoista ja nojaa eteenpäin suoralla keholla.",
@@ -46205,7 +46205,7 @@
     ]
   },
   "8297": {
-    "name": "Ylätaljaveto suorin käsin köydellä",
+    "name": "Ylätaljaveto suorin käsin köydellä kumarassa",
     "description": "Taljaveto suorin käsin köydellä. Eristää leveät selkälihakset ilman käsivarsien apua.",
     "instructions": [
       "Kiinnitä köysi ylätaljaan ja seiso kasvot taljaan päin.",
@@ -54501,7 +54501,7 @@
     ]
   },
   "0068": {
-    "name": "Yhden jalan kyykky levytangolla",
+    "name": "Yhden jalan kyykky levytangolla takajalka penkillä",
     "description": "Yhden jalan kyykky tanko yläselällä. Haastaa etureidet, pakarat ja tasapainon.",
     "instructions": [
       "Asetu seisomaan jalat hartioiden leveydellä ja aseta levytanko yläselän päälle.",
@@ -56442,7 +56442,7 @@
     ]
   },
   "0237": {
-    "name": "Ylätaljaveto suorin käsin köydellä v. 2",
+    "name": "Ylätaljaveto suorin käsin köydellä",
     "description": "Ylätaljaveto suorin käsin köydellä. Pidä kädet lähes suorina, jolloin työ kohdistuu leveisiin selkälihaksiin.",
     "instructions": [
       "Kiinnitä köysi taljaan ja säädä talja ylimpään asentoon.",
@@ -59179,7 +59179,7 @@
     ]
   },
   "0490": {
-    "name": "Kapea vinopunnerrus v. 2",
+    "name": "Kapea vinopunnerrus tangolla",
     "description": "Vinopunnerrus kädet koholla ja kapeassa asennossa. Liike kohdistuu ojentajiin ja rintaan.",
     "instructions": [
       "Aseta kädet korotetulle alustalle, kuten penkille tai korokkeelle, hieman hartioita leveämmälle.",
@@ -60562,7 +60562,7 @@
     ]
   },
   "0616": {
-    "name": "Lonkankoukistajan venytys maaten v. 2",
+    "name": "Lonkankoukistajan venytys maaten polvi rintaan",
     "description": "Maaten penkin tai alustan reunalla annat toisen jalan roikkua, jolloin lonkan etuosa venyy. Lievittää istumisen aiheuttamaa kireyttä.",
     "instructions": [
       "Asetu selinmakuulle penkin tai sängyn reunan lähelle.",
@@ -60959,7 +60959,7 @@
     ]
   },
   "0655": {
-    "name": "Punnerrus jumppapallolla",
+    "name": "Punnerrus kädet jumppapallolla",
     "description": "Etunojapunnerrus kädet jumppapallon päällä. Epävakaa alusta tuo rintatreenin ohella lisähaastetta keskivartalolle ja olkapäiden hallinnalle.",
     "instructions": [
       "Aseta jumppapallo lattialle ja asetu kasvot alaspäin kädet pallon päällä hartioiden leveydellä.",
@@ -60970,7 +60970,7 @@
     ]
   },
   "0656": {
-    "name": "Punnerrus jumppapallolla v. 2",
+    "name": "Punnerrus jalat jumppapallolla vaakatasossa",
     "description": "Etunojapunnerrus kädet jumppapallon päällä. Epävakaa alusta haastaa keskivartaloa ja olkapäitä rintatreenin ohella.",
     "instructions": [
       "Aseta jumppapallo lattialle ja asetu kasvot alaspäin kädet pallon päällä hartioiden leveydellä.",
@@ -62817,7 +62817,7 @@
     ]
   },
   "0830": {
-    "name": "Penkkidippi lisäpainolla v. 2",
+    "name": "Penkkidippi lisäpainolla",
     "description": "Dippi penkillä lisäpaino sylissä tai lantiolla. Kasvattaa ojentajia ja rintaa.",
     "instructions": [
       "Istu penkille kädet penkin reunalla, sormet eteenpäin osoittaen.",
