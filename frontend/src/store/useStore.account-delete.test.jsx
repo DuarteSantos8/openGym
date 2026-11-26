@@ -39,6 +39,16 @@ afterEach(() => {
 })
 
 describe('deleteAccount', () => {
+  it('keeps device training when deleting a profile that is not open in this store', async () => {
+    useStore.setState({ user: null })
+    localStorage.removeItem('gym_owner')
+    localStorage.setItem('gym_guest', '1')
+    await useStore.getState().forgetDeletedAccount(USER.id)
+    expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
+    expect(localStorage.getItem('gym_guest')).toBe('1')
+    expect(api).not.toHaveBeenCalled()
+  })
+
   it('asks the server with the typed name and the owner’s proof, then signs this device out and keeps nothing of the account', async () => {
     api.mockResolvedValue({ ok: true })
     await useStore.getState().deleteAccount('One', { current: 'correct horse battery staple' })

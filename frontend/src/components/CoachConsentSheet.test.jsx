@@ -64,7 +64,7 @@ describe('asking', () => {
     await act(async () => { p = askAiConsent(server) })
     const text = host.textContent
     expect(text).toContain('Send your training to Google Gemini?')
-    expect(text).toContain('through your openGym server to Google Gemini')
+    expect(text).toContain('through your Ironvane server to Google Gemini')
     expect(text).toContain('your server’s admin picked')
     for (const line of ['Your plan', 'Your workouts', 'Your body weight', 'Your answers to the Coach', 'Your unit and language', 'Anything you type to the Coach']) expect(text).toContain(line)
     expect(text).not.toMatch(/—/)

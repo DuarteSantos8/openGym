@@ -2,11 +2,11 @@ import { tempoSheet } from './components/Tempo.jsx'
 import { useCircuit } from './store/useCircuit.js'
 import { CircuitResults } from './components/CircuitCard.jsx'
 import { normalizeTempo, repSec } from './lib/tempo.js'
-import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, Suspense, lazy, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx, staplesFirst } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
@@ -15,17 +15,18 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
+import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, freestyleConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
-import { beep, vibrate } from './lib/sound.js'
+import { cue } from './lib/feedback.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nameIn, said } from './lib/a11y-name.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, AWAY_PLANS } from './lib/starter.js'
 import OwnExerciseMedia from './components/OwnExerciseMedia.jsx'
 import Media, { Thumb } from './components/Media.jsx'
+import ExercisePictures, { useDemoMedia } from './components/ExercisePictures.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { FormVideosSection } from './components/SetVideo.jsx'
@@ -49,7 +50,8 @@ import Icon from './components/Icon.jsx'
 import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
-import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
+import { useNfcSupported, nfcExerciseSheet, addExerciseToSession } from './components/Nfc.jsx'
+import { exMediaOf, setExMediaShow } from './lib/ex-media.js'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -144,7 +146,6 @@ const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
 const ui = () => useUI.getState()
 const toast = m => ui().toast(m)
-const snd = () => S().sound
 
 /* ============================ custom confirm dialog ============================ */
 // `noCancel`: one button only, for an explainer that must lead straight to the phone's own
@@ -188,8 +189,8 @@ export function addDeviceSetupMessage(routines) {
 export function askAddDeviceData(extras) {
   const logged = extras.workouts || extras.bodyweight || extras.customEx
   return new Promise(resolve => confirmSheet({
-    title: logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
-    message: logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
+    title: extras.nutritionEntries ? t('Add this device’s data to your profile?') : logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
+    message: extras.nutritionEntries ? t('This device has {0} nutrition entries logged while signed out. Add them and any other local entries, or keep the profile as it is on the server.', extras.nutritionEntries) : logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
     confirmText: t('Add them'), cancelText: t('Keep profile as is'),
     onConfirm: () => resolve(true), onCancel: () => resolve(false), locked: true
   }))
@@ -263,15 +264,18 @@ export function confirmSheet(opts) {
 // string literals written inside a t() call, so copy parked in the catalog and passed in as a
 // variable is invisible to it — it would quietly stay English in every language.
 const PLAN_COPY = {
-  ppl: () => ({ name: t('Push / Pull / Legs'), about: t('Push, pull and legs each get their own day.') }),
-  'upper-lower': () => ({ name: t('Upper / Lower'), about: t('Upper body twice, lower body twice.') }),
-  'full-body': () => ({ name: t('Full Body'), about: t('Three sessions, the whole body each time.') }),
-  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') }),
-  'home-bw': () => ({ name: t('No equipment'), about: t('Your body and the floor. A table for rows, that’s it.') }),
-  dumbbells: () => ({ name: t('Dumbbells only'), about: t('One pair of dumbbells, no bench needed.') }),
-  bands: () => ({ name: t('Resistance bands'), about: t('A set of bands and a door to anchor them.') }),
-  hotel: () => ({ name: t('Hotel room'), about: t('Twenty-five minutes between the bed and the desk chair.') })
+  ppl: () => ({ name: t('Push / Pull / Legs'), goal: t('Build muscle'), level: t('Intermediate'), kit: t('Full gym') }),
+  'upper-lower': () => ({ name: t('Upper / Lower'), goal: t('Build muscle'), level: t('Intermediate'), kit: t('Full gym') }),
+  'full-body': () => ({ name: t('Full Body'), goal: t('General fitness'), level: t('Beginner'), kit: t('Full gym') }),
+  '5x5': () => ({ name: t('5×5'), goal: t('Get stronger'), level: t('Beginner'), kit: t('Full gym') }),
+  'home-bw': () => ({ name: t('No equipment'), goal: t('General fitness'), level: t('Beginner'), kit: t('Your body and the floor. A table for rows, that’s it.') }),
+  dumbbells: () => ({ name: t('Dumbbells only'), goal: t('General fitness'), level: t('Beginner'), kit: t('One pair of dumbbells, no bench needed.') }),
+  bands: () => ({ name: t('Resistance bands'), goal: t('General fitness'), level: t('Beginner'), kit: t('A set of bands and a door to anchor them.') }),
+  hotel: () => ({ name: t('Hotel room'), goal: t('General fitness'), level: t('Beginner'), kit: t('Two chairs') })
 }
+
+/** A starter plan's name in the language on screen, or '' for an unknown id (views/Onboarding.jsx). */
+export const starterPlanName = id => PLAN_COPY[id]?.().name || ''
 
 // Adds the plan's routines (reusing one you already have under the same name) and puts them on
 // its weekdays. Existing routines are never touched
@@ -309,6 +313,7 @@ function StarterPlanChooser({ close }) {
   // Fitting starts on for the profile you already filter by; '' leaves the plan as written.
   const [fitId, setFitId] = useState(() => activeProfile(useStore.getState().S)?.id || '')
   const fit = profiles.find(p => p.id === fitId) || null
+  const options = useMemo(() => starterPlanOptions(fit && profileEquipment(fit), profileMachines(fit)), [fit])
   const choose = (id, name) => {
     const days = starterPlanDays(id)
     close()
@@ -325,6 +330,14 @@ function StarterPlanChooser({ close }) {
   }
   return <>
     <h3>{t('Choose starter plan')}</h3>
+    {/* Not sure which? The quiz picks one from six answers (EP22, views/Onboarding.jsx). */}
+    <div className="list" style={{ marginBottom: 10 }}>
+      <button type="button" className="item" data-start="quiz" onClick={() => closeThenNav(close, '/start')}>
+        <div className="lrow-i" aria-hidden="true" style={{ '--tint': 'var(--green)' }}><Icon name="sparkles" /></div>
+        <div className="grow"><div className="tt">{t('Find my plan')}</div><div className="ss">{t('Six questions, then a plan that fits')}</div></div>
+        <Icon name="chevronRight" className="chev" />
+      </button>
+    </div>
     {profiles.length > 0
       ? <div className="chips" style={{ margin: '0 0 10px' }}>
           <div className="small dim" style={{ width: '100%' }}>{t('Fit to my equipment')}</div>
@@ -332,14 +345,19 @@ function StarterPlanChooser({ close }) {
           {profiles.map(p => <button key={p.id} className={'chip nocap' + (fit?.id === p.id ? ' on' : '')} onClick={() => setFitId(p.id)}>{p.name}</button>)}
         </div>
       : <div className="small dim" style={{ margin: '0 0 10px' }}>{t('Add an equipment profile in Settings to fit a plan to what you own.')}</div>}
-    {[starterPlanOptions().filter(o => !AWAY_PLANS.includes(o.id)), starterPlanOptions().filter(o => AWAY_PLANS.includes(o.id))].map((list, gi) => <Fragment key={gi}>
+    {[options.filter(o => !AWAY_PLANS.includes(o.id)), options.filter(o => AWAY_PLANS.includes(o.id))].map((list, gi) => <Fragment key={gi}>
       {gi === 1 && <h4 className="sec" style={{ marginTop: 16 }}>{t('Away from the gym')}</h4>}
       <div className="list">
-        {list.map(({ id, days }) => {
-          const { name, about } = PLAN_COPY[id]()
+        {list.map(({ id, days, minutes, kit }) => {
+          const { name, goal, level, kit: writtenKit } = PLAN_COPY[id]()
+          const equipment = kit ? new Intl.ListFormat(dateLocale()).format(kit.map(k => t(k))) : writtenKit
           return <div key={id} className="item" data-plan={id} {...tappable(() => choose(id, name))}>
             <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name={gi ? (id === 'hotel' ? 'bed' : id === 'dumbbells' ? 'dumbbell' : 'house') : 'clipboard'} /></span>
-            <div className="grow"><div className="tt">{name}</div><div className="ss">{t('{0} days per week', days)} · {about}</div></div>
+            <div className="grow">
+              <div className="tt">{goal} · {t('{0} days per week', days)}</div>
+              <div className="ss">{name}</div>
+              <div className="ss">{t('{0} min per session', minutes)} · {level} · {equipment || t('No equipment')}</div>
+            </div>
             <Icon name="chevronRight" className="chev" />
           </div>
         })}
@@ -543,7 +561,7 @@ function WeighIns() {
         <div className="row between" style={{ margin: '16px 2px 4px', gap: 8 }}>
           <span className="small" style={{ fontWeight: 600 }}>{t('Week of {0}', fmtDate(w.key))}</span>
           <span className="small row" style={{ gap: 8 }}>
-            {moved && <span className="row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(w.delta, w.avg) }}>
+            {moved && <span className="row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(w.delta, w.avg, true) }}>
               <Icon name={w.delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />{fmtNum(Math.abs(w.delta))}
             </span>}
             <span className="muted" style={{ whiteSpace: 'nowrap' }}>{t('Average {0}', fmtNum(w.avg) + ' ' + st.unit)}</span>
@@ -936,11 +954,12 @@ function HevyImportSheet({ close }) {
 }
 
 /* ============================ target weight ============================ */
-export function bwDeltaColor(delta, currentW) {
+// `ink`: the text-safe pair (--acc-ink / --red-ink, 4.5:1 on the light theme) for small text.
+export function bwDeltaColor(delta, currentW, ink = false) {
   if (!delta) return 'var(--label-2)'
   if (!S().targetW) return 'var(--label)'
   const up = S().targetW > currentW
-  return (delta > 0) === up ? 'var(--acc-ink)' : 'var(--red-ink)'
+  return (delta > 0) === up ? (ink ? 'var(--acc-ink)' : 'var(--acc)') : (ink ? 'var(--red-ink)' : 'var(--red)')
 }
 function GoalSheet({ close }) {
   const st = S()
@@ -1542,24 +1561,99 @@ function FavButton({ id }) {
   </button>
 }
 
+// Last time's top set: the heaviest work set, more reps breaking a tie (a warm-up never speaks
+// for the session). Read as the log reads it (setLabel), so a run or a hold says itself.
+function lastTopSet(exId, last, st) {
+  const work = (last?.sets || []).filter(x => !isWarmupRow(x))
+  if (!work.length) return ''
+  const top = work.reduce((a, x) => ((+x.w || 0) > (+a.w || 0) || ((+x.w || 0) === (+a.w || 0) && (+x.r || 0) > (+a.r || 0)) ? x : a))
+  return setLabel(exId, top, last.target, speedUnitOf(st))
+}
+
+// The picture at the top, and which one shows: Video (a demonstration clip), Steps (photos of the
+// movement, start to end), the catalogue's Animation, and Yours (your own photo or video, lib/ex-media.js).
+// Only what the exercise has is offered; with one there is no switch. Video and Steps come from
+// catalogue/demos and catalogue/photos (components/ExercisePictures.jsx), free licences, credited
+// under each file. Animation / Yours is the same choice the flip on the picture made, and is kept
+// (setExMediaShow); Video / Steps hold for the session, so the next sheet opens on them too.
+let demoPick = null
+function ExerciseMediaSwitch({ ex }) {
+  const entry = useStore(s => (ex && !isCustomEx(ex) ? s.S.exMedia?.[ex.id] : undefined))
+  const own = !isCustomEx(ex) && entry ? exMediaOf({ exMedia: { [ex.id]: entry } }, ex.id) : null
+  const demo = useDemoMedia(ex)
+  const hasSteps = !!demo && (demo.sequences.length > 0 || demo.steps.length > 0)
+  const [pick, setPick] = useState(demoPick)
+  const segs = [
+    demo?.video && { value: 'video', label: t('Video') },
+    hasSteps && { value: 'steps', label: t('Steps') },
+    ex.gif && { value: 'stock', label: t('Animation') },
+    own && { value: 'own', label: t('Yours') },
+  ].filter(Boolean)
+  const picture = own && (own.show === 'own' || !ex.gif) ? 'own' : 'stock'
+  const showing = segs.some(sg => sg.value === pick) ? pick : picture
+  const choose = v => {
+    if (v === 'video' || v === 'steps') { demoPick = v; setPick(v); return }
+    demoPick = null; setPick(null)
+    update(s => { setExMediaShow(s, ex.id, v) })
+  }
+  return <>
+    {segs.length > 1 && <Segmented className="ex-media-seg" options={segs} value={showing} onChange={choose} />}
+    {showing === 'video' || showing === 'steps'
+      ? <ExercisePictures ex={ex} only={showing} media={demo} />
+      : <Media ex={ex} noFlip />}
+  </>
+}
+
+// The exercise sheet (Ironvane redesign, step 4): learn it, see your numbers, then act. The name
+// and its tags; the picture; Last · Best · estimated 1RM; one block for how to do it (the
+// description, the steps and the YouTube search together, where they were two blocks far apart);
+// Add to this workout and Add to my plan as the main buttons; everything you set once for the
+// exercise folded under "Setup for this exercise"; Merge and Delete at the very end, apart (P6).
+// The form guidance and its text (EP23), fetched the first time an exercise sheet opens. It
+// renders nothing for an exercise without a guide.
+const ExerciseGuide = lazy(() => import('./components/ExerciseGuide.jsx'))
+
 function ExerciseDetail({ ex, close }) {
   useLang() // the description and steps arrive in their own chunk the first time a sheet asks
   // The best and last time in the exercise's own weight unit (#657).
   const st = exView(useStore(s => s.S), ex.id)
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
+  const active = useStore(s => s.S.active)
+  const inWorkout = !!active && (active.entries || []).some(e => e?.id === ex.id)
   const nfcOK = useNfcSupported()
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
   const [showOther, setShowOther] = useState(false)
+  const [setup, setSetup] = useState(false)
+  const [calc, setCalc] = useState(false)
+  // No one-rep max on an assistance machine: the load is the help you were given, so the
+  // calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
+  // stronger (issue #232). Cardio has none for the same kind of reason.
+  const hasOrm = !isCardio(ex) && !isAssisted(ex)
+  const orm = hasOrm ? best1RM(st, ex.id) : null
+  const lastVal = last ? lastTopSet(ex.id, last, st) : ''
+  const reps = modeOf({ id: ex.id }) === 'reps'
+  const steps = instrFor(ex)
+  const desc = descFor(ex)
+  const yt = youtubeSearchUrl(ex)
+  const addHere = () => {
+    if (!useStore.getState().S.active) return
+    if (addExerciseToSession(ex.id) < 0) return
+    closeThenNav(close, '/workout')
+    toast(t('“{0}” added', exerciseNameText(ex)))
+  }
+  const startWith = () => {
+    const now = S()
+    startBuiltSession([freestyleConfig(sessionHistory(now), { id: ex.id, ...pickedExerciseConfig(ex.id, undefined, now) })], null, close)
+  }
   return <>
     <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
       <h3 className={'exdetail-name ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
       <FavButton id={ex.id} />
     </div>
-    <Media ex={ex} />
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '2px 0 10px' }}>
       {detailTags(ex).map(tg => {
         if (tg.other) {
           if (!showOther) {
@@ -1573,49 +1667,87 @@ function ExerciseDetail({ ex, close }) {
         return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
       })}
     </div>
-    <ExerciseAliasesEditor key={ex.id} ex={ex} />
-    {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the animation
-        or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
-    <OwnExerciseMedia ex={ex} />
-    {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
-    {/* One line of text that wraps as a sentence: as a flex row, the last session became a
-        separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}
-    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtWeight(best, st.unit)}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
-    <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
-    {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
-    <FormVideosSection exId={ex.id} />
-    {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
-    {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
-    {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
-    {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
-    {modeOf({ id: ex.id }) === 'reps' && <>
-      <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} /></div>
-      <GymSplitRow ex={ex} />
-      <h4 className="sec">{t('Plate loading')}</h4>
-      <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
-      {canHaveStack(ex) && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
-    </>}
-    {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
-        above. A routine can still pick its own on the exercise's settings. */}
-    {isBellEx(ex) && <>
-      <h4 className="sec">{t('Weight means')}</h4>
-      <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
-        onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
-    </>}
+    <ExerciseMediaSwitch ex={ex} />
+    {/* Your numbers, one tile each. Last opens the history; the estimated 1RM opens the
+        calculator for a set you have not done (issue #18), so it is there before any history.
+        Each button's name starts with the words on it and then says where it leads, so someone
+        speaking the words they see reaches it (WCAG 2.5.3; axe label-content-name-mismatch). */}
+    {(last || best > 0 || hasOrm) && <div className="ex-nums" style={{ '--n': hasOrm ? 3 : 2 }}>
+      <button type="button" className="ex-num" disabled={!last} aria-label={nameIn(t('Last') + ' ' + (lastVal || '–'), t('History'))}
+        onClick={() => exerciseHistorySheet(ex.id)}>
+        <span className="ex-num-l">{t('Last')}{last && <Icon name="chevronRight" />}</span>
+        <bdi dir="ltr" className="ex-num-v">{lastVal || '–'}</bdi>
+      </button>
+      <div className="ex-num">
+        <span className="ex-num-l">{t('Best')}</span>
+        <bdi dir="ltr" className="ex-num-v">{best > 0 ? fmtWeight(best, st.unit) : '–'}</bdi>
+      </div>
+      {hasOrm && <button type="button" className={'ex-num' + (calc ? ' on' : '')} aria-expanded={calc}
+        aria-label={nameIn(t('Est. 1RM') + ' ' + (orm ? fmtNum(orm.est) + ' ' + st.unit : '–'), t('Estimated 1RM'))} onClick={() => setCalc(c => !c)}>
+        <span className="ex-num-l">{t('Est. 1RM')}<Icon name={calc ? 'chevronUp' : 'chevronDown'} /></span>
+        <bdi dir="ltr" className="ex-num-v">{orm ? fmtNum(orm.est) + ' ' + st.unit : '–'}</bdi>
+      </button>}
+    </div>}
+    {hasOrm && calc && <div className="ex-calc"><OneRM ex={ex} /></div>}
     {/* Beginner to Elite for the main lifts, from the best estimated 1RM against body weight
         (lib/strength-level.js). Hidden without a weigh-in. */}
     <StrengthLevelBlock exId={ex.id} />
-    {/* No one-rep max on an assistance machine: the load is the help you were given, so the
-        calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
-        stronger (issue #232). Cardio has none for the same kind of reason. */}
-    {!isCardio(ex) && !isAssisted(ex) && <OneRM ex={ex} />}
-    {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
-    {/* A YouTube search for the exercise, opened after the tap and only then (lib/youtube.js). A
-        video link of the exercise's own stays first, in the media above. */}
-    {youtubeSearchUrl(ex) && <Button variant="ghost" icon="play" style={{ marginTop: 6 }} onClick={() => openExternal(youtubeSearchUrl(ex))}>{t('Watch on YouTube')}</Button>}
+    {/* How to do it, in one place: what the exercise is, its steps, and a YouTube search opened
+        after the tap and only then (lib/youtube.js). */}
+    {(desc || steps.length > 0 || yt) && <div className="ex-learn">
+      <h4 className="sec">{t('How to')}{steps.length > 0 && getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4>
+      {desc && <div className="exnote">{desc}</div>}
+      {steps.length > 0 && <ol className="steps-list">{steps.map((x, i) => <li key={i}>{x}</li>)}</ol>}
+      {/* Form guidance for the exercises that have it (EP23): cues, common mistakes, where to
+          feel it, and the way to an easier or harder version. Its text arrives on demand. */}
+      <Suspense fallback={null}>
+        <ExerciseGuide ex={ex} onOpen={other => { close(); exerciseDetailSheet(other) }} />
+      </Suspense>
+      {yt && <Button variant="ghost" icon="play" className="ex-yt" onClick={() => openExternal(yt)}>{t('Watch on YouTube')}</Button>}
+    </div>}
+    {/* The main actions. In a workout that already has it, there is nothing to add: the plan is. */}
+    <div className={'ex-acts' + (inWorkout ? ' one' : '')}>
+      {!inWorkout && (active
+        ? <Button variant="primary" onClick={addHere}>{t('Add to this workout')}</Button>
+        : <Button variant="primary" onClick={startWith}>{t('Start workout')}</Button>)}
+      <Button variant={inWorkout ? 'primary' : 'tinted'} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
+    </div>
+    <FormVideosSection exId={ex.id} />
     {/* The community library: where a copy came from, and tips from people on this server. */}
     <CommunityBits ex={ex} />
+    {/* What you set once for this exercise, folded: it was most of the sheet. The tour's
+        "its own page" stop points here (lib/tour.js, c-unit). */}
+    <div className="ex-setup" data-tour="ex-unit">
+      <button type="button" className="ex-setup-h" aria-expanded={setup} onClick={() => setSetup(o => !o)}>
+        <span className="ex-setup-m"><span className="ex-setup-t">{t('Setup for this exercise')}</span>
+          <span className="ex-setup-s">{t('Weight unit, plates and bar, other names, your media')}</span></span>
+        <Icon name={setup ? 'chevronUp' : 'chevronDown'} />
+      </button>
+      {setup && <div className="ex-setup-b">
+        {isCustomEx(ex) && <Button icon="pencil" style={{ marginBottom: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
+        {reps && <>
+          <h4 className="sec">{t('Weight unit')}</h4>
+          <ExUnitRow ex={ex} />
+          <GymSplitRow ex={ex} />
+          <h4 className="sec">{t('Plate loading')}</h4>
+          <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
+          {canHaveStack(ex) && <><h4 className="sec">{t('Weight stack')}</h4><StackEditor ex={ex} /></>}
+        </>}
+        {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
+            above. A routine can still pick its own on the exercise's settings. */}
+        {isBellEx(ex) && <>
+          <h4 className="sec">{t('Weight means')}</h4>
+          <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
+            onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
+        </>}
+        <ExerciseAliasesEditor key={ex.id} ex={ex} />
+        {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the
+            animation or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
+        <OwnExerciseMedia ex={ex} />
+        {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
+        {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 8 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
+      </div>}
+    </div>
     {/* The catalogue is community-edited (catalogue/README.md): a wrong muscle, a clumsy step or a
         missing translation is one tap from an issue that already names the exercise. */}
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
@@ -1623,8 +1755,8 @@ function ExerciseDetail({ ex, close }) {
       <Icon name="pencil" /> {t('Suggest a fix for this exercise')}</a>}
     {/* The end of the sheet: what makes this exercise go away. Merge into… (#656,
         lib/exercise-merge.js) moves its history and plans onto another and then deletes or hides
-        it, so it sits here with Delete, above it, rather than between History and the settings
-        (1.4.5 features pass). Delete stays the last row, red and on its own (P6). Both ask. */}
+        it, so it sits here with Delete, above it (1.4.5 features pass). Delete stays the last
+        row, red and on its own (P6). Both ask. */}
     {canMerge && <div className="sect-b ex-del">
       <button type="button" className="lrow tap" onClick={() => mergeExerciseFlow(ex, close)}>
         <Icon name="merge" className="ex-del-i ex-merge-i" /><span className="lrow-m"><span className="lrow-t">{t('Merge into…')}</span></span>
@@ -1756,30 +1888,49 @@ function RepRecords({ rows, unit, assisted }) {
 export const exerciseHistorySheet = exId => ui().openSheet(close => <ExerciseHistory exId={exId} close={close} />)
 
 /* ============================ add to routine ============================ */
+// One exercise, or several picked together in Library: the routine is chosen once, then each
+// exercise gets its own sets, reps and weight in turn. Closing one of those stops there; the ones
+// already confirmed stay added.
 function AddToRoutine({ ex, close }) {
   const st = useStore(s => s.S)
+  const list = Array.isArray(ex) ? ex : [ex]
+  const names = list.map(e => exerciseNameText(e)).join(', ')
   const pick = rid => {
     close()
     const isNew = rid === '_new'
-    exConfigSheet(ex, null, cfg => {
-      update(s => {
-        let r = isNew ? { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] } : s.routines.find(x => x.id === rid)
-        if (isNew) s.routines.push(r)
-        if (r) r.ex.push({ id: ex.id, ...cfg })
-      })
-      const r = isNew ? S().routines[S().routines.length - 1] : st.routines.find(x => x.id === rid)
-      toast(t('“{0}” added to {1}', exerciseNameText(ex), r ? r.name : t('routine')))
+    const routineId = isNew ? uid() : rid
+    const added = []
+    const done = () => {
+      const r = S().routines.find(x => x.id === routineId)
+      toast(t('“{0}” added to {1}', added.map(e => exerciseNameText(e)).join(', '), r ? r.name : t('routine')))
       if (isNew && r) nav('/plan/r/' + r.id)
-    }, null, isNew ? null : st.routines.find(x => x.id === rid))
+    }
+    const step = i => {
+      if (i >= list.length) { done(); return }
+      const e = list[i]
+      exConfigSheet(e, null, cfg => {
+        update(s => {
+          let r = s.routines.find(x => x.id === routineId)
+          if (!r && isNew) { r = { id: routineId, name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }; s.routines.push(r) }
+          if (r) r.ex.push({ id: e.id, ...cfg })
+        })
+        added.push(e)
+        // The next exercise's sheet opens once this one has closed.
+        if (i + 1 < list.length) setTimeout(() => step(i + 1), 0)
+        else done()
+      }, null, isNew ? null : st.routines.find(x => x.id === rid))
+    }
+    step(0)
   }
+  const one = list.length === 1
   return <>
-    <h3 className={exerciseNameClass(ex)}>{t('Add “{0}”', exerciseNameFor(ex))}</h3>
+    <h3 className={one ? exerciseNameClass(list[0]) : ''}>{t('Add “{0}”', one ? exerciseNameFor(list[0]) : names)}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Pick a routine. Sets, reps and weight come next.')}</div>
     <div className="list">
       {st.routines.map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
+        {list.some(e => r.ex.some(x => x.id === e.id)) && <span className="tag">{t('already in')}</span>}<Icon name="plus" className="chev" />
       </div>)}
       <div className="item" {...tappable(() => pick('_new'))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="plusCircle" /></span>
         <div className="grow"><div className="tt">{t('New routine')}</div><div className="ss">{t('Create one and start with this exercise')}</div></div><Icon name="plus" className="chev" /></div>
@@ -2059,7 +2210,11 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   // favourites leading within each half.
   // While searching, what you have logged or planned follows right after them.
   const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
-  const ranked = q.trim() ? sortYoursFirst(narrowedList, st, usage) : sortFavouritesFirst(narrowedList, st)
+  // Someone who has not trained or planned anything yet sees the common lifts first, not A to Z;
+  // favourites still lead (release pass).
+  const fresh = !q.trim() && !like && !Object.keys(usage).length
+  const baseList = fresh ? staplesFirst(narrowedList) : narrowedList
+  const ranked = q.trim() ? sortYoursFirst(baseList, st, usage) : sortFavouritesFirst(baseList, st)
   const f = bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked
   const showSuggestions = !!like && !q.trim() && bp !== '★' && bp !== '☆'
   // A planned backup is already listed first, so it is not suggested a second time.
@@ -4824,7 +4979,7 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // on Discard: its bar is app-wide and would chime over the summary, and its callback writes
   // into s.active, which is gone. What it held is not logged, like any set left unchecked.
   useUI.getState().stopWork()
-  beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
+  cue('session-done', st)
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} close={close} />, { kind: 'center', locked: true, wide: true })
 }
 

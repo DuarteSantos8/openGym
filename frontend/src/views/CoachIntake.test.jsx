@@ -490,6 +490,17 @@ describe('CoachIntake — the answers themselves', () => {
 })
 
 describe('CoachIntake — building the plan', () => {
+  it('keeps the starter through first-time consent and intake without ordering a plan', () => {
+    const starter = 'Make today shorter'
+    act(() => root.render(<CoachIntake starter={starter} />))
+    walkTo('Almost there')
+    expect(footBtn().textContent).toContain('Continue')
+    cont()
+    expect(mocks.S.coach.profile).toBeTruthy()
+    expect(requestPlan).not.toHaveBeenCalled()
+    expect(mocks.nav).toHaveBeenCalledWith('/coach', { replace: true, state: { coachStarter: starter } })
+  })
+
   it('saves the answers, opens the thread with one intake line, and asks for a plan', async () => {
     mount(); walkTo('Almost there')
     let resolve

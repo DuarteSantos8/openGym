@@ -1,0 +1,134 @@
+{
+  "runtimeSha": "c0393641",
+  "date": "2026-11-14",
+  "node": "22.23.5",
+  "method": "Independent browser-harness native coordinate clicks after elementFromPoint checks; synthetic guest on isolated localhost origin and throwaway API DATA_DIR. Licensed exercise media blocked before navigation. Onboarding dismissed through the UI.",
+  "normal": {
+    "passed": true,
+    "restTimerVisible": true,
+    "savedAfterReload": {
+      "saved": {
+        "id": "mwfphkf5cmn09",
+        "d": "2026-11-14",
+        "start": 1794618447520,
+        "end": 1794618448783,
+        "routineIds": [
+          "ep02-parent-r"
+        ],
+        "routineId": "ep02-parent-r",
+        "name": "EP02 parent synthetic",
+        "bw": null,
+        "entries": [
+          {
+            "id": "0025",
+            "sets": [
+              {
+                "w": 40,
+                "r": 10,
+                "done": true,
+                "at": 1794618447830
+              },
+              {
+                "w": 40,
+                "r": 10,
+                "done": false
+              },
+              {
+                "w": 40,
+                "r": 10,
+                "done": false
+              }
+            ],
+            "topW": 40,
+            "target": {
+              "id": "0025",
+              "sets": 3,
+              "reps": 10,
+              "weight": 40
+            },
+            "rid": "ep02-parent-r",
+            "planned": {
+              "sets": 3,
+              "reps": 10,
+              "weight": 40
+            }
+          }
+        ],
+        "prs": [
+          "0025"
+        ],
+        "vol": 400
+      },
+      "active": null
+    }
+  },
+  "reduce": {
+    "passed": true,
+    "restTimerVisible": true,
+    "trustedSetClick": true,
+    "clickToLocalStorageMs": 7.6,
+    "savedAfterReload": {
+      "theme": "light",
+      "saved": {
+        "id": "mwfpjhoa4f5um",
+        "d": "2026-11-14",
+        "start": 1794618537273,
+        "end": 1794618538409,
+        "routineIds": [
+          "ep02-parent-r"
+        ],
+        "routineId": "ep02-parent-r",
+        "name": "EP02 parent synthetic",
+        "bw": null,
+        "entries": [
+          {
+            "id": "0025",
+            "sets": [
+              {
+                "w": 40,
+                "r": 10,
+                "done": true,
+                "at": 1794618537560
+              },
+              {
+                "w": 40,
+                "r": 10,
+                "done": false
+              },
+              {
+                "w": 40,
+                "r": 10,
+                "done": false
+              }
+            ],
+            "topW": 40,
+            "target": {
+              "id": "0025",
+              "sets": 3,
+              "reps": 10,
+              "weight": 40
+            },
+            "rid": "ep02-parent-r",
+            "planned": {
+              "sets": 3,
+              "reps": 10,
+              "weight": 40
+            }
+          }
+        ],
+        "prs": [
+          "0025"
+        ],
+        "vol": 400
+      },
+      "active": null
+    }
+  },
+  "limits": [
+    "One successful workflow per motion setting; not a statistical performance comparison.",
+    "Initial probe setup corrections were needed: hash navigation did not reload the injected fixture; onboarding covered Start; direct mouse dispatch was replaced by browser-harness click_at_xy. These were not successful test runs.",
+    "Normal-mode capture-listener microtask ran before the React handler and was rejected as a timing measurement. Reduced mode measured the actual localStorage.setItem call.",
+    "No authenticated account, native device, or live provider was exercised."
+  ],
+  "cleanup": "Own API/Vite processes stopped and both own browser tabs closed."
+}

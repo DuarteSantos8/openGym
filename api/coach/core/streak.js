@@ -97,11 +97,15 @@ export function ruleAt(timeline, wk) {
 export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
   const ws = weekStartOf(S);
   const cur = weekKey(today, ws);
-  const trained = new Set();
+  const trained = new Set(), mobility = new Map();
   for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
     if (!w || !isISO(w.d)) continue;
     const k = weekKey(w.d, ws);
     if (k <= cur) trained.add(k);
+    if (w.restDayMobility === w.d && w.d <= today && w.id) {
+      if (!mobility.has(k)) mobility.set(k, new Set());
+      mobility.get(k).add(w.id);
+    }
   }
   // Recovery sessions (frontend/src/lib/recovery-sessions.js) count only when the profile opted in:
   // a sauna week is a week you showed up for yourself, but not everyone wants it to keep a streak.
@@ -143,7 +147,7 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
   if (wk < floor) wk = floor;
   let run = 0, best = 0, freezes = 0, earned = 0, frozen = [], excused = [];
   for (let i = 0; i <= MAX_WEEKS && wk <= cur; i++, wk = plusWeek(wk)) {
-    let s = 'open', got = false, why = null;
+    let s = 'open', got = false, mobilityEarned = false, why = null;
     const rule = ruleAt(timeline, wk), cap = STREAK_RULES[rule].max;
     // A rule that keeps fewer: the bank shrinks to it, the streak stays as counted.
     if (freezes > cap) freezes = cap;
@@ -151,6 +155,7 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
       run++;
       earned++;
       if (earned % FREEZE_EVERY === 0 && freezes < cap) { freezes++; got = true; }
+      if (mobility.get(wk)?.size >= 2 && freezes < cap) { freezes++; mobilityEarned = true; }
       s = 'on';
     } else if (wk !== cur) {
       const year = wk.slice(0, 4), used = usedIn.get(year) || 0;
@@ -160,7 +165,8 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
       } else if (freezes > 0) { freezes--; frozen.push(wk); s = 'frozen'; } else { s = run > 0 ? 'broke' : 'missed'; run = 0; earned = 0; freezes = 0; frozen = []; excused = []; }
     }
     if (run > best) best = run;
-    if (log) log.set(wk, why ? { s, run, bank: freezes, earned: got, rule, tag: why } : { s, run, bank: freezes, earned: got, rule });
+    if (log) log.set(wk, { s, run, bank: freezes, earned: got || mobilityEarned, rule,
+      ...(why ? { tag: why } : {}), ...(mobilityEarned ? { mobilityEarned: true, trainedFreeze: got } : {}) });
   }
   return {
     current: run,

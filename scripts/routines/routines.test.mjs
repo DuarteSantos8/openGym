@@ -39,6 +39,25 @@ test('every routine in routines/ passes the validator', () => {
   assert.ok(repo.routines.some(r => r.source === 'starter' && r.builtin === 'ppl' && r.sessions.length === 3))
 })
 
+test('validates each playable Learn session and keeps drafts outside the published library', () => {
+  const ids = ['cooldown-general', 'desk-break', 'mobility-hips', 'mobility-shoulders',
+    'mobility-spine', 'warmup-general', 'warmup-lower', 'warmup-upper']
+  assert.deepEqual((repo.learn || []).map(r => r.slug).sort(), ids)
+  assert.ok(repo.routines.every(r => r.source !== 'learn'))
+  for (const r of repo.learn) {
+    assert.ok(r.duration >= 5 && r.duration <= 12, r.slug)
+    assert.match(r.description, /source:/i)
+    assert.match(r.description, /draft/i)
+    for (const session of r.sessions) {
+      for (const exercise of session.exercises) {
+        const e = cat.get(exercise.id)
+        assert.equal(e?.eq, 'body weight', exercise.id)
+        assert.deepEqual(e.needs || [], [], exercise.id)
+      }
+    }
+  }
+})
+
 test('a starter routine takes its days from the app', () => {
   const r = repo.routines.find(x => x.id === 'starter/5x5')
   assert.equal(r.sessions[0].exercises[0].id, '0043')

@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import SyncBanner, { PENDING_GRACE_MS, useConnectionTrouble } from './SyncBanner.jsx'
 import { connectionView } from './ServerSync.jsx'
+import { setCloudAccount } from '../lib/account-badge.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -41,6 +42,7 @@ vi.mock('../store/useUI.js', () => {
 vi.mock('react-router-dom', () => ({ useNavigate: () => to => mocks.navs.push(to) }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 vi.mock('../lib/demo.js', () => ({ get DEMO() { return mocks.DEMO } }))
+vi.mock('../lib/edition.js', () => ({ isCloud: () => !!mocks.cloud }))
 vi.mock('../lib/api.js', () => ({ webauthnOK: () => mocks.webauthn, passkeyLogin: (...a) => mocks.passkeyLogin(...a) }))
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: vi.fn() }))
 // What the connect sheet was opened with is the point; its own form is tested elsewhere.
@@ -166,7 +168,7 @@ describe('not connected — it says so, and what to do', () => {
   it('an answer that is not openGym\'s (a proxy\'s login page) is named as such', () => {
     mocks.sync = sync('error', { lastError: { status: 200, code: 'bad-response' } })
     render()
-    expect(text()).toBe('Your server’s address answered with something other than openGym (HTTP 200). Your changes are kept here.')
+    expect(text()).toBe('Your server’s address answered with something other than Ironvane (HTTP 200). Your changes are kept here.')
   })
 
   it('phone refused by its server: "Pair again" opens the connect sheet with the address it had', () => {
@@ -430,5 +432,56 @@ describe('with the connection status switched off', () => {
     both()
     expect(bar()).not.toBeNull()
     expect(trouble()).toBe(false)
+  })
+})
+
+/* Found by the owner on the real project (Cloud edition): signed in to their account, the app
+   still said "Guest mode" and offered "Sign in", as if it did not know them. With no server of
+   its own the app is on this device either way, but who is signed in is not a guess. */
+describe('the hosted account in the indicator', () => {
+  const local = () => sync('local', { server: null })
+  it('someone signed in to their account is named, with their training said to be on this device', () => {
+    const view = connectionView(local(), { account: { email: 'sam@example.com', name: 'Sam' }, cloud: true })
+    expect(view.banner).toBe('Signed in as Sam. Your training is stored on this device.')
+    expect(view.line).toBe('Signed in as Sam')
+    expect(view.tone).toBe('quiet')
+    expect(view.action).toBe('account')
+    expect(connectionView(local(), { account: { email: 'sam@example.com', name: '' }, cloud: true }).line).toBe('Signed in as sam@example.com')
+  })
+
+  it('in the Cloud edition a guest is offered the account, not a sign-in to a server that is not there', () => {
+    const view = connectionView(local(), { account: null, cloud: true })
+    expect(view.banner).toBe('Guest mode: your data lives only in this browser.')
+    expect(view.action).toBe('account')
+  })
+
+  it('the default edition says what it always said, whatever is handed in', () => {
+    const view = connectionView(local(), { account: { email: 'sam@example.com', name: 'Sam' }, cloud: false })
+    expect(view.banner).toBe('Guest mode: your data lives only in this browser.')
+    expect(view.action).toBe('signin')
+  })
+
+  it('a phone, or a browser that is on a server, is not touched', () => {
+    expect(connectionView(local(), { mobile: true, account: { email: 'sam@example.com' }, cloud: true }).action).toBe('connect')
+    expect(connectionView(sync('ok'), { account: { email: 'sam@example.com' }, cloud: true }).line).toBe('All synced')
+  })
+
+  it('the button goes to the account', () => {
+    Object.assign(mocks, { user: null, guest: true, sync: local() })
+    setCloudAccount({ email: 'sam@example.com', name: 'Sam' })
+    mocks.cloud = true
+    try {
+      render()
+      expect(host.querySelector('.conn-t').textContent).toBe('Signed in as Sam. Your training is stored on this device.')
+      expect(host.querySelector('.conn-a').textContent).toBe('Account')
+      act(() => host.querySelector('button.conn').click())
+      expect(mocks.navs).toEqual(['/account'])
+      // and it follows the account: signed out, the guest line and "Sign in" to the account
+      act(() => setCloudAccount(null))
+      expect(host.querySelector('.conn-t').textContent).toBe('Guest mode: your data lives only in this browser.')
+      expect(host.querySelector('.conn-a').textContent).toBe('Sign in')
+      act(() => host.querySelector('button.conn').click())
+      expect(mocks.navs).toEqual(['/account', '/account'])
+    } finally { setCloudAccount(null); mocks.cloud = false }
   })
 })

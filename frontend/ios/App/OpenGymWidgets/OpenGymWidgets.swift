@@ -171,7 +171,7 @@ struct ConfigurableWidget: Widget {
         AppIntentConfiguration(kind: "OpenGymPick", intent: GymWidgetIntent.self, provider: GymProvider()) { entry in
             ConfigurableWidgetView(entry: entry)
         }
-        .configurationDisplayName("openGym")
+        .configurationDisplayName("Ironvane")
         .description("Your streak, weight goal, week, next workout, records or volume. You pick.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }

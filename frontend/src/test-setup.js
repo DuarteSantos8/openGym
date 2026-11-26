@@ -29,3 +29,22 @@ export function ensureWebStorage(g = globalThis) {
 }
 
 ensureWebStorage()
+
+// A unit test never opens a connection. happy-dom's fetch is a real one: a relative address
+// becomes http://localhost:3000/..., a socket is opened, refused, and the refusal is logged some
+// time later. Code under test survives that (it catches), but the log does not always arrive
+// before the worker closes, and then the whole run fails with every test passing ("Closing rpc
+// while onUserConsoleLog was pending"). So in a DOM environment fetch refuses at once, the way a
+// browser with no network does (a TypeError), and names what was asked for. A test that needs an
+// answer stubs fetch or passes one in, as most already do; its stub replaces this.
+export function refuseNetwork(g = globalThis) {
+  if (typeof g.document === 'undefined') return
+  const refuse = input => {
+    const url = typeof input === 'string' ? input : input?.url || String(input)
+    return Promise.reject(new TypeError(`fetch is not available in a unit test (asked for ${url}). Stub it, or pass a fetch in.`))
+  }
+  Object.defineProperty(g, 'fetch', { value: refuse, configurable: true, writable: true })
+  if (g.window && g.window !== g) { try { g.window.fetch = refuse } catch { /* the global one is what code calls */ } }
+}
+
+refuseNetwork()

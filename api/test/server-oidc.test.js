@@ -25,7 +25,8 @@ async function setup(t, { env = {}, users = [], creds = [], mock: mockOpts = {} 
   const mock = await startMockOidc(mockOpts);
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-oidc-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
-  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users, creds, subs: [], invites: [] }));
+  // `users` may be a function of the mock provider, for profiles that start out linked to it.
+  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: typeof users === 'function' ? users(mock) : users, creds, subs: [], invites: [] }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: {
@@ -74,7 +75,83 @@ const landed = r => new URL(r.location, 'http://x').searchParams;
 test('config: the provider button is public, and so is OIDC_ONLY', async t => {
   const h = await setup(t, { env: { OIDC_ONLY: '1' } });
   const cfg = await (await h.get('/api/config')).json();
-  assert.deepEqual(cfg.oidc, { label: 'VoidAuth', only: true });
+  assert.deepEqual(cfg.oidc, { label: 'VoidAuth', only: true, webOrigin: ORIGIN, deleteProfile: true });
+});
+
+test('hosted deletion consumes a proof, removes the profile, and never opens a session', async t => {
+  const h = await setup(t);
+  const signedIn = await roundTrip(h);
+  const profileId = h.db().users[0].id;
+  const proof = await roundTrip(h, { query: '?mode=delete' });
+  assert.match(proof.location, /server-delete=ready$/);
+  assert.equal(proof.session, null);
+  const cookie = cookieNamed(proof.cb, 'gymoidc-delete');
+  assert.ok(cookie);
+
+  const legacy = await h.post('/api/oidc/delete-profile', { subject: 'user-1' }, { cookie });
+  assert.equal(legacy.status, 400);
+  assert.equal(legacy.cookie, null);
+  assert.equal(h.db().users.length, 1);
+
+  const deletion = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie });
+  assert.equal(deletion.status, 200);
+  assert.equal(deletion.cookie, null);
+  assert.deepEqual(deletion.body, { deleted: true, profileId });
+  assert.equal(h.db().users.length, 0);
+  assert.equal((await h.get('/api/me', { cookie: signedIn.session })).status, 401);
+  assert.equal((await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie })).status, 403);
+
+  const retry = await roundTrip(h, { query: '?mode=delete' });
+  const absent = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: cookieNamed(retry.cb, 'gymoidc-delete') });
+  assert.deepEqual(absent, { status: 200, body: { deleted: false }, cookie: null });
+});
+
+test('hosted deletion refuses a disabled profile and never creates a session for it', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  h.mock.next = { sub: 'admin', name: 'Admin' };
+  const admin = await roundTrip(h);
+  h.mock.next = { sub: 'member', name: 'Member' };
+  await roundTrip(h);
+  const memberId = h.db().users.find(user => user.oidc?.sub === 'member').id;
+  const disabled = await h.post('/api/admin/user/disable', { id: memberId, disabled: true }, { cookie: admin.session });
+  assert.equal(disabled.status, 200);
+
+  const proof = await roundTrip(h, { query: '?mode=delete' });
+  const deletion = await h.post('/api/oidc/delete-profile', { subject: 'member', confirm: 'delete' }, { cookie: cookieNamed(proof.cb, 'gymoidc-delete') });
+  assert.equal(deletion.status, 403);
+  assert.equal(deletion.body.code, 'disabled');
+  assert.equal(deletion.cookie, null);
+  assert.equal(h.db().users.length, 2);
+});
+
+test('hosted deletion requires auth_time in the ID token even when userinfo supplies an old value', async t => {
+  const h = await setup(t, { mock: { userinfoGroups: true } });
+  h.mock.tamper = { claims: { auth_time: undefined }, userinfo: { auth_time: Math.floor(Date.now() / 1000) - 3600 } };
+
+  const proof = await roundTrip(h, { query: '?mode=delete' });
+  assert.match(proof.location, /server-delete=failed$/);
+  assert.equal(cookieNamed(proof.cb, 'gymoidc-delete'), null);
+  assert.equal(proof.session, null);
+});
+
+test('hosted deletion leaves an unrelated session and the last admin intact', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  const admin = await roundTrip(h);
+  h.mock.next = { sub: 'member', name: 'Member' };
+  const member = await roundTrip(h);
+  h.mock.next = { sub: 'user-1', name: 'Ana' };
+
+  const proof = await roundTrip(h, { query: '?mode=delete', cookie: member.session });
+  const conflict = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: [member.session, cookieNamed(proof.cb, 'gymoidc-delete')].join('; ') });
+  assert.equal(conflict.status, 409);
+  assert.equal((await h.get('/api/me', { cookie: member.session })).status, 200);
+
+  const retry = await roundTrip(h, { query: '?mode=delete', cookie: admin.session });
+  const blocked = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: [admin.session, cookieNamed(retry.cb, 'gymoidc-delete')].join('; ') });
+  assert.equal(blocked.status, 409);
+  assert.equal(blocked.body.code, 'last-admin');
+  assert.equal((await h.get('/api/me', { cookie: admin.session })).status, 200);
+  assert.equal(h.db().users.length, 2);
 });
 
 test('start: PKCE S256, a state and a nonce, and a short-lived flow cookie', async t => {
@@ -329,6 +406,65 @@ test('unlink: the provider is never removed when it is the last way in', async t
   const un = await h.post('/api/oidc/unlink', { provider: true }, { cookie: r.session });
   assert.equal(un.status, 409);
   assert.equal(un.body.code, 'last-way-in');
+});
+
+// Found in review of #88. Where the provider is the only way in for members, a passkey does not
+// sign a member in (the test above), so it is not another way in: unlinking with one left a
+// profile nothing could open. An admin's passkey does sign them in, so they may unlink.
+test('OIDC_ONLY: a member keeps the provider link, since nothing else would sign them in; an admin may drop it', async t => {
+  const member = softPasskey(ORIGIN), admin = softPasskey(ORIGIN);
+  const created = new Date().toISOString();
+  const h = await setup(t, {
+    env: { OIDC_ONLY: '1' }, creds: [member.row('u_m'), admin.row('u_a')],
+    users: mock => [
+      { id: 'u_m', name: 'Mo', created, oidc: { iss: mock.issuer, sub: 'mo' } },
+      { id: 'u_a', name: 'Al', created, admin: true, owner: true, oidc: { iss: mock.issuer, sub: 'al' } }]
+  });
+  h.mock.next = { sub: 'mo', name: 'Mo' };
+  const mo = await roundTrip(h);
+  assert.equal((await (await h.get('/api/me', { cookie: mo.session })).json()).user.id, 'u_m');
+  const s1 = await h.post('/api/login/options', {});
+  const refused = await h.post('/api/oidc/unlink', { cid: s1.body.cid, credential: member.assertion(s1.body.options.challenge) }, { cookie: mo.session });
+  assert.equal(refused.status, 409);
+  assert.equal(refused.body.code, 'last-way-in');
+  assert.equal(h.db().users.find(u => u.id === 'u_m').oidc.sub, 'mo');
+
+  h.mock.next = { sub: 'al', name: 'Al' };
+  const al = await roundTrip(h);
+  const s2 = await h.post('/api/login/options', {});
+  const done = await h.post('/api/oidc/unlink', { cid: s2.body.cid, credential: admin.assertion(s2.body.options.challenge) }, { cookie: al.session });
+  assert.equal(done.status, 200);
+  assert.equal(h.db().users.find(u => u.id === 'u_a').oidc, undefined);
+});
+
+// Found in review of #92. Unlinking takes away an admin role the provider's groups gave, but
+// never the owner's (applyRoles). So an owner made admin that way keeps a passkey that works and
+// may unlink; any other group-made admin would be a member again, with nothing to sign in with.
+test('OIDC_ONLY with a role map: the owner may unlink, another group-made admin may not', async t => {
+  const owner = softPasskey(ORIGIN), ops = softPasskey(ORIGIN);
+  const created = new Date().toISOString();
+  const h = await setup(t, {
+    env: { OIDC_ONLY: '1', OIDC_ROLE_MAP: 'admin=ops' }, creds: [owner.row('u_o'), ops.row('u_g')],
+    users: mock => [
+      { id: 'u_o', name: 'Ow', created, admin: true, adminFrom: 'oidc', owner: true, oidc: { iss: mock.issuer, sub: 'ow' } },
+      { id: 'u_g', name: 'Gi', created, admin: true, adminFrom: 'oidc', oidc: { iss: mock.issuer, sub: 'gi' } }]
+  });
+  h.mock.next = { sub: 'gi', name: 'Gi', groups: ['ops'] };
+  const gi = await roundTrip(h);
+  const s1 = await h.post('/api/login/options', {});
+  const refused = await h.post('/api/oidc/unlink', { cid: s1.body.cid, credential: ops.assertion(s1.body.options.challenge) }, { cookie: gi.session });
+  assert.equal(refused.status, 409);
+  assert.equal(refused.body.code, 'last-way-in');
+  assert.equal(h.db().users.find(u => u.id === 'u_g').oidc.sub, 'gi');
+
+  h.mock.next = { sub: 'ow', name: 'Ow', groups: ['ops'] };
+  const ow = await roundTrip(h);
+  const s2 = await h.post('/api/login/options', {});
+  const done = await h.post('/api/oidc/unlink', { cid: s2.body.cid, credential: owner.assertion(s2.body.options.challenge) }, { cookie: ow.session });
+  assert.equal(done.status, 200);
+  const kept = h.db().users.find(u => u.id === 'u_o');
+  assert.equal(kept.oidc, undefined);
+  assert.equal(kept.admin, true, 'the owner stays admin without the link');
 });
 
 test('provider proof: fresh after a provider sign-in, refused on a session without one', async t => {

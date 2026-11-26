@@ -1,0 +1,63 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v4.1.12 /code/openGym-fork/frontend
+
+ ❯ src/lib/media-sync.test.js (31 tests | 1 failed) 14277ms
+     × signed in, evicts synced main files over the cap — never a pending one or a poster the state shows 11818ms
+DOMException [NotSupportedError]: Failed to load iframe page "https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1". Iframe page loading is disabled.
+    at #loadPage (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:333:27)
+    at [connectedToDocument] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at [connectedToNode] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:801:53)
+    at [appendChild] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:421:45)
+    at [appendChild] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/element/Element.js:1102:62)
+    at HTMLDivElement.appendChild (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:314:48)
+    at insertOrAppendPlacementNode (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14263:62)
+    at commitPlacement (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14337:11)
+    at runWithFiberInDEV (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at commitReconciliationEffects (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:16330:11)
+DOMException [NotSupportedError]: Failed to load iframe page "https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1". Iframe page loading is disabled.
+    at #loadPage (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:333:27)
+    at [connectedToDocument] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at [connectedToNode] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:801:53)
+    at [appendChild] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:421:45)
+    at [appendChild] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/element/Element.js:1102:62)
+    at HTMLDivElement.appendChild (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:314:48)
+    at insertOrAppendPlacementNode (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14263:62)
+    at commitPlacement (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14337:11)
+    at runWithFiberInDEV (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at commitReconciliationEffects (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:16330:11)
+DOMException [NotSupportedError]: Failed to load iframe page "https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1". Iframe page loading is disabled.
+    at #loadPage (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:333:27)
+    at [connectedToDocument] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at [connectedToNode] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:801:53)
+    at [appendChild] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:421:45)
+    at [appendChild] (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/element/Element.js:1102:62)
+    at HTMLDivElement.appendChild (file:///code/openGym-fork/frontend/node_modules/happy-dom/lib/nodes/node/Node.js:314:48)
+    at insertOrAppendPlacementNode (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14263:62)
+    at commitPlacement (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:14337:11)
+    at runWithFiberInDEV (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at commitReconciliationEffects (/code/openGym-fork/frontend/node_modules/react-dom/cjs/react-dom-client.development.js:16330:11)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/media-sync.test.js > localMediaGc > signed in, evicts synced main files over the cap — never a pending one or a poster the state shows
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/lib/media-sync.test.js:325:3
+    323|   })
+    324|
+    325|   it('signed in, evicts synced main files over the cap — never a pendi…
+       |   ^
+    326|     const S = { customEx: [
+    327|       { id: 'x', media: refOf(hex('a'), hex('b'), { size: 200 * MB }) …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 662 passed (663)
+      Tests  1 failed | 7952 passed (7953)
+   Start at  09:30:05
+   Duration  442.49s (transform 46.62s, setup 119.68s, import 244.69s, tests 246.18s, environment 143.20s)

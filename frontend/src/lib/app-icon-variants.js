@@ -6,8 +6,8 @@
 // (null: the primary icon) and `android` the activity-alias in AndroidManifest.xml. `art` is a
 // hand-made SVG the script renders instead of the glyph; `bg`/`fg` are then just its main colours.
 export const APP_ICON_VARIANTS = [
-  { id: 'default', name: 'Original', bg: '#0c0e12', fg: '#a3e635', ios: null, android: 'IconDefault' },
-  { id: 'light', name: 'Light', bg: '#ffffff', fg: '#65a30d', ios: 'AppIcon-Light', android: 'IconLight' },
+  { id: 'default', name: 'Original', bg: '#0c0e12', fg: '#ff6b2c', ios: null, android: 'IconDefault' },
+  { id: 'light', name: 'Light', bg: '#ffffff', fg: '#e8590c', ios: 'AppIcon-Light', android: 'IconLight' },
   { id: 'mono', name: 'Mono', bg: '#0c0e12', fg: '#f2f2f7', ios: 'AppIcon-Mono', android: 'IconMono' },
   { id: 'neon', name: 'Green', bg: '#a3e635', fg: '#0c0e12', ios: 'AppIcon-Neon', android: 'IconNeon' },
   { id: 'sky', name: 'Blue', bg: '#0a84ff', fg: '#ffffff', ios: 'AppIcon-Sky', android: 'IconSky' },

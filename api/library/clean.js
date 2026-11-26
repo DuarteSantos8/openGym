@@ -202,6 +202,10 @@ export function cleanPayload(type, p) {
       if (z) out.freeze = z;
       if (HEX.test(p.accent || '') || /^[a-z]{3,12}$/.test(p.accent || '')) out.accent = String(p.accent).toLowerCase();
       if (!Object.keys(out).length) throw bad('bad-payload', 'a look needs an icon or a colour');
+      // Ironvane: a preset drawn from its colour travels by name too, and the Bold/Refined look with
+      // it. The receiving app checks both against what it knows; here only the shape.
+      if (out.accent && /^[a-z]{3,12}$/.test(p.preset || '')) out.preset = p.preset;
+      if (p.look === 'bold' || p.look === 'refined') out.look = p.look;
       return out;
     }
     case 'measures': {

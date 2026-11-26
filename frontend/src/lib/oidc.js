@@ -5,6 +5,8 @@ import { t } from './i18n-core.js'
 import { appBase } from './app-base.js'
 
 export const oidcOn = config => !!config?.oidc
+// The flow cookie belongs to the browser origin that starts sign-in.
+export const oidcWebOn = config => oidcOn(config) && (!config.oidc.webOrigin || config.oidc.webOrigin === globalThis.location?.origin)
 export const oidcOnly = config => !!config?.oidc?.only
 export const oidcLabel = config => String(config?.oidc?.label || 'SSO')
 

@@ -1,0 +1,130 @@
+
+> opengym-mcp@0.1.0 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v4.1.12 /code/openGym-fork/mcp
+
+stderr | test/write-tools.test.js > log_workout writes through the server > the document the server sent, plus the workout, with the revision and write id it was read at
+[opengym-mcp] log_workout saved mw12j4lzcu0p2 for 2026-11-14 (1 exercises, 3 sets), rev 8
+
+stderr | test/write-tools.test.js > log_workout writes through the server > the same call again is the same workout: no second write
+[opengym-mcp] log_workout saved mw12j4lzcu0p2 for 2026-11-14 (1 exercises, 3 sets), rev 8
+
+stderr | test/write-tools.test.js > log_workout writes through the server > a 409 is merged on the document it carries and written again, once
+[opengym-mcp] log_workout saved mw12j4lzcu0p2 for 2026-11-14 (1 exercises, 3 sets), rev 9
+
+stderr | test/write-tools.test.js > log_workout writes through the server > a rejected token says what to do, and never repeats the token or the renewed one
+[opengym-mcp] log_workout saved mw12j4lzcu0p2 for 2026-11-14 (1 exercises, 3 sets), rev 8
+
+stderr | test/write-tools.test.js > found in review > a 409 from a profile just switched to lb reads the same numbers in the unit first read, as the same workout
+[opengym-mcp] log_workout saved mw18j22opdhx9 for 2026-11-14 (1 exercises, 1 sets), rev 9
+
+stderr | test/write-tools.test.js > found in review > the profile's own exercises count as the app counts them: a one-arm dumbbell press logged 'each' is one bell
+[opengym-mcp] log_workout saved mw2aey7hg5517 for 2026-11-14 (1 exercises, 1 sets), rev 8
+
+stderr | test/write-tools.test.js > found in review > a custom assisted machine folds towards less help: more help is not a new confirmed weight
+[opengym-mcp] log_workout saved mw2gemevfzy6p for 2026-11-14 (1 exercises, 1 sets), rev 8
+
+stderr | test/write-tools.test.js > found in review > a 409 after another device switched a dumbbell default keeps the meaning first read
+[opengym-mcp] log_workout saved mw6gljs7fwu9 for 2026-11-14 (1 exercises, 1 sets), rev 9
+
+stderr | test/write-tools.test.js > found in review > an OPENGYM_UID that names another profile than the token is refused even when its data is not readable here
+[opengym-mcp] OPENGYM_TOKEN is for profile someone-else, this server reads expected-profile
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1qymbc1fd50 for 2026-11-13 (1 exercises, 3 sets), rev 8
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw12ebae4g6fm for 2026-11-12 (1 exercises, 3 sets), rev 9
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1mmps2jqvv6 for 2026-11-11 (1 exercises, 3 sets), rev 10
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw17mycx1rnfk for 2026-11-10 (1 exercises, 3 sets), rev 11
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mwhexy0yk0v5 for 2026-11-09 (1 exercises, 3 sets), rev 12
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1xgb53r0c6t for 2026-11-08 (1 exercises, 3 sets), rev 13
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mwm93mtekj2c for 2026-11-07 (1 exercises, 3 sets), rev 14
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw283595tnp7l for 2026-11-06 (1 exercises, 3 sets), rev 15
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw13l0z5peoy2 for 2026-11-05 (1 exercises, 3 sets), rev 16
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1e0pi7a6x8d for 2026-11-04 (1 exercises, 3 sets), rev 17
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw9wak8v1dsv for 2026-11-03 (1 exercises, 3 sets), rev 18
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1xzwhbkzbsy for 2026-11-02 (1 exercises, 3 sets), rev 19
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1hn49io7lux for 2026-11-01 (1 exercises, 3 sets), rev 20
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mwt981w172d0 for 2026-10-31 (1 exercises, 3 sets), rev 21
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw20b8d7ez8ce for 2026-10-30 (1 exercises, 3 sets), rev 22
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mwneqcfznpn for 2026-10-29 (1 exercises, 3 sets), rev 23
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mwfioh0te61 for 2026-10-28 (1 exercises, 3 sets), rev 24
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1iklaz020li for 2026-10-27 (1 exercises, 3 sets), rev 25
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mw1y8kk80k5zw for 2026-10-26 (1 exercises, 3 sets), rev 26
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile
+[opengym-mcp] log_workout saved mwnpvf7nn69f for 2026-10-25 (1 exercises, 3 sets), rev 27
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > dry runs and duplicates are not saves and do not use the budget up
+[opengym-mcp] log_workout saved mw12j4lzcu0p2 for 2026-11-14 (1 exercises, 3 sets), rev 8
+
+stderr | test/write-tools.test.js > limits and the trail a write leaves > dry runs and duplicates are not saves and do not use the budget up
+[opengym-mcp] log_workout saved mw1mmps2jqvv6 for 2026-11-11 (1 exercises, 3 sets), rev 9
+
+ ✓ test/tools.test.js (98 tests) 632ms
+     ✓ an empty exercise_id is a validation error, not the whole PR table  311ms
+stderr | test/write-tools.test.js > the token has to belong to the profile being read > a token for another profile is refused before anything is read or written
+[opengym-mcp] OPENGYM_TOKEN is for profile someone-else, this server reads test-uid
+
+ ✓ test/write-tools.test.js (25 tests) 515ms
+ ✓ test/state.test.js (9 tests) 723ms
+stderr | test/log-workout.e2e.test.js > log_workout against the real api > stored: the device document as it was, plus one workout, one revision on
+[opengym-mcp] log_workout saved mw1xhvj8s0d0l for 2026-11-14 (1 exercises, 3 sets), rev 6
+
+stderr | test/log-workout.e2e.test.js > log_workout against the real api > a backup restored in between (same revision, another write id) is merged, not written over
+[opengym-mcp] log_workout saved mw37cw77ob7q for 2026-10-12 (1 exercises, 1 sets), rev 7
+
+stderr | test/log-workout.e2e.test.js > log_workout against the real api > a phone pushing in between: both its change and the workout survive
+[opengym-mcp] log_workout saved mw4yy9959jun for 2026-10-14 (1 exercises, 1 sets), rev 9
+
+ ✓ test/log-workout.e2e.test.js (5 tests) 1124ms
+stderr | test/contracts.test.js > log_workout preserves unknown fields through GET, 409 rebuild and PUT
+[opengym-mcp] log_workout saved mw1r6ehgx1xgj for 2026-11-14 (1 exercises, 1 sets), rev 3
+
+ ✓ test/contracts.test.js (2 tests) 550ms
+ ✓ test/labels.test.js (1 test) 20ms
+
+ Test Files  6 passed (6)
+      Tests  140 passed (140)
+   Start at  09:44:08
+   Duration  4.36s (transform 2.51s, setup 0ms, import 3.99s, tests 3.56s, environment 1ms)
+
+
+COMMAND_EXIT=0

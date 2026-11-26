@@ -1,0 +1,27 @@
+{
+  "author": {
+    "name": "openGym"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-25",
+  "language": "en",
+  "title": "Lower-body warm-up",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 10,
+  "description": "Draft. Move gently and switch sides when comfortable. Source: MedlinePlus, How to avoid exercise injuries; NHS, How to warm up before exercising.",
+  "sessions": [
+    {
+      "name": "Lower-body warm-up",
+      "exercises": [
+        { "id": "4420", "sets": 5, "sec": 30 },
+        { "id": "1368", "sets": 5, "sec": 30 },
+        { "id": "4286", "sets": 5, "sec": 30 },
+        { "id": "1364", "sets": 5, "sec": 30 }
+      ],
+      "note": "Move gently and switch sides when comfortable."
+    }
+  ],
+  "about": "MedlinePlus, How to avoid exercise injuries; NHS, How to warm up before exercising"
+}

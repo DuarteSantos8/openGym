@@ -1,0 +1,43 @@
+/* The approved phone bar stays in index.css. This sheet only hides the desktop lockup by default
+   and adapts the same five controls at the existing desktop breakpoint. */
+#tabbar .tabbar-brand{display:none}
+
+@media (min-width:1000px){
+  body{--iv-sidebar-width:240px}
+  /* :has keeps intentional no-navigation screens (workout, onboarding, permissions and Coach)
+     full width. Logical padding moves the content to the correct side in RTL as well. */
+  body:has(#tabbar){padding-inline-start:var(--iv-sidebar-width)}
+
+  /* The extra body specificity intentionally wins over the legacy floating-bar desktop rules in
+     index.css, which are loaded after component sheets by the current Vite dependency graph. */
+  body #tabbar{
+    top:0;bottom:0;left:auto;right:auto;
+    inset-inline-start:0;inset-inline-end:auto;
+    width:var(--iv-sidebar-width);height:100dvh;max-height:100dvh;transform:none;
+    flex-direction:column;justify-content:flex-start;align-items:stretch;gap:8px;
+    padding:calc(var(--sat) + 24px) 16px calc(24px + var(--sab));
+    overflow-y:auto;overscroll-behavior:contain;
+    border:0;border-inline-end:var(--hair) solid var(--sep-op);border-radius:0;box-shadow:none;
+  }
+  body #tabbar .tabbar-brand{
+    display:inline-flex;align-self:center;flex:none;justify-content:center;
+    min-height:56px;margin:0 0 16px;padding:8px 0;
+  }
+  body #tabbar button{
+    flex:none;width:100%;min-width:0;min-height:56px;height:auto;
+    flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;
+    padding:10px 14px;border-radius:var(--r-lg);
+    font-size:1.0625rem;line-height:1.25;text-align:start;white-space:normal;
+  }
+  body #tabbar button>span:last-child{min-width:0;padding-block:2px;overflow-wrap:anywhere}
+  body #tabbar button.on{color:var(--label);background:var(--acc-soft)}
+  body #tabbar button.start{margin-top:0}
+  body #tabbar button.start .cir{width:40px;height:40px;flex:none;box-shadow:none}
+  body #tabbar button.start .cir .icn{font-size:1.375rem}
+  body #tabbar button.start:active .cir{transform:none}
+}
+
+@media (min-width:1000px) and (prefers-reduced-motion:reduce){
+  body #tabbar button{transition:none}
+  body #tabbar button.start.rec .cir::after{animation:none}
+}

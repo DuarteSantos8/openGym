@@ -1,0 +1,41 @@
+{
+  "nutritionEntries": [
+    {
+      "id": "5cbde324-1f60-43ef-9188-4f555376ddc5",
+      "schemaVersion": 1,
+      "createdAt": "2026-11-13T10:00:00.000Z",
+      "createdBy": "manual",
+      "source": "manual",
+      "day": "2026-11-13",
+      "timeZone": "Europe/Lisbon",
+      "occurredAt": "2026-11-13T10:00:00.000Z",
+      "label": "Synthetic oats",
+      "amountG": 60,
+      "energyKcal": 228,
+      "proteinG": 8,
+      "carbohydrateG": 40,
+      "fatG": 4,
+      "_f": {
+        "schemaVersion": 1794564000000,
+        "createdAt": 1794564000000,
+        "createdBy": 1794564000000,
+        "source": 1794564000000,
+        "day": 1794564000000,
+        "timeZone": 1794564000000,
+        "occurredAt": 1794564000000,
+        "label": 1794564000000,
+        "amountG": 1794564000000,
+        "energyKcal": 1794564000000,
+        "proteinG": 1794564000000,
+        "carbohydrateG": 1794564000000,
+        "fatG": 1794564000000
+      },
+      "_ts": 1794564000000
+    }
+  ],
+  "deleted": {
+    "nutritionEntries": {
+      "5cbde324-1f60-43ef-9188-4f555376ddc5": 1794564001000
+    }
+  }
+}

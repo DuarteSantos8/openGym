@@ -1933,6 +1933,7 @@
     ]
   },
   "1355": {
+    "name": "Einarmiges Drücken gegen die Wand",
     "instructions": [
       "Stell dich schulterbreit mit dem Gesicht zur Wand.",
       "Streck einen Arm gerade nach vorn und leg die Handfläche an die Wand.",
@@ -2424,6 +2425,7 @@
     "name": "Rücken-Dehnung"
   },
   "1405": {
+    "name": "Rücken- und Brustdehnung",
     "instructions": [
       "Stell dich aufrecht hin, die Füße schulterbreit.",
       "Streck die Arme gerade nach vorn, parallel zum Boden.",
@@ -5040,8 +5042,7 @@
       "Mach so viele Wiederholungen wie gewünscht."
     ]
   },
-  "1770": {
-  },
+  "1770": { "name": "Bizeps-Konzentrationscurl mit Bein" },
   "1771": {
     "name": "Trizeps-Strecken kniend mit Körpergewicht",
     "instructions": [
@@ -6100,6 +6101,7 @@
     ]
   },
   "2203": {
+    "name": "Rolle sitzend, Schulter beugen, senken und zurückziehen",
     "instructions": [
       "Setz dich auf eine ebene Fläche, die Beine nach vorn ausgestreckt.",
       "Halte die Rolle mit beiden Händen, die Handflächen zeigen nach unten, und leg sie auf die Oberschenkel.",
@@ -6158,8 +6160,7 @@
       "Mach so viele Wiederholungen wie gewünscht."
     ]
   },
-  "2209": {
-  },
+  "2209": { "name": "Rolle sitzend, einbeinig, Schulter beugen, senken und zurückziehen" },
   "2224": {
     "name": "Beinpresse in 45 Grad mit Schlitten"
   },
@@ -6521,6 +6522,7 @@
     ]
   },
   "2333": {
+    "name": "Hängendes Beinheben mit gestreckten Beinen",
     "instructions": [
       "Häng dich mit ganz gestreckten Armen an eine Klimmzugstange, die Beine hängen gerade nach unten.",
       "Spann den Rumpf an und heb die Beine vor dir an, bis sie parallel zum Boden sind.",
@@ -6600,6 +6602,7 @@
     "name": "Kreuzheben Rücken (Formcheck)"
   },
   "2355": {
+    "name": "Hängendes Knieheben mit gebeugten Beinen",
     "instructions": [
       "Häng dich mit ganz gestreckten Armen an eine Klimmzugstange, die Knie im 90-Grad-Winkel gebeugt.",
       "Spann den Rumpf an und zieh die Knie Richtung Brust, so nah wie möglich an die Ellbogen.",
@@ -8926,6 +8929,7 @@
     ]
   },
   "3292": {
+    "name": "Fahrstuhl",
     "instructions": [
       "Stell dich schulterbreit hin und beug die Knie leicht.",
       "Stütz die Hände in die Hüften oder kreuz die Arme vor der Brust.",
@@ -10127,6 +10131,7 @@
     ]
   },
   "3637": {
+    "name": "Bauchroller-Lauf",
     "instructions": [
       "Geh in die Liegestützposition, die Hände auf dem Bauchroller, der Körper gerade.",
       "Spann den Rumpf an und roll den Bauchroller nach vorn, indem du die Arme streckst.",
@@ -23109,6 +23114,7 @@
     "name": "Grasshopper-Liegestütz"
   },
   "0469": {
+    "name": "Leisten-Crunch",
     "instructions": [
       "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
       "Leg die Hände hinter den Kopf, die Ellbogen zeigen nach außen.",
@@ -23810,6 +23816,7 @@
     ]
   },
   "0555": {
+    "name": "Beinkick im Sitzen",
     "instructions": [
       "Setz dich auf die Kante einer Bank oder eines Stuhls, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
       "Lehn dich leicht zurück und stütz dich mit den Händen an der Kante der Bank oder des Stuhls ab.",
@@ -24659,6 +24666,7 @@
     "name": "Liegestütz mit einbeinigem Beinheben"
   },
   "0668": {
+    "name": "Rückwärtige Schräg-Brücke",
     "instructions": [
       "Leg dich auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
       "Leg die Arme neben den Körper, die Handflächen zeigen nach unten.",
@@ -25833,6 +25841,7 @@
     "name": "Reduktionsdreieck mit Zusatzgewicht"
   },
   "0844": {
+    "name": "Runde Arme mit Gewicht",
     "instructions": [
       "Stell dich mit schulterbreiten Füßen hin und halte in jeder Hand eine Kurzhantel.",
       "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade.",
@@ -26085,6 +26094,7 @@
     ]
   },
   "0870": {
+    "name": "Po-Heben",
     "instructions": [
       "Leg dich flach auf den Rücken, beug die Knie und stell die Füße flach auf den Boden.",
       "Leg die Hände neben den Körper, die Handflächen zeigen nach unten.",

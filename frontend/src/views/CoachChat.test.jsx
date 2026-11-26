@@ -3,9 +3,13 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
-import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
+import { CONSENT_VERSION, revertLast } from '../lib/coach.js'   // fixtures grant the current consent version
+import { askCoach, refinePlan } from '../lib/coach-api.js'
+import fr from '../locales/fr.js'
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
+import { build } from '../../../api/coach/core/payload.js'
+import { runPipeline } from '../../../api/coach/core/pipeline.js'
 
 // The chat is where a plan is imported. These pin that the Import button applies the pending
 // plan through the store, writes the decision into the thread, and leaves today startable.
@@ -37,6 +41,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
 vi.mock('../lib/coach-api.js', () => ({
   useCoachStatus: () => ({ pending: mocks.pending, job: mocks.job, cap: null, loading: false, lastError: null, last: null, refresh: mocks.refresh, maxMessageLen: mocks.maxMessageLen }),
   resolvePending: vi.fn(() => Promise.resolve({})),
+  askCoach: vi.fn(),
   refinePlan: vi.fn(() => Promise.resolve({})),
   requestReview: vi.fn(() => Promise.resolve({})),
   requestDebrief: vi.fn(() => Promise.resolve({})),
@@ -69,6 +74,33 @@ const bundle = week => ({
 })
 const everyDay = Object.fromEntries([0, 1, 2, 3, 4, 5, 6].map(d => [d, 'x1']))
 
+const pushPull = 'Add a push day on Tuesday and a pull day on Wednesday'
+async function pushPullProposal(S, id, note = pushPull) {
+  const payload = build(S, { handle: 'test', kind: 'ask', note })
+  const adapter = { spawns: false, async invoke({ prompt }) {
+    expect(prompt).toContain(note)
+    return { code: 0, text: JSON.stringify({
+      coach_contract: 1, answer: 'Here are the two days.', actions: [
+        { type: 'routine', name: 'Push', items: [{ id: '0662', sets: 2, reps: 8 }] },
+        { type: 'routine', name: 'Pull', items: [{ id: '1772', sets: 2, reps: 8 }] },
+        { type: 'schedule', name: 'Push', day: 2 },
+        { type: 'schedule', name: 'Pull', day: 3 },
+      ],
+    }) }
+  } }
+  const result = await runPipeline({ adapter, cfg: {}, kind: 'ask', payload })
+  expect(result.ok).toBe(true)
+  expect(result.kind).toBe('create')
+  return { id, kind: result.kind, from: 'ask', ...result.result }
+}
+
+function withMonday() {
+  const S = state()
+  S.routines = [{ id: 'old', name: 'Monday', ex: [{ id: '0662', sets: 2, reps: 8 }] }]
+  S.week = { 1: ['old'] }
+  return S
+}
+
 const state = () => ({
   unit: 'kg', lang: 'en', customEx: [], workouts: [], bodyweight: [], exWeights: {},
   dayPlan: {}, routines: [], week: {},
@@ -91,13 +123,13 @@ function installDom() {
   root = createRoot(container)
 }
 
-async function mount(pending, job = null, { community = false, S = state() } = {}) {
+async function mount(pending, job = null, { community = false, S = state(), starter } = {}) {
   mocks.S = S
   mocks.pending = pending
   mocks.job = job
   mocks.community = community
   installDom()
-  await act(async () => { root.render(React.createElement(CoachChat)) })
+  await act(async () => { root.render(React.createElement(CoachChat, { starter })) })
 }
 
 const byText = re => [...container.querySelectorAll('button')].find(b => re.test(b.textContent || ''))
@@ -113,6 +145,94 @@ afterEach(async () => {
 })
 
 describe('the Coach chat', () => {
+  it('opens the editable composer with the Home starter and sends nothing', async () => {
+    const starter = 'Make today shorter'
+    await mount(null, null, { starter })
+    expect(container.querySelector('.composer textarea').defaultValue).toBe(starter)
+    expect(mocks.S.coach.chat.some(m => m.text === starter)).toBe(false)
+  })
+
+  it('takes a first-time starter through intake before opening the composer', async () => {
+    const S = state()
+    S.coach.profile = null
+    await mount(null, null, { S, starter: 'Make today shorter' })
+    expect(mocks.nav).toHaveBeenCalledWith('/coach/intake', { replace: true, state: { coachStarter: 'Make today shorter' } })
+    expect(container.querySelector('.composer')).toBeNull()
+  })
+
+  it.each([pushPull, fr[pushPull]])('schedules only the two requested days on a new three-day profile: %s', async starter => {
+    const S = state()
+    askCoach.mockImplementationOnce(async note => { mocks.pending = await pushPullProposal(S, 'first', note) })
+    await mount(null, null, { S, starter })
+    await click(container.querySelector('.send'))
+    expect(askCoach).toHaveBeenCalledWith(starter)
+    expect(refinePlan).not.toHaveBeenCalled()
+    await act(async () => { root.render(<CoachChat />) })
+    expect(S.week).toEqual({})
+    expect(S.routines).toEqual([])
+    await click(byText(/Import this plan/))
+    expect(S.routines.map(r => r.name)).toEqual(['Push', 'Pull'])
+    expect(S.week).toEqual({ 2: [S.routines[0].id], 3: [S.routines[1].id] })
+    expect(S.coach.profile.daysPerWeek).toBe(3)
+  })
+
+  it('previews Tuesday push and Wednesday pull, then schedules both on confirmation', async () => {
+    const S = withMonday()
+    const before = structuredClone({ routines: S.routines, week: S.week })
+    const p = await pushPullProposal(S, 'first')
+    await mount(p, null, { S })
+    expect({ routines: S.routines, week: S.week }).toEqual(before)
+    expect([...container.querySelectorAll('.pcard-wd.on')].map(d => d.textContent)).toEqual(['Tu', 'We'])
+    await click(byText(/Import this plan/))
+    for (const [day, name] of [[2, 'Push'], [3, 'Pull']]) {
+      expect(S.week[day].map(id => S.routines.find(r => r.id === id)?.name)).toEqual([name])
+    }
+  })
+
+  it('preserves Monday when the person asks to add Tuesday and Wednesday', async () => {
+    const S = withMonday()
+    S.week[2] = 'old'   // A pre-upgrade weekday containing a single routine ID.
+    S.dayPlan['2099-01-01'] = 'rest'
+    S.scheduleMode = 'rotation'
+    S.rotation = { id: 'loop', sequence: ['old', 'rest'], at: 1 }
+    await mount(await pushPullProposal(S, 'first'), null, { S })
+    expect(container.textContent).not.toContain('Replaces your current week')
+    await click(byText(/Import this plan/))
+    expect(S.week[1]).toEqual(['old'])
+    expect(S.coach.chat.at(-1).text).toBe('scheduled on 2 days')
+    expect(S.week[2]).toEqual(['old', S.routines.find(r => r.name === 'Push').id])
+    expect(S.dayPlan['2099-01-01']).toBe('rest')
+    expect(S.rotation).toEqual({ id: 'loop', sequence: ['old', 'rest'], at: 1 })
+  })
+
+  it('keeps one copy when the same push/pull request is sent and confirmed on a second visit', async () => {
+    const S = withMonday()
+    await mount(await pushPullProposal(S, 'first'), null, { S })
+    await click(byText(/Import this plan/))
+    S.routines.forEach(r => { r._ts = 100; r._f = { name: 100 } })
+    const afterFirst = structuredClone({ routines: S.routines, week: S.week })
+    await act(async () => { root.unmount() })
+    await mount(await pushPullProposal(S, 'second'), null, { S })
+    expect({ routines: S.routines, week: S.week }).toEqual(afterFirst)
+    await click(byText(/Import this plan/))
+    expect(S.routines.map(r => r.name)).toEqual(afterFirst.routines.map(r => r.name))
+    expect(S.week).toEqual(afterFirst.week)
+    expect(S.coach.snapshots).toHaveLength(1)
+    expect(revertLast(S)).toBe(true)
+    expect(S.week).toEqual({ 1: ['old'] })
+    expect(S.routines.map(r => r.id)).toEqual(['old'])
+  })
+
+  it('keeps a same-name routine with a different prescription', async () => {
+    const S = withMonday()
+    S.routines[0].name = 'Push'
+    S.routines[0].ex[0].sets = 5
+    await mount(await pushPullProposal(S, 'first'), null, { S })
+    await click(byText(/Import this plan/))
+    expect(S.routines.filter(r => r.name === 'Push').map(r => r.ex[0].sets)).toEqual([5, 2])
+    expect(S.week[2]).not.toContain('old')
+  })
+
   it('opens with the questionnaire summary and pitches the plan as a card with routine tabs', async () => {
     await mount({ id: 'p1', kind: 'create', bundle: bundle(everyDay) })
     expect(container.textContent).toContain('Build muscle')

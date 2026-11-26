@@ -39,6 +39,7 @@ import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
+import AppHelp from './AppHelp.jsx'
 import VoiceSettings from '../components/VoiceSettings.jsx'
 import { bandsSheet } from '../components/Bands.jsx'
 import { bandsOf } from '../lib/bands.js'
@@ -66,7 +67,8 @@ import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
-import { coachAvailable } from '../lib/coach.js'
+import { forgetBodyFocus } from '../lib/body-photo.js'
+import { coachAvailable, hasConsent } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -88,7 +90,7 @@ import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
-import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
+import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, rootPagesFor, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
@@ -101,6 +103,10 @@ import { libraryOn } from '../lib/shared-api.js'
 import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
+import { LEVELS, experienceOf, applyExperience } from '../lib/experience.js'
+import { isCloud } from '../lib/edition.js'
+import { useCloudAccount, whoIs, badgeCard } from '../lib/account-badge.js'
+import { levelName } from '../lib/experience-copy.js'
 import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -119,6 +125,8 @@ import { offlineBuild } from '../lib/build-caps.js'
 import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
 import ReminderSounds from '../components/ReminderSounds.jsx'
 import DisplayRows from '../components/DisplayRows.jsx'
+import { APP_NAME, SOURCE_URL, UPSTREAM_URL } from '../lib/brand.js'
+import { lookOf } from '../lib/look.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, a row per page under four headings
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -134,7 +142,7 @@ let lastQuery = { q: '', key: null }
 
 // The route: /settings and /settings/<page>. An unknown page, or one this device does not have
 // (the Coach page off the phone app), goes back to the root.
-export function SettingsRoute() {
+export function SettingsRoute({ appHelp = false }) {
   const { page } = useParams()
   const loc = useLocation()
   // `ios` now, not after an async platform check: the Apple Watch page is iPhone only, and a route
@@ -147,7 +155,7 @@ export function SettingsRoute() {
   const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
-  return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
+  return <Settings appHelp={appHelp} key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
 
 // The tutorials' rows in About & updates.
@@ -167,8 +175,9 @@ const standalone = () => {
 // rather than from lib/api.js, whose test mocks across the Settings suites only carry IS_ANDROID.
 const APPLE_UA = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 
-export default function Settings({ page = null, find = null, via = null, entryKey = null }) {
+export default function Settings({ appHelp = false, page = null, find = null, via = null, entryKey = null }) {
   const nav = useNavigate()
+  const cloudWho = useCloudAccount()     // Cloud edition: who is signed in to the hosted account, for its row
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
@@ -466,6 +475,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       resetAll()
       nav('/home'); toast(t('All data reset'))
       clearMediaAfterReset(!!user).catch(() => {})
+      forgetBodyFocus()   // Today's body picker: its photos and picks on this device
     },
   })
 
@@ -947,6 +957,20 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       </Section>
+      {/* The beginner's way in (EP21, EP22, EP24): the quiz that picks a plan, the level that decides
+          how much the workout screen shows (lib/experience.js), and the basics to read. */}
+      <Section footer={t('Beginner keeps the workout screen simple. Nothing is removed, and you can change this at any time.')}>
+        <Row icon="sparkles" iconTint="var(--green)" title={t('Find my plan')} subtitle={t('Six questions, then a plan that fits')} accessory="chevron" onClick={() => nav('/start')} />
+        <SelectRow icon="stairs" iconTint="var(--indigo)" title={t('Experience level')}
+          value={experienceOf(S) || ''}
+          options={[...(experienceOf(S) ? [] : [{ value: '', label: t('Not set') }]), ...LEVELS.map(l => ({ value: l, label: levelName(l) }))]}
+          onChange={v => { if (v) update(s => { applyExperience(s, v) }) }} />
+        <Row tour="settings-learn" icon="lightbulb" iconTint="var(--yellow)" title={t('Learn')} subtitle={t('The basics, explained plainly. Works offline.')} accessory="chevron" onClick={() => nav('/learn')} />
+      </Section>
+      {/* Cloud edition only (lib/edition.js): the hosted account. Nothing in a default build. */}
+      {isCloud() && <Section>
+        <Row icon="person" iconTint="var(--acc)" title={t('Account')} subtitle={cloudWho ? t('Signed in as {0}', whoIs(cloudWho)) : undefined} accessory="chevron" onClick={() => nav('/account')} />
+      </Section>}
     </>,
 
     units: () => <>
@@ -1068,6 +1092,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     look: () => <>
       <Section footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
+        {/* Ironvane's two looks (lib/look.js): Bold, the default, or Refined, the softer one. */}
+        <Row icon="sparkles" iconTint="var(--acc)" title={t('Look')} subtitle={lookOf(S) === 'bold' ? t('Sharp corners, bold titles and numbers.') : t('Soft corners, quieter type.')}>
+          <Segmented
+            className="seg-inline"
+            options={[
+              { value: 'bold', label: t('Bold') },
+              { value: 'refined', label: t('Refined') },
+            ]}
+            value={lookOf(S)}
+            onChange={v => update(s => { if (v === 'refined') s.look = 'refined'; else s.look = 'bold' })}
+          />
+        </Row>
         <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
           <Segmented
             className="seg-inline"
@@ -1091,7 +1127,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             emoji for those who like them (components/Glyph.jsx). Synced like the theme. */}
         <Row icon="sparkles" iconTint="var(--orange)" title={t('Icons')} subtitle={t('The flame, the medals and friends.')}>
           <Segmented className="seg-inline"
-            options={[{ value: 'opengym', label: 'openGym' }, { value: 'emoji', label: t('Emoji') }]}
+            options={[{ value: 'opengym', label: APP_NAME }, { value: 'emoji', label: t('Emoji') }]}
             value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
             onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
         </Row>
@@ -1347,8 +1383,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           build there is no address bar and no about box, so without this there is no way to tell
           which build you are running, or whether an update actually installed. */}
       <div className="dim small sp-version">
-        openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
+        {APP_NAME} v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
+        <a href={UPSTREAM_URL} target="_blank" rel="noopener"><span>{t('Based on openGym')}</span></a><br />
+        <a href={SOURCE_URL} target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
         {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated.
             The spans keep each link's words above its neighbours' 44 px tap targets (index.css). */}
         Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener"><span>Gym visual</span></a>, gymvisual.com.
@@ -1434,6 +1471,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   }
 
   /* ---------------- a page ---------------- */
+  if (appHelp) return <AppHelp ctx={ctx} canExplain={!ctx.demo && !ctx.offline && !(MOBILE && coachLocal?.mode === 'byok') && !!user && hasConsent(S) && config?.coach?.enabled && isOn(S, 'coach')} />
   if (page && pages[page]) {
     const parent = PAGES[page].parent
     return <div className="narrow" ref={body}>
@@ -1450,7 +1488,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   }
 
   /* ---------------- the root ---------------- */
-  return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
+  return <SettingsRoot level={experienceOf(S)} showAll={!!S.settingsAll}
+    toggleAll={() => update(s => { s.settingsAll = !s.settingsAll })} ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
     home={() => nav('/home')} go={(hit) => {
       if (hit.page === 'coach') { nav('/coach/setup'); return }
       if (hit.route) { nav(hit.route); return }
@@ -1458,13 +1497,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     }} />
 }
 
-function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
+function SettingsRoot({ level, showAll, toggleAll, ctx, preview, open, user, sync, home, go, entryKey }) {
   // The router's key for this history entry, taken once. From the router rather than
   // window.history: drawn under an edge swipe back the page is the entry before the current one.
   const [key] = useState(() => (entryKey && entryKey !== 'default' && entryKey !== 'back-preview' ? entryKey : window.history.state?.key || null))
   const [q, setQ] = useState(() => (key && lastQuery.key === key ? lastQuery.q : ''))
   const set = v => { lastQuery = { q: v, key }; setQ(v) }
+  const rootPages = rootPagesFor(level, showAll, ctx)
   const hits = q.trim() ? searchSettings(q, ctx) : null
+  const cloudWho = useCloudAccount()
+  const cloudCard = isCloud() ? badgeCard(cloudWho, t) : null
   // The account card: who this is, and the one line that matters about it.
   const acct = DEMO ? { title: t('Demo'), sub: t('Example data, only in this browser.') }
     : user ? {
@@ -1472,9 +1514,10 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
       sub: sync && sync.status && sync.status !== 'ok' ? t('Sync needs a look') : MOBILE ? t('Synced with your server') : t('Account, devices and sync'),
     }
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
-    : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
+    // Cloud edition: signed in to the hosted account is not "Guest" (lib/account-badge.js).
+    : cloudCard || { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
   // The face: one's own picture (components/Avatar.jsx), else the name's first letter, else the icon.
-  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : null
+  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : !DEMO && !MOBILE && cloudCard ? cloudCard.face : null
   const nav = useNavigate()
   // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
   // it the admin dashboard has no Coach card to land on.
@@ -1482,7 +1525,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
     <div className="sp-nav">
-      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
+      <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Today')}><Icon name="chevronLeft" /><span>{t('Today')}</span></button>
     </div>
     <h1 className="sp-root-title">{t('Settings')}</h1>
     <div className="sp-search">
@@ -1503,7 +1546,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
           <Icon name="chevronRight" className="lrow-c" />
         </button>
       </Section>
-      {ROOT_GROUPS.map(g => ({ ...g, ids: g.ids.filter(id => onRoot(id, ctx)) })).filter(g => g.ids.length).map(g => (
+      {ROOT_GROUPS.map(g => ({ ...g, ids: g.ids.filter(id => rootPages.includes(id)) })).filter(g => g.ids.length).map(g => (
         <Section key={g.ids[0]} title={g.title && t(g.title)}>
           {g.ids.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" tour={'settings-' + id} />)}
@@ -1518,7 +1561,10 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
             accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
-      <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
+      {level === 'beginner' && <Section><Row title={showAll ? t('Show fewer') : t('Show all settings')}
+        onClick={toggleAll} /></Section>}
+      <Section><Row icon="magnifier" title={t('App help')} accessory="chevron" onClick={() => nav('/app-help')} /></Section>
+      <div className="dim small sp-version">{APP_NAME} v{__APP_VERSION__}</div>
     </>}
   </div>
 }

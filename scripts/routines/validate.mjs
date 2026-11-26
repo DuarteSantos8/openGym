@@ -13,15 +13,18 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 
 export function validateRepo(root = ROOT) {
   const cat = loadCatalogue(path.join(root, 'catalogue'))
-  return { cat, ...loadAll(path.join(root, 'routines'), { cat, starters: STARTER_PLANS }) }
+  const dir = path.join(root, 'routines')
+  const library = loadAll(dir, { cat, starters: STARTER_PLANS })
+  const learn = loadAll(dir, { cat, sources: ['learn'] })
+  return { cat, routines: library.routines, learn: learn.routines, problems: [...library.problems, ...learn.problems] }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { routines, problems } = validateRepo()
+  const { routines, learn, problems } = validateRepo()
   for (const p of problems) console.error(p)
   if (problems.length) {
     console.error(`\n${problems.length} problem${problems.length === 1 ? '' : 's'} in routines/. The format is in routines/README.md.`)
     process.exit(1)
   }
-  console.log(`routines: ${routines.length} routines, all fine`)
+  console.log(`routines: ${routines.length} routines, ${learn.length} Learn sessions, all fine`)
 }

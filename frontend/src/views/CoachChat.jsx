@@ -27,7 +27,7 @@ import { scheduleModeOf } from '../lib/rotation.js'
 import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
-  markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
+  markStale, applicable, applyChangeSet, applyCreatedPlan, addsWeekdays, recordDismissal, recordDebrief, logEntry,
   changeTitle, changeValues, changeMeaning, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
@@ -50,7 +50,7 @@ import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui
 import '../coach.css'
 import { isoRun } from '../lib/bidi.js'
 
-export default function CoachChat() {
+export default function CoachChat({ starter = '' }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
@@ -63,7 +63,8 @@ export default function CoachChat() {
   // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
   const gate = useCoachGate()
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
-  const [text, setText] = useState('')
+  const [text, setText] = useState(starter)
+  const starterDraft = useRef(starter.trim())
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -79,8 +80,9 @@ export default function CoachChat() {
   useEffect(() => {
     if (!storeReady || !gate.known) return
     if (!ok) nav('/home', { replace: true })
-    else if (!ready) nav('/coach/intake', { replace: true })
-  }, [storeReady, gate.known, ok, ready])
+    else if (!ready) nav('/coach/intake', starter ? { replace: true, state: { coachStarter: starter } } : { replace: true })
+    else if (starter) nav('/coach', { replace: true }) // The draft now belongs to this composer.
+  }, [storeReady, gate.known, ok, ready, starter])
 
   // A job that ends is either a proposal, "nothing to change", or a failure. The server tells
   // the client none of that directly — the job simply stops appearing — so the transition is
@@ -146,13 +148,12 @@ export default function CoachChat() {
     if (!msg || busy) return
     setBusy(true)
     try {
-      // A message about a proposed plan refines it. With no plan at all — the first attempt
-      // failed, or nothing was ever built — the message asks for one; a review would only
-      // answer that there is no workout to look at, which is how people got stuck. Anything else
-      // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
-      // review the whole plan. A review is the chip and the menu's, as it always was.
-      if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
+      // Home starters ask for individual changes, including when intake has saved no routines yet.
+      const addingDay = /\b(add|schedule|put)\b/i.test(msg) && /\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i.test(msg)
+      const needsPlan = !S.routines?.length && msg !== starterDraft.current && !addingDay
+      if (pending?.kind === 'create' || needsPlan) await refinePlan(msg)
       else await askCoach(msg)
+      starterDraft.current = ''
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
       setExpanded(false)
@@ -264,6 +265,7 @@ export default function CoachChat() {
 
     <div className="composer">
       {idle && !busy && <div className="chips-row">
+        <button className="qchip" onClick={() => nav('/app-help')}><Icon name="magnifier" />{t('App help')}</button>
         <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
         {!!lastWorkout && <button className="qchip" onClick={askDebrief}><Icon name="checkCircle" />{t('Last workout')}</button>}
         {!!(S.routines || []).length && <button className="qchip" onClick={pickRoutine}><Icon name="wrench" />{t('Improve a routine')}</button>}
@@ -352,7 +354,8 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
   const weekDays = useMemo(() => new Set(Object.keys(b.week || {}).map(Number)), [b])
   // Routines asked for in the chat ("make me 3 routines") come with no week. Switched on, an empty
   // week replaced yours with rest days, so there is nothing to switch then. A rotation still takes them.
-  const inRotation = scheduleModeOf(S) === 'rotation'
+  const additive = addsWeekdays(p)
+  const inRotation = !additive && scheduleModeOf(S) === 'rotation'
   const canSchedule = inRotation || weekDays.size > 0
   const [schedule, setSchedule] = useState(canSchedule)
   const r = b.routines[Math.min(tab, b.routines.length - 1)]
@@ -365,6 +368,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
         n = res?.routines?.length || b.routines.length
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: res.rotation
           ? t('Imported! {0} routines are in your plan and your rotation starts over with them. See you at the next session.', n)
+          : additive && schedule ? tn('scheduled on {0} day', 'scheduled on {0} days', weekDays.size)
           : schedule && canSchedule
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
@@ -405,6 +409,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
         {/* In rotation mode the plan goes into the loop, which is what Home reads (#778). */}
         {inRotation
           ? <span className="lrow-m"><span className="lrow-t">{t('Use this plan in your rotation')}</span><span className="lrow-s">{t('Replaces the sessions in your rotation and starts it over with the first one.')}</span></span>
+          : additive ? <span className="lrow-t">{t('Schedule')}</span>
           : <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>}
         <Switch checked={schedule} onChange={setSchedule} />
       </div>}
@@ -711,7 +716,7 @@ function ProposalDetail({ entry, S }) {
         {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
-      <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>{entry.rotation ? t('Your rotation was set to this plan.') : entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
+      <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>{entry.rotation ? t('Your rotation was set to this plan.') : entry.additive && entry.scheduled ? tn('scheduled on {0} day', 'scheduled on {0} days', weekDays.size) : entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}
 
