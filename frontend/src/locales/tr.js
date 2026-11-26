@@ -6339,6 +6339,7 @@ export default {
   "Build me a back workout with no weights": "Bana ağırlıksız bir sırt antrenmanı hazırla",
   "Add a push day on Tuesday and a pull day on Wednesday": "Salıya bir itiş antrenmanı, çarşambaya bir çekiş antrenmanı ekle",
   "Make today shorter": "Bugünkü antrenmanı kısalt",
+  "Ask Coach to pick a result": "Koçtan bir sonuç seçmesini iste",
   "App help": "Uygulama yardımı",
   "No matching help found.": "Eşleşen yardım bulunamadı.",
 }

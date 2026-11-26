@@ -6304,6 +6304,7 @@ export default {
   "Build me a back workout with no weights": "Buatkan latihan punggung tanpa beban",
   "Add a push day on Tuesday and a pull day on Wednesday": "Tambahkan sesi latihan dorong pada hari Selasa dan sesi latihan tarik pada hari Rabu",
   "Make today shorter": "Persingkat latihan hari ini",
+  "Ask Coach to pick a result": "Minta Pelatih memilih hasil",
   "App help": "Bantuan aplikasi",
   "No matching help found.": "Tidak ditemukan bantuan yang cocok.",
 };

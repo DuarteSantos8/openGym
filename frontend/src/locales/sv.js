@@ -6386,6 +6386,7 @@ export default {
   "Build me a back workout with no weights": "Sätt ihop ett ryggpass utan vikter åt mig",
   "Add a push day on Tuesday and a pull day on Wednesday": "Lägg till ett presspass på tisdag och ett dragpass på onsdag",
   "Make today shorter": "Gör dagens pass kortare",
+  "Ask Coach to pick a result": "Be coachen välja ett resultat",
   "App help": "Apphjälp",
   "No matching help found.": "Ingen matchande hjälp hittades.",
 }

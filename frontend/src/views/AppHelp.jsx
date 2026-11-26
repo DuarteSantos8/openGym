@@ -57,7 +57,7 @@ export default function AppHelp({ ctx, canExplain }) {
       <Row title={t('Search settings')} accessory="chevron" onClick={() => nav('/settings')} />
       <Row title={t('Learn')} accessory="chevron" onClick={() => nav('/learn')} />
     </Section>}
-    {!!matches.length && online && canExplain && <Button disabled={busy} onClick={explain}>{t('Ask your Coach')}</Button>}
+    {!!matches.length && online && canExplain && <Button disabled={busy} onClick={explain}>{t('Ask Coach to pick a result')}</Button>}
     {selected && matches.some(hit => hit.route === selected.route && hit.title === selected.title) &&
       <section aria-live="polite"><h2>{selected.title}</h2><ol>{selected.steps.map((step, i) => <li key={i}>{step}</li>)}</ol></section>}
     {error && <p role="status">{t('Could not ask the Coach')}</p>}

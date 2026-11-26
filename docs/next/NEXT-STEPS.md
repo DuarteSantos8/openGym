@@ -12,7 +12,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
   See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102) for the catalogue evidence.
   All 25 translations have simulated-provider coverage. The four new strings await native-language review.
 
-- **App help (B4, prepared).** Coach and Settings can search local navigation help. The optional provider call shares the question and up to three visible results. Verify on the hosted preview after merge. The two new strings await native-language review.
+- **App help (B4, prepared).** Coach and Settings can search local navigation help. The optional provider call shares the question and up to three visible results. Verify on the hosted preview after merge. The three new strings await native-language review.
 
 - **Hosted Coach (B1, 2026-11-25).** A chat and a full plan succeeded on the hosted test
   account. See [The Coach](CLOUD-SERVER.md#the-coach) for the failed first plan attempt,
