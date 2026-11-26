@@ -5,7 +5,7 @@ import { useOnline } from '../components/ServerSync.jsx'
 import { helpMatches } from '../lib/app-help.js'
 import { t } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
-import { ensureAiConsent } from '../lib/coach-api.js'
+import { ensureAiConsent, JOB_ERRORS } from '../lib/coach-api.js'
 
 export default function AppHelp({ ctx, canExplain }) {
   const nav = useNavigate()
@@ -13,7 +13,7 @@ export default function AppHelp({ ctx, canExplain }) {
   const [question, setQuestion] = useState('')
   const [selected, setSelected] = useState(null)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
   const version = useRef(0)
   useEffect(() => () => { version.current++ }, [])
   const matches = helpMatches(question, ctx)
@@ -22,12 +22,12 @@ export default function AppHelp({ ctx, canExplain }) {
     setQuestion(text)
     setBusy(false)
     setSelected(null)
-    setError(false)
+    setError('')
   }
   async function explain() {
     const current = ++version.current
     setBusy(true)
-    setError(false)
+    setError('')
     try {
       await ensureAiConsent()
       if (current !== version.current) return
@@ -35,9 +35,9 @@ export default function AppHelp({ ctx, canExplain }) {
       const result = await api('/api/coach/help', { method: 'POST', timeout: 0, body: JSON.stringify({ question: question.trim(), entries }) })
       if (current !== version.current) return
       if (Number.isInteger(result.index) && matches[result.index]) setSelected(matches[result.index])
-      else setError(true)
+      else setError(t('Could not ask the Coach'))
     } catch (e) {
-      if (!e?.quiet && current === version.current) setError(true)
+      if (!e?.quiet && current === version.current) setError(e?.data?.code === 'cap' ? JOB_ERRORS.cap : t('Could not ask the Coach'))
     } finally {
       if (current === version.current) setBusy(false)
     }
@@ -60,6 +60,6 @@ export default function AppHelp({ ctx, canExplain }) {
     {!!matches.length && online && canExplain && <Button disabled={busy} onClick={explain}>{t('Ask Coach to pick a result')}</Button>}
     {selected && matches.some(hit => hit.route === selected.route && hit.title === selected.title) &&
       <section aria-live="polite"><h2>{selected.title}</h2><ol>{selected.steps.map((step, i) => <li key={i}>{step}</li>)}</ol></section>}
-    {error && <p role="status">{t('Could not ask the Coach')}</p>}
+    {error && <p role="status">{error}</p>}
   </main>
 }

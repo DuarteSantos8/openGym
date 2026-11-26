@@ -8,6 +8,8 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/src/views/AppHelp.jsx` | `next/EP19-coach-help-quota` | UI | Explain a daily Coach limit while local help stays available. |
+| `frontend/src/views/AppHelp.test.jsx` | `next/EP19-coach-help-quota` | Test | Distinguish the daily cap from other failures and open a local match. |
 | `frontend/src/store/useStore.js` | `next/EP19-delete-fixes` | +6 | Clear the local signed-in copy only when its profile ID matches the deleted server profile. |
 | `frontend/src/views/Home.jsx` | `next/today-body-focus` | +4 | Renders the body picker card under today's workout, behind `isOn(S, 'bodyfocus')`. |
 | `frontend/src/lib/modules.js` | `next/today-body-focus` | +3 −1 | Registers the `bodyfocus` module (on by default) and adds it to the Just training preset, so every preset keeps it. |

@@ -8,7 +8,7 @@ import { api } from '../lib/api.js'
 const nav = vi.hoisted(() => vi.fn())
 vi.mock('react-router-dom', () => ({ useNavigate: () => nav }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
-vi.mock('../lib/coach-api.js', () => ({ ensureAiConsent: vi.fn() }))
+vi.mock('../lib/coach-api.js', async importOriginal => ({ ...await importOriginal(), ensureAiConsent: vi.fn() }))
 vi.mock('../components/ServerSync.jsx', () => ({ useOnline: () => true }))
 let root, host
 const button = text => [...host.querySelectorAll('button')].find(b => b.textContent.includes(text))
@@ -52,6 +52,18 @@ it('keeps the local destination on declined consent or a substituted provider li
   api.mockResolvedValueOnce({ index: 'https://example.invalid/' })
   await click(button('Ask Coach to pick a result'))
   expect(host.querySelector('ol')).toBeNull()
+  await click(button('Rest timer'))
+  expect(nav.mock.lastCall[0]).toBe('/settings/workout')
+})
+
+it.each([
+  ['cap', 'The Coach is taking a rest day. Try again tomorrow.'],
+  ['quota', 'Could not ask the Coach'],
+])('explains a %s refusal and keeps local matches usable', async (code, message) => {
+  change('rest timer')
+  api.mockRejectedValueOnce(Object.assign(new Error('request refused'), { status: 429, data: { code } }))
+  await click(button('Ask Coach to pick a result'))
+  expect(host.querySelector('[role=status]').textContent).toBe(message)
   await click(button('Rest timer'))
   expect(nav.mock.lastCall[0]).toBe('/settings/workout')
 })

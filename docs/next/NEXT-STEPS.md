@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
+
 - D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
 - **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm the two preview HTTP statuses and the owner dashboard. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
@@ -165,3 +167,5 @@ npm run test:e2e                         # Playwright + axe; starts API and prev
 > Repo: `sorensadrgit-art/openGym`. Read `AGENTS.md`, then `docs/next/NEXT-STEPS.md`. Take the first unfinished task in section 3 that an agent can do. Create a worktree from `main`. Write the tests first. Then run the full suite with `--maxWorkers=8`, the build, `check-bundle-syntax` and `test:e2e`. Open a draft PR on the fork with a body that says what was verified and what wasn't. Follow section 5. Stop and ask before anything irreversible.
 
 D2 follow-up bundles the 13 training-screen definitions for offline use and leaves the full Learn library on demand. The full-screen accessibility check covers Workout, Plan and Progress.
+
+Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
