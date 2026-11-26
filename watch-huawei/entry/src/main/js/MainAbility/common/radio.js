@@ -5,11 +5,13 @@ import { frames, createReceiver } from './frames.js'
 
 const ID_RANGE = 2176782336 // 36^6: an id is at most six base-36 characters
 const SENT = 207 // Wear Engine's "send succeeded"; 206 is "send failed"
+// Each transmit takes the next turn; a frame chain of an older turn stops. One count for every radio: a page that
+// replaces another makes its own radio, and the old page's chain must not go on between the new one's frames.
+let turn = 0
 
 export function createRadio (client, build, seed) {
-  const rx = createReceiver()
+  let rx = createReceiver()
   let counter = seed % ID_RANGE
-  let turn = 0 // each transmit takes the next turn; a frame chain of an older turn stops
 
   // One frame out; done(true|false) once. wearengine.js calls onSuccess then onSendResult (or
   // onFailure then onSendResult), and throws nothing, but its callbacks all get called unchecked,
@@ -66,6 +68,8 @@ export function createRadio (client, build, seed) {
     stop: function () {
       const receiver = { onSuccess: () => {} } // wearengine.js calls it unconditionally
       try { client.unregisterReceiver(receiver) } catch (e) { /* already gone */ }
+      // what was gathered is of the subscription that ended: a part kept would hold `gathering` true when the next one fails
+      rx = createReceiver()
     }
   }
 }

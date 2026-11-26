@@ -107,6 +107,20 @@ test('a newer message takes over: the old chain stops and reports nothing', () =
   assert.deepEqual([a.done, a.err, b.done, b.err], [0, 0, 1, 0])
 })
 
+test('a newer message of another radio takes over too: the old chain sends no more frames', () => {
+  const f = fake()
+  const g = fake()
+  const a = listener()
+  const b = listener()
+  createRadio(f.client, build, 0).transmit(big, a)
+  createRadio(g.client, build, 0).transmit({ events: [] }, b) // the next page's radio
+  f.ok() // the old page's first frame comes back
+  assert.equal(f.sent.length, 1)
+  assert.deepEqual([a.done, a.err], [0, 0])
+  g.ok()
+  assert.deepEqual([b.done, b.err], [1, 0])
+})
+
 test('the id differs from one message to the next and stays within six base-36 characters', () => {
   const f = fake()
   const radio = createRadio(f.client, build, 36 ** 6 - 1)
@@ -164,5 +178,15 @@ test('gathering is true between the first frame and the last, and any frame coun
   assert.equal(radio.gathering(), true)
   assert.deepEqual(states, [true]) // no onSuccess came, the frame did it
   f.registered.onReceiveMessage(fr[1])
+  assert.equal(radio.gathering(), false)
+})
+
+test('stop forgets a part of a message: nothing is gathering when the next receiver fails to register', () => {
+  const f = fake()
+  const radio = createRadio(f.client, build, 0)
+  radio.listen(() => {}, () => {})
+  frames(JSON.stringify({ x: 'y'.repeat(1200) }), 'q').slice(0, 1).forEach(fr => f.registered.onReceiveMessage(fr))
+  assert.equal(radio.gathering(), true)
+  radio.stop()
   assert.equal(radio.gathering(), false)
 })
