@@ -4,9 +4,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { join } from 'node:path/posix' // the file names are compared as strings: always /
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('../entry/src/main/js/MainAbility/', import.meta.url).pathname
+const root = fileURLToPath(new URL('../entry/src/main/js/MainAbility/', import.meta.url))
 const sources = dir => readdirSync(join(root, dir), { withFileTypes: true }).flatMap(e =>
   e.isDirectory() ? sources(join(dir, e.name)) : e.name.endsWith('.js') && e.name !== 'wearengine.js' ? [join(dir, e.name)] : [])
 

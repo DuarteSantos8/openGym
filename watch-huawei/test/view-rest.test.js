@@ -119,7 +119,9 @@ test('Rest: -15 and +15 are ignored in the first second after Done, like Skip', 
   w.snap(fixture().active)
   w.tap('done')
   const before = w.c.s.rest
-  w.tap('restMinus'); w.tap('restPlus')
+  w.tap('restMinus')
+  assert.equal(w.c.s.rest, before) // each tap on its own: a -15 and a +15 that both worked would cancel out
+  w.tap('restPlus')
   assert.equal(w.c.s.rest, before)
   assert.equal(w.d().locked, true)
   w.wait(2)
@@ -282,8 +284,10 @@ test('Still training?: after the quiet time, Keep going or Finish', () => {
   assert.equal(w.evs().pop().type, 'stillHere')
   w.wait(20 * 60 + 10)
   assert.equal(w.screen(), 'ask')
+  const queued = w.evs().length
   w.tap('askFinish')
   assert.equal(w.screen(), 'over')
+  assert.equal(w.evs().length, queued) // no finish is queued before the lifter confirms
   assert.equal(w.evs().filter(e => e.type === 'stillHere').length, 1) // Finish tells the phone nothing
 })
 

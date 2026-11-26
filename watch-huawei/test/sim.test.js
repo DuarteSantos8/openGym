@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { badLines, heapPeak, hook, inject, failures } from '../huawei-sim.mjs'
 
 test('badLines finds the three failures and nothing else', () => {
@@ -22,6 +23,8 @@ test('failures: an OOM before the first feed is one line, not also "never ran"',
   assert.deepEqual(failures({ fed: false, bad: [] }), ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'])
   assert.deepEqual(failures({ fed: false, bad: ['JS HEAP OOM'] }), ['FAIL JS HEAP OOM'])
   assert.deepEqual(failures({ fed: true, answered: true, bad: ['JS REF LIMIT'] }), ['FAIL JS REF LIMIT'])
+  // the simulator ended on its own after the lines were logged: not a pass
+  assert.deepEqual(failures({ fed: true, answered: true, bad: [], died: 'code 1' }), ['FAIL the simulator exited before the run finished (code 1)'])
 })
 
 test('inject puts the debug phone in the app.js copy, after the core is made, and refuses an app.js it does not recognise', () => {
@@ -41,7 +44,7 @@ test('hook tells the driver which page is up, in the copy of every page, and ref
 })
 
 test('the debug phone is never inside the app', () => {
-  const root = new URL('../entry/src/', import.meta.url).pathname
+  const root = fileURLToPath(new URL('../entry/src/', import.meta.url))
   const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)])
   const hits = walk(root).filter(f => /debugphone|OGSMOKE/.test(f) || (/\.(js|json|hml|css)$/.test(f) && /debugphone|OGSMOKE/.test(readFileSync(f, 'utf8'))))
   assert.deepEqual(hits, [])

@@ -1,12 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { render, build, LANGS, KEYS, REGIONS, I18N } from '../huawei-strings.mjs'
 
 test('i18n/*.json and common/en.js are what the generator writes now, and nothing else is in i18n', async () => {
   const files = await render()
   Object.entries(files).forEach(([f, text]) => assert.equal(existsSync(f) && readFileSync(f, 'utf8'), text, f + ' is out of date: run node watch-huawei/huawei-strings.mjs'))
-  readdirSync(I18N).forEach(f => assert.ok(files[I18N + '/' + f], f + ' is not written by the generator: run node watch-huawei/huawei-strings.mjs'))
+  readdirSync(I18N).forEach(f => assert.ok(files[join(I18N, f)], f + ' is not written by the generator: run node watch-huawei/huawei-strings.mjs'))
 })
 
 test('the regions are the spec\'s: the main one per language, none for the scripts the font may not draw', () => {

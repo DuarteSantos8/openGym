@@ -51,7 +51,8 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `healthDeleted` | `ids` | the phone's own Apple Health removal runs again |
 | `watchStatus` | `health`, `version`, `at` | Settings → Apple Watch; an older one never replaces a newer one |
 
-Every event has a unique `id` and a per-watch `seq` (its order on that watch). With protocol 2
+Every event has a unique `id`. Every event but a Huawei watch's also has a per-watch `seq` (its order
+on that watch; the Huawei core has none, see Two watches below). With protocol 2
 every event also carries `off`: the watch's clock minus the phone's, in ms, as the watch works it
 out (Clocks, below); the phone takes it off `at`, `restEnd` and `endsAt` before anything else.
 

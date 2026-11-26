@@ -13,7 +13,7 @@ import net from 'node:net'
 import { spawn } from 'node:child_process'
 import { cpSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build, outOf } from './huawei-size.mjs'
 import { STEPS } from './sim/debugphone.js'
@@ -26,7 +26,8 @@ const PAGES = 'entry/src/main/js/MainAbility/pages/'
 
 export const badLines = (log) => log.split('\n').filter((l) => BAD.test(l))
 // what a run failed on; "never ran" only when no bad line explains it
-export const failures = ({ fed, answered, bad }) => [
+export const failures = ({ fed, answered, bad, died }) => [
+  ...(died ? ['FAIL the simulator exited before the run finished (' + died + ')'] : []),
   ...(!fed && !bad.length ? ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'] : []),
   ...(fed && !answered && !bad.length ? ['FAIL the fake phone never answered the start (no OGSMOKE answered in the simulator log)'] : []),
   ...bad.map((l) => 'FAIL ' + l.slice(0, 160))]
@@ -84,6 +85,10 @@ async function run(dir, out, hs) {
     '-lws', '40003', '-s', 'ogsmoke', '-url', 'pages/index/index'] // no -l: the lite simulator stays zh-CN whatever it is given
   if (hs) args.push('-hs', String(hs))
   const sim = spawn(join(bin, 'Simulator'), args, { cwd: bin, stdio: ['ignore', openSync(logPath, 'w'), openSync(join(out, 'sim.err'), 'w')] })
+  // an exit nobody asked for is a failed run, whatever the log says; the kill in `finally` is not one
+  let died = null
+  let ending = false
+  sim.on('exit', (code, signal) => { if (!ending) died = signal ? 'signal ' + signal : 'code ' + code })
   let ws
   try { // whatever happens, the simulator dies with the run: it is heavy for an 8 GB Mac
     await sleep(1500)
@@ -95,19 +100,20 @@ async function run(dir, out, hs) {
     const log = () => readFileSync(logPath, 'utf8')
     // wait for the driver's first line, then take a shot 800 ms after each step
     let fed = false
-    for (let i = 0; i < 150 && !fed && !badLines(log()).length; i++) { await sleep(200); fed = log().includes('OGSMOKE feed') }
+    for (let i = 0; i < 150 && !fed && !died && !badLines(log()).length; i++) { await sleep(200); fed = log().includes('OGSMOKE feed') }
     const t0 = Date.now()
     if (fed) {
       for (const [ms, name] of STEPS) {
         await sleep(ms + 800 - (Date.now() - t0))
         if (last) writeFileSync(join(out, `${String(ms).padStart(5, '0')}-${name}.jpg`), last)
-        if (badLines(log()).length) break // an OOM mid-run: no point waiting out the rest of the steps
+        if (died || badLines(log()).length) break // an OOM mid-run: no point waiting out the rest of the steps
       }
       await sleep(2000)
     }
     writeFileSync(join(out, 'pipe.txt'), pipe) // the simulator's memoryUsage reports, in order: the heap per step
-    return { fed, answered: log().includes('OGSMOKE answered'), bad: badLines(log()), peak: heapPeak(pipe), out }
+    return { fed, answered: log().includes('OGSMOKE answered'), bad: badLines(log()), died, peak: heapPeak(pipe), out }
   } finally {
+    ending = true
     sim.kill(); if (ws) ws.close(); srv.close()
   }
 }
@@ -116,7 +122,7 @@ async function main() {
   const arg = (k) => { const i = process.argv.indexOf(k); return i < 0 ? undefined : process.argv[i + 1] }
   const hsArg = arg('--hs') || '196608'
   const hs = hsArg === 'none' ? 0 : +hsArg
-  let dir = arg('--from')
+  let dir = arg('--from') && resolve(arg('--from')) // it is a working directory below: an absolute path, whatever it was given as
   const made = !dir
   if (made) dir = mkdtempSync(join(tmpdir(), 'opengym-sim-'))
   let r

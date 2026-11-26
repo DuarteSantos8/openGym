@@ -54,8 +54,13 @@ test('numbers: sets done and in all, the volume, and the heart rate now, average
   assert.equal(n.volume, 480)
   assert.equal(n.unit, 'kg')
   assert.deepEqual(n.hr, { now: 140, avg: 120, max: 140 })
+  // a reading is there, and only the setting hides it
   const off = running([ent('a', 0, rows('a', 1))], {}, { show: { hr: false } })
+  beat(off, 1000, 100)
   assert.equal(X.numbers(off.c).hr, null)
+  const on = running([ent('a', 0, rows('a', 1))], {}, { show: { hr: true } })
+  beat(on, 1000, 100)
+  assert.deepEqual(X.numbers(on.c).hr, { now: 100, avg: 100, max: 100 })
 })
 
 test('numbers: the phone\'s totals count what the window does not hold', () => {

@@ -390,11 +390,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Huawei watch app tests
-        # texts.js is generated from the app's packs and the Wear OS and Garmin words; the test
+        # common/en.js and i18n/*.json are generated from the app's packs and the Wear OS and Garmin words; the test
         # fails when it is stale, so the message says what to run.
         run: |
           npm test || {
-            echo "::error::If strings.test.js failed, run node watch-huawei/huawei-strings.mjs and commit common/texts.js"
+            echo "::error::If strings.test.js failed, run node watch-huawei/huawei-strings.mjs and commit common/en.js and i18n/*.json"
             exit 1
           }
         working-directory: watch-huawei

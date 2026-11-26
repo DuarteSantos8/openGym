@@ -75,7 +75,7 @@ test('every tap in a page\'s HML has a handler in that page, and every action is
 test('every class a page\'s HML uses is in its CSS, and only components the research file confirms are used', () => {
   Object.keys(PG).forEach(n => {
     const p = PG[n]
-    ;[...p.hml.matchAll(/\bclass="([^"]*)"/g)].flatMap(m => m[1].split(/\s+/)).forEach(c => assert.ok(new RegExp('\\.' + c + '\\b').test(p.css), n + ': no style for .' + c))
+    ;[...p.hml.matchAll(/\bclass="([^"]*)"/g)].flatMap(m => m[1].split(/\s+/)).forEach(c => assert.ok(new RegExp('\\.' + c + '(?![\\w-])').test(p.css), n + ': no style for .' + c))
     ;[...p.hml.matchAll(/<([a-z-]+)[\s>]/g)].map(m => m[1]).forEach(t => assert.ok(['div', 'text', 'input', 'progress', 'stack', 'list', 'list-item'].indexOf(t) >= 0, t))
     ;[...p.hml.matchAll(/<input\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="button"/))
     ;[...p.hml.matchAll(/<progress\b[^>]*>/g)].forEach(m => assert.match(m[0], /type="(arc|horizontal)"/))
@@ -136,10 +136,12 @@ async function loadPage (W, sameApp, name) {
 // fake Huawei: files that answer later (flush), a P2P client that records, a sensor, a clock and timers
 function world (disk) {
   const W = { disk: disk, now: 1761742800000, timers: [], sent: [], receiver: null, hr: null, awake: [], buzzes: [], io: [], terminated: 0 }
+  // W.holdReads: reads wait in W.held (not answered) until a test moves them to W.io; W.asked: every write and delete asked for
+  W.held = []; W.asked = []
   W.file = {
-    readText: p => W.io.push(() => (W.failReads ? p.fail('x', 300) : W.disk.has(p.uri) ? p.success({ text: W.disk.get(p.uri) }) : p.fail('x', 301))),
-    writeText: p => W.io.push(() => { W.disk.set(p.uri, p.text); p.success() }),
-    delete: p => W.io.push(() => { W.disk.delete(p.uri); p.success() })
+    readText: p => { const run = () => (W.failReads ? p.fail('x', 300) : W.disk.has(p.uri) ? p.success({ text: W.disk.get(p.uri) }) : p.fail('x', 301)); (W.holdReads ? W.held : W.io).push(run) },
+    writeText: p => { W.asked.push(p.uri); W.io.push(() => { W.disk.set(p.uri, p.text); p.success() }) },
+    delete: p => { W.asked.push(p.uri); W.io.push(() => { W.disk.delete(p.uri); p.success() }) }
   }
   W.vibrator = { vibrate: p => { W.buzzes.push(p.mode); p.success() } }
   W.subs = 0; W.unsubs = 0
@@ -443,9 +445,8 @@ test('page switch: a rest and the heart-rate totals survive a new page, in eithe
       assert.deepEqual(globalThis.getApp().data.k().hrSoFar(A.c), hr)
       assert.equal(next.s_rest, true)
       assert.ok(A.store && A.radio && A.cb, 'the new page is wired: store, radio, redraw')
-      const t = W.timers.length
       W.advance(2)
-      assert.ok(W.timers.length > 0 || t > 0, 'the clock runs')
+      assert.ok(W.timers.length > 0, 'the clock runs: the tick that just ran asked for the next one')
       assert.ok(W.hr, 'the sensor still runs')
       assert.ok(W.receiver, 'the new page listens')
       next.restSkip()
@@ -678,10 +679,18 @@ test('page: a second boot (Try again) drops the first core: only the new one sav
   try {
     const page = await boot(W)
     const files = [...disk.keys()].sort().join()
+    const text = new Map(disk)
+    const asked = W.asked.length
+    W.holdReads = true // the new load's reads stay unanswered
     page.def.retry.call(page) // Try again: boots once more with the module alive (a later page's onInit adopts the running core instead)
     page.def.onShow.call(page)
     page.start(); page.routines(); W.advance(3) // taps and the clock before the new load finishes: no core, nothing happens
+    assert.ok(W.held.length > 0, 'the retry is waiting for its read')
+    assert.equal(W.asked.length, asked, 'no write or delete is asked for while the read is pending')
+    assert.deepEqual([...disk.entries()], [...text.entries()], 'no file is overwritten either')
     assert.equal([...disk.keys()].sort().join(), files)
+    W.holdReads = false
+    W.io.push(...W.held.splice(0))
     W.settle(); W.advance(2)
     const A = globalThis.getApp().data.get()
     assert.ok(A.c && A.c.s.w, 'the stored workout is back')

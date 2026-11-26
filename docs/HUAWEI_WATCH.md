@@ -525,7 +525,7 @@ finish, summary):
 
 | Heap (`-hs`) | Result |
 | --- | --- |
-| 196,608 (192 KB) | **passes**, peak about 192.5 KB |
+| 196,608 (192 KB) | passed in the runs that finished, peak about 192.5 KB, but a page switch ran out of memory in about one run in three, so one good run is no proof of a safe limit |
 | 180,224 (176 KB) | fails: out of memory on the rest page |
 | 163,840 (160 KB) | fails: out of memory on the lift page during the 3-2-1, peak 158.2 KB |
 
