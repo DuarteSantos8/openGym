@@ -101,7 +101,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 exercises, which is every exercise a starter plan uses, so every Find my plan result is covered (a test holds that). All `draft`: **the owner or a named reviewer still has to read them** (ADR 0012). About 35 more for the routines library are open |
 | EP23-T04 | Guidance on the exercise sheet | `sheets.jsx`, `components/ExerciseGuide.jsx` | cues, mistakes with fixes, where to feel it, breathing, easier and harder open the other exercise; a draft is never called reviewed | done, `next/EP23-exercise-guidance` |
 | EP23-T05 | Library opens on guided exercises for a Beginner | `views/Library.jsx`, `lib/exercise-guide.js` | a Beginner's Library opens on the exercises with a form guide, as a chip anyone can set or clear; a search with nothing guided in it shows what it found | **done** (#60). The search index and the 50 ms target were not needed for this and are not built |
-| EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 terms, searchable, one `Term` in use (the plan result). Still open: `Term` in Workout, Plan and Progress; translations of the entries |
+| EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 searchable terms. The plan result, Workout, Plan and Progress expose definitions. Complete translations and native review of the entries remain open |
 | EP24-T02 | Learn | `views/Learn.jsx`, `App.jsx` `/learn` | done, same branch: 8 guides and the glossary, offline, no link out, axe clean |
 | EP24-T03 | Warm-up, cool-down and mobility as guided sessions | NEW `routines/learn/*.json`, circuit player | 8 routines playable with spoken cues | prepared, content in draft pending named review |
 | EP24-T04 | Food, sleep and safety basics | `content/learn.js` | done, same branch: every number names its source; English only for now |
@@ -133,7 +133,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 1. Owner: read the 45 exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
 2. Owner: create the Supabase project and the Stripe test account. Nothing more of the Cloud edition can be verified without them: ADR 0013's five checks, EP19-T03, T05, EP20-T01, T07 and EP18-T02 all wait on this.
-3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (the glossary on more screens).
+3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (glossary translations and native review).
 4. EP18-T04 and EP26-T01 before any live key.
 
 ## What "production ready" still needs, and who can give it

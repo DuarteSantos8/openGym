@@ -2,7 +2,7 @@
 .iv-term-card{text-align:center;padding:4px 0}
 .iv-term-card h3{margin-bottom:8px}
 .iv-term-card p{margin:0 0 18px;line-height:1.5;text-align:start}
-.iv-screen-glossary{margin-block:12px;color:var(--muted);font-size:var(--fs-subhead)}
+.iv-screen-glossary{margin-block:12px;color:var(--label-2);font-size:var(--fs-subhead)}
 .iv-screen-glossary summary{width:fit-content;padding-block:6px;cursor:pointer}
 .iv-screen-glossary > div{display:flex;flex-wrap:wrap;gap:4px 16px}
 .iv-screen-glossary .iv-term{min-height:32px}
