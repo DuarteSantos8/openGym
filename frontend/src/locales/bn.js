@@ -127,7 +127,7 @@ export default {
   "Your own clips": "আপনার নিজের ক্লিপ",
   "{0} of {1} seconds": "{1} সেকেন্ডের মধ্যে {0}",
   "Just the facts": "শুধু আসল কথা",
-  "The set, the time, nothing else.": "সেট, সময়, আর কিছু না।",
+  "The set and how it went, nothing else.": "সেট আর সেটা কেমন গেল, আর কিছু না।",
   "Calm coach": "শান্ত কোচ",
   "Soft words, steady breathing.": "নরম কথা, স্থির শ্বাস।",
   "Loud, strict, secretly proud of you.": "জোরালো, কড়া, মনে মনে আপনাকে নিয়ে গর্বিত।",

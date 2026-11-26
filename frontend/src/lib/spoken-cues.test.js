@@ -402,6 +402,28 @@ describe('a line about each set, by level (#1393)', () => {
     expect(played).toEqual(['k2'])
     vi.useRealTimers()
   })
+  // The number words come from the plural helpers; the sentence round them takes the nominative
+  // ("Время тренировки: 21 минута"), as a preposition would not fit 1, 2, 5 and 21 alike.
+  test('Slavic plurals are right for 1, 2, 5 and 21 in the closer and in the beat', async () => {
+    const ru = (await import('../locales/ru.js')).default
+    const pl = (await import('../locales/pl.js')).default
+    const st = S([entry(BENCH, [set(80, 8, true)], tgt)])
+    bindCueState(() => st)
+    _setLangState('ru', ru, null, null)
+    const closer = m => { speak.mockClear(); cues.finished(st, { start: 0, end: m * 60000 }); return said()[0] }
+    expect([1, 2, 5, 21].map(closer)).toEqual(['Время тренировки: 1 минута.', 'Время тренировки: 2 минуты.', 'Время тренировки: 5 минут.', 'Время тренировки: 21 минута.'])
+    const beat = more => {
+      speak.mockClear()
+      bindCueState(() => ({ ...S([entry(BENCH, [set(80, 8 + more, true, { at: more }), set(80, 8)], { mode: 'reps', sets: 3, reps: 8 + more })]), ...past([8, 8, 8]) }))
+      cues.restStarted(0, 0)
+      return said()[1]
+    }
+    expect([1, 2, 5].map(beat)).toEqual(['Больше, чем в прошлый раз: 1 повторение.', 'Больше, чем в прошлый раз: 2 повторения.', 'Больше, чем в прошлый раз: 5 повторений.'])
+    _setLangState('pl', pl, null, null)
+    bindCueState(() => st)
+    expect(closer(21)).toBe('Czas treningu: 21 minut.')
+    expect(closer(22)).toBe('Czas treningu: 22 minuty.')
+  })
   test('a German app says the German line', () => {
     _setLangState('de', de, null, null)
     bindCueState(() => three([set(80, 9, true), set(80, 8), set(80, 8), set(80, 8)], past([8, 8, 8])))

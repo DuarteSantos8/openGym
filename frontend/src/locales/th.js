@@ -127,7 +127,7 @@ export default {
   "Your own clips": "คลิปของคุณเอง",
   "{0} of {1} seconds": "{0} จาก {1} วินาที",
   "Just the facts": "แค่ข้อเท็จจริง",
-  "The set, the time, nothing else.": "เซ็ต เวลา แค่นั้น",
+  "The set and how it went, nothing else.": "เซ็ตและผลของมัน แค่นั้น",
   "Calm coach": "โค้ชใจเย็น",
   "Soft words, steady breathing.": "คำพูดนุ่มนวล หายใจสม่ำเสมอ",
   "Loud, strict, secretly proud of you.": "เสียงดัง เข้มงวด แอบภูมิใจในตัวคุณ",

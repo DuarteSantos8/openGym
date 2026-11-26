@@ -3720,7 +3720,7 @@ export default {
   "Your own clips": "自分のクリップ",
   "{0} of {1} seconds": "{1}秒中{0}秒",
   "Just the facts": "事実だけ",
-  "The set, the time, nothing else.": "セットと時間だけ。余計なことは言いません。",
+  "The set and how it went, nothing else.": "セットとその結果だけ。余計なことは言いません。",
   "Calm coach": "穏やかなコーチ",
   "Soft words, steady breathing.": "やさしい言葉で、落ち着いた呼吸を。",
   "Loud, strict, secretly proud of you.": "声は大きく、指導は厳しく、内心ではあなたが自慢。",

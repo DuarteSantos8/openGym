@@ -127,7 +127,7 @@ export default {
   "Your own clips": "کلیپ‌های خودتان",
   "{0} of {1} seconds": "{0} از {1} ثانیه",
   "Just the facts": "فقط حقایق",
-  "The set, the time, nothing else.": "ست، زمان، و دیگر هیچ.",
+  "The set and how it went, nothing else.": "ست و نتیجه‌اش، و دیگر هیچ.",
   "Calm coach": "مربی آرام",
   "Soft words, steady breathing.": "حرف‌های نرم، نفس‌های آرام.",
   "Loud, strict, secretly proud of you.": "بلند، سخت‌گیر، و در دل به شما افتخار می‌کند.",

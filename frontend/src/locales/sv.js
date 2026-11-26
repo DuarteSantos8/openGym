@@ -127,7 +127,7 @@ export default {
   "Your own clips": "Dina egna klipp",
   "{0} of {1} seconds": "{0} av {1} sekunder",
   "Just the facts": "Bara fakta",
-  "The set, the time, nothing else.": "Setet, tiden, inget annat.",
+  "The set and how it went, nothing else.": "Setet och hur det gick, inget annat.",
   "Calm coach": "Lugn coach",
   "Soft words, steady breathing.": "Mjuka ord, jämn andning.",
   "Loud, strict, secretly proud of you.": "Högljudd, sträng, i hemlighet stolt över dig.",

@@ -24,7 +24,7 @@ export const LINES_MAX = 8
 export const LINE_MAX = 120
 
 export const STYLE_COPY = {
-  plain: ['Just the facts', 'The set, the time, nothing else.'],
+  plain: ['Just the facts', 'The set and how it went, nothing else.'],
   calm: ['Calm coach', 'Soft words, steady breathing.'],
   drill: ['Drill sergeant', 'Loud, strict, secretly proud of you.'],
   hype: ['Hype man', 'ALL CAPS ENERGY.'],

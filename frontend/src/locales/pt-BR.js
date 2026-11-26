@@ -175,7 +175,7 @@ export const PT_BR_OVERRIDES = {
   "Your own clips": "Seus próprios clipes",
   "{0} of {1} seconds": "{0} de {1} segundos",
   "Just the facts": "Só os fatos",
-  "The set, the time, nothing else.": "A série, o tempo, nada mais.",
+  "The set and how it went, nothing else.": "A série e como foi, nada mais.",
   "Calm coach": "Treinador zen",
   "Soft words, steady breathing.": "Palavras suaves, respiração tranquila.",
   "Loud, strict, secretly proud of you.": "Barulhento, rígido, secretamente orgulhoso de você.",

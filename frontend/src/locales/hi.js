@@ -127,7 +127,7 @@ export default {
   "Your own clips": "आपकी अपनी क्लिप्स",
   "{0} of {1} seconds": "{1} में से {0} सेकंड",
   "Just the facts": "बस काम की बात",
-  "The set, the time, nothing else.": "सेट, समय, और कुछ नहीं।",
+  "The set and how it went, nothing else.": "सेट और वह कैसा रहा, और कुछ नहीं।",
   "Calm coach": "शांत कोच",
   "Soft words, steady breathing.": "नरम शब्द, स्थिर साँसें।",
   "Loud, strict, secretly proud of you.": "ऊँची आवाज़, सख़्त, और अंदर ही अंदर आप पर गर्व।",

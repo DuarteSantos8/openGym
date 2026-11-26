@@ -127,7 +127,7 @@ export default {
   "Your own clips": "Clip của riêng bạn",
   "{0} of {1} seconds": "{0}/{1} giây",
   "Just the facts": "Chỉ thông tin",
-  "The set, the time, nothing else.": "Hiệp, thời gian, hết.",
+  "The set and how it went, nothing else.": "Hiệp tập và diễn biến của nó, hết.",
   "Calm coach": "HLV điềm tĩnh",
   "Soft words, steady breathing.": "Lời nhẹ nhàng, hơi thở đều.",
   "Loud, strict, secretly proud of you.": "Ồn ào, nghiêm khắc, thầm tự hào về bạn.",

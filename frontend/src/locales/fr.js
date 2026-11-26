@@ -127,7 +127,7 @@ export default {
   "Your own clips": "Tes propres clips",
   "{0} of {1} seconds": "{0} sur {1} secondes",
   "Just the facts": "Juste les faits",
-  "The set, the time, nothing else.": "La série, le temps, rien d’autre.",
+  "The set and how it went, nothing else.": "La série et comment elle s’est passée, rien d’autre.",
   "Calm coach": "Coach zen",
   "Soft words, steady breathing.": "Mots doux, souffle tranquille.",
   "Loud, strict, secretly proud of you.": "Fort, strict, secrètement fier de toi.",

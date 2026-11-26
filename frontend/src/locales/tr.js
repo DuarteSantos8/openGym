@@ -127,7 +127,7 @@ export default {
   "Your own clips": "Kendi kliplerin",
   "{0} of {1} seconds": "{0}/{1} saniye",
   "Just the facts": "Sadece gerçekler",
-  "The set, the time, nothing else.": "Set, süre, o kadar.",
+  "The set and how it went, nothing else.": "Set ve nasıl geçtiği, o kadar.",
   "Calm coach": "Sakin koç",
   "Soft words, steady breathing.": "Yumuşak sözler, düzenli nefes.",
   "Loud, strict, secretly proud of you.": "Gürültülü, sert, gizliden seninle gurur duyuyor.",

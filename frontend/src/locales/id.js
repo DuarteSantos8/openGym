@@ -127,7 +127,7 @@ export default {
   "Your own clips": "Klip milikmu",
   "{0} of {1} seconds": "{0} dari {1} detik",
   "Just the facts": "Fakta saja",
-  "The set, the time, nothing else.": "Set, waktu, itu saja.",
+  "The set and how it went, nothing else.": "Set dan hasilnya, itu saja.",
   "Calm coach": "Pelatih kalem",
   "Soft words, steady breathing.": "Kata-kata lembut, napas tenang.",
   "Loud, strict, secretly proud of you.": "Keras, galak, diam-diam bangga padamu.",

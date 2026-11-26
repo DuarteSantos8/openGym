@@ -127,7 +127,7 @@ export default {
   "Your own clips": "Os teus próprios clips",
   "{0} of {1} seconds": "{0} de {1} segundos",
   "Just the facts": "Só os factos",
-  "The set, the time, nothing else.": "A série, o tempo, mais nada.",
+  "The set and how it went, nothing else.": "A série e como correu, mais nada.",
   "Calm coach": "Treinador zen",
   "Soft words, steady breathing.": "Palavras suaves, respiração calma.",
   "Loud, strict, secretly proud of you.": "Barulhento, rigoroso, secretamente orgulhoso de ti.",

@@ -127,7 +127,7 @@ export default {
   "Your own clips": "مقاطعك الخاصة",
   "{0} of {1} seconds": "{0} من {1} ثانية",
   "Just the facts": "الحقائق فقط",
-  "The set, the time, nothing else.": "المجموعة، الوقت، ولا شيء غير ذلك.",
+  "The set and how it went, nothing else.": "المجموعة وكيف سارت، ولا شيء غير ذلك.",
   "Calm coach": "مدرب هادئ",
   "Soft words, steady breathing.": "كلمات لطيفة، وتنفس ثابت.",
   "Loud, strict, secretly proud of you.": "صاخب، صارم، وفخور بك سرًّا.",
