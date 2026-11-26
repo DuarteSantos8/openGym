@@ -6,13 +6,12 @@ import file from '@system.file'
 import vibrator from '@system.vibrator'
 import sensor from '@system.sensor'
 import brightness from '@system.brightness'
-import configuration from '@system.configuration'
 import app from '@system.app'
 import { P2pClient, Message, Builder } from '../../common/wearengine.js'
 import { createCore, launch, stop, second, countTick, onPhone, hrSample } from '../../common/core.js'
 import { createRadio } from '../../common/radio.js'
 import { createStore } from '../../common/store.js'
-import { blank, newUi, tick, build, act, translator, langOf, deviceLang, lostData, wantHr, wantAwake, buzzPlan, bpmNow, swipeTo } from '../../common/view.js'
+import { blank, newUi, tick, build, act, translator, lostData, wantHr, wantAwake, buzzPlan, bpmNow, swipeTo } from '../../common/view.js'
 
 // The phone app this watch talks to (wire.md section 4). The package is the phone app's release
 // applicationId (a debug phone build is ch.duartesantos.opengym.test: change it to try one).
@@ -35,7 +34,7 @@ let client = {}
 try { client = new P2pClient() } catch (e) { client = {} }
 
 // What lives while the page does. Module level, like Huawei's own sample: a page's `this` only holds data.
-const S = { boot: 0, shown: false, lost: false, core: null, ui: null, store: null, radio: null, t: null, lang: '', loop: 0, ticks: 0, lastSec: 0, fast: false, reg: 'pending', sum: false, hr: false, bpm: 0, bpmAt: 0, awake: false }
+const S = { boot: 0, shown: false, lost: false, core: null, ui: null, store: null, radio: null, t: null, loop: 0, ticks: 0, lastSec: 0, fast: false, reg: 'pending', sum: false, hr: false, bpm: 0, bpmAt: 0, awake: false }
 
 function makeMessage (text) {
   const builder = new Builder()
@@ -83,9 +82,7 @@ function devices (c) {
 function refresh (page) {
   const c = S.core
   if (!c) return
-  const lang = langOf(S.ui)
-  if (lang !== S.lang) { S.lang = lang; S.t = translator(lang) }
-  const d = build(c, S.ui, S.t)
+  const d = build(c, S.ui, words(page))
   Object.keys(d).forEach(function (k) { if (page[k] !== d[k]) page[k] = d[k] })
   // the crown scrolls the summary list: ask for it once when the summary comes up (the list draws a turn later)
   if (d.s_summary !== S.sum) {
@@ -160,14 +157,15 @@ function appVersion () {
   try { return String(app.getInfo().versionName || '') } catch (e) { return '' }
 }
 
-function locale () {
-  try { return configuration.getLocale() } catch (e) { return null }
+// the page's $t, read once: the framework picks the file for the watch's language
+function words (page) {
+  return S.t || (S.t = translator(function (path) { return page.$t(path) }))
 }
 
 // The stored workout could not be read: say so, make no core, save nothing (the store refuses to).
 function showLost (page) {
   S.lost = true
-  const d = lostData(translator(deviceLang(locale())))
+  const d = lostData(words(page))
   Object.keys(d).forEach(function (k) { page[k] = d[k] })
 }
 
@@ -183,7 +181,7 @@ function whenVersion (cb) {
 }
 
 function start (page, stored, mine) {
-  S.ui = newUi(deviceLang(locale()))
+  S.ui = newUi()
   try {
     client.setPeerPkgName(PHONE_PACKAGE)
     client.setPeerFingerPrint(PHONE_FINGERPRINT)

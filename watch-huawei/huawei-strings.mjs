@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// Writes the Huawei watch's words, entry/src/main/js/MainAbility/common/texts.js, in every language
-// the phone app has. Nothing is translated twice: the watch says what the Wear OS watch says
+// Writes the Huawei watch's words: one entry/src/main/js/MainAbility/i18n/<lang>-<REGION>.json for each
+// language and region below (the framework's $t reads the one for the WATCH's language), and
+// common/en.js, the English the page falls back on when $t gives nothing (no file for the language).
+// Nothing is translated twice: the watch says what the Wear OS watch says
 // (frontend/android/wear/src/main/res/values*/strings.xml, made from the app's packs and the Apple
 // Watch's strings), two words come from the app's own packs, two phrases from the Garmin watch's
 // generated strings (same wording as that watch), and the few only this watch says are below.
@@ -8,16 +10,26 @@
 //
 //   node watch-huawei/huawei-strings.mjs
 //
-// Copy tone (CONTRIBUTING.md): plain, human, never an em dash. Huawei's own i18n/*.json only follows
-// the watch's language, so it is not used for these.
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+// Copy tone (CONTRIBUTING.md): plain, human, never an em dash.
+import { readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const frontend = join(here, '..', 'frontend')
 const wearRes = join(frontend, 'android', 'wear', 'src', 'main', 'res')
-export const OUT = join(here, 'entry', 'src', 'main', 'js', 'MainAbility', 'common', 'texts.js')
+const ability = join(here, 'entry', 'src', 'main', 'js', 'MainAbility')
+export const I18N = join(ability, 'i18n')
+export const EN_OUT = join(ability, 'common', 'en.js')
+
+// The files to write: the app's language -> its <language>-<REGION> names. The main region of each language, as the
+// Garmin does; Huawei's region codes are UNSURE, so English shows where none matches. ar, bn, fa, hi and th get no
+// file: the watch's one font (SourceHanSansSC) may not draw them, so they show English.
+export const REGIONS = {
+  en: ['en-US'], de: ['de-DE'], fr: ['fr-FR'], es: ['es-ES'], it: ['it-IT'], pt: ['pt-PT'], 'pt-BR': ['pt-BR'], pl: ['pl-PL'],
+  hu: ['hu-HU'], tr: ['tr-TR'], ru: ['ru-RU'], uk: ['uk-UA'], ko: ['ko-KR'], sv: ['sv-SE'], zh: ['zh-CN'], 'zh-TW': ['zh-TW', 'zh-HK'],
+  cs: ['cs-CZ'], id: ['id-ID'], lt: ['lt-LT'], da: ['da-DK'], vi: ['vi-VN'],
+}
 
 // the app's language -> [Wear OS values folder, Garmin resources folder (or null)]
 export const LANGS = {
@@ -134,20 +146,27 @@ export async function build () {
     row.try_again = TRY_AGAIN[lang]
     row.open_phone_once = OPEN_OWN[lang] ?? (gm.open_phone_once || '').replace(/Garmin/g, 'Huawei')
     for (const k of KEYS) check(lang, k, row[k])
-    out[lang] = KEYS.map(k => row[k])
+    out[lang] = row
   }
   return out
 }
 
+// file name -> text, for everything render() owns
 export async function render () {
   const rows = await build()
-  const head = '// The Huawei watch\'s words. Written by watch-huawei/huawei-strings.mjs: change that, not this.\n' +
-    '// One line per word, in the order of KEYS, for each language; view.js splits the language in use.\n'
-  const body = Object.entries(rows).map(([lang, row]) => ' ' + JSON.stringify(lang) + ': ' + JSON.stringify(row.join('\n'))).join(',\n')
-  return head + 'export const KEYS = ' + JSON.stringify(KEYS) + '\nexport const TEXTS = {\n' + body + '\n}\n'
+  const out = {}
+  for (const [lang, names] of Object.entries(REGIONS)) {
+    const text = JSON.stringify({ strings: Object.fromEntries(KEYS.map(k => [k, rows[lang][k]])) }, null, 2) + '\n'
+    names.forEach(n => { out[join(I18N, n + '.json')] = text })
+  }
+  out[EN_OUT] = '// The English the page says when $t has no word. Written by watch-huawei/huawei-strings.mjs: change that, not this.\n' +
+    'export const EN = ' + JSON.stringify(Object.fromEntries(KEYS.map(k => [k, rows.en[k]])), null, 1) + '\n'
+  return out
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  writeFileSync(OUT, await render())
-  console.log('wrote', OUT, 'for', Object.keys(LANGS).length, 'languages')
+  const files = await render()
+  readdirSync(I18N).forEach(f => { if (!files[join(I18N, f)]) unlinkSync(join(I18N, f)) })
+  Object.entries(files).forEach(([f, text]) => writeFileSync(f, text))
+  console.log('wrote', Object.keys(files).length, 'files')
 }

@@ -5,10 +5,10 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import * as K from '../entry/src/main/js/MainAbility/common/core.js'
 import * as V from '../entry/src/main/js/MainAbility/common/view.js'
-import { KEYS, TEXTS } from '../entry/src/main/js/MainAbility/common/texts.js'
+import { FILES, dollarT } from './i18n.js'
 
 const T0 = 1761742800000
-const t = V.translator('en')
+const t = V.translator(dollarT('en-US'))
 const clone = v => JSON.parse(JSON.stringify(v))
 
 function mk (opts) {
@@ -18,7 +18,7 @@ function mk (opts) {
   const sent = []
   const env = { radio: { transmit: m => { sent.push(clone(m)) } }, now: () => clk.now, random: () => 0.5, save: () => {}, buzz: p => buzzes.push(p), today: () => '2026-11-25' }
   const c = K.createCore(env, o.stored)
-  const ui = V.newUi(o.lang || 'en')
+  const ui = V.newUi()
   const w = {
     c, ui, clk, buzzes, sent,
     snap: (active, extra) => { K.onPhone(c, Object.assign({ v: 1, unit: 'kg', restSec: 90, settings: {}, active: active, ready: null }, extra || {})); V.tick(c, ui) },
@@ -164,7 +164,7 @@ test('Overview: the page clamps when the window shrinks', () => {
 })
 
 test('The lost state: the one message and button, in the watch\'s words', () => {
-  const d = V.lostData(V.translator('de'))
+  const d = V.lostData(V.translator(dollarT('de-DE')))
   assert.equal(d.s_lost, true)
   V.SCREENS.forEach(k => assert.equal(d['s_' + k], false))
   assert.deepEqual([d.lostText, d.retryLabel], ['Training konnte nicht gelesen werden. Nichts wurde geändert.', 'Nochmal versuchen'])
@@ -635,7 +635,7 @@ test('Set page: the top is the heart rate alone, red is never the sync state; th
 test('Added weight: a language whose word is too long for the tile gets the plain word', () => {
   const w = mk()
   w.snap(act([ent('Dip', 0, [row(10, 10)], { bodyweight: true })]))
-  const lt = V.translator('lt')
+  const lt = V.translator(dollarT('lt-LT'))
   assert.equal(V.build(w.c, w.ui, lt).wLabel, lt('weight').toUpperCase())
 })
 
@@ -761,31 +761,21 @@ test('Look: the lime unless the phone gives an accent; the ink follows', () => {
   assert.deepEqual([w.d().accent, w.d().ink], ['#A3E635', '#0C0E12'])
 })
 
-test('Words: the watch\'s language, else English; the phone\'s is not used', () => {
-  const w = mk({ lang: 'fr' })
-  assert.equal(V.langOf(w.ui), 'fr')
-  w.snap(null, { settings: { lang: 'de' } })
-  assert.equal(V.langOf(w.ui), 'fr') // the phone's language is ignored, as on the Garmin
-  assert.equal(V.langOf(mk({ lang: 'xx' }).ui), 'en')
-  assert.equal(V.langOf(mk({ lang: 'ar' }).ui), 'en') // not drawable by the font, for now
-  assert.equal(V.translator('de')('set_of', 2, 4), 'Satz 2 von 4')
-  assert.equal(V.translator('de')('no_such_key'), 'no_such_key')
-  assert.equal(V.translator('xx')('done'), 'Done')
-})
-
-test('deviceLang maps the watch\'s locale onto the app\'s languages', () => {
-  const l = (language, countryOrRegion) => V.deviceLang({ language: language, countryOrRegion: countryOrRegion })
-  assert.deepEqual([l('de', 'DE'), l('zh', 'CN'), l('zh', 'TW'), l('zh', 'HK'), l('pt', 'BR'), l('pt', 'PT'), l('in', 'ID'), l('xx', ''), l('constructor', '')],
-    ['de', 'zh', 'zh-TW', 'zh-TW', 'pt-BR', 'pt', 'id', 'en', 'en'])
-  assert.equal(V.deviceLang(null), 'en')
-  assert.equal(V.deviceLang({}), 'en')
+test('Words: $t first, then the English kept in the code, then the key; {0} {1} are filled in', () => {
+  const de = V.translator(dollarT('de-DE'))
+  assert.equal(de('set_of', 2, 4), 'Satz 2 von 4')
+  assert.equal(de('no_such_key'), 'no_such_key')
+  const none = V.translator(dollarT('xx-XX')) // a watch language with no file: $t gives undefined
+  assert.equal(none('done'), 'Done')
+  assert.equal(none('set_of', 2, 4), 'Set 2 of 4')
+  assert.equal(V.translator(() => { throw new Error('no $t') })('done'), 'Done')
+  assert.equal(V.translator(() => '')('done'), 'Done')
 })
 
 test('the screens speak every language they are given: no key missing, no leftover placeholder', () => {
-  Object.keys(TEXTS).forEach(lang => {
-    const line = TEXTS[lang].split('\n')
-    assert.equal(line.length, KEYS.length, lang)
-    line.forEach((w, i) => { assert.ok(w, lang + ' ' + KEYS[i]); assert.doesNotMatch(w, /%\d|\$\d\$|—/, lang + ' ' + KEYS[i]) })
+  Object.keys(FILES).forEach(lang => {
+    assert.deepEqual(Object.keys(FILES[lang]), Object.keys(FILES['en-US']), lang)
+    Object.keys(FILES[lang]).forEach(k => assert.doesNotMatch(FILES[lang][k], /%\d|\$\d\$|—/, lang + ' ' + k))
   })
 })
 
@@ -793,7 +783,7 @@ test('view.js only asks for words that exist', () => {
   const src = readFileSync(new URL('../entry/src/main/js/MainAbility/common/view.js', import.meta.url), 'utf8')
   const used = [...src.matchAll(/\bt\('([a-z_]+)'/g)].map(m => m[1])
   assert.ok(used.length > 40)
-  used.forEach(k => assert.ok(KEYS.indexOf(k) >= 0, k))
+  used.forEach(k => assert.ok(k in FILES['en-US'], k))
 })
 
 /* ---------- plumbing ---------- */
@@ -932,7 +922,7 @@ test('Closing the summary locks for a second by the core\'s own clock, not the w
   const clk = { now: T0, tick: 5000 }
   const env = { radio: { transmit: () => {} }, now: () => clk.now, tick: () => clk.tick, random: () => 0.5, save: () => {}, today: () => '2026-11-25' }
   const c = K.createCore(env, null)
-  const ui = V.newUi('en')
+  const ui = V.newUi()
   K.onPhone(c, { v: 1, unit: 'kg', restSec: 90, settings: { weighIn: false }, active: act([ent('Bench', 0, [row(60, 8)])]), ready: null })
   V.act(c, ui, 'finish'); V.act(c, ui, 'yes')
   clk.tick += 2000; clk.now += 2000

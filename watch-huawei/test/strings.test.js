@@ -1,10 +1,29 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { render, build, LANGS, KEYS, OUT } from '../huawei-strings.mjs'
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
+import { render, build, LANGS, KEYS, REGIONS, I18N } from '../huawei-strings.mjs'
 
-test('texts.js is what the generator writes now', async () => {
-  assert.equal(readFileSync(OUT, 'utf8'), await render(), 'texts.js is out of date: run node watch-huawei/huawei-strings.mjs')
+test('i18n/*.json and common/en.js are what the generator writes now, and nothing else is in i18n', async () => {
+  const files = await render()
+  Object.entries(files).forEach(([f, text]) => assert.equal(existsSync(f) && readFileSync(f, 'utf8'), text, f + ' is out of date: run node watch-huawei/huawei-strings.mjs'))
+  readdirSync(I18N).forEach(f => assert.ok(files[I18N + '/' + f], f + ' is not written by the generator: run node watch-huawei/huawei-strings.mjs'))
+})
+
+test('the regions are the spec\'s: the main one per language, none for the scripts the font may not draw', () => {
+  const names = [].concat(...Object.values(REGIONS)).sort()
+  assert.deepEqual(names, ['cs-CZ', 'da-DK', 'de-DE', 'en-US', 'es-ES', 'fr-FR', 'hu-HU', 'id-ID', 'it-IT', 'ko-KR', 'lt-LT', 'pl-PL', 'pt-BR', 'pt-PT',
+    'ru-RU', 'sv-SE', 'tr-TR', 'uk-UA', 'vi-VN', 'zh-CN', 'zh-HK', 'zh-TW'])
+  assert.deepEqual(readdirSync(I18N).sort(), names.map(n => n + '.json'))
+  ;['ar', 'bn', 'fa', 'hi', 'th'].forEach(l => assert.equal(REGIONS[l], undefined, l))
+})
+
+test('every i18n file has every key, as {strings}, and stays small (the framework buffers 10 KB)', () => {
+  readdirSync(I18N).forEach(f => {
+    const j = JSON.parse(readFileSync(I18N + '/' + f, 'utf8'))
+    assert.deepEqual(Object.keys(j), ['strings'], f)
+    assert.deepEqual(Object.keys(j.strings), KEYS, f)
+    assert.ok(statSync(I18N + '/' + f).size < 10240, f + ' is over 10 KB')
+  })
 })
 
 test('every language the app has is in, with every key, none empty', async () => {
@@ -16,13 +35,12 @@ test('every language the app has is in, with every key, none empty', async () =>
   const rows = await build()
   assert.deepEqual(Object.keys(LANGS).sort(), packs.concat('en').sort()) // the phone app's languages, no more, no fewer
   Object.keys(rows).forEach(l => {
-    assert.equal(rows[l].length, KEYS.length, l)
-    rows[l].forEach((w, i) => { assert.ok(w.length > 0, l + ' ' + KEYS[i]); assert.doesNotMatch(w, /—|\n/, l + ' ' + KEYS[i]) })
+    KEYS.forEach(k => { assert.ok(rows[l][k].length > 0, l + ' ' + k); assert.doesNotMatch(rows[l][k], /—|\n/, l + ' ' + k) })
   })
 })
 
 test('placeholders agree across languages: each word has the same {0} {1} {2} as English', async () => {
   const rows = await build()
   const holes = w => (w.match(/\{\d\}/g) || []).sort().join('')
-  Object.keys(rows).forEach(l => rows[l].forEach((w, i) => assert.equal(holes(w), holes(rows.en[i]), l + ' ' + KEYS[i])))
+  Object.keys(rows).forEach(l => KEYS.forEach(k => assert.equal(holes(rows[l][k]), holes(rows.en[k]), l + ' ' + k)))
 })

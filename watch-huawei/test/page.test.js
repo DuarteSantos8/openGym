@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { blank, ACTIONS, SCREENS } from '../entry/src/main/js/MainAbility/common/view.js'
+import { dollarT } from './i18n.js'
 import { frames } from '../entry/src/main/js/MainAbility/common/frames.js'
 
 const dir = new URL('../entry/src/main/js/MainAbility/pages/index/', import.meta.url)
@@ -67,7 +68,7 @@ test('buttons are at least 56 px tall and text boxes have a size', () => {
 
 const modules = {
   '@system.file': 'file', '@system.vibrator': 'vibrator', '@system.sensor': 'sensor', '@system.brightness': 'brightness',
-  '@system.configuration': 'configuration', '@system.app': 'app'
+  '@system.app': 'app'
 }
 let loads = 0
 async function loadPage (W) {
@@ -94,7 +95,6 @@ function world (disk) {
   W.vibrator = { vibrate: p => { W.buzzes.push(p.mode); p.success() } }
   W.sensor = { subscribeHeartRate: p => { W.hr = p }, unsubscribeHeartRate: () => { W.hr = null } }
   W.brightness = { setKeepScreenOn: p => { W.awake.push(p.keepScreenOn); p.success() } }
-  W.configuration = { getLocale: () => ({ language: 'de', countryOrRegion: 'DE' }) }
   W.app = { terminate: () => { W.terminated += 1 }, getInfo: () => ({ appName: 'openGym', versionName: '1.4.6', versionCode: 1004006 }) }
   W.Builder = function () {}
   W.Builder.prototype.setDescription = function (d) { this.messageInfo = d }
@@ -126,7 +126,7 @@ async function boot (W) {
   globalThis.setTimeout = (fn, ms) => { W.timers.push({ fn: fn, ms: ms }) }
   Date.now = () => W.now
   const def = await loadPage(W)
-  const page = Object.assign({}, def.data)
+  const page = Object.assign({ $t: dollarT('de-DE') }, def.data) // the framework's $t, for a watch set to German
   Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
   page.def = def
   def.onInit.call(page)
@@ -217,7 +217,7 @@ test('page: a tap before the state is loaded does nothing, and a swipe right lea
     globalThis.__W = W
     globalThis.setTimeout = (fn, ms) => { W.timers.push({ fn: fn, ms: ms }) }
     const def = await loadPage(W)
-    const page = Object.assign({}, def.data)
+    const page = Object.assign({ $t: dollarT('de-DE') }, def.data) // the framework's $t, for a watch set to German
     Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
     assert.doesNotThrow(() => page.done.call(page))
     def.swipe.call(page, { direction: 'left' })
@@ -412,7 +412,7 @@ test('page: a load that finishes after the page was hidden starts nothing until 
     globalThis.setTimeout = (fn, ms) => { W.timers.push({ fn: fn, ms: ms }) }
     Date.now = () => W.now
     const def = await loadPage(W)
-    const page = Object.assign({}, def.data)
+    const page = Object.assign({ $t: dollarT('de-DE') }, def.data) // the framework's $t, for a watch set to German
     Object.keys(def).forEach(k => { if (typeof def[k] === 'function') page[k] = def[k] })
     def.onInit.call(page)
     def.onShow.call(page)

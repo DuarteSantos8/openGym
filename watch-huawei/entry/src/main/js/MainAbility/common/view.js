@@ -2,12 +2,12 @@
 // decisions live here (which screen is up, every line of text, which buttons exist); the page file only
 // copies the data across and forwards taps. Nothing here touches a Huawei API.
 //
-//   ui = newUi(lang)            the screen-only state: menus, the 3-2-1, the weight and reps boxes
+//   ui = newUi()                the screen-only state: menus, the 3-2-1, the weight and reps boxes
 //   tick(c, ui)                 once a second and after anything that changed c: starts the 3-2-1's
 //                               workout, loads the boxes for the set that is up
 //   build(c, ui, t) -> data     the screen's fields (always `s_<screen>`, `top`, the look)
 //   act(c, ui, name)            a tap (ACTIONS lists the names; each is one handler in the page)
-//   translator(lang) -> t(key, a, b, c)
+//   translator($t) -> t(key, a, b, c)   the watch's language through the page's $t, English from en.js where it has none
 //   swipeTo(c, ui, dir)         a swipe: left opens the Metrics page from the set or the rest, right goes back; ui.mp is 1 on it
 // Same language subset as core.js (test/syntax.test.js).
 import {
@@ -17,7 +17,7 @@ import {
   restAdd, restSkip, rate, refSet, fixLast, fixStep, fixCancel, fixSave, keepGoing, supersetStart, sensorShouldRest, lockFor
 } from './core.js'
 import { numbers } from './metrics.js'
-import { KEYS, TEXTS } from './texts.js'
+import { EN } from './en.js'
 
 export const LIME = '#A3E635'
 export const ON_LIME = '#0C0E12'
@@ -37,7 +37,6 @@ const strOf = v => (typeof v === 'string' ? v : v == null ? '' : String(v))
 const toF = v => (typeof v === 'number' && isFinite(v) ? v : null)
 const isTrue = v => v === true || v === 1
 const isOff = v => v === false || v === 0
-const known = lang => Object.prototype.hasOwnProperty.call(TEXTS, lang)
 const two = n => (n < 10 ? '0' : '') + n
 
 // 62.5 -> "62.5", 60 -> "60": never a trailing ".0".
@@ -51,31 +50,13 @@ export function clock (sec) {
 }
 
 /* ---------- words ---------- */
-// The app's languages whose script the watch's one font (SourceHanSansSC-Regular) may not draw show
-// English instead.
-// unsure: whether it draws Arabic, Persian, Hindi, Bengali and Thai; check on a real watch and empty this list if it does.
-const NO_GLYPHS = ['ar', 'bn', 'fa', 'hi', 'th']
-
-// The watch's own language as one of the app's: configuration.getLocale() gives { language, countryOrRegion }.
-export function deviceLang (loc) {
-  const l = loc && typeof loc.language === 'string' ? loc.language.toLowerCase() : ''
-  const r = loc && typeof loc.countryOrRegion === 'string' ? loc.countryOrRegion.toUpperCase() : ''
-  if (l === 'zh') return r === 'TW' || r === 'HK' || r === 'MO' ? 'zh-TW' : 'zh'
-  if (l === 'pt') return r === 'BR' ? 'pt-BR' : 'pt'
-  if (l === 'in') return 'id'
-  return known(l) ? l : 'en'
-}
-// The watch's language, or English where the watch's one font may not draw its script.
-export function langOf (ui) {
-  const use = known(ui.lang) ? ui.lang : 'en'
-  return NO_GLYPHS.indexOf(use) >= 0 ? 'en' : use
-}
-export function translator (lang) {
-  const line = TEXTS[known(lang) ? lang : 'en'].split('\n')
-  const words = {}
-  KEYS.forEach((k, i) => { words[k] = line[i] })
+// `get` is the page's $t: the word in i18n/<language>-<REGION>.json for the WATCH's language (the phone's is
+// ignored, as on the Garmin). A language with no file gets undefined on the device, so English is kept here.
+export function translator (get) {
   return (key, a, b, c) => {
-    let w = words[key]
+    let w
+    try { w = get('strings.' + key) } catch (e) { w = undefined }
+    if (typeof w !== 'string' || w === '') w = EN[key]
     if (w === undefined) return key
     if (a !== undefined) w = w.split('{0}').join(String(a))
     if (b !== undefined) w = w.split('{1}').join(String(b))
@@ -124,8 +105,8 @@ function bandColor (kind, v, accent) {
 const join = a => a.filter(x => x).join(' · ')
 
 /* ---------- ui state ---------- */
-export function newUi (lang) {
-  return { lang: lang || 'en', cd: null, rp: 0, op: 0, mp: 0, menu: false, confirm: null, key: '', w: 0, r: 0, hasW: false, rt: 0, rtFor: null, cdN: null }
+export function newUi () {
+  return { cd: null, rp: 0, op: 0, mp: 0, menu: false, confirm: null, key: '', w: 0, r: 0, hasW: false, rt: 0, rtFor: null, cdN: null }
 }
 
 // The routines the Start screen offers: today's first, then the others as the phone sent them.

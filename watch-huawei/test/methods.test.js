@@ -9,7 +9,7 @@ import { strip } from './syntax.test.js'
 const root = new URL('../entry/src/main/js/MainAbility/', import.meta.url)
 const es5 = 'forEach map filter some every indexOf lastIndexOf slice concat push pop shift unshift splice sort reverse join keys isArray stringify parse floor ceil round max min abs charAt charCodeAt substring split replace test toString toLowerCase toUpperCase call'.split(' ')
 const own = 'onError onComplete accept busy gathering listen stop save load send registerReceiver unregisterReceiver readText writeText delete buzz now random'.split(' ')
-const huawei = 'getInfo setDescription vibrate subscribeHeartRate unsubscribeHeartRate setKeepScreenOn getLocale setPeerPkgName setPeerFingerPrint terminate rotation'.split(' ')
+const huawei = 'getInfo setDescription vibrate subscribeHeartRate unsubscribeHeartRate setKeepScreenOn $t setPeerPkgName setPeerFingerPrint terminate rotation'.split(' ')
 
 ;['common/frames.js', 'common/radio.js', 'common/store.js', 'common/view.js', 'pages/index/index.js'].forEach(f => {
   test(f + ' calls only ES5 methods, its own names and Huawei\'s documented calls', () => {

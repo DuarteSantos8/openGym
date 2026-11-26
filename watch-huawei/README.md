@@ -11,15 +11,15 @@ built with Huawei's DevEco Studio. Nobody has run it on a watch yet: see
 ```
 entry/src/main/config.json                    app id, version, permissions, the phone's package and fingerprint
 entry/src/main/js/MainAbility/
-  app.js, i18n/en-US.json                     the app shell
+  app.js                                      the app shell
   pages/index/                                the one page: index.hml, index.css, index.js (glue only)
   common/core.js                              the logic: the Garmin watch's Core/Actions/Link as plain JS
   common/view.js                              what each screen shows and what each tap does
   common/frames.js, radio.js                  1 KB message framing and the Wear Engine send/receive
   common/store.js                             the state in the watch's files, safe against being killed
-  common/texts.js                             the words, 26 languages (generated, do not edit)
+  common/en.js, i18n/<lang>-<REGION>.json     the words: English in code, one file per watch language (generated, do not edit)
   common/wearengine.js                        Huawei's own SDK file, Apache-2.0, unchanged
-huawei-strings.mjs                            writes common/texts.js
+huawei-strings.mjs                            writes common/en.js and i18n/*.json
 huawei-size.mjs                               release build, fails if a built file is over 45 KB (--report: print only)
 test/                                         Node tests for everything above except wearengine.js
 ```
@@ -45,7 +45,7 @@ cd watch-huawei && npm test      # node's own runner, no install needed
 ## The words
 
 The watch says what the Wear OS watch says, plus a few phrases of its own. After changing any of
-those, regenerate and commit the result (a test fails when `texts.js` is out of date):
+those, regenerate and commit the result (a test fails when `en.js` or `i18n/` is out of date):
 
 ```bash
 node watch-huawei/huawei-strings.mjs

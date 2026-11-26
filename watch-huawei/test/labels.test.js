@@ -1,10 +1,10 @@
 // Button labels against their buttons. `input` has no text-overflow, so a label wider than its button
 // is clipped at both ends. Rough glyph width: 0.55 x font-size for Latin, Cyrillic and Greek, 1.0 for
-// CJK and Hangul: an estimate, not a render. Languages the watch shows in English anyway are skipped.
+// CJK and Hangul: an estimate, not a render. Languages with no i18n file show English, which en-US covers.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { TEXTS, KEYS } from '../entry/src/main/js/MainAbility/common/texts.js'
+import { FILES } from './i18n.js'
 
 const css = readFileSync(new URL('../entry/src/main/js/MainAbility/pages/index/index.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
 const rule = c => { const m = css.match(new RegExp('\\.' + c + '\\s*\\{([^}]*)\\}')); const o = {}; m[1].split(';').forEach(p => { const i = p.indexOf(':'); if (i > 0) o[p.slice(0, i).trim()] = p.slice(i + 1).trim() }); return o }
@@ -15,20 +15,19 @@ const USES = {
   start_workout: 'btn', quick_start: 'btn', routines: 'btn', keep_going: 'btn', finish_and_save: 'btn', discard_workout: 'btn',
   previous_set: 'btn', overview: 'btn', skip_set: 'btn', continue_workout: 'btn', stop: 'btn', try_again: 'btnA'
 }
-const NO_GLYPHS = ['ar', 'bn', 'fa', 'hi', 'th'] // shown in English: see view.js
 const wide = ch => /[ᄀ-ᇿ⺀-鿿가-힯豈-﫿＀-￯]/.test(ch)
 const need = (s, fs) => [...s].reduce((a, ch) => a + (wide(ch) ? 1.0 : 0.55) * fs, 0)
 
 test('labels fit their buttons on the round screen (block 70% of 466) and the rectangle (336)', () => {
   const over = []
-  Object.keys(TEXTS).filter(l => NO_GLYPHS.indexOf(l) < 0).forEach(lang => {
-    const words = TEXTS[lang].split('\n')
+  Object.keys(FILES).forEach(lang => {
+    const words = FILES[lang]
     Object.keys(USES).forEach(k => {
       const p = rule(USES[k])
       const fs = parseFloat(p['font-size'])
       const frac = parseFloat(p.width) / 100
       ;[466 * 0.7, 336].forEach(scr => {
-        const label = words[KEYS.indexOf(k)]
+        const label = words[k]
         if (need(label, fs) > frac * scr - 8) over.push(lang + ' ' + k + ' (' + USES[k] + ' ' + Math.round(frac * scr) + 'px): "' + label + '" ~' + Math.round(need(label, fs)))
       })
     })
@@ -48,10 +47,8 @@ const BOXES = [
 ]
 test('the pill, the tile labels and Go! fit their boxes on the round screen and the rectangle', () => {
   const over = []
-  Object.keys(TEXTS).filter(l => NO_GLYPHS.indexOf(l) < 0).forEach(lang => {
-    const words = TEXTS[lang].split('\n')
-    const k = {}
-    KEYS.forEach((key, i) => { k[key] = words[i] })
+  Object.keys(FILES).forEach(lang => {
+    const k = FILES[lang]
     BOXES.forEach(([what, label, cls, box]) => {
       ;[466 * 0.7, 336].forEach(scr => {
         const fs = parseFloat(rule(cls)['font-size'])
