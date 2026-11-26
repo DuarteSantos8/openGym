@@ -211,6 +211,20 @@ test('page: boots, says hello over Wear Engine, shows the phone\'s routine, runs
   } finally { restore() }
 })
 
+test('page: after a destroy and a new page, the words come from the new page\'s $t', async () => {
+  const W = world(new Map())
+  try {
+    const p1 = await boot(W) // German
+    W.advance(2)
+    assert.equal(p1.title, 'Noch nicht synchronisiert')
+    p1.def.onDestroy.call(p1)
+    const p2 = Object.assign({ $t: dollarT('en-US') }, p1.def.data)
+    Object.keys(p1.def).forEach(k => { if (typeof p1.def[k] === 'function') p2[k] = p1.def[k] })
+    p1.def.onInit.call(p2); p1.def.onShow.call(p2); W.settle(); W.advance(2)
+    assert.equal(p2.title, 'Not synced yet')
+  } finally { restore() }
+})
+
 test('page: a tap before the state is loaded does nothing, and a swipe right leaves only from Start', async () => {
   const W = world(new Map())
   try {

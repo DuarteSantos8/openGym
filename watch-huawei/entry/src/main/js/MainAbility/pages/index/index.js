@@ -157,7 +157,7 @@ function appVersion () {
   try { return String(app.getInfo().versionName || '') } catch (e) { return '' }
 }
 
-// the page's $t, read once: the framework picks the file for the watch's language
+// the page's $t, kept until the page is destroyed or boots again: the framework picks the file for the watch's language
 function words (page) {
   return S.t || (S.t = translator(function (path) { return page.$t(path) }))
 }
@@ -203,6 +203,7 @@ function start (page, stored, mine) {
 // drops the first one's core and loop first: only one core may save into one store.
 function boot (page) {
   S.boot += 1
+  S.t = null // the new page's $t, not the old one's
   const mine = S.boot
   S.loop += 1
   if (S.core) stop(S.core) // the old core sends and saves nothing more
@@ -234,7 +235,7 @@ export default {
     if (S.core) resume(this)
   },
   onHide: function () { S.shown = false; pause() },
-  onDestroy: function () { S.shown = false; S.sum = false; S.boot += 1; pause() },
+  onDestroy: function () { S.shown = false; S.sum = false; S.t = null; S.boot += 1; pause() },
   retry: function () { boot(this) },
   // Swipe right leaves the app, from the Start screen only: not by accident in the middle of a workout.
   // In a workout a swipe left opens the Metrics page and a swipe right steps back (view.js swipeTo).
