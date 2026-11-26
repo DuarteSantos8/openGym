@@ -6397,4 +6397,6 @@ export default {
   "Ask Coach to pick a result": "اطلب من المدرب اختيار نتيجة",
   "App help": "مساعدة التطبيق",
   "No matching help found.": "لم يتم العثور على مساعدة مطابقة.",
+  "Show all settings": "عرض جميع الإعدادات",
+  "Show fewer": "عرض أقل",
 }

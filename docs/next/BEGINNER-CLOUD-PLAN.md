@@ -1,5 +1,7 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
+D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
+
 Coach App Help daily-limit guidance is prepared. Local search remains available after a refused request.
 
 Status 2026-11-26. D4 prepares an eight-stop beginner tour with offline keyboard replay. The origin guard, MCP Blueprint, linked deletion (ADR 0014), browser sign-in guidance and the repeat sign-in fix are merged in #85–#91 and live on the hosted server. Repeat sign-in and one linked deletion are verified there. The three findings left open on #88 are merged in #92. What is left, in order and as tasks for a coding agent, is in `AGENT-DEVELOPMENT-PLAN.md` (merged in #93). Task A2 merged in #94. Eight playable Learn sessions are prepared on `next/EP24-learn-sessions`; their training content is draft. Still to be seen by a person on the hosted server: the admin and the numeric HTTP status after sign-out. Two-tab sign-in was verified on the hosted preview. The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101. The fixes merged in #102. The preview verified new-profile scheduling, the French no-weights starter and nine equipment-free substitutions in a three-day MiniMax plan. See the [live Coach checks](CLOUD-SERVER.md#live-coach-checks-after-102). Task A5 passed in isolated browsers with ten guest workouts. Hosted verification is pending. Read after `NEXT-STEPS.md`.

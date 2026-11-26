@@ -6342,4 +6342,6 @@ export default {
   "Ask Coach to pick a result": "코치에게 결과를 골라 달라고 하기",
   "App help": "앱 도움말",
   "No matching help found.": "일치하는 도움말이 없습니다.",
+  "Show all settings": "모든 설정 표시",
+  "Show fewer": "간략히 보기",
 }

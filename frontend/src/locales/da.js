@@ -6282,4 +6282,6 @@ export default {
   "Ask Coach to pick a result": "Bed træneren vælge et resultat",
   "App help": "Hjælp til appen",
   "No matching help found.": "Ingen matchende hjælp fundet.",
+  "Show all settings": "Vis alle indstillinger",
+  "Show fewer": "Vis færre",
 }

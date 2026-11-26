@@ -171,3 +171,5 @@ npm run test:e2e                         # Playwright + axe; starts API and prev
 D2 follow-up bundles the 13 training-screen definitions for offline use and leaves the full Learn library on demand. The full-screen accessibility check covers Workout, Plan and Progress.
 
 Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
+
+D3 prepares a short Beginner Settings root; full search, App help and Account stay available. The two new navigation labels in all locale packs await native review.

@@ -14,6 +14,10 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Settings.jsx` | `next/EP22-beginner-tour` | +1 −1 | Anchor the real Learn row shown in the tour. |
 | `frontend/src/views/Workout.jsx` | `next/EP22-beginner-tour` | +1 −1 | Anchor the exercise menu containing Swap exercise. |
 | `frontend/src/lib/workout-keys.js` | `next/EP22-beginner-tour` | +1 −1 | Let focused tour dialog controls handle the keyboard during practice. |
+| `frontend/src/views/Settings.jsx` | `next/EP21-beginner-settings` | Settings | Render the short root and its profile preference. |
+| `frontend/src/views/settings-pages.js` | `next/EP21-beginner-settings` | Settings | Select the visible page IDs for the current experience. |
+| `frontend/src/views/settings-pages.test.jsx` | `next/EP21-beginner-settings` | Settings | Verify page selection and retain the existing layout check across line endings. |
+| `frontend/src/locales/*.js` | `next/EP21-beginner-settings` | Settings | Translate the two Settings navigation controls in all 25 packs. |
 | `frontend/src/views/AppHelp.jsx` | `next/EP19-coach-help-quota` | UI | Explain a daily Coach limit while local help stays available. |
 | `frontend/src/views/AppHelp.test.jsx` | `next/EP19-coach-help-quota` | Test | Distinguish the daily cap from other failures and open a local match. |
 | `frontend/src/store/useStore.js` | `next/EP19-delete-fixes` | +6 | Clear the local signed-in copy only when its profile ID matches the deleted server profile. |

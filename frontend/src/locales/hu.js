@@ -6345,4 +6345,6 @@ export default {
   "Ask Coach to pick a result": "Kérd meg az edzőt egy találat kiválasztására",
   "App help": "Alkalmazássúgó",
   "No matching help found.": "Nincs megfelelő súgótalálat.",
+  "Show all settings": "Összes beállítás megjelenítése",
+  "Show fewer": "Kevesebb megjelenítése",
 }
