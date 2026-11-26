@@ -5,6 +5,8 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+E3 is prepared. Confirmed workout saves add a vibration on supported browsers. Set, record and session feedback respects reduced motion, and the timer retains its configured alarm.
+
 Read after `NEXT-STEPS.md`. What is left, in order and as tasks for a coding agent, is in
 `AGENT-DEVELOPMENT-PLAN.md` (merged in #93).
 

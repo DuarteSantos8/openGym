@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Workout feedback (E3, prepared).** Set checks, records, completed rest timers and confirmed workout saves use the profile’s sound and vibration settings. Reduced motion suppresses the optional cues. Configured rest alarms still announce when to resume.
+
 - **Rest-day mobility freeze (D8, prepared).** Two completed Learn mobility sessions started on scheduled rest days earn one freeze that week when the profile has room. The calendar explains the award. Earlier workouts retain their existing credit. Merging the shared streak code restarts the hosted API.
 
 - **Beginner tour (D4, prepared).** The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
