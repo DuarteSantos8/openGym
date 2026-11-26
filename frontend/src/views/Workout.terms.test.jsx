@@ -2,9 +2,12 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { useUI } from '../store/useUI.js'
+
+// Device-only use must still work when a separate Learn chunk cannot be fetched.
+vi.mock('../components/Term.jsx', () => { throw new Error('Offline') })
 
 it('opens the definition for every Workout term from a standalone button', async () => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -17,7 +20,6 @@ it('opens the definition for every Workout term from a standalone button', async
     await act(async () => {
       glossary.open = true
       glossary.dispatchEvent(new Event('toggle'))
-      await import('../components/Term.jsx')
     })
     const buttons = [...host.querySelectorAll('button.iv-term')]
     for (const label of ['Warm-up', 'Working set', 'RIR', 'RPE', 'Drop set', 'Superset']) {

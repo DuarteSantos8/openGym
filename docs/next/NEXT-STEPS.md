@@ -5,7 +5,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 ## 1. State
 
 - D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
-- **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. Confirm the two preview HTTP statuses, the owner dashboard and the two-tab case. See [Before real users](CLOUD-SERVER.md#before-real-users).
+- **Hosted account checks (A1, partial).** The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm the two preview HTTP statuses and the owner dashboard. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
@@ -164,4 +164,4 @@ npm run test:e2e                         # Playwright + axe; starts API and prev
 
 > Repo: `sorensadrgit-art/openGym`. Read `AGENTS.md`, then `docs/next/NEXT-STEPS.md`. Take the first unfinished task in section 3 that an agent can do. Create a worktree from `main`. Write the tests first. Then run the full suite with `--maxWorkers=8`, the build, `check-bundle-syntax` and `test:e2e`. Open a draft PR on the fork with a body that says what was verified and what wasn't. Follow section 5. Stop and ask before anything irreversible.
 
-D2 follow-up keeps definitions out of the first load. The full-screen accessibility check covers Workout, Plan and Progress.
+D2 follow-up bundles the 13 training-screen definitions for offline use and leaves the full Learn library on demand. The full-screen accessibility check covers Workout, Plan and Progress.
