@@ -104,7 +104,7 @@
 .sName { width: 100%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
 .liS { width: 100%; height: 40px; }
 .liSi { width: 100%; height: 40px; flex-direction: row; align-items: center; justify-content: center; }
-.liD { width: 86%; height: 100px; }
+.liD { width: 86%; margin-left: 7%; height: 100px; }
 .liDi { width: 100%; height: 100px; flex-direction: column; align-items: center; justify-content: center; }
 
 /* the set, as the Apple Watch's: a dark-lime pill and tiles, the partner in the accent */
@@ -149,7 +149,7 @@
 .menuList { width: 100%; height: 72%; }
 .overList { width: 100%; height: 60%; }
 .li { width: 100%; height: 72px; }
-.liIn { width: 86%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liIn { width: 86%; margin-left: 7%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
 
 /* last, so a grey label stays grey whatever size class it has */
 .quiet { color: #a1a1a6; }

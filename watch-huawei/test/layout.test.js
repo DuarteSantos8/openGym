@@ -152,6 +152,10 @@ function rowsOf (box, top) {
           out.push({ name: it.name, top: ly, bottom: ly + it.h, width: content })
           ly += it.h
         })
+        // scrolled to the end, the last item sits at the list's bottom edge
+        const last = v.kids[v.kids.length - 1][0]
+        const li = last.kids[0][0]
+        out.push({ name: last.name + ' (scrolled to the end)', top: y + v.h - last.h, bottom: y + v.h, width: li.kids.length ? Math.max.apply(null, li.kids.map(k => k[0].w)) : last.w })
       } else {
         const width = v.kids.length && v.node.tag === 'div' && v.node.attrs.class !== 'pick' && v.node.attrs.class !== 'ring' ? Math.min(v.w, v.content || v.w) : v.w
         out.push({ name: v.name, top: y, bottom: y + v.h, width: width })

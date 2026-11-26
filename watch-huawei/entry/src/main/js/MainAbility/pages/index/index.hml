@@ -235,7 +235,7 @@
       </div></div></list-item>
       <list-item class="liS" if="{{hrOn}}"><div class="liSi"><text class="tinyC quiet">{{hrLine}}</text></div></list-item>
       <list-item class="liS" if="{{syncOn}}"><div class="liSi"><text class="tinyC quiet">{{sync}}</text></div></list-item>
-      <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="close" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="done" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="close" /></div></list-item>
     </list>
   </div>
 
