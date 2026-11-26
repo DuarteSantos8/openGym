@@ -46,7 +46,7 @@
 "Finish now" = "Lopeta nyt";
 "Back" = "Takaisin";
 "Last time: %@" = "Viimeksi: %@";
-"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo %@, ja sen lopuksi tallentuu viimeinen sarjasi.";
+"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo %@, ja päättymisajaksi tallennetaan viimeinen sarjasi.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Lopetetaanko treeni nyt? Muuten se päättyy itsestään klo %@.";
 "No workout running" = "Ei treeniä käynnissä";
 "Not synced yet" = "Ei vielä synkronoitu";

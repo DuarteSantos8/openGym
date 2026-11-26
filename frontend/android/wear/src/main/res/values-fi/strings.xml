@@ -36,7 +36,7 @@
     <string name="how_hard">Kuinka raskas sarja oli?</string>
     <string name="hr_avg_max">ka. %1$d · max %2$d</string>
     <string name="hr_why">Salli syke, niin näet sen joka sarjalla.</string>
-    <string name="idle_ends_at">Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo %1$s, ja sen lopuksi tallentuu viimeinen sarjasi.</string>
+    <string name="idle_ends_at">Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo %1$s, ja päättymisajaksi tallennetaan viimeinen sarjasi.</string>
     <string name="keep_going">Jatka</string>
     <string name="last_time">Viimeksi: %1$s</string>
     <string name="left">Vasen</string>

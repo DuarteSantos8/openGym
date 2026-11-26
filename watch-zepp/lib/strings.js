@@ -2374,7 +2374,7 @@ export const STRINGS = {
   "hold_to_finish": "Lopeta pitämällä",
   "how_hard": "Kuinka raskas sarja oli?",
   "hr_avg_max": "ka. {0} · max {1}",
-  "idle_ends_at": "Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo {0}, ja sen lopuksi tallentuu viimeinen sarjasi.",
+  "idle_ends_at": "Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo {0}, ja päättymisajaksi tallennetaan viimeinen sarjasi.",
   "keep_going": "Jatka",
   "last_time": "Viimeksi: {0}",
   "left": "Vasen",
