@@ -8,12 +8,6 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
-| `frontend/src/lib/tour.js` | `next/EP22-beginner-tour` | +12 −3 | Register eight beginner stops and select the existing walk for other levels. |
-| `frontend/src/lib/tour.test.js` | `next/EP22-beginner-tour` | +21 −2 | Check the beginner targets, default walk, named tutorials and replay. |
-| `frontend/src/components/Tour.jsx` | `next/EP22-beginner-tour` | +9 −2 | Read the experience level and drive the practice and navigation stops. |
-| `frontend/src/views/Settings.jsx` | `next/EP22-beginner-tour` | +1 −1 | Anchor the real Learn row shown in the tour. |
-| `frontend/src/views/Workout.jsx` | `next/EP22-beginner-tour` | +1 −1 | Anchor the exercise menu containing Swap exercise. |
-| `frontend/src/lib/workout-keys.js` | `next/EP22-beginner-tour` | +1 −1 | Let focused tour dialog controls handle the keyboard during practice. |
 | `frontend/src/views/AppHelp.jsx` | `next/EP19-coach-help-quota` | UI | Explain a daily Coach limit while local help stays available. |
 | `frontend/src/views/AppHelp.test.jsx` | `next/EP19-coach-help-quota` | Test | Distinguish the daily cap from other failures and open a local match. |
 | `frontend/src/store/useStore.js` | `next/EP19-delete-fixes` | +6 | Clear the local signed-in copy only when its profile ID matches the deleted server profile. |

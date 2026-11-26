@@ -8,7 +8,7 @@ import { isSideSet } from './workout-model.js'
 
 // Where a key belongs to the element rather than to the workout: every text field (the arrows
 // move the caret there), and the controls that use the arrows themselves.
-const OWNS_KEYS = '[role="dialog"],input,textarea,select,[contenteditable=""],[contenteditable="true"],[role="textbox"],[role="slider"],[role="spinbutton"]'
+const OWNS_KEYS = 'input,textarea,select,[contenteditable=""],[contenteditable="true"],[role="textbox"],[role="slider"],[role="spinbutton"]'
 // What Space and Enter press when focus is on it.
 const CONTROL = 'button,a[href],summary,[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="tab"],[role="option"]'
 
