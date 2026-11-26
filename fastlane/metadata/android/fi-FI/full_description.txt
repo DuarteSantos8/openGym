@@ -1,33 +1,33 @@
-openGym on treenisovellus, jonka ovat tehneet salilla kävijät salilla kävijöille. Suunnittele viikkosi, kirjaa jokainen sarja ja näe, mitä oikeasti teit. Ei tiliä, ei mainoksia, ei tilausmaksua, ei seurantaa.
+openGym on salilla kävijöiden tekemä treenisovellus salilla kävijöille. Suunnittele viikkosi, kirjaa jokainen sarja ja näe, mitä oikeasti teit. Ei tiliä, ei mainoksia, ei tilausmaksua, ei seurantaa.
 
 SUUNNITTELE
 • Yli 5 600 liikettä animoiduin esimerkein, yli 20 kielellä, myös suomeksi
-• Neljä valmista ohjelmaa (työntö/veto/jalat, ylä-/alavartalo, koko keho, 5×5) tai tee oma
+• Neljä aloitussuunnitelmaa (työntö/veto/jalat, ylä-/alavartalo, koko keho, 5×5) tai tee oma
 • Oma ohjelma jokaiselle viikonpäivälle tai kierto (A, B, C, A …), jos viikkosi ei noudata aikataulua
-• Supersarjat, lämmittelysarjat, pudotussarjat, rest-pause, pitoajat ja toistot puolta kohden
+• Supersarjat, lämmittelysarjat, pudotussarjat, rest-pause, ajastetut pidot ja toistot puolta kohti
 
 TREENAA
-• Päivän treeni käynnistyy itsestään, ja painot täyttyvät edellisestä kerrasta
-• Palautusajastin soi myös näytön ollessa lukittuna
+• Päivän treeni käynnistyy itsestään, ja painot ovat valmiina edelliseltä kerralta
+• Taukoajastin soi, vaikka näyttö olisi lukittuna
 • Levylaskuri juuri niille levypainoille, jotka sinulla on
 • Progressiosäännöt: lineaarinen, Greyskull, kaksoisprogressio ja muita
-• Näytä salin jäsenkortti suoraan sovelluksesta
+• Pääse salille sisään näyttämällä jäsenkoodisi sovelluksesta
 
 SEURAA
 • Arvioidun 1RM:n käyrät, volyymi lihasryhmittäin ja palautumiskartta
-• Kehonpaino tavoitetta vasten ja edistymiskuvat rinnakkain
+• Kehonpaino suhteessa tavoitteeseen ja edistymiskuvat rinnakkain
 • Muokkaa mitä tahansa aiempaa treeniä tai kirjaa paperille tehty treeni jälkikäteen
 
-SINUN OMASI
+SINUN EHDOILLASI
 • Kaikki pysyy puhelimessasi. Haluatko synkronoinnin? Yhdistä oma openGym-palvelimesi.
-• Tuonti Strongista, Hevystä ja FitNotesista, ja kaiken voi viedä ulos milloin tahansa
-• Valinnainen AI-valmentaja luonnostelee viikkosi omalla API-avaimellasi ja vain kysyttyään ensin sinulta
-• Ilmainen ja avoimen lähdekoodin (AGPL), kehitetään avoimesti yhteisön kanssa
+• Tuo treenisi Strongista, Hevystä ja FitNotesista ja vie kaikki tietosi ulos milloin tahansa
+• Valinnainen AI-valmentaja luonnostelee viikkosi omalla API-avaimellasi ja vain kysyttyään ensin sinulta lupaa
+• Ilmainen ja avointa lähdekoodia (AGPL), kehitetään avoimesti yhdessä yhteisön kanssa
 
 ANDROIDILLA
-• Salimuistutus: lisää salisi, niin openGym muistuttaa, kun kävelet sisään, vaikka sovellus olisi kiinni. Se käyttää sijaintia taustalla vain, kun olet kytkenyt toiminnon päälle, eivätkä paikkasi koskaan poistu puhelimesta
-• Health Connect, jos haluat: valmiit treenit ja punnitukset menevät sinne, ja syke ja vaa'an punnitukset tulevat takaisin
-• Aloitusnäytön widget päivän suunnitelmalla ja NFC-tarrat, jotka avaavat sovelluksen telineesi luona
+• Salimuistutus: lisää salisi, niin openGym muistuttaa, kun astut sisään, vaikka sovellus olisi suljettuna. Se käyttää sijaintia taustalla vain, kun olet kytkenyt toiminnon päälle, eivätkä tallentamasi paikat koskaan lähde puhelimesta
+• Health Connect, jos haluat: valmiit treenit ja punnitukset siirtyvät sinne, ja syke sekä vaa’an punnitukset tulevat sieltä sovellukseen
+• Aloitusnäytön widget, jossa näkyy päivän suunnitelma, ja NFC-tarrat, jotka avaavat sovelluksen telineesi luona
 • Tässä F-Droid-versiossa on mukana tavalliset 180 px:n animaatiot, mutta ei Wear OS -yhteyttä, koska se vaatii Google Play -palvelut
 
 Liikeanimaatiot © Gym visual (gymvisual.com), lisensoitu openGymille.

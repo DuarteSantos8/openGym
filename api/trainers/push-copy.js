@@ -251,7 +251,7 @@ export const TRAINER_COPY = {
       "body": "Se, mitä {0} näkee, muuttui juuri. Etkö tehnyt muutosta itse? Tarkista Valmentaja ja sali."
     },
     "joined": {
-      "title": "Tervetuloa: {0}",
+      "title": "{0} toivottaa sinut tervetulleeksi",
       "body": "Salivastaavasi näkee vain rastittamasi asiat."
     },
     "change": {

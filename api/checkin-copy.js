@@ -51,9 +51,9 @@ export const CHECKIN_COPY = {
   },
   "fi": {
     "title": "Tilannekatsauksen aika",
-    "measure": "Tilannekatsauksen aika. Muutama luku, kaksi minuuttia ja päivä jatkuu.",
+    "measure": "Tilannekatsaus odottaa. Muutama luku, kaksi minuuttia, ja sitten päivä jatkuu.",
     "photos": "Edistymiskuvapäivä. Sama paikka, sama valo, sama ylpeä ilme.",
-    "both": "Tilannekatsauksen ja edistymiskuvan aika. Enintään viisi minuuttia."
+    "both": "Tilannekatsaus ja edistymiskuva odottavat. Enintään viisi minuuttia."
   },
   "fr": {
     "title": "C’est l’heure du bilan",
