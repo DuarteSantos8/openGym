@@ -202,6 +202,11 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   const workouts = Array.from({ length: 10 }, (_, i) => ({ ...workout(i, '0662', 2), id: 'guest-workout-' + i }))
   const ids = workouts.map(w => w.id).sort()
   const savedIds = p => p.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1') || '{}').workouts?.map(w => w.id).sort() || [])
+  const seeHistory = async p => {
+    await p.goto('/#/history')
+    await expect(p.getByRole('heading', { name: 'History' })).toBeVisible()
+    await expect(p.getByText('10 workouts', { exact: true })).toBeVisible()
+  }
   const link = async p => {
     await open(p)
     await signIn(p)
@@ -223,6 +228,8 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible()
   await expect.poll(() => savedIds(page)).toEqual(ids)
 
+  await seeHistory(page)
+
   const second = await browser.newContext({ baseURL })
   try {
     const other = await second.newPage()
@@ -239,6 +246,7 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     expect((await other.request.get('/api/me')).status()).toBe(401)
     await link(other)
     await expect.poll(() => savedIds(other)).toEqual(ids)
+    await seeHistory(other)
     expect(external).toEqual([])
   } finally {
     await second.close()
