@@ -20,6 +20,7 @@ entry/src/main/js/MainAbility/
   common/texts.js                             the words, 26 languages (generated, do not edit)
   common/wearengine.js                        Huawei's own SDK file, Apache-2.0, unchanged
 huawei-strings.mjs                            writes common/texts.js
+huawei-size.mjs                               release build, fails if a built file is over 45 KB (--report: print only)
 test/                                         Node tests for everything above except wearengine.js
 ```
 
