@@ -1501,6 +1501,17 @@ describe('list_favourites', () => {
     expect(r.exercises[2].name).toBe('barbell bench press')
   })
 
+  test('resolves a starred id that was merged away, once, in star order', () => {
+    S.customEx = [{ id: 'cx-sled', n: 'Sled drag' }]
+    // Another device starred the custom, then heard of the merge; the sync union keeps both ids.
+    S.favEx = ['0739', 'cx-sled-old', 'cx-sled', '0025']
+    S.exMerged = { 'cx-sled-old': { into: 'cx-sled', _ts: 1000 } }
+    const r = call('list_favourites')
+    expect(r.total).toBe(3)
+    expect(r.exercises.map(e => e.id)).toEqual(['0739', 'cx-sled', '0025'])
+    expect(r.exercises[1]).toMatchObject({ id: 'cx-sled', name: 'Sled drag', own: true })
+  })
+
   test('a synced profile with no favourites is an empty list, not an error', () => {
     S.favEx = []
     expect(call('list_favourites')).toEqual({ total: 0, exercises: [] })

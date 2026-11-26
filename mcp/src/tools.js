@@ -25,6 +25,7 @@ import { programmesOf, programmeStatus, programmeRoutineIds } from '../../fronte
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
 import { favIds } from '../../frontend/src/lib/favourites.js'
+import { mergedInto } from '../../frontend/src/lib/exercise-merge.js'
 
 /* ---------- helpers ---------- */
 
@@ -805,9 +806,17 @@ export const listFavourites = {
   handler: () => {
     const S = getState()
     if (!S) return noState()
-    const exercises = favIds(S).map(id => {
-      const ex = exerciseOf(id, S)
-      return {
+    // A merge rewrites the stars on the device that made it (mergeExercise), but every other copy
+    // meets the merge through applyExerciseMerges, which brings workouts, routines and programmes
+    // in line and not this list — and the sync union then keeps the old id beside the new one. So
+    // resolve each star through the merge and keep one entry per exercise, in star order.
+    const seen = new Set()
+    const exercises = []
+    for (const id of favIds(S)) {
+      const ex = exerciseOf(mergedInto(S, id), S)
+      if (seen.has(ex.id)) continue
+      seen.add(ex.id)
+      exercises.push({
         id: ex.id,
         name: ex.n,
         body_part: ex.bp || null,
@@ -817,8 +826,8 @@ export const listFavourites = {
         ...(ex.hd ? { mode: 'time' } : ex.bp === 'cardio' ? { mode: 'cardio' } : {}),
         ...((S.customEx || []).some(c => c && c.id === ex.id) ? { own: true } : {}),
         ...(ex.missing ? { missing: true } : {}),
-      }
-    })
+      })
+    }
     return { total: exercises.length, exercises }
   }
 }
