@@ -195,6 +195,31 @@ Everything is under `/data`. Before real users: confirm Render's disk snapshots 
 disk and try one restore, or turn on the app's own WebDAV backup (`docs/WEBDAV_BACKUP.md`).
 Neither has been tried here yet.
 
+### Live Coach checks after #102
+
+On November 25–26, 2026 (Eastern time), the cloud preview at commit `1175a32af` ran both checks
+against the hosted Coach with MiniMax. **Plan > Routines** initially showed “No routines yet.”
+
+**Three-day intake, two requested days.** From beginner Home, select “Add a push day on Tuesday
+and a pull day on Wednesday.” Intake showed three days a week, with Monday, Wednesday and Friday
+selected, and a 30-minute session. The first request ended with “The server restarted while the
+Coach was thinking.” On retry the Coach offered two routines. After **Import this plan**, the
+chat showed “scheduled on 2 days.” **Plan > Routines** listed exactly `Push 3 exercises · Tu` and
+`Pull 3 exercises · We`.
+
+**French no-weights request.** With equipment unrestricted in intake, send “Prépare-moi une séance de dos sans poids”.
+MiniMax offered a one-off “Bodyweight Back” workout with three exercises. The catalogue
+instructions confirmed that each movement can be performed without equipment:
+
+| Exercise | What its catalogue entry specifies |
+| --- | --- |
+| [elbow lift - reverse push-up](../../catalogue/exercises/1772.json) | Lie on the floor and press through the palms. |
+| [alternating superman](../../catalogue/exercises/4702.json) | Lie face down and raise the opposite arm and leg. |
+| [mid back elbow squeeze](../../catalogue/exercises/8585.json) | Stand tall and draw the elbows back and down. |
+
+This one-off workout offered zero substitutes and was left unstarted. The counter showed
+**3 of 3 Coach runs used today** after the French reply. The daily limit stayed at three.
+
 ## Rollback
 
 The server is additive. To back out: remove the `/api/*` rewrite (the Cloud build then behaves
