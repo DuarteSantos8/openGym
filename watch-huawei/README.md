@@ -20,7 +20,7 @@ entry/src/main/js/MainAbility/
   common/en.js, i18n/<lang>-<REGION>.json     the words: English in code, one file per watch language (generated, do not edit)
   common/wearengine.js                        Huawei's own SDK file, Apache-2.0, trimmed to the calls openGym makes (text send, register, unregister, set peer)
 huawei-strings.mjs                            writes common/en.js and i18n/*.json
-huawei-size.mjs                               release build, fails if a built file is over 45 KB (--report: print only)
+huawei-size.mjs                               release build, fails if a built file is over 45 KB (--report: the same table, fails only if app.js is over)
 huawei-sim.mjs                                simulator smoke: builds a temp copy with a fake phone (sim/debugphone.js), drives a workout, prints the heap peak (-hs 196608 by default, `--hs none` to skip); exit 1 on OOM
 test/                                         Node tests for everything above except wearengine.js
 ```
@@ -45,7 +45,7 @@ The built files must stay under 45 KB each and a workout must run in the simulat
 Neither runs in `npm test`; both need DevEco Studio (the setup is in the guide):
 
 ```bash
-node watch-huawei/huawei-size.mjs   # release build, fails over 45 KB (--report only prints)
+node watch-huawei/huawei-size.mjs   # release build, fails over 45 KB (--report fails only if app.js is over)
 node watch-huawei/huawei-sim.mjs    # simulator smoke, prints the heap peak
 ```
 

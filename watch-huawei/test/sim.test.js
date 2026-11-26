@@ -17,10 +17,11 @@ test('heapPeak is the largest peakAllocBytes the pipe reported', () => {
 })
 
 test('failures: an OOM before the first feed is one line, not also "never ran"', () => {
-  assert.deepEqual(failures({ fed: true, bad: [] }), [])
+  assert.deepEqual(failures({ fed: true, answered: true, bad: [] }), [])
+  assert.deepEqual(failures({ fed: true, answered: false, bad: [] }), ['FAIL the fake phone never answered the start (no OGSMOKE answered in the simulator log)'])
   assert.deepEqual(failures({ fed: false, bad: [] }), ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'])
   assert.deepEqual(failures({ fed: false, bad: ['JS HEAP OOM'] }), ['FAIL JS HEAP OOM'])
-  assert.deepEqual(failures({ fed: true, bad: ['JS REF LIMIT'] }), ['FAIL JS REF LIMIT'])
+  assert.deepEqual(failures({ fed: true, answered: true, bad: ['JS REF LIMIT'] }), ['FAIL JS REF LIMIT'])
 })
 
 test('inject puts the debug phone in the app.js copy, after the core is made, and refuses an app.js it does not recognise', () => {

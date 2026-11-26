@@ -2,7 +2,7 @@
 // The size gate: Huawei's lite engine refuses a file over 48 KB, so no built file may pass 45 KB.
 // Clears the build's output folder, runs the release build, lists the built JS/JSON files and exits 1 if one is over the limit.
 //   node watch-huawei/huawei-size.mjs            fails when a file is too big
-//   node watch-huawei/huawei-size.mjs --report   prints the table; fails only for app.js (the page files are being split)
+//   node watch-huawei/huawei-size.mjs --report   the same table; still exits 1 when app.js is over (a page file over the limit does not fail it)
 // Needs DevEco Studio's command line tools (JAVA_HOME and DEVECO_SDK_HOME, docs/HUAWEI_WATCH.md).
 import { execFileSync } from 'node:child_process'
 import { readdirSync, rmSync, statSync } from 'node:fs'
@@ -19,7 +19,7 @@ const DEVECO = '/Applications/DevEco-Studio.app/Contents'
 // [name, bytes] list -> the ones over the limit
 export const overLimit = (files, limit = LIMIT) => files.filter(([, bytes]) => bytes > limit)
 
-// app.js is the file every page shares and the tightest: it fails the gate even under --report (pages join in later tasks)
+// app.js is the file every page shares and the tightest: it fails the gate even under --report
 export const appOver = (files, limit = LIMIT) => overLimit(files, limit).filter(([n]) => /^app\.(js|bc)$/.test(n))
 
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

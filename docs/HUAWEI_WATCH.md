@@ -565,7 +565,7 @@ Both scripts need DevEco Studio's command line tools:
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17
 export DEVECO_SDK_HOME=/Applications/DevEco-Studio.app/Contents/sdk
 node watch-huawei/huawei-size.mjs            # release build, prints every file, exits 1 if one is over 45 KB
-node watch-huawei/huawei-size.mjs --report   # the same table without failing
+node watch-huawei/huawei-size.mjs --report   # the same table; exits 1 only if app.js is over
 node watch-huawei/huawei-sim.mjs             # simulator smoke at -hs 196608 (--hs BYTES, or --hs none)
 ```
 
@@ -785,9 +785,11 @@ sample code; "not verified" means a blog, a third-party project or a guess.
 - **The four points to learn first on a real watch.**
   1. **The memory.** What heap a watch gives a JavaScript app is unknown. The app needs about 192 KB
      in the simulator and misses its 160 KB target (see "Size and memory").
-  2. **`.js` or `.bc`.** The release build makes `.bc` (bytecode) files where it can, and the
-     package ships them beside the `.js`. The simulator loads the `.js`. Which one a watch runs, and
-     whether bytecode takes less heap, is unknown. The size gate checks both kinds of file.
+  2. **`.js` or `.bc`.** The release build tries to make `.bc` (bytecode) files, but the last
+     build made none (the tool printed "Failed to convert ... to a snapshot" for every page and
+     for app.js), and the unsigned `.hap` holds only the `.js` files (checked with `unzip -l`).
+     Whether a watch would run bytecode, and whether it takes less heap, is unknown. The size
+     gate checks `.js`, `.bc` and `.json`, so a `.bc` would be held to the same limit.
   3. **The page switch on hardware.** A switch takes 5 to 25 ms in the simulator, and no blank frame
      was caught, but the simulator's frame stream is not every frame. It happens at every Done
      (Set to Rest), so a flash or a slow switch on a real watch would be seen at once.
@@ -805,6 +807,10 @@ sample code; "not verified" means a blog, a third-party project or a guess.
   for the clock and `setTimeout` for its clock loop, and the core needs both. They work in the
   simulator and the code comment says so (`// unsure: Date is not in Huawei's lite docs; check on a
   real watch`). If either is missing on a watch, the app cannot run its clock.
+- **A list is not centred by the engine (measured in the simulator, not in Chrome).** It sits at the left
+  edge of the screen, and a `%` `margin-left` inside a list row does not render as written (a `px` one
+  does). So a list screen's block is the whole screen wide (`.scrL`) and each row is centred by its
+  list-item (`.li` is a centring row), with no margin. `test/layout.test.js` models exactly this.
 - **What happens to the page when the screen sleeps is undocumented.** Huawei describes no background
   running for lite JavaScript apps. The watch app assumes the page stops (no clock, no messages)
   when hidden, stops its clock, the sensor and the screen lock when the page is hidden (`A.hide` in

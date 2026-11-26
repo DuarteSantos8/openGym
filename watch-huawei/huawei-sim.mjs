@@ -4,13 +4,14 @@
 // peak and saves a shot per step. Exit 1 on JS HEAP OOM, Eval JS file failed or JS REF LIMIT (or if the app never ran).
 //   node watch-huawei/huawei-sim.mjs [--hs BYTES|none] [--out DIR] [--from DIR]
 //   --hs   the simulator's JS heap in bytes, default 196608 (192 KB); `none` runs with the simulator's own heap
-//   --from reuse the copy a run printed (it stays in the temp folder; no copy, no build); --out where the shots and logs go (default: the copy)
+//   --from reuse a copy (kept: no copy, no build); --out where the shots and logs go (default: <copy>-shots beside it)
+//   --keep keep the ~17 MB copy after the run (it is removed otherwise, the shots stay)
 // The debug phone (sim/debugphone.js) never reaches the product: it lives outside entry/, only this script copies it, and
 // only into the temp copy. A test (test/sim.test.js) checks entry/ has no trace of it; grep the product build to prove it.
 // Needs DevEco Studio (JAVA_HOME and DEVECO_SDK_HOME, docs/HUAWEI_WATCH.md). One simulator at a time: it is killed at the end.
 import net from 'node:net'
 import { spawn } from 'node:child_process'
-import { cpSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -25,7 +26,10 @@ const PAGES = 'entry/src/main/js/MainAbility/pages/'
 
 export const badLines = (log) => log.split('\n').filter((l) => BAD.test(l))
 // what a run failed on; "never ran" only when no bad line explains it
-export const failures = ({ fed, bad }) => [...(!fed && !bad.length ? ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'] : []), ...bad.map((l) => 'FAIL ' + l.slice(0, 160))]
+export const failures = ({ fed, answered, bad }) => [
+  ...(!fed && !bad.length ? ['FAIL the app never ran its workout (no OGSMOKE feed in the simulator log)'] : []),
+  ...(fed && !answered && !bad.length ? ['FAIL the fake phone never answered the start (no OGSMOKE answered in the simulator log)'] : []),
+  ...bad.map((l) => 'FAIL ' + l.slice(0, 160))]
 // the simulator reports memoryUsage on the pipe as JSON ending in a NUL byte
 export const heapPeak = (pipe) => Math.max(0, ...[...pipe.matchAll(/"peakAllocBytes":\s*(\d+)/g)].map((m) => +m[1]))
 
@@ -77,7 +81,7 @@ async function run(dir, out, hs) {
   await new Promise((r) => srv.listen(sock, r)) // the simulator must find the socket when it starts
   const logPath = join(out, 'sim.log')
   const args = ['-j', outOf(dir), '-n', 'opengym', '-device', 'liteWearable', '-shape', 'circle', '-or', '466', '466', '-cr', '466', '466',
-    '-lws', '40003', '-s', 'ogsmoke', '-url', 'pages/index/index', '-l', 'en_US']
+    '-lws', '40003', '-s', 'ogsmoke', '-url', 'pages/index/index'] // no -l: the lite simulator stays zh-CN whatever it is given
   if (hs) args.push('-hs', String(hs))
   const sim = spawn(join(bin, 'Simulator'), args, { cwd: bin, stdio: ['ignore', openSync(logPath, 'w'), openSync(join(out, 'sim.err'), 'w')] })
   let ws
@@ -102,7 +106,7 @@ async function run(dir, out, hs) {
       await sleep(2000)
     }
     writeFileSync(join(out, 'pipe.txt'), pipe) // the simulator's memoryUsage reports, in order: the heap per step
-    return { fed, bad: badLines(log()), peak: heapPeak(pipe), out }
+    return { fed, answered: log().includes('OGSMOKE answered'), bad: badLines(log()), peak: heapPeak(pipe), out }
   } finally {
     sim.kill(); if (ws) ws.close(); srv.close()
   }
@@ -113,13 +117,16 @@ async function main() {
   const hsArg = arg('--hs') || '196608'
   const hs = hsArg === 'none' ? 0 : +hsArg
   let dir = arg('--from')
-  if (!dir) {
-    dir = mkdtempSync(join(tmpdir(), 'opengym-sim-'))
-    prepare(dir)
-    build(dir)
+  const made = !dir
+  if (made) dir = mkdtempSync(join(tmpdir(), 'opengym-sim-'))
+  let r
+  try {
+    if (made) { prepare(dir); build(dir) }
+    r = await run(dir, arg('--out') || dir + '-shots', hs)
+  } finally {
+    if (made && !process.argv.includes('--keep')) rmSync(dir, { recursive: true, force: true }) // ~17 MB each; the shots stay
   }
-  const r = await run(dir, arg('--out') || join(dir, 'shots'), hs)
-  console.log(`copy ${dir}`)
+  console.log(made && !process.argv.includes('--keep') ? 'copy removed' : `copy ${dir} (kept)`)
   console.log(`heap limit ${hs || 'simulator default'}, peak ${r.peak ? r.peak + ' bytes' : 'not reported (the simulator died or gave none)'}, shots in ${r.out}`)
   const fails = failures(r)
   fails.forEach((l) => console.log(l))
