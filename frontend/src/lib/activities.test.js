@@ -97,6 +97,28 @@ describe('activities: from the health store', () => {
     expect(mergeHealthActivities(S, [rec], { src: 'hc', now })).toHaveLength(0)
     expect(activitiesOf(S)).toEqual([])
   })
+  it('keeps one entry when the same session comes back under a new id (Garmin Connect re-writing it)', () => {
+    const S = {}
+    expect(mergeHealthActivities(S, [{ ...rec, km: 10.2 }], { src: 'ah', now })).toHaveLength(1)
+    expect(mergeHealthActivities(S, [{ ...rec, id: 'hc-2', km: 10.2 }], { src: 'ah', now })).toHaveLength(0)
+    expect(activitiesOf(S)).toHaveLength(1)
+  })
+  it('keeps one entry for two apps saving the same ride, with the distance one of them has', () => {
+    const ride = { id: 'peloton', sport: 'ride', start: rec.start, end: rec.start + 47 * 60e3, origin: 'com.onepeloton' }
+    const garmin = { id: 'garmin', sport: 'ride', start: rec.start + 5e3, end: rec.start + 45 * 60e3, km: 27.21, origin: 'com.garmin' }
+    const S = {}
+    expect(mergeHealthActivities(S, [ride, garmin], { src: 'ah', now })).toHaveLength(2)
+    const list = activitiesOf(S)
+    expect(list).toHaveLength(1)
+    expect(list[0]).toMatchObject({ sport: 'ride', min: 45, km: 27.21, at: garmin.start })
+    expect(mergeHealthActivities(S, [ride, garmin], { src: 'ah', now })).toHaveLength(0)
+  })
+  it('still takes two sessions of the same sport a few minutes apart, or two sports at once', () => {
+    const S = {}
+    const later = { ...rec, id: 'hc-3', start: rec.start + 50 * 60e3, end: rec.end + 50 * 60e3 }
+    const swim = { ...rec, id: 'hc-4', sport: 'swim' }
+    expect(mergeHealthActivities(S, [rec, later, swim], { src: 'hc', now })).toHaveLength(3)
+  })
 })
 
 describe('activities: imports', () => {
