@@ -38,7 +38,7 @@ const KEY = 'gym_tour_v1'
    `when(profile)`: a stop that only makes sense for some profiles, decided once at the start.
    `optional`: a stop whose element may not be there (no rest timer after a Next instead of a
      tick, a row this device does not have) is passed over rather than shown pointing at nothing. */
-const STANDARD = [
+export const STEPS = [
   { id: 'today', route: '/home', anchor: 'today' },
   { id: 'go-plan', route: '/home', anchor: 'tab-plan', go: '/plan' },
   { id: 'plan-views', route: '/plan', anchor: 'plan-views' },
@@ -62,14 +62,6 @@ const STANDARD = [
   { id: 'look', route: '/settings', anchor: 'settings-look' },
   { id: 'done', route: null, anchor: null },
 ]
-
-// The shorter tour reuses the practice workout and real navigation controls.
-const START_HOME = { id: 'start-home', route: '/home', anchor: 'start', intercept: true }
-const SWAP = { id: 'swap', route: '/workout', anchor: 'exercise-options', sandbox: 'practice' }
-const LEARN = { id: 'learn', route: '/settings/plan', anchor: 'settings-learn', go: '/learn' }
-export const STEPS = [...STANDARD, START_HOME, SWAP, LEARN]
-const BEGINNER = ['start-home', 'tick', 'rest', 'swap', 'finish', 'go-plan', 'learn', 'go-settings']
-  .map(id => STEPS.find(step => step.id === id))
 
 // Shared with the app-help index; the tour remains the source of its directions.
 export const NAVIGATION_COPY = {
@@ -165,7 +157,7 @@ const BACKUP = [
 ]
 
 /** Every flow by name: the tour, then the tutorials in the order Settings lists them. */
-export const FLOWS = { tour: STANDARD, plan: PLAN, custom: CUSTOM, edit: EDIT, backup: BACKUP }
+export const FLOWS = { tour: STEPS, plan: PLAN, custom: CUSTOM, edit: EDIT, backup: BACKUP }
 export const TUTORIALS = ['plan', 'custom', 'edit', 'backup']
 // What the closing card and Settings call each tutorial (literal t() calls for check-source-strings).
 export const TUTORIAL_COPY = {
@@ -178,8 +170,7 @@ export const TUTORIAL_COPY = {
 
 /** The stops of `flow` for this profile, in order. `ctx`: { plannedDays, rest, swipe, balance, workouts }. */
 export function tourSteps(ctx = {}, flow = 'tour') {
-  const steps = flow === 'tour' && ctx.level === 'beginner' ? BEGINNER : FLOWS[flow] || STANDARD
-  return steps.filter(s => !s.when || s.when(ctx))
+  return (FLOWS[flow] || STEPS).filter(s => !s.when || s.when(ctx))
 }
 
 /** Where to go from `i` in direction `dir` (+1 / -1): the index, or -1 past either end. */

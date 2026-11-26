@@ -11,25 +11,6 @@ beforeEach(() => { localStorage.clear(); closeTour() })
 afterEach(() => { localStorage.clear(); closeTour() })
 
 describe('steps', () => {
-  it('gives beginners eight real stops for a first workout and leaves other tours alone', () => {
-    const profile = { rest: true, swipe: true, workouts: true, plannedDays: true }
-    const beginner = tourSteps({ ...profile, level: 'beginner' })
-    expect(beginner.map(s => s.anchor)).toEqual([
-      'start', 'tick', 'rest', 'exercise-options', 'finish', 'tab-plan', 'settings-learn', 'settings-gear',
-    ])
-    expect(beginner.every(s => STEPS.some(target => target.anchor === s.anchor))).toBe(true)
-    expect(beginner[0]).toMatchObject({ route: '/home', intercept: true })
-    for (const level of ['intermediate', 'advanced']) {
-      expect(tourSteps({ ...profile, level })).toEqual(tourSteps(profile))
-    }
-    for (const flow of TUTORIALS) {
-      expect(tourSteps({ ...profile, level: 'beginner' }, flow)).toEqual(tourSteps(profile, flow))
-    }
-    markTourDone()
-    expect(shouldOffer(readTour(), fresh)).toBe(false)
-    startTour()
-    expect(beginner[indexOfStep(beginner, tourState().at)].anchor).toBe('start')
-  })
   it('runs Home, Plan, Library, the workout, Stats, Settings and a closing card, in that order', () => {
     const routes = tourSteps({}).map(s => s.route).filter((r, i, all) => r !== all[i - 1])
     expect(routes).toEqual(['/home', '/plan', '/library', '/workout', '/home', '/stats', '/home', '/settings', null])
@@ -47,7 +28,7 @@ describe('steps', () => {
       })
     }
     // the tab bar's own buttons, the gear and the back buttons
-    expect(FLOWS.tour.filter(s => s.go).map(s => s.anchor)).toEqual(['tab-plan', 'tab-library', 'tab-stats', 'tab-home', 'settings-gear'])
+    expect(STEPS.filter(s => s.go).map(s => s.anchor)).toEqual(['tab-plan', 'tab-library', 'tab-stats', 'tab-home', 'settings-gear'])
     // into the practice workout through the Start button, which the tour takes for itself
     expect(STEPS.find(s => s.id === 'start')).toMatchObject({ anchor: 'start', intercept: true, route: '/library' })
   })
@@ -89,7 +70,7 @@ describe('steps', () => {
     expect(empty).not.toContain('stats-records')
     expect(empty).not.toContain('rest')
     const full = tourSteps({ plannedDays: true, rest: true, swipe: true, balance: true, workouts: true }).map(s => s.id)
-    expect(full).toEqual(FLOWS.tour.map(s => s.id))
+    expect(full).toEqual(STEPS.map(s => s.id))
   })
   it('only the workout stops run on the practice session, and they sit together', () => {
     const steps = tourSteps({ rest: true, swipe: true })
