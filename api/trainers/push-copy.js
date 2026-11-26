@@ -248,7 +248,7 @@ export const TRAINER_COPY = {
     },
     "scopes": {
       "title": "Jakamisasetuksesi muuttuivat",
-      "body": "Se, mitä {0} näkee, muuttui juuri. Etkö tehnyt sitä sinä? Tarkista Valmentaja ja sali."
+      "body": "Se, mitä {0} näkee, muuttui juuri. Etkö tehnyt muutosta itse? Tarkista Valmentaja ja sali."
     },
     "joined": {
       "title": "Tervetuloa: {0}",
@@ -263,7 +263,7 @@ export const TRAINER_COPY = {
       "body": "Hyväksy tai hylkää kohdassa Valmentaja ja sali."
     },
     "comment": {
-      "title": "{0} jätti sinulle muistiinpanon",
+      "title": "{0} jätti sinulle kommentin",
       "body": ""
     },
     "offer": {

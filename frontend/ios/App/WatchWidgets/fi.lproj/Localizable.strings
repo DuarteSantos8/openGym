@@ -21,7 +21,7 @@
 "Time" = "Aika";
 "Skip set" = "Ohita sarja";
 "Personal records" = "Ennätykset";
-"Quick check-in" = "Nopea tilannekatsaus";
+"Quick check-in" = "Pikapunnitus";
 "Save & start workout" = "Tallenna ja aloita treeni";
 "Start without weighing in" = "Aloita ilman punnitusta";
 "Body weight" = "Kehonpaino";
@@ -46,7 +46,7 @@
 "Finish now" = "Lopeta nyt";
 "Back" = "Takaisin";
 "Last time: %@" = "Viimeksi: %@";
-"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Mitään ei ole kirjattu hetkeen. Jos olet valmis, treeni päättyy itsestään klo %@, ja päättymisajaksi tallennetaan viimeinen sarjasi.";
+"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Ei kirjauksia hetkeen. Jos olet valmis, treeni päättyy itsestään klo %@ ja tallentuu päättyneeksi viimeiseen sarjaasi.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Lopetetaanko treeni nyt? Muuten se päättyy itsestään klo %@.";
 "No workout running" = "Ei treeniä käynnissä";
 "Not synced yet" = "Ei vielä synkronoitu";
