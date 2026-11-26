@@ -4752,5 +4752,7 @@ export const PT_BR_OVERRIDES = {
   "Ask Coach to pick a result": "Pedir ao treinador que escolha um resultado",
   "App help": "Ajuda do aplicativo",
   "No matching help found.": "Nenhum tópico de ajuda encontrado.",
+  "Show all settings": "Mostrar todas as configurações",
+  "Show fewer": "Mostrar menos",
 }
 export default { ...pt, ...PT_BR_OVERRIDES }

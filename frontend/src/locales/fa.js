@@ -6308,4 +6308,6 @@ export default {
   "Ask Coach to pick a result": "از مربی بخواه یک نتیجه را انتخاب کند",
   "App help": "راهنمای برنامه",
   "No matching help found.": "راهنمایی مرتبطی پیدا نشد.",
+  "Show all settings": "نمایش همهٔ تنظیمات",
+  "Show fewer": "نمایش کمتر",
 }

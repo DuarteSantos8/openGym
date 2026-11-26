@@ -71,6 +71,14 @@ export const ROOT_GROUPS = [
   { ids: ['data', 'about'] },
 ]
 
+// Account, App help and the full-list control sit alongside these five page rows.
+export const BEGINNER_ROOT = ['workout', 'plan', 'units', 'equipment', 'look']
+
+export function rootPagesFor(level, showAll, ctx) {
+  const ids = level === 'beginner' && !showAll ? BEGINNER_ROOT : ROOT_GROUPS.flatMap(group => group.ids)
+  return ids.filter(id => onRoot(id, ctx))
+}
+
 export const WATCH_PAGES = ['watch', 'wear', 'garmin', 'zepp']
 
 /** Whether a page has its own row on the root: Zepp sits inside Watches wherever Watches is. */

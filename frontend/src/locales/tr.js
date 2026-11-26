@@ -6342,4 +6342,6 @@ export default {
   "Ask Coach to pick a result": "Koçtan bir sonuç seçmesini iste",
   "App help": "Uygulama yardımı",
   "No matching help found.": "Eşleşen yardım bulunamadı.",
+  "Show all settings": "Tüm ayarları göster",
+  "Show fewer": "Daha az göster",
 }
