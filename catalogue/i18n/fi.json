@@ -125,7 +125,7 @@
       "Tartu kuminauhaan molemmin käsin kämmenet kehoon päin ja pidä käsivarret suorina.",
       "Jännitä keskivartalo ja pidä polvet hieman koukussa.",
       "Taivuta vartaloa hitaasti lantiosta eteenpäin pitäen selän suorana ja rinta ylhäällä.",
-      "Laske kuminauhaa kohti lattiaa pitäen polvet kevyesti koukussa.",
+      "Laske kuminauhaa kohti lattiaa pitäen jalat suorina.",
       "Pysäytä liike hetkeksi ala-asennossa, purista sitten pakaroita ja takareisiä palataksesi aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
@@ -3125,7 +3125,7 @@
     "description": "Punnerra kahta käsipainoa ylös yläselkä jumppapallon päällä. Hyvä tapa treenata rintaa, ja samalla tasapaino ja keskivartalo saavat lisähaastetta.",
     "instructions": [
       "Istu jumppapallolle jalat tukevasti lattialla ja käsipainot reisien päällä.",
-      "Kävele jaloillasi hitaasti eteenpäin rullaten palloa, kunnes yläselkäsi on pallon tuella ja polvet ovat 90 asteen kulmassa.",
+      "Kävele jaloillasi hitaasti eteenpäin rullaten palloa, kunnes alaselkäsi on pallon tuella ja polvet ovat 90 asteen kulmassa.",
       "Nosta käsipainot olkapäiden korkeudelle, kämmenet eteenpäin.",
       "Punnerra käsipainoja ylöspäin, kunnes kädet ovat suorat.",
       "Pysähdy hetkeksi ylhäällä ja laske sitten käsipainot hitaasti takaisin aloitusasentoon.",
@@ -3440,7 +3440,7 @@
     "description": "Istuen tehtävä taljasoutu köydellä, jolloin kädet voivat mennä ristiin ja päättää liikkeen leveälle. Liike kuormittaa yläselkää ja leveitä selkälihaksia pidemmällä liikeradalla.",
     "instructions": [
       "Istu soutulaitteeseen jalat tukevasti jalkatuilla ja polvet kevyesti koukussa.",
-      "Tartu köyteen neutraalilla otteella kämmenet vastakkain.",
+      "Tartu köyteen myötäotteella kämmenet vastakkain.",
       "Nojaa hieman taaksepäin pitäen selän suorana ja keskivartalon tiukkana.",
       "Vedä köyttä kohti rintaa ja purista lapoja yhteen.",
       "Pysähdy hetkeksi liikkeen huipulla, vapauta sitten jännitys hitaasti ja palaa aloitusasentoon.",
@@ -3452,7 +3452,7 @@
     "description": "Istumasoutu taljassa köydellä korotetulta istuimelta. Se harjoittaa yläselkää, leveitä selkälihaksia ja hauiksia neutraalilla otteella.",
     "instructions": [
       "Istu korotetulle penkille kasvot taljalaitetta kohti.",
-      "Tartu köyden kahvoihin neutraalilla otteella kämmenet vastakkain.",
+      "Tartu köyden kahvoihin myötäotteella kämmenet vastakkain.",
       "Pidä selkä suorana ja nojaa hieman taaksepäin pitäen polvet kevyesti koukussa.",
       "Vedä taljaa kohti vartaloasi tuomalla lapoja yhteen ja puristamalla selkälihaksia.",
       "Pysähdy hetkeksi täysin supistetussa asennossa.",
@@ -3478,7 +3478,7 @@
     "description": "Istuen tehtävä soutu köysitaljalla. Neutraali ote kuormittaa yläselkää, leveitä selkälihaksia ja hauiksia.",
     "instructions": [
       "Istu soutulaitteeseen jalat tukevasti jalkatuilla ja polvet kevyesti koukussa.",
-      "Tartu köyteen neutraalilla otteella kämmenet vastakkain.",
+      "Tartu köyteen myötäotteella kämmenet vastakkain.",
       "Pidä selkä suorana ja nojaa hieman eteenpäin pitäen kyynärpäät kevyesti koukussa.",
       "Vedä köyttä kohti vartaloa ja purista lapoja yhteen.",
       "Pysähdy hetkeksi liikkeen huipulla, vapauta sitten jännitys hitaasti ja palaa aloitusasentoon.",
@@ -4029,8 +4029,8 @@
     "name": "Pohjenousu lattialla levytangolla",
     "description": "Seiso levytanko hartioilla ja nouse lattialta varpaille. Liike kuormittaa pohkeita, mutta tasainen alusta rajoittaa liikerataa.",
     "instructions": [
-      "Aseta levytanko hartioillesi niskan taakse.",
-      "Seiso tasaisella lattialla jalat lantion leveydellä.",
+      "Aseta levytanko lattialle eteesi.",
+      "Seiso päkiöillä levytangon päällä niin, että kantapäät roikkuvat ilmassa.",
       "Ota tarvittaessa tukea tukevasta esineestä.",
       "Nosta kantapäät pohkeiden voimalla mahdollisimman ylös.",
       "Pysähdy hetkeksi ylhäällä, laske sitten kantapäät hitaasti takaisin aloitusasentoon.",
@@ -4527,19 +4527,19 @@
     ]
   },
   "1413": {
-    "name": "Yhden käden hauiskääntö taljassa vastaotteella",
-    "description": "Yhden käden hauiskääntö taljassa vastaotteella. Se vahvistaa hauista ja kyynärvartta.",
+    "name": "Yhden käden käänteinen hauiskääntö taljassa",
+    "description": "Yhden käden hauiskääntö taljassa myötäotteella. Se vahvistaa kyynärvarsia ja hauiksen ulko-osaa.",
     "instructions": [
       "Seiso kasvot taljalaitteeseen päin jalat hartioiden leveydellä.",
-      "Tartu taljan kahvaan vastaotteella kämmen ylöspäin.",
+      "Tartu taljan kahvaan myötäotteella kämmen alaspäin.",
       "Pidä kyynärpää lähellä kylkeä ja käännä kyynärvartta hitaasti ylöspäin kohti olkapäätä.",
       "Pysähdy hetkeksi yläasennossa ja laske kyynärvarsi hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
   "1414": {
-    "name": "Yhden käden Scott-hauiskääntö käsipainolla",
-    "description": "Tue käsivarsi Scott-penkkiin ja tee hauiskääntö käsipainolla vastaotteella. Se kuormittaa hauista ja kyynärvartta ilman kehon heijausta.",
+    "name": "Yhden käden käänteinen Scott-hauiskääntö käsipainolla",
+    "description": "Tue käsivarsi Scott-penkkiin ja tee hauiskääntö käsipainolla myötäotteella. Se kuormittaa hauista ja kyynärvartta ilman kehon heijausta.",
     "instructions": [
       "Istu Scott-penkille rinta pehmustetta vasten ja ojenna käsi penkin reunan yli pitäen käsipainoa vastaotteella.",
       "Laske käsipainoa hitaasti, kunnes käsi on suora.",
@@ -4588,7 +4588,7 @@
   },
   "1418": {
     "name": "Polvien halaus rintaan",
-    "description": "Kyykisty ja halaa polvia rintaa vasten. Liike venyttää pakaroita ja rentouttaa lantiota sekä alaselkää.",
+    "description": "Seiso ja vedä toinen polvi rintaan molemmin käsin. Se venyttää pakaroita ja rentouttaa lantiota sekä alaselkää.",
     "instructions": [
       "Aloita seisomalla jalat hartioiden leveydellä.",
       "Koukista polvet ja laskeudu kyykkyasentoon.",
@@ -6775,8 +6775,8 @@
     ]
   },
   "1616": {
-    "name": "Scott-hauiskääntö laitteessa",
-    "description": "Scott-hauiskääntö vipuvarsilaitteessa vastaotteella. Liike kuormittaa hauiksia ja kyynärvarsia.",
+    "name": "Käänteinen Scott-hauiskääntö laitteessa",
+    "description": "Scott-hauiskääntö vipuvarsilaitteessa myötäotteella. Liike siirtää työtä kyynärvarsille ja olkalihakselle.",
     "instructions": [
       "Säädä istuimen korkeus ja asetu vipuvarsilaitteeseen.",
       "Tartu kahvoihin vastaotteella kämmenet ylöspäin.",
@@ -6864,7 +6864,7 @@
     "instructions": [
       "Säädä vinopenkki 45 asteen kulmaan.",
       "Istu penkille selkänojaa vasten jalkapohjat lattiassa.",
-      "Pidä käsipainoa kummassakin kädessä neutraalilla otteella kämmenet vastakkain.",
+      "Pidä käsipainoa kummassakin kädessä myötäotteella kämmenet sisäänpäin osoittaen.",
       "Ojenna kädet suoraan ylös rinnan yläpuolelle pitäen kyynärpäät kevyesti koukussa.",
       "Laske käsipainoja hitaasti kohti olkapäitä pitäen kyynärpäät lähellä vartaloa.",
       "Pysähdy hetkeksi alhaalla ja punnerra käsipainot takaisin ylös aloitusasentoon.",
@@ -7463,8 +7463,8 @@
       "Istu Scott-penkille ja tartu käsipainoon toisella kädellä vastaotteella.",
       "Asetu niin, että olkavartesi lepää pehmustetta vasten ja käsivarsi on suorana.",
       "Käännä paino kohti olkapäätä pitäen olkavartesi paikallaan.",
-      "Käännä rannetta liikkeen yläasennossa niin, että kämmen osoittaa alaspäin.",
-      "Laske käsipaino hitaasti alas kämmen alaspäin ja käännä ranne alhaalla takaisin vastaotteeseen.",
+      "Käännä rannetta liikkeen yläasennossa niin, että kämmen osoittaa ylöspäin.",
+      "Laske käsipaino hitaasti takaisin alas ja käännä samalla ranne takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja ja vaihda sitten kättä."
     ]
   },
@@ -7663,14 +7663,14 @@
     ]
   },
   "1689": {
-    "name": "Työntö ja veto seisten",
-    "description": "Seisten tehtävä kehonpainoliike, jossa kädet työntyvät vuorotellen eteen ja vetäytyvät takaisin kylkien viereen. Se harjoittaa rintaa ja käsivarsia.",
+    "name": "Punnerrus ja veto omalla painolla",
+    "description": "Kehonpainoliike, jossa työnnetään ja vedetään omaa kehonpainoa vastuksena. Se harjoittaa rintaa ja käsivarsia.",
     "instructions": [
-      "Seiso suorana jalat hartioiden leveydellä ja pidä keskivartalo tiukkana.",
-      "Koukista kädet kylkien viereen kämmenet ylöspäin.",
-      "Työnnä toinen käsi suoraksi eteen kämmen ylöspäin.",
-      "Vedä ojennettu käsi takaisin kyljen viereen ja työnnä samalla toinen käsi eteen.",
-      "Jatka käsiä vuorotellen niin, että toinen on aina koukussa kyljen vieressä ja toinen ojennettuna.",
+      "Asetu punnerrusasentoon kädet hieman hartioita leveämmälle ja vartalo suorana.",
+      "Laske rintaa kohti lattiaa koukistamalla kyynärpäitä ja pitäen vartalon suorana.",
+      "Punnerra kämmenillä takaisin aloitusasentoon ojentamalla kädet.",
+      "Laskeudu uudelleen alas punnerrusasennosta vetämällä rintaa kohti lattiaa kyynärpäitä koukistamalla ja vartalo suorana pitäen.",
+      "Punnerra kämmenillä takaisin ylös aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -8398,7 +8398,7 @@
     ]
   },
   "1755": {
-    "name": "Ojentajadippi laitteessa",
+    "name": "Ojentajadippi lisäpainolla",
     "description": "Dippi penkiltä tai tuolilta lisäpainolla ja jalat suorina. Rasittaa ojentajia tehokkaammin kuin pelkkä kehonpainoversio.",
     "instructions": [
       "Istu penkin tai tuolin reunalle ja tartu käsillä reunaan lantion vierestä.",
@@ -10426,7 +10426,7 @@
     ]
   },
   "1941": {
-    "name": "Lonkan ulkosyrjän venytys seisten jalat ristissä",
+    "name": "Lähentäjien venytys seisten",
     "description": "Venytys, jossa toinen jalka viedään toisen taakse ja vartaloa kallistetaan sivulle. Venyttää lonkan ulkosyrjää.",
     "instructions": [
       "Seiso ryhdikkäästi ja vie toinen jalka toisen taakse niin, että jalat ovat lähekkäin.",
@@ -14042,7 +14042,7 @@
     "description": "Vaakasuora jalkaprässi vipuvarsilaitteella tehtynä yhdellä jalalla kerrallaan. Kehittää pakaroita ja etureisiä.",
     "instructions": [
       "Säädä laitteen penkki niin, että polvesi ovat 90 asteen kulmassa, kun jalkasi on jalkalevyllä.",
-      "Istu laitteeseen selkänojaa vasten, aseta toinen jalka jalkalevylle ja pidä toinen jalka levossa tuella sen vieressä.",
+      "Istu laitteeseen selkänojaa vasten ja aseta toinen jalka jalkalevylle.",
       "Pidä kiinni laitteen kahvoista tai reunoista vakauden säilyttämiseksi.",
       "Paina jalkalevyä poispäin ojentamalla jalkasi ja pidä selkä tiukasti selkänojaa vasten.",
       "Pysäytä liike hetkeksi kokonaan ojennetussa asennossa ja koukista sitten jalka hitaasti takaisin aloitusasentoon.",
@@ -16108,7 +16108,7 @@
     "instructions": [
       "Seiso selkä kelkkaan päin ja tartu kahvoihin.",
       "Jännitä keskivartalo ja nojaa kevyesti kuormaa kohti.",
-      "Kävele taaksepäin voimakkain askelin työntäen kelkkaa.",
+      "Kävele eteenpäin voimakkain askelin työntäen kelkkaa.",
       "Pidä askelluksesi tasaisena ja hengitys hallittuna.",
       "Kulje määritetty matka ja pidä tauko."
     ]
@@ -16865,7 +16865,7 @@
     ]
   },
   "2991": {
-    "name": "Olkapään koukistus, lapojen painallus ja vetäminen taakse pallolla istuen yhdellä jalalla",
+    "name": "Olkapään koukistajien, laskijoiden ja vetäjien venytys pallolla istuen yhdellä jalalla",
     "description": "Olkapäiden hallintaharjoitus jumppapallolla istuen toinen jalka ylhäällä. Haastaa tasapainoa, kun nostat, lasket ja vedät lapoja taakse.",
     "instructions": [
       "Istu ryhdikkäästi jumppapallolla jalat lattiassa.",
@@ -18098,7 +18098,7 @@
     "description": "Aloittelijaystävällinen punnerrus polvet lattiassa. Kehittää rintaa, olkapäitä ja ojentajia kevyemmällä kuormalla kuin peruspunnerrus.",
     "instructions": [
       "Asetu lattialle konttausasentoon kädet hartioiden leveydellä, sormet eteenpäin osoittaen.",
-      "Pidä polvet lattiassa ja siirrä vartalo niin, että se muodostaa suoran linjan päästä polviin.",
+      "Ojenna jalat taakse päkiöiden varaan niin, että keho muodostaa suoran linjan päästä kantapäihin.",
       "Jännitä keskivartalo ja laske vartaloa kohti lattiaa koukistamalla kyynärpäitä, pitäen ne lähellä kylkiä.",
       "Jatka laskemista, kunnes rintasi on juuri lattian yläpuolella, ja punnerra sitten itsesi takaisin aloitusasentoon ojentamalla kädet.",
       "Tee haluamasi määrä toistoja."
@@ -18442,10 +18442,10 @@
   },
   "3241": {
     "name": "Pohjenousu jumppapallo seinää vasten (tennispallo nilkkojen välissä)",
-    "description": "Pohjenousu seisten kasvot seinään päin jumppapallo vartalon ja seinän välissä, käsipainot käsissä ja pallo puristettuna nilkkojen väliin. Treenaa pohkeita.",
+    "description": "Pohjenousu seisten selkä seinää vasten olevaa jumppapalloa vasten, käsipainot käsissä ja pallo puristettuna nilkkojen väliin. Treenaa pohkeita.",
     "instructions": [
       "Seiso kasvot seinään päin jalat hartioiden leveydellä.",
-      "Aseta jumppapallo seinän ja vatsan väliin.",
+      "Aseta jumppapallo seinän ja alaselän väliin.",
       "Pidä käsipainoa kummassakin kädessä kädet ojennettuina sivuilla.",
       "Aseta tennispallo nilkkojen väliin.",
       "Nosta kantapäät irti lattiasta ja nouse varpaillesi.",
@@ -19111,10 +19111,10 @@
     "name": "Maltalainen risti",
     "description": "Edistynyt voimistelupito renkailla, jossa kädet ovat suorina sivuilla ja vartalo suorana. Vaatii valtavasti voimaa rinnalta, olkapäiltä ja keskivartalolta.",
     "instructions": [
-      "Ota renkaista kiinni ja nouse tukiasentoon kädet suorina.",
-      "Kallista vartaloa hitaasti eteenpäin ja vie suorat kädet sivuille, kunnes vartalo on lattian suuntainen.",
-      "Jännitä keskivartalo ja pidä vartalo suorana muutaman sekunnin ajan.",
-      "Palaa hallitusti tukiasentoon.",
+      "Asetu seisomaan jalat hartioiden leveydellä ja kädet ojennettuna suoraan sivuille.",
+      "Nojaa hitaasti eteenpäin pitäen kädet suorina, kunnes ylävartalosi on lattian suuntainen.",
+      "Jännitä keskivartalo ja pidä tämä asento muutaman sekunnin ajan.",
+      "Palaa aloitusasentoon työntämällä jaloilla ja nousemalla takaisin pystyyn.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -20249,8 +20249,8 @@
     "description": "Leuanveto jalat suorina L-asennossa. Liike vahvistaa leveitä selkälihaksia, hauiksia ja keskivartaloa.",
     "instructions": [
       "Tartu tankoon myötäotteella hieman hartioita leveämmällä otteella.",
-      "Roiku kädet suorina ja nosta suorat jalat eteen lattian suuntaisiksi L-asentoon.",
-      "Vedä vartaloa kohti tankoa leveillä selkälihaksilla ja hauiksilla. Pidä kyynärpäät lähellä vartaloa ja jalat L-asennossa.",
+      "Roiku tangossa kädet ja vartalo suorina.",
+      "Vedä vartaloa kohti tankoa leveillä selkälihaksilla ja hauiksilla, kyynärpäät lähellä vartaloa.",
       "Jatka vetoa, kunnes leukasi on tangon yläpuolella.",
       "Pysähdy hetkeksi ylhäällä ja laskeudu sitten hallitusti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
@@ -20508,7 +20508,7 @@
   },
   "3460": {
     "name": "Kylkilankku ja lonkan lähennys (polvi koukussa)",
-    "description": "Kylkilankku, jossa alimmainen jalka nousee kohti päällimmäistä. Vahvistaa sisäreisiä ja vinoja vatsalihaksia.",
+    "description": "Kylkilankku, jossa päällimmäinen jalka nousee sisäänpäin. Vahvistaa sisäreisiä ja vinoja vatsalihaksia.",
     "instructions": [
       "Asetu kylkilankkuun niin, että alimmainen polvi on koukussa.",
       "Pidä vartalo suorana.",
@@ -21226,11 +21226,11 @@
   },
   "3523": {
     "name": "Lantionnosto molemmat jalat penkillä (mies)",
-    "description": "Kehonpainolla tehtävä lantionnosto selinmakuulla molemmat jalat penkillä. Treenaa pakaroita ja takareisiä.",
+    "description": "Kehonpainolla tehtävä lantionnosto hartiat penkkiä vasten ja molemmat jalat lattiassa. Treenaa pakaroita ja takareisiä.",
     "instructions": [
-      "Asetu selinmakuulle lattialle ja nosta molemmat jalat penkille.",
-      "Aseta kädet lattialle lantion viereen tueksi.",
-      "Jännitä pakarat ja takareidet, nosta sitten lantio irti lattiasta, kunnes kehosi muodostaa suoran linjan polvista hartioihin.",
+      "Istu penkin reunalle selkä penkkiä vasten ja jalkapohjat tukevasti lattiassa.",
+      "Aseta kädet penkille lantion viereen tueksi.",
+      "Jännitä pakarat ja takareidet, nosta sitten lantio irti penkiltä, kunnes kehosi muodostaa suoran linjan polvista hartioihin.",
       "Pysähdy hetkeksi yläasennossa ja laske sitten lantio hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
@@ -21678,9 +21678,9 @@
   },
   "3562": {
     "name": "Lantionnosto levytangolla jalat penkillä",
-    "description": "Levytangolla tehtävä lantionnosto selinmakuulla jalat penkillä ja tanko lantiolla. Se kehittää pakaroita ja takareisiä.",
+    "description": "Levytangolla tehtävä lantionnosto yläselkä penkillä ja tanko lantiolla. Se kehittää pakaroita ja takareisiä.",
     "instructions": [
-      "Asetu selinmakuulle lattialle ja aseta jalkapohjat penkille lantion leveydelle.",
+      "Istu lattialle yläselkä penkin reunaa vasten ja jalkapohjat lattiassa lantion leveydellä.",
       "Aseta levytanko lantion päälle ja pidä siitä tukevasti kiinni molemmin käsin.",
       "Jännitä pakarat ja keskivartalo, ja työnnä kantapäiden kautta lantio ylös, kunnes vartalo on suorassa linjassa polvista hartioihin.",
       "Pysähdy hetkeksi ylhäällä ja purista pakaroita.",
@@ -22479,7 +22479,7 @@
     "instructions": [
       "Mene kyljellesi jalat suorina ja pinossa toistensa päällä.",
       "Tue päätäsi asettamalla alimmainen käsi pään alle.",
-      "Jännitä lähentäjät ja nosta alimmaista jalkaa mahdollisimman ylös kiertämättä lantiota tai kallistumatta taaksepäin.",
+      "Jännitä lähentäjät ja nosta päällimmäistä jalkaa mahdollisimman ylös kiertämättä lantiota tai kallistumatta taaksepäin.",
       "Pysähdy hetkeksi ylhäällä ja laske jalka sitten hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja ja vaihda sitten puolta."
     ]
@@ -28075,7 +28075,7 @@
     "name": "Etunosto taljassa maaten",
     "description": "Etunosto selinmakuulla alataljan avulla. Se eristää etuolkapäät ilman kehon heijausta.",
     "instructions": [
-      "Asetu selinmakuulle jalat kohti alataljaa.",
+      "Asetu selinmakuulle pää kohti alataljaa.",
       "Pidä kahvaa suorin käsin lantion kohdalla.",
       "Nosta käsiä kaaressa, kunnes ne osoittavat suoraan ylöspäin.",
       "Pysähdy hetkeksi ylhäällä.",
@@ -29318,7 +29318,7 @@
     "name": "Vaakasoutu kuminauhalla",
     "description": "Kehonpainolla tehtävä soutu vastuskuminauhalla tehostettuna. Se vahvistaa yläselkää ja hauiksia samalla, kun keskivartalo pitää vartalon suorana.",
     "instructions": [
-      "Tartu tankoon tai telineeseen maaten sen alapuolella ja aseta kuminauha niin, että se kulkee rintasi yli lisävastukseksi.",
+      "Kiinnitä kuminauha tukevaan tankoon tai telineeseen ja tartu siihen maaten ankkuripisteen alapuolella.",
       "Pidä kehosi suorassa linjassa kantapäät lattiassa.",
       "Vedä rintasi ylös kohti käsiäsi ja purista lapoja yhteen.",
       "Pysäytä liike hetkeksi ylhäällä.",
@@ -29624,13 +29624,13 @@
   },
   "4407": {
     "name": "Ojentajan rullaus hierontakepillä",
-    "description": "Ojentajan hieronta hierontakepillä. Kepillä rullataan olkavarren takaosaa.",
+    "description": "Ojentajaliike kehonpainolla tai kahvalla, jossa keskitytään suoristamaan kyynärpäät vastusta vastaan.",
     "instructions": [
-      "Aseta hierontakeppi olkavarren takaosaa vasten.",
-      "Pidä käsivarsi rentona.",
-      "Rullaa keppiä kyynärpään ja olkapään väliä edestakaisin kevyellä paineella.",
-      "Pysähdy hetkeksi aristaville kohdille.",
-      "Jatka haluamasi ajan ja vaihda kättä."
+      "Asetu kasvot ankkuripistettä tai tukea kohti, olkavarret lähellä kehoa.",
+      "Jännitä keskivartalo ja pidä kyynärpäät paikoillaan.",
+      "Ojenna kädet kokonaan suoriksi niin, että ojentajat jännittyvät.",
+      "Purista hetki ala-asennossa.",
+      "Palaa hitaasti aloitusasentoon."
     ]
   },
   "4408": {
@@ -36102,7 +36102,7 @@
       "Laske toinen käsipaino rinnan sivulle.",
       "Punnerra se takaisin ylös, kunnes käsi on suora.",
       "Toista liike toisella kädellä.",
-      "Pidä keskivartalo tiukkana ja toinen käsi suorana ylhäällä."
+      "Pidä keskivartalo tiukkana ja penkin puoleinen käsi vakaana."
     ]
   },
   "5098": {
@@ -39408,9 +39408,9 @@
     "name": "Yhden käden ylätaljaveto suorin käsin sivulta",
     "description": "Suorin käsin tehtävä taljaveto sivulta, yksi käsi kerrallaan. Eristää leveät selkälihakset juuri koukistamatta kyynärpäätä.",
     "instructions": [
-      "Seiso kylki ylätaljaan päin ja ota kahvasta kiinni yhdellä kädellä.",
+      "Seiso kasvot ylätaljaan päin ja ota kahvasta kiinni yhdellä kädellä.",
       "Pidä käsi lähes suorana ja kevyesti vinossa.",
-      "Vedä kahva sivukautta alas reiden viereen supistamalla leveää selkälihasta.",
+      "Vedä kahva alas reittä kohti supistamalla leveää selkälihasta.",
       "Pidä hetki alhaalla.",
       "Anna kahvan nousta hitaasti ylös ja vaihda puolta sarjan jälkeen."
     ]
@@ -39614,7 +39614,7 @@
     ]
   },
   "5876": {
-    "name": "Ojentajapunnerrus harjoitushihnoilla seisten",
+    "name": "Ojentajapunnerrus harjoitushihnoilla v. 2",
     "description": "Nojaa harjoitushihnoihin ja suorista kädet koukistetusta asennosta. Treenaa ojentajia kehonpainolla.",
     "instructions": [
       "Ota kiinni kahvoista ja nojaa eteenpäin suoralla keholla.",
@@ -43959,11 +43959,11 @@
   },
   "6914": {
     "name": "Lapojen vienti yhteen istuen v. 2",
-    "description": "Muunnelma istuen tehtävästä lapojen yhteenvedosta, jossa kädet tuodaan suorina edestä koukkuun sivuille. Vahvistaa yläselkää ja ryhtilihaksia.",
+    "description": "Muunnelma istuen tehtävästä lapojen yhteenvedosta kädet koukussa. Vahvistaa yläselkää ja ryhtilihaksia.",
     "instructions": [
-      "Istu ryhdikkäästi ja ojenna kädet eteen polvien yläpuolelle kämmenet alaspäin.",
-      "Koukista kyynärpäät ja vie kädet sivuille kämmenet eteenpäin.",
-      "Purista lapoja yhteen ja taivuta sitten niskaa taaksepäin.",
+      "Istu ryhdikkäästi kyynärpäät koukussa ja kädet kylkien lähellä.",
+      "Pidä niska rentona.",
+      "Vedä kyynärpäitä taakse ja purista lapoja yhteen.",
       "Pidä asento 2–3 sekuntia.",
       "Palaa hitaasti aloitusasentoon ja toista."
     ]
@@ -45393,11 +45393,11 @@
   },
   "7592": {
     "name": "Vipunosto taakse vinopenkillä selkä tuettuna taljassa",
-    "description": "Vipunosto taakse taljoilla selkä vinopenkkiä vasten. Eristää takaolkapäitä.",
+    "description": "Vipunosto taakse taljoilla rinta vinopenkkiä vasten. Eristää takaolkapäitä.",
     "instructions": [
-      "Istu vinopenkille selkä selkänojaa vasten kahden taljan väliin.",
-      "Tartu vastakkaisten puolien kahvoihin kädet hieman koukussa.",
-      "Vie käsiä sivuille, kunnes ne ovat olkapäiden korkeudella.",
+      "Asetu päinmakuulle vinopenkille kahden taljan väliin.",
+      "Tartu vastakkaisten puolien kahvoihin, kädet roikkuen ja hieman koukussa.",
+      "Nosta käsiä sivuille, kunnes ne ovat olkapäiden korkeudella.",
       "Pysähdy hetkeksi ja purista takaolkapäitä.",
       "Laske hallitusti alas ilman heijausta."
     ]
@@ -46510,7 +46510,7 @@
   },
   "8502": {
     "name": "Vastakkaisen käden pystypunnerrus polvillaan käsipainolla",
-    "description": "Yhden käden pystypunnerrus toispolviasennossa, jossa painoa pitävän käden puoleinen polvi on maassa. Asento tuo hartiatyöhön mukaan keskivartalon ja lantion vakautuksen.",
+    "description": "Yhden käden pystypunnerrus polviasennossa. Asento tuo hartiatyöhön mukaan keskivartalon ja lantion vakautuksen.",
     "instructions": [
       "Asetu toispolviasentoon ja pidä käsipainoa hartian korkeudella sillä kädellä, jonka puoleinen polvi on maassa.",
       "Pidä vartalo suorana ja pakarat tiukkana.",
@@ -53898,7 +53898,7 @@
     "instructions": [
       "Asetu päinmakuulle matolle tai penkille jalat täysin suorina.",
       "Pyydä paria avuksi tai kiinnitä nilkat vastuskuminauhalla.",
-      "Jännitä takareidet ja koukista polvia niin, että kantapäät nousevat kohti pakaroita.",
+      "Jännitä takareidet ja nosta jalkoja kohti pakaroita pitäen polvet suorina.",
       "Pysäytä liike hetkeksi yläasennossa ja laske jalat sitten hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
@@ -54536,12 +54536,12 @@
   },
   "0071": {
     "name": "Istumaannousu punnerruksella levytangolla",
-    "description": "Istumaannousu levytangolla, jossa tanko punnerretaan ylös noustessa. Vahvistaa vatsalihaksia.",
+    "description": "Istumaannousu lisäpainolla, tanko rinnan päällä. Vahvistaa vatsalihaksia.",
     "instructions": [
       "Asetu selinmakuulle matolle polvet koukussa ja jalat lattialla.",
       "Tartu levytankoon myötäotteella ja pidä sitä rintasi päällä.",
-      "Jännitä vatsalihakset, nosta ylävartaloa hitaasti irti lattiasta ja punnerra samalla tanko suorille käsille, kunnes ylävartalo on 45 asteen kulmassa.",
-      "Pysähdy hetkeksi ylhäällä ja laske sitten tanko rinnalle ja ylävartalo hitaasti takaisin aloitusasentoon.",
+      "Jännitä vatsalihakset, nosta ylävartaloa hitaasti irti lattiasta ja rutista eteenpäin, kunnes ylävartalo on 45 asteen kulmassa.",
+      "Pysähdy hetkeksi ylhäällä ja laske sitten ylävartalo hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -54809,7 +54809,7 @@
     "description": "Vartalonkierto istuen levytanko hartioilla. Vahvistaa vinoja ja suoria vatsalihaksia.",
     "instructions": [
       "Istu tasapenkille jalat lattiassa ja polvet koukussa.",
-      "Aseta levytanko hartioillesi niskan taakse ja pidä siitä kiinni molemmin käsin.",
+      "Pidä levytangosta kiinni molemmin käsin rinnan edessä kyynärpäät kevyesti koukussa.",
       "Jännitä keskivartalo ja kierrä ylävartaloa hitaasti sivulle pitäen selän suorana.",
       "Pysäytä liike hetkeksi kierron lopussa ja palaa sitten hitaasti aloitusasentoon.",
       "Toista kierto toiselle puolelle.",
@@ -54992,7 +54992,7 @@
     "name": "Hauiskääntö myötäotteella seisten levytangolla",
     "description": "Hauiskääntö seisten myötäotteella. Treenaa hauiksia, olkalihasta ja kyynärvarsia.",
     "instructions": [
-      "Seiso suorana jalat hartioiden leveydellä ja pidä levytankoa myötäotteella, kämmenet alaspäin.",
+      "Seiso suorana jalat hartioiden leveydellä ja pidä levytankoa vastaotteella, kämmenet ylöspäin.",
       "Pidä kyynärpäät lähellä vartaloa ja olkavarret liikkumattomina.",
       "Hengitä ulos ja koukista tankoa ylös hauiksia supistaen tuoden sen mahdollisimman lähelle olkapäitä.",
       "Pidä supistettu asento hetken aikaa ja purista hauiksia.",
@@ -55295,7 +55295,7 @@
     "description": "Kehonpainolla tehtävä vatsaliike, jossa lantio keinahtaa ylös kohti kattoa. Vahvistaa vatsalihaksia.",
     "instructions": [
       "Asetu selinmakuulle jalat ojennettuina ja kädet vartalon viereen.",
-      "Koukista polvet ja nosta jalat irti lattiasta niin, että reidet osoittavat suoraan ylös.",
+      "Koukista polvet ja tuo ne rintaa kohti ja pidä jalat irti lattiasta.",
       "Jännitä vatsalihakset, nosta lantio irti lattiasta ja tuo polvet päätä kohti.",
       "Pysähdy hetkeksi ylhäällä ja laske sitten lantio hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
@@ -55313,8 +55313,8 @@
     ]
   },
   "0140": {
-    "name": "Hauispainotteinen leuanveto myötäotteella",
-    "description": "Leuanveto myötäotteella. Kohdistuu hauiksiin.",
+    "name": "Leuanveto vastaotteella hauispainotteisesti",
+    "description": "Leuanveto vastaotteella. Kohdistuu hauiksiin.",
     "instructions": [
       "Ripustaudu leuanvetotankoon kämmenet itsestäsi poispäin ja kädet hartioiden leveydellä.",
       "Jännitä keskivartalo ja vedä itsesi ylös koukistamalla kyynärpäitä, rinta kohti tankoa.",
@@ -55512,7 +55512,7 @@
     "description": "Lattialla istuen tehtävä taljasoutu leveällä otteella. Kohdistuu yläselkään.",
     "instructions": [
       "Istu lattialle jalat ojennettuina ja selkä suorana.",
-      "Kiinnitä taljakahva alataljaan ja istu kasvot taljalaitteeseen päin.",
+      "Kiinnitä taljakahva alataljaan ja aseta taljalaite taaksesi.",
       "Tartu kahvaan leveällä myötäotteella kämmenet alaspäin.",
       "Nojaa kevyesti taaksepäin pitäen selän suorana ja rinnan koholla.",
       "Vedä kahvaa kohti vyötäröä puristaen lapoja yhteen.",
@@ -55568,11 +55568,11 @@
     ]
   },
   "0165": {
-    "name": "Hauiskääntö taljassa köydellä vastaotteella",
-    "description": "Taljassa köydellä tehtävä hauiskääntö vastaotteella. Harjoittaa hauiksia ja olkalihasta.",
+    "name": "Vasarakääntö taljassa köydellä",
+    "description": "Taljassa köydellä tehtävä vasarakääntö. Harjoittaa hauiksia ja olkalihasta.",
     "instructions": [
       "Asetu seisomaan ryhdikkäästi jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
-      "Tartu köysikahvaan vastaotteella kämmenet ylöspäin ja kädet täysin ojennettuina.",
+      "Tartu köysikahvaan neutraalilla otteella kämmenet vastakkain ja kädet täysin ojennettuina.",
       "Pidä olkavarret paikoillaan, hengitä ulos ja tee hauiskääntö supistamalla hauiksia.",
       "Nosta köyttä, kunnes hauikset ovat täysin supistuneet ja köysi on hartioiden korkeudella.",
       "Purista hauiksia ja pidä supistus hetken ajan.",
@@ -56480,11 +56480,11 @@
   },
   "0240": {
     "name": "Käänteinen aukaisu selinmakuulla taljassa",
-    "description": "Selinmakuulla penkillä viet taljan kahvat sivuille. Harjoittaa takaolkapäitä ja yläselkää.",
+    "description": "Vatsallaan penkillä maaten nostat taljan kahvat sivuille. Harjoittaa takaolkapäitä ja yläselkää.",
     "instructions": [
-      "Kiinnitä D-kahva alataljaan ja asetu selinmakuulle tasapenkille.",
-      "Tartu kahvoihin ja ojenna kädet suoraan ylös rinnan yläpuolelle.",
-      "Pidä kädet suorina ja vie ne sivuille, kunnes ne ovat lattian suuntaiset.",
+      "Kiinnitä D-kahva alataljaan ja asetu makaamaan vatsallaan tasapenkille.",
+      "Tartu kahvoihin kämmenet alaspäin ja ojenna kädet suoraan eteen.",
+      "Pidä kädet suorina ja nosta ne sivuille, kunnes ne ovat lattian suuntaiset.",
       "Pysähdy hetkeksi ylhäällä ja laske kädet hitaasti takaisin alas aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
@@ -56791,9 +56791,9 @@
     "instructions": [
       "Istu jumppapallolle jalat lattialla ja polvet 90 asteen kulmassa.",
       "Nojaa taaksepäin pallolle, kunnes alaselkäsi on tuettuna ja ylävartalosi on lattian suuntainen.",
-      "Ojenna kädet suoriksi ylös kohti kattoa.",
-      "Jännitä vatsalihakset ja nosta ylävartalo irti pallosta kurottaen suorilla käsillä kohti kattoa.",
-      "Pysähdy hetkeksi ylhäällä ja laske ylävartalo sitten hitaasti takaisin aloitusasentoon kädet edelleen suorina.",
+      "Aseta kätesi pään taakse tai ristiin rinnalle.",
+      "Jännitä vatsalihakset ja nosta ylävartalo irti pallosta rutistamalla hartioita kohti lantiota.",
+      "Pysähdy hetkeksi ylhäällä ja laske ylävartalo sitten hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -57287,14 +57287,14 @@
   },
   "0316": {
     "name": "Aukaisu vinopenkillä myötäotteella käsipainoilla",
-    "description": "Vinopenkkiliike, jossa painot viedään kaaressa sivuille ja tuodaan takaisin ylös. Kohdistuu ylärintaan.",
+    "description": "Vinopenkkiliike, jossa painot lasketaan rinnan sivuille ja punnerretaan ylös. Kohdistuu ylärintaan.",
     "instructions": [
       "Säädä vinopenkki 45 asteen kulmaan.",
       "Istu penkille selkä selkänojaa vasten ja jalat lattialla.",
       "Tartu käsipainoihin myötäotteella niin, että kämmenet osoittavat eteenpäin.",
       "Aloita kädet suorina, kohtisuorassa lattiaan nähden.",
-      "Laske käsipainoja hitaasti kaaressa sivuille kyynärpäät kevyesti koukussa.",
-      "Pysähdy hetkeksi alhaalla ja tuo painot kaaressa takaisin aloitusasentoon.",
+      "Laske käsipainoja hitaasti rinnan sivuille pitäen kyynärpäät 90 asteen kulmassa.",
+      "Pysähdy hetkeksi alhaalla ja punnerra painot takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -57863,19 +57863,19 @@
     "name": "Yhden käden ranteen koukistus neutraalilla otteella penkin yli käsipainolla",
     "description": "Yksi kyynärvarsi lepää penkin päällä kämmen sisäänpäin, ja liikutat käsipainoa ranteella. Kehittää puristusvoimaa ja kyynärvartta puoli kerrallaan.",
     "instructions": [
-      "Istu penkille käsipaino toisessa kädessä ja aseta kyynärvarsi penkin päälle kämmen sisäänpäin niin, että ranne on penkin reunan yli.",
-      "Pidä kyynärvarsi paikallaan ja nosta käsipainoa ylöspäin pelkällä ranteella.",
+      "Istu penkille käsipaino toisessa kädessä ja käsi ojennettuna penkin yli kämmen ylöspäin.",
+      "Pidä olkavarsi paikallaan ja koukista käsipaino kohti olkapäätä pitäen ranne neutraalissa asennossa.",
       "Pysäytä liike hetkeksi ylhäällä ja laske sitten käsipaino hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja ja vaihda sitten kättä."
     ]
   },
   "0367": {
-    "name": "Yhden käden ranteen ojennus penkin yli käsipainolla",
-    "description": "Yksi kyynärvarsi lepää penkin päällä kämmen alaspäin, ja nostat käsipainoa ranteella. Tämä vahvistaa kyynärvarren yläpuolta.",
+    "name": "Yhden käden ranteen koukistus penkin yli käsipainolla",
+    "description": "Yksi kyynärvarsi lepää penkin päällä kämmen ylöspäin, ja koukistat käsipainoa ranteella. Tämä vahvistaa kyynärvarren alapuolta.",
     "instructions": [
       "Istu penkille jalat maassa ja pidä käsipainoa toisessa kädessä kämmen alaspäin.",
       "Aseta kyynärvarsi penkille niin, että ranne roikkuu reunan yli.",
-      "Nosta rannetta hitaasti ylöspäin niin, että käsipaino nousee.",
+      "Koukista rannetta hitaasti ylöspäin niin, että käsipaino tulee kohti kyynärvartta.",
       "Pysäytä liike hetkeksi ylhäällä ja laske sitten käsipaino hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja ja vaihda sitten kättä."
     ]
@@ -58075,7 +58075,7 @@
     "description": "Scott-kääntö myötäotteella. Se vahvistaa hauiksia, niiden alla olevaa olkalihasta ja kyynärvarsia.",
     "instructions": [
       "Istu Scott-penkille niin, että olkavarret lepäävät pehmusteella ja rinta on tukea vasten.",
-      "Ota käsipaino kumpaankin käteen myötäotteella, kämmenet alaspäin.",
+      "Tartu käsipainoon kummallakin kädellä vastaotteella kämmenet ylöspäin.",
       "Pidä olkavarret paikoillaan, hengitä ulos ja tee hauiskääntö supistaen hauiksia.",
       "Jatka painojen nostamista, kunnes hauikset ovat täysin supistuneet ja painot hartioiden korkeudella.",
       "Pidä supistus hetken aikaa ja purista hauiksia.",
@@ -58662,10 +58662,10 @@
     "name": "Tate-punnerrus käsipainoilla",
     "description": "Maaten penkillä lasket käsipainoja rinnan päälle kyynärpäät sivuille suunnattuina ja punnerrat takaisin ylös. Liike kohdistuu tehokkaasti ojentajiin.",
     "instructions": [
-      "Asetu selinmakuulle tasapenkille ja ojenna käsipainot suorin käsin rinnan yläpuolelle.",
-      "Laske käsipainoja koukistamalla kyynärpäitä niin, että kyynärpäät osoittavat sivuille ja painot laskeutuvat rinnan päälle.",
-      "Punnerra käsipainot takaisin ylös, kunnes kädet ovat suorina.",
-      "Tee haluamasi määrä toistoja."
+      "Istu tasapenkille käsipaino kummassakin kädessä, kämmenet vastakkain.",
+      "Nosta käsipainot hartioiden korkeudelle ja kierrä ranteita niin, että kämmenet osoittavat poispäin sinusta.",
+      "Punnerra käsipainoja ylöspäin, kunnes kädet ovat täysin suorina, ja laske ne takaisin hartioiden korkeudelle.",
+      "Kierrä ranteet takaisin aloitusasentoon ja tee haluamasi määrä toistoja."
     ]
   },
   "0437": {
@@ -59435,7 +59435,7 @@
       "Koukista vasenta polvea ja taivu lantiosta laskien ylävartaloa vasemmalle puolelle.",
       "Pidä oikea käsi suorana ylhäällä ja katse kahvakuulassa.",
       "Kun lasket ylävartaloa, anna oikean jalan suoristua ja oikean jalkaterän kääntyä hieman.",
-      "Laske ylävartaloa, kunnes tunnet venytyksen vasemmassa takareidessä ja oikea käsi osoittaa edelleen kohti kattoa.",
+      "Laske ylävartaloa, kunnes tunnet venytyksen vasemmassa takareidessä ja oikea käsi osoittaa kohti lattiaa.",
       "Pysähdy hetkeksi, jännitä keskivartalo ja palaa vasemmalla kantapäällä ponnistaen aloitusasentoon.",
       "Tee haluamasi määrä toistoja ja vaihda sitten puolta."
     ]
@@ -59871,7 +59871,7 @@
       "Seiso jalat hartioiden leveydellä ja pidä kahvakuulaa oikeassa kädessä suoralla kädellä ylhäällä.",
       "Käännä vasenta jalkaterää ulospäin noin 45 astetta ja pidä oikea jalkaterä suoraan eteenpäin.",
       "Taivuta ylävartaloa vasemmalle pitäen oikea käsi suorana ylhäällä ja katse kahvakuulassa.",
-      "Laske ylävartaloa niin alas kuin pystyt pitäen oikean käden suorana ja kurottaen vasemmalla kädellä kohti vasenta jalkaa.",
+      "Laske ylävartaloa niin alas kuin pystyt pitäen oikea käsi suorana ja vasen käsi ojennettuna sivulle.",
       "Pysähdy hetkeksi ja palaa aloitusasentoon ponnistaen oikealla jalalla ja supistaen vinoja vatsalihaksia.",
       "Tee haluamasi määrä toistoja ja vaihda sitten puolta."
     ]
@@ -60067,8 +60067,8 @@
     ]
   },
   "0574": {
-    "name": "Kulmasoutu levytangolla myötäotteella",
-    "description": "Kulmasoutu levytangolla myötäotteella. Vedät tankoa vartaloa kohti, mikä vahvistaa yläselkää ja leveitä selkälihaksia.",
+    "name": "Kulmasoutu vipuvarsilaitteessa",
+    "description": "Vipuvarsilaitteella tehtävä versio kulmasoudusta. Vedät kahvoja vartaloa kohti selän ja leveiden selkälihasten treenaamiseksi.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
       "Tartu tankoon myötäotteella, kädet hieman hartialeveyttä leveämmällä.",
@@ -60369,11 +60369,11 @@
     "description": "Istut laitteessa ja viet sääret taakse ja alas pehmustetta vasten. Eristää takareidet.",
     "instructions": [
       "Säädä laite sopivaksi ja istu siihen selkänojaa vasten.",
-      "Aseta sääret pehmustetun vivun päälle juuri nilkkojen yläpuolelle.",
+      "Aseta sääret pehmustetun vivun alle juuri nilkkojen yläpuolelle.",
       "Tartu laitteen sivukahvoihin tuen saamiseksi.",
-      "Pidä reidet paikallaan, hengitä ulos ja koukista polvia viemällä sääret alas ja taakse niin pitkälle kuin mahdollista.",
+      "Pidä reidet paikallaan, hengitä ulos ja koukista jalat niin pitkälle kuin mahdollista.",
       "Pysähdy hetkeksi supistettuun asentoon ja purista takareisiä.",
-      "Hengitä sisään ja anna vivun nousta hitaasti takaisin aloitusasentoon.",
+      "Hengitä sisään ja laske vipu hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -60671,7 +60671,7 @@
     "name": "Leuanveto sekaotteella",
     "description": "Leuanveto, jossa toinen käsi on myötäotteella ja toinen vastaotteella. Kehittää leveitä selkälihaksia, hauiksia ja puristusvoimaa. Vaihda kättä sarjojen välillä.",
     "instructions": [
-      "Tartu leuanvetotankoon sekaotteella (toinen käsi myötäotteella, toinen vastaotteella) hieman hartioita leveämmällä otteella.",
+      "Tartu leuanvetotankoon vastaotteella (kämmenet itseesi päin) hieman hartioita leveämmällä otteella.",
       "Roiku tangossa kädet suorina ja jalat irti lattiasta.",
       "Jännitä selkälihakset ja vedä vartaloa kohti tankoa rinta edellä.",
       "Jatka vetoa, kunnes leukasi on tangon yläpuolella.",
@@ -60905,10 +60905,10 @@
     "name": "Polvien veto jumppapallolla",
     "description": "Kädet lattialla ja jalat jumppapallon päällä vedät palloa kohti rintaa. Työstää vatsalihaksia ja lonkankoukistajia ja haastaa samalla tasapainoa.",
     "instructions": [
-      "Asetu punnerrusasentoon niin, että sääret tai jalkapöydät ovat jumppapallon päällä.",
-      "Pidä kädet hartioiden alla ja vartalo suorana.",
-      "Jännitä vatsalihakset ja vedä polvia hitaasti kohti rintaa niin, että pallo rullaa eteenpäin.",
-      "Pysähdy hetkeksi ja ojenna sitten jalat hitaasti takaisin aloitusasentoon.",
+      "Istu aluksi jumppapallon päälle jalkapohjat lattialla ja polvet 90 asteen kulmassa.",
+      "Aseta kädet jumppapallon sivuille tueksi.",
+      "Jännitä vatsalihakset ja rullaa lantiota hitaasti eteenpäin tuoden polvia kohti rintaa.",
+      "Pysähdy hetkeksi ylhäällä ja ojenna sitten jalat hitaasti takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -61030,13 +61030,13 @@
   },
   "0661": {
     "name": "Punnerrus ja jalan potku sisäänpäin",
-    "description": "Punnerrus, jossa jalat ovat ala-asennossa erillään ja ne tuodaan yhteen yläasentoon noustessa. Tuo rintatreeniin mukaan keskivartalon ja lonkan työtä.",
+    "description": "Punnerrus, jossa potkaiset toista jalkaa sisäänpäin yläasennossa. Tuo rintatreeniin mukaan keskivartalon ja lonkan työtä.",
     "instructions": [
       "Aloita punnerrusasennosta kädet hieman hartioita leveämmällä ja jalat yhdessä.",
-      "Laske kehoa kohti lattiaa koukistamalla kyynärpäitä ja vie samalla jalat erilleen. Pidä selkä suorana ja keskivartalo tiukkana.",
-      "Kun punnerrat ylös, tuo jalat takaisin yhteen.",
-      "Laskeudu uudelleen alas ja vie jalat taas erilleen.",
-      "Jatka niin, että jalat ovat alhaalla erillään ja ylhäällä yhdessä."
+      "Laske kehoa kohti lattiaa koukistamalla kyynärpäitä ja pidä selkä suorana ja keskivartalo tiukkana.",
+      "Kun punnerrat ylös, nosta toinen jalka irti lattiasta ja potkaise se sivulle pitäen jalan suorana.",
+      "Laske jalka takaisin alas, tee uusi punnerrus ja vaihda sitten jalkaa.",
+      "Jatka vuorotellen jalkapotkuja jokaisen punnerruksen yhteydessä."
     ]
   },
   "0662": {
@@ -61708,7 +61708,7 @@
   },
   "0723": {
     "name": "Jalkojen nosto pystyyn sivuttain (suorin jaloin)",
-    "description": "Selinmakuulla nostat suorat jalat pystyyn ja käännät lantiota sivulle. Kohdistuu alavatsaan ja vinoihin vatsalihaksiin.",
+    "description": "Selinmakuulla jalat suorina pystyssä nostat lantiota sivuttain. Kohdistuu alavatsaan ja vinoihin vatsalihaksiin.",
     "instructions": [
       "Asetu selinmakuulle ja nosta jalat suorina pystyyn.",
       "Aseta kädet vartalon viereen.",
@@ -61933,11 +61933,11 @@
   },
   "0746": {
     "name": "Olankohautus tanko takana Smith-laitteessa",
-    "description": "Smith-laitteessa tehtävä olankohautus tanko vartalon takana. Nostat hartiat suoraan ylös, mikä kehittää epäkkäiden yläosaa.",
+    "description": "Smith-laitteessa tehtävä olankohautus, jossa nostat hartiat suoraan ylös tangon kanssa. Kehittää epäkkäiden yläosaa.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä ja polvet kevyesti koukussa.",
       "Tartu tankoon myötäotteella, kädet hieman hartialeveyttä leveämmällä.",
-      "Pidä käsivarret suorina ja anna tangon roikkua reisien takana.",
+      "Pidä käsivarret suorina ja anna tangon roikkua reisien edessä.",
       "Nosta olkapäitä suoraan kohti korvia ja purista epäkkäitä yläasennossa.",
       "Pysy hetki yläasennossa ja laske sitten olkapäät takaisin aloitusasentoon.",
       "Tee haluamasi määrä toistoja."
@@ -62311,10 +62311,10 @@
       "Koukista polvia ja taivu lantiosta kyykkyasentoon ja tartu tankoon myötäotteella.",
       "Pidä selkä suorana ja rinta ylhäällä, kun nostat tangon irti lattiasta ponnistamalla kantapäillä ja ojentamalla lonkat ja polvet.",
       "Kun tanko saavuttaa lantion tason, vedä sitä ylöspäin räjähtävästi kohauttamalla hartioita ja nostamalla kyynärpäitä ylös ja sivuille.",
-      "Jatka vetoa, kunnes tanko nousee rinnan korkeudelle.",
-      "Pidä kyynärpäät korkealla ja sivuilla tangon ollessa ylimmillään.",
-      "Älä pudottaudu tangon alle, vaan anna tangon laskeutua hallitusti lantiolle.",
-      "Laske tanko hallitusti takaisin lattialle.",
+      "Kun tanko saavuttaa korkeimman kohdan, pudottaudu nopeasti sen alle syvään kyykkyyn.",
+      "Ota tanko vastaan pään yläpuolella kädet suorina ja polvet koukussa.",
+      "Nouse ylös ojentamalla lonkat ja polvet ja pidä tanko pään yläpuolella.",
+      "Laske tanko takaisin alas aloitusasentoon tekemällä liike päinvastaisessa järjestyksessä.",
       "Tee haluamasi määrä toistoja."
     ]
   },
@@ -64180,7 +64180,7 @@
     "description": "Lonkan ojennus kumartuneena kuminauhalla potkaisemalla yhtä jalkaa taakse. Liike treenaa pakaroita.",
     "instructions": [
       "Kiinnitä kuminauha tukevaan ankkuripisteeseen nilkan korkeudella.",
-      "Seiso kasvot ankkuripisteeseen päin jalat hartioiden leveydellä.",
+      "Seiso selkä ankkuripisteeseen päin jalat hartioiden leveydellä.",
       "Ota askel taaksepäin saadaksesi kuminauhaan jännitystä ja pidä polvet kevyesti koukussa.",
       "Taivu lantiosta eteenpäin pitäen selkärangan neutraalina.",
       "Ojenna oikea jalka suoraan taakse puristaen pakaraa yläasennossa.",
@@ -64260,7 +64260,7 @@
     "name": "Yhden jalan askelkyykky kuminauhalla",
     "description": "Yhden jalan split-kyykky kuminauhalla takajalan ollessa korokkeella. Liike vahvistaa etureisiä ja pakaroita.",
     "instructions": [
-      "Seiso jalat lantion leveydellä, astu kuminauhan päälle etujalalla ja pidä nauhan päästä kiinni yhdellä kädellä.",
+      "Seiso jalat lantion leveydellä ja aseta vastuskuminauha nilkkojen ympärille.",
       "Vie toinen jalka taakse ja aseta jalkapöytä takanasi olevan penkin tai korokkeen päälle.",
       "Pidä toisella kädellä kiinni tuesta tasapainon säilyttämiseksi.",
       "Koukista etujalkaa ja laske vartalo kyykkyyn pitäen polvi samassa linjassa varpaiden kanssa.",
