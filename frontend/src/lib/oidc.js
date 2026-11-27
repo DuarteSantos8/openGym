@@ -22,9 +22,7 @@ export function startWebSignIn(mode = 'web', go = url => window.location.assign(
     return (async () => {
       while (pendingCookieCleanup) await pendingCookieCleanup
       if (logoutOwed()) {
-        const request = api('/api/logout', { method: 'POST', body: '{}', timeout: 5000 })
-        trackCookieCleanup(request)
-        await request
+        await trackCookieCleanup(() => api('/api/logout', { method: 'POST', body: '{}', timeout: 5000 }))
         while (pendingCookieCleanup) await pendingCookieCleanup
         if (logoutOwed()) throw new Error('Logout pending')
       }

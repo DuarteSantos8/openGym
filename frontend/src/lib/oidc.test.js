@@ -7,13 +7,31 @@ import { takeOidcReturn, oidcArrival, clearOidcArrival, oidcErrorText, oidcOkTex
 const loc = (search, hash = '#/', pathname = '/') => ({ search, hash, pathname })
 
 describe('lib/oidc', () => {
+  it('stays on the page when a later failed sign-out arrives during the pre-sign-in retry', async () => {
+    const { logoutOwed } = await import('./cookie-cleanup.js')
+    logoutOwed(true)
+    const fetch = vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async () => {
+      logoutOwed(false)
+      logoutOwed(true)
+      return Response.json({ ok: true })
+    })
+    const go = vi.fn()
+    try {
+      await expect(startWebSignIn('web', go)).rejects.toThrow('Logout pending')
+      expect(go).not.toHaveBeenCalled()
+      expect(logoutOwed()).toBe(true)
+    } finally {
+      fetch.mockRestore()
+      logoutOwed(false)
+    }
+  })
   it('waits for cleanup registered after the web sign-in button was pressed', async () => {
     const { trackCookieCleanup } = await import('./cookie-cleanup.js')
     let first, second
-    trackCookieCleanup(new Promise(resolve => { first = resolve }))
+    trackCookieCleanup(() => new Promise(resolve => { first = resolve }))
     const go = vi.fn()
     const signingIn = startWebSignIn('web', go)
-    trackCookieCleanup(new Promise(resolve => { second = resolve }))
+    trackCookieCleanup(() => new Promise(resolve => { second = resolve }))
     try {
       first()
       await new Promise(resolve => setTimeout(resolve, 0))
@@ -25,8 +43,8 @@ describe('lib/oidc', () => {
   it('waits for an older logout response when responses arrive out of order', async () => {
     const { trackCookieCleanup } = await import('./cookie-cleanup.js')
     let first, second
-    trackCookieCleanup(new Promise(resolve => { first = resolve }))
-    trackCookieCleanup(new Promise(resolve => { second = resolve }))
+    trackCookieCleanup(() => new Promise(resolve => { first = resolve }))
+    trackCookieCleanup(() => new Promise(resolve => { second = resolve }))
     const go = vi.fn()
     const signingIn = startWebSignIn('web', go)
     try {

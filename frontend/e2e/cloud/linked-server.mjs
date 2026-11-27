@@ -30,6 +30,7 @@ const api = spawn(process.execPath, ['server.js'], {
   },
 })
 const stop = () => { api.kill(); idp.close().finally(() => process.exit(0)) }
+process.on('disconnect', stop)
 process.on('SIGTERM', stop)
 process.on('SIGINT', stop)
 api.on('exit', code => { idp.close().finally(() => process.exit(code ?? 0)) })

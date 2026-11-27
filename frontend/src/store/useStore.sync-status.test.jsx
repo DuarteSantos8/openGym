@@ -427,6 +427,18 @@ describe('a sign-out the server did not answer', () => {
     document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0'
     expect(logoutOwed()).toBe(false)
   })
+
+  it('a late sign-out failure cannot recreate debt after another tab signs in', async () => {
+    await inStep()
+    api.mockImplementation(async path => {
+      if (path !== '/api/logout') return { rev: 1 }
+      logoutOwed(false) // the other tab completed an explicit sign-in before this reply
+      throw netError()
+    })
+    expect(await useStore.getState().signOut()).toEqual({ owed: false })
+    expect(paths()).toContain('POST /api/logout')
+    expect(logoutOwed()).toBe(false)
+  })
 })
 
 describe('signing in again to the account this copy belongs to', () => {

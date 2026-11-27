@@ -1843,7 +1843,7 @@ export const useStore = create((set, get) => {
             adoptHold = wasHeld
             if (!MOBILE) {
               logoutOwed(true)
-              trackCookieCleanup(api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS }))
+              trackCookieCleanup(() => api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS }))
             }
             const message = t('Could not save')
             import('./useUI.js').then(({ useUI }) => useUI.getState().toast(message))
@@ -2095,7 +2095,9 @@ export const useStore = create((set, get) => {
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
       let out = null
-      try { out = await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
+      const endSession = () => api('/api/logout', { method: 'POST', body: '{}' })
+      if (!MOBILE) logoutOwed(true)
+      try { out = await (MOBILE ? endSession() : trackCookieCleanup(endSession)) } catch { /* boot retries the recorded web logout */ }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
       if (!MOBILE && typeof out?.provider_logout === 'string' && /^https?:\/\//.test(out.provider_logout)) window.location.assign(out.provider_logout)
@@ -2322,7 +2324,7 @@ export const useStore = create((set, get) => {
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
-        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false) } catch { /* owed until it is answered */ }
+        try { await trackCookieCleanup(() => api('/api/logout', bootOpts({ method: 'POST', body: '{}' }))) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
