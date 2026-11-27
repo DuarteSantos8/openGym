@@ -73,6 +73,7 @@ services:
         - frontend/package.json
         - frontend/src/lib/**
         - api/package.json
+        - api/connector-origin.js
         - api/coach/core/**
         - render.yaml
     envVars:

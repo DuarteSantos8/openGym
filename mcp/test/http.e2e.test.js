@@ -2,7 +2,7 @@
 // client signs in with scoped tokens made through the api's own routes, and what it may list, read
 // and write is exactly what each token holds, for its own profile only, until it is revoked.
 // Needs api/'s dependencies, like log-workout.e2e.test.js.
-import { describe, test, expect, beforeAll, afterAll } from 'vitest'
+import { describe, test, expect, vi, beforeAll, afterAll } from 'vitest'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -101,6 +101,30 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
       expect(r.status).toBe(401)
       expect(r.headers.get('www-authenticate')).toContain('resource_metadata="https://gym.example.com/.well-known/oauth-protected-resource/mcp"')
     } finally { srv.close() }
+  })
+
+  test('invalid connector addresses cannot appear in a discovery challenge', async () => {
+    const { createMcpHandler } = await import('../src/http.js')
+    try {
+      for (const invalid of ['invalid', 'http://connector.example', 'https://user@localhost', 'https://connector.example/path', 'https://connector.example?', 'https://connector.example#']) {
+        vi.stubEnv('MCP_PUBLIC_ORIGIN', invalid)
+        expect(() => createMcpHandler()).toThrow('MCP_PUBLIC_ORIGIN must be an HTTPS origin')
+      }
+    } finally { vi.unstubAllEnvs() }
+  })
+
+  test('the discovery challenge uses the configured connector origin', async () => {
+    vi.stubEnv('ORIGIN', 'https://web.example')
+    vi.stubEnv('MCP_PUBLIC_ORIGIN', 'https://connector.example/')
+    vi.stubEnv('BASE_PATH', '/gym')
+    const { createMcpHandler } = await import('../src/http.js')
+    const srv = http.createServer(createMcpHandler({ apiUrl: apiBase }))
+    try {
+      await new Promise(resolve => srv.listen(0, '127.0.0.1', resolve))
+      const response = await fetch(`http://127.0.0.1:${srv.address().port}/mcp`, { method: 'POST' })
+      expect(response.status).toBe(401)
+      expect(response.headers.get('www-authenticate')).toContain('resource_metadata="https://connector.example/.well-known/oauth-protected-resource/gym/mcp"')
+    } finally { srv.close(); vi.unstubAllEnvs() }
   })
 
   test('a read-only token lists read tools of its categories and reads its own profile', async () => {

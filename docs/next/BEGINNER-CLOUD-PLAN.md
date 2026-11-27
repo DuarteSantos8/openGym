@@ -13,12 +13,12 @@ D3 status: the short Beginner Settings root and reversible full-list preference 
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner still needs to choose a production address and verify both email return journeys after cutover.
 Learn checks every supported locale for explicit glossary labels, including loanwords spelled the same as in English.
 06.01 is prepared. The device save warning distinguishes quota exhaustion from refused writes.
-Nutrition sync checks now cover three offline copies editing portions of the same diary entry and a repeated import of a legacy entry.
+Nutrition sync checks cover three offline copies, a repeated legacy import, and preserving a future-schema portion when an older device syncs.
 A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
 
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
 
-10.02 has a loopback regression for denied workout writes with a plans-only grant. Live connector acceptance remains open.
+10.02 has a loopback regression for denied workout writes with a plans-only grant. Separate connector discovery and web consent origins are prepared. Live connector acceptance remains open.
 Nutrition account isolation is prepared. Shared-device tests cover expired sessions, profile switches and delayed pairing. Hosted checks remain open.
 
 A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
