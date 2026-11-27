@@ -3581,6 +3581,17 @@ export default {
   "Wear OS watch": "Wear OSウォッチ",
   "Not in this build": "このビルドでは利用できません",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OSウォッチはGoogle Play開発者サービス経由でスマートフォンと通信しますが、F-Droid版アプリにはこのサービスが含まれていません。opengym.chのAPKとGoogle Play版アプリでは、ウォッチと連携できます。",
+  // Heart rate curve (#1243)
+  "Collapse": "折りたたむ",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "平均 {0} · 最大 {1} bpm",
+  "Heart rate curve": "心拍数カーブ",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch が計測している間、進行バーの下に線を表示します。タップするとセッション全体を表示します。",
+  // Heart rate by exercise and in the exports (#1355)
+  "Average bpm": "平均 bpm",
+  "Last session": "前回のセッション",
+  "{0} in zones 4 and 5": "ゾーン4と5で{0}",
+  "Heart rate, one reading a minute (bpm)": "心拍数、1分ごとに1回の計測 (bpm)",
   "Muscles": "筋肉",
   "Chart": "グラフ",
   "Harder": "よりきつい",

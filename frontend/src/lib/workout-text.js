@@ -8,6 +8,7 @@ import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { fmtDate, fmtNum, fmtVol, durPart, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
+import { heartStepText } from './heart-steps.js'
 
 /**
  * `unit` is the profile's, `nameOf(entry)` the exercise's display name, `speedUnit` the one cardio
@@ -15,15 +16,20 @@ import { viewEntry, exUnitOf } from './ex-unit.js'
  * then each exercise (a superset's under one "Superset" line, its members together), then the
  * session note. Every weight is written with its unit, "60 kg × 8". `state`, when given, is the
  * profile: an exercise in a weight unit of its own (#657) is then written in that one.
+ * `heart`, when the phone's health hub had the session's heart rate: { avg, max, perMinute }
+ * (lib/heart-rate.js), a line under the heading and the curve as one reading a minute, so a chat
+ * (or an AI reading it) gets the curve as well.
  */
-export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state = null }) {
+export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state = null, heart = null }) {
   const facts = [
     ...durPart((w.end || 0) - (w.start || 0)),
     // `warmups`: the profile counts warm-ups in volume (#719); the set list below stays work sets.
     fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit),
     ...(w.bw ? [t('Body weight') + ' ' + fmtNum(w.bw) + ' ' + unit] : []),
   ]
-  const blocks = [[[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' · '), facts.join(' · ')].join('\n')]
+  const heading = [[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' · '), facts.join(' · ')]
+  if (heart?.avg) heading.push(t('Heart rate') + ': ' + t('Average {0} · Max {1} bpm', heart.avg, heart.max))
+  const blocks = [heading.join('\n')]
   // Work sets only: the text is what you trained, the work the volume above counts. Warm-ups are
   // left out of volume, records and progression everywhere else, and listed here with nothing to
   // tell them apart they would read as sets of their own.
@@ -45,7 +51,12 @@ export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state
   for (const group of sessionSections(entries).flatMap(section => section.units)) {
     const members = group.map(i => lines(entries[i])).filter(Boolean)
     if (!members.length) continue
-    blocks.push([...(members.length > 1 ? [t('Superset')] : []), ...members.flat()].join('\n'))
+    // The heart rate during it (lib/heart-steps.js), when the hub had the session's.
+    const step = heart?.steps?.find(x => x.members.includes(group[0]))
+    blocks.push([...(members.length > 1 ? [t('Superset')] : []), ...members.flat(), ...(step ? ['♥ ' + heartStepText(step)] : [])].join('\n'))
+  }
+  if (heart?.perMinute?.some(Boolean)) {
+    blocks.push(t('Heart rate, one reading a minute (bpm)') + ':\n' + heart.perMinute.map(x => x ?? '–').join(' '))
   }
   if (w.note) blocks.push(w.note)
   return blocks.join('\n\n')

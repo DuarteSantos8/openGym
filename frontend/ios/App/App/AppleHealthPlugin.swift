@@ -216,8 +216,13 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: from / 1000), end: Date(timeIntervalSince1970: to / 1000))
         let perMinute = HKUnit.count().unitDivided(by: .minute())
+        // `device: 'watch'`: only what an Apple Watch measured (the workout screen's heart band, which
+        // follows the watch's own readings), not the AirPods' or another app's in the same minutes.
+        let watchOnly = call.getString("device") == "watch"
         query(type, predicate) { found in
-            let all = found.compactMap { $0 as? HKQuantitySample }.map {
+            let all = found.compactMap { $0 as? HKQuantitySample }.filter {
+                !watchOnly || HealthReadCore.fromAppleWatch(productType: $0.sourceRevision.productType, model: $0.device?.model)
+            }.map {
                 HealthReadCore.HeartSample(ms: $0.startDate.timeIntervalSince1970 * 1000, bpm: $0.quantity.doubleValue(for: perMinute))
             }
             let origins = Array(Set(found.map { $0.sourceRevision.source.bundleIdentifier }))

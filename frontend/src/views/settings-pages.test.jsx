@@ -258,6 +258,11 @@ describe('the search lands on a row', () => {
     expect(titles('record hints', { ...guestWeb, recordHints: false })).not.toContain('Record hints')
     expect(titles('rests', { ...guestWeb, mobile: true, ios: true })).toContain('+15 s on rests')
     expect(titles('rests', { ...guestWeb, mobile: true, android: true })).not.toContain('+15 s on rests')
+    // The heart curve is the Apple Watch's, streamed to the iPhone app: not on Android or the web.
+    expect(titles('heart rate curve', { ...guestWeb, mobile: true, ios: true })).toContain('Heart rate curve')
+    expect(titles('heart rate curve', { ...guestWeb, mobile: true, ios: true, mod: id => id !== 'watch' })).not.toContain('Heart rate curve')
+    expect(titles('heart rate curve', { ...guestWeb, mobile: true, android: true })).not.toContain('Heart rate curve')
+    expect(titles('heart rate curve', guestWeb)).not.toContain('Heart rate curve')
     for (const q of ['voice', 'gym reminder']) {
       const keys = searchSettings(q, { ...guestWeb, mobile: true, spokenCues: true }, s => s).map(h => h.page + ':' + h.title)
       expect(keys.length, q).toBe(new Set(keys).size)

@@ -15,6 +15,9 @@ import { reportData, workSetsOf } from './report.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
 import { SPORT_LABEL } from './activities.js'
 import { isoRun } from './bidi.js'
+import { heartCurve } from './heart-rate.js'
+import { exerciseSpans, heartStepText } from './heart-steps.js'
+import { DEFAULT_HR_MAX, ZONE_FLOOR, ZONES } from './live-tiles.js'
 
 /* ----------------------------------- pieces ----------------------------------- */
 
@@ -174,6 +177,10 @@ const CHART_CSS = `
   svg .line { fill: none; stroke: #3b404b; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
   svg .dot { fill: #3b404b; stroke: #fff; stroke-width: 1.2; }
   svg .dot.hot { fill: #a3e635; stroke: #3f6212; stroke-width: 1.4; }
+  svg.hrz { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  svg .seam { stroke: #3b404b; stroke-opacity: .35; stroke-width: 1; stroke-dasharray: 3 3; }
+  svg .hr { fill: none; stroke: #1f2329; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .wx-hr { margin-top: 3pt; font-size: 8.5pt; color: #6b7180; }
   svg.cal { display: block; }
   svg.cal .l0 { fill: #f0f1f4; } svg.cal .l1 { fill: #e2f5bd; } svg.cal .l2 { fill: #bfe57a; }
   svg.cal .l3 { fill: #84cc16; } svg.cal .l4 { fill: #3f6212; }
@@ -298,7 +305,33 @@ function entryVolume(e, S) { return workoutVolume({ entries: [e] }, { warmups: c
  * One finished workout on paper: what it was, when, how long and how heavy, then every exercise
  * with every set. Each exercise, and each superset, stays whole on a page.
  */
-export function workoutPrintHTML(S, w, { owner = '', probe = false } = {}) {
+// The session's heart rate on paper, the way the app draws it (components/HeartGraph.jsx): the
+// five zones in the colours of Apple's workout screen with their lower bound in bpm, the curve over
+// them, a thin line where one exercise ends and the next begins, the start and end times below.
+const ZONE_COLOURS = ['#42aeff', '#47feed', '#bdff01', '#ff8c0e', '#ff0e75']
+function heartPrintSVG(w, curve, hrMax) {
+  const W = 680, H = 150, padL = 34, padR = 4, padB = 16, gap = 2
+  const span = Math.max(1, w.end - w.start)
+  const band = (H - padB - (ZONES - 1) * gap) / ZONES
+  const x = ms => padL + ms / span * (W - padL - padR)
+  const y = hr => {
+    const share = Math.min(1, Math.max(ZONE_FLOOR, hr / hrMax))
+    return (H - padB) - (share - ZONE_FLOOR) / (1 - ZONE_FLOOR) * (H - padB)
+  }
+  const zones = Array.from({ length: ZONES }, (_, i) => {
+    const z = ZONES - i, top = i * (band + gap)
+    const low = Math.round((ZONE_FLOOR + (z - 1) / (ZONES * 2)) * hrMax)
+    return `<rect x="${padL}" y="${top.toFixed(1)}" width="${W - padL - padR}" height="${band.toFixed(1)}" rx="3" fill="${ZONE_COLOURS[z - 1]}" opacity=".35"/>`
+      + `<text x="${padL - 5}" y="${(top + band / 2 + 3).toFixed(1)}" class="ax" text-anchor="end">${low}</text>`
+  }).join('')
+  const seams = exerciseSpans(w).slice(1).map(s => `<line x1="${x(s.from - w.start).toFixed(1)}" x2="${x(s.from - w.start).toFixed(1)}" y1="0" y2="${H - padB}" class="seam"/>`).join('')
+  const line = curve.points.map(p => `${x(p.t).toFixed(1)},${y(p.hr).toFixed(1)}`).join(' ')
+  const times = `<text x="${padL}" y="${H - 3}" class="ax">${esc(clock(w.start))}</text><text x="${W - padR}" y="${H - 3}" class="ax" text-anchor="end">${esc(clock(w.end))}</text>`
+  return `<svg class="chart hrz" viewBox="0 0 ${W} ${H}" width="100%" role="img" direction="ltr">${zones}${seams}<polyline points="${line}" class="hr"/>${times}</svg>`
+}
+
+/** `heart`: the session's readings from the phone's health hub ({ samples, steps }), when it had them. */
+export function workoutPrintHTML(S, w, { owner = '', probe = false, heart = null } = {}) {
   const m = probeMarks(probe)
   const unit = S.unit || 'kg'
   const speedUnit = speedUnitOf(S)
@@ -316,12 +349,22 @@ export function workoutPrintHTML(S, w, { owner = '', probe = false } = {}) {
     card(t('Exercises'), esc(fmtNum((w.entries || []).length))),
   ].filter(Boolean).slice(0, 6)
   let num = 0
+  // The heart rate during an exercise, on its last member when it is a superset.
+  const steps = heart?.steps || []
+  const heartLine = e => {
+    const i = (w.entries || []).indexOf(e)
+    const step = steps.find(x => x.members[x.members.length - 1] === i)
+    return step ? `<div class="wx-hr">♥ ${esc(heartStepText(step))}</div>` : ''
+  }
+  const curve = heart?.samples ? heartCurve(heart.samples, w.start, w.end) : null
+  const heartHTML = curve ? `<div class="keep">${m.s('heart')}<h3 class="sec-h">${esc(t('Heart rate'))}</h3>${heartPrintSVG(w, curve, heart.hrMax || DEFAULT_HR_MAX)}<div class="note-line">${esc(t('Average {0} · Max {1} bpm', curve.avg, curve.max))}</div>${m.e('heart')}</div>` : ''
   const exHTML = e => {
     const v = entryVolume(e, S)
     const done = (e.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).length
     const sum = [t('{0} sets', done), v > 0 ? fmtVol(v, unit) : ''].filter(Boolean).join(' · ')
     return `<div class="wx"><div class="wx-h"><div class="wx-num">${++num}</div><div class="wx-main">${nameHTML(e, { pr: prs.has(e.id) })}</div><div class="wx-sum">${esc(sum)}</div></div>`
       + setsHTML(viewEntry(S, e), speedUnit, exUnitOf(S, e.id))
+      + heartLine(e)
       + (e.note ? `<div class="wx-note">${esc(e.note)}</div>` : '') + '</div>'
   }
   const units = workoutUnits(w)
@@ -333,7 +376,7 @@ export function workoutPrintHTML(S, w, { owner = '', probe = false } = {}) {
   const note = w.note ? `<div class="keep">${m.s('note')}<h3 class="sec-h">${esc(t('Session note'))}</h3><div class="session-note">${esc(w.note)}</div>${m.e('note')}</div>` : ''
   const facts = [day ? paperDate(day) : '', [clock(w.start), clock(w.end)].filter(Boolean).join(' – ')]
   const body = `<div class="keep">${m.s('cards')}<div class="cards">${cards.join('')}</div>${m.e('cards')}</div>`
-    + (blocks || `<p class="none">${esc(t('no sets'))}</p>`) + note
+    + heartHTML + (blocks || `<p class="none">${esc(t('no sets'))}</p>`) + note
   return printShell({ title: w.name || t('Workout'), kicker: t('Workout'), facts, owner, date: todayISO(), body, css: REPORT_CSS })
 }
 

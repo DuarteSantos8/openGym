@@ -124,7 +124,12 @@ import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, 
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
 import { stampWorkout } from './lib/sync-merge.js'
-import { hrLabel } from './lib/heart-rate.js'
+import { hrLabel, heartCurve, heartPerMinute } from './lib/heart-rate.js'
+import { workoutSamples } from './lib/health-sync.js'
+import SessionHeart from './components/SessionHeart.jsx'
+import { heartByExercise } from './lib/heart-steps.js'
+import { hrMaxOf, DEFAULT_HR_MAX } from './lib/live-tiles.js'
+import ExerciseHeart, { useHeartPick, pickProps } from './components/ExerciseHeart.jsx'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
 import ShareWorkout from './components/ShareWorkout.jsx'
@@ -136,7 +141,7 @@ import { recoverySheet, RecoveryRow } from './components/RecoverySheet.jsx'
 import { activityDays, activitiesOn, mergeImportedActivities } from './lib/activities.js'
 import { activitySheet, ActivityRow } from './components/ActivitySheet.jsx'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
-import { copyText } from './lib/clipboard.js'
+import { copyTextLater } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 import { isOn } from './lib/modules.js'
@@ -1684,6 +1689,15 @@ function ExerciseHistory({ exId }) {
   const st = useMemo(() => onlyPlace(full, exId, placeOn), [full, exId, placeOn])
   const ex = exOr(exId)
   const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId, st.volumeWarmups])
+  // The heart rate has its own tab (components/ExerciseHeart.jsx), shown once a set has a reading.
+  const pick = useHeartPick(st.workouts, exId)
+  const hasHeart = pick.heart.formats.length > 0
+  const [tab, setTab] = useState('main')
+  // Switching tabs keeps the room the last one took, so the sheet does not shrink and jump.
+  const tabBody = useRef(null)
+  const [tabMin, setTabMin] = useState(0)
+  const onHeart = hasHeart && tab === 'heart'
+  const pickTab = v => { setTabMin(m => Math.max(m, tabBody.current?.offsetHeight || 0)); setTab(v) }
   const [curve, setCurve] = useState('top')
   // Against body weight, as in Stats: the estimated 1RM (body weight included for bodyweight and
   // assisted work) as a % of the body weight then. Only for rep work, and only once two sessions
@@ -1733,6 +1747,10 @@ function ExerciseHistory({ exId }) {
   return <>
     <h3 className={exerciseNameClass(ex)} style={{ marginBottom: 2 }}>{exerciseNameFor(ex)}</h3>
     <div className="muted small" style={{ marginBottom: 10 }}>{t('Exercise history')} · {tn('{0} session', '{0} sessions', h.total)}</div>
+    {hasHeart && <Segmented className="seg-range" value={tab} onChange={pickTab}
+      options={[{ value: 'main', label: t('Overview') }, { value: 'heart', label: t('Heart rate') }]} />}
+    <div ref={tabBody} style={tabMin ? { minHeight: tabMin } : undefined}>
+    {onHeart ? <ExerciseHeart workouts={st.workouts} exId={exId} unit={st.unit} pick={pick} /> : <>
     {/* Only reps work with a load produces an estimate, so the toggle is absent for the rest. */}
     {places.length > 1 && <div className="chips" style={{ marginBottom: 8 }}>
       <button type="button" className={'chip nocap' + (!placeOn ? ' on' : '')} aria-pressed={!placeOn} onClick={() => setPlace('')}>{t('All gyms')}</button>
@@ -1750,6 +1768,21 @@ function ExerciseHistory({ exId }) {
     {onRel && <div className="small dim">{relTop ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')}</div>}
     {repTable.length > 0 && <RepRecords rows={repTable} unit={st.unit} assisted={isAssisted(exId)} />}
     <FormVideosSection exId={exId} />
+    </>}
+    </div>
+    {/* On the heart tab, every session with a reading in the format compared, within the window
+        picked (not only the last ten): a card picks or drops it from the curves laid over each other. */}
+    {onHeart ? <>
+      <h4 className="sec">{t('Sessions')}</h4>
+      <div className="list">
+        {pick.sessions.map(s => <div key={s.id} className="item" {...pickProps(pick, s.id)}>
+          <div className="grow">
+            <div className="tt">{fmtDate(s.d, true)}</div>
+            <div className="small dim" style={{ marginTop: 3 }}>♥ {t('Average {0} · Max {1} bpm', s.avg, s.max)}</div>
+          </div>
+        </div>)}
+      </div>
+    </> : <>
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
       {h.sessions.map(s => {
@@ -1767,6 +1800,7 @@ function ExerciseHistory({ exId }) {
         </div>
       })}
     </div>
+    </>}
   </>
 }
 // The rep-record table of the history sheet. Rows with nothing logged and nothing estimated stay
@@ -3786,23 +3820,36 @@ function WorkoutDetail({ w, close, again }) {
       {unit.map(i => entryRow(w.entries[i], i))}
     </div>
   })
-  // Copied with the note as it stands in the box, which may not be saved yet.
+  // The session's heart rate for every way out (text, PDF, .fit): the curve kept with the workout,
+  // else the phone's health hub's (lib/health-sync.js workoutSamples). null without a reading.
+  const heartFor = async rec => {
+    const samples = await workoutSamples(rec, st)
+    const curve = heartCurve(samples, rec.start, rec.end)
+    const hrMax = hrMaxOf(st) || DEFAULT_HR_MAX
+    return curve && { avg: curve.avg, max: curve.max, samples, hrMax, perMinute: heartPerMinute(samples, rec.start, rec.end),
+      steps: heartByExercise(rec, samples, hrMax) }
+  }
+  // Copied with the note as it stands in the box, which may not be saved yet, and the heart rate.
+  // The copy starts within the tap (copyTextLater), the heart rate read meanwhile.
   const copyAsText = async () => {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
-    toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), state: st })) ? t('Copied') : t('Could not copy'))
+    const text = heartFor(rec).then(heart => workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), state: st, heart }))
+    toast(await copyTextLater(text) ? t('Copied') : t('Could not copy'))
   }
   // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data.
-  const exportFit = () => {
+  const exportFit = async () => {
     const rec = st.workouts.find(x => sameWorkout(x, w)) || w
+    const heart = await heartFor(rec)
     let bytes
-    try { bytes = workoutFit(rec, { unit: st.unit, version: __APP_VERSION__ }) }
+    try { bytes = workoutFit(rec, { unit: st.unit, version: __APP_VERSION__, heart: heart?.samples }) }
     catch (e) { toast(t('Could not create the file')); return }
     saveFitFile(new Blob([bytes], { type: 'application/vnd.ant.fit' }), fitFileName(rec))
   }
-  const saveAsPdf = () => {
+  const saveAsPdf = async () => {
     saveNote()
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
-    printWorkout(st, rec, { owner: useStore.getState().user?.name || '' })
+    const heart = await heartFor(rec)
+    printWorkout(st, rec, { owner: useStore.getState().user?.name || '', heart })
   }
   const shareAsImage = () => shareWorkoutSheet(st.workouts.find(x => sameWorkout(x, w)) || w)
   // A combined session's entries carry a `rid`; group them into per-routine sections in merge
@@ -3893,6 +3940,8 @@ function WorkoutDetail({ w, close, again }) {
         {entryRows(g.units)}
       </div>
     }) : entryRows(groups[0]?.units || [])}
+    {/* The saved record as it is now: a sync that brings the curve redraws an open card. */}
+    <SessionHeart w={st.workouts.find(x => sameWorkout(x, w)) || w} nameOf={e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : (e.n || e.id))} />
     {/* Progress photos and form-check videos: added and removed right here, on the saved record. */}
     <WorkoutMediaSection w={w} />
     <div className="small muted" style={{ margin: '4px 0 6px' }}>{t('Session note')}</div>
