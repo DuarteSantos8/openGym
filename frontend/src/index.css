@@ -709,6 +709,9 @@ h4.sec{
    the alpha doubled up and the icon read as a stack of loose layers. Carrying the
    fade on the <svg> instead of in the stroke colour flattens the icon first and
    fades it as one shape — and it does that for every icon, not just this one. */
+#tabbar button{min-width:0}
+#tabbar button>span:last-child{max-width:100%;overflow-wrap:anywhere}
+#tabbar .tab-resume .tab-time{display:block}
 #tabbar button .icn{font-size:1.5625rem;--icon-stroke:1.65;color:var(--label)}
 #tabbar button.on{color:var(--acc-ink)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
@@ -4745,7 +4748,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   display:flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r, 12px);
   background:var(--surface);box-shadow:inset 0 0 0 var(--hair) var(--sep);
   font-size:var(--fs-footnote);font-weight:600;color:var(--label)}
-.wk-acts button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-acts button span{min-width:0;overflow-wrap:anywhere;text-align:center}
+@media(max-width:400px){
+  .wk-acts{grid-template-columns:repeat(auto-fit,minmax(min(100%,6.5em),1fr))}
+}
 .wk-acts button:disabled{opacity:.45;cursor:default}
 .wk-acts button:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 .wk-acts button:not(:disabled):active{transform:scale(var(--press-scale-sm))}
