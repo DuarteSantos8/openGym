@@ -1,5 +1,9 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Достигнута",
+  "Not reached": "Не достигнута",
+  "No ladders are available.": "Нет доступных лестниц прогрессии.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Ступени идут от более простых к более сложным. Запись завершённого подхода отмечает эту ступень и все предыдущие как достигнутые. Это не оценка вашей техники или готовности.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Оценка по повторяющемуся плану. Разминочные подходы и изменения на отдельные даты не учитываются.",
   "No working sets in the recurring plan.": "В повторяющемся плане нет рабочих подходов.",
   "below range": "ниже диапазона",

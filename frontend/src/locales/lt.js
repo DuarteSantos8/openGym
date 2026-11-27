@@ -1,5 +1,9 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Pasiekta",
+  "Not reached": "Nepasiekta",
+  "No ladders are available.": "Nėra pasiekiamų progresijos sekų.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Žingsniai išdėstyti nuo lengvesnio iki sunkesnio. Užregistravus atliktą seriją, tas žingsnis ir visi ankstesni pažymimi kaip pasiekti. Tai neįvertina tavo technikos ar pasirengimo.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Pasikartojančio plano įvertis. Apšilimo serijos ir konkrečių dienų pakeitimai neįtraukti.",
   "No working sets in the recurring plan.": "Pasikartojančiame plane nėra darbinių serijų.",
   "below range": "žemiau intervalo",

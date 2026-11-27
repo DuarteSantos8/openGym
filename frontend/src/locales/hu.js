@@ -1,5 +1,9 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Elérve",
+  "Not reached": "Még nincs elérve",
+  "No ladders are available.": "Nincs elérhető létra.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "A lépések a könnyebbtől a nehezebbig haladnak. Egy elvégzett sorozat naplózása elértnek jelöli az adott és az összes korábbi lépést. Ez nem értékeli a technikádat vagy a felkészültségedet.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "A rendszeres terv becslése. A bemelegítő sorozatok és az egyes napokra megadott módosítások nem számítanak bele.",
   "No working sets in the recurring plan.": "A rendszeres tervben nincs munkasorozat.",
   "below range": "a tartomány alatt",

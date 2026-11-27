@@ -4391,6 +4391,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .ladder-card h3{font-size:var(--fs-title3)}
 .ladder-steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:2px;position:relative}
 .ladder-step button{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:6px 8px;border:0;border-radius:10px;background:none;color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
+.ladder-read-step{display:flex;align-items:center;gap:12px;min-height:40px;padding:6px 8px;overflow-wrap:anywhere}
 .ladder-step button:active{background:var(--press-fill)}
 .ladder-dot{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:var(--fs-caption);color:var(--on-acc);--icon-stroke:2.6}
 .ladder-step.is-done .ladder-dot{background:var(--acc);box-shadow:none}

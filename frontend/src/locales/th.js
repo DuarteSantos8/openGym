@@ -1,5 +1,9 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "ถึงแล้ว",
+  "Not reached": "ยังไม่ถึง",
+  "No ladders are available.": "ไม่มีลำดับขั้นให้เลือก",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "ขั้นต่าง ๆ เรียงจากง่ายไปยาก เมื่อบันทึกเซตที่ทำเสร็จ ขั้นนั้นและทุกขั้นก่อนหน้าจะถูกระบุว่าถึงแล้ว ข้อมูลนี้ไม่ได้ประเมินเทคนิคหรือความพร้อมของคุณ",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "ค่าประมาณสำหรับแผนที่ทำซ้ำ ไม่นับเซ็ตวอร์มอัปและการเปลี่ยนแปลงเฉพาะวันที่",
   "No working sets in the recurring plan.": "ไม่มีเซ็ตฝึกจริงในแผนที่ทำซ้ำ",
   "below range": "ต่ำกว่าช่วง",

@@ -162,7 +162,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | the rig and the squat (E5a) are prepared: the rig is its own chunk, the still key pose with words covers reduced motion and a device without WebGL, and the rig is freed when the sheet closes. The eight other patterns follow in E5b. Native-language review of the seven new strings remains open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
 | EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
-| EP26-T04 | Ladder skill tree | open |
+| EP26-T04 | Ladder skill tree | Prepared for review: Learn opens existing ladders as an ordered, read-only history view. Highest logged step and all earlier steps are marked reached. [Local evidence](evidence/EP26-T04/README.md); independent and native-language review pending. |
 | EP26-T05 | Haptics and sound kit that respects mute and reduced motion | open |
 | EP26-T06 | Second form-check movement (closes EP10-T04) | open; needs the owner's three clips first |
 | EP26-T07 | Routine builder shows weekly sets per muscle against the goal | Prepared locally; personal targets take precedence, draft defaults only for muscle growth; independent and named content review pending |

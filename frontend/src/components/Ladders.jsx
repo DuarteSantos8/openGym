@@ -4,8 +4,8 @@ import { useUI } from '../store/useUI.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { uid, exerciseNameText } from '../lib/format.js'
-import { exOr } from '../lib/exercises.js'
-import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
+import { EXIDX, exOr } from '../lib/exercises.js'
+import { allLadders, reachedRung, visibleLadderProgress, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
 import { LADDER_TOP, LADDER_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
 import { DEFAULT_GLYPH, glyphOf } from '../lib/glyphs.js'
@@ -69,8 +69,8 @@ function TrainIt ({ ladder, rung, close }) {
   </>
 }
 
-function LadderCard ({ S, ladder, onEdit }) {
-  const top = reachedRung(S, ladder)
+function LadderCard ({ S, ladder, onEdit, readOnly, top = reachedRung(S, ladder) }) {
+  const Row = readOnly ? 'div' : 'button'
   const next = Math.min(ladder.steps.length - 1, top + 1)
   const ui = useUI.getState()
   return <div className="card ladder-card" data-ladder={ladder.id}>
@@ -78,23 +78,25 @@ function LadderCard ({ S, ladder, onEdit }) {
       <h3 style={{ margin: 0 }}>{ladderName(ladder)}</h3>
       <span className="small muted">{top < 0 ? t('Not started') : top >= ladder.steps.length - 1 ? t('Top rung reached') : t('Rung {0} of {1}', top + 1, ladder.steps.length)}</span>
     </div>
-    <ol className="ladder-steps" aria-label={ladderName(ladder)}>
+    <ol className="ladder-steps" role="list" aria-label={ladderName(ladder)}>
       {ladder.steps.map((id, i) => {
         const ex = exOr(id)
-        const state = i <= top ? 'done' : i === next ? 'next' : 'todo'
+        const state = i <= top ? 'done' : !readOnly && i === next ? 'next' : 'todo'
         return <li key={id} className={'ladder-step is-' + state}>
-          <button type="button" onClick={() => exerciseDetailSheet(ex)}>
+          <Row {...(readOnly ? { className: 'ladder-read-step' } : { type: 'button', onClick: () => exerciseDetailSheet(ex) })}>
             <span className="ladder-dot" aria-hidden="true">{state === 'done' ? <Icon name="check" /> : null}</span>
             <span className={'ladder-n ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</span>
-            {state === 'next' && <span className="ladder-tag">{top < 0 ? t('Start here') : t('Next up')}</span>}
-          </button>
+            {readOnly
+              ? <span className={state === 'done' ? 'ladder-tag' : 'small muted'}>{state === 'done' ? t('Reached') : t('Not reached')}</span>
+              : state === 'next' && <span className="ladder-tag">{top < 0 ? t('Start here') : t('Next up')}</span>}
+          </Row>
         </li>
       })}
     </ol>
-    <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+    {!readOnly && <div className="row" style={{ gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
       <Button size="sm" variant="tinted" icon="plus" aria-label={nameIn(ladderName(ladder), t('Train it'))} onClick={() => ui.openSheet(close => <TrainIt ladder={ladder} rung={next} close={close} />)}>{t('Train it')}</Button>
       {ladder.own && <Button size="sm" variant="ghost" aria-label={nameIn(ladderName(ladder), t('Edit'))} onClick={() => onEdit(ladder)}>{t('Edit')}</Button>}
-    </div>
+    </div>}
   </div>
 }
 
@@ -151,3 +153,22 @@ export function LaddersSheet () {
 }
 
 export const laddersSheet = () => useUI.getState().openSheet(() => <LaddersSheet />)
+
+function LearnLaddersSheet ({ close }) {
+  const S = useStore(s => s.S)
+  const ladders = allLadders(S).flatMap(ladder => {
+    const reached = reachedRung(S, ladder)
+    const { steps, top } = visibleLadderProgress(ladder.steps, reached, id => Object.hasOwn(EXIDX, id))
+    return steps.length ? [{ ladder: { ...ladder, steps }, top }] : []
+  })
+  return <div className="ladders">
+    <div className="row between" style={{ gap: 8 }}>
+      <h2 style={{ margin: 0 }}>{t('Skill ladders')}</h2>
+      <Button size="sm" variant="ghost" onClick={close}>{t('Close')}</Button>
+    </div>
+    <p className="small muted" style={{ margin: '8px 0 14px' }}>{t('Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.')}</p>
+    {ladders.length ? ladders.map(({ ladder, top }) => <LadderCard key={(ladder.own ? 'own:' : '') + ladder.id} S={S} ladder={ladder} top={top} readOnly />)
+      : <p>{t('No ladders are available.')}</p>}
+  </div>
+}
+export const learnLaddersSheet = () => useUI.getState().openSheet(close => <LearnLaddersSheet close={close} />)

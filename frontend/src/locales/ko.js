@@ -1,5 +1,9 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "도달함",
+  "Not reached": "아직 도달하지 않음",
+  "No ladders are available.": "이용할 수 있는 단계별 운동이 없습니다.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "단계는 쉬운 것부터 어려운 것까지 순서대로 표시됩니다. 완료한 세트를 기록하면 해당 단계와 그 이전 단계가 모두 도달한 것으로 표시됩니다. 운동 자세나 준비 상태를 평가하는 것은 아닙니다.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "반복 일정의 추정치입니다. 준비 운동 세트와 특정 날짜의 변경 사항은 제외됩니다.",
   "No working sets in the recurring plan.": "반복 일정에 본 운동 세트가 없습니다.",
   "below range": "범위 미만",

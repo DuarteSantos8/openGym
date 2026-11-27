@@ -1,6 +1,10 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  "Reached": "Nået",
+  "Not reached": "Ikke nået",
+  "No ladders are available.": "Der er ingen stiger tilgængelige.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Trinnene går fra lettere til sværere. Et registreret gennemført sæt markerer trinnet og alle tidligere trin som nået. Det siger ikke noget om din teknik eller om du er klar.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Skøn for den tilbagevendende plan. Opvarmningssæt og ændringer på enkelte datoer tæller ikke med.",
   "No working sets in the recurring plan.": "Der er ingen arbejdssæt i den tilbagevendende plan.",
   "below range": "under intervallet",

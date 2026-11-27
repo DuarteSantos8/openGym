@@ -2,6 +2,10 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  "Reached": "Raggiunto",
+  "Not reached": "Non raggiunto",
+  "No ladders are available.": "Non ci sono progressioni disponibili.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "I livelli vanno dal più facile al più difficile. Registrare una serie completata segna quel livello e tutti i precedenti come raggiunti. Questo non valuta la tua tecnica o la tua preparazione.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Stima del programma ricorrente. Sono escluse le serie di riscaldamento e le modifiche per singole date.",
   "No working sets in the recurring plan.": "Il programma ricorrente non contiene serie di lavoro.",
   "below range": "sotto l’intervallo",

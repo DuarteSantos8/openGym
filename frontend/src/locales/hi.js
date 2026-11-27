@@ -1,5 +1,9 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "पहुँच गए",
+  "Not reached": "अभी नहीं पहुँचे",
+  "No ladders are available.": "कोई प्रगति क्रम उपलब्ध नहीं है।",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "चरण आसान से कठिन क्रम में हैं। पूरा किया गया सेट दर्ज करने पर वह चरण और उससे पहले के सभी चरण पूरे माने जाते हैं। इससे आपकी तकनीक या तैयारी का आकलन नहीं होता।",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "आवर्ती योजना का अनुमान। वॉर्म-अप सेट और किसी खास तारीख के बदलाव इसमें शामिल नहीं हैं।",
   "No working sets in the recurring plan.": "आवर्ती योजना में कोई वर्किंग सेट नहीं है।",
   "below range": "सीमा से कम",
