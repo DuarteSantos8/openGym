@@ -361,4 +361,26 @@ describe('RecoverySheet: Health Connect / Apple Health suggestions', () => {
     expect(saved.find(r => r.srcId === 'w-2').note).toBe('Errand walks')
     expect(mocks.toast).toHaveBeenCalledWith('Easy walk logged. Your muscles say thanks.')
   })
+
+  it('deduplicates near-start walks within the same batch save', async () => {
+    const startA = at('2026-11-21', 9, 0)
+    mocks.readDayWorkouts.mockResolvedValue({
+      src: 'hc',
+      records: [
+        { id: 'w-garmin', sport: 'walk', start: startA, end: startA + 20 * 60e3, km: 1.5 },
+        { id: 'w-fit', sport: 'walk', start: startA + 30e3, end: startA + 20 * 60e3 + 30e3, km: 1.5 },
+        { id: 'w-afternoon', sport: 'walk', start: at('2026-11-21', 15, 0), end: at('2026-11-21', 15, 15), km: 1.1 },
+      ],
+    })
+    await mount()
+    await act(async () => { kindBtn('Easy walk').click() })
+    await flush()
+    await act(async () => { host.querySelector('.rec-select-all').click() })
+    const logBtn = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Log 3 sessions')
+    await act(async () => { logBtn.click() })
+    const saved = recoverySessionsOf(useStore.getState().S)
+    expect(saved).toHaveLength(2)
+    expect(saved.map(r => r.srcId).sort()).toEqual(['w-afternoon', 'w-garmin'])
+    expect(mocks.toast).toHaveBeenCalledWith('2 sessions logged. Your muscles say thanks.')
+  })
 })

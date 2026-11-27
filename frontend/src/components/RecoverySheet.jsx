@@ -262,12 +262,17 @@ function RecoveryLog({ id = null, day = null, close }) {
       update(s => {
         const existing = recoverySessionsOf(s)
         const seenSrc = new Set(existing.map(r => r.srcId).filter(Boolean))
+        const insertedStarts = []
         let map = s.recoverySessions
         for (const item of ordered) {
           const dup = (item.srcId && seenSrc.has(item.srcId))
-            || existing.some(r => r.d === d && r.kind === kind && r.at > 0 && Math.abs(r.at - item.start) < 60e3)
+            || (item.start > 0 && (
+              existing.some(r => r.d === d && r.kind === kind && r.at > 0 && Math.abs(r.at - item.start) < 60e3)
+              || insertedStarts.some(at => Math.abs(at - item.start) < 60e3)
+            ))
           if (dup) continue
           if (item.srcId) seenSrc.add(item.srcId)
+          if (item.start > 0) insertedStarts.push(item.start)
           const itemNote = typedNote || (item.notes ? item.notes.slice(0, NOTE_MAX) : '')
           map = withRecovery(map, uid(), {
             d, kind, min: item.min, note: itemNote, ...specFrom(item),
