@@ -753,9 +753,9 @@ function settleAmountGroup(a, b, out) {
   // Any exception lets the field merge mix members of different copies, and then the result
   // depends on which device synced first. The newest portion wins whole; a malformed portion is
   // kept as it is only while it is the newest, and is never repaired field by field.
-  // Rows from before schemaVersion are the same portion shape. Only a later, unknown schema keeps
-  // the ordinary field merge, since its amount fields may not mean what they mean here.
-  const known = x => x.schemaVersion === 1 || x.schemaVersion === undefined
+  // Legacy rows (schemaVersion omitted or 0, DATA_CONTRACTS.md) are the same portion shape. Only a
+  // later, unknown schema keeps the field merge, since its amount fields may mean something else.
+  const known = x => x.schemaVersion === 1 || x.schemaVersion === 0 || x.schemaVersion === undefined
   if (!known(a) || !known(b)) return
   // A change or removal of any member dates the whole portion, including after
   // earlier merges. Keeping the maximum makes this choice independent of grouping.

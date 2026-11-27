@@ -265,9 +265,11 @@ describe('nutrition amount groups merge atomically on client and API', () => {
       food({ amountG: 50, serving: { label: 'bowl', count: 1.0004, size: 50, unit: 'g' }, _ts: 15, _f: { amountG: 15, serving: 15 } }),
       // A copy from before schemaVersion settles as a portion too.
       (({ schemaVersion, ...legacy }) => legacy)(food({ amountG: 80, _ts: 18, _f: { amountG: 18 } })),
+      // Version 0 is legacy input too.
+      food({ schemaVersion: 0, amountMl: 90, serving: { label: 'cup', count: 1, size: 90, unit: 'mL' }, _ts: 8, _f: { amountMl: 8, serving: 8 } }),
     ]
     expect(normalizeEntry(copies[3]).supported).toBe(true)
-    const orders = [[0, 1, 2, 3, 4], [4, 2, 0, 1, 3], [3, 2, 4, 1, 0], [1, 3, 0, 4, 2], [2, 3, 0, 1, 4]]
+    const orders = [[0, 1, 2, 3, 4, 5], [4, 5, 2, 0, 1, 3], [3, 2, 4, 1, 0, 5], [5, 1, 3, 0, 4, 2], [2, 3, 0, 5, 1, 4]]
     for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
       const results = orders.flatMap(o => {
         const rows = o.map(i => [copies[i]])
