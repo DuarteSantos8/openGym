@@ -92,7 +92,7 @@ const amountNumber = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 
 // records keep the ordinary field merge, even when they already contain both dimensions.
 function amountDimension(x) {
   if (x.schemaVersion !== 1) return null
-  const g = Object.hasOwn(x, 'amountG'), m = Object.hasOwn(x, 'amountMl')
+  const g = x.amountG != null, m = x.amountMl != null
   if (g === m) return null
   const key = g ? 'amountG' : 'amountMl'
   if (!amountNumber(x[key])) return null
@@ -116,8 +116,9 @@ function settleAmountGroup(a, b, out) {
   // Settle every pair of current-schema rows, coherent or not. Skipping a cleared copy let the
   // field merge mix it with the others, so the result depended on which device synced first.
   // A row that already holds both dimensions is malformed and keeps the ordinary field merge.
-  const settles = x => x.schemaVersion === 1 && !(Object.hasOwn(x, 'amountG') && Object.hasOwn(x, 'amountMl'))
-  if (!settles(a) || !settles(b) || (!amountDimension(a) && !amountDimension(b))) return
+  const settles = x => x.schemaVersion === 1 && !(x.amountG != null && x.amountMl != null)
+  const readable = x => amountDimension(x) || (x.amountG == null && x.amountMl == null && !Object.hasOwn(x, 'serving'))
+  if (!settles(a) || !settles(b) || (!readable(a) && !readable(b))) return
   // A change or removal of any member dates the whole portion, including after
   // earlier merges. Keeping the maximum makes this choice independent of grouping.
   const clock = row => Math.max(...amountFields.map(key => optionalTime(row._f?.[key])))

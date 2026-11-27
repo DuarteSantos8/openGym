@@ -253,6 +253,33 @@ describe('nutrition amount groups merge atomically on client and API', () => {
     }
   })
 
+  it('merges explicit legacy nulls like cleared amounts, preserving the winning representation', () => {
+    const base = { nutritionEntries: [food({ amountG: 50 })] }
+    stampOptionalCollections({}, base, 1)
+    for (const middle of [{ amountG: null, amountMl: 100 }, { amountG: null }]) {
+      const copies = [{ amountMl: null }, middle, { amountG: 75 }].map((values, i) => {
+        const next = clone(base)
+        delete next.nutritionEntries[0].amountG
+        Object.assign(next.nutritionEntries[0], values)
+        expect(normalizeEntry(next.nutritionEntries[0]).supported).toBe(true)
+        stampOptionalCollections(base, next, i + 2)
+        return next.nutritionEntries
+      })
+      for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+        const [a, b, c] = copies
+        const reference = merge(merge(a, b), c)
+        for (const [x, y, z] of [[a,b,c],[a,c,b],[b,a,c],[b,c,a],[c,a,b],[c,b,a]]) {
+          expect(merge(x, merge(y, z))).toEqual(reference)
+          expect(merge(merge(x, y), z)).toEqual(reference)
+          expect(merge(reference, x)).toEqual(reference)
+        }
+        expect(reference[0].amountG).toBe(75)
+        expect(reference[0]).not.toHaveProperty('amountMl')
+        expect(normalizeEntry(reference[0]).supported).toBe(true)
+      }
+    }
+  })
+
   it('converges after independent edits to a common amount, serving and dimension', () => {
     const base = { nutritionEntries: [food({ amountG: 50, customField: 'kept' })] }
     stampOptionalCollections({}, base, 1)
