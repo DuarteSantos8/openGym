@@ -19,19 +19,6 @@
         "type": "page"
       }
     ],
-    "reqPermissions": [
-      { "name": "ohos.permission.VIBRATE" },
-      {
-        "name": "ohos.permission.READ_HEALTH_DATA",
-        "reason": "$string:hr_reason",
-        "usedScene": { "ability": [".MainAbility"], "when": "inuse" }
-      }
-    ],
-    "metaData": {
-      "customizeData": [
-        { "name": "supportLists", "value": "ch.duartesantos.opengym:REPLACE_WITH_SHA256_OF_SIGNING_CERT", "extra": "" }
-      ]
-    },
     "js": [
       { "pages": ["pages/index/index", "pages/lift/index", "pages/rest/index", "pages/over/index"], "name": ".MainAbility" }
     ]

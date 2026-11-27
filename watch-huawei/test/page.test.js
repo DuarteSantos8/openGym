@@ -716,7 +716,9 @@ test('page: the 3-2-1 ticks every quarter second, and the count buzzes', async (
 test('config.json: the supportLists pair is the page\'s package and fingerprint, and the bundle name is the phone link\'s', () => {
   const cfg = JSON.parse(readFileSync(new URL('../entry/src/main/config.json', import.meta.url), 'utf8'))
   const pair = glueJs.match(/const PHONE_PACKAGE = '([^']+)'/)[1] + ':' + glueJs.match(/const PHONE_FINGERPRINT = '([^']+)'/)[1]
-  assert.equal(cfg.module.metaData.customizeData[0].value, pair)
+  const sl = cfg.module.metaData && cfg.module.metaData.customizeData[0]
+  if (/REPLACE_WITH/.test(pair)) assert.equal(sl, undefined, 'no placeholder supportLists in the package: the real pair is added at release (docs step 7)')
+  else assert.equal(sl.value, pair)
   Object.keys(PG).forEach(n => assert.doesNotMatch(PG[n].js, /PHONE_FINGERPRINT|PHONE_PACKAGE/, n + ' has no pair of its own: the glue has the one')) // one place
   assert.equal(cfg.app.bundleName, 'ch.duartesantos.opengym.huawei')
 })

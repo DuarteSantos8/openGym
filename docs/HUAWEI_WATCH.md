@@ -112,7 +112,7 @@ two watches cannot clash.
 - **Heart rate** from the watch's own sensor (`subscribeHeartRate`) while a workout runs. Each
   set logged on the watch carries `hr: { avg, max }`, as on the other watches. Huawei says the
   sensor reports every five seconds; the watch lets the last reading count for 15 seconds and then
-  counts none. Needs the `READ_HEALTH_DATA` permission, which the app asks for in its manifest.
+  counts none. Huawei's docs list `READ_HEALTH_DATA` for it. The manifest does not declare it yet (see "The heart-rate permission" below).
   Whether the watch grants it is not verified. The watch keeps only running sums (count, total,
   maximum) for the Metrics page and the summary, not the readings, so a set ticked **on the phone**
   gets no heart rate from the watch (the Garmin's rule).
@@ -720,8 +720,9 @@ sample code; "not verified" means a blog, a third-party project or a guess.
    certificate from step 2 (hex, no colons), in:
    - `PHONE_FINGERPRINT` in `watch-huawei/entry/src/main/js/MainAbility/common/page-glue.js` (the
      placeholder is `REPLACE_WITH_SHA256_OF_SIGNING_CERT`), and
-   - `supportLists` in `watch-huawei/entry/src/main/config.json`, as
-     `ch.duartesantos.opengym:<the same value>` (the same placeholder; at most 255 characters).
+   - `supportLists` in `watch-huawei/entry/src/main/config.json`: add a `module.metaData.customizeData`
+     entry named `supportLists` with the value `ch.duartesantos.opengym:<the same value>` (at most 255
+     characters). The file ships without it, because a placeholder value is not a real pair.
 
    Huawei says older watch firmware reads only `supportLists` and newer reads the fingerprint from
    code, and tells you to set both. The watch app takes one value, so it works with one phone
@@ -834,10 +835,14 @@ sample code; "not verified" means a blog, a third-party project or a guess.
   when hidden, stops its clock, the sensor and the screen lock when the page is hidden (`A.hide` in
   `app.js`), and works the rest and hold times out from the clock when it is shown again. No rest buzz is promised while the screen is off. The vibrator has `short` and `long`
   only, and Huawei documents it for a live app.
-- **The heart-rate permission** (`READ_HEALTH_DATA`) and the `reqPermissions` block in `config.json`
-  were assembled from Huawei's field list and a third-party project's real file, not copied from a
-  sample that reads heart rate. The sensor, the permission prompt and whether the app can read
-  heart rate on every watch model are not verified.
+- **Permissions, icon and `supportLists` in `config.json`** (a GT 6 tester, 2026-11-27): the Huawei
+  Watch GT 6 refused the first package (AppManager error 40, then 46). It installed once the
+  41 x 41 `icon_small.png` was in `resources/base/media` (the Lite template has one; the build picks it
+  up by name) and the `reqPermissions` block was gone. So `config.json` has no `reqPermissions` and no
+  placeholder `supportLists` for now. Huawei's docs say `@system.vibrator` needs `ohos.permission.VIBRATE`
+  and `subscribeHeartRate` needs `ohos.permission.READ_HEALTH_DATA`, so vibration and heart rate may not
+  work without them: the code treats both as optional (`try`/`catch` plus a `fail` callback). Which
+  declaration the GT 6 accepts is not verified.
 - **Languages the font may not draw.** Arabic, Bengali, Persian, Hindi and Thai have no language
   file, so they show English, until someone checks on a real watch whether the font draws them.
   Huawei says the lite text component supports only the SourceHanSansSC-Regular font. Japanese has no
