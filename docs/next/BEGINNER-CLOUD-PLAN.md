@@ -9,6 +9,8 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
+
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
 
 10.02 has a loopback regression for denied workout writes with a plans-only grant. Separate connector discovery and web consent origins are prepared. Live connector acceptance remains open.

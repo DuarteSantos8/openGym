@@ -198,3 +198,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/ApiTokens{,.test}.jsx`, `frontend/src/views/Assistants{,.test}.jsx` | `next/EP19-connector-origin` | UI | Show the configured address on both connector setup screens. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP24-glossary-translations` | Copy | Add the missing 26 labels and 49 definitions per pack for the training glossary. |
 | `frontend/e2e/cloud/account.e2e.mjs` | 11.02h / EP27-T01 | Cloud Learn ladder journey | Exercises the shipped ladder from a linked account and checks that linked progress disappears on a clean device after sign-out; no runtime behavior changed. |
+| `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-two-tab-guest-adoption` | E2E | Save the tenth guest workout and its photo in another tab, then reopen the photo from signed-out History offline. |
