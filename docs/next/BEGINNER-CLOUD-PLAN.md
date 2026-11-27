@@ -10,6 +10,8 @@ D3 status: the short Beginner Settings root and reversible full-list preference 
 ## Status on November 26, 2026
 
 06.01 is prepared. The device save warning distinguishes quota exhaustion from refused writes.
+A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
+
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
 
 10.02 has a loopback regression for denied workout writes with a plans-only grant. Live connector acceptance remains open.
