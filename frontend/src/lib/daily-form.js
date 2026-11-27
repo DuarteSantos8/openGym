@@ -166,3 +166,41 @@ export function dailyFormSource(S, from, to) {
 
 /** Hands the check-ins to the deload suggestion. Called once at start-up (main.jsx). */
 export const registerDailyFormSource = () => setDailyFormSource(dailyFormSource)
+
+/* ---------- the check-in on the watch (#1535) ---------- */
+//
+// A workout started on the Apple Watch or the Wear OS watch can ask a short check-in first, before
+// its 3-2-1: the three questions that matter most for the lifting (sleep, energy, soreness), one tap
+// each, one tap to skip it all. Its answers come to the phone as a `dailyForm` event
+// (lib/watch-sync.js) and are stored here exactly like the phone's own, so the journal, the history
+// and the deload suggestion read them the same.
+//
+//   S.dailyFormWatch: "Ask on the watch too" under Settings → Workout → Daily check-in. Undefined is
+//   on: it only ever counts while the check-in itself is on, so whoever uses the check-in gets it on
+//   the wrist too, and nobody else is ever asked.
+//
+// Never twice a day: the watch hears which day was answered last (watchExtras `checkinDay`) and
+// remembers the day it asked itself (a skip counts); a day answered already keeps its answers.
+export const WATCH_FORM_KEYS = ['sleep', 'energy', 'sore']
+
+/** Whether the watches ask the check-in before a workout they start. */
+export const watchCheckinOn = S => !!S && isOn(S, 'health') && S.dailyForm === true && S.dailyFormWatch !== false
+
+/** The newest day with an answered check-in (YYYY-MM-DD), or null. */
+export function lastFormDay(S) {
+  const days = formDays(S)
+  return days.length ? days[days.length - 1].d : null
+}
+
+/**
+ * S.dayForm with the watch's answers `f` on `iso`, or null when there is nothing to store: no
+ * answer in it, or that day was answered already (on the phone or another watch: the first one counts).
+ */
+export function withWatchForm(map, iso, f, now = Date.now()) {
+  if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null
+  const answers = {}
+  for (const k of FORM_KEYS) if (f && f[k] != null) answers[k] = f[k]
+  if (!readForm(answers)) return null
+  if (readForm(isMap(map) ? map[iso] : null)) return null
+  return withForm(map, iso, answers, now)
+}

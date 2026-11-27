@@ -141,6 +141,9 @@ class WorkoutService : Service() {
                 .setIsAutoPauseAndResumeEnabled(false)
                 .setIsGpsEnabled(false)
                 .build()
+            // On before the call: Health Services may accept the start after this service is gone
+            // (cancelled mid-start), and onDestroy must still end it.
+            exerciseOn = true
             try {
                 client.startExerciseAsync(config(setOfNotNull(DataType.HEART_RATE_BPM, kcal))).await()
             } catch (e: kotlinx.coroutines.CancellationException) {
@@ -150,22 +153,21 @@ class WorkoutService : Service() {
                 if (kcal == null) throw e
                 client.startExerciseAsync(config(setOf(DataType.HEART_RATE_BPM))).await()
             }
-            exerciseOn = true
         } catch (_: Exception) { /* another app's exercise, or no sensor: the workout goes on without */ }
     }
 
     override fun onDestroy() {
+        alive = false
         if (exerciseOn) {
             val client = HealthServices.getClient(this).exerciseClient
             try { client.endExerciseAsync() } catch (_: Exception) {}
             try { client.clearUpdateCallbackAsync(hrCallback) } catch (_: Exception) {}
             exerciseOn = false
-        }
+        } else if (!measuring) endStrayExercise(this) // never started here, or lost with a dead process
         if (measuring) {
             try { HealthServices.getClient(this).measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, measureCallback) } catch (_: Exception) {}
             measuring = false
         }
-        alive = false
         WearStore.clearHeartRate()
         scope.cancel()
         val running = WearStore.state.value.workout != null
@@ -193,6 +195,29 @@ class WorkoutService : Service() {
         /** Asked to start, onCreate not run yet: Android kills the app if it is stopped before startForeground. */
         @Volatile private var starting = false
 
+        /** `sync` has looked for an exercise left by a dead process in this one. */
+        @Volatile private var strayChecked = false
+
+        /**
+         * Ends an exercise of ours that no running service owns. Health Services keeps it, the sensor
+         * at workout rate, after its app dies, so the flag in memory cannot be trusted. Another app's
+         * exercise is never touched. A listener on the caller's thread, so no scope has to outlive it.
+         */
+        fun endStrayExercise(ctx: Context) {
+            try {
+                val client = HealthServices.getClient(ctx.applicationContext).exerciseClient
+                val info = client.getCurrentExerciseInfoAsync()
+                info.addListener({
+                    try {
+                        @SuppressLint("RestrictedApi", "WrongConstant")
+                        val owned = ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS
+                        // A service that came up meanwhile owns the exercise now (and a start restarts it).
+                        if (HrPlan.stray(info.get().exerciseTrackedStatus, owned, alive || starting)) client.endExerciseAsync()
+                    } catch (_: Exception) {}
+                }, Runnable::run)
+            } catch (_: Exception) {}
+        }
+
         fun hasHrPermission(ctx: Context): Boolean {
             val perm = if (Build.VERSION.SDK_INT >= 36) "android.permission.health.READ_HEART_RATE" else Manifest.permission.BODY_SENSORS
             return ContextCompat.checkSelfPermission(ctx, perm) == PackageManager.PERMISSION_GRANTED
@@ -209,6 +234,8 @@ class WorkoutService : Service() {
         fun sync(ctx: Context, fromPhone: Boolean = false) {
             val app = ctx.applicationContext
             val active = WearStore.state.value.workout != null
+            // No sensor is wanted (no workout, or it rests) but one may run on from a process that died.
+            if ((!active || WearStore.sensorsResting) && !strayChecked) { strayChecked = true; endStrayExercise(app) }
             if (!active) {
                 // A start still on its way stops itself in onCreate, once it is in the foreground.
                 if (!starting) app.stopService(Intent(app, WorkoutService::class.java))

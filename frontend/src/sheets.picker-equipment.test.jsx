@@ -61,4 +61,47 @@ describe('exercise picker equipment filter', () => {
     expect(isOn(eqAfter)).toBe(true)
     expect(isOn(chipByText(host, 'Any equipment'))).toBe(false)
   })
+
+  // Discord "Pick more than one equipment and type": cables or dumbbells, both at once.
+  it('takes more than one equipment, lists any of them, and a second tap takes one off', () => {
+    exercisePicker(vi.fn())
+    const host = renderTop()
+    act(() => chipByText(host, 'upper arms').click())
+    const count = () => Number(host.querySelector('.search-count').textContent.replace(/\D/g, ''))
+    act(() => chipByText(host, 'dumbbell').click())
+    const dumbbells = count()
+    act(() => chipByText(host, 'cable').click())
+    expect(isOn(chipByText(host, 'dumbbell'))).toBe(true)
+    expect(isOn(chipByText(host, 'cable'))).toBe(true)
+    const both = count()
+    act(() => chipByText(host, 'dumbbell').click())
+    const cables = count()
+    act(() => chipByText(host, 'dumbbell').click())
+    // any of the two: the dumbbell exercises and the cable ones together
+    expect(both).toBe(dumbbells + cables)
+    expect(cables).toBeGreaterThan(0)
+    act(() => chipByText(host, 'cable').click())
+    expect(isOn(chipByText(host, 'cable'))).toBe(false)
+    expect(isOn(chipByText(host, 'dumbbell'))).toBe(true)
+    act(() => chipByText(host, 'Any equipment').click())
+    expect(isOn(chipByText(host, 'dumbbell'))).toBe(false)
+  })
+})
+
+// #1082: the picker finds an exercise by the machine brand set for it at a gym.
+describe('exercise picker: search by machine brand', () => {
+  it('lists the exercise kept per gym under its brand', async () => {
+    const { CATALOGUE } = await import('./lib/exercises.js')
+    const ext = CATALOGUE.find(e => /^lever leg extension$/i.test(e.n))
+    useStore.setState(s => ({ S: { ...s.S, exGym: { [ext.id]: { split: true, brands: { g1: 'Technogym' } } } } }))
+    exercisePicker(vi.fn())
+    const host = renderTop()
+    const input = host.querySelector('input')
+    act(() => {
+      Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set.call(input, 'technogym')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    const names = [...host.querySelectorAll('.item .tt')].map(x => x.textContent.toLowerCase()).filter(n => n !== 'create your own exercise')
+    expect(names[0]).toContain('lever leg extension')
+  })
 })

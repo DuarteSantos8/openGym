@@ -167,6 +167,31 @@ describe('report and workout printouts', () => {
     expect(html).toContain('class="pr"')
     expect(html).not.toMatch(/<img|\.webp|\.gif|\.mp4/)
   })
+  it('a workout writes the weight unit next to every weight, warm-ups included', () => {
+    const S = state()
+    const html = workoutPrintHTML(S, S.workouts[4], { owner: 'Ana' })
+    expect(html).toContain('<span class="v">100 kg × 5</span>')
+    expect(html).toContain('<span class="v">50 kg × 8</span>')
+    expect(html).toContain('<span class="v">60 kg × 8</span>')
+    // A set that was not done is a dash, with no unit after it.
+    expect(html).toContain('<span class="v">–</span>')
+    expect(workoutPrintHTML({ ...S, unit: 'lb' }, S.workouts[4], { owner: 'Ana' })).toContain('<span class="v">100 lb × 5</span>')
+  })
+  it('a workout with no weight on any set (a timed hold) has no unit on its sets', () => {
+    const S = state()
+    expect(workoutPrintHTML(S, S.workouts[5], { owner: 'Ana' })).not.toMatch(/ kg × /)
+  })
+  it('the performance report lists each workout\'s sets with the weight unit next to each weight', () => {
+    const html = reportPrintHTML(state(), { range: '4w', today: TODAY })
+    expect(html).toContain('<td class="s">100 kg × 5, 100 kg × 5, 100 kg × 5</td>')
+    expect(html).toContain('<td class="s">60 kg × 8</td>')
+    expect(reportPrintHTML({ ...state(), unit: 'lb' }, { range: '4w', today: TODAY })).toContain('<td class="s">100 lb × 5, 100 lb × 5, 100 lb × 5</td>')
+  })
+  it('a timed hold with no weight has no unit in the report\'s workout list', () => {
+    const rows = [...reportPrintHTML(state(), { range: '4w', today: TODAY }).matchAll(/<td class="s">([^<]*)<\/td>/g)].map(x => x[1])
+    expect(rows.length).toBeGreaterThan(0)
+    expect(rows.filter(r => !r.includes(' kg × '))).toEqual(['0:45'])
+  })
   it('charts are plain SVG with round axis numbers', () => {
     const bars = barChartSVG([{ label: 'a', value: 1200 }, { label: 'b', value: 0 }, { label: 'c', value: 3100 }])
     expect(bars).toContain('class="bar hot"')

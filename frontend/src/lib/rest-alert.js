@@ -48,7 +48,7 @@ export function buildCues(cues) {
     .map(c => ({ dt: Math.round(c.dt), title: c.title }))
 }
 
-export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, cues = null, countdown = true, now = Date.now() } = {}) {
+export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, lightScreen = true, cues = null, countdown = true, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
   // Settings → Sound (#306): one of lib/sound.js REST_SOUNDS; without one, `classic` decides, as before.
   // 'u:<hash>': a sound of one's own (lib/user-sounds.js), which the native side plays from its file.
@@ -80,6 +80,8 @@ export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, so
     // Settings → "Vibrate when the phone is on silent" (#375): the end buzzes as an alarm, which
     // silent mode lets through, instead of through the notification channel, which it mutes.
     alarmBuzz: !!vibrate && !!alarmBuzz,
+    // Settings → Light up the screen at rest end (#1475, Android): off leaves a locked phone dark.
+    lightScreen: lightScreen !== false,
     localOnly: false,
     visibility: 'public',
     importance: 'high',
@@ -116,7 +118,7 @@ const restPlugin = () => pluginP || (pluginP = (async () => {
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
-  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz, cues: opts.cues, countdown: opts.countdown !== false })
+  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz, lightScreen: opts.lightScreen !== false, cues: opts.cues, countdown: opts.countdown !== false })
   if (!alert) return Promise.resolve(false)
   // Outside the chain and never awaited: the alarm, its tone and the alarm buzz do not need the
   // notification permission, and a dialog left open while the phone is put away must not hold
@@ -293,6 +295,7 @@ async function deliver(alert) {
     // for it where notifications are off. With the app in front the page buzzes (lib/sound.js).
     vibrate: alert.vibrate,
     alarmBuzz: alert.alarmBuzz,
+    lightScreen: alert.lightScreen,
     channelId: alert.channelId,
     visibility: alert.visibility,
     importance: alert.importance,

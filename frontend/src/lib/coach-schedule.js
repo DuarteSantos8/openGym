@@ -44,12 +44,33 @@ export async function checkScheduledReview(getStore, foreground = false) {
   } catch { return null } finally { running = false }
 }
 
+/** Whether automatic reviews on a server are waiting for a target the app can fill in itself
+ *  (switched on before 1.4.6: lib/coach-api.js adoptCadence). */
+export function mayAdopt(store) {
+  const c = store?.S?.coach
+  return store?.coachLocal?.mode !== 'byok' && !!store?.config?.coach?.enabled && !!store?.user
+    && !!c?.cadence && c.cadence !== 'off' && !c.cadenceFor && isOn(store.S, 'coach')
+}
+let adopting = false
+async function adopt(getStore) {
+  if (adopting || !mayAdopt(getStore())) return
+  adopting = true
+  try { await (await import('./coach-api.js')).adoptCadence() } catch { /* asked again next time */ } finally { adopting = false }
+}
+
 let started = false
 export function initCoachSchedule(getStore) {
-  if (!MOBILE || started) return
+  if (started) return
   started = true
+  // The web app runs no reviews itself; it only fills in the target, on start and on return.
+  if (!MOBILE) {
+    setTimeout(() => adopt(getStore), 5000)
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'hidden') adopt(getStore) })
+    return
+  }
   const look = (foreground = false) => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+    if (foreground) adopt(getStore)
     checkScheduledReview(getStore, foreground)
   }
   setTimeout(() => look(true), 5000)      // after start-up, not in the middle of it

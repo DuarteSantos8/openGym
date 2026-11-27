@@ -196,3 +196,26 @@ describe('relativeSeries: assisted machines', () => {
     expect(relativeSeries(state([workout(1000, [{ id: ASSISTED, sets: [done(90, 1)] }], 80)]), ASSISTED)).toEqual([])
   })
 })
+
+describe('bodyweightAt, every side of a workout', () => {
+  const T0 = 100 * DAY
+  it('one side too far away: the near side alone, not a line to a weigh-in months off', () => {
+    const log = [{ t: T0, w: 90 }, { t: T0 + 200 * DAY, w: 70 }]
+    expect(bodyweightAt(log, T0 + 2 * DAY)).toBe(90)
+    expect(bodyweightAt(log, T0 + 198 * DAY)).toBe(70)
+    expect(bodyweightAt(log, T0 + 100 * DAY)).toBeNull()
+    expect(bodyweightAt(log, T0 + 100 * DAY, Infinity)).toBeCloseTo(80)
+  })
+  it('only weigh-ins before, or only after', () => {
+    expect(bodyweightAt([{ t: T0, w: 90 }], T0 + 3 * DAY)).toBe(90)
+    expect(bodyweightAt([{ t: T0, w: 90 }], T0 - 3 * DAY)).toBe(90)
+  })
+  it('several readings: the two around the moment, whatever the stored order', () => {
+    const log = [{ t: T0 + 4 * DAY, w: 86 }, { t: T0, w: 90 }, { t: T0 + 2 * DAY, w: 88 }]
+    expect(bodyweightAt(log, T0 + 3 * DAY)).toBeCloseTo(87)
+    expect(bodyweightAt(log, T0 + 2 * DAY)).toBe(88)
+  })
+  it('ignores readings that are not a weight', () => {
+    expect(bodyweightAt([{ t: T0, w: 0 }, { t: T0, w: 'x' }, { t: T0 + DAY, w: 80 }], T0)).toBe(80)
+  })
+})

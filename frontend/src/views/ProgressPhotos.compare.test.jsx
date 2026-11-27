@@ -46,6 +46,7 @@ describe('comparing more than two (#950)', () => {
     mount()
     expect(host.textContent).not.toContain('Slider')
     expect(host.querySelector('[aria-label="Share as image"]')).not.toBeNull()
+    expect(host.textContent).toContain('Drag a photo to move what shows, pinch to zoom in.')   // #1315
   })
   it('two photos offer the slider and side by side', () => {
     openProgressCompare(photo('2026-03-01', 2), photo('2026-01-01', 1))

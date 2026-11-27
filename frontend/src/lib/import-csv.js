@@ -26,7 +26,7 @@ import { cleanBands, bandsFromCell } from './bands.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
-import { activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
+import { activitiesFromHealthExport, activitiesFromStravaExport, isStravaExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
 import {
   MEASUREMENT_FIELDS, MEASUREMENT_KEYS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
@@ -117,6 +117,11 @@ const COLUMNS = [
   // Strong's current export: the whole workout's length, in seconds, on every row.
   ['durationSec', ['duration sec', 'duration secs']],
   ['setType', ['set type']],
+  // Anneal's export (anneal.fit/import/anneal-csv/): Warmup is Yes/No, and a timed set keeps its
+  // seconds in Reps with Logging_Mode saying so. Its Weight_LBS / Weight_KG land on the lb / kg
+  // columns above (kg is the rounded copy, so lb wins when both are read).
+  ['warmup', ['warmup', 'is warmup']],
+  ['loggingMode', ['logging mode']],
   // The set's number and, for a set logged per side, which side the row is (our own export).
   // Strong's Set Order is a number, or W (warm-up), D (drop), F (failure); "Rest Timer" and "Note" rows are not sets.
   ['setNo', ['set', 'set order', 'set index']],
@@ -155,6 +160,7 @@ function mapHeader(header) {
 export function detectSource(header) {
   const h = header.map(norm)
   if (h.includes('exercise id') && h.includes('set type')) return 'openGym'
+  if (h.includes('weight lbs') && h.includes('weight kg') && h.includes('unit entered')) return 'Anneal'
   if (h.includes('exercise') && h.includes('est 1rm kg')) return 'GymMane'
   if (h.includes('exercise title') && h.includes('set index')) return 'Hevy'
   if (h.includes('exercise name') && h.includes('set order')) return 'Strong'
@@ -389,7 +395,7 @@ export function matchExercise(name) {
  * The same steps as matchExercise, which an import keeps using unchanged: there a near miss is
  * worth a custom exercise the user can fix later, and the first of two same-named entries is as
  * good as the other. Logging one session by name has no such fallback, so here an exact name the
- * catalogue spells twice ("lever chest press" is 0576 and 0577) is a question, not an answer.
+ * catalogue spells twice ("ez barbell spider curl" is 0454 and 1628) is a question, not an answer.
  * With nothing close, the entries sharing the most words are offered instead. `kind` says which
  * step answered: 'alias', 'exact', 'near', or 'none' (nothing close; the candidates only share a word).
  */
@@ -536,23 +542,23 @@ const monthOf = w => {
 /** "2020-12-30 18:51:52" · "2024-03-07" · "2024/03/07" · "2024.03.07" · "22 Dec 2025, 08:00" · "21 août 2024, 18:00" · "07/03/2024" -> { d, t } */
 export function parseWhen(s) {
   const v = String(s || '').trim()
-  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/)
-  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5])
+  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/)
+  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5], m[6], m[7])
   // \p{L} rather than [A-Za-z]: the month word carries an accent in most languages.
-  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/u)
   let mon = m && monthOf(m[2])
-  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5])
-  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5], m[6], m[7])
+  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/u)
   mon = m && monthOf(m[1])
-  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5])
+  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5], m[6], m[7])
   // Day-first when ambiguous: FitNotes/Strong/Hevy all write unambiguous dates, so a
   // bare numeric one came through a spreadsheet, and those are usually European.
-  m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2}))?/)
+  m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]\.?)?)?/)
   if (m) {
     const [, a, b, y] = m
     const day = +a > 12 ? a : +b > 12 ? b : a
     const mon = day === a ? b : a
-    return calendarDay(y, mon, day, m[4], m[5])
+    return calendarDay(y, mon, day, m[4], m[5], m[6], m[7])
   }
   return null
 }
@@ -565,16 +571,24 @@ export const daysBetween = (a, b) => {
 // before 1900 and not in the future. A day of slack covers a file written in a time zone
 // ahead of this one. Anything else is a broken cell, and filed as a workout it would sit
 // in the history as "Invalid Date" or a session from the year 9999.
-function calendarDay(y, mo, d, h, mi) {
+function calendarDay(y, mo, d, h, mi, sec, ampm) {
   y = +y; mo = +mo; d = +d
   const at = new Date(Date.UTC(y, mo - 1, d))
   if (y < 1900 || at.getUTCFullYear() !== y || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null
-  if (h !== undefined && (+h > 23 || +mi > 59)) return null
+  if (h !== undefined && (ampm ? (+h < 1 || +h > 12 || +mi > 59 || +sec > 59) : (+h > 23 || +mi > 59 || +sec > 59))) return null
   const now = new Date()
   if (at.getTime() > Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1)) return null
-  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi) }
+  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi, sec, ampm) }
 }
-const hm = (h, mi) => (h === undefined ? null : (parseInt(h, 10) || 0) * 3600000 + (parseInt(mi, 10) || 0) * 60000)
+const hm = (h, mi, sec, ampm) => {
+  if (h === undefined) return null
+  let hour = parseInt(h, 10) || 0
+  if (ampm) {
+    hour %= 12
+    if (ampm.toLowerCase() === 'p') hour += 12
+  }
+  return hour * 3600000 + (parseInt(mi, 10) || 0) * 60000 + (parseInt(sec, 10) || 0) * 1000
+}
 
 /** "HH:MM:SS" · "MM:SS" · "90" -> minutes */
 // "0:01:30" or "1:30" as seconds; 0 for anything that is not a clock time.
@@ -726,7 +740,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
 
     // explicit kg/lb columns beat a generic column plus a unit column
     let w = 0, rowUnit = ''
-    if (map.weightKg !== undefined && cell(r, 'weightKg')) { w = num(cell(r, 'weightKg')); rowUnit = 'kg' }
+    // Anneal writes both; its Weight_LBS is the stored value and Weight_KG a two-decimal copy.
+    if (source === 'Anneal' && map.weightLb !== undefined && cell(r, 'weightLb')) { w = num(cell(r, 'weightLb')); rowUnit = 'lb' }
+    else if (map.weightKg !== undefined && cell(r, 'weightKg')) { w = num(cell(r, 'weightKg')); rowUnit = 'kg' }
     else if (map.weightLb !== undefined && cell(r, 'weightLb')) { w = num(cell(r, 'weightLb')); rowUnit = 'lb' }
     else {
       w = num(cell(r, 'weight'))
@@ -736,8 +752,10 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     if (rowUnit === 'lb') sawLb = true
     if (rowUnit === 'kg') sawKg = true
 
-    const reps = Math.round(num(cell(r, 'reps')))
-    const secs = num(cell(r, 'seconds'))
+    let reps = Math.round(num(cell(r, 'reps')))
+    let secs = num(cell(r, 'seconds'))
+    // Anneal's Reps column holds seconds when Logging_Mode says the set was timed.
+    if (cell(r, 'loggingMode').toLowerCase() === 'time' && !secs) { secs = reps; reps = 0 }
     // FitNotes keeps a hold (a plank, a dead hang) only in its Time column, "0:01:30": the set's
     // own time, as exact seconds. Its treadmill rows have a distance and stay cardio below.
     const fnSecs = /^FitNotes/.test(source) && map.seconds === undefined ? clockSeconds(cell(r, 'time')) : 0
@@ -757,7 +775,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
     // Sessions outside the days you chose stay in the file.
     if (!inRange(when.d, from, to)) { excluded++; continue }
-    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
+    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w' || /^(yes|true|1)$/i.test(cell(r, 'warmup'))
 
     // Our own file names the exercise by id: a catalogue id is taken as it is, and a custom one
     // keeps its id too, so the same exercise on another device is the same exercise. Never a key
@@ -827,7 +845,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     const ownCardio = own && cell(r, 'distanceKm') !== '' && !ownDistance
     // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
     const timed = own ? secs > 0 && !reps && !ownCardio
-      : (secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp))
+      : (secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || source === 'Anneal' || !!nameBp))
         || (fnSecs > 0 && !km && !reps && !exCardio)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
@@ -1313,6 +1331,13 @@ const importReadingId = b => 'i' + hashId(`${b.d}|${b.at || ''}|${b.w}`)
 export function parseImport(text, opts) {
   const s = String(text)
   if (s.includes('HKQuantityTypeIdentifier') || /^\s*</.test(s)) return parseBodyweight(s, opts)
+  // Strava's activities.csv (#1313): runs, rides and matches, as activities. Told by its first line.
+  const firstLine = s.slice(0, (s.search(/[\r\n]/) + 1) || s.length)
+  if (isStravaExport(parseCSV(firstLine)[0])) {
+    const acts = activitiesFromStravaExport(parseCSV(s))
+    // only gym sessions and walks in it: nothing to bring, and the sheet says so
+    return acts.length ? finishBodyweight(new Map(), opts?.unit || 'kg', 'Strava', '', [], acts) : { kind: 'bodyweight', source: 'Strava', bodyweight: [] }
+  }
   const asWorkouts = parseWorkoutCSV(s, opts)
   if (!asWorkouts.error) return asWorkouts
   const asWeights = parseBodyweight(s, opts)

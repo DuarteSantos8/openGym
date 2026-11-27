@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
 import { nextPrescription, POLICIES_FOR, LADDER_TOP } from './progression.js'
 import { EXIDX } from './exercises.js'
+import { buildPlannedEntry } from './session-start.js'
 
 const done = (d, id, reps, sets = 3) => ({ d, entries: [{ id, target: { id, sets, reps, prog: 'ladder', weight: 0 }, sets: Array.from({ length: sets }, () => ({ w: 0, r: reps, done: true })) }] })
 
@@ -57,5 +58,37 @@ describe('the Skill ladder rule', () => {
     const last = nextPrescription({ workouts: [done('2026-11-01', '0725', 12)] }, { ...cfg, id: '0725' })
     expect(last.kind).toBe('hold')
     expect(last.next).toBeUndefined()
+  })
+
+  it('the first session opens at the bottom, so the second climbs from it and not from half the top', () => {
+    const first = buildPlannedEntry({ workouts: [] }, cfg, null)
+    expect(first.sets.map(x => x.r)).toEqual([5, 5, 5])
+    expect(first.target.reps).toBe(5)
+    const S = { workouts: [{ d: '2026-11-01', entries: [{ id: '0662', target: first.target, sets: first.sets.map(x => ({ ...x, done: true })) }] }] }
+    const second = buildPlannedEntry(S, cfg, null)
+    expect(second.plan).toMatchObject({ kind: 'up', reps: 6 })
+    expect(second.sets.map(x => x.r)).toEqual([6, 6, 6])
+    expect(second.target.rowReps).toBeUndefined()
+  })
+
+  it('steps a per-side rung by two, so no side is asked for half a rep', () => {
+    const side = { ...cfg, id: '1759', side: true }
+    expect(nextPrescription({ workouts: [] }, side)).toMatchObject({ kind: 'first', reps: 6 })
+    expect(nextPrescription({ workouts: [done('2026-11-01', '1759', 6)] }, side)).toMatchObject({ kind: 'up', reps: 8 })
+    // an odd goal an earlier session stamped is rounded down to a pair, for a climb and a hold
+    expect(nextPrescription({ workouts: [done('2026-11-01', '1759', 7)] }, side)).toMatchObject({ kind: 'up', reps: 8 })
+    const miss = done('2026-11-01', '1759', 7)
+    miss.entries[0].sets[2].r = 4
+    expect(nextPrescription({ workouts: [miss] }, side)).toMatchObject({ kind: 'hold', reps: 6 })
+    // a plain range still climbs a rep at a time
+    expect(nextPrescription({ workouts: [done('2026-11-01', '0662', 6)] }, cfg)).toMatchObject({ kind: 'up', reps: 7 })
+  })
+
+  it('writes whole reps into each side of the next session', () => {
+    const side = { ...cfg, id: '1759', side: true }
+    const S = { workouts: [done('2026-11-01', '1759', 6)] }
+    const plan = buildPlannedEntry(S, side, null)
+    expect(plan.sets).toHaveLength(3)
+    for (const s of plan.sets) for (const k of ['L', 'R']) expect(s.sides[k].r).toBe(4)
   })
 })

@@ -77,7 +77,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
 
 // `tone`: the rest's sound, a built-in one or one of one's own (lib/user-sounds.js toneFor).
 // `rk`: the kind of rest (#165), whose own sound the native alarm plays when it was given one.
-const alertPrefs = (S, rk = null) => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: toneFor(S, 'rest', rk), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
+const alertPrefs = (S, rk = null) => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: toneFor(S, 'rest', rk), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent, lightScreen: S.restLightScreen !== false })
 const autoForecast = owner => { try { return autoHooks?.forecast?.(owner) || [] } catch { return [] } }
 // The count-in and the hold of a chain, booked with the phone the same way (no countdown card:
 // that one is the rest's, with the rest's buttons). Only the phone app, and not the tour.
@@ -901,10 +901,19 @@ bindCueState(() => useStore.getState?.()?.S)
 // A workout that begins gets its first set announced (#1210): only a rest announced anything
 // before, so the first exercise went unsaid until its first set was done. The id already running
 // when this module loads is not announced — an app restart mid-workout is not a beginning.
+// Only one begun here and now (review 1.4.6): a workout another device started that arrives by
+// sync, one brought back at sign-in, a backfill typed in afterwards and the tour's sandbox are not
+// a beginning either. "Now" is a start within the last half minute.
+export const BEGAN_WINDOW_MS = 30000
+export function beganHere(st, now = Date.now()) {
+  const a = st?.S?.active
+  if (!a || st?.tourSandbox || a.backfill || a.editingWorkoutId) return false
+  return Number(a.start) > 0 && now - Number(a.start) >= 0 && now - Number(a.start) < BEGAN_WINDOW_MS
+}
 let heardWorkout = useStore.getState?.()?.S?.active?.id ?? null
 useStore.subscribe?.(st => {
   const id = st?.S?.active?.id ?? null
   if (id === heardWorkout) return
   heardWorkout = id
-  if (id) cues.began()
+  if (id && beganHere(st)) cues.began()
 })

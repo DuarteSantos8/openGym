@@ -24,7 +24,7 @@ import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, connectWithProvider, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { takeOidcReturn } from '../lib/oidc.js'
-import { loadCfAccess } from '../lib/cf-access.js'
+import { loadCfAccess, reloadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { initCoachSchedule } from '../lib/coach-schedule.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
@@ -33,6 +33,7 @@ import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent, NEW_ACCENT } from '../lib/accent.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
+import { pushSupported, disablePush } from '../lib/push.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -352,6 +353,9 @@ export function freshState() {
   // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
   // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
   s.streakRuleAsk = true
+  // The first workout asks once how it should look, one exercise per page or the whole list
+  // (components/LayoutPick.jsx). DEF has no mark: a profile from before never gets asked.
+  s.layoutAsk = true
   // The brand's green (1.4.5). DEF stays on the old green, so only a copy made here gets this.
   s.accent = NEW_ACCENT
   return s
@@ -541,7 +545,8 @@ export const useStore = create((set, get) => {
     if (Object.keys(next).some(k => (k === 'lastError' ? !sameError(next[k], cur[k]) : next[k] !== cur[k]))) set({ sync: next })
   }
   const isNetworkError = e => e && e.status == null   // fetch itself failed, or gave up: no response at all
-  const refused = e => e?.status === 401 || e?.code === 'not-paired'
+  // Cloudflare Access saying no is not the server refusing this device: the pairing is fine (#1529).
+  const refused = e => (e?.status === 401 && e?.code !== 'cf-access') || e?.code === 'not-paired'
   // The server answered: whatever was wrong with the connection is over.
   const reached = (extra = {}) => setSync({ offline: false, auth: false, lastError: null, ...extra })
   // What a failed request says about the connection. A refused token and a phone without a
@@ -823,7 +828,9 @@ export const useStore = create((set, get) => {
   window.addEventListener('focus', () => checkRev())
   window.addEventListener('pageshow', e => { if (e.persisted) checkRev() })
   window.addEventListener('online', () => checkRev(true))   // also retries a push that failed offline
-  onAppActive(() => checkRev())
+  // Back in the app: a Cloudflare Access token the last start could not read (a locked iPhone that
+  // started the app in the background, #1529) is read again before the check goes out.
+  onAppActive(() => { reloadCfAccess().catch(() => false).then(() => checkRev()) })
   schedulePoll()
 
   // Both copies changed: keep both sides' entries, let the newer copy decide the rest
@@ -865,6 +872,7 @@ export const useStore = create((set, get) => {
   // Take the server's copy as this device's own, timestamp and all (see persist).
   const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts, next._wid); markOwed(false) }
 
+  let noGzip = false   // a gzipped push was refused this run: send plain from now on
   const doPush = async (tok, attempt = 0) => {
     const S = get().S
     const { base } = metaOf()
@@ -884,7 +892,20 @@ export const useStore = create((set, get) => {
     if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
     else if (!force && base) { body.baseRev = base.rev; if (base.wid) body.baseWid = base.wid }
     try {
-      const r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
+      // Gzipped only to a server that said it takes it (#1489). One that refuses the gzipped body
+      // anyway (a proxy that mangles it, a config read from a server this phone has since left)
+      // gets the same push plain right away, and plain for the rest of the run.
+      const gzip = !noGzip && !!get().config?.gzip_body
+      let r
+      try { r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body), gzip }) }
+      catch (e) {
+        // An older server reads the gzip bytes as JSON and says `invalid json`; a proxy that
+        // broke them on the way gets `invalid gzip`; 415 is an encoding it does not take.
+        const refusedGzip = e?.status === 415 || (e?.status === 400 && /^invalid (json|gzip)$/.test(e?.data?.error || ''))
+        if (!gzip || !refusedGzip) throw e
+        noGzip = true
+        r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
+      }
       // Answered for an account or a server this device has left: none of it is this copy's.
       if (!isCurrent(tok)) return
       // A server from before revisions answers without one — then there is nothing to hold the
@@ -1266,6 +1287,17 @@ export const useStore = create((set, get) => {
       ui.abandonWork?.()
       ui.stopRest?.()
     } catch { /* no timers to stop */ }
+  }
+  // A signed-out browser must stop getting the account's reminders and rest alerts. Web only (the
+  // phones have no service worker), skipped where notifications were never allowed, and a failure
+  // never holds up the sign-out (a row whose browser side did go is pruned on the server's next send).
+  const DROP_PUSH_WAIT_MS = 1500
+  const dropPush = async () => {
+    if (MOBILE || !pushSupported() || Notification.permission !== 'granted') return
+    // At most a moment's wait (review 1.4.6): offline, the service worker and the request could
+    // hold the sign-out for 8 s and the button looked dead. What has not finished by then goes on
+    // by itself; the server also drops a subscription it can no longer deliver to.
+    await Promise.race([disablePush().catch(() => {}), new Promise(r => setTimeout(r, DROP_PUSH_WAIT_MS))])
   }
 
   // Back on the server and account a forced sign-out or disconnect left: the kept changes are
@@ -1948,6 +1980,7 @@ export const useStore = create((set, get) => {
     // "Sync now": what is waiting goes, the server's copy is checked, and the answer is the
     // `sync` every screen reads — status 'ok' when the two agree.
     async syncNow() {
+      if (MOBILE) await reloadCfAccess().catch(() => false)   // #1529: Try again reads the Access token again first
       if (!get().user) { setSync({}); return get().sync }
       // Held for a sign-in's question: "Sync now" is asking it (again), and the sync follows.
       if (adoptHold) { await get().resumeAdoption(); if (adoptHold) return get().sync }
@@ -1986,6 +2019,16 @@ export const useStore = create((set, get) => {
     async keptState(server, uid) {
       const all = await readStashes()
       return all[stashKey(server, uid)]?.state || null
+    },
+    // The copy kept for one account thrown away, from Settings (#1269): for a server that is not
+    // coming back, where "added back when it connects" never happens. Its photos and videos go
+    // with the next clean-up (stashedMediaHashes no longer lists them). False if nothing went.
+    async dropKept(server, uid) {
+      const all = await readStashes()
+      const key = stashKey(server, uid)
+      if (!all[key]) return false
+      delete all[key]
+      return writeStashes(all)
     },
     // Every photo and video file the stashes refer to: they are kept on this device for as long
     // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
@@ -2060,6 +2103,7 @@ export const useStore = create((set, get) => {
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
       let out = null
+      await dropPush()   // while the session can still tell the server which row is this browser's
       try { out = await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
@@ -2127,6 +2171,7 @@ export const useStore = create((set, get) => {
       if (left.owed && !force) return owedResult(left)
       await stopTimers()
       await api('/api/logout/all', { method: 'POST', body: '{}' })
+      await dropPush()   // the server dropped every row of the account; this ends the browser's side
       if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       await clearLocalSession()
@@ -2315,7 +2360,7 @@ export const useStore = create((set, get) => {
         // same account merges it (adoptProfile). A later reload still says so while that copy
         // owes its account changes — the user is gone by then, the owner and the copy are not —
         // unless whoever is here chose to go on as a guest.
-        if (e.status === 401) {
+        if (e.status === 401 && e.code !== 'cf-access') {
           const kept = !!get().user || (!get().isGuest() && !!localStorage.getItem('gym_owner') && owes())
           get().setUser(null)
           if (kept) failed(e, { pending: owes() })

@@ -1,9 +1,10 @@
 import { laddersSheet } from '../components/Ladders.jsx'
-import { useDeferredValue, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
+import { searchWithBrands } from '../lib/brand-search.js'
+import { EXDB, BODYPARTS, allExercises, byCategories, byEquipment, togglePick, warmSearch, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
@@ -31,8 +32,9 @@ export default function Library() {
   const community = useStore(s => libraryOn(s.config, s.user)) && isOn(S, 'community')
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')
-  const [eq, setEq] = useState('')
-  const [cat, setCat] = useState('')
+  // Several picks each (Discord): cables or dumbbells, strength or stretching.
+  const [eq, setEq] = useState([])
+  const [cat, setCat] = useState([])
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
   const [shown, setShown] = useState(40)
   const bpStrip = useRef(null)
@@ -41,36 +43,37 @@ export default function Library() {
   // Your own exercises, counted the way the list below shows them (allExercises puts every
   // custom entry in front of the catalogue; deleting one removes it from customEx outright).
   const ownCount = (S.customEx || []).filter(c => c && c.id).length
-  const inPart = searchExercises(allExercises(S).filter(e => !bp || e.bp === bp), q)
+  // The search words of every exercise, built while the phone is idle before the first letter.
+  useEffect(() => { warmSearch(allExercises(useStore.getState().S)) }, [])
+  // By name, and by the machine brand you gave it at a gym (#1082, lib/brand-search.js).
+  const inPart = searchWithBrands(allExercises(S).filter(e => !bp || e.bp === bp), S, q)
   // Kind of exercise (strength, stretching, cardio...), the same fallback as equipment below: a
   // choice the search or body part has narrowed away is ignored for now, never a dead end.
-  const { opts: catOpts, on: catOn, list: base } = byCategory(inPart, cat)
+  const { on: catOn, list: base } = byCategories(inPart, cat)
   const eqFiltered = (profile && !showAll) ? base.filter(e => exAvailable(S, e)) : base
   // What a search found that the gym leaves out, counted under the results.
   const gymHidden = q.trim() ? base.length - eqFiltered.length : 0
-  const eqOpts = equipmentOf(eqFiltered)
-  // Drop the equipment filter if the search narrowed it away, so you never hit a dead end.
-  const eqOn = eqOpts.includes(eq) ? eq : ''
+  // An equipment pick the search narrowed away is dropped for this view, so you never hit a dead end.
+  const { on: eqOn, list: narrowedList } = byEquipment(eqFiltered, eq)
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order;
   // while searching, the exercises you have logged or planned follow right after them.
-  const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
   const usage = useMemo(() => (q.trim() ? usageOf(S) : null), [q, S.routines, S.workouts])
   const f = usage ? sortYoursFirst(narrowedList, S, usage) : sortFavouritesFirst(narrowedList, S)
   useRevealActiveChip(bpStrip, bp)
   // Type and equipment live in the Filters sheet (P7). It works out its own options from the same
   // search and body part, so a choice it offers is never a dead end either.
-  const sheetOn = (catOn ? 1 : 0) + (eqOn ? 1 : 0)
+  const sheetOn = catOn.length + eqOn.length
   const filtersFor = (c, e) => {
-    const by = byCategory(inPart, c)
+    const by = byCategories(inPart, c)
     const pool = (profile && !showAll) ? by.list.filter(x => exAvailable(S, x)) : by.list
-    const opts = equipmentOf(pool)
-    return { catOpts: by.opts, catOn: by.on, eqOpts: opts, eqOn: opts.includes(e) ? e : '' }
+    const ex = byEquipment(pool, e)
+    return { catOpts: by.opts, catOn: by.on, eqOpts: ex.opts, eqOn: ex.on }
   }
-  const openFilters = () => useUI.getState().openSheet(close => <LibraryFilters close={close} cat={catOn} eq={eqOn} filtersFor={filtersFor}
+  const openFilters = () => useUI.getState().openSheet(close => <LibraryFilters close={close} cat={cat} eq={eq} filtersFor={filtersFor}
     onChange={(c, e) => { setCat(c); setEq(e); setShown(40) }} />)
   // A live count at the end of the search field while a search or filter narrows the list
   // (idea and first version: GitLab !31) — how many are left, before scrolling to find out.
-  const narrowed = !!(q.trim() || bp || eqOn || catOn)
+  const narrowed = !!(q.trim() || bp || eqOn.length || catOn.length)
   // Close but not exact (a typo too many, most of the words, a similar name), under the results
   // once they are all on screen, so a search almost never ends on "No match".
   // Worked out a beat behind the typing (useDeferredValue): the list itself never waits for it.
@@ -130,8 +133,8 @@ export default function Library() {
       <button type="button" className={'chip nocap ichip lib-fbtn' + (sheetOn ? ' on' : '')} aria-haspopup="dialog" onClick={openFilters}>
         <Icon name="slider" />{t('Filters')}{sheetOn ? <span className="lib-fn">{sheetOn}</span> : null}
       </button>
-      {catOn && <button type="button" className="chip on ichip" aria-label={t('Clear') + ': ' + t(catOn)} onClick={() => { setCat(''); setShown(40) }}>{t(catOn)}<Icon name="xmark" /></button>}
-      {eqOn && <button type="button" className="chip on ichip" aria-label={t('Clear') + ': ' + t(eqOn)} onClick={() => { setEq(''); setShown(40) }}>{t(eqOn)}<Icon name="xmark" /></button>}
+      {catOn.map(x => <button key={'c' + x} type="button" className="chip on ichip" aria-label={t('Clear') + ': ' + t(x)} onClick={() => { setCat(c => c.filter(y => y !== x)); setShown(40) }}>{t(x)}<Icon name="xmark" /></button>)}
+      {eqOn.map(x => <button key={'e' + x} type="button" className="chip on ichip" aria-label={t('Clear') + ': ' + t(x)} onClick={() => { setEq(e => e.filter(y => y !== x)); setShown(40) }}>{t(x)}<Icon name="xmark" /></button>)}
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on ichip' : '')} aria-pressed={bp === b}
         onClick={() => { setBp(bp === b ? '' : b); setShown(40) }}>{t(b)}{bp === b && <Icon name="xmark" />}</button>)}
     </div>
@@ -163,19 +166,19 @@ function LibraryFilters({ close, cat, eq, filtersFor, onChange }) {
     {catOpts.length > 1 && <>
       <h4 className="sec">{t('Exercise type')}</h4>
       <div className="chips wrap">
-        <button type="button" className={'chip nocap' + (!catOn ? ' on' : '')} aria-pressed={!catOn} onClick={() => set('', e)}>{t('Any type')}</button>
-        {catOpts.map(x => <button type="button" key={x} className={'chip' + (catOn === x ? ' on' : '')} aria-pressed={catOn === x} onClick={() => set(x, e)}>{t(x)}</button>)}
+        <button type="button" className={'chip nocap' + (!catOn.length ? ' on' : '')} aria-pressed={!catOn.length} onClick={() => set([], e)}>{t('Any type')}</button>
+        {catOpts.map(x => <button type="button" key={x} className={'chip' + (catOn.includes(x) ? ' on' : '')} aria-pressed={catOn.includes(x)} onClick={() => set(togglePick(c, x), e)}>{t(x)}</button>)}
       </div>
     </>}
     {eqOpts.length > 1 && <>
       <h4 className="sec">{t('Equipment')}</h4>
       <div className="chips wrap">
-        <button type="button" className={'chip nocap' + (!eqOn ? ' on' : '')} aria-pressed={!eqOn} onClick={() => set(c, '')}>{t('Any equipment')}</button>
-        {eqOpts.map(x => <button type="button" key={x} className={'chip' + (eqOn === x ? ' on' : '')} aria-pressed={eqOn === x} onClick={() => set(c, x)}>{t(x)}</button>)}
+        <button type="button" className={'chip nocap' + (!eqOn.length ? ' on' : '')} aria-pressed={!eqOn.length} onClick={() => set(c, [])}>{t('Any equipment')}</button>
+        {eqOpts.map(x => <button type="button" key={x} className={'chip' + (eqOn.includes(x) ? ' on' : '')} aria-pressed={eqOn.includes(x)} onClick={() => set(c, togglePick(e, x))}>{t(x)}</button>)}
       </div>
     </>}
     <div style={{ height: 16 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
-    {(catOn || eqOn) && <Button variant="ghost" className="dim" style={{ marginTop: 6 }} onClick={() => set('', '')}>{t('Clear filters')}</Button>}
+    {(catOn.length > 0 || eqOn.length > 0) && <Button variant="ghost" className="dim" style={{ marginTop: 6 }} onClick={() => set([], [])}>{t('Clear filters')}</Button>}
   </div>
 }

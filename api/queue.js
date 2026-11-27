@@ -28,8 +28,11 @@
 // dated today or later that names a session still to do. On its day the pinned session is the
 // day's session, ahead of the floating order; on every other day from today on the floating rule
 // skips it. A pin on a past day is stale (the session floats again), and a pin on a done session
-// is fulfilled (`pinState === 'done'`) and reads as no override at all. Pins change which session
-// is NEXT, never what counts as DONE, so the tally a planner reads is untouched.
+// is fulfilled (`pinState === 'done'`) and reads as no override at all. A pin dated today or
+// later on a session already done is fulfilled only when that routine was trained in the pin's
+// own calendar week (Monday, or Sunday or Saturday by `S.weekStart`), on or before its day; otherwise the day
+// still trains it. Pins change which session is NEXT, never what counts as DONE, so the tally a
+// planner reads is untouched.
 //
 // The `?.` on each workout is this copy's own, like the one on each routine below: a state file
 // written before PUT /api/data dropped null entries can still hold one, and a throw here is
@@ -137,28 +140,47 @@ function queueNext(S, iso) {
   return remaining.find(id => !pinned.has(id)) ?? null;
 }
 
-// What a per-date override pointing at `id` means for the queue: 'open' — a pin on a session
-// still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be read as no
-// override; null — not a queue session (no queue, a malformed one, a routine override, 'rest', a
-// deleted routine), so the plain override rules apply. As of `today`: by default the user's
-// date in the zone the reminder fires by, as the frontend's copy defaults to the device's.
-export function pinState(S, id, today = dayIn(Date.now(), S.reminder?.tz)) {
+// What a per-date override pointing at `id` on the date `iso` means for the queue: 'open' — the
+// day trains the session (one still to do, skipped elsewhere; or one already done, picked again
+// for a day from today on); 'done' — a fulfilled pin, to be read as no override; null — not a
+// queue session (no queue, a malformed one, a routine override, 'rest', a deleted routine), so
+// the plain override rules apply. As of `today`: by default the user's date in the zone the
+// reminder fires by, as the frontend's copy defaults to the device's. Without `iso` a done
+// session's pin is fulfilled, the rule for a pin before today.
+export function pinState(S, id, today = dayIn(Date.now(), S.reminder?.tz), iso) {
   const q = queueOf(S);
   if (!q || !id || !q.ids.includes(id)) return null;
-  return doneIds(S, q, today).has(id) ? 'done' : 'open';
+  if (!doneIds(S, q, today).has(id)) return 'open';
+  if (!iso || iso < today) return 'done';
+  const from = weekStartOn(iso, S.weekStart === 0 || S.weekStart === 6 ? S.weekStart : 1);
+  for (const w of S.workouts || []) {
+    const d = String(w?.d || '');
+    if (d >= from && d <= iso && routineIdsOf(w).includes(id)) return 'done';
+  }
+  return 'open';
+}
+
+// The first day of the calendar week `iso` is in, for a week starting on weekday `ws` (0 Sunday,
+// 1 Monday): the frontend's weekKey (lib/format.js). Noon, so a DST change cannot move the day.
+function weekStartOn(iso, ws) {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() - (d.getDay() - ws + 7) % 7);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
 // The `?.` on each routine entry is this copy's own: it reads whatever is on disk, including a
 // file written before PUT /api/data dropped null entries.
 // Per-date overrides: 'rest' -> null; a pin on an open queue session -> that session; a pin on a
-// done one is fulfilled and ignored; an explicit routine id -> that id. Otherwise a live queue's
+// done one is fulfilled and ignored once trained in its own week; an explicit routine id -> that id.
+// The pin is judged as of `today` (the user's date by default), as the phone judges it, so a past
+// pin on a done session is fulfilled even when `iso` is asked about as if it were today. Otherwise a live queue's
 // next session wins over the plain weekday assignment, falling back to the weekday only once the
 // queue is finished, not yet started, or absent.
-export function effectiveRoutineId(S, iso) {
+export function effectiveRoutineId(S, iso, today = dayIn(Date.now(), S.reminder?.tz)) {
   const ov = S.dayPlan?.[iso];
   if (ov === 'rest') return null;
-  const pin = pinState(S, ov, iso);
+  const pin = pinState(S, ov, today, iso);
   if (pin === 'open') return ov;
   if (!pin && ov && S.routines?.some(r => r?.id === ov)) return ov;
   const q = queueNext(S, iso);

@@ -81,6 +81,22 @@ export function byCategory(list, cat) {
   return { opts, on, list: on ? list.filter(e => e.cat === on) : list }
 }
 
+// The same rows with more than one pick (Discord "Pick more than one equipment and type"): an
+// exercise passes when it matches any of them (cables or dumbbells). Picks the list has none of
+// are ignored for now, never a dead end, and kept, so they come back when the list has them again.
+export function byCategories(list, cats) {
+  const opts = categoriesOf(list)
+  const on = (cats || []).filter(c => opts.includes(c))
+  return { opts, on, list: on.length ? list.filter(e => on.includes(e.cat)) : list }
+}
+export function byEquipment(list, eqs) {
+  const opts = equipmentOf(list)
+  const on = (eqs || []).filter(x => opts.includes(x))
+  return { opts, on, list: on.length ? list.filter(e => on.includes(e.eq)) : list }
+}
+/** A chip of a several-pick row tapped: on if it was off, off if it was on. */
+export const togglePick = (picks, x) => ((picks || []).includes(x) ? picks.filter(p => p !== x) : [...(picks || []), x])
+
 // Custom (user-created) exercises live in synced state S.customEx (issue #11) and are
 // merged into the id index here so every EXIDX[id] lookup keeps working unchanged.
 let customIds = new Set()
@@ -509,6 +525,25 @@ export function matchExercise(e, query) {
   if (!tokens.length) return true
   if (!e || typeof e !== 'object') return false
   return matchTokens(e, tokens, new Set(tokens))
+}
+
+/**
+ * Builds the search words of `list` ahead of the first keystroke (review 1.4.6: on a slow phone
+ * the first letter typed in Library or the exercise picker took up to a second, because the
+ * words of all 5,600 exercises were made inside that keystroke). A few hundred at a time while
+ * the phone is idle; what is already built is skipped, and a search that comes first simply
+ * builds the rest itself as before.
+ */
+export function warmSearch(list, { chunk = 300 } = {}) {
+  const items = Array.isArray(list) ? list : []
+  let at = 0
+  const idle = globalThis.requestIdleCallback || (fn => setTimeout(() => fn({ timeRemaining: () => 8 }), 50))
+  const step = () => {
+    const end = Math.min(items.length, at + chunk)
+    for (; at < end; at++) corpusOf(items[at])
+    if (at < items.length) idle(step)
+  }
+  idle(step)
 }
 
 // Search a list, exact hits first: a token that appears literally in at least one exercise is

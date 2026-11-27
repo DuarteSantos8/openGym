@@ -7,7 +7,7 @@
 //
 // The choice is a Look setting like Theme and Accent color, so it syncs with the profile:
 // S.seasonal = { halloween: 'auto' | 'on' | 'off', halloweenColors: true, halloweenWorkout: false,
-//               christmas: 'auto', christmasColors: false, christmasWorkout: true }.
+//               christmas: 'auto', christmasColors: false, christmasWorkout: true, christmasShake: true }.
 // Absent reads as Auto, without the colours, and with the workout screen decorated.
 // What happens once a day (the pumpkin's surprise) is per device, in localStorage below.
 
@@ -43,6 +43,7 @@ export const THEMES = [
     workoutTitle: 'Also during workouts', workoutNote: 'A few snowflakes behind the cards, a bauble in the header, presents on the finish screen. Never on your sets.',
     during: 'Snow, fairy lights, a sleigh and an advent calendar until the end of December. Never on your sets.',
     back: 'Back next December. The elves are on a tea break.',
+    shakeTitle: 'Shake for a snow globe', shakeNote: 'Shake your phone hard and the snow goes wild. It settles again on its own.',
     appIcon: 'christmas', appIconTitle: 'Try the Christmas app icon',
   },
 ]

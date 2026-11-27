@@ -171,6 +171,54 @@ test('the outbox rate limit holds jobs back without counting them as failures', 
   assert.equal(n, 4);
 });
 
+test('one profile whose receiver never answers does not hold up another profile\'s deliveries', async () => {
+  const hung = [], sent = [];
+  let live = 0, peak = 0;
+  const r = outboxRig(j => {
+    if (j.uid !== 'u1') { sent.push(j.key); return Promise.resolve({ ok: true }); }
+    live++; peak = Math.max(peak, live);
+    return new Promise(res => hung.push(() => { live--; res({ ok: true }); }));
+  });
+  for (const k of ['a1', 'a2', 'a3']) r.ob.enqueue(job(k));
+  r.ob.enqueue(job('b1', { uid: 'u2', conn: 'c2' }));
+  const pass = r.ob.run();
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(sent, ['b1'], 'the other profile is served while the first still waits');
+  assert.equal(hung.length, 1, 'one slot at a time for a profile');
+  // A job queued mid-pass by another profile does not wait for the pass to end.
+  r.ob.enqueue(job('c1', { uid: 'u3', conn: 'c3' }));
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(sent, ['b1', 'c1'], 'sent while the first profile still waits');
+  hung.shift()();
+  await new Promise(res => setImmediate(res));
+  while (hung.length || live) { hung.shift()?.(); await new Promise(res => setImmediate(res)); }
+  await pass;
+  assert.equal(peak, 1);
+  assert.equal(r.ob.snapshot().jobs.length, 0);
+});
+
+test('another profile\'s retry comes round in the same pass, behind a receiver that never answers', async () => {
+  const hung = [], tries = [];
+  const r = outboxRig(j => {
+    if (j.uid === 'u1') return new Promise(res => hung.push(() => res({ ok: true })));
+    tries.push(j.key);
+    return Promise.resolve(tries.length === 1 ? { ok: false, retry: true, msg: '503' } : { ok: true });
+  });
+  r.ob.enqueue(job('a1'));
+  r.ob.enqueue(job('a2'));
+  r.ob.enqueue(job('b1', { uid: 'u2', conn: 'c2' }));
+  const pass = r.ob.run();
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(tries, ['b1'], 'failed once, due again in 30 s');
+  r.tick(BASE_MS);
+  hung.shift()();
+  await new Promise(res => setImmediate(res));
+  assert.deepEqual(tries, ['b1', 'b1'], 'retried without waiting for the pass to end');
+  while (hung.length) { hung.shift()(); await new Promise(res => setImmediate(res)); }
+  await pass;
+  assert.ok(r.ob.snapshot().done.b1);
+});
+
 test('the outbox is bounded per profile and drops what a disconnect leaves behind', () => {
   const r = outboxRig(async () => ({ ok: true }));
   for (let i = 0; i < 200; i++) assert.equal(r.ob.enqueue(job('k' + i)), 'queued');
@@ -254,6 +302,31 @@ test('a new recent workout is an event, a record another, an old or edited one i
   const lots = { workouts: Array.from({ length: 300 }, (_, i) => W('r' + i, RECENT_MS * 2)) };
   assert.equal(detectEvents({}, lots, { now: NOW }).length, 0);
   assert.equal(detectEvents(null, { workouts: 'nope', bodyweight: [null, 5] }, { now: NOW }).length, 0, 'junk is ignored');
+});
+
+test('workout.started: the session running on the pushing device, once, and only while it is new (#1152)', () => {
+  const routines = [{ id: 'r1', name: 'Push day' }];
+  const A = (extra = {}) => ({ id: 'live1', name: 'Push day', d: '2026-10-20', start: NOW - 60000, routineIds: ['r1'], cur: 0, entries: [{ id: '0025', sets: [] }, { id: 'cx1' }], ...extra });
+  const doc = { unit: 'kg', routines, customEx: [{ id: 'cx1', name: 'Band pull-apart' }], workouts: [] };
+  let evs = detectEvents(doc, doc, { now: NOW, active: A() });
+  assert.deepEqual(evs.map(e => e.type + ':' + e.entity), ['workout.started:live1']);
+  assert.deepEqual(eventData(evs[0], doc), { workout: {
+    id: 'live1', name: 'Push day', date: '2026-10-20', startedAt: new Date(NOW - 60000).toISOString(),
+    routine: { id: 'r1', name: 'Push day' }, unit: 'kg',
+    exercises: [{ id: '0025', name: 'barbell bench press' }, { id: 'cx1', name: 'Band pull-apart' }],
+  } });
+  // No session running, or a push from before this field: nothing, as before.
+  assert.equal(detectEvents(doc, doc, { now: NOW }).length, 0);
+  // Started hours ago (a phone back online with yesterday's open session), an old workout opened
+  // to edit, one typed in after the fact, one already in the log: none of them is starting now.
+  for (const a of [A({ start: NOW - 7 * 3600_000 }), A({ editingWorkoutId: 'w0' }), A({ backfill: true }), A({ start: null })]) {
+    assert.equal(detectEvents(doc, doc, { now: NOW, active: a }).length, 0, JSON.stringify(a).slice(0, 60));
+  }
+  const finished = { ...doc, workouts: [W('live1', 0)] };
+  assert.equal(detectEvents(doc, finished, { now: NOW, active: A() }).filter(e => e.type === 'workout.started').length, 0);
+  // The finishing push itself still says workout.finished.
+  assert.deepEqual(detectEvents(doc, finished, { now: NOW, active: A() }).map(e => e.type), ['workout.finished']);
+  assert.equal(detectEvents(doc, doc, { now: NOW, active: [1, 2] }).length, 0, 'junk is ignored');
 });
 
 /* ---------- the hub ---------- */
@@ -355,6 +428,26 @@ test('connect, deliver signed, fail, retry and disconnect, end to end', async ()
 
   r.hub.disconnect('u1', id);
   assert.deepEqual(r.hub.describe('u1').connections, []);
+  r.hub.stop();
+});
+
+test('workout.started goes out once per session to a webhook that asked for it, every set push after is a duplicate', async () => {
+  const r = hubRig();
+  const asked = r.hub.connect('u1', 'webhook', { url: 'https://hooks.example.com/started', events: ['workout.started'] });
+  r.hub.connect('u1', 'webhook', { url: 'https://hooks.example.com/finished-only', events: ['workout.finished'] });
+  r.tick(60000);
+  const active = { id: 'live9', name: 'Legs', start: NOW + 30000, entries: [] };
+  assert.equal(r.hub.onStateWrite('u1', {}, { workouts: [] }, { active }), 1, 'only the webhook that asked');
+  assert.equal(r.hub.onStateWrite('u1', {}, { workouts: [] }, { active }), 0, 'the next set\'s push: the same session');
+  assert.equal(r.hub.onStateWrite('u1', {}, { workouts: [] }), 0, 'no session: nothing');
+  await r.hub._outbox().run();
+  assert.equal(r.calls.length, 1);
+  assert.equal(r.calls[0].url, 'https://hooks.example.com/started');
+  assert.equal(r.calls[0].headers['X-OpenGym-Event'], 'workout.started');
+  assert.equal(JSON.parse(r.calls[0].body).data.workout.id, 'live9');
+  const tst = await r.hub.test('u1', asked.connection.id, 'workout.started');
+  assert.equal(tst.ok, true);
+  assert.equal(JSON.parse(r.calls.at(-1).body).data.workout.name, 'Test workout');
   r.hub.stop();
 });
 

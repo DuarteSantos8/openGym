@@ -504,7 +504,9 @@ and list, so agreeing there counts as this yes and a first-timer is asked once. 
 (`frontend/src/lib/coach-consent.js`), so pointing the Coach somewhere else asks again; the Coach
 menu's **AI data sharing** (and Settings → AI Coach on the phone) lists what was allowed and takes
 it back. Switching on automatic reviews asks too, and withdrawing the server's provider switches
-them off. The demo, and a model on your own machine or network (localhost, private and Tailscale
+them off. The provider and host they were switched on for is kept in the synced profile
+(`coach.cadenceFor`): when the admin points the Coach somewhere else, the server stops running them
+for that member, and the app asks again the next time they open the Coach (a no switches them off). The demo, and a model on your own machine or network (localhost, private and Tailscale
 addresses, `*.local`/`*.lan`), never ask: nothing goes to a third party. `GET /api/coach/disclosure`
 names the host for this, never the rest of the URL.
 

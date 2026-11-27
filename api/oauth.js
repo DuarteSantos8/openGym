@@ -125,12 +125,14 @@ export function assistantOf(redirect, name = '') {
 }
 
 const GRANTS = ['authorization_code', 'refresh_token'];
+export const REDIRECTS_MAX = 10;
 const cleanName = (v, fallback) => String(v || '').replace(/[\u0000-\u001f\u007f‪-‮⁦-⁩]/g, '').trim().slice(0, 60) || fallback;
 
 /** RFC 7591 registration. { status, body } */
 export function registerClient(db, body, now = Date.now()) {
   const uris = Array.isArray(body?.redirect_uris) ? body.redirect_uris.filter(u => typeof u === 'string') : [];
-  if (!uris.length || uris.length > 5 || !uris.every(redirectOk)) return { status: 400, body: { error: 'invalid_redirect_uri', error_description: 'redirect_uris: 1-5 https addresses (or http on localhost)' } };
+  // Up to 10, as for a client metadata document below: Gemini registers six (#1297).
+  if (!uris.length || uris.length > REDIRECTS_MAX || !uris.every(redirectOk)) return { status: 400, body: { error: 'invalid_redirect_uri', error_description: `redirect_uris: 1-${REDIRECTS_MAX} https addresses (or http on localhost)` } };
   const name = cleanName(body?.client_name, 'MCP client');
   const grants = Array.isArray(body?.grant_types) ? GRANTS.filter(g => body.grant_types.includes(g)) : ['authorization_code'];
   if (!grants.includes('authorization_code')) grants.unshift('authorization_code');
@@ -162,9 +164,13 @@ export function isCimdId(id) {
 export function cimdClient(id, doc) {
   if (!doc || typeof doc !== 'object' || doc.client_id !== id) return { ok: false, error: 'the client metadata document does not name itself as its client_id' };
   const uris = Array.isArray(doc.redirect_uris) ? doc.redirect_uris.filter(u => typeof u === 'string') : [];
-  if (!uris.length || uris.length > 10 || !uris.every(redirectOk)) return { ok: false, error: 'the client metadata document lists no usable redirect_uris' };
+  if (!uris.length || uris.length > REDIRECTS_MAX || !uris.every(redirectOk)) return { ok: false, error: 'the client metadata document lists no usable redirect_uris' };
+  // A document may name a stronger method as the one it prefers and still list `none` among
+  // those it supports: ChatGPT's says private_key_jwt and lists both (#1251). This server offers
+  // `none` only (authServerMetadata), so such a client signs in as a public one, with PKCE.
   const method = doc.token_endpoint_auth_method || 'none';
-  if (method !== 'none') return { ok: false, error: 'only public clients (token_endpoint_auth_method none) are supported' };
+  const supported = Array.isArray(doc.token_endpoint_auth_methods_supported) ? doc.token_endpoint_auth_methods_supported : [];
+  if (method !== 'none' && !supported.includes('none')) return { ok: false, error: 'only public clients (token_endpoint_auth_method none) are supported' };
   const grants = Array.isArray(doc.grant_types) ? GRANTS.filter(g => doc.grant_types.includes(g)) : ['authorization_code'];
   let name = cleanName(doc.client_name, '');
   if (!name) { try { name = new URL(id).hostname; } catch { name = 'MCP client'; } }

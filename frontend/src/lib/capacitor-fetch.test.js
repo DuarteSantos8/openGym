@@ -40,4 +40,12 @@ describe('native Coach transport timeouts', () => {
       readTimeout: 40 * 60000
     }))
   })
+
+  it('hands on the answer\'s headers and final URL, for the Cloudflare Access check (#1529)', async () => {
+    native.request.mockResolvedValueOnce({ status: 403, data: '<html/>', headers: { 'CF-Ray': '8abc-ZRH' }, url: 'https://gym.test/api/me' })
+    const r = await nativeFetch('https://gym.test/api/me')
+    expect(r.headers.get('cf-ray')).toBe('8abc-ZRH')
+    expect(r.headers.get('x-none')).toBe(null)
+    expect(r.url).toBe('https://gym.test/api/me')
+  })
 })

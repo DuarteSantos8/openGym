@@ -77,6 +77,19 @@ final class IdleTests: XCTestCase {
         XCTAssertEqual(Idle.verdict(since: 0, now: 25 * min, wid: "w1", reply: nil), .ask)
     }
 
+    // The drain: past 45 minutes with the phone out of reach the verdict is only "ask", so the
+    // Apple Health session kept the sensor at workout rate until SensorPlan's 3 hours. It rests then.
+    func testTheSensorRestsWhenTheWorkoutIsPastEndingAndThePhoneCouldNotBeAsked() {
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 44 * min, reply: nil), "before the end: only asked")
+        XCTAssertTrue(Idle.sensorRests(since: 0, now: 45 * min, reply: nil))
+        XCTAssertTrue(Idle.sensorRests(since: 0, now: 300 * min, reply: nil))
+        // The phone answered: it ends the workout, or says it is in use. Either way not the sensor's call.
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 45 * min, reply: Idle.PhoneReply(wid: "w1", activeAt: 44 * min)))
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 45 * min, reply: Idle.PhoneReply(wid: "w2", activeAt: nil)))
+        // Forgotten workouts switched off: nothing is ever past ending (SensorPlan's 3 hours stay the net).
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 300 * min, reply: nil, rules: Idle.Rules(askAfter: 0, grace: 5 * min, leaveGym: false)))
+    }
+
     func testThePhoneStillLoggingKeepsTheWorkoutGoing() {
         // The issue's case: the phone's last tick 24 s ago.
         let reply = Idle.PhoneReply(wid: "w1", activeAt: 45 * min - 24_000)
@@ -166,6 +179,26 @@ final class IdleTests: XCTestCase {
         XCTAssertNil(SessionCore.stillHere(SessionState(), at: 1, id: "k2"))
         let (_, left) = SessionCore.finish(s, at: 5 * min, id: "e9", idle: true, left: true)
         XCTAssertEqual(left?["left"] as? Bool, true)
+    }
+
+    /* #976: paused on the phone on purpose, the phone's own check and the Wear watch skip it. */
+
+    func testAWorkoutPausedOnThePhoneIsNeverForgotten() {
+        var w = workout(start: 0, ats: [3 * min])
+        XCTAssertFalse(Idle.isPaused(w))
+        w.pausedAt = 5 * min
+        XCTAssertTrue(Idle.isPaused(w))
+        w.pausedAt = 0
+        XCTAssertFalse(Idle.isPaused(w), "a zero stamp is not a pause")
+        let rules = Idle.Rules(askAfter: 20 * min, grace: 5 * min, leaveGym: true)
+        XCTAssertEqual(Idle.state(since: 0, now: 600 * min, rules: rules), .end, "running: ended")
+        XCTAssertEqual(Idle.state(since: 0, now: 600 * min, rules: rules, paused: true), .active)
+        XCTAssertEqual(Idle.state(since: 0, now: 600 * min, rules: rules, leftAt: 10 * min, paused: true), .active, "also after leaving the gym")
+        // The phone answers with the same workout and its old activeAt: still not ended.
+        let reply = Idle.PhoneReply(wid: "w1", activeAt: 4 * min)
+        XCTAssertEqual(Idle.verdict(since: 0, now: 600 * min, wid: "w1", reply: reply, rules: rules, paused: true), .active)
+        XCTAssertFalse(Idle.sensorRests(since: 0, now: 600 * min, reply: nil, rules: rules, paused: true), "a paused workout keeps its sensor as the pause left it")
+        XCTAssertEqual(Idle.verdict(since: 0, now: 600 * min, wid: "w1", reply: reply, rules: rules), .end)
     }
 
     func testTheNewFieldsAreOptionalBothWays() throws {

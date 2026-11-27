@@ -60,6 +60,8 @@ const FROM_APP = {
   'Next set': 'Next set',
   'Edit': 'Edit',
   'Overview': 'Overview',
+  'Add session note': 'Add session note',
+  'Edit session note': 'Edit session note',
   'Discard workout?': 'Discard workout?',
   'Up next': 'Up next',
   'How hard was that set?': 'How hard was that set?',
@@ -76,6 +78,31 @@ const FROM_APP = {
   'More': 'More',
   // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
   'Back': 'Back',
+  // The summary's medal (#1309): the status beside the clock, the time's unit, the records' legend.
+  'Saved': 'Saved',
+  'Hours': 'Hours',
+  // The app's "min" is minutes; the watch's own "min" is a heart-rate minimum (zh 最低), so its own key.
+  'min (minutes)': 'min',
+  'Records': 'Records',
+  // The daily check-in before a workout started on the watch (#1535), the phone's own words.
+  'How are you today?': 'How are you today?',
+  'Sleep': 'Sleep',
+  'Energy': 'Energy',
+  'Soreness': 'Soreness',
+  'Barely slept': 'Barely slept',
+  'Slept like a log': 'Slept like a log',
+  'Running on fumes': 'Running on fumes',
+  'Full of beans': 'Full of beans',
+  'Nothing aches': 'Nothing aches',
+  'Everything aches': 'Everything aches',
+  'Skip for today': 'Skip for today',
+  'Continue': 'Continue',
+  'New record': 'New record',
+}
+// The watch's own word where the app's is too long for its buttons; every other language keeps the app's.
+const SHORTER = {
+  // #1400: "Überspringen" barely fits between −15 and +15; the owner picked "Weiter".
+  'Skip': { de: 'Weiter' },
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
@@ -90,6 +117,8 @@ const COMPOSED = {
     ['Nothing logged for a while. If you’re done, it ends by itself at {0}, saved at your last set.', w => w.replace('{0}', '%@')],
   'Finish the workout now? Otherwise it ends by itself at %@.':
     ['Finish the workout now? Otherwise it ends by itself at {0}.', w => w.replace('{0}', '%@')],
+  // The medal's back: "AVG BPM", "MAX 162 BPM", in the phone's unit word.
+  '%@ bpm': ['{0} bpm', w => w.replace('{0}', '%@')],
 }
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
@@ -162,6 +191,17 @@ const OWN = {
     pl: '%@, seria %lld', hu: '%@, %lld. sorozat', tr: '%@, set %lld', ru: '%@, подход %lld', uk: '%@, підхід %lld', ar: '%@، المجموعة %lld',
     hi: '%@, सेट %lld', bn: '%@, সেট %lld', th: '%@ เซ็ต %lld', ko: '%@, %lld세트', 'zh-Hans': '%@，第 %lld 组', 'zh-Hant': '%@，第 %lld 組',
     cs: '%@, série %lld', fa: '%@، ست %lld', id: '%@, set %lld', lt: '%@, serija %lld', sv: '%@, set %lld', vi: '%@, hiệp %lld',
+  },
+  '%@, set %lld/%lld': {
+    de: '%@, Satz %lld/%lld', fr: '%@, série %lld/%lld', es: '%@, serie %lld/%lld',
+    it: '%@, serie %lld/%lld', 'pt-PT': '%@, série %lld/%lld', 'pt-BR': '%@, série %lld/%lld',
+    pl: '%@, seria %lld/%lld', hu: '%@, sorozat %lld/%lld', tr: '%@, set %lld/%lld',
+    ru: '%@, подход %lld/%lld', uk: '%@, підхід %lld/%lld', ar: '%@، المجموعة %lld/%lld',
+    hi: '%@, सेट %lld/%lld', bn: '%@, সেট %lld/%lld', th: '%@ เซ็ต %lld/%lld',
+    ko: '%@, %lld/%lld세트', 'zh-Hans': '%@，第 %lld/%lld 组', 'zh-Hant': '%@，第 %lld/%lld 組',
+    cs: '%@, série %lld/%lld', fa: '%@، ست %lld/%lld', id: '%@, set %lld/%lld',
+    lt: '%@, serija %lld/%lld', sv: '%@, set %lld/%lld', vi: '%@, hiệp %lld/%lld',
+    da: '%@, sæt %lld/%lld',
   },
   'Calories': {
     de: 'Kalorien', fr: 'Calories', es: 'Calorías', it: 'Calorie', 'pt-PT': 'Calorias', 'pt-BR': 'Calorias', pl: 'Kalorie', hu: 'Kalória', tr: 'Kalori', ru: 'Калории', uk: 'Калорії', ar: 'السعرات', hi: 'कैलोरी', bn: 'ক্যালোরি', th: 'แคลอรี', ko: '칼로리', 'zh-Hans': '卡路里', 'zh-Hant': '卡路里',
@@ -246,6 +286,13 @@ const OWN = {
   'iPhone out of reach': {
     de: 'iPhone außer Reichweite', fr: 'iPhone hors de portée', es: 'iPhone fuera de alcance', it: 'iPhone fuori portata', 'pt-PT': 'iPhone fora de alcance', 'pt-BR': 'iPhone fora de alcance', pl: 'iPhone poza zasięgiem', hu: 'Az iPhone nincs a közelben', tr: 'iPhone menzil dışında', ru: 'iPhone вне зоны', uk: 'iPhone поза зоною', ar: 'iPhone خارج النطاق', hi: 'iPhone पहुँच से बाहर', bn: 'iPhone নাগালের বাইরে', th: 'iPhone อยู่นอกระยะ', ko: 'iPhone이 멀리 있어요', 'zh-Hans': 'iPhone 不在附近', 'zh-Hant': 'iPhone 不在附近', cs: 'iPhone je mimo dosah', fa: 'iPhone خارج از دسترس است', id: 'iPhone di luar jangkauan', lt: 'iPhone nepasiekiamas', sv: 'iPhone utom räckhåll', vi: 'iPhone ngoài tầm kết nối',
   },
+  // The phone beside the clock on the start screen (PhoneMark): short, it shares the row with the time.
+  'Phone away': {
+    de: 'Kein iPhone', fr: 'iPhone absent', es: 'Sin iPhone', it: 'iPhone lontano', 'pt-PT': 'Sem iPhone', 'pt-BR': 'Sem iPhone', pl: 'Brak iPhone\'a', hu: 'Nincs iPhone', tr: 'iPhone yok', ru: 'Нет iPhone', uk: 'Немає iPhone', ar: 'iPhone بعيد', hi: 'iPhone दूर', bn: 'iPhone দূরে', th: 'iPhone ไม่อยู่', ko: 'iPhone 없음', 'zh-Hans': 'iPhone 不在', 'zh-Hant': 'iPhone 不在', cs: 'iPhone pryč', fa: 'iPhone دور است', id: 'iPhone jauh', lt: 'Nėra iPhone', sv: 'iPhone borta', vi: 'Xa iPhone',
+  },
+  'iPhone in reach': {
+    de: 'iPhone in Reichweite', fr: 'iPhone à portée', es: 'iPhone al alcance', it: 'iPhone a portata', 'pt-PT': 'iPhone ao alcance', 'pt-BR': 'iPhone ao alcance', pl: 'iPhone w zasięgu', hu: 'Az iPhone a közelben van', tr: 'iPhone menzilde', ru: 'iPhone рядом', uk: 'iPhone поруч', ar: 'iPhone ضمن النطاق', hi: 'iPhone पहुँच में', bn: 'iPhone নাগালের মধ্যে', th: 'iPhone อยู่ในระยะ', ko: 'iPhone이 가까이 있어요', 'zh-Hans': 'iPhone 在附近', 'zh-Hant': 'iPhone 在附近', cs: 'iPhone je v dosahu', fa: 'iPhone در دسترس است', id: 'iPhone dalam jangkauan', lt: 'iPhone pasiekiamas', sv: 'iPhone inom räckhåll', vi: 'iPhone trong tầm kết nối',
+  },
   'No set for %lld min. Still at it?': {
     de: 'Seit %lld Min. kein Satz. Noch dabei?', fr: 'Aucune série depuis %lld min. Toujours là ?', es: 'Ninguna serie en %lld min. ¿Sigues?', it: 'Nessuna serie da %lld min. Ci sei ancora?', 'pt-PT': 'Nenhuma série há %lld min. Ainda aí?', 'pt-BR': 'Nenhuma série há %lld min. Ainda aí?', pl: 'Brak serii od %lld min. Dalej ćwiczysz?', hu: '%lld perce nincs sorozat. Még edzel?', tr: '%lld dakikadır set yok. Hâlâ orada mısın?', ru: 'Ни одного подхода %lld мин. Ещё тренируетесь?', uk: 'Жодного підходу %lld хв. Ще тренуєшся?', ar: 'لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟', hi: '%lld मिनट से कोई सेट नहीं। अभी भी लगे हैं?', bn: '%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?', th: 'ไม่มีเซ็ตมา %lld นาทีแล้ว ยังฝึกอยู่ไหม', ko: '%lld분째 세트가 없어요. 아직 운동 중이세요?', 'zh-Hans': '已经 %lld 分钟没有记录组了。还在练吗？', 'zh-Hant': '已經 %lld 分鐘沒有記錄組了。還在練嗎？', cs: 'Už %lld min žádná série. Pořád cvičíš?', fa: '%lld دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟', id: 'Tidak ada set selama %lld mnt. Masih latihan?', lt: 'Jau %lld min. be serijos. Dar treniruojatės?', sv: 'Inget set på %lld min. Kör du fortfarande?', vi: 'Đã %lld phút không có hiệp nào. Bạn còn tập không?',
   },
@@ -285,6 +332,11 @@ const OWN = {
   // The Muscles page of Metrics.
   'No sets yet': { de: 'Noch keine Sätze', fr: 'Aucune série', es: 'Aún sin series', it: 'Ancora nessuna serie', 'pt-PT': 'Ainda sem séries', 'pt-BR': 'Nenhuma série ainda', pl: 'Jeszcze bez serii', hu: 'Még nincs sorozat', tr: 'Henüz set yok', ru: 'Подходов пока нет', uk: 'Підходів ще немає', ar: 'لا مجموعات بعد', hi: 'अभी कोई सेट नहीं', bn: 'এখনো কোনো সেট নেই', th: 'ยังไม่มีเซ็ต', ko: '아직 세트가 없어요', 'zh-Hans': '还没有组', 'zh-Hant': '還沒有組', cs: 'Zatím žádné série', fa: 'هنوز ستی نیست', id: 'Belum ada set', lt: 'Dar nėra serijų', sv: 'Inga set än', vi: 'Chưa có hiệp nào' },
   '+%lld more': { de: '+%lld weitere', fr: '+%lld autres', es: '+%lld más', it: '+%lld altri', 'pt-PT': '+%lld mais', 'pt-BR': '+%lld mais', pl: '+%lld więcej', hu: '+%lld további', tr: '+%lld daha', ru: 'ещё %lld', uk: 'ще %lld', ar: '+%lld أخرى', hi: '+%lld और', bn: '+%lld আরও', th: '+%lld อื่นๆ', ko: '+%lld개 더', 'zh-Hans': '还有 %lld 个', 'zh-Hant': '還有 %lld 個', cs: '+%lld další', fa: '+%lld مورد دیگر', id: '+%lld lagi', lt: '+%lld daugiau', sv: '+%lld till', vi: '+%lld nữa' },
+  // The summary's medal when the phone ended the workout (finished there): beside the clock.
+  'On iPhone': {
+    de: 'Am iPhone', fr: 'Sur l’iPhone', es: 'En el iPhone', it: 'Sull’iPhone', 'pt-PT': 'No iPhone', 'pt-BR': 'No iPhone', pl: 'Na iPhonie', hu: 'iPhone-on', tr: 'iPhone’da', ru: 'На iPhone', uk: 'На iPhone', ar: 'على iPhone', hi: 'iPhone पर', bn: 'iPhone-এ', th: 'บน iPhone', ko: 'iPhone에서', 'zh-Hans': '在 iPhone 上', 'zh-Hant': '在 iPhone 上',
+    cs: 'Na iPhonu', fa: 'در iPhone', id: 'Di iPhone', lt: 'Baigta iPhone', sv: 'På iPhone', vi: 'Trên iPhone', da: 'På iPhone',
+  },
   '%@ sets': { de: '%@ Sätze', fr: '%@ séries', es: '%@ series', it: '%@ serie', 'pt-PT': '%@ séries', 'pt-BR': '%@ séries', pl: 'Serie: %@', hu: '%@ sorozat', tr: '%@ set', ru: 'Подходов: %@', uk: 'Підходів: %@', ar: '%@ مجموعات', hi: '%@ सेट', bn: '%@ সেট', th: '%@ เซ็ต', ko: '%@세트', 'zh-Hans': '%@ 组', 'zh-Hant': '%@ 組', cs: 'Sérií: %@', fa: '%@ ست', id: '%@ set', lt: 'Serijų: %@', sv: '%@ set', vi: '%@ hiệp' },
 }
 
@@ -347,9 +399,13 @@ const SET_MENU = {
 }
 Object.assign(OWN, SET_MENU)
 
+// #1276: the start screen's note under the routines (HomeView.swift).
+OWN['Archived routines stay on your iPhone.'] = {"ar":"تبقى الروتينات المؤرشفة على iPhone.", "bn":"আর্কাইভ করা রুটিন আপনার iPhone-এই থাকে।", "cs":"Archivované rutiny zůstávají v iPhonu.", "da":"Arkiverede rutiner bliver på din iPhone.", "de":"Archivierte Routinen bleiben auf deinem iPhone.", "es":"Las rutinas archivadas se quedan en tu iPhone.", "fa":"روتین‌های بایگانی‌شده روی iPhone شما می‌مانند.", "fr":"Les routines archivées restent sur ton iPhone.", "hi":"आर्काइव की गई रूटीन आपके iPhone पर ही रहती हैं।", "hu":"Az archivált rutinok az iPhone-odon maradnak.", "id":"Rutinitas yang diarsipkan tetap ada di iPhone-mu.", "it":"Le routine archiviate restano sul tuo iPhone.", "ko":"보관된 루틴은 iPhone에 남아 있어요.", "lt":"Suarchyvuotos programos lieka tavo iPhone.", "pl":"Zarchiwizowane rutyny zostają na iPhonie.", "pt-BR":"Rotinas arquivadas ficam no seu iPhone.", "pt-PT":"As rotinas arquivadas ficam no teu iPhone.", "ru":"Архивные тренировки остаются на iPhone.", "sv":"Arkiverade rutiner stannar på din iPhone.", "th":"รูทีนที่เก็บถาวรจะอยู่บน iPhone ของคุณ", "tr":"Arşivlenen rutinler iPhone'unda kalır.", "uk":"Архівні тренування залишаються на iPhone.", "vi":"Lịch tập đã lưu trữ vẫn ở trên iPhone của bạn.", "zh-Hans":"已归档的训练计划会保留在你的 iPhone 上。", "zh-Hant":"已封存的訓練計畫會保留在你的 iPhone 上。"}
+
 // Danish (#1039): the watch's own lines.
 OWN['Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.'].da = 'Slå Apple Sundhed til på din iPhone, så bliver openGym på skærmen under pauser og hold.'
 for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min.", "No sets yet": "Ingen sæt endnu", "+%lld more": "+%lld mere", "%@ sets": "%@ sæt"})) OWN[k].da = v
+for (const [k, v] of Object.entries({ 'Phone away': 'iPhone væk', 'iPhone in reach': 'iPhone inden for rækkevidde' })) OWN[k].da = v
 for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved hvert sæt og bruger din fødselsdato til pulszonerne.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
 
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
@@ -362,7 +418,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
     if (/—/.test(v)) { console.error(`${lproj}: em dash in "${k}"`); problems++ }
     lines.push(`"${esc(k)}" = "${esc(v)}";`)
   }
-  for (const [k, appKey] of Object.entries(FROM_APP)) put(k, dict[appKey])
+  for (const [k, appKey] of Object.entries(FROM_APP)) put(k, SHORTER[k]?.[lproj] || dict[appKey])
   for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey], lproj))
   for (const [k, tr] of Object.entries(OWN)) put(k, tr[lproj])
   mkdirSync(join(out, `${lproj}.lproj`), { recursive: true })
@@ -382,7 +438,8 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
 {
   const keys = [...Object.keys(FROM_APP), ...Object.keys(COMPOSED), ...Object.keys(OWN)]
   const lines = ['/* openGym on the Apple Watch, en. Written by ios/ci/watch-strings.mjs: change that, not this. */', '']
-  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k === 'Warm-up disc' ? 'Warm-up' : k)}";`)
+  // A borrowed word says the app's English ("min (minutes)" → "min"); every other key is its own English.
+  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k === 'Warm-up disc' ? 'Warm-up' : (FROM_APP[k] || k))}";`)
   for (const dir of [out, widgets]) {
     mkdirSync(join(dir, 'en.lproj'), { recursive: true })
     writeFileSync(join(dir, 'en.lproj', 'Localizable.strings'), lines.join('\n') + '\n')

@@ -8,7 +8,7 @@
 // floor of 6 is only a convention about which sets are worth rating. RPE 8 == RIR 2.
 import { EFFORT, effortOf, workoutAt } from './history.js'
 import { weekKey, weekStartOf, startOfWeek } from './format.js'
-import { isWarmupRow, isFailureSet } from './workout-model.js'
+import { isWarmupRow, isFailureSet, modeForSet } from './workout-model.js'
 import { isAssisted } from './exercises.js'
 
 // At or below this a set is close enough to failure to be the kind that drives adaptation.
@@ -50,7 +50,8 @@ export const scaleName = kind => EFFORT[kind].hd
 function eachDoneSet(S, fn) {
   ;(S.workouts || []).forEach(w =>
     (w.entries || []).forEach(e =>
-      (e.sets || []).forEach(s => { if (s.done && !isWarmupRow(s)) fn(s, w, e) })))
+      // Cardio takes no rating, so it is not a set that "went unrated" either.
+      (e.sets || []).forEach(s => { if (s.done && !isWarmupRow(s) && modeForSet(s, e.target) !== 'cardio') fn(s, w, e) })))
 }
 
 // A window in days, counted back from now. 0 = everything, which is also what an empty
@@ -98,6 +99,27 @@ export function effortSummary(S, days, resolve = rirOf) {
     avg: covered >= MIN_RATED ? sum / covered : null,
     hardPct: covered >= MIN_RATED ? hard / covered : null
   }
+}
+
+/**
+ * Whether a window is read from its ratings alone (Stats → Effort). The estimate for an unrated set
+ * takes the best set of the last 90 days as all-out, so for anyone who stops short of failure it
+ * reads harder than it was (a profile rated at 1.5 RIR read 0.8 and "100% hard" with estimates in).
+ * Real ratings win once there are enough of them: at least MIN_RATED sets with an RIR or RPE, and
+ * at least RATED_SHARE of the finished sets, so a handful of rated top sets does not speak for a
+ * whole block. A failure tick alone is not a rating here: imports carry it on the failed sets only,
+ * and those alone would read every set as 0 RIR; that history keeps the estimate, labelled.
+ */
+export const RATED_SHARE = 0.25
+export function readsRatingsOnly(S, days) {
+  let done = 0, scored = 0
+  eachDoneSet(S, (s, w) => {
+    if (!inWindow(w, days)) return
+    done++
+    const sides = s.sides && typeof s.sides === 'object' ? [s.sides.L, s.sides.R] : []
+    if ([s, ...sides].some(x => x && (x.rir != null || x.rpe != null))) scored++
+  })
+  return scored >= MIN_RATED && scored >= done * RATED_SHARE
 }
 
 /** Does this profile hold any rated set at all? Decides whether the effort UI exists. */

@@ -85,6 +85,10 @@
                 <!-- The snapshot as a message too (protocol 2), for the clock offset (WatchBridgePlugin.java). -->
                 <data android:scheme="wear" android:host="*" android:path="/opengym/snapshot" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.REQUEST_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:path="/opengym/ping" />
+            </intent-filter>
         </service>
 
         <!-- The Tile: the streak and today's plan, or the set up next while a workout runs. -->
@@ -117,10 +121,10 @@
             <meta-data
                 android:name="android.support.wearable.complications.SUPPORTED_TYPES"
                 android:value="RANGED_VALUE,SHORT_TEXT,LONG_TEXT,MONOCHROMATIC_IMAGE" />
-            <!-- Pushed by the app whenever it changes; this is only the fallback. -->
+            <!-- Pushed by the app whenever it changes (requestUpdateAll); a timer would only start the app for nothing. -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="1800" />
+                android:value="0" />
         </service>
     </application>
 </manifest>

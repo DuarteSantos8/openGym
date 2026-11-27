@@ -1,5 +1,6 @@
 package ch.duartesantos.opengym.wear
 
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.tasks.Tasks
@@ -24,8 +25,13 @@ class WearListener : WearableListenerService() {
         val stored = mutableListOf<String>()
         val stills = mutableListOf<Triple<String?, String, Asset>>()
         val clips = mutableListOf<Triple<String?, String, Asset>>()
+        var routines: Asset? = null
         for (e in events) {
             val path = e.dataItem.uri.path ?: continue
+            if (e.type == DataEvent.TYPE_CHANGED && path == Paths.ROUTINES) {
+                routines = DataMapItem.fromDataItem(e.dataItem.freeze()).dataMap.getAsset(Paths.KEY_JSON)
+                continue
+            }
             if (e.type == DataEvent.TYPE_CHANGED && path.startsWith(Paths.STILL_PREFIX)) {
                 val map = DataMapItem.fromDataItem(e.dataItem.freeze()).dataMap
                 map.getAsset(Paths.KEY_IMG)?.let { stills += Triple(map.getString(Paths.KEY_WID), path.removePrefix(Paths.STILL_PREFIX), it) }
@@ -48,12 +54,21 @@ class WearListener : WearableListenerService() {
                 fd.inputStream.use { WearStore.saveStill(wid, exId, readUpTo(it, Stills.MAX_BYTES + 1)) }
             } catch (_: Exception) {}
         }
+        routines?.let { readRoutines(it) }
         for ((wid, exId, asset) in clips) {
             try {
                 val fd = Tasks.await(Wearable.getDataClient(this).getFdForAsset(asset), 10, TimeUnit.SECONDS)
                 fd.inputStream.use { WearStore.saveStill(wid, exId, readUpTo(it, Stills.CLIP_MAX_BYTES + 1), clip = true) }
             } catch (_: Exception) {}
         }
+    }
+
+    /** The routines file: every routine, which is more than the snapshot holds (about 100 KB for 40, so a few MB at most). */
+    private fun readRoutines(asset: Asset) {
+        try {
+            val fd = Tasks.await(Wearable.getDataClient(this).getFdForAsset(asset), 10, TimeUnit.SECONDS)
+            fd.inputStream.use { WearStore.saveRoutines(readUpTo(it, ROUTINES_MAX)) }
+        } catch (_: Exception) {}
     }
 
     override fun onMessageReceived(event: MessageEvent) {
@@ -70,6 +85,10 @@ class WearListener : WearableListenerService() {
         WorkoutService.sync(this, fromPhone = true)
     }
 
+    /** The phone's link check: answered at once, nothing else touched. */
+    override fun onRequest(nodeId: String, path: String, request: ByteArray): Task<ByteArray>? =
+        if (path == Paths.PING) Tasks.forResult(byteArrayOf(1)) else null
+
     /**
      * The store is the main thread's (the screens, the timers, the heart rate all change it there);
      * this service's callbacks come on a thread of their own. A snapshot applied from here while a
@@ -82,6 +101,8 @@ class WearListener : WearableListenerService() {
         android.os.Handler(android.os.Looper.getMainLooper()).post { try { block() } finally { done.countDown() } }
         try { done.await(10, TimeUnit.SECONDS) } catch (_: InterruptedException) {}
     }
+
+    private companion object { const val ROUTINES_MAX = 4 * 1024 * 1024 }
 
     /** At most `max` bytes of a stream (InputStream.readNBytes is Android 13 and later only). */
     private fun readUpTo(input: java.io.InputStream, max: Int): ByteArray {

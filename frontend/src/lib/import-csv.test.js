@@ -298,3 +298,48 @@ describe('impossible dates and numbers', () => {
     expect(parsed.bodyweight.map(b => b.d)).toEqual(['2026-01-01'])
   })
 })
+
+
+describe('AM/PM time parsing', () => {
+  it('converts 12-hour times and keeps 24-hour times', () => {
+    expect(parseWhen('2026-09-06 12:20 AM')).toEqual({ d: '2026-09-06', t: 20 * 60000 })
+    expect(parseWhen('2026-09-06 12:20 PM')).toEqual({ d: '2026-09-06', t: 12 * 3600000 + 20 * 60000 })
+    expect(parseWhen('2026-09-06 1:05 p.m.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('2026-09-06 1:05 P.M.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('6 Sep 2026, 1:05 A.M.')).toEqual({ d: '2026-09-06', t: 1 * 3600000 + 5 * 60000 })
+    expect(parseWhen('Sep 6, 2026, 1:05 P.M.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('06/09/2026, 1:05 A.M.')).toEqual({ d: '2026-09-06', t: 1 * 3600000 + 5 * 60000 })
+    expect(parseWhen('2026-09-06 13:05')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('2026-09-06 1:05:30 PM')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 + 30 * 1000 })
+    expect(parseWhen('6 Sep 2026, 1:05:30 pm')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 + 30 * 1000 })
+  })
+
+  it('rejects an impossible 12-hour clock value', () => {
+    expect(parseWhen('2026-09-06 13:05 PM')).toBeNull()
+    expect(parseWhen('2026-09-06 1:05:99 PM')).toBeNull()
+  })
+
+  it.each(['2025-12-27', '27 Dec 2025,', 'Dec 27, 2025,', '27/12/2025,'])('keeps seconds and AM/PM separate for %s', date => {
+    expect(parseWhen(`${date} 1:05:30 PM`)).toEqual({ d: '2025-12-27', t: 13 * 3600000 + 5 * 60000 + 30 * 1000 })
+    expect(parseWhen(`${date} 12:05:30 AM`)).toEqual({ d: '2025-12-27', t: 5 * 60000 + 30 * 1000 })
+    expect(parseWhen(`${date} 13:05:30`)).toEqual({ d: '2025-12-27', t: 13 * 3600000 + 5 * 60000 + 30 * 1000 })
+    expect(parseWhen(`${date} 11:59:99 PM`)).toBeNull()
+    expect(parseWhen(`${date} 23:59:99`)).toBeNull()
+  })
+
+  it('imports Hevy afternoon workouts with their full duration', () => {
+    const csv = [
+      HEVY_HEAD,
+      '"Push","Dec 27, 2025, 12:04 PM","Dec 27, 2025, 1:25 PM","","Chest Press (Machine)",,"",0,"normal",20,12,,,',
+      '"Legs","Dec 28, 2025, 6:10 PM","Dec 28, 2025, 7:00 PM","","Leg Press (Machine)",,"",0,"normal",60,10,,,',
+    ].join('\n')
+    const parsed = parseWorkoutCSV(csv, { unit: 'kg' })
+    expect(parsed.skipped).toBe(0)
+    expect(parsed.workouts).toHaveLength(2)
+    const [push, legs] = parsed.workouts
+    expect(push.start).toBe(new Date(2025, 11, 27, 12, 4).getTime())
+    expect((push.end - push.start) / 60000).toBe(81)
+    expect(legs.start).toBe(new Date(2025, 11, 28, 18, 10).getTime())
+    expect((legs.end - legs.start) / 60000).toBe(50)
+  })
+})

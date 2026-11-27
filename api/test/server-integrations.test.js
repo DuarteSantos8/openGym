@@ -136,6 +136,30 @@ test('a webhook: refused targets, connect, a workout delivered signed, test, log
   assert.deepEqual((await h.call('GET', '/api/integrations')).body.connections, []);
 });
 
+test('workout.started: the session the phone pushes, while it runs, is sent once and never stored (#1152)', async t => {
+  const rx = await receiver(t);
+  const h = await startServer(t, { INTEGRATIONS: 'webhook', INTEGRATIONS_ALLOW_LAN: '1', ALLOWED_PRIVATE_IPS: '127.0.0.1' });
+  const made = await h.call('POST', '/api/integrations/connect', { provider: 'webhook', url: rx.url, events: ['workout.started', 'workout.finished'] });
+  assert.equal(made.status, 200, JSON.stringify(made.body));
+  const start = Date.now() + 1000;
+  const active = { id: 'live-1', name: 'Legs', d: new Date(start).toISOString().slice(0, 10), start, cur: 0, entries: [{ id: '0025', sets: [{ w: 100, r: 5 }] }] };
+  const base = { unit: 'kg', routines: [], workouts: [] };
+  assert.equal((await h.call('PUT', '/api/data', { state: { ...base, active } })).status, 200);
+  await rx.next(1);
+  assert.equal(rx.got[0].headers['x-opengym-event'], 'workout.started');
+  const body = JSON.parse(rx.got[0].body);
+  assert.equal(body.data.workout.id, 'live-1');
+  assert.deepEqual(body.data.workout.exercises, [{ id: '0025', name: 'barbell bench press' }]);
+  assert.equal('active' in JSON.parse(fs.readFileSync(path.join(h.dataDir, 'state-u_a.json'), 'utf8')), false, 'the running session stays off the disk');
+  // The next set's push carries the same session: nothing more.
+  await h.call('PUT', '/api/data', { state: { ...base, _ts: 2, active: { ...active, cur: 1 } } });
+  // Finished: workout.finished, and no second start.
+  await h.call('PUT', '/api/data', { state: { ...base, _ts: 3, workouts: [{ id: 'live-1', d: active.d, name: 'Legs', start, end: start + 1000, entries: [] }] } });
+  await rx.next(2);
+  await new Promise(r => setTimeout(r, 300));
+  assert.deepEqual(rx.got.map(g => g.headers['x-opengym-event']), ['workout.started', 'workout.finished']);
+});
+
 test('without the home network opened, a LAN receiver is refused', async t => {
   const h = await startServer(t, { INTEGRATIONS: 'webhook' });
   const r = await h.call('POST', '/api/integrations/connect', { provider: 'webhook', url: 'http://192.168.1.20:8123/api/webhook/x' });

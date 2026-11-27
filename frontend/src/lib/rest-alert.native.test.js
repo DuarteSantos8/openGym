@@ -165,6 +165,16 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.schedule.at(-1)).toMatchObject({ alarmBuzz: false })
   })
 
+  it('lights the screen at the end unless Settings says off (#1475)', async () => {
+    h.platform = 'android'
+    const calls = capture()
+    const alert = await import('./rest-alert.js')
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })
+    expect(calls.schedule.at(-1)).toMatchObject({ lightScreen: true })
+    await alert.armRestAlert(Date.now() + 90_000, { totalSec: 90, lightScreen: false })
+    expect(calls.schedule.at(-1)).toMatchObject({ lightScreen: false })
+  })
+
   it('hands the plugin the end tone Settings → Sound picked', async () => {
     h.platform = 'android'
     const calls = capture()
@@ -372,8 +382,19 @@ describe('iPhone: the rest tone never stops the music', () => {
 
   it('sets the mixing .ambient session at load and whenever it lets go', () => {
     expect(swift).toMatch(/static func mixWithMusic\(\)\s*\{\s*try\? AVAudioSession\.sharedInstance\(\)\.setCategory\(\.ambient/)
-    // at load, and in letGo after the last sound of ours ended (Reddit, v1.4.5)
-    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(2)
+    // at load, in letGo after the last sound of ours ended (Reddit, v1.4.5), when a sounding shape
+    // is refused, and before any sound while the session is .soloAmbient (which stops the music)
+    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(4)
+    expect(swift).toMatch(/category == \.soloAmbient \{\s*if let shape = ledger\.activeShape, shape\.category == \.playback \{ apply\(\.activate\(shape\)\) \} else \{ RestAlertPlugin\.mixWithMusic\(\) \}/)
+    // a refused activation: the category that took stays (onSilent keeps .playback) and is not
+    // recorded as active, so the next cue tries again; a refused category gets the mixing kind
+    expect(swift).toMatch(/\} catch \{[^}]*?if session\.category != shape\.avCategory \{ RestAlertPlugin\.mixWithMusic\(\) \}\s*ledger\.didFailActivation\(\)/)
+    expect(swift).toMatch(/private func letGo\(attempt: Int\) \{\s*guard ledger\.isIdle, ledger\.holdsSession else/)
+    // The catch of apply's activation, cut out whole: it records the failure, never an activation.
+    const activate = swift.slice(swift.indexOf('case .activate(let shape):'), swift.indexOf('case .deactivate('))
+    const refused = activate.slice(activate.indexOf('} catch {'))
+    expect(refused).toMatch(/ledger\.didFailActivation\(\)/)
+    expect(refused).not.toMatch(/didActivate\(/)
     expect(swift).toMatch(/private func letGo\(attempt: Int\)[\s\S]*?setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)[\s\S]*?mixWithMusic/)
   })
 
@@ -396,6 +417,19 @@ describe('iPhone: the rest tone never stops the music', () => {
     expect(pbx).toMatch(/CueAudioLedger\.swift in Sources/)
     const ci = readFileSync(new URL('../../../.github/workflows/ios.yml', import.meta.url), 'utf8')
     expect(ci).toMatch(/working-directory: frontend\/ios\/App\/CueAudioCore/)
+  })
+})
+
+// A set logged on the Lock Screen during a timed hold books the next rest's alarm under "opengym.rest"
+// (tick), then RestAlertPlugin's queued autoStopped block runs. It may only take the chain's own alerts
+// back: removing the rest's id wiped that fresh alarm, and post() then rang the old hold's end or nothing.
+describe('iPhone: Stop auto and a set logged in a hold keep the rest alarm the Lock Screen booked', () => {
+  const swift = readFileSync(new URL('../../ios/App/App/RestAlertPlugin.swift', import.meta.url), 'utf8')
+  const body = swift.slice(swift.indexOf('@objc private func autoStopped()'), swift.indexOf('@objc private func watchRest'))
+
+  it('takes back the chain\'s alert ids only, and does not post again', () => {
+    expect(body).toMatch(/self\.withdraw\(RestAlertPlugin\.cueIds\)/)
+    expect(body).not.toMatch(/self\.withdraw\(\)|self\.post\(\)/)
   })
 })
 

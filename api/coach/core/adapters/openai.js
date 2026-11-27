@@ -49,6 +49,7 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
     // Every one is a no-op on a request that does not carry what it changes; http.js skips those.
     compat: {
       strict: body => spec.withStrictSchema(body),
+      non_reasoning: body => ({ ...body, enable_thinking: false }),
       json_object: body => (body.response_format && body.response_format.type === 'json_schema' ? { ...body, response_format: { type: 'json_object' } } : body),
       tokens: body => {
         const from = 'max_tokens' in body ? 'max_tokens' : 'max_completion_tokens' in body ? 'max_completion_tokens' : null;

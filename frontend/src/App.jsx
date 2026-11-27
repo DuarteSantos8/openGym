@@ -7,7 +7,8 @@ import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavig
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
-import { setWeightDecimals } from './lib/format.js'
+import { setWeightDecimals, isoOf } from './lib/format.js'
+import { withWatchForm } from './lib/daily-form.js'
 import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
@@ -33,7 +34,7 @@ import { buildSessionEntry } from './lib/session-start.js'
 import { EXIDX } from './lib/exercises.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
-import { startPhoneWorkout } from './lib/phone-workout.js'
+import { startPhoneWorkout, setSessionDeadline } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
@@ -41,9 +42,11 @@ import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
+import { syncPrefs } from './lib/device-prefs-sync.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
+import { useQuiet } from './lib/wakelock-quiet.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
@@ -160,6 +163,9 @@ function Shell() {
   setKnownBands(S.bands)
   // Settings → Vibrate, the same way: one page-level switch rather than a check at each buzz.
   useEffect(() => { setVibrate(S.vibrate !== false) }, [S.vibrate])
+  // Display and voice, kept in the profile so every device signed in
+  // shares them (lib/device-prefs-sync.js): a profile from another device is applied here.
+  useEffect(() => { syncPrefs(useStore.getState().S, useStore.getState().update) }, [S.prefs])
   // Android app: "Vibrate when the phone is on silent" sends the end-of-rest buzz through the
   // native side as an alarm (#375). buzzAsAlarm answers false off Android, so iOS buzzes as before.
   useEffect(() => { setAlarmBuzzer(MOBILE && S.vibrate !== false && S.vibrateOnSilent ? buzzAsAlarm : null) }, [S.vibrate, S.vibrateOnSilent])
@@ -355,7 +361,12 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(wantsWakeLock(S))
+  // ...but not for ever: a workout left quiet for 15 min lets the screen lock (lib/wakelock-quiet.js)
+  const resting = useUI(u => !!(u.timer && !u.timer.ready && !u.timer.paused) || !!(u.work && !u.work.paused))
+  // a circuit clock counts too: an interval step can run 60 min untouched, and our release is global
+  const circuitOn = useCircuit(c => !!c.run && !c.run.ended && c.run.paused == null)
+  const quiet = useQuiet(S.active, resting || circuitOn)
+  useWakeLock(wantsWakeLock(S) && !quiet)
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
@@ -526,6 +537,11 @@ export default function App() {
       start: (ids, { bw = null, ...opts } = {}) => beginWorkout(ids, bw, opts),
       // The watch's weigh-in: logged as the phone's check-in logs one (today's replaces today's).
       weighIn: ({ w, at }) => useStore.getState().update(s => { logWeighIn(s, w, at) }),
+      // The watch's daily check-in (#1535): stored on its day as the phone's own, unless that day has one.
+      dailyForm: ({ form, at }) => {
+        const d = isoOf(new Date(at))
+        if (withWatchForm(useStore.getState().S.dayForm, d, form)) useStore.getState().update(s => { s.dayForm = withWatchForm(s.dayForm, d, form) || s.dayForm })
+      },
       // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
       // runs again, finds them gone and stops retrying them.
       healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },
@@ -574,6 +590,7 @@ export default function App() {
       noteUse: (wid, at) => notePhoneOpen(wid, at),
       readLeft: readGymLeft,
       onLeft: onGymLeft,
+      sessionDeadline: setSessionDeadline,
     })
   }, [ready])
   // iPhone app on iOS 26+: the phone's own workout session when no Apple Watch app takes the

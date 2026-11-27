@@ -48,4 +48,20 @@ describe('routine folders in Plan', () => {
     mount()
     expect(names()).toEqual(['Mobility', 'Old legs'])
   })
+
+  // #1534: Edit used to flatten the list, so you could not tell which folder a routine was in.
+  it('keeps the folder headers in Edit, every folder open, and moves within a folder', () => {
+    mount()
+    click([...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit'))
+    const heads = [...host.querySelectorAll('.plan-folder')]
+    expect(heads.map(h => h.querySelector('.grow').textContent)).toEqual(['Block 2', 'Archive'])
+    // Not a fold switch while editing: the folded Archive shows its routine to delete too.
+    expect(heads.every(h => h.tagName !== 'BUTTON')).toBe(true)
+    expect(names()).toEqual(['Mobility', 'Push A', 'Pull A', 'Old legs'])
+    const inBlock = [...host.querySelectorAll('[data-folder="Block 2"] [data-reorder-handle]')]
+    expect(inBlock.map(b => b.getAttribute('aria-label'))).toEqual(['Move Push A', 'Move Pull A'])
+    act(() => { inBlock[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })) })
+    expect(useStore.getState().S.routines.map(r => r.name)).toEqual(['Mobility', 'Old legs', 'Pull A', 'Push A'])
+    expect(host.querySelectorAll('.plan-minus').length).toBe(4)
+  })
 })

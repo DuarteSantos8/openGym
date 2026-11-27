@@ -1,6 +1,6 @@
 {
   "id": "1877",
-  "name": "standing hip out aductor stretch",
+  "name": "standing hip out adductor stretch",
   "bodyPart": "upper legs",
   "equipment": "body weight",
   "target": "adductors",
@@ -9,6 +9,7 @@
     "groin"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "Standing stretch that pushes the hip out to the side to lengthen the inner thigh.",
   "instructions": [
     "Stand tall with your feet wider than hip width.",

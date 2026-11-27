@@ -13,13 +13,15 @@ import { t } from './i18n.js'
 import { exerciseNameText, fmtNum, fmtVol } from './format.js'
 import { setLabel, supersetUnits, modeOf, isBw, EFFORT, effortOf, sessionVolume, exNoteFor } from './history.js'
 import { viewRow, exUnitTag, exUnitOf } from './ex-unit.js'
-import { isWarmupRow } from './workout-model.js'
+import { hasCompletedWork, isWarmupRow } from './workout-model.js'
+import { elapsedMs } from './workout-pause.js'
 import { speedUnitOf, fmtSpeed } from './speed.js'
 import { distUnitOf, fmtDist } from './distance.js'
 import { hasIncline, hasLevel } from './incline.js'
 import { activeGym, gymLabel, gymsOf } from './gym-inventory.js'
 import { sanitizeHr } from './heart-rate.js'
-import { bodyKgFor, MET } from './active-energy.js'
+import { activeKcal, bodyKgFor } from './active-energy.js'
+import { plannedType } from './health-connect.js'
 import { TILES } from './live-layout.js'
 import { recordBaseline, recordHint, recordHintText, recordHintsOn } from './set-records.js'
 import { sessionHistory } from './backfill.js'
@@ -78,14 +80,25 @@ export function hrZone (bpm, S, now = Date.now()) {
   return p >= 0.9 ? 5 : p >= 0.8 ? 4 : p >= 0.7 ? 3 : p >= 0.6 ? 2 : p >= 0.5 ? 1 : null
 }
 
-/** A rough running kcal for the session so far (strength training's MET for the time gone). */
+/**
+ * A rough running kcal for the session so far: the estimate the finished workout gets
+ * (activeKcal, the one written to Apple Health and Health Connect), over the time trained.
+ * Until a set is done, the time counts at the type the session is planned as, so an hour's walk
+ * reads as walking from the first minute (#1368); from then on, at the type the saved estimate
+ * takes, so the two agree. Pauses are already out of `start` (workout-pause.js resumeWorkout), and
+ * an open pause stops the clock at `pausedAt`, as elapsedMs does.
+ */
 export function kcalSoFar (S, A, now = Date.now()) {
+  // A session logged after the fact (backfill) or a saved workout being edited starts in the past:
+  // the clock since then is not time trained, so there is no running figure to show.
+  if (A?.backfill || A?.editingWorkoutId != null) return null
   const start = num(A?.start)
-  if (!start || now <= start) return null
-  const hours = Math.min(3, (now - start - (num(A?.pausedMs) || 0)) / 3600e3)
-  const met = num(MET?.strength_training) || 5
-  const kg = bodyKgFor(S, A)
-  const v = Math.round((met - 1) * kg * Math.max(0, hours))
+  const trained = elapsedMs(A, now)
+  if (!start || !(trained > 0)) return null
+  const entries = A?.entries || []
+  const started = entries.some(e => (e?.sets || []).some(hasCompletedWork))
+  const restType = started ? undefined : plannedType(entries) || 'strength_training'
+  const v = activeKcal({ start, end: start + trained, entries }, bodyKgFor(S, A), { restType })
   return v > 0 ? v : null
 }
 

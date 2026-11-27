@@ -7,7 +7,7 @@ import { exOr } from '../lib/exercises.js'
 import { clampIncline, INCLINE_MAX, INCLINE_STEP, clampLevel, LEVEL_MAX, cardioCol } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtPlate, exerciseNameText } from '../lib/format.js'
-import { EFFORT, effortOf, modeOf } from '../lib/history.js'
+import { EFFORT, effortOf, warmupEffortOn, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
@@ -80,7 +80,11 @@ const addBurstTo = (row, restSec) => {
 
 function Prescription({ entry, setIdx, unit, fallbackRest, children }) {
   const target = entry.target || {}
-  const reps = target.repsMin > 0 ? `${target.repsMin}–${target.reps}` : target.reps > 0 ? String(target.reps) : ''
+  // Double progression's range is the plan's (`planned`, as the Cards layout reads it). Today's
+  // `target.reps` is only where the session aims, and sits on the floor after a weight increase,
+  // which used to print "8–8".
+  const top = entry.planned?.repsMin > 0 && entry.planned.reps > target.repsMin ? entry.planned.reps : target.reps
+  const reps = target.repsMin > 0 ? `${target.repsMin}–${top}` : target.reps > 0 ? String(target.reps) : ''
   const load = target.weight > 0
     ? `@ ${fmtNum(target.weight)}${target.weightMax > target.weight ? `–${fmtNum(target.weightMax)}` : ''} ${unit}`
     : ''
@@ -392,7 +396,7 @@ export default function FocusView({
         {/* The bands this set is done with, as on the list (TestFlight 11-08: missing here). */}
         {mode === 'reps' && usesBands(S, entry.id, entry.target) && <BandChips className="focus-bands" value={setBandsOf(set)}
           label={t('Bands for set {0}', setIdx + 1)} onToggle={id => { if (!locked) onMutateSet(setIdx, row => toggleSetBand(row, id)) }} />}
-        {mode === 'reps' && effortField && <button className={'effcell focus-effort' + (effortValue == null ? ' is-empty' : '')}
+        {mode === 'reps' && effortField && (warmupEffortOn(S) || !isWarmupRow(set)) && <button className={'effcell focus-effort' + (effortValue == null ? ' is-empty' : '')}
           style={effortTint ? { color: effortTint, borderColor: effortTint, background: `color-mix(in srgb, ${effortTint} 20%, var(--surface-2))` } : undefined}
           aria-label={t(EFFORT[effort].hd)} disabled={readOnly} onClick={openEffort}>{effortValue == null ? t(EFFORT[effort].hd) : fmtNum(effortValue)}</button>}
         {/* Cardio: how hard it felt, on the card (Q5). Rated after the fact too, so a done set

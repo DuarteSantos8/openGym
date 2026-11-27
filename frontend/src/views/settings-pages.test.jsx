@@ -454,7 +454,7 @@ describe('the pages', () => {
   it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
+    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Your warm-up ramp', 'Layout',
       'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
@@ -464,6 +464,27 @@ describe('the pages', () => {
     mount('advanced')
     expect(titles()).toEqual(['Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+  })
+
+  it('#1535: "Ask on the watch too" sits under the daily check-in on the phones, on until switched off', () => {
+    mocks.MOBILE = true
+    mount('workout')
+    expect(rowTitled('Ask on the watch too')).toBeUndefined()
+    mocks.S.dailyForm = true
+    mount('workout')
+    const t = titles()
+    expect(t[t.indexOf('Daily check-in') + 1]).toBe('Ask on the watch too')
+    const sw = rowTitled('Ask on the watch too').querySelector('[role="switch"]')
+    expect(sw.getAttribute('aria-checked')).toBe('true')
+    act(() => sw.click())
+    expect(mocks.S.dailyFormWatch).toBe(false)
+    mount('workout')
+    act(() => rowTitled('Ask on the watch too').querySelector('[role="switch"]').click())
+    expect('dailyFormWatch' in mocks.S).toBe(false)
+    // the web app has no watch to ask on
+    mocks.MOBILE = false
+    mount('workout')
+    expect(rowTitled('Ask on the watch too')).toBeUndefined()
   })
 
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {

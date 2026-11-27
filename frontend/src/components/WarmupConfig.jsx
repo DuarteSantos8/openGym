@@ -6,7 +6,7 @@ import { SelectRow, Stepper, Button } from './ui.jsx'
 import { fmtNum } from '../lib/format.js'
 import { MAX_PLANNED_WARMUPS, barFloor, isBw, modeOf } from '../lib/history.js'
 import { dropGrid } from '../lib/plates.js'
-import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, autoRungs, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
+import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, autoRungs, rampOf, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { isAssisted } from '../lib/exercises.js'
 import { isoRun } from '../lib/bidi.js'
@@ -47,8 +47,13 @@ export default function WarmupConfig({ st, ex, c, setC }) {
   const work = Number(c.weight) > 0 ? Number(c.weight) : Number(st.exWeights?.[ex.id]?.w) || 0
   const unit = st.unit === 'lb' ? 'lb' : 'kg'
   const kg = unit === 'lb' ? work * LB_KG : work
-  // A block of your own starts from what Auto would do, so there is something to edit.
+  // A block of your own starts from your ramp in Settings (#1423), else from what Auto would do,
+  // so there is something to edit.
+  const ramp = rampOf(st)
   const seed = () => {
+    // The ramp's bar row only where there is a bar: the body alone on a bodyweight lift, else left out.
+    const own = ramp.flatMap(r => (!r.wb || floor > 0 ? [r] : bw ? [{ wp: 0, r: r.r }] : []))
+    if (own.length) return own
     const rungs = autoRungs({ work: work || 100, kg: kg || 100, bar: floor, compound: isCompoundEx(ex.id), bw })
     return (rungs.length ? rungs : [{ wp: 50, r: 10 }]).slice(0, MAX_OWN_WARMUPS)
   }
@@ -57,7 +62,7 @@ export default function WarmupConfig({ st, ex, c, setC }) {
   const setRows = next => setC(x => ({ ...x, warmup: 'own', warmupRows: next }))
   const options = [
     { value: 'default', label: defaultLabel, subtitle: t('Follows Settings → Workout → Automatic warm-ups.') },
-    { value: 'auto', label: t('Auto'), subtitle: t('Ramped from the work weight: more rungs when it is heavy, fewer when it is light.') },
+    { value: 'auto', label: t('Auto'), subtitle: ramp.length ? t('Your warm-up ramp from Settings, scaled to the work weight.') : t('Ramped from the work weight: more rungs when it is heavy, fewer when it is light.') },
     { value: 'own', label: t('My own'), subtitle: t('Your rows, as a share of the work weight, so they grow with it.') },
     { value: 'count', label: t('A number of ramp sets'), subtitle: t('Each one closes half the gap to the work weight.') },
     { value: 'none', label: t('None'), subtitle: t('Straight into the work sets.') },
@@ -66,7 +71,6 @@ export default function WarmupConfig({ st, ex, c, setC }) {
   const preview = shown && mode === 'reps' ? previewLine(st, cfg, work, unit) : null
   // The lightest a rung can be: the bar on a barbell lift, the body alone on a bodyweight one.
   const lowest = floor > 0 || bw ? 0 : 5
-  const pctLabel = r => (r.wb ? t('Bar') : r.wp === 0 ? t('Body') : r.wp + '%')
   return <div className="warmup-cfg" style={{ marginBottom: 18 }}>
     <div className="sect-b" style={{ marginBottom: 6 }}>
       <SelectRow icon="sunrise" iconTint="var(--orange)" title={t('Warm-ups')} value={choice} onChange={pick} options={options} />
@@ -75,22 +79,7 @@ export default function WarmupConfig({ st, ex, c, setC }) {
       <Stepper label={t('Warm-up sets')} value={c.warmupSets || 1} step={1} min={1} max={MAX_PLANNED_WARMUPS} decimal={false}
         onChange={v => setC(x => ({ ...x, warmupSets: Math.max(1, Math.min(MAX_PLANNED_WARMUPS, Math.round(v) || 1)) }))} />
     </div>}
-    {choice === 'own' && <div className="warmup-rows">
-      {rows.map((r, i) => <div className="row cfgrow warmup-row" key={i} style={{ marginBottom: 6, alignItems: 'flex-end' }}>
-        <Stepper label={t('Warm-up {0}', i + 1)} value={r.wb ? 0 : r.wp} step={5} min={lowest} max={OWN_PCT_MAX} decimal={false}
-          ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
-          unit="%" display={r.wb ? t('Bar') : r.wp === 0 ? t('Body') : undefined}
-          onChange={v => setRows(rows.map((x, j) => j !== i ? x : v <= 0 ? (floor > 0 ? { wb: true, r: x.r } : { wp: 0, r: x.r }) : { wp: Math.max(5, v), r: x.r }))} />
-        <Stepper label={t('Reps')} value={r.r} step={1} min={1} max={30} decimal={false}
-          onChange={v => setRows(rows.map((x, j) => j !== i ? x : { ...x, r: Math.max(1, Math.round(v) || 1) }))} />
-        <Button size="sm" icon="trash" aria-label={t('Remove warm-up {0}', i + 1)} onClick={() => setRows(rows.filter((_, j) => j !== i))} />
-      </div>)}
-      {rows.length < MAX_OWN_WARMUPS && <Button size="sm" icon="plus" onClick={() => {
-        const last = rows[rows.length - 1]
-        const next = last ? { wp: Math.min(OWN_PCT_MAX, (last.wb ? 40 : last.wp) + 20), r: Math.max(1, last.r - 2) } : { wp: 50, r: 8 }
-        setRows([...rows, next])
-      }}>{t('Add a warm-up')}</Button>}
-    </div>}
+    {choice === 'own' && <OwnWarmupRows rows={rows} setRows={setRows} lowest={lowest} bar={floor > 0} />}
     <div className="small dim" style={{ marginTop: 6 }}>
       {/* Settings > Units can count warm-ups in volume (#719); records and progression never do. */}
       {preview ? t('With {0} {1} today: {2}', fmtNum(work), unit, preview)
@@ -105,5 +94,31 @@ export default function WarmupConfig({ st, ex, c, setC }) {
           : choice === 'none' || (choice === 'default' && !followsAuto) ? t('Ramp-up sets added before the work sets, so you do not have to add them by hand each session.')
             : t('Built from your work weight when the workout starts.')}
     </div>
+  </div>
+}
+
+const pctLabel = r => (r.wb ? t('Bar') : r.wp === 0 ? t('Body') : r.wp + '%')
+
+/**
+ * The rows of a block of your own: a share of the work weight and the reps, per row. `lowest` is
+ * the lightest a row may go (0 lets it reach the bar or the body alone), `bar` whether that 0 is
+ * the bar. Shared by an exercise's settings and Settings → Your warm-up ramp (#1423).
+ */
+export function OwnWarmupRows({ rows, setRows, lowest = 5, bar = false }) {
+  return <div className="warmup-rows">
+    {rows.map((r, i) => <div className="row cfgrow warmup-row" key={i} style={{ marginBottom: 6, alignItems: 'flex-end' }}>
+      <Stepper label={t('Warm-up {0}', i + 1)} value={r.wb ? 0 : r.wp} step={5} min={lowest} max={OWN_PCT_MAX} decimal={false}
+        ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
+        unit="%" display={r.wb ? t('Bar') : r.wp === 0 ? t('Body') : undefined}
+        onChange={v => setRows(rows.map((x, j) => j !== i ? x : v <= 0 ? (bar ? { wb: true, r: x.r } : { wp: 0, r: x.r }) : { wp: Math.max(5, v), r: x.r }))} />
+      <Stepper label={t('Reps')} value={r.r} step={1} min={1} max={30} decimal={false}
+        onChange={v => setRows(rows.map((x, j) => j !== i ? x : { ...x, r: Math.max(1, Math.round(v) || 1) }))} />
+      <Button size="sm" icon="trash" aria-label={t('Remove warm-up {0}', i + 1)} onClick={() => setRows(rows.filter((_, j) => j !== i))} />
+    </div>)}
+    {rows.length < MAX_OWN_WARMUPS && <Button size="sm" icon="plus" onClick={() => {
+      const last = rows[rows.length - 1]
+      const next = last ? { wp: Math.min(OWN_PCT_MAX, (last.wb ? 40 : last.wp) + 20), r: Math.max(1, last.r - 2) } : { wp: 50, r: 8 }
+      setRows([...rows, next])
+    }}>{t('Add a warm-up')}</Button>}
   </div>
 }

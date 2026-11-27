@@ -50,7 +50,8 @@ def ttf_for(face, fname):
 def stand_in(entry, table, ppi):
     fname = entry['filename']
     face, height = table.get(fname[4:] if fname.startswith('FNT_') else fname, (None, None))
-    m = re.search(r'_(\d+)[BM]?$', fname)
+    # the height at the end of the name, not an index (Approach S62: ..._NUMBER_FONT_1 came out 1 px tall)
+    m = re.search(r'(?<!_FONT)_(\d+)[BM]?$', fname)
     if m:
         em = int(m.group(1)) / CAP
     elif height:

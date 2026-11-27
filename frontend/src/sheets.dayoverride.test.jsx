@@ -79,8 +79,11 @@ describe('Day sheet header in a coach week', () => {
 })
 
 describe('Day sheet list in a coach week', () => {
-  it('a fulfilled pin — the session pinned here already done — reads as no change; the clear row stays', () => {
-    setS({ dayPlan: { [todayISO()]: 'd1' }, workouts: [logged('d1')] })
+  it('a fulfilled pin — the session pinned here already done this week — reads as no change; the clear row stays', () => {
+    // Yesterday and today share a week that starts on Sunday, unless today is Sunday.
+    const yesterday = daysFromToday(-1), start = new Date(yesterday + 'T12:00:00').getTime()
+    const done = { ...logged('d1'), d: yesterday, start, end: start + 3600000 }
+    setS({ dayPlan: { [todayISO()]: 'd1' }, workouts: [done], weekStart: new Date().getDay() === 0 ? 1 : 0 })
     dayOverrideSheet(todayISO())
     const host = renderTop()
     expect(header(host)).toMatch(/^Weekly plan: US W1 D2/)

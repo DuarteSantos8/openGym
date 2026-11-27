@@ -45,6 +45,7 @@ const local = async () => {
       // (api/coach/cadence.js): a skip, a failure or "nothing to change" nobody asked for is noise.
       if (ev.scheduled) { if (ev.kind === 'ready') announceProposal(ev.pending); return }
       if (ev.kind === 'failed') toast(jobErrorText(ev.errorClass, ev.detail))
+      else if (ev.kind === 'resumed') toast(t('The connection dropped while openGym was in the background. The Coach picked up where it left off.'))
       else if (ev.kind === 'nochange') toast(t('Nothing to change right now: {0}', String(ev.reading || '').slice(0, 140)))
     })
   }
@@ -82,6 +83,46 @@ export async function ensureAiConsent() {
   throw Object.assign(new Error(t('Okay, nothing was sent.')), { code: 'declined', quiet: true, data: { code: 'declined' } })
 }
 const asked = fn => async (...a) => { await ensureAiConsent(); return fn(...a) }
+
+/* Automatic reviews run on the server's tick with nobody there to ask, so the yes they were
+   switched on with keeps which provider and host it was for (S.coach.cadenceFor, synced). The
+   tick runs them only while the server still sends reviews there (api/coach/cadence.js). */
+const cadenceKey = info => `${info?.provider || ''}|${info?.host || ''}`
+export async function agreeCadence() {
+  await ensureAiConsent()
+  return cadenceKey(await disclosure())
+}
+/** On opening the Coach: automatic reviews agreed for another provider or host are paused on the
+ *  server, so this asks again. A yes moves them to the new one; "Not now" switches them off. */
+export async function recheckCadence() {
+  const cadence = S()?.coach?.cadence
+  if (DEMO || LOCAL() || !cadence || cadence === 'off') return
+  const key = cadenceKey(await disclosure())
+  if (S().coach.cadenceFor === key) return
+  const { update } = useStore.getState()
+  try { await ensureAiConsent() } catch (e) {
+    if (isDeclined(e)) update(s => { s.coach.cadence = 'off' })
+    return
+  }
+  update(s => { s.coach.cadenceFor = key })
+}
+
+/** On start: automatic reviews switched on before 1.4.6 kept no target, so the server holds them
+ *  back (api/coach/cadence.js) until someone opens the Coach, which a person who set them up to
+ *  run by themselves never has a reason to do. When this device already said yes to the server's
+ *  provider and host, that yes is the one they run on: kept, without asking anything. Without one
+ *  it waits for the Coach to be opened (recheckCadence), as before. */
+export async function adoptCadence() {
+  const cadence = S()?.coach?.cadence
+  if (DEMO || LOCAL() || !cadence || cadence === 'off' || S().coach.cadenceFor) return false
+  const { consentTarget, hasAiConsent } = await import('./coach-consent.js')
+  const info = await disclosure()
+  const target = consentTarget(info, coachVia())
+  if (!target || (!target.local && !await hasAiConsent(target))) return false
+  if (S()?.coach?.cadenceFor) return false
+  useStore.getState().update(s => { s.coach.cadenceFor = cadenceKey(info) })
+  return true
+}
 
 export const coachStatus = async () => DEMO ? (await demo()).demoStatus() : LOCAL() ? (await local()).localStatus() : api('/api/coach/status')
 // The phone's vitals (sleep, heart rate, HRV, steps) go along only when the person shares health

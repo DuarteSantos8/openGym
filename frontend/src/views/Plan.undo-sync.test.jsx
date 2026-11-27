@@ -10,7 +10,7 @@ import { deleteRoutineWithUndo } from './Plan.jsx'
 import { mergeStates, stampChange } from '../lib/sync-merge.js'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn(), appBase: () => '/' }))
 
 const clone = value => JSON.parse(JSON.stringify(value))

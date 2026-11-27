@@ -331,3 +331,31 @@ describe('estimated fallback resolver', () => {
     expect(hist.slice(1).every(b => b.n === 0)).toBe(true)
   })
 })
+
+describe('readsRatingsOnly (Stats → Effort, 2026-11-24)', () => {
+  const w = (sets, ago = 1) => ({ d: '2026-11-20', start: Date.now() - ago * 86400000, entries: [{ id: '0025', sets }] })
+  const s = (x = {}) => ({ w: 80, r: 5, done: true, ...x })
+  it('enough real ratings, and a fair share of the sets: the ratings alone', async () => {
+    const { readsRatingsOnly } = await import('./effort.js')
+    expect(readsRatingsOnly({ workouts: [w([s({ rir: 2 }), s({ rir: 2 }), s({ rir: 1 }), s({ rpe: 8 }), s({ rir: 3 }), s(), s()])] }, 90)).toBe(true)
+  })
+  it('too few, or too small a share, or only failure ticks: the estimate stands in', async () => {
+    const { readsRatingsOnly } = await import('./effort.js')
+    expect(readsRatingsOnly({ workouts: [w([s({ rir: 2 }), s({ rir: 2 }), s()])] }, 90)).toBe(false)
+    expect(readsRatingsOnly({ workouts: [w([...Array(5)].map(() => s({ rir: 1 })).concat([...Array(30)].map(() => s())))] }, 90)).toBe(false)
+    expect(readsRatingsOnly({ workouts: [w([...Array(8)].map(() => s({ failure: true })))] }, 90)).toBe(false)
+  })
+  it('a rating on one side of a one-arm set counts, cardio and warm-ups do not dilute', async () => {
+    const { readsRatingsOnly } = await import('./effort.js')
+    const side = { w: 10, r: 16, done: true, sides: { L: { w: 10, r: 8, done: true, rir: 2 }, R: { w: 10, r: 8, done: true } } }
+    const run = { sec: 1800, speed: 10, done: true, mode: 'cardio' }
+    const warm = s({ phase: 'warmup' })
+    expect(readsRatingsOnly({ workouts: [w([side, side, side, side, side, warm, warm, warm])] }, 90)).toBe(true)
+    expect(readsRatingsOnly({ workouts: [{ ...w([side, side, side, side, side]), entries: [{ id: '0294', sets: [side, side, side, side, side] }, { id: '2197', target: { mode: 'cardio' }, sets: [run, run, run, run, run, run, run, run, run, run, run, run, run, run, run, run] }] }] }, 90)).toBe(true)
+  })
+  it('outside the window does not count', async () => {
+    const { readsRatingsOnly } = await import('./effort.js')
+    expect(readsRatingsOnly({ workouts: [w([...Array(6)].map(() => s({ rir: 2 })), 200)] }, 90)).toBe(false)
+    expect(readsRatingsOnly({ workouts: [w([...Array(6)].map(() => s({ rir: 2 })), 200)] }, 0)).toBe(true)
+  })
+})

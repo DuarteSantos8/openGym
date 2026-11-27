@@ -13,12 +13,18 @@
 // app as opengym://r#<payload>, Android's https://opengym.ch/r filter, or a web app at
 // <server>/#/r/<payload>.
 //
+// Which of those a link names (#1337): the phone apps and the demo link to opengym.ch/r, which
+// opens the app on the friend's phone and has a box for "I run my own server". The web app on a
+// self-hosted server links to itself, <server>/#/r/<payload>, so a friend on the same server
+// lands straight in it (and the hash route works on every server version, old ones included).
+//
 // Besides the plan file, the bundle carries two things an older app simply ignores: `from`, the
 // sender's name when they chose to add it, and `names`, the English catalogue names of the
 // exercises, so the website can show the routine without the exercise database.
 import { EXIDX, isCustomEx } from './exercises.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 import { t } from './i18n-core.js'
+import { appBase } from './app-base.js'
 
 export const LINK_FMT = 1
 export const LINK_BASE = 'https://opengym.ch/r'
@@ -155,7 +161,24 @@ export async function decodePayload(payload) {
   return data
 }
 
-export const linkFor = payload => `${LINK_BASE}#${payload}`
+/** A link for the payload: opengym.ch/r, or `server`'s own hash route when one is given. */
+export const linkFor = (payload, server = '') => (server ? `${server}#/r/${payload}` : `${LINK_BASE}#${payload}`)
+
+/**
+ * The server a web app's links point at (#1337): its own address with the subpath it is served
+ * under (lib/app-base.js), or '' for opengym.ch/r. '' in the phone apps (the friend's phone opens
+ * an opengym.ch link in the app, a server's address only in the browser), in the demo (no server
+ * behind it), and on opengym.ch itself.
+ */
+export function ownServer(loc = globalThis.location, { mobile = false, demo = false } = {}) {
+  if (mobile || demo || !loc) return ''
+  try {
+    const u = new URL(loc.href)
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return ''
+    if (u.hostname.toLowerCase().replace(/^www\./, '') === 'opengym.ch') return ''
+    return u.origin + appBase(u)
+  } catch { return '' }
+}
 
 /**
  * The link for a routine, or `{ tooLong: true }` when it would pass MAX_LINK (the caller shares a
@@ -164,7 +187,7 @@ export const linkFor = payload => `${LINK_BASE}#${payload}`
 export async function routineLink(S, routine, opts = {}) {
   const bundle = routineLinkBundle(S, routine, opts)
   const payload = await encodePayload(bundle, opts)
-  const url = linkFor(payload)
+  const url = linkFor(payload, opts.server || '')
   return url.length > MAX_LINK ? { tooLong: true, length: url.length, bundle } : { url, length: url.length, payload, bundle }
 }
 
@@ -198,6 +221,21 @@ export function routinePayloadFromUrl(raw) {
   const rest = u.pathname.replace(/^\/+/, '').replace(/\/+$/, '')
   if (host !== 'r' || rest) return null
   return ok(hash)
+}
+
+/**
+ * The payload this web app was opened with, from its own address: the hash route above, plus a
+ * bare #P (#1337). A link built as <server>/r#P by hand, or by an older guess at the format,
+ * reaches the app as <server>/#P, since the server sends any path that is not a file back to the
+ * app's root and the browser keeps the fragment.
+ */
+export function ownPayloadFromLocation(href) {
+  const p = routinePayloadFromUrl(href)
+  if (p) return p
+  let u
+  try { u = new URL(String(href || '')) } catch { return null }
+  const hash = (u.hash || '').replace(/^#/, '')
+  return PAYLOAD_RE.test(hash) && hash.length <= MAX_PAYLOAD ? hash : null
 }
 
 /**

@@ -136,8 +136,7 @@ public class GymReminderPlugin extends Plugin {
         JSObject s = new JSObject();
         s.put("trainedOn", call.getString("trainedOn", ""));
         s.put("quietOn", call.getString("quietOn", ""));
-        Double since = call.getDouble("activeSince");
-        s.put("activeSince", since == null ? 0L : since.longValue());
+        s.put("activeSince", GymReminderRules.millis(call.getData().opt("activeSince")));
         s.put("title", call.getString("title", ""));
         s.put("body", call.getString("body", ""));
         s.put("channel", call.getString("channel", ""));

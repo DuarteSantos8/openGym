@@ -10,7 +10,7 @@ tempData();
 process.env.COACH_CHATGPT_PLAN = 'on';
 const plan = await import('../coach/chatgpt-plan.js');
 const cfgStore = await import('../coach/config.js');
-const { default: adapter, sessionFor } = await import('../coach/adapters/chatgpt.js');
+const { default: adapter, disconnectSession, sessionFor } = await import('../coach/adapters/chatgpt.js');
 
 test('the first sign-in registers a dynamic agent with PKCE, the plan scopes and the resource', () => {
   const { url, pending } = plan.startSignIn({ hostId: 'urn:uuid:1' });
@@ -111,4 +111,73 @@ test('the adapter renews a session about to run out (once, the rotated refresh t
   assert.equal(sent.store, false);
   assert.equal(calls.at(-1)[3], 'Bearer new-access');
   assert.equal(cfgStore.isPersonalCredential('oauth'), true, 'it binds to the first profile, like the setup token');
+});
+
+function saveSession(account, expiresIn = 60000) {
+  const data = cfgStore.encrypt({
+    token: `${account}-access`, refresh: `${account}-refresh`, exp: Date.now() + expiresIn,
+    clientId: `client-${account}`, scope: plan.SCOPE
+  });
+  cfgStore.saveAuth('chatgpt', { type: 'oauth', account, data });
+}
+
+const refreshedSession = account => Response.json({
+  access_token: `${account}-new-access`, refresh_token: `${account}-new-refresh`, expires_in: 3600
+});
+
+test('an account replacement has its own renewal while the previous renewal settles', { timeout: 5000 }, async () => {
+  const previousReply = Promise.withResolvers();
+  const currentReply = Promise.withResolvers();
+  const renewals = [];
+  const fetchImpl = (url, { body }) => {
+    assert.equal(url, plan.TOKEN_URL);
+    const token = new URLSearchParams(body).get('refresh_token');
+    renewals.push(token);
+    return token === 'previous-refresh' ? previousReply.promise : currentReply.promise;
+  };
+
+  saveSession('previous');
+  const previous = sessionFor(fetchImpl);
+  saveSession('current');
+  const current = sessionFor(fetchImpl);
+  previousReply.resolve(refreshedSession('previous'));
+  assert.equal((await previous).ok, false);
+
+  const joined = sessionFor(fetchImpl);
+  currentReply.resolve(refreshedSession('current'));
+  for (const result of await Promise.all([current, joined])) {
+    assert.equal(result.cred.token, 'current-new-access');
+  }
+  assert.deepEqual(renewals, ['previous-refresh', 'current-refresh']);
+  const saved = cfgStore.authFor(cfgStore.load(), 'chatgpt');
+  assert.equal(saved.account, 'current');
+  assert.equal(cfgStore.decrypt(saved.data).refresh, 'current-new-refresh');
+});
+
+test('disconnect clears the local session and revokes its latest token during a concurrent renewal', { timeout: 5000 }, async () => {
+  const refreshReply = Promise.withResolvers();
+  const revoking = Promise.withResolvers();
+  const revokeReply = Promise.withResolvers();
+  const fetchImpl = (url, { body }) => {
+    if (url === plan.TOKEN_URL) return refreshReply.promise;
+    assert.equal(url, `${plan.ISSUER}/api/accounts/oauth/revoke`);
+    revoking.resolve(new URLSearchParams(body));
+    return revokeReply.promise;
+  };
+
+  saveSession('previous');
+  const refresh = sessionFor(fetchImpl);
+  const disconnect = disconnectSession(fetchImpl);
+  assert.equal(cfgStore.authFor(cfgStore.load(), 'chatgpt'), null);
+  assert.equal((await sessionFor(fetchImpl)).ok, false);
+  refreshReply.resolve(refreshedSession('previous'));
+  const form = await revoking.promise;
+  assert.equal(form.get('token'), 'previous-new-refresh');
+  assert.equal(form.get('client_id'), 'client-previous');
+  assert.equal((await refresh).ok, false);
+
+  saveSession('replacement', 3600000);
+  revokeReply.resolve(Response.json({}));
+  await disconnect;
+  assert.equal((await sessionFor(fetchImpl)).cred.token, 'replacement-access');
 });

@@ -12,6 +12,7 @@ import { routineFromSession } from './session-routines.js'
 import { buildSets, applyIntensifierPlan, modeOf, setsFromRows } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { dropGrid } from './plates.js'
+import { ownedWeightsFor, rowsOnOwned } from './dumbbells.js'
 import { weightIncrement, defaultIncrement } from './progression.js'
 
 const sourceEntries = w => (Array.isArray(w?.entries) ? w.entries : []).filter(entry => entry?.sets?.length)
@@ -41,7 +42,8 @@ export function repeatSessionEntries(st, w, { exists = id => !!EXIDX[id] } = {})
     // Only this entry of this workout is history here, so a later session of the same exercise,
     // or the same exercise twice in one workout, does not seed the rows.
     const only = { ...st, workouts: [{ ...w, entries: [source] }] }
-    const sets = applyIntensifierPlan(buildSets(only, cfg, { step, preferLast: true }), cfg, dropGrid(st, cfg))
+    const owned = modeOf(cfg) === 'reps' ? ownedWeightsFor(st, cfg) : null
+    const sets = applyIntensifierPlan(rowsOnOwned(buildSets(only, cfg, { step, preferLast: true }), owned), cfg, dropGrid(st, cfg))
       .map(row => ({ ...row, done: false }))
     entries.push({ id: cfg.id, ...(sg ? { sg } : {}), target: { ...cfg }, plan: null, sets })
   })

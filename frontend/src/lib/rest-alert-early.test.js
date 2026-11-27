@@ -11,7 +11,10 @@ const fire = java.slice(java.indexOf('public static void fire('), java.indexOf('
 describe('an early rest alarm on Android (#995)', () => {
   it('is judged before it claims the end or touches the card', () => {
     expect(fire.indexOf('alarmVerdict(')).toBeGreaterThan(-1)
-    expect(fire.indexOf('alarmVerdict(')).toBeLessThan(fire.indexOf('claim(at)'))
+    // claim(at, …): the end is claimed only after the verdict, whatever else the call passes.
+    const claim = fire.search(/\bclaim\(at[,)]/)
+    expect(claim).toBeGreaterThan(-1)
+    expect(fire.indexOf('alarmVerdict(')).toBeLessThan(claim)
     expect(fire).toMatch(/REBOOK\) \{[\s\S]*?rebook\(ctx, intent, at\);\s*return;/)
     expect(fire).toMatch(/STALE\) \{[\s\S]*?return;/)
   })

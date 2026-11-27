@@ -172,7 +172,8 @@ export function e1rmSeries(S, exId, formula = formulaOf(S), as = currentDbLoad(S
   const pts = []
   ;(S.workouts || []).forEach(w => {
     const best = bestSetOfEntries(entriesForExercise(workoutAs(w, exId, as), exId), formula)
-    if (best) pts.push({ t: workoutAt(w), d: w.d, y: best.est, w: best.w, r: best.r })
+    // `bw`: the body weight checked in for that session, when there is one (lib/strength-level.js).
+    if (best) pts.push({ t: workoutAt(w), d: w.d, y: best.est, w: best.w, r: best.r, ...(Number(w.bw) > 0 ? { bw: Number(w.bw) } : {}) })
   })
   return pts
 }

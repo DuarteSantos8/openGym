@@ -7,11 +7,12 @@
 // it instead of adding a second one, and anything openGym wrote can be found and removed again.
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
-import { isoOf } from './format.js'
+import { isoOf, weightDecimals } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
 import { activeKcal, bodyKgFor } from './active-energy.js'
 import { workoutSegments } from './health-segments.js'
+import { getVersion } from './i18n-core.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
@@ -147,10 +148,12 @@ export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null, segments 
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
   }
-  // The estimated active energy (lib/active-energy.js), only when the hub lets openGym write it:
-  // `kg` is then the body weight to work it out with.
-  // A workout longer than a day: no calories (nor segments), see ENERGY_SPAN_MS.
-  const kcal = kg > 0 && !long ? activeKcal(w, kg) : null
+  // The active calories, only when the hub lets openGym write them: `kg` is then the body weight.
+  // A Wear OS watch's (`w.kcal`, #724) are Health Services' total, so the resting burn comes off
+  // (1 kcal per kg per hour, the 1 MET the estimate leaves out too); none left, the estimate
+  // (lib/active-energy.js). A workout longer than a day: no calories (nor segments), see ENERGY_SPAN_MS.
+  const measured = Math.round(Number(w.kcal) - kg * (end - start) / 3600e3)
+  const kcal = !(kg > 0) || long ? null : measured > 0 ? measured : activeKcal(w, kg)
   if (Number.isFinite(kcal) && kcal > 0 && kcal <= MAX_KCAL) rec.kcal = kcal
   // Health Connect (Android) takes the sets as segments of a strength session (lib/health-segments.js).
   // Only there: Apple Health has no such thing, and an iPhone's records stay as they were written.
@@ -202,15 +205,33 @@ export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = f
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   // `kcal`: the hub allows active energy, so every session carries its estimate. A change of that
   // permission changes the records, so the next sync writes them all again, with or without.
+  const o = { unit, nameOf, speedUnit, kcal, segments, customEx: S?.customEx, bw: kcal ? S?.bodyweight : null, i18n: getVersion(), dec: weightDecimals() }
   return {
-    sessions: (S?.workouts || []).filter(w => !isImportedWorkout(w))
-      .map(w => sessionRecord(w, { unit, nameOf, speedUnit, kg: kcal ? bodyKgFor(S, w) : null, segments, customEx: S?.customEx, now })).filter(Boolean),
+    sessions: (S?.workouts || []).filter(w => !isImportedWorkout(w)).map(w => keptSession(S, w, o, now)).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
     // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
     weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
       ? readingsOf(b).filter(r => !r.src).map(r => weightRecord(b, unit, r, now))
       : b?.src ? [] : [weightRecord(b, unit, null, now)])).filter(Boolean),
   }
+}
+
+// A save runs this on every set tick, which changes S.active only: update() (store/useStore.js
+// draftOf) keeps every finished workout the same object, so its record and fingerprint are kept
+// here, and built again once anything they are made from changes: the workout, the unit, the
+// names and the language (i18n's version), the weight decimals (Settings), the body weight log
+// the calories come from. Nothing changes a record once built (the plugin gets a copy), so its
+// fingerprint holds as long as it does.
+const kept = new WeakMap()
+const keys = new WeakMap()
+const KEPT_BY = ['unit', 'nameOf', 'speedUnit', 'kcal', 'segments', 'customEx', 'bw', 'i18n', 'dec']
+function keptSession(S, w, o, now) {
+  const was = kept.get(w)
+  if (was && KEPT_BY.every(k => was.o[k] === o[k])) return was.rec
+  const rec = sessionRecord(w, { ...o, kg: o.kcal ? bodyKgFor(S, w) : null, now })
+  // One left out may be ahead of the clock, and written once its time comes: never kept.
+  if (rec) { kept.set(w, { rec, o }); keys.set(rec, recordKey(rec)) }
+  return rec
 }
 
 // A record's content as a short fingerprint, to tell a changed record from one already written as
@@ -273,7 +294,7 @@ export function planSync({ sessions, weights }, written = {}, gone = null) {
   const take = (list, k, into) => {
     for (const rec of list) {
       if (next[rec.id]) continue   // two workouts with one id: the first is the one written
-      const h = recordKey(rec)
+      const h = keys.get(rec) ?? recordKey(rec)
       next[rec.id] = { k, h }
       if (written[rec.id]?.h !== h) into.push(rec)
     }

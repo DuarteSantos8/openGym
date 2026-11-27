@@ -114,6 +114,17 @@ public class GymReminderRulesTest {
     }
 
     @Test
+    public void theWorkoutStartArrivesWhateverItsNumberType() {
+        // A millisecond timestamp is past the int range: the page's start time reaches the
+        // plugin as a Long, which getDouble dropped, so a leave never asked (#1332).
+        assertEquals(1794903630123L, GymReminderRules.millis(1794903630123L));
+        assertEquals(1794903630123L, GymReminderRules.millis(1794903630123.0));
+        assertEquals(42L, GymReminderRules.millis(42));
+        assertEquals(0L, GymReminderRules.millis(null));
+        assertEquals(0L, GymReminderRules.millis("1794903630123"));
+    }
+
+    @Test
     public void onlyPlacesOnEarthAreWatched() {
         // LocationManager throws IllegalArgumentException for any other (v1.4.5).
         assertTrue(GymReminderRules.validPlace(47.37, 8.54));
@@ -122,5 +133,57 @@ public class GymReminderRulesTest {
         assertFalse(GymReminderRules.validPlace(47, -181));
         assertFalse(GymReminderRules.validPlace(Double.NaN, 8));
         assertFalse(GymReminderRules.validPlace(47, Double.POSITIVE_INFINITY));
+    }
+
+    // ---------------------------------------------------------------- battery (#1477)
+
+    @Test
+    public void cheapFixesWhileFarAndGpsOnlyCloseIn() {
+        assertTrue(GymReminderRules.far(new double[] { 700, 900 }, true));
+        assertFalse(GymReminderRules.far(new double[] { 390, 900 }, true));
+        // once close, cheap again only past 500 m: no flipping at 400 m
+        assertFalse(GymReminderRules.far(new double[] { 450 }, false));
+        assertTrue(GymReminderRules.far(new double[] { 520 }, false));
+        assertEquals(30_000L, GymReminderRules.intervalFor(true));
+        assertEquals(15_000L, GymReminderRules.intervalFor(false));
+    }
+
+    @Test
+    public void belowAndroid12FarNeverStartsWithTheGpsChip() {
+        assertEquals("network", GymReminderRules.providersFor(true, 30)[0]);
+        assertEquals("gps", GymReminderRules.providersFor(false, 30)[0]);
+        assertEquals("fused", GymReminderRules.providersFor(true, 34)[0]);
+    }
+
+    @Test
+    public void aPhoneThatGetsNoCloserEndsTheCheckAfterFiveMinutes() {
+        GymReminderRules.Progress p = new GymReminderRules.Progress();
+        long t = 0;
+        assertFalse(p.stalled(600, t));
+        // sitting at home 600 m out, a little GPS jitter
+        assertFalse(p.stalled(620, t += 120_000));
+        assertFalse(p.stalled(580, t += 120_000));
+        assertTrue(p.stalled(610, t += 61_000));   // 5 min 1 s without coming 75 m closer
+    }
+
+    @Test
+    public void walkingInKeepsTheCheckGoing() {
+        GymReminderRules.Progress p = new GymReminderRules.Progress();
+        long t = 0;
+        for (double d = 700; d > 250; d -= 80) assertFalse(p.stalled(d, t += 60_000));
+        assertFalse(p.stalled(250, t += 4 * 60_000));
+    }
+
+    @Test
+    public void waitingInTheCarParkDoesNotEndIt() {
+        GymReminderRules.Progress p = new GymReminderRules.Progress();
+        assertFalse(p.stalled(150, 0));
+        assertFalse(p.stalled(150, 10 * 60_000));
+    }
+
+    @Test
+    public void nearestEdgeIsDistanceMinusRadius() {
+        assertEquals(0, GymReminderRules.nearestEdge(new double[] { 80 }, new double[] { 100 }), 0.001);
+        assertEquals(300, GymReminderRules.nearestEdge(new double[] { 400, 900 }, new double[] { 100, 100 }), 0.001);
     }
 }
