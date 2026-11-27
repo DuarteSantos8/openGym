@@ -94,11 +94,14 @@ function amountGroup(x) {
   return group
 }
 function settleAmountGroup(a, b, out) {
-  // Settle every pair of current-schema rows as whole portions: coherent, cleared or malformed.
+  // Settle every pair of known-schema rows as whole portions: coherent, cleared or malformed.
   // Any exception lets the field merge mix members of different copies, and then the result
   // depends on which device synced first. The newest portion wins whole; a malformed portion is
   // kept as it is only while it is the newest, and is never repaired field by field.
-  if (a.schemaVersion !== 1 || b.schemaVersion !== 1) return
+  // Rows from before schemaVersion are the same portion shape. Only a later, unknown schema keeps
+  // the ordinary field merge, since its amount fields may not mean what they mean here.
+  const known = x => x.schemaVersion === 1 || x.schemaVersion === undefined
+  if (!known(a) || !known(b)) return
   // A change or removal of any member dates the whole portion, including after
   // earlier merges. Keeping the maximum makes this choice independent of grouping.
   const clock = row => Math.max(...amountFields.map(key => optionalTime(row._f?.[key])))
