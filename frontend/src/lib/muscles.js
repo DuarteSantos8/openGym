@@ -389,7 +389,7 @@ export function sessionLevels({ done, planned }) {
  * A floating week or rotation (S.queue, lib/queue.js) is the plan too: each of its sessions once,
  * beside your own weekday routines — the same split the Home streak card tallies (weekTally).
  */
-export function loadOfWeeklyPlan(S) {
+export function loadOfWeeklyPlan(S, loadRoutine = loadOfRoutine) {
   const routines = new Map((S?.routines || []).map(routine => [routine.id, routine]))
   const exercises = Object.fromEntries((S?.customEx || []).map(exercise => [exercise.id, exercise]))
   const q = queueOf(S)
@@ -402,7 +402,7 @@ export function loadOfWeeklyPlan(S) {
   for (const id of ids) {
     const routine = routines.get(id)
     if (!routine) continue
-    for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises))) {
+    for (const [slug, sets] of Object.entries(loadRoutine(routine, exercises))) {
       load[slug] = (load[slug] || 0) + sets
     }
   }
