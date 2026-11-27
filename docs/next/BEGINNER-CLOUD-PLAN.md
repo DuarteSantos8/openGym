@@ -1,6 +1,7 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
 B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval.
+06.03 narrow Workout actions and navigation labels are prepared. Four locales passed the 320 px control fit and accessible-name regression.
 
 G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
 
@@ -57,8 +58,8 @@ The owner accepted [ADR 0015](adr/0015-coach-app-help.md). B4 app help is prepar
 implementation PR after owner approval. Hosted verification is pending. Coach App Help
 daily-limit guidance is prepared. Local search remains available after a refused request.
 
-D2 status: English glossary access is prepared on Workout, Plan and Progress. Complete glossary
-translations and native review are pending. D3 status: the short Beginner Settings root and
+D2 status: Glossary access is prepared on Workout, Plan and Progress. The 25 locale packs include all 49 entries.
+The machine translations await native review. D3 status: the short Beginner Settings root and
 reversible full-list preference are prepared. D4 prepares an eight-stop beginner tour with
 offline keyboard replay. D5 prepares goal-led starter cards that show weekly frequency, session
 length, experience level and equipment. The local chooser works offline.
@@ -152,7 +153,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 starter-plan exercises plus 10 sourced routine exercises. Tests cover every exercise in Linear Strength, Twice a Week and Ganzkörper zu Hause. The 10 additions have text in all 25 packs. All 55 guides are `draft` pending named review (ADR 0012). 36 distinct routine exercise IDs still lack guides |
 | EP23-T04 | Guidance on the exercise sheet | `sheets.jsx`, `components/ExerciseGuide.jsx` | cues, mistakes with fixes, where to feel it, breathing, easier and harder open the other exercise; a draft is never called reviewed | done, `next/EP23-exercise-guidance` |
 | EP23-T05 | Library opens on guided exercises for a Beginner | `views/Library.jsx`, `lib/exercise-guide.js` | a Beginner's Library opens on the exercises with a form guide, as a chip anyone can set or clear; a search with nothing guided in it shows what it found | **done** (#60). The search index and the 50 ms target were not needed for this and are not built |
-| EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 searchable terms. The plan result, Workout, Plan and Progress expose definitions. Complete translations and native review of the entries remain open |
+| EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 searchable terms. The plan result, Workout, Plan and Progress expose definitions. All 25 packs include the complete glossary. Native review remains open |
 | EP24-T02 | Learn | `views/Learn.jsx`, `App.jsx` `/learn` | done, same branch: 8 guides and the glossary, offline, no link out, axe clean |
 | EP24-T03 | Warm-up, cool-down and mobility as guided sessions | NEW `routines/learn/*.json`, circuit player | 8 routines playable with spoken cues | prepared, content in draft pending named review |
 | EP24-T04 | Food, sleep and safety basics | `content/learn.js` | done, same branch: every number names its source; English only for now |
@@ -184,7 +185,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 1. Owner: read the 55 draft exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
 2. Owner: create the Supabase project and the Stripe test account. Nothing more of the Cloud edition can be verified without them: ADR 0013's five checks, EP19-T03, T05, EP20-T01, T07 and EP18-T02 all wait on this.
-3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (glossary translations and native review).
+3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (native review of glossary translations).
 4. EP18-T04 and EP26-T01 before any live key.
 
 ## What "production ready" still needs, and who can give it
