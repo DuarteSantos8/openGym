@@ -177,11 +177,26 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
   const count = () => reps.filter(r => r.counted).length
   const reachedNow = () => !!acc && acc.rec.rawPeak >= DROP_PHASES.minRep && dropMeets(acc.judged ? dropDepthOf(acc.maxHd) : null, std)
 
-  // The arm's image-vertical facts, null without shoulder, elbow and wrist under them.
+  // The arm's image-vertical facts, null without shoulder, elbow and wrist under them. The rep's
+  // signal, the arm's height, is read on both arms only when both are seen surely (BOTH_CONF),
+  // else on the surer arm alone: side-on Vision guesses the far arm now and then at 0.3 to 0.5,
+  // and averaging it in moved the "shoulder" and "wrist" by half the gap between the arms for
+  // that frame (a bench dip read half way down at the top and back up at the bottom, and a rep
+  // was lost). Depth, straight arms and the camera checks still read the pairs' middles.
+  function armPart(joints, part) {
+    const conf = sd => Math.min(...ARM.map(p => (seen(joints, sd + p) || [0, 0, 0])[2] ?? 1))
+    const l = conf('left'), r = conf('right')
+    if (l >= BOTH_CONF && r >= BOTH_CONF) return mid(joints, part)
+    if (!l && !r) return mid(joints, part)
+    return seen(joints, (l >= r ? 'left' : 'right') + part)
+  }
+
   function figure(joints) {
     const sh = mid(joints, 'Shoulder'), el = mid(joints, 'Elbow'), wr = mid(joints, 'Wrist')
     if (!sh || !el || !wr) return null
-    const arm = wr[1] - sh[1], upper = el[1] - sh[1], fore = wr[1] - el[1]
+    const upper = el[1] - sh[1], fore = wr[1] - el[1]
+    const ash = armPart(joints, 'Shoulder'), awr = armPart(joints, 'Wrist')
+    const arm = ash && awr ? awr[1] - ash[1] : wr[1] - sh[1]
     if (!(fore > 0) || !(arm > 0)) return null
     return { sh, el, wr, arm, upper, straight: upper > 0 && upper / fore >= DROP_STRAIGHT }
   }

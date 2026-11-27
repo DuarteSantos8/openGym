@@ -139,6 +139,22 @@ describe.each(YAWS)('the dip filmed at yaw %i°', yaw => {
 })
 
 describe('the dip, whatever the angle', () => {
+  it('side-on: a far arm Vision guesses now and then, unsurely and out of place, does not break the count', () => {
+    const frames = dipSet(same(4, LEVEL), { yaw: 0 }).map((f, i) => {
+      if (i % 5) return f
+      const j = { ...f.joints }
+      // The far (right) arm guessed at 0.3 and squashed: its shoulder put level with the near
+      // elbow, its wrist on the near one (as on a real bench dip).
+      if (j.leftShoulder && j.leftElbow && j.leftWrist) {
+        j.rightShoulder = [j.leftShoulder[0] + 0.02, j.leftElbow[1], 0.3]
+        j.rightElbow = [j.leftElbow[0] + 0.02, (j.leftElbow[1] + j.leftWrist[1]) / 2, 0.3]
+        j.rightWrist = [j.leftWrist[0] + 0.02, j.leftWrist[1], 0.3]
+      }
+      return { ...f, joints: j }
+    })
+    expect(run(frames, ANY).res).toMatchObject({ count: 4, missed: 0 })
+  })
+
   it('side-on: the bottom elbow angle, its spread across the set, and the note', () => {
     const { res } = run(dipSet([{ min: 80, down: 1.5, up: 1 }, { min: 90, down: 1.5, up: 1 }, { min: 85, down: 1.5, up: 1 }]))
     expect(res.reps[0].measures.minElbow).toBeCloseTo(80, -1)
