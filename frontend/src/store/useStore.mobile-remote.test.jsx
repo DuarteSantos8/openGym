@@ -71,11 +71,17 @@ function installFetch() {
 const refusing = () => json(401, { error: 'not signed in' })
 // The paired server, as api/server.js answers: a revision per document, 409 on a stale baseRev.
 function serverWith(doc) {
-  const srv = { doc: clone(doc), puts: [] }
+  const srv = { doc: clone(doc), puts: [], pairingCode: 'ABCD2345' }
   srv.handle = (path, method, init) => {
     if (path === '/api/me') return json(200, { user: USER })
     if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true })
-    if (path === '/api/pair/redeem') return json(200, { token: 'TOKEN-NEW', user: USER })
+    if (path === '/api/pair/redeem') {
+      if (JSON.parse(init.body).code !== srv.pairingCode || !srv.pairingCode) {
+        return json(400, { error: 'invalid or expired code', code: 'pair-invalid' })
+      }
+      srv.pairingCode = null
+      return json(200, { token: 'TOKEN-NEW', user: USER })
+    }
     if (path === '/api/data/rev') return json(200, { rev: srv.doc._rev })
     if (path === '/api/data' && method === 'GET') return json(200, { state: clone(srv.doc), rev: srv.doc._rev })
     if (path === '/api/data' && method === 'PUT') {
@@ -615,6 +621,27 @@ describe('the first-start permission steps (views/PermissionSteps.jsx)', () => {
     expect(useStore.getState().permSteps).toBe(false)
     return useStore
   }
+
+  it('removes a new pairing if the guest copy cannot be saved and permits a retry', async () => {
+    const useStore = await firstLaunch()
+    await useStore.getState().chooseLocalMode()
+    useStore.getState().update(s => { s.workouts = [workout('guest', '2026-09-10')] }, false)
+    const srv = serverWith(SERVER_STATE)
+    const put = localStorage.setItem.bind(localStorage)
+    const deny = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'gym_guest_state') throw new DOMException('full', 'QuotaExceededError')
+      put(key, value)
+    })
+    const pair = code => useStore.getState().connectToServer(BASE, code, vi.fn(async () => false))
+    try { await expect(pair('ABCD2345')).rejects.toThrow('Could not save') } finally { deny.mockRestore() }
+    expect(readFile('opengym-remote.json')).toEqual({ mode: 'local' })
+    expect(useStore.getState().user).toBeNull()
+    expect(ids(useStore.getState().S.workouts)).toEqual(['guest'])
+    await expect(pair('ABCD2345')).rejects.toMatchObject({ code: 'pair-invalid' })
+    srv.pairingCode = 'EFGH2345'
+    await pair(srv.pairingCode)
+    expect(useStore.getState().user.id).toBe(USER.id)
+  })
 
   it('are due once "Use on this device" is picked', async () => {
     const useStore = await firstLaunch()
