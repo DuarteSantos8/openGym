@@ -85,6 +85,10 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
       }
       const {violations} = await new AxeBuilder({page}).include(target).withRules(['label-content-name-mismatch']).analyze()
       expect.soft(violations.map(v => v.id)).toEqual([])
+      if (route === 'workout') {
+        await click(page.locator('[data-tour="tick"]').first())
+        await expect(page.locator('#timer')).toBeVisible()
+      }
       await doubleText(page)
       expect.soft(await textFits(labels)).toBe(true)
       if (route === 'settings') {
@@ -98,8 +102,11 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
         await testInfo.attach(route + '-de-320-double-text', {body: await page.screenshot({mask:[page.locator('img,canvas,video')]}), contentType:'image/png'})
       }
       if (route === 'workout') {
-        await click(page.locator('[data-tour="tick"]').first())
-        await expect(page.locator('#timer')).toBeVisible()
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+        const last = page.locator('#app button:visible').last()
+        await expect.poll(() => last.evaluate(el =>
+          el.getBoundingClientRect().bottom <= document.querySelector('#timer').getBoundingClientRect().top + 1
+        )).toBe(true)
       } else {
         const pause = page.locator('#timer .pause')
         for (let i = 0; i < 100 && !await pause.evaluate(el => el === document.activeElement); i++) {

@@ -326,7 +326,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 body.resting #app{padding-bottom:calc(var(--tabbar-height) + var(--rest-bar-height) + 8px)}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
-body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
+body.no-tabbar.resting #app{padding-bottom:calc(var(--rest-bar-height) + 16px)}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
 .wk-end{margin-top:2px}
@@ -3324,7 +3324,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .conn-row{max-width:640px}   /* the width of the .narrow pages below it */
   body.resting #app{padding-bottom:calc(220px + var(--sab))}
   body.no-tabbar #app{padding-bottom:calc(40px + var(--sab))}
-  body.no-tabbar.resting #app{padding-bottom:calc(130px + var(--sab))}
+  body.no-tabbar.resting #app{padding-bottom:calc(var(--rest-bar-height) + 40px)}
   .workout-end-spacer{height:40px}
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
   .cols>*{min-width:0}
