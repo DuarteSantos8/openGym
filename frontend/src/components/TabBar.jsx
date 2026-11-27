@@ -50,7 +50,7 @@ export default function TabBar({ onStart, onPick }) {
     }
     measure()
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
-    ro?.observe(el)
+    ro?.observe(el, { box: 'border-box' })
     window.addEventListener('resize', measure)
     return () => {
       ro?.disconnect()

@@ -24,17 +24,22 @@ async function overlaysFit(page) {
     const timer = document.querySelector('#timer')
     const app = document.querySelector('#app')
     if (!bar || !timer || !app) return false
-    const start = bar.querySelector('.start').getBoundingClientRect()
+    const resume = bar.querySelector('.start')
+    const start = resume.getBoundingClientRect()
     const timerBox = timer.getBoundingClientRect()
     const tolerance = 1
     if (timerBox.bottom > Math.min(bar.getBoundingClientRect().top, start.top) + tolerance) return false
+    function reachable(button) {
+      const box = button.getBoundingClientRect()
+      return button.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2))
+    }
+    if (!reachable(resume) || [...timer.querySelectorAll('button')].filter(b => b.getClientRects().length).some(b => !reachable(b))) return false
     let top = timerBox.top
     if (document.body.classList.contains('totop-on')) {
       const button = document.querySelector('#totop')
       const box = button.getBoundingClientRect()
       if (box.bottom > timerBox.top + tolerance) return false
-      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
-      if (!button.contains(hit)) return false
+      if (!reachable(button)) return false
       top = Math.min(top, box.top)
     }
     return parseFloat(getComputedStyle(app).paddingBottom) >= innerHeight - top - tolerance
@@ -88,6 +93,17 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
       if (route === 'workout') {
         await click(page.locator('[data-tour="tick"]').first())
         await expect(page.locator('#timer')).toBeVisible()
+      }
+      if (lang === 'de') {
+        const selector = route === 'workout' ? '#timer' : '#tabbar'
+        const variable = route === 'workout' ? '--rest-bar-height' : '--tabbar-height'
+        const bar = page.locator(selector)
+        const measured = () => bar.evaluate((el, name) => parseFloat(el.ownerDocument.documentElement.style.getPropertyValue(name)), variable)
+        const before = await measured()
+        await bar.evaluate(el => el.style.paddingBottom = (parseFloat(getComputedStyle(el).paddingBottom) + 24) + 'px')
+        await expect.poll(measured).toBeCloseTo(before + 24, 0)
+        await bar.evaluate(el => el.style.removeProperty('padding-bottom'))
+        await expect.poll(measured).toBeCloseTo(before, 0)
       }
       await doubleText(page)
       expect.soft(await textFits(labels)).toBe(true)

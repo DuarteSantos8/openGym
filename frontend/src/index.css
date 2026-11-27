@@ -2226,6 +2226,8 @@ body.no-tabbar #timer{
 }
 body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 @media (max-width:399px){
+  #timer.rest{flex-wrap:wrap}
+  #timer.rest .acts{flex-basis:max-content;max-width:100%;flex-wrap:wrap}
   #timer .acts{gap:4px}
   #timer .acts .adj{padding-inline:6px;gap:1px}
   #timer .acts .pause,#timer .acts .pause-slot{padding-inline:10px}

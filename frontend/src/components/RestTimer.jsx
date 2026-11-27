@@ -112,7 +112,7 @@ export default function RestTimer() {
     measure()
     document.body.classList.add('resting')
     const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
-    observer?.observe(el)
+    observer?.observe(el, { box: 'border-box' })
     window.addEventListener('resize', measure)
     return () => {
       observer?.disconnect()
