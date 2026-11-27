@@ -1,5 +1,9 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Alcançado",
+  "Not reached": "Não alcançado",
+  "No ladders are available.": "Não há progressões disponíveis.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "As etapas vão da mais fácil à mais difícil. Registar uma série concluída assinala essa etapa e todas as anteriores como alcançadas. Isto não avalia a tua técnica nem a tua preparação.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Estimativa do plano recorrente. As séries de aquecimento e as alterações em datas específicas não são contabilizadas.",
   "No working sets in the recurring plan.": "Não há séries de trabalho no plano recorrente.",
   "below range": "abaixo do intervalo",

@@ -1,5 +1,9 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "تم الوصول",
+  "Not reached": "لم يتم الوصول",
+  "No ladders are available.": "لا توجد تدرّجات متاحة.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "تنتقل الخطوات من الأسهل إلى الأصعب. عند تسجيل مجموعة مكتملة، تُعلَّم هذه الخطوة وكل ما قبلها على أنها مُنجزة. لا يقيّم هذا أسلوب أدائك أو جاهزيتك.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "تقدير للخطة المتكررة. لا يشمل الإحماء والتعديلات الخاصة بتواريخ محددة.",
   "No working sets in the recurring plan.": "لا توجد مجموعات عمل في الخطة المتكررة.",
   "below range": "أقل من النطاق",

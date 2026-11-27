@@ -1,5 +1,9 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  "Reached": "Đã đạt",
+  "Not reached": "Chưa đạt",
+  "No ladders are available.": "Không có lộ trình tăng độ khó nào.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Các bước được xếp từ dễ đến khó. Ghi lại một hiệp đã hoàn thành sẽ đánh dấu bước đó và mọi bước trước đó là đã đạt. Điều này không đánh giá kỹ thuật hay mức độ sẵn sàng của bạn.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Ước tính cho lịch tập lặp lại. Không tính hiệp khởi động và thay đổi vào ngày cụ thể.",
   "No working sets in the recurring plan.": "Lịch tập lặp lại không có hiệp tập chính.",
   "below range": "dưới khoảng",

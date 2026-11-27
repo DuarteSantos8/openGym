@@ -1,5 +1,9 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "পৌঁছেছেন",
+  "Not reached": "এখনও পৌঁছাননি",
+  "No ladders are available.": "কোনো ধাপক্রম উপলব্ধ নেই।",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "ধাপগুলো সহজ থেকে কঠিনের দিকে সাজানো। সম্পন্ন একটি সেট নথিভুক্ত করলে সেই ধাপ ও আগের সব ধাপ অর্জিত হিসেবে চিহ্নিত হয়। এতে আপনার কৌশল বা প্রস্তুতি যাচাই করা হয় না।",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "পুনরাবৃত্ত পরিকল্পনার আনুমানিক হিসাব। ওয়ার্ম-আপ ও নির্দিষ্ট দিনের পরিবর্তন বাদ দেওয়া হয়েছে।",
   "No working sets in the recurring plan.": "পুনরাবৃত্ত পরিকল্পনায় কোনো ওয়ার্কিং সেট নেই।",
   "below range": "সীমার নিচে",

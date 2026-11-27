@@ -1,5 +1,9 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Ulaşıldı",
+  "Not reached": "Ulaşılmadı",
+  "No ladders are available.": "Kullanılabilir ilerleme basamağı yok.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Basamaklar kolaydan zora doğru sıralanır. Tamamlanmış bir seti kaydettiğinde o basamak ve öncekilerin tümü ulaşıldı olarak işaretlenir. Bu, tekniğini veya hazır olup olmadığını değerlendirmez.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Tekrarlanan planın tahmini. Isınma setleri ve belirli tarihlere ait değişiklikler dahil edilmez.",
   "No working sets in the recurring plan.": "Tekrarlanan planda çalışma seti yok.",
   "below range": "aralığın altında",

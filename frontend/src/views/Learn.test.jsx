@@ -42,6 +42,40 @@ describe('Learn', () => {
     act(() => useStore.setState(({ S }) => ({ S: { ...S, active: null } })))
   })
 
+  it('keeps progress earned from a deleted ladder rung on the visible steps', () => {
+    const { S } = useStore.getState()
+    act(() => useStore.setState({ S: {
+      ...S,
+      ladders: [
+        { id: 'partial', name: 'Partial ladder', steps: ['0659', 'c-deleted', '0493'] },
+        { id: 'one-left', name: 'One rung left', steps: ['0659', 'c-deleted'] },
+        { id: 'stale', name: 'Stale ladder', steps: ['c-deleted', 'c-also-deleted'] },
+      ],
+      workouts: [{ entries: [{ id: 'c-deleted', sets: [{ done: true }] }] }],
+    } }))
+    try {
+      mount(<Learn />)
+      const entry = Array.from(container.querySelectorAll('button')).find(b => b.textContent === 'Skill ladders')
+      act(() => entry.click())
+      const [sheet] = useUI.getState().sheets
+      act(() => root.render(sheet.render(() => {})))
+
+      const partial = container.querySelector('[data-ladder="partial"]')
+      expect(partial.querySelector('.row .muted').textContent).toBe('Rung 1 of 2')
+      expect(Array.from(partial.querySelectorAll('.ladder-step'), row => row.lastElementChild.lastElementChild.textContent))
+        .toEqual(['Reached', 'Not reached'])
+      const oneLeft = container.querySelector('[data-ladder="one-left"]')
+      expect(oneLeft.querySelector('.row .muted').textContent).toBe('Top rung reached')
+      expect(oneLeft.querySelectorAll('.ladder-step')).toHaveLength(1)
+      expect(oneLeft.querySelector('.ladder-step').textContent).toContain('Reached')
+      expect(container.querySelector('[data-ladder="stale"]')).toBeNull()
+      expect(container.textContent).not.toContain('c-deleted')
+      expect(Array.from(container.querySelectorAll('button'), b => b.textContent)).toEqual(['Close'])
+    } finally {
+      act(() => useStore.setState({ S }))
+    }
+  })
+
   it('lists every guide closed and the whole glossary', () => {
     mount(<Learn />)
     expect(container.querySelectorAll('[data-guide]').length).toBe(GUIDES.length)

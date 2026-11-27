@@ -1,4 +1,8 @@
 export default {
+  "Reached": "已達成",
+  "Not reached": "未達成",
+  "No ladders are available.": "目前沒有可用的進階階梯。",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "各階段由易到難排列。記錄一組已完成的訓練後，該階段和之前的所有階段都會標為已達成。這不代表對你的動作技巧或準備程度作出了評估。",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "依重複排程估算，不計入熱身組與個別日期的調整。",
   "No working sets in the recurring plan.": "重複排程中沒有正式訓練組。",
   "below range": "低於範圍",
