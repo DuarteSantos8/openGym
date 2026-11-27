@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   ARM, BAR, armFraming, armReach, benchRowPose, createArmViewDetector, flyPose, forearmsUp, hangDrop,
-  hangPose, hangShare, rowDrop, rowPose, topShare,
+  hangPose, hangShare, restElbow, rowDrop, rowPose, topShare,
 } from './pull-kit.js'
 import { project } from './test-kit.js'
 
@@ -58,6 +58,19 @@ describe('createArmViewDetector', () => {
     const d = createArmViewDetector(1)
     expect(d.push({ joints: {} }, 0.2)).toBeNull()
     expect(d.push(frame(flyPose(0), 0), 0)).toBeNull()
+  })
+})
+
+describe('restElbow', () => {
+  it('reads the more bent arm when both are seen, else the one that is', () => {
+    const j = {
+      leftShoulder: [0.4, 0.5, 0.9], leftElbow: [0.4, 0.4, 0.9], leftWrist: [0.4, 0.3, 0.9],     // straight
+      rightShoulder: [0.6, 0.5, 0.9], rightElbow: [0.65, 0.4, 0.9], rightWrist: [0.6, 0.3, 0.9], // bent
+    }
+    expect(restElbow(j)).toBeLessThan(140)
+    const { rightElbow, ...one } = j
+    expect(restElbow(one)).toBeCloseTo(180, 5)
+    expect(restElbow({})).toBe(null)
   })
 })
 

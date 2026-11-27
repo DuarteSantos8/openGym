@@ -16,7 +16,7 @@
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
-  createPhaseMachine, dist, ema, fades, framingHint, mean, mid, pickCue, round1, seen, spread, tempo, viewHint,
+  angleAt, createPhaseMachine, dist, ema, fades, framingHint, mean, mid, pickCue, round1, seen, spread, tempo, viewHint,
 } from './kit.js'
 
 export const HANG_S = 0.12            // signal at most this before a rep: started from a full hang / straight arms
@@ -37,6 +37,13 @@ export function armReach(joints, distal, above) {
   const sh = mid(joints, 'Shoulder'), d = mid(joints, distal)
   if (!sh || !d) return null
   return { sh, d, r: above ? sh[1] - d[1] : d[1] - sh[1] }
+}
+
+/** The elbow angle at rest: the more bent arm when both are seen, else the one that is; null for none. */
+export function restElbow(joints, aspect = 1) {
+  const at = s => angleAt(seen(joints, s + 'Shoulder'), seen(joints, s + 'Elbow'), seen(joints, s + 'Wrist'), aspect)
+  const l = at('left'), r = at('right')
+  return l != null && r != null ? Math.min(l, r) : l ?? r
 }
 
 /**
@@ -105,6 +112,8 @@ const fmt = n => (n == null ? '' : fmtNum(n))
  * A reps tracker for one arm-driven drill. `spec`:
  *   views, distal, above, k and viewEdges (createArmViewDetector), farRef (reach under this: too far), phases
  *   hang: whether a rep must start from rest (straight arms) under some standard
+ *   hangDeg: optional, the start also counts as from rest when the elbows read at least this
+ *     straight at rest before the rep (restElbow, smoothed), whatever the reach
  *   settle: a still pause on the way back ends the rep and becomes the new rest (SETTLE_MS), for
  *     drills whose rest between reps sits short of the first one
  *   needs: { [standard]: { top, hang } }  what each standard asks
@@ -125,18 +134,24 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
   const state = {}                // the drill's own memory (onRest)
   let ref = null, sm = null, lastS = null
   let low = Infinity              // the lowest signal while at rest since the last rep
+  let restAng = null, straight = -Infinity   // spec.hangDeg: the elbows at rest, smoothed, and their straightest since the last rep
   let acc = null
   let back = []                   // spec.settle: { t, s, r } since the way back began
 
   const viewNow = () => fixedView || views.view
   const topJudged = v => !spec.topViews || spec.topViews.includes(v)
   const count = () => reps.filter(r => r.counted).length
-  const hangOk = h => (h == null ? null : h <= HANG_S)
+  // The start: the reach back to the first rest (HANG_S), or with spec.hangDeg the elbows read
+  // straight at rest, which a straight arm shows from any view (three points in a line stay in a line).
+  const hangOk = (h, e) => {
+    if (h == null && e == null) return null
+    return (h != null && h <= HANG_S) || (spec.hangDeg != null && e != null && e >= spec.hangDeg)
+  }
   const topOk = top => (top == null ? null : top >= spec.topNeed)
 
   function reachedNow() {
     if (!acc || acc.rec.rawPeak < spec.phases.minRep) return false
-    if (needs.hang && hangOk(acc.hang) === false) return false
+    if (needs.hang && hangOk(acc.hang, acc.hangElbow) === false) return false
     if (needs.top && acc.judged && !topOk(acc.top)) return false
     return true
   }
@@ -144,7 +159,7 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
   function finish(rec) {
     const a = acc
     const top = a.judged ? a.top : null
-    const tOk = topOk(top), hOk = spec.hang ? hangOk(a.hang) : null
+    const tOk = topOk(top), hOk = spec.hang ? hangOk(a.hang, a.hangElbow) : null
     const reason = needs.top && tOk === false ? 'low' : needs.hang && hOk === false ? 'hang' : null
     const counted = rec.lost || !reason
     const measures = {
@@ -154,6 +169,7 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
       peak: Math.round(rec.peak * 100) / 100,
     }
     if (spec.hang) { measures.hang = a.hang == null ? null : Math.round(a.hang * 100) / 100; measures.hangOk = hOk }
+    if (spec.hang && spec.hangDeg != null) measures.hangElbow = a.hangElbow == null ? null : Math.round(a.hangElbow)
     const ex = spec.extras && spec.extras[a.view]
     if (ex) Object.assign(measures, ex.finish(a.x, rec))
     reps.push({ rec, counted, reason: counted ? null : reason, measures })
@@ -207,12 +223,15 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
     const ev = machine.push(at, s, { canStart: holding })
     let justCounted = false, justMissed = false, reason = null
     if (ev.dropped || (!ev.rep && acc)) acc = null
-    let hangBefore = null
-    if (ev.started) { hangBefore = Number.isFinite(low) ? low : null; low = Infinity }
+    let hangBefore = null, elbowBefore = null
+    if (ev.started) {
+      hangBefore = Number.isFinite(low) ? low : null; low = Infinity
+      elbowBefore = Number.isFinite(straight) ? straight : null; straight = -Infinity; restAng = null
+    }
     if (ev.rep) {
       if (!acc || acc.rec !== ev.rep) {
         const v = viewNow()
-        acc = { rec: ev.rep, view: v, judged: topJudged(v), top: null, hang: hangBefore, x: {} }
+        acc = { rec: ev.rep, view: v, judged: topJudged(v), top: null, hang: hangBefore, hangElbow: elbowBefore, x: {} }
       }
       if (s != null) {
         const ctx = { joints, aspect, sh: a.sh, d: a.d, s, ref, view: acc.view, state }
@@ -230,6 +249,10 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
       }
     }
     if (machine.phase === 'standing' && sm != null && sm < low) low = sm
+    if (spec.hangDeg != null && machine.phase === 'standing' && holding) {
+      const ang = restElbow(joints, aspect)
+      if (ang != null) { restAng = ema(restAng, ang, 0.5); if (restAng > straight) straight = restAng }
+    }
     const reached = reachedNow()
     return {
       count: count(), phase: machine.phase, inFrame: !why, hint: hint(why, machine.phase),

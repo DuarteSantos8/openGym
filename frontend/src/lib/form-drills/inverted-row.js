@@ -10,11 +10,18 @@
 // well, so it asks to turn and only counts. Side-on and at an angle it also reads the hips
 // against the line from the shoulders to the knees (the knees, not the ankles, so a bent-knee
 // row reads the same).
+//
+// The start is also read from the elbows (HANG_DEG): heels on the floor, the body pivots about
+// them, so the reach at rest drifts with the hips. Settling under the bar a lifter read a reach
+// 0.24 for a moment, then 0.21 to 0.22 at rest with the elbows at 176 to 179; the rest before his
+// second pull, the elbows at 176 to 179 again, came to 0.14 of that first reach short and the rep
+// was refused as not from straight arms. Arms that read straight at rest started from straight arms.
 import { t } from '../i18n-core.js'
 import { matchExercise, mid } from './kit.js'
 import { createArmTracker } from './pull-kit.js'
 
 export const CHEST_S = 0.85           // signal at the top at least this: chest to the bar
+export const HANG_DEG = 160          // the elbows at rest at least this straight: started from straight arms
 export const SAG = 0.15               // hips this many reaches under the shoulder-knee line: sagged
 export const PHASES = { stand: 0.3, descent: 0.38, minRep: 0.5, bottomEps: 0.04, ascentRise: 0.12, topBand: 0.03 }
 
@@ -61,6 +68,7 @@ const SPEC = {
   farRef: 0.06,
   phases: PHASES,
   hang: true,
+  hangDeg: HANG_DEG,
   needs: { full: { top: true, hang: true }, chest: { top: true }, any: {} },
   topOf: ({ s }) => s,
   topNeed: CHEST_S,

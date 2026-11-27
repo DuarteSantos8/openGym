@@ -67,6 +67,34 @@ describe.each(JUDGED)('the inverted row filmed at yaw %i°', yaw => {
     expect(res.reps.map(r => r.reason)).toEqual([null, 'low', null, 'hang'])
   })
 
+  it('full: a rep from straight arms counts though the body pivoted and the reach at rest came up short', () => {
+    // From the first rep's way down the whole body moves so the straight arms lean 38 degrees
+    // from the bar at rest: the reach there is under 0.88 of the first, past HANG_S, the elbows straight.
+    const tilt = rad => (d, o = {}) => {
+      const pose = rowPose(d, o)
+      const k = 1 - (o.p || 0)              // the whole lean at rest, none at the top
+      const S = rowPose(REST).leftShoulder, W = pose.leftWrist
+      const L = Math.hypot(S[0] - W[0], S[1] - W[1])
+      const shift = [(W[0] + L * Math.sin(rad) - S[0]) * k, (W[1] - L * Math.cos(rad) - S[1]) * k]
+      const out = {}
+      for (const [name, j] of Object.entries(pose)) out[name] = name.endsWith('Wrist') ? j : [j[0] + shift[0], j[1] + shift[1], j[2]]
+      for (const sd of ['left', 'right']) {
+        // The elbow kept on the line from the moved shoulder to the wrist, where it was on the arm.
+        const s0 = pose[sd + 'Shoulder'], e0 = pose[sd + 'Elbow'], w = pose[sd + 'Wrist'], s1 = out[sd + 'Shoulder']
+        const f = Math.hypot(e0[0] - s0[0], e0[1] - s0[1], e0[2] - s0[2]) / Math.hypot(w[0] - s0[0], w[1] - s0[1], w[2] - s0[2])
+        if (k === 1) out[sd + 'Elbow'] = s1.map((v, i) => v + f * (w[i] - v))
+      }
+      return out
+    }
+    // Leaning from the way down of the first rep on (stand 15 frames, up 15, top 2).
+    const lean = tilt(38 * Math.PI / 180)
+    let i = 0
+    const pose = (d, o) => (i++ >= 32 ? lean(d, o) : rowPose(d, o))
+    const { res } = run(film(armPoses(pose, REST, [FULL, FULL]), { ...CAM, yaw }))
+    expect(res.reps.map(r => r.reason)).toEqual([null, null])
+    expect(res.reps[1].measures.hang).toBeGreaterThan(0.12)
+  })
+
   it('chest: a rep from bent arms counts; any: every real pull counts', () => {
     expect(run(S([FULL, LOW, BENT, FULL]), { standard: 'chest' }).res.reps.map(r => r.counted)).toEqual([true, false, true, true])
     expect(run(S([FULL, LOW, BENT, FULL]), { standard: 'any' }).res.missed).toBe(0)
