@@ -6,6 +6,8 @@ D3 status: the short Beginner Settings root and reversible full-list preference 
 ## Status on November 26, 2026
 
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
+
+10.02 has a loopback regression for denied workout writes with a plans-only grant. Live connector acceptance remains open.
 Nutrition account isolation is prepared. Shared-device tests cover expired sessions, profile switches and delayed pairing. Hosted checks remain open.
 
 A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
