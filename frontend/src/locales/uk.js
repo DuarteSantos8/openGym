@@ -4201,6 +4201,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Бачиш лише ти, тут і на інших своїх пристроях. Навіть адмін не бачить.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Кадрування фото. Стрілки рухають, плюс і мінус змінюють масштаб.",
   "Picture removed. Back to the letter.": "Фото прибрано. Знову літера.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Фото прибрано. Літера залишиться до наступного входу через {0}.",
   "Picture set. Looking sharp.": "Фото встановлено. Виглядаєш чудово.",
   "Profile picture": "Фото профілю",
   "Remove picture": "Прибрати фото",

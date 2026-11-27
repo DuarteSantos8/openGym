@@ -4170,6 +4170,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Vidíš ji jen ty, tady i na svých dalších zařízeních. Ani admin ne.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Výřez fotky. Šipky ji posouvají, plus a minus přibližují.",
   "Picture removed. Back to the letter.": "Fotka odebrána. Zpátky k písmenu.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Fotka odebrána. Písmeno zůstane do příštího přihlášení přes {0}.",
   "Picture set. Looking sharp.": "Fotka nastavena. Sluší ti to.",
   "Profile picture": "Profilová fotka",
   "Remove picture": "Odebrat fotku",

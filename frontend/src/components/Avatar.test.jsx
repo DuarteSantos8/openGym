@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AvatarFace, AvatarSection } from './Avatar.jsx'
 import { createMediaStore, memoryBackend, _setMediaStore } from '../lib/media-store.js'
+import { useUI } from '../store/useUI.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -75,8 +76,25 @@ describe('the profile picture', () => {
     expect(host.textContent).toContain('stays on this device')
     expect(host.querySelector('input[type=file]').getAttribute('accept')).toBe('image/*')
     const remove = [...host.querySelectorAll('button')].find(b => b.textContent.includes('Remove picture'))
+    const toast = vi.fn()
+    useUI.setState({ toast })
     act(() => remove.click())
     expect(mocks.S.avatar).toBeUndefined()
+    expect(toast).toHaveBeenCalledWith('Picture removed. Back to the letter.')
+  })
+
+  it('a removed picture stays the letter until the next provider sign-in', async () => {
+    mocks.user = { id: 'u1', name: 'Ana', oidcPicture: '2026-11-28T09:00:00.000Z' }
+    mocks.config = { oidc: { label: 'MockID' } }
+    mocks.S = { ...photo, avatarOidc: { at: '2026-11-27T09:00:00.000Z', hash: HASH } }
+    await mount(<AvatarSection name="Ana" signedIn />)
+    const remove = [...host.querySelectorAll('button')].find(b => b.textContent.includes('Remove picture'))
+    const toast = vi.fn()
+    useUI.setState({ toast })
+    act(() => remove.click())
+    expect(toast).toHaveBeenCalledWith('Picture removed. Back to the letter until your next sign-in with MockID.')
+    expect(mocks.S.avatar).toBeUndefined()
+    expect(mocks.S.avatarOidc).toEqual({ at: '2026-11-28T09:00:00.000Z' })
   })
 
   it('says it syncs only where the server keeps it', async () => {

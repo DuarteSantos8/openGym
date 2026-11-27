@@ -4283,6 +4283,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "শুধু আপনিই দেখেন, এখানে আর আপনার অন্য ডিভাইসে। এমনকি অ্যাডমিনও না।",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "ছবি ক্রপ। তীর কী দিয়ে সরান, প্লাস আর মাইনাস দিয়ে জুম।",
   "Picture removed. Back to the letter.": "ছবি সরানো হয়েছে। আবার প্রথম অক্ষর।",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "ছবি সরানো হয়েছে। পরের বার {0} দিয়ে সাইন ইন করা পর্যন্ত প্রথম অক্ষর থাকবে।",
   "Picture set. Looking sharp.": "ছবি বসানো হয়েছে। দারুণ লাগছে।",
   "Profile picture": "প্রোফাইল ছবি",
   "Remove picture": "ছবি সরান",

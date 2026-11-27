@@ -13,7 +13,7 @@ import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJson
 import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
-import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, keepAvatarMark, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { keptHashes } from '../lib/media-refs.js'
@@ -1703,7 +1703,7 @@ export const useStore = create((set, get) => {
       const running = carryActive(cur, next) || next.active || null
       // No account: "Merge them in" joins this copy's own entries into the backup's.
       if (mergeWith?.device && !uid) {
-        const merged = keepReset(cur, Object.assign(clone(DEF), mergeStates(next, cur, { prefer: 'a' })))
+        const merged = keepAvatarMark(cur, keepReset(cur, Object.assign(clone(DEF), mergeStates(next, cur, { prefer: 'a' }))))
         stampRestore(merged, [cur, next], now)
         merged._ts = now
         merged.active = carryActive({ unit: next.unit, active: running }, merged)
@@ -1724,7 +1724,7 @@ export const useStore = create((set, get) => {
       const others = mergeWith.local ? mergeStates(cur, mergeWith.state) : mergeWith.state
       // The merge keeps the backup's reset stamp (prefer); a later one this copy or the server's
       // holds stays, as it does on a replace.
-      const merged = keepReset(others, keepReset(cur, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' }))))
+      const merged = keepAvatarMark(others, keepAvatarMark(cur, keepReset(others, keepReset(cur, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' }))))))
       stampRestore(merged, [cur, mergeWith.state, next], now)
       merged._ts = now
       merged.active = carryActive({ unit: next.unit, active: running }, merged)
@@ -1737,7 +1737,7 @@ export const useStore = create((set, get) => {
     // never takes the reset stamp back (keepReset).
     replaceState(S, push = false, { baseRev = null, baseWid } = {}) {
       if (push) { if (baseRev != null) replaceRev = { rev: baseRev, wid: baseWid }; else forceNext = true }
-      persist(keepReset(get().S, clone(S)), push)
+      persist(keepAvatarMark(get().S, keepReset(get().S, clone(S))), push)
     },
 
     // Fires after the moments where losing local data would actually hurt — a workout just

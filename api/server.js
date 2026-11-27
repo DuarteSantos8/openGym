@@ -523,6 +523,25 @@ function writeStateAs(uid, fn, { skipIf = null } = {}) {
   try { integrations.onStateWrite(uid, cur, next); } catch (e) { console.error('integrations onStateWrite', e); }
   return result;
 }
+// The provider-picture mark (frontend lib/avatar.js S.avatarOidc) only moves forward like `resetAt`,
+// and of two marks of one sign-in the one naming the picture shown stays; a picture sent with the older
+// mark it came from stays the provider's (frontend lib/sync-merge.js keepAvatarMark). A time that isn't
+// one this server wrote is no mark; a time up to `signedIn`, the account's last provider sign-in, counts
+// whatever the clock says now. True when what is stored differs from what was sent.
+function keepAvatarMark(cur, next, signedIn) {
+  const at = x => (x && typeof x === 'object' && typeof x.at === 'string' && x.at.length === 24 && !Number.isNaN(Date.parse(x.at)) && new Date(x.at).toISOString() === x.at && (x.at <= signedIn || Date.parse(x.at) < Date.now() + 864e5) ? x.at : '');
+  const mark = (t, h) => (typeof h === 'string' && /^[0-9a-f]{64}$/.test(h) ? { at: t, hash: h } : { at: t });
+  const a = cur?.avatarOidc, b = next.avatarOidc;
+  let keep = at(b) ? mark(b.at, b.hash) : null;
+  if (at(a) && (at(a) > at(b) || (at(a) === at(b) && a.hash !== b?.hash && a.hash === next.avatar?.m?.hash))) {
+    const own = at(a) > at(b) && at(b) && typeof b.hash === 'string' && b.hash === next.avatar?.m?.hash;
+    keep = mark(a.at, own ? b.hash : a.hash);
+  }
+  const same = keep ? !!b && typeof b === 'object' && b.at === keep.at && b.hash === keep.hash && Object.keys(b).length === Object.keys(keep).length : b === undefined;
+  if (keep) next.avatarOidc = keep;
+  else delete next.avatarOidc;
+  return !same;
+}
 // The write every route that replaces a profile's document ends in: PUT /api/data, and a scoped
 // token's PUT /api/token/data (tokens.js). `cur` is the stored document, `state` the one to store
 // (mutated), `overRead` whether the writer sent the revision it read and it is the current one.
@@ -546,6 +565,7 @@ function commitState(uid, cur, state, { overRead = false, stamped = false } = {}
   // undone by the next device that merges (sync-stamps.js).
   // A document nested too deep to compare is the bad request the stringify below refuses too.
   const report = {};
+  if (keepAvatarMark(cur, state, db.users.find(u => u.id === uid)?.oidc?.pictureAt)) report.changed = true;
   try { stampPut(cur, state, { overRead, stamped, report }); }
   catch (e) { if (e instanceof RangeError) return { status: 400, body: { error: 'invalid state' } }; throw e; }
   state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
@@ -854,6 +874,8 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // Authorization header is the only credential the route reads, and no browser attaches one.
 // The connector's OAuth registration and token exchange (oauth.js) are called by the assistant's
 // own server: the code and verifier in the body are the credential, and no cookie is read.
+// A GET that has the server fetch from elsewhere against a budget, which another site must not spend.
+const CSRF_CHECKED_GETS = new Set(['GET /api/oidc/picture']);
 const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/oauth/revoke', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
@@ -883,7 +905,7 @@ function bearerAuthenticates(req) {
   return !!sessionUser(auth.slice(7).trim());
 }
 function csrfOk(req, key) {
-  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return true;
+  if ((req.method === 'GET' && !CSRF_CHECKED_GETS.has(key)) || req.method === 'HEAD' || req.method === 'OPTIONS') return true;
   if (CSRF_EXEMPT.has(key)) return true;
   // The paired mobile app authenticates with a Bearer token. A browser never attaches one on its
   // own, so there is no ambient authority for a hostile page to borrow and no origin to check.
@@ -905,7 +927,9 @@ function csrfOk(req, key) {
   // No Origin header at all means no browser sent this — curl, a script, a monitoring check.
   // Browsers put an Origin on every state-changing request and a page cannot suppress it, so the
   // forgery this exists to stop always carries one.
-  if (!origin) return true;
+  // A GET carries none even from a browser, so the checked ones want a header that no page can
+  // send across sites without a preflight.
+  if (!origin) return !CSRF_CHECKED_GETS.has(key) || !!req.headers['x-opengym-account'];
   return originsMatch(origin, ORIGIN);
 }
 
@@ -1425,7 +1449,7 @@ function loginTarget(body) {
 }
 const acctKey = u => 'acct:' + u.id;
 const passkeyCount = u => db.creds.filter(c => c.userId === u.id).length;
-const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u), ...(isOwner(u) ? { owner: true } : {}), ...(oidcWayIn(u) ? { oidc: true } : {}) });
+const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u), ...(isOwner(u) ? { owner: true } : {}), ...(oidcWayIn(u) ? { oidc: true } : {}), ...(oidcWayIn(u) && u.oidc.picture && u.oidc.pictureAt ? { oidcPicture: u.oidc.pictureAt } : {}) });
 // A linked provider identity is a way in while the provider is configured (and the same issuer).
 const oidcWayIn = u => !!(OIDC.enabled && u?.oidc && String(u.oidc.iss || '').replace(/\/+$/, '') === OIDC.issuer);
 // The ways in besides passkeys, for "never remove the last one".
@@ -2232,24 +2256,25 @@ if (MEDIA_ON) {
 // neuters it even if opened as a page, CORP keeps other sites from embedding it, and no-store
 // keeps a copy out of the HTTP cache — the app's own media store is the only client cache, and
 // an HTTP-cache copy would outlive the sign-out purge. No Range and no ETag: nothing asks.
+const mediaHeaders = (mime, size, filename) => ({
+  'Content-Type': mime,
+  'Content-Length': String(size),
+  'Cache-Control': 'private, no-store',
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Security-Policy': "default-src 'none'; sandbox",
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'Content-Disposition': `inline; filename="${filename}"`,
+  'X-Robots-Tag': 'noindex',
+  // The paired phone reads the length before the body to refuse an oversized answer; it is
+  // CORS-safelisted already, this only spells it out for older WebViews.
+  'Access-Control-Expose-Headers': 'Content-Length'
+});
 async function sendMediaFile(res, f, hash) {
   let fd;
   try { fd = fs.openSync(f.path, 'r'); }
   catch { throw new MediaError(404, 'media-missing'); }   // swept between the lookup and here
   const size = fs.fstatSync(fd).size;
-  res.writeHead(200, {
-    'Content-Type': f.mime,
-    'Content-Length': String(size),
-    'Cache-Control': 'private, no-store',
-    'X-Content-Type-Options': 'nosniff',
-    'Content-Security-Policy': "default-src 'none'; sandbox",
-    'Cross-Origin-Resource-Policy': 'same-origin',
-    'Content-Disposition': `inline; filename="${hash}.${f.ext}"`,
-    'X-Robots-Tag': 'noindex',
-    // The paired phone reads the length before the body to refuse an oversized answer; it is
-    // CORS-safelisted already, this only spells it out for older WebViews.
-    'Access-Control-Expose-Headers': 'Content-Length'
-  });
+  res.writeHead(200, mediaHeaders(f.mime, size, `${hash}.${f.ext}`));
   try { await pipeline(fs.createReadStream(null, { fd }), res); }
   catch { res.destroy(); }   // the client went away mid-download; nothing left to answer
 }
@@ -2382,7 +2407,9 @@ if (OIDC.enabled) {
     json, readBody, readSession, sessionOf, audit, auditFail, saveDb, publicUser, requireAdmin,
     db: () => db, sessionCookie, makeSession, claimFirstAdmin, isAdmin, nameTaken, normalizeEmail,
     inviteOnly: INVITE_ONLY, proveOwner, otherWaysIn: u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0),
-    cookieValues,
+    cookieValues, wrongAccount,
+    // The provider's picture goes the way of a profile picture, so only where avatars are kept.
+    picture: MEDIA_ON ? { maxBytes: Math.floor(MEDIA_LIMITS.imageMB * 1048576), send: (res, bytes, type) => { res.writeHead(200, mediaHeaders(type.mime, bytes.length, 'picture.' + type.ext)); res.end(bytes); } } : null,
     syncRoles: TRAINERS ? (uid, roles) => org.syncClaimRoles(uid, roles) : null,
     throttle: req => { const a = limitAddress(req); return OIDC_BURST.take(a) || ADDR_FAILS.retryAfter('oidc|' + a); },
     strike: req => strikeAddress(req, 'oidc')

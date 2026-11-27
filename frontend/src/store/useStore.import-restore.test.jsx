@@ -112,3 +112,21 @@ describe('a restored backup brings back what it holds, and it stays', () => {
     await vi.waitFor(() => expect(toast).toHaveBeenCalled())
   })
 })
+
+describe('a restored backup leaves a removed profile picture removed', () => {
+  it('keeps the provider mark when the backup has none or an older one, on a replace and on a merge', () => {
+    const at = '2026-11-27T09:00:00.000Z'
+    useStore.setState({ S: { ...clone(useStore.getState().S), avatarOidc: { at } } })
+    useStore.getState().importBackup({ ...backup, avatarOidc: { at: '2026-11-01T09:00:00.000Z' } })
+    expect(useStore.getState().S.avatarOidc).toEqual({ at })
+    useStore.getState().importBackup(backup, { mergeWith: { state: clone(doc), rev: doc._rev } })
+    expect(useStore.getState().S.avatarOidc).toEqual({ at })
+    const later = { at: '2026-11-28T09:00:00.000Z' }
+    useStore.getState().importBackup(backup, { mergeWith: { state: { ...clone(doc), avatarOidc: later }, rev: doc._rev } })
+    expect(useStore.getState().S.avatarOidc).toEqual(later)
+    useStore.setState({ S: { ...clone(useStore.getState().S), avatarOidc: { at } } })
+    useStore.setState({ user: null })
+    useStore.getState().importBackup(backup, { mergeWith: { device: true } })
+    expect(useStore.getState().S.avatarOidc).toEqual({ at })
+  })
+})

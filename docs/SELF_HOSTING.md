@@ -512,6 +512,12 @@ What it does:
   fresh sign-in at the provider.
 - Admin → **Identity provider** shows what the server was told, whether the provider answered,
   how many signing keys it loaded, and the last error. **Check now** asks again without a restart.
+- A `picture` the provider sends (ID token or userinfo) becomes the profile picture at each provider
+  sign-in, unless the person chose a photo or icon in openGym. It needs uploads on. The server fetches
+  it without redirects, up to `MEDIA_IMAGE_MAX_MB`, as JPEG, PNG, WebP or GIF, and off the issuer's own
+  origin only over https from a public address (`ALLOWED_PRIVATE_IPS` opens an address, never the name
+  `localhost`), at most 10 times an hour per profile. When that fails the profile keeps its picture,
+  and the audit log says why.
 
 **Who gets in.** With no group settings, anyone your provider signs in gets a profile. To let
 in only a group (the "being in the openGym group is the invite" setup):

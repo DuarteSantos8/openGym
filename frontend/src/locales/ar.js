@@ -4259,6 +4259,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "لا يراها أحد غيرك، هنا وعلى أجهزتك الأخرى. ولا حتى المشرف.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "قص الصورة. مفاتيح الأسهم تحركها، وزائد وناقص للتكبير.",
   "Picture removed. Back to the letter.": "أُزيلت الصورة. عاد الحرف الأول.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "أُزيلت الصورة. يبقى الحرف الأول حتى تسجيل دخولك التالي عبر {0}.",
   "Picture set. Looking sharp.": "تم تعيين الصورة. تبدو رائعًا.",
   "Profile picture": "صورة الملف الشخصي",
   "Remove picture": "إزالة الصورة",

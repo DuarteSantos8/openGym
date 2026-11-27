@@ -4204,6 +4204,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "나만 볼 수 있어요. 여기서도, 내 다른 기기에서도. 관리자도 못 봐요.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "사진 자르기. 화살표 키로 옮기고, 플러스와 마이너스로 확대해요.",
   "Picture removed. Back to the letter.": "사진을 지웠어요. 다시 이니셜이에요.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "사진을 지웠어요. 다음에 {0}(으)로 로그인할 때까지 이니셜이에요.",
   "Picture set. Looking sharp.": "사진을 설정했어요. 멋져요.",
   "Profile picture": "프로필 사진",
   "Remove picture": "사진 지우기",

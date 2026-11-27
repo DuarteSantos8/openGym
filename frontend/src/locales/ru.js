@@ -4208,6 +4208,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Видишь только ты, здесь и на других своих устройствах. Даже админ не видит.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Кадрирование фото. Стрелки двигают, плюс и минус меняют масштаб.",
   "Picture removed. Back to the letter.": "Фото убрано. Снова буква.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Фото убрано. Буква останется до следующего входа через {0}.",
   "Picture set. Looking sharp.": "Фото установлено. Выглядишь отлично.",
   "Profile picture": "Фото профиля",
   "Remove picture": "Убрать фото",

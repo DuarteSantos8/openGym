@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest'
 import {
   avatarOf, initialOf, setAvatarPhoto, setAvatarPreset, clearAvatar, sanitizeAvatar, AVATAR_PRESETS,
   clampCrop, sourceRect, zoomAround, coverScale, hasImageMetadata, openAvatarImage, renderAvatar,
-  AVATAR_EDGE, AVATAR_MAX_BYTES, ZOOM_MAX
+  AVATAR_EDGE, AVATAR_MAX_BYTES, ZOOM_MAX, providerMarkOf, fromProvider, setAvatarFromProvider, renderAvatarFrom
 } from './avatar.js'
 import { referencedHashes, uploadableFiles, keptHashes } from './media-refs.js'
-import { stampEdits, mergeStates } from './sync-merge.js'
+import { stampEdits, mergeStates, keepAvatarMark } from './sync-merge.js'
 import { exportBackupZip, readBackupFile, storeBackupMedia } from './backup-media.js'
 import { createMediaStore, memoryBackend } from './media-store.js'
 import { sha256Hex } from './sha256.js'
@@ -63,6 +63,73 @@ describe('the avatar in the state', () => {
     clearAvatar(s)
     expect('avatar' in s).toBe(false)
     expect(new Set(AVATAR_PRESETS.map(p => p.id)).size).toBe(AVATAR_PRESETS.length)
+  })
+  it('notes the provider sign-in a picture came from beside the picture, which stays a plain photo', () => {
+    const T1 = '2026-11-27T09:00:00.000Z'
+    const s = {}
+    setAvatarFromProvider(s, ref(), T1)
+    expect(s.avatar).toEqual({ m: ref() })
+    expect(s.avatarOidc).toEqual({ at: T1, hash: H('a') })
+    expect(fromProvider(s)).toBe(true)
+    setAvatarPhoto(s, ref(H('b')))
+    expect(fromProvider(s), 'a photo chosen here, whatever the mark says').toBe(false)
+    setAvatarPreset(s, 'moon')
+    expect(fromProvider(s), 'an icon chosen here, whatever the mark says').toBe(false)
+    expect(providerMarkOf(s)).toEqual({ at: T1, hash: H('a') })
+    for (const junk of [{ at: 42 }, { at: '' }, { at: 'x'.repeat(65) }, { hash: H('a') }, 'x', null, [T1]]) {
+      expect(providerMarkOf({ avatarOidc: junk })).toBe(null)
+    }
+    expect(providerMarkOf({ avatarOidc: { at: T1, hash: '../x' } })).toEqual({ at: T1, hash: null })
+  })
+  it('a copy put in place of the profile (a backup, a reset) never takes the provider mark back', () => {
+    const T1 = '2026-11-27T09:00:00.000Z', T2 = '2026-11-28T09:00:00.000Z'
+    const removed = { avatarOidc: { at: T2 } }
+    expect(keepAvatarMark(removed, {}).avatarOidc).toEqual({ at: T2 })
+    expect(keepAvatarMark(removed, { avatarOidc: { at: T1, hash: H('a') } }).avatarOidc).toEqual({ at: T2 })
+    expect(keepAvatarMark({ avatarOidc: { at: T1 } }, { avatarOidc: { at: T2 } }).avatarOidc).toEqual({ at: T2 })
+    expect(keepAvatarMark({}, { avatarOidc: { at: T1 } }).avatarOidc).toEqual({ at: T1 })
+    const junk = { at: '2' + 'z'.repeat(100) }
+    expect(keepAvatarMark({ avatarOidc: junk }, { avatarOidc: { at: T1 } }).avatarOidc).toEqual({ at: T1 })
+    expect(keepAvatarMark({ avatarOidc: { at: T1 } }, { avatarOidc: junk }).avatarOidc).toEqual({ at: T1 })
+    expect(keepAvatarMark({ avatarOidc: { at: 'x' } }, { avatarOidc: { at: T1 } }).avatarOidc).toEqual({ at: T1 })
+    expect(providerMarkOf({ avatarOidc: { at: 'x' } })).toBe(null)
+    for (const at of ['2026-11-27T09:00:00Z', '2026-11-27 09:00:00.000Z', '9999-99-99T99:99:99.999Z', '2026-11-27T09:00:00.000+00:00', '2026-11-31T09:00:00.000Z']) {
+      expect(providerMarkOf({ avatarOidc: { at } }), at).toBe(null)
+      expect(keepAvatarMark({ avatarOidc: { at } }, { avatarOidc: { at: T1 } }).avatarOidc).toEqual({ at: T1 })
+    }
+    expect(keepAvatarMark({ avatarOidc: { at: T2, hash: 'z'.repeat(900), note: 1 } }, {}).avatarOidc).toEqual({ at: T2 })
+    expect('avatarOidc' in keepAvatarMark({}, { avatarOidc: { at: 'x' } })).toBe(false)
+    for (const hash of [H('A'), H('a').slice(1), H('a') + 'a', ' ' + H('a')]) {
+      expect(keepAvatarMark({}, { avatarOidc: { at: T1, hash } }).avatarOidc).toEqual({ at: T1 })
+    }
+    const restored = mark => ({ avatar: { m: ref(H('a')) }, avatarOidc: mark })
+    for (const later of [{ at: T2, hash: H('b') }, { at: T2 }]) {
+      expect(keepAvatarMark({ avatarOidc: later }, restored({ at: T1, hash: H('a') })).avatarOidc, 'a backup\'s provider picture').toEqual({ at: T2, hash: H('a') })
+      expect(keepAvatarMark({ avatarOidc: later }, restored({ at: T1, hash: H('c') })).avatarOidc, 'a backup\'s own photo').toEqual(later)
+      expect(keepAvatarMark({ avatarOidc: later }, restored({ at: 'x', hash: H('a') })).avatarOidc).toEqual(later)
+    }
+    const shown = () => ({ avatar: { m: ref(H('b')) }, avatarOidc: { at: T2, hash: H('a') } })
+    expect(keepAvatarMark({ avatarOidc: { at: T2, hash: H('b') } }, shown()).avatarOidc, 'of two marks of one sign-in, the one naming the picture shown').toEqual({ at: T2, hash: H('b') })
+    expect(keepAvatarMark({ avatarOidc: { at: T2, hash: H('c') } }, shown()).avatarOidc).toEqual({ at: T2, hash: H('a') })
+  })
+  it('a removal after a provider sign-in holds until a later one, and never moves the mark back', () => {
+    const T1 = '2026-11-27T09:00:00.000Z', T2 = '2026-11-28T09:00:00.000Z'
+    const s = {}
+    setAvatarFromProvider(s, ref(), T1)
+    clearAvatar(s, T2)
+    expect('avatar' in s).toBe(false)
+    expect(s.avatarOidc).toEqual({ at: T2 })
+    setAvatarFromProvider(s, ref(), T2)
+    clearAvatar(s, T1)
+    expect(s.avatarOidc, 'a tab that knows only the older sign-in').toEqual({ at: T2, hash: H('a') })
+    setAvatarFromProvider(s, ref(), T2)
+    clearAvatar(s, T2)
+    expect(s.avatarOidc).toEqual({ at: T2, hash: H('a') })
+    clearAvatar(s)
+    expect(s.avatarOidc).toEqual({ at: T2, hash: H('a') })
+    const plain = { avatar: { m: ref() } }
+    clearAvatar(plain)
+    expect(plain).toEqual({})
   })
   it('falls back to the first letter, emoji and accents included', () => {
     expect(initialOf('ana')).toBe('A')
@@ -147,6 +214,15 @@ describe('no metadata leaves the device', () => {
     await expect(renderAvatar(await openAvatarImage(new Blob([jpeg()]), never), 264, { zoom: 1 }, never)).rejects.toMatchObject({ code: 'too-large' })
   })
 
+  it('makes the provider\'s picture the same way: the centre square, re-encoded, never the bytes it came as', async () => {
+    const d = fakeDeps()
+    const out = await renderAvatarFrom(new Blob([jpegWithGps()], { type: 'image/jpeg' }), d)
+    expect(new Uint8Array(await out.blob.arrayBuffer())).toEqual(webpVp8(256, 256))
+    expect(out.media).toMatchObject({ kind: 'image', width: AVATAR_EDGE, height: AVATAR_EDGE })
+    expect(d.drawn[1].args.slice(1, 5), 'the centre square of a 1280 x 960 copy').toEqual([160, 0, 960, 960])
+    await expect(renderAvatarFrom(new Blob([latin1('<svg xmlns="http://www.w3.org/2000/svg"/>')]), fakeDeps())).rejects.toMatchObject({ code: 'type' })
+  })
+
   it('refuses what is not a still image before decoding anything', async () => {
     const d = fakeDeps()
     const wav = bytes('RIFF', [0, 0, 0, 0], 'WAVE', 'fmt ', [16, 0, 0, 0], [1, 0], new Uint8Array(40))
@@ -164,6 +240,18 @@ describe('the avatar syncs as a hash', () => {
     expect(uploadableFiles(S).map(f => f.hash)).toEqual([H('c'), H('b')])
     expect(uploadableFiles(S, { avatar: false }).map(f => f.hash)).toEqual([H('c')])
     expect([...referencedHashes({ avatar: { preset: 'flame' } })]).toEqual([])
+  })
+
+  it('a provider picture removed on one device stays removed, and a later pick of one\'s own wins', () => {
+    const T1 = '2026-11-27T09:00:00.000Z'
+    const base = { _ts: 1, unit: 'kg', workouts: [], routines: [] }
+    const phone = stampEdits(base, { ...base, _ts: 10, avatar: { m: ref(H('d')), oidc: T1 } }, 100)
+    const laptop = stampEdits(phone, { ...phone, _ts: 20, avatar: { oidc: T1 } }, 200)
+    expect(mergeStates(phone, laptop).avatar).toEqual({ oidc: T1 })
+    expect(mergeStates(laptop, phone).avatar).toEqual({ oidc: T1 })
+    const own = stampEdits(laptop, { ...laptop, _ts: 30, avatar: { preset: 'crown' } }, 300)
+    expect(mergeStates(phone, own).avatar).toEqual({ preset: 'crown' })
+    expect([...referencedHashes(laptop)]).toEqual([])
   })
 
   it('the picture set last wins a merge, and a removal stays removed', () => {
@@ -203,6 +291,14 @@ describe('the avatar in a backup', () => {
     const bad = { unit: 'kg', workouts: [], routines: [], avatar: { m: { hash: '../../etc', mime: 'text/html' } } }
     expect((await readBackupFile(new File([JSON.stringify(bad)], 'b.json'))).state.avatar).toBeUndefined()
     expect(sanitizeAvatar({ avatar: { preset: 'moon', junk: 1 } }).avatar).toEqual({ preset: 'moon' })
+  })
+
+  it('keeps the provider\'s mark through a backup, and nothing else in it', () => {
+    const T1 = '2026-11-27T09:00:00.000Z'
+    expect(sanitizeAvatar({ avatar: { m: ref() }, avatarOidc: { at: T1, hash: H('a'), junk: 1 } })).toEqual({ avatar: { m: ref() }, avatarOidc: { at: T1, hash: H('a') } })
+    expect(sanitizeAvatar({ avatarOidc: { at: T1, hash: 'nope' } })).toEqual({ avatarOidc: { at: T1 } })
+    expect(sanitizeAvatar({ avatarOidc: { at: { evil: 1 } } })).toEqual({})
+    expect(sanitizeAvatar({ avatar: { m: ref(), oidc: T1 } })).toEqual({ avatar: { m: ref() } })
   })
 
   it('a sound of one\'s own comes back from the zip too (it was exported, then skipped on import)', async () => {

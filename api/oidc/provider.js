@@ -1,7 +1,11 @@
 /* Talking to the identity provider: discovery (.well-known/openid-configuration), its key set,
  * the token endpoint and userinfo. Each answer is size-capped and time-boxed, the discovery
- * document and the keys are cached for an hour, and the last error is kept for the admin page. */
+ * document and the keys are cached for an hour, and the last error is kept for the admin page.
+ * The profile picture the provider names (the `picture` claim) is fetched here too. */
+import net from 'node:net';
+import { fetch as undiciFetch, Agent } from 'undici';
 import { OidcError } from './jwt.js';
+import { isPrivateAddr, outboundLookup } from '../net-guard.js';
 
 const HOUR = 3600000;
 const MAX_BYTES = 256 * 1024;
@@ -10,13 +14,21 @@ const TIMEOUT_MS = 10000;
 // so junk tokens cannot turn us into a request amplifier against the provider.
 const REFETCH_MIN_MS = 30000;
 
+// Some providers let people type their own picture address (a Keycloak attribute, an LDAP field
+// behind Authelia). Off the issuer's own origin it is fetched like a push endpoint is sent to:
+// over https only, never from a private, loopback or link-local address, judged in the
+// connection's own lookup.
+let publicAgent = null;
+const publicFetch = (url, init) => undiciFetch(url, { ...init, dispatcher: (publicAgent ||= new Agent({ connect: { lookup: outboundLookup() } })) });
+const localHost = h => /^localhost$|\.localhost$/i.test(h) || (net.isIP(h) !== 0 && isPrivateAddr(h));
+
 async function readJson(r, what) {
   const text = await r.text();
   if (text.length > MAX_BYTES) throw new OidcError('provider', `the ${what} answer is too large`);
   try { return JSON.parse(text); } catch { throw new OidcError('provider', `the ${what} answer is not JSON`); }
 }
 
-export function createProvider(cfg, { fetchImpl = globalThis.fetch, now = Date.now } = {}) {
+export function createProvider(cfg, { fetchImpl = globalThis.fetch, pictureFetch = publicFetch, now = Date.now, timeoutMs = TIMEOUT_MS } = {}) {
   let meta = null, metaAt = 0;
   let keys = null, keysAt = 0, keysTriedAt = 0;
   const status = { lastOk: null, lastError: null, lastErrorAt: null };
@@ -24,7 +36,7 @@ export function createProvider(cfg, { fetchImpl = globalThis.fetch, now = Date.n
 
   async function call(url, init, what) {
     let r;
-    try { r = await fetchImpl(url, { ...init, redirect: 'error', signal: AbortSignal.timeout(TIMEOUT_MS) }); }
+    try { r = await fetchImpl(url, { ...init, redirect: 'error', signal: AbortSignal.timeout(timeoutMs) }); }
     catch (e) { throw new OidcError('provider', `the ${what} could not be reached (${e.name === 'TimeoutError' ? 'timeout' : 'network'})`); }
     const body = await readJson(r, what);
     if (!r.ok) {
@@ -96,12 +108,44 @@ export function createProvider(cfg, { fetchImpl = globalThis.fetch, now = Date.n
     } catch (e) { fail(e); throw e; }
   }
 
-  async function userinfo(accessToken) {
+  async function userinfo(accessToken, { quiet = false } = {}) {
     const m = await discover();
     if (!m.userinfo_endpoint || typeof accessToken !== 'string') return null;
     try { return await call(m.userinfo_endpoint, { headers: { Authorization: 'Bearer ' + accessToken, Accept: 'application/json' } }, 'userinfo endpoint'); }
-    catch (e) { fail(e); return null; }
+    catch (e) { if (!quiet) fail(e); return null; }
   }
 
-  return { discover, jwks, exchange, userinfo, status, get meta() { return meta; }, get keyCount() { return keys?.keys?.length || 0; } };
+  // Not counted as a provider error on the admin page: the address can be the person's own.
+  async function picture(url, maxBytes) {
+    const u = new URL(url);
+    const own = u.origin === new URL(cfg.issuer).origin;
+    // 'picture-refused': the same address will never do, unlike a timeout or a provider's 5xx.
+    const refused = why => new OidcError('picture-refused', why);
+    if (!own && u.protocol !== 'https:') throw refused('the picture is not on https');
+    if (!own && localHost(u.hostname.replace(/^\[|\]$/g, ''))) throw refused('the picture is on a private address');
+    const tooLarge = () => new OidcError('picture-size', 'the picture is too large');
+    try {
+      const r = await (own ? fetchImpl : pictureFetch)(u.href, { headers: { Accept: 'image/*' }, redirect: 'manual', signal: AbortSignal.timeout(timeoutMs) });
+      if (!r.ok) {
+        r.body?.cancel().catch(() => {});
+        const why = 'HTTP ' + r.status;
+        throw r.status < 500 && r.status !== 408 && r.status !== 429 ? refused(why) : new OidcError('picture', why);
+      }
+      if (Number(r.headers.get('content-length')) > maxBytes) { r.body?.cancel().catch(() => {}); throw tooLarge(); }
+      const parts = [];
+      let n = 0;
+      for await (const chunk of r.body || []) {
+        n += chunk.length;
+        if (n > maxBytes) throw tooLarge();
+        parts.push(chunk);
+      }
+      return Buffer.concat(parts);
+    } catch (e) {
+      if (e instanceof OidcError) throw e;
+      if (e?.cause?.code === 'EBLOCKED') throw refused('the picture is on a private address');
+      throw new OidcError('picture', e.name === 'TimeoutError' ? 'timeout' : 'network');
+    }
+  }
+
+  return { discover, jwks, exchange, userinfo, picture, status, get meta() { return meta; }, get keyCount() { return keys?.keys?.length || 0; } };
 }

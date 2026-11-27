@@ -4170,6 +4170,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Chỉ bạn thấy, ở đây và trên các thiết bị khác của bạn. Kể cả quản trị viên cũng không.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Cắt ảnh. Phím mũi tên để di chuyển, cộng và trừ để phóng to.",
   "Picture removed. Back to the letter.": "Đã gỡ ảnh. Trở lại chữ cái đầu.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Đã gỡ ảnh. Hiện chữ cái đầu cho đến lần đăng nhập tiếp theo bằng {0}.",
   "Picture set. Looking sharp.": "Đã đặt ảnh. Trông tuyệt đấy.",
   "Profile picture": "Ảnh hồ sơ",
   "Remove picture": "Gỡ ảnh",

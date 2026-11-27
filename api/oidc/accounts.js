@@ -62,6 +62,19 @@ export function decide(db, claims, cfg, { inviteOnly = false, normalizeEmail = e
   return { kind: 'create' };
 }
 
+export const MAX_PICTURE_URL = 2048;
+
+/** The `picture` claim (OIDC Core 5.1, the URL of an image) as an address this server may fetch:
+ *  http(s), no user name or password in it, at most MAX_PICTURE_URL long. Anything else is null. */
+export function pictureOf(claims) {
+  const v = claims?.picture;
+  if (typeof v !== 'string' || !v || v.length > MAX_PICTURE_URL) return null;
+  let u;
+  try { u = new URL(v); } catch { return null; }
+  if (!/^https?:$/.test(u.protocol) || !u.hostname || u.username || u.password) return null;
+  return u.href.length <= MAX_PICTURE_URL ? u.href : null;
+}
+
 /** A name for a new profile: what the provider calls them, made unique among names that sign in. */
 export function nameFor(claims, taken) {
   const pick = [claims.name, claims.preferred_username, claims.nickname, typeof claims.email === 'string' ? claims.email.split('@')[0] : '']

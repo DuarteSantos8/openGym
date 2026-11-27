@@ -4204,6 +4204,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "सिर्फ़ आप इसे देखते हैं, यहाँ और आपके दूसरे डिवाइस पर। एडमिन भी नहीं।",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "फ़ोटो क्रॉप। तीर कुंजियाँ खिसकाती हैं, प्लस और माइनस ज़ूम करते हैं।",
   "Picture removed. Back to the letter.": "तस्वीर हटा दी गई। वापस पहला अक्षर।",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "तस्वीर हटा दी गई। अगली बार {0} से साइन इन करने तक पहला अक्षर दिखेगा।",
   "Picture set. Looking sharp.": "तस्वीर लग गई। शानदार लग रहे हैं।",
   "Profile picture": "प्रोफ़ाइल तस्वीर",
   "Remove picture": "तस्वीर हटाएँ",

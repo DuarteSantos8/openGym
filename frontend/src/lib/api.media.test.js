@@ -24,6 +24,8 @@ describe('apiBlob', () => {
     expect(new Uint8Array(await b.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3, 4, 5, 6]))
     expect(fetchImpl.mock.calls[0][0]).toBe('https://gym.example.com/api/media/abc')
     expect(fetchImpl.mock.calls[0][1].headers).toEqual({ Authorization: 'Bearer TOKEN' })
+    await apiBlob('/api/oidc/picture', { fetchImpl, headers: { 'X-OpenGym-Account': 'u1' } })
+    expect(fetchImpl.mock.calls[1][1].headers).toEqual({ Authorization: 'Bearer TOKEN', 'X-OpenGym-Account': 'u1' })
   })
 
   it('refuses an answer that announces more than the file can be, before reading it', async () => {

@@ -1163,6 +1163,39 @@
       "expect": []
     },
     {
+      "name": "a profile picture made from the identity provider's keeps its file",
+      "state": {
+        "avatar": {
+          "m": {
+            "kind": "image",
+            "hash": "7777777777777777777777777777777777777777777777777777777777777777",
+            "mime": "image/webp",
+            "size": 9000,
+            "width": 256,
+            "height": 256,
+            "at": 2
+          }
+        },
+        "avatarOidc": {
+          "at": "2026-11-27T09:00:00.000Z",
+          "hash": "7777777777777777777777777777777777777777777777777777777777777777"
+        }
+      },
+      "expect": [
+        "7777777777777777777777777777777777777777777777777777777777777777"
+      ]
+    },
+    {
+      "name": "the mark of a provider picture that was removed keeps no file",
+      "state": {
+        "avatarOidc": {
+          "at": "2026-11-27T09:00:00.000Z",
+          "hash": "8888888888888888888888888888888888888888888888888888888888888888"
+        }
+      },
+      "expect": []
+    },
+    {
       "name": "your own media on built-in exercises, a removed one and a malformed one",
       "state": {
         "exMedia": {

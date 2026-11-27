@@ -3521,6 +3521,7 @@ export const PT_BR_OVERRIDES = {
   "Only you see it, here and on your other devices. Not even an admin can.": "Só você vê, aqui e nos seus outros dispositivos. Nem um admin.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Recorte da foto. As setas movem, mais e menos dão zoom.",
   "Picture removed. Back to the letter.": "Foto removida. Volta a inicial.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Foto removida. Fica a inicial até você entrar de novo com {0}.",
   "Picture set. Looking sharp.": "Foto definida. Ficou ótimo.",
   "Profile picture": "Foto de perfil",
   "Remove picture": "Remover foto",

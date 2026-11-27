@@ -60,7 +60,8 @@ info:
     State-changing browser requests must come from the app's own origin. The server
     checks `Sec-Fetch-Site` (falling back to `Origin` vs the configured `ORIGIN`);
     a mismatch is refused with `403 {"error":"cross-origin request refused","code":"origin-mismatch","expected":ORIGIN}` on any
-    non-GET route, the passkey routes included. Exempt: `pair/redeem`, which the mobile
+    non-GET route, the passkey routes included, and on GET /api/oidc/picture, which without
+    `Sec-Fetch-Site` and `Origin` also needs its `X-OpenGym-Account` header. Exempt: `pair/redeem`, which the mobile
     app calls from its own origin (the code in the body is the credential, and the token
     comes back in the body, never as a cookie), and any request a Bearer token
     authenticates by itself: a valid session token, with no session cookie beside it, on
@@ -789,6 +790,45 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { description: The proof was missing or wrong (`reauth-required` for a stale provider proof). }
         '409': { description: The provider is the only way in (`last-way-in`). }
+
+  /api/oidc/picture:
+    get:
+      tags: [oidc]
+      operationId: oidcPicture
+      summary: The picture the provider named at your last sign-in
+      description: |
+        Fetched from the `picture` claim's address (ID token or userinfo) of the caller's last
+        provider sign-in, for the caller only, and not kept: the app crops and re-encodes it like a
+        picked photo and stores that as the profile picture (`avatar` in the state). Only on a
+        server that keeps avatars (`media.avatar` in GET /api/config); without uploads this is 404.
+
+        The address is fetched without redirects, for at most 10 seconds and `MEDIA_IMAGE_MAX_MB`.
+        Off the issuer's own origin it is fetched over https only and never from `localhost` or a
+        private, loopback or link-local address (`ALLOWED_PRIVATE_IPS` opens an address). A failed
+        fetch is audited as `auth.oidc.picture` with the reason, never the address. What comes back has to be a JPEG, PNG, WebP or
+        GIF by its first bytes. Same headers as GET /api/media/{hash}. Header `X-OpenGym-Account`
+        as on PUT /api/media/{hash}, required when the request has neither `Sec-Fetch-Site`,
+        `Origin` nor a Bearer token. At most 10 an hour per profile. Checked for CSRF like a
+        write, so another site cannot spend that budget.
+      responses:
+        '200':
+          description: The image.
+          headers:
+            Content-Length: { schema: { type: integer } }
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+            image/gif: { schema: { type: string, format: binary } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Sent from another site (`origin-mismatch`). }
+        '404': { description: No picture from the last provider sign-in (`no-picture`), or uploads are off. }
+        '409': { description: Signed in as another account than `X-OpenGym-Account` names (`account-mismatch`). }
+        '413': { description: Larger than `MEDIA_IMAGE_MAX_MB` (`media-too-large`). }
+        '415': { description: Not a JPEG, PNG, WebP or GIF (`media-type`). }
+        '422': { description: 'The address is refused and will stay so until the next sign-in: not https or a private address off the issuer''s origin, a redirect, or a 4xx from its host (`picture-refused`).' }
+        '429': { description: Over the hourly budget (`locked`, with `Retry-After`). }
+        '502': { description: 'The address could not be fetched this time: a timeout, no connection, or a 5xx, 408 or 429 from its host (`picture-unavailable`).' }
 
   /api/logout/all:
     post:
@@ -6368,6 +6408,13 @@ components:
         owner: { type: boolean, description: Present (true) only for the instance owner. }
         admin: { type: boolean }
         oidc: { type: boolean, description: Present (true) when the profile is linked to the configured identity provider. }
+        oidcPicture:
+          type: string
+          format: date-time
+          description: >-
+            Present when the last provider sign-in named a picture (the `picture` claim) on a server
+            that keeps avatars: the time of that sign-in, always later than the one before.
+            GET /api/oidc/picture has the image.
       example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
 
     # ------------------------------------------------------------------ WebAuthn

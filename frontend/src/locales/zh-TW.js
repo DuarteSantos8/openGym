@@ -4197,6 +4197,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "只有你看得到，這裡和你的其他裝置上都是。管理員也看不到。",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "裁切照片。方向鍵移動，加號和減號縮放。",
   "Picture removed. Back to the letter.": "照片已移除。換回首字母了。",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "照片已移除。下次使用 {0} 登入前顯示首字母。",
   "Picture set. Looking sharp.": "照片已設定。真有精神。",
   "Profile picture": "大頭貼",
   "Remove picture": "移除照片",
