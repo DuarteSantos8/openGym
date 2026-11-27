@@ -87,25 +87,6 @@ function optionalRecord(x) {
 }
 
 const amountFields = ['amountG', 'amountMl', 'serving']
-const amountNumber = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1000000
-// Only rows with one coherent amount dimension may have that dimension repaired. Other opaque
-// records keep the ordinary field merge, even when they already contain both dimensions.
-function amountDimension(x) {
-  if (x.schemaVersion !== 1) return null
-  const g = x.amountG != null, m = x.amountMl != null
-  if (g === m) return null
-  const key = g ? 'amountG' : 'amountMl'
-  if (!amountNumber(x[key])) return null
-  if (Object.hasOwn(x, 'serving')) {
-    const s = x.serving
-    if (!isMap(s) || typeof s.label !== 'string' || !s.label.trim() || s.label.trim().length > 200 ||
-        !amountNumber(s.count) || !amountNumber(s.size) || !(s.size > 0) ||
-        (key === 'amountG' ? s.unit !== 'g' : s.unit !== 'mL')) return null
-    const amount = Math.round((s.count * s.size + Number.EPSILON) * 1000) / 1000
-    if (amount !== x[key]) return null
-  }
-  return key
-}
 // A cleared or partly cleared portion is still a portion: its members move together.
 function amountGroup(x) {
   const group = {}
@@ -113,12 +94,30 @@ function amountGroup(x) {
   return group
 }
 function settleAmountGroup(a, b, out) {
-  // Settle every pair of current-schema rows, coherent or not. Skipping a cleared copy let the
-  // field merge mix it with the others, so the result depended on which device synced first.
-  // A row that already holds both dimensions is malformed and keeps the ordinary field merge.
-  const settles = x => x.schemaVersion === 1 && !(x.amountG != null && x.amountMl != null)
-  const readable = x => amountDimension(x) || (x.amountG == null && x.amountMl == null && !Object.hasOwn(x, 'serving'))
-  if (!settles(a) || !settles(b) || (!readable(a) && !readable(b))) return
+  // Settle every pair of known-schema rows as whole portions: coherent, cleared or malformed.
+  // Any exception lets the field merge mix members of different copies, and then the result
+  // depends on which device synced first. The newest portion wins whole; a malformed portion is
+  // kept as it is only while it is the newest, and is never repaired field by field.
+  // Omitted/zero versions share this shape. Two unknown versions retain ordinary field merge.
+  const known = x => x.schemaVersion === 1 || x.schemaVersion === 0 || x.schemaVersion === undefined
+  const knownA = known(a), knownB = known(b)
+  if (!knownA || !knownB) {
+    if (knownA === knownB) return
+    // An older writer cannot migrate a future portion, and a newer one must not be mixed with
+    // it. The newest copy wins whole, with its schema, fields and clocks, so replaying an old
+    // quantity cannot hide a later future edit and a restored backup (stamped now) still lands.
+    // A tie keeps the future copy.
+    const portionClock = row => Math.max(...['schemaVersion', ...amountFields].map(key => optionalTime(row._f?.[key])))
+    const future = knownA ? b : a, current = knownA ? a : b
+    const take = portionClock(current) > portionClock(future) ? current : future
+    for (const key of ['schemaVersion', ...amountFields]) {
+      if (Object.hasOwn(take, key)) out[key] = clone(take[key])
+      else delete out[key]
+      if (Object.hasOwn(take._f || {}, key)) out._f[key] = take._f[key]
+      else delete out._f[key]
+    }
+    return
+  }
   // A change or removal of any member dates the whole portion, including after
   // earlier merges. Keeping the maximum makes this choice independent of grouping.
   const clock = row => Math.max(...amountFields.map(key => optionalTime(row._f?.[key])))
