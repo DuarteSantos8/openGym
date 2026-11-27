@@ -119,6 +119,7 @@ const Library = lazyView(() => import('./views/Library.jsx'))
 const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
 const Community = lazyView(() => import('./views/Community.jsx'))
+const Skills = lazyView(() => import('./views/Skills.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
 const loadTour = () => import('./components/Tour.jsx')
@@ -421,6 +422,7 @@ function Shell() {
       <Route path="/library" element={<Library />} />
       <Route path="/muscles" element={<Muscles />} />
       {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
+      <Route path="/skills" element={<Skills />} />
       <Route path="/structural-balance" element={<StructuralBalance />} />
       <Route path="/tools" element={<Tools />} />
       <Route path="/journal" element={<Journal />} />

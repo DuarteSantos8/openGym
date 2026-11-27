@@ -12,6 +12,7 @@
 // exercise in one of your chains follows yours first, so you can reorder a built-in one by making
 // your own copy.
 import { EXIDX } from './exercises.js'
+import { haveOf, skillOfExercise } from './skill-tree.js'
 
 export const STEPS_MAX = 12
 export const OWN_MAX = 24
@@ -80,6 +81,9 @@ export function reachedRung (S, ladder) {
   for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
     for (const e of w?.entries || []) if (e?.id && (e.sets || []).some(s => s?.done)) done.add(e.id)
   }
+  // A rung whose skill the trees count as had (views/Skills.jsx, ticked by hand or from the log).
+  const have = haveOf(S)
+  for (const id of ladder.steps) { const skill = skillOfExercise(S, id); if (skill && have[skill]) done.add(id) }
   let top = -1
   ladder.steps.forEach((id, i) => { if (done.has(id)) top = i })
   return top
