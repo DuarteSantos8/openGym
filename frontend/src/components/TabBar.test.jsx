@@ -115,10 +115,11 @@ describe('the tab icons and labels', () => {
       act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: Date.now() - 754_000 } }, false) })
       act(() => { root.render(<TabBar onStart={() => {}} />) })
       const start = tabs()[2]
-      expect(label(start)).toBe('12:34')
-      expect(start.getAttribute('aria-label')).toBe('Resume')
+      expect(start.querySelector('.tab-time')?.textContent).toBe('12:34')
+      expect(start.querySelector('.tab-time')?.getAttribute('aria-hidden')).toBe('true')
+      expect(start.querySelector('.tab-time')?.parentElement.textContent).toContain('Resume')
       act(() => { vi.advanceTimersByTime(2000) })
-      expect(label(start)).toBe('12:36')
+      expect(start.querySelector('.tab-time')?.textContent).toBe('12:36')
       expect(tabs()[2]).toBe(start)   // the same button, only its text ticks
 
       // a past workout being edited has no clock running

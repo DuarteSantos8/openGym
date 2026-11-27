@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Accessible workout controls (06.03, prepared).** Workout actions wrap on narrow phones. The progression control includes its displayed guidance and exercise settings in its accessible name. Resume has a stable visible label and a separate visual clock. Physical VoiceOver and TalkBack review remain pending.
+
 - **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
 - **Skill ladders from Learn (11.02c / EP26-T04, prepared for review).** Learn → Skill ladders shows the existing exercise sequences from easier to harder. A completed set marks its step and all earlier steps as reached; the marks describe workout history, not technique or readiness. [Local browser evidence](evidence/EP26-T04/README.md). Independent and native-language review remain open.
 
