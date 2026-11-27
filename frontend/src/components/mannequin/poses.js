@@ -170,8 +170,8 @@ export function frameIndexAt(pattern, at) {
   return i
 }
 
-/** The joint angles at a moment in the loop, read from the frames around it. */
-export function jointsAt(pattern, at) {
+// Keep the caption and the rig on the same interpolation segment, including at wrap.
+function poseSegmentAt(pattern, at) {
   const frames = poseFor(pattern)
   const loop = loopFor(pattern)
   if (!frames || !loop) return null
@@ -180,7 +180,21 @@ export function jointsAt(pattern, at) {
   const cur = frames[i]
   const next = frames[(i + 1) % frames.length]
   const nextAt = i + 1 < frames.length ? next.at : loop + next.at
-  const u = nextAt > cur.at ? Math.min(1, Math.max(0, (t - cur.at) / (nextAt - cur.at))) : 0
+  return { cur, next, u: (t - cur.at) / (nextAt - cur.at) }
+}
+
+/** Describe the closer of the two poses blended into the rig. */
+export function captionFrameAt(pattern, at) {
+  const segment = poseSegmentAt(pattern, at)
+  if (!segment) return null
+  return segment.u < 0.5 ? segment.cur : segment.next
+}
+
+/** The joint angles at a moment in the loop, read from the frames around it. */
+export function jointsAt(pattern, at) {
+  const segment = poseSegmentAt(pattern, at)
+  if (!segment) return null
+  const { cur, next, u } = segment
   const out = {}
   for (const joint of new Set([...Object.keys(cur.joints), ...Object.keys(next.joints)])) {
     const a = cur.joints[joint] ?? 0
