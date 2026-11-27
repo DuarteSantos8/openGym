@@ -13,8 +13,8 @@ test('a delayed boot logout preserves a second tab’s new provider sign-in', as
     await tab.goto(origin + '/#/account')
     await tab.locator('input[name=email]').fill(state.users[0].email)
     await tab.locator('input[name=password]').fill(state.users[0].password)
-    await click(tab.locator('[data-submit]'))
-    await click(tab.locator('[data-continue]'))
+    await tab.locator('[data-submit]').click()
+    await tab.locator('[data-continue]').click()
     await expect(tab.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
     expect(await me(tab)).toBe(200)
   }
