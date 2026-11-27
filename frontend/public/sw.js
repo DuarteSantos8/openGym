@@ -186,7 +186,11 @@ function media(e) {
       return range ? slice(hit, range) : hit
     }
     // The whole file for a range request: the one answer that can be kept.
-    return fetch(range ? e.request.url : e.request).then(res => {
+    return fetch(range ? e.request.url : e.request).catch(() => {
+      // An uncached image or clip is unavailable offline. Return an HTTP failure
+      // so WebKit can show the media fallback without an uncaught worker error.
+      return new Response(null, { status: 503 })
+    }).then(res => {
       const whole = range ? res.status === 200 : true
       if (whole && realMedia(res)) {
         touched.add(e.request.url)
