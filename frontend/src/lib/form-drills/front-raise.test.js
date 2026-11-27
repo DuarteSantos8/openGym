@@ -70,6 +70,14 @@ const run = (frames, opts = {}) => {
 const FULL = { top: 92, up: 1.2, down: 1.8 }
 const LOW = { top: 60, up: 1.2, down: 1.8 }
 
+describe('the front raise with a plate resting on the thighs', () => {
+  it('counts reps whose arms rest about 30 degrees forward at the bottom', () => {
+    for (const yaw of [0, 30]) {
+      expect(run(frontRaiseSet(same(3, { ...FULL, bottom: 32 }), { yaw, hang: 32 })).res).toMatchObject({ count: 3, missed: 0 })
+    }
+  })
+})
+
 describe('the front raise drill', () => {
   it('keeps the contract', () => {
     expect(checkDrill(frontRaise)).toEqual([])

@@ -18,8 +18,15 @@ import {
 import { bothArms, cameraBelowShoulders, createCycleMachine, createHangRef, cycleTempo, liftDeg, liftOf } from './arms-kit.js'
 
 export const TOP = 80                  // the arm this far from hanging (degrees): the wrists at shoulder height
-export const HANG = 30                 // and back under this before the next rep: lowered to the hang
-export const CYCLE = { rise: 12, minAmp: liftOf(45), low: liftOf(HANG), settleMs: 600 }   // in lift units
+export const HANG = 40                 // and back under this before the next rep: lowered to the hang
+// (a plate or bar resting on the thighs keeps the arms 26 to 37 degrees forward at the bottom on
+// real video, so 30 refused real reps as not lowered)
+// The arm's hanging length is read with the arm within this of straight down: a plate held at the
+// rim or a bar rests on the thighs in front, so real lifters' arms read 26 to 35 degrees forward
+// at the bottom and the kit's 20 never let the length be read (nothing counted).
+export const HANG_TOL = 40
+export const LOW_END = 30              // back under this the rep ends at once (else it ends where the arms settle)
+export const CYCLE = { rise: 12, minAmp: liftOf(45), low: liftOf(LOW_END), settleMs: 600 }   // in lift units
 export const LEVEL = [-0.45, 0.45]     // camera from 0.45 torso above to 0.45 below the shoulders
 export const LEAN_BACK = 10            // the torso this many degrees further back at the top than at the hang: leaned
 export const BENT = 150                // the elbow under this at the top: bent
@@ -47,7 +54,7 @@ const MISSES = {
 export function missOf(top, bottom, standard) {
   if (standard === 'any') return null
   if (top != null && top < TOP) return 'low'
-  return bottom != null && bottom > CYCLE.low ? 'hang' : null
+  return bottom != null && bottom > liftOf(HANG) ? 'hang' : null
 }
 
 const CUE = {
@@ -81,7 +88,7 @@ function create({ standard, view: fixedView } = {}) {
   const machine = createCycleMachine(CYCLE)
   const views = createViewDetector()
   const side = createSidePicker(CHAIN)
-  const arms = createHangRef('Shoulder', 'Wrist')
+  const arms = createHangRef('Shoulder', 'Wrist', { tol: HANG_TOL })
   const reps = []
   let level = null, baseLean = null
   let acc = null
@@ -146,7 +153,7 @@ function create({ standard, view: fixedView } = {}) {
     const why = framing(fr, CHAIN)
     const arm = why ? null : bothArms(joints, arms, 'Shoulder', 'Wrist', fr.aspect)
     const s = arm ? arm.value : null
-    if (s != null && s < CYCLE.low && (machine.phase === 'bottom' || machine.phase === 'waiting')) readBottom(fr)
+    if (s != null && s < liftOf(HANG) && (machine.phase === 'bottom' || machine.phase === 'waiting')) readBottom(fr)
     const ev = machine.push(at, s)
     let justCounted = false, justMissed = false, reason = null
     if (ev.dropped || (!ev.rep && acc)) acc = null
