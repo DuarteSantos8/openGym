@@ -76,6 +76,15 @@ describe('API tokens page', () => {
     expect(host.textContent).toContain('https://connector.example/mcp')
   })
 
+    it('does not keep a retired connector address once the token list stops sending one', async () => {
+          mocks.config = { api_tokens: true, mcp: true, mcpAddress: 'https://connector.example/mcp' }
+          mocks.answers['/api/tokens'] = { tokens: [], mcp: true }
+          await render(<ApiTokensPage />)
+          expect(host.textContent).not.toContain('https://connector.example/mcp')
+          expect(host.textContent).toContain('http://localhost:3000/mcp'.replace('http://localhost:3000', location.origin))
+          mocks.config = { api_tokens: true }
+    })
+
   it('lists a token with what it may do, and revokes it', async () => {
     mocks.answers['/api/tokens'] = { tokens: [TOK], mcp: false }
     mocks.answers['/api/tokens/revoke'] = { tokens: [], revoked: 1 }
