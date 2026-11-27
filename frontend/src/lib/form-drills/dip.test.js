@@ -140,6 +140,27 @@ describe.each(YAWS)('the dip filmed at yaw %i°', yaw => {
     }
   })
 
+  it('counts touch-and-go dips that turn back down short of the lockout they started from', () => {
+    // Locked out at 175 to start, then down to 85 and up to 150 only between reps.
+    const fps = 15, poses = []
+    const ramp = (a, b, sec) => { const n = Math.round(sec * fps); for (let i = 1; i <= n; i++) poses.push(dipPose(a + (b - a) * ease(i / n))) }
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    let at = 175
+    for (let k = 0; k < 5; k++) { ramp(at, 85, 0.8); ramp(85, k === 4 ? 175 : 150, 0.7); at = 150 }
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    const { counted, res } = run(film(poses, { fps, yaw, height: ELBOW_TOP, noise: 0.002 }))
+    expect([counted, res.count, res.missed]).toEqual([5, 5, 0])
+  })
+
+  it('does not split a rep that bounces at the bottom', () => {
+    const fps = 15, poses = []
+    const ramp = (a, b, sec) => { const n = Math.round(sec * fps); for (let i = 1; i <= n; i++) poses.push(dipPose(a + (b - a) * ease(i / n))) }
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    ramp(175, 85, 0.8); ramp(85, 125, 0.4); ramp(125, 85, 0.4); ramp(85, 175, 0.8)
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    expect(run(film(poses, { fps, yaw, height: ELBOW_TOP, noise: 0.002 })).res).toMatchObject({ count: 1, missed: 0 })
+  })
+
   it('times the way down and up', () => {
     for (const r of run(set(same(3, { min: 80, down: 2, up: 1 }), { noise: 0.002 })).res.reps) {
       expect(r.measures.downSec).toBeGreaterThan(1.4)

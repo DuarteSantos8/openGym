@@ -164,12 +164,14 @@ export function dropDepthShare(reps, standard) {
  *   aboveBand: optional, how far above the elbow (upper arms, after shoulderMark) the shoulder may
  *         read and the depth still be level (LEVEL_BAND when not given): the camera's band on the
  *         short side, where a rep is given the benefit of the doubt
+ *   turnTop: optional, the phase machine's turnTop (signal units): touch-and-go reps that turn back
+ *         down short of the top the set started from end where they turn (off when not given)
  *   side: optional { track(acc, frame, sidePick), finish(acc, measures), summary(m) -> {}, cues: [[id, (summary, n) => bool, () => text]],
  *         tile(summary) -> tile | null, rows(measures) -> rows }   (side-on extras)
  */
 export function createArmDropTracker(drill, spec, { standard, view: fixedView } = {}) {
   const std = DROP_STANDARDS.some(s => s.id === standard) ? standard : 'level'
-  const machine = createPhaseMachine(DROP_PHASES)
+  const machine = createPhaseMachine(spec.turnTop != null ? { ...DROP_PHASES, turnTop: spec.turnTop } : DROP_PHASES)
   const views = spec.viewDetector()
   const side = createSidePicker(ARM)
   const extra = spec.side || null

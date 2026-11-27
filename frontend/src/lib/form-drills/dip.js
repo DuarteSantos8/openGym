@@ -38,6 +38,15 @@ export const SHOULDER_MARK = 0.15
 // knees bent, clearly short by eye, read 0.41 above). The push-up keeps LEVEL_BAND.
 export const ABOVE_BAND = 0.3
 
+// Touch-and-go dips: a lifter who sets up locked out with the shoulders pushed down, then dips
+// without locking out between reps (form lab, a bar dip from a low diagonal camera: the far elbow
+// read 146 to 149 degrees at each top against 168 at the start, the arm's height 6 to 8 per cent
+// short of the start) never came back under the phase machine's top, and ten reps read as one.
+// A way up that gets back within 15 per cent of the arm's height of the start (signal 0.3; those
+// tops read 0.15 to 0.2) and turns down again ends the rep there; a bounce at the bottom does not
+// come near it.
+export const TURN_TOP = 0.3
+
 // Side-on runs to about 25 degrees here (VIEW_EDGES), not the kit's 20: a bench dip filmed from
 // the side with the torso leaning back read 0.20 to 0.25 (the shoulders retracted on the bench
 // read wider than the hips), so its depth went unjudged and the camera was asked to move. Side-on
@@ -51,6 +60,7 @@ export const VIEW_EDGES = { side: 0.245, front: KIT_VIEW_EDGES.front }  // width
 const SPEC = {
   shoulderMark: SHOULDER_MARK,
   aboveBand: ABOVE_BAND,
+  turnTop: TURN_TOP,
   framing: frame => framing(frame, ARM),
   viewDetector: () => createViewDetector(VIEW_EDGES),
   startHint: () => t('Arms straight to start'),
