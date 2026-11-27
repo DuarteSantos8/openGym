@@ -60,6 +60,7 @@ running and untouched as the rollback target (`ROLLBACK.md`).
 | Reconciliation | DONE | all 3 API profiles carry an `oidc` link with one issuer; their 3 `sub`s are 3 Supabase accounts, each with a profile row and a live OAuth consent. The other 2 accounts never signed in to this API. No orphan state or upload files |
 | 6 Railway restore (rehearsal) | DONE 2026-11-27 15:48Z | Railway's empty-instance `secret`/`vapid.json` archived to the VPS first; archive streamed in over `railway ssh`; Railway `/data` manifest == Render manifest; after `railway restart` `/api/health` users 0 → 3 |
 | 7 Persistence | DONE 2026-11-27 15:52Z | `railway redeploy` (deployment `cd5fcc9e`, SUCCESS): manifest still equal, `/api/health` users 3. Render unchanged: users 3 |
+| Render origin switch | DONE 2026-11-27 16:00Z | Render `/data` manifest equal to the 15:42 backup before and after the redeploy; `/api/health` users 3 |
 
 Railway is now a point-in-time copy. Render keeps taking writes, so the copy goes stale; the
 cutover sync above repeats steps 1–7 under a write freeze. Until then nobody can sign in to

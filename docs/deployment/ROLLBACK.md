@@ -14,6 +14,8 @@ plan deletes Render, its disk, the Supabase project, auth users or the OAuth cli
 | 2026-11-27 15:40 | Vercel domain `ironvane-cloud-preview.vercel.app` added, git branch `next/cloud-preview` (the old branch alias is held by another Vercel account, 409) | Project → Domains → remove |
 | 2026-11-27 15:44 | Railway SSH key `hermes-vps-ironvane-railway` registered; Render SSH key `hermes-vps-ironvane-backup` (owner-added) | `railway ssh keys remove`; Render Account Settings → SSH Public Keys |
 | 2026-11-27 15:48 | Railway `ironvane-api` `/data`: Render copy restored over the empty volume, then restart + redeploy | Stream `/root/backups/ironvane/railway-pre-restore-*/data.tar.gz` back after emptying `/data` (it holds only the empty instance's `secret` and `vapid.json`), restart |
+| 2026-11-27 15:57 | Vercel "Protection Bypass for Automation" secret created (Preview protection stays on); value only in the VPS Hermes `.env` | Project → Settings → Deployment Protection → revoke |
+| 2026-11-27 15:58 | Render `ironvane-api` (owner-chosen sign-in origin): `ORIGIN` `https://opengym-git-next-cloud-preview-sorensadr-gmailcoms-projects.vercel.app` → `https://ironvane-cloud-preview.vercel.app`; `RP_ID` same host change; redeployed the already-live commit `da96e4002` (deploy `dep-dc4qhdlg1s2s73fes2ig`, live 16:00), no new code. `/data` manifest equal before and after | Set both back in Render → Environment, then Manual Deploy → the same commit. No passkeys or connector tokens existed on the old host (`creds 0`, `apiTokens 0`) |
 
 Both affect only the Railway candidate stack, which serves no real users.
 
