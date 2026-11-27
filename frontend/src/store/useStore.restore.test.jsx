@@ -413,12 +413,13 @@ describe('a save this device refuses', () => {
 
     useStore.getState().update(s => { s.restSec = 90 }, false)
     expect(JSON.parse(localStorage.getItem('gym_state_v1')).restSec).toBe(90)
-    const undo2 = refusingStorage('SecurityError')
+    const undo2 = refusingStorage('QuotaExceededError')
     try {
       useStore.getState().update(s => { s.restSec = 80 }, false)
       await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(3))
-      expect(toast.mock.calls[2][0]).toBe('Could not save')
+      expect(toast.mock.calls[2][0]).toMatch(/out of storage/)
     } finally { undo2() }
+    useStore.getState().update(s => { s.restSec = 70 }, false) // reset the module's warning streak for the next test
   })
 
   it('keeps the change, marks it owed to the server, and says so once', async () => {
