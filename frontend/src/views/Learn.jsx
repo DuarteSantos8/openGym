@@ -10,6 +10,7 @@ import { GUIDES, searchGlossary, guideById } from '../lib/learn.js'
 import { LEARN_SESSIONS, learnSessionById, startLearnSession } from '../lib/learn-sessions.js'
 import { useStore } from '../store/useStore.js'
 import Icon from '../components/Icon.jsx'
+import { learnLaddersSheet } from '../components/Ladders.jsx'
 import { Button, SearchField } from '../components/ui.jsx'
 import './onboarding.css'
 
@@ -74,6 +75,7 @@ export default function Learn() {
       {GUIDES.map(g => <Guide key={g.id} guide={g} open={open === g.id} onToggle={() => setOpen(open === g.id ? null : g.id)} />)}
     </div>
 
+    <Button variant="tinted" icon="stairs" aria-haspopup="dialog" onClick={learnLaddersSheet}>{t('Skill ladders')}</Button>
     <h2 className="sec" id="iv-learn-glossary">{t('Glossary')}</h2>
     <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} placeholder={t('Search the glossary')} aria-label={t('Search the glossary')} />
     {terms.length

@@ -8,6 +8,28 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `api/server.js`, `api/openapi.yaml`, `api/test/server-token-refresh.test.js` | #133 | Browser logout | End the presented session while leaving a later browser sign-in and other devices signed in. |
+| `api/oidc/routes.js`, `api/test/server-oidc.test.js` | #133 | Verified provider callback | Clear the pending logout fallback when issuing the replacement browser session. |
+| `frontend/src/store/useStore.js`, `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js`, `frontend/src/lib/oidc.test.js` | #133 | Sign-in retry | Preserve the newer session when logout responses overlap or storage is full. |
+| `frontend/src/components/Ladders.jsx`, `frontend/src/index.css` | `next/EP26-learn-ladder` | Learn sheet | Reuse the existing ladder cards and history calculation for a read-only, text-only Learn view. |
+| `frontend/src/lib/ladders.test.js` | `next/EP26-learn-ladder` | Test | Pin built-in rung counts and push-up order; cover unrelated, incomplete, repeated and out-of-order sets. |
+| `frontend/src/locales/*.js` | `next/EP26-learn-ladder` | +4 each | Translate rung status, the meaning of reached, and the empty state in all 25 packs. |
+| `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Cache size limit | Preserve original guest and stashed attachments when trimming downloaded files. |
+| `frontend/src/store/useStore.js` | `next/EP19-guest-privacy-followup` | Account transitions | Protect guest training and attachments, and clean up a login or pairing when the guest snapshot cannot be saved. |
+| `frontend/src/store/useStore.mobile-remote.test.jsx` | `next/EP19-guest-privacy-followup` | Pairing | Cover refused guest storage and the next successful pairing. |
+| `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js` | `next/EP19-guest-privacy-followup` | Sign-in | Wait for a failed adoption's cookie cleanup before the next sign-in. |
+| `frontend/src/views/Login.jsx` | `next/EP19-guest-privacy-followup` | Sign-in | Restore the provider sign-in button when cookie cleanup cannot reach the server. |
+| `frontend/src/components/ExerciseGuide.jsx` | `next/EP26-mannequin-squat` | Demo | Show the movement demo for the guide's pattern, loaded on demand, so the 3D code stays out of the app's first download. |
+| `frontend/public/sw.js` | `next/EP26-T03-guided-workout` | Hashed assets | Reuse the installed immutable module when an offline module request sends an Origin header. |
+| `frontend/src/views/Workout.jsx` | `next/EP26-T03-guided-workout` | Layout | Offer the session layout and pass its active exercise to the existing swap flow. |
+| `frontend/src/views/FocusView.jsx`, `FocusView.css` | `next/EP26-T03-guided-workout` | Guided card | Keep set logging and show the selected exercise’s cues and controls. |
+| `frontend/src/sheets.jsx` | `next/EP26-T03-guided-workout` | Swap | Announce the easier exercise only after a confirmed active-session swap. |
+| `frontend/src/views/Workout.test.jsx` | `next/EP26-T03-guided-workout` | Tests | Include Guided workout in the two layout-menu expectations. |
+| `frontend/src/locales/*.js` | `next/EP26-T03-guided-workout` | Copy | Translate the layout name and swap confirmation in all 25 packs. |
+| `frontend/src/views/Workout.jsx` | `next/EP26-workout-feedback` | Set checks | Route existing set and record signals through the shared preferences. |
+| `frontend/src/store/useUI.js` | `next/EP26-workout-feedback` | Rest timer | Keep the native alarm and selected tone on a live rest completion. |
+| `frontend/src/sheets.jsx` | `next/EP26-workout-feedback` | Finish | Play completion feedback after the workout is saved. |
+| `frontend/src/sheets.finish-hold.test.jsx` | `next/EP26-workout-feedback` | Finish test | Confirm a pending finish produces no cue and a saved session produces one. |
 | `api/coach/core/streak.js` | `next/EP25-mobility-freeze` | Streak | Bank one freeze for two verified mobility sessions in a week under the active rule. |
 | `frontend/src/lib/finish-workout.js` | `next/EP25-mobility-freeze` | Workout | Preserve the rest-day date only for a completed Learn circuit. |
 | `frontend/src/lib/streak.js`, `streak-explain.js` | `next/EP25-mobility-freeze` | Calendar | Document the shared rule and explain a mobility award. |
@@ -141,8 +163,15 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Plan.day-rows.test.jsx` | `next/EP24-glossary-workout-plan-progress` | Test | Check that the weekday button names its visible routine. |
 | `frontend/src/views/Plan.routine-count.test.jsx` | `next/EP24-glossary-workout-plan-progress` | Test | Find weekday buttons with their routine details. |
 | `frontend/src/views/Plan.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain terms for the weekly schedule. |
+| `frontend/src/views/RoutineEdit.jsx`, `frontend/src/index.css` | `next/EP26-weekly-muscle-sets` | UI | Show recurring planned sets in the routine editor; reuse Stats' muscle weights and keep textual statuses. |
+| `frontend/src/lib/muscle-targets.js` | `next/EP26-weekly-muscle-sets` | Logic | Resolve valid saved ranges for planning without changing the logged-volume fallback. |
+| `frontend/src/lib/muscles.js` | `next/EP26-weekly-muscle-sets` | Logic | Share recurring-plan aggregation; keep the Stats map default and apply cardio/EMOM counting rules only in the editor. |
+| `frontend/src/locales/*.js` | `next/EP26-weekly-muscle-sets` | Copy | Preserve localized estimate, empty state, range status and source labels. |
 | `frontend/src/views/Stats.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain record and volume metrics in Progress. |
 | `frontend/src/components/Term.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Reuse the definition sheet for small, screen-specific glossaries. |
 | `frontend/src/views/onboarding.css` | `next/EP24-glossary-workout-plan-progress` | UI | Move shared term styles to the component stylesheet. |
 | `api/coach/core/adapters/http.js`, `api/test/chatgpt-plan.test.js` | `next/EP19-coach-app-navigation` | API and tests | Allow provider discovery and credential refresh within a single generation request. |
 | `frontend/src/views/settings-pages.js` | `next/EP19-coach-app-navigation` | Search | Expose the visible Settings index to app help to rank full translated labels in a question. |
+| `frontend/src/components/ExerciseGuide.jsx`, `frontend/src/lib/i18n{,-core}.js` | `next/EP23-routine-guide-batch-1` | UI | Show the English notice only when a guide actually falls back to English. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP23-routine-guide-batch-1` | Copy | Translate the cues, mistake and correction pairs, muscle descriptions and breathing for ten routine exercises. |
+| `frontend/src/store/useStore.js` | `next/EP19-guest-import-ownership` | +32 −3 | **Store (Tier A area):** the device's own guest profile is snapshotted into `gym_guest_state` when a sign-in adopts the device data, and `clearLocalSession` (every sign-out) puts it back instead of a blank profile — **Add them** copies a guest's workouts into the account, it never consumes them (owner decision 2026-11-27, `DECISION-01.01.md`). Account workouts never reach the guest slot. Just over the 30-line guide; the owner decision is the design note. |

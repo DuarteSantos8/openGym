@@ -132,6 +132,19 @@ launch, not for the beta.
 
 Not needed for the owner's own bring-up, required before anyone else is let in.
 
+- **Guest workout import (A5), November 26, 2026, ownership contract of November 27.** On the
+  hosted preview, an Edge InPrivate guest had ten synthetic workouts, one per day from
+  November 1 through 10. The fresh linked account returned zero workouts from `GET /api/data`
+  before the guest chose **Add them**. After a reload, Edge History showed each original name
+  once on its original date. The authenticated `GET /api/data` returned ten distinct workout
+  IDs with the same ten names and dates, each once. A fresh load of History in a second
+  browser showed all ten exactly once without importing there. This run did not check offline
+  or signed-out History — the owner decision of November 27 now sets what those must show and
+  the regression `useStore.guest-import-ownership.test.jsx` holds it: **Add them** copies the
+  guest's workouts into the account and never consumes them, so signing out puts the device's
+  own guest profile back and guest History shows the ten originals again; whatever is logged
+  inside an account stays private to that account and is absent from guest History and from
+  any other account, offline, after reconnect and across a switch.
 - **Linked deletion: verified once on the hosted service (2026-11-24).**
   [ADR 0014](adr/0014-hosted-account-deletion.md) has what was seen and what was not tried: a
   deletion after an old sign-in, signing up again with the deleted address, and a browser
@@ -139,6 +152,10 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   `VITE_CLOUD_SERVER=off`.
 - **Signing in a second time** works on the hosted service since #91 (three sign-ins on
   2026-11-24 went through with no consent step, as the hosted project's log shows).
+  When repeating this check on the revised preview, attach a photo to an original guest
+  exercise, add a separate account-only workout, sign out, and reload offline. Confirm the
+  guest photo opens and the account-only workout is absent. Use a disposable account for
+  the separate account reset check. These checks are pending on the hosted build.
 - **Hosted account checks (A1), November 26, 2026.** On the preview, a disposable linked
   profile showed no Admin dashboard in Settings > Account. Opening `GET /api/admin/oidc`
   returned `{"error":"forbidden"}`. Choosing Sign out on the account screen brought back

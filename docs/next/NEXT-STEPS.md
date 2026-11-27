@@ -4,9 +4,24 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
+- **Skill ladders from Learn (11.02c / EP26-T04, prepared for review).** Learn → Skill ladders shows the existing exercise sequences from easier to harder. A completed set marks its step and all earlier steps as reached; the marks describe workout history, not technique or readiness. [Local browser evidence](evidence/EP26-T04/README.md). Independent and native-language review remain open.
+
+- **Routine builder weekly sets (11.02b, prepared for review).** Plan → routine → Weekly sets per muscle estimates the whole recurring plan using the existing muscle weights. A saved personal range takes precedence for any goal; existing draft defaults appear only for muscle growth. The saved plan quiz goal takes precedence, with the saved Coach intake goal used when the quiz goal is absent. Other or missing goals show counts wherever there is no personal range. Cardio adds no strength sets, and an EMOM counts only the station visits within its configured duration. Default values are app adaptations of [RP Strength’s volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth), not numbers validated for each muscle or personalized recommendations. Named source review and native-language review are pending.
+- **Guest workout ownership follow-up (A5, prepared).** Verify signed-out History and guest attachments on the deployed build. The store regression suite covers account reset, profile creation, refused storage writes and a second guest tab.
+
+- **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
+
+- **Movement demo (E5a, prepared).** An exercise with a form guide now shows the movement it asks for: the mannequin rig on the exercise sheet, in a chunk of its own, with the words that go with the pose. With reduced motion, or on a device that cannot show 3D, the key pose is shown as a picture with the same words and nothing moves. [English phone view](evidence/EP26-T01/mannequin-rig-390-dark.png), [the still without WebGL](evidence/EP26-T01/mannequin-still-390-dark.png).
+
+- **Workout feedback (E3, prepared).** Set checks, records, completed rest timers and confirmed workout saves use the profile’s sound and vibration settings. Reduced motion suppresses the optional cues. Configured rest alarms still announce when to resume.
+
+- **Catalogue level and pattern (D6, prepared).** Rebuild the draft index with `node scripts/catalogue/seed-level.mjs`. All strength, calisthenics, isometric, olympic and plyometric entries count, including unclassified ones. Exercises in mixed categories also count unless text identifies a non-strength activity. The classifier uses the movement name, target and equipment. All 45 authored guides take precedence, and variants inherit their canonical entry. Unknown IDs stay absent. Review the sample before using draft levels in the app.
 - **Rest-day mobility freeze (D8, prepared).** Two completed Learn mobility sessions started on scheduled rest days earn one freeze that week when the profile has room. The calendar explains the award. Earlier workouts retain their existing credit. Merging the shared streak code restarts the hosted API.
 
-- **Beginner tour (D4, prepared).** The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
+- **Hosted preview.** The API and Coach are live on the cloud preview. External MCP connector checks and the production-domain cutover remain open. See the [hosted server runbook](CLOUD-SERVER.md).
+
+- **Beginner Settings and tour (D3 and D4, verified on the preview).** Settings starts with the shorter list for Beginners. The short tour walks through a practice workout, Plan, Learn and Settings. It can be replayed from Settings > About & updates.
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 
@@ -15,7 +30,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
 
-- **Guest sign-in (A5, browser verified).** Ten device workouts reached the linked test server and appeared in History in a clean second browser. Repeat on the hosted preview with a disposable account after merge.
+- **Guest sign-in (A5, verified live November 26, 2026; ownership contract November 27).** Ten guest workouts reached the hosted server and appeared once each on their original dates in both browsers. **Add them** copies them into the account and leaves the device's guest profile intact: after sign-out guest History shows the originals again, and workouts logged inside an account stay private to it (regression `useStore.guest-import-ownership.test.jsx`, branch `next/EP19-guest-import-ownership`). See [Before real users](CLOUD-SERVER.md#before-real-users).
 - **Starter plan cards (D5, prepared).** All eight lead with the goal and show weekly frequency, estimated minutes per session, level and equipment before loading. A device guest can fit a plan to local equipment offline. The translated hotel equipment label awaits native-language review. [English phone view](evidence/EP22-T03/starter-cards-390-dark.png).
 
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
@@ -139,10 +154,10 @@ With no routines or with a proposed plan open, a message uses the plan builder i
 | 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, and the twelve EP24-T03 strings in all packs) | reviewer | Reviewer named in a PR |
 | 8 | EP09-T03 (apply a progression rule to a routine). Only if users ask for it. | — | — |
 | 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
-| 10 | **Read the 45 exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the remaining exercises of the routines library (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
+| 10 | **Read the 55 draft exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the 36 remaining distinct routine exercises (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
 | 11 | Named review of the eight EP24-T03 Learn sessions prepared on `next/EP24-learn-sessions`, EP24-T01 (the glossary on more screens), the remaining exercises of EP23-T03 | agent | Per the plan's acceptance column |
 | 12 | Cloud, owner's dashboard steps (`supabase/README.md`, "What only the owner can switch on"): leaked-password protection, custom SMTP, the email templates' links, the OAuth server for ADR 0013, `APP_ORIGIN`, and the cloud build's three variables in Vercel | owner | Sign-up and reset emails arrive; the API's "Sign in with Ironvane" completes on a preview |
-| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos) | agent | Before any live Stripe key |
+| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos). The rig and the squat (E5a) are prepared; the eight other patterns follow in E5b | agent | Before any live Stripe key |
 
 ## 4. Environment (WSL2 Ubuntu)
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
+import { logoutOwed, trackCookieCleanup } from '../lib/cookie-cleanup.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
@@ -58,11 +59,7 @@ const SYNCED_FP_KEY = 'gym_synced_fp'  // a fingerprint of that copy (lib/sync-c
 // reaches that server as that account again. On a phone also a file beside the state mirror.
 const STASH_KEY = 'gym_stash'
 const STASH_FILE = 'opengym-stash.json'
-// A browser sign-out whose request never reached the server. The session cookie is HttpOnly, so
-// only the server's answer to /api/logout takes it out of the browser; until that answer comes,
-// boot sends the logout again instead of asking /api/me, which would sign the browser straight
-// back in with no passkey or password. Any sign-in replaces the cookie and clears the mark.
-const LOGOUT_OWED_KEY = 'gym_logout_owed'
+const GUEST_KEY = 'gym_guest_state'
 // A sign-in (or a phone's pairing) whose question about this device's own entries has not been
 // answered yet (adoptProfile): { uid, rejoined, alwaysAsk }. Until it is, nothing syncs — the copy
 // on this device may still be a guest's, and a pull or push in that window used to send it over the
@@ -77,14 +74,6 @@ const ADOPT_KEY = 'gym_adopt'
 // is on screen at once (App hides the boot screen), so their boot keeps lib/api.js's timeouts.
 const BOOT_WAIT_MS = 5000
 const BOOT_WAIT_MIN_MS = 1500   // what a later request still gets once an earlier one used it all
-// Reads the mark with no argument, sets or clears it with one. Storage that cannot be read owes nothing.
-function logoutOwed(on) {
-  try {
-    if (on === undefined) return localStorage.getItem(LOGOUT_OWED_KEY) === '1'
-    if (on) localStorage.setItem(LOGOUT_OWED_KEY, '1'); else localStorage.removeItem(LOGOUT_OWED_KEY)
-  } catch { /* private mode with storage blocked */ }
-  return false
-}
 // Mobile build: whose copy the file mirror (lib/mobile.js, opengym-state.json) holds, and which
 // one — { owner, ts }, written after it (saveMirror). A device fact, so never inside S.
 const MIRROR_OWNER_FILE = 'opengym-state-owner.json'
@@ -387,6 +376,10 @@ function loadState() {
   return freshState()
 }
 
+// The guest copy is separate from signed-in state. Capture it before switching owners.
+const readGuestProfile = () => {
+  try { const raw = localStorage.getItem(GUEST_KEY); return raw ? sanitizeAccent(Object.assign(clone(DEF), JSON.parse(raw))) : null } catch { return null }
+}
 // Whether a copy holds anything of its own worth keeping over another: workouts, routines,
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
@@ -1121,8 +1114,8 @@ export const useStore = create((set, get) => {
     localStorage.removeItem('gym_owner')
     seenOwner = null   // a guest's tab now: it joins what other signed-out tabs save (as setUser)
     handedOver = false
-    // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
-    persist(freshState(), false)
+    const guest = readGuestProfile() || freshState()
+    persist(guest, false)
     // Today's body picker keeps a photo and the picks outside the state (lib/body-photo.js): a
     // shared device keeps nothing of them either.
     forgetBodyFocus()
@@ -1140,7 +1133,7 @@ export const useStore = create((set, get) => {
     // the device owner's choice) stays. After the state file, which must not wait for it.
     const coachGone = MOBILE ? Promise.resolve(wiped).then(() => saveCoachDevice({ pending: null })).catch(() => {}) : null
     // The account's photos and videos go with its copy (a shared device keeps nothing of it),
-    // except the ones a stash still refers to — whatever was pending is in a stash by now
+    // except the ones the guest or a stash still refers to — whatever was pending is in a stash by now
     // (signOut refuses otherwise) and comes back with it. A file picked from here on is kept.
     // After the state file, which is the one write a sign-out must not be kept waiting for. Also
     // when the copy refers to no media any more: a photo removed in the last hour, or one whose
@@ -1150,8 +1143,8 @@ export const useStore = create((set, get) => {
     // left alone, since nothing can have been put into it.
     if (hadMedia || mediaStoreInUse()) {
       const since = Date.now()
-      Promise.resolve(wiped).then(() => readStashes())
-        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)])), { keepPutAfter: since }))
+      Promise.resolve(wiped).then(() => retainedMedia(guest))
+        .then(hashes => mediaStore.retainOnly(hashes, { keepPutAfter: since }))
         .catch(() => {})
     }
     return MOBILE ? Promise.all([wiped, coachGone]).then(([w]) => w) : wiped
@@ -1167,6 +1160,13 @@ export const useStore = create((set, get) => {
     try { all = JSON.parse(localStorage.getItem(STASH_KEY)) || {} } catch { /* none */ }
     if (MOBILE) { const f = await readJsonFile(STASH_FILE); if (f && typeof f === 'object') all = { ...all, ...f } }
     return all
+  }
+  const retainedMedia = async guest => {
+    const hashes = keptHashes(guest)
+    for (const entry of Object.values(await readStashes())) {
+      for (const hash of keptHashes(entry?.state)) hashes.add(hash)
+    }
+    return hashes
   }
   // True when at least one durable copy of the stashes was written.
   const writeStashes = async all => {
@@ -1656,6 +1656,9 @@ export const useStore = create((set, get) => {
       const S = restartedState(cur)
       S.resetAt = Math.max(Date.now(), highestStamp(cur) + 1)
       S.resetIds = mergeResetIds(cur.resetIds, resetIdsOf(cur))
+      if (!get().user && !readOwner()) {
+        try { localStorage.removeItem(GUEST_KEY) } catch { /* the next sign-in refreshes this copy */ }
+      }
       get().replaceState(S, !!get().user)
       if (!get().user) return Promise.resolve()
       const tok = currentSession()
@@ -1800,7 +1803,7 @@ export const useStore = create((set, get) => {
 
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
-    setUser(u, { adopt } = {}) {
+    setUser(u, { adopt, restored = false } = {}) {
       const was = get().user?.id ?? null
       const wasHeld = adoptHold   // the hold of the account signed in so far, before this one's goes on
       if (u) {
@@ -1830,6 +1833,23 @@ export const useStore = create((set, get) => {
         // too: the question below is about it, and from here on this tab joins only the
         // account's saves (seenOwner below).
         syncFromSaved()
+        if (!owner && !was) {
+          try {
+            const guest = get().S
+            if (hasData(guest) || keptHashes(guest).size) localStorage.setItem(GUEST_KEY, stateJson(guest))
+            else localStorage.removeItem(GUEST_KEY)
+          } catch {
+            // Keep the guest copy in place. Boot must end the new cookie before it can adopt data.
+            adoptHold = wasHeld
+            if (!MOBILE) {
+              logoutOwed(true)
+              trackCookieCleanup(() => api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS }))
+            }
+            const message = t('Could not save')
+            import('./useUI.js').then(({ useUI }) => useUI.getState().toast(message))
+            throw new Error(message)
+          }
+        }
         if (other) {
           keepForPrevious(owner, wasHeld)
           forgetSync()
@@ -1854,7 +1874,7 @@ export const useStore = create((set, get) => {
         seenOwner = u.id
         handedOver = false
         localStorage.setItem('gym_user', JSON.stringify(u)); localStorage.removeItem('gym_guest')
-        logoutOwed(false)   // this sign-in's cookie replaced the one a failed sign-out left behind
+        if (!MOBILE && !restored) logoutOwed(false)   // an explicit sign-in replaced the old cookie
         // A profile created here (no question: this copy becomes it) is saved once under its owner
         // now. Another tab of this browser takes only a copy saved under the new owner, and went
         // blank until this one happened to save something (takeSaved).
@@ -2003,11 +2023,9 @@ export const useStore = create((set, get) => {
       const all = await readStashes()
       return all[stashKey(server, uid)]?.state || null
     },
-    // Every photo and video file the stashes refer to: they are kept on this device for as long
-    // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
-    async stashedMediaHashes() {
-      const all = await readStashes()
-      return new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)]))
+    // Other profiles can still own local files, even after the current profile resets.
+    stashedMediaHashes() {
+      return retainedMedia(readOwner() ? readGuestProfile() : null)
     },
 
     // Sign-in (and pairing a phone) takes the server's profile as this device's copy — the
@@ -2058,7 +2076,8 @@ export const useStore = create((set, get) => {
       } catch { return null }
     },
 
-    /* Signing out wipes this device's copy — never while it holds changes the server has not
+    /* Signing out wipes this device's copy of the account's data — the device's own guest profile
+       comes back instead (clearLocalSession) — never while it holds changes the server has not
        seen. After one more push, if anything is still owed, nothing is wiped and the result
        says so: { owed: true, count } (see unsyncedChanges), for the screen to offer a retry, an
        export, or going ahead anyway. `force` goes ahead: the owed copy is kept aside on this
@@ -2076,7 +2095,9 @@ export const useStore = create((set, get) => {
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
       let out = null
-      try { out = await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
+      const endSession = () => api('/api/logout', { method: 'POST', body: '{}' })
+      if (!MOBILE) logoutOwed(true)
+      try { out = await (MOBILE ? endSession() : trackCookieCleanup(endSession)) } catch { /* boot retries the recorded web logout */ }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
       if (!MOBILE && typeof out?.provider_logout === 'string' && /^https?:\/\//.test(out.provider_logout)) window.location.assign(out.provider_logout)
@@ -2106,7 +2127,12 @@ export const useStore = create((set, get) => {
     async afterConnect(user, url, ask) {
       // The account first, the address after: a copy another account still owed is kept aside
       // for it under the server it belongs to, not the one being paired.
-      get().setUser(user, { adopt: true })
+      try {
+        get().setUser(user, { adopt: true })
+      } catch (error) {
+        await forgetRemote()
+        throw error
+      }
       if (keeping) { await keeping; keeping = null }
       setPairedBase(normalizeServerUrl(url))
       setSync({ server: pairedBase })
@@ -2298,7 +2324,7 @@ export const useStore = create((set, get) => {
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
-        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false) } catch { /* owed until it is answered */ }
+        try { await trackCookieCleanup(() => api('/api/logout', bootOpts({ method: 'POST', body: '{}' }))) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
@@ -2312,7 +2338,7 @@ export const useStore = create((set, get) => {
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await (hurry ? api('/api/me', bootOpts({})) : api('/api/me'))
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-        get().setUser(me.user, arrived ? { adopt: true } : undefined)
+        get().setUser(me.user, arrived ? { adopt: true } : { restored: true })
         if (arrived) {
           finishBoot()
           const { askAddDeviceData } = await import('../sheets.jsx')

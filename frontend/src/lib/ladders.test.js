@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
+import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, visibleLadderProgress, saveLadder, deleteLadder, ownLadders } from './ladders.js'
 import { nextPrescription, POLICIES_FOR, LADDER_TOP } from './progression.js'
 import { EXIDX } from './exercises.js'
 
@@ -7,14 +7,15 @@ const done = (d, id, reps, sets = 3) => ({ d, entries: [{ id, target: { id, sets
 
 describe('ladders', () => {
   it('every built-in rung is a catalogue exercise, easiest first', () => {
+    expect(LADDERS.map(l => l.steps.length)).toEqual([7, 7, 5, 6, 5, 6, 5])
     for (const l of LADDERS) {
-      expect(l.steps.length).toBeGreaterThanOrEqual(4)
       for (const id of l.steps) expect(EXIDX[id], id).toBeTruthy()
     }
     expect(nextRung({}, '0662')).toBe('0283')   // push-up → diamond push-up
     expect(prevRung({}, '0662')).toBe('3211')
     expect(nextRung({}, '0725')).toBe(null)      // one-arm push-up: the top
-    expect(nextRung({}, '0025')).toBe(null)      // a barbell lift is in no ladder
+    expect(EXIDX['0025']?.id).toBe('0025')
+    expect(ladderOf({}, '0025')).toBe(null)      // a barbell lift is in no ladder
   })
 
   it('your own chain wins for its exercises and can be edited and deleted', () => {
@@ -34,8 +35,30 @@ describe('ladders', () => {
 
   it('knows the highest rung you logged', () => {
     const push = LADDERS.find(l => l.id === 'push-up')
+    expect(push.steps).toEqual(['0659', '0493', '3211', '0662', '0283', '3294', '0725'])
+    const incomplete = done('2026-11-04', '0725', 8, 1)
+    incomplete.entries[0].sets[0].done = false
     expect(reachedRung({ workouts: [] }, push)).toBe(-1)
-    expect(reachedRung({ workouts: [done('2026-11-01', '0662', 8)] }, push)).toBe(3)
+    expect(reachedRung({ workouts: [incomplete, done('2026-11-02', '0025', 8)] }, push)).toBe(-1)
+    const middle = done('2026-11-01', '0662', 8)
+    expect(reachedRung({ workouts: [middle] }, push)).toBe(3)
+    expect(reachedRung({ workouts: [incomplete, done('2026-11-03', '0659', 8), middle, done('2026-11-02', '0662', 8)] }, push)).toBe(3)
+  })
+})
+
+describe('visible ladder progress', () => {
+  const steps = ['easier', 'removed', 'harder', 'removed-top']
+  const isVisible = id => id === 'easier' || id === 'harder'
+
+  it.each([
+    [-1, -1], [1, 0], [2, 1], [3, 1],
+  ])('maps original rung %i to visible rung %i', (reached, top) => {
+    expect(visibleLadderProgress(steps, reached, isVisible)).toEqual({ steps: ['easier', 'harder'], top })
+  })
+
+  it('reports no reached rung if nothing at or below it is visible', () => {
+    expect(visibleLadderProgress(['removed', 'harder'], 0, isVisible)).toEqual({ steps: ['harder'], top: -1 })
+    expect(visibleLadderProgress(['removed'], 0, isVisible)).toEqual({ steps: [], top: -1 })
   })
 })
 

@@ -5,6 +5,8 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import ExerciseGuide from './ExerciseGuide.jsx'
 import { EXIDX } from '../lib/exercises.js'
+import { _setLangState } from '../lib/i18n-core.js'
+import de from '../locales/de.js'
 import { guideFor } from '../lib/exercise-guide.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -28,6 +30,19 @@ describe('ExerciseGuide', () => {
     const facts = [...container.querySelectorAll('.iv-guide-facts dd')].map(x => x.textContent)
     expect(facts).toEqual([g.feel, g.breathing])
     expect(container.querySelector('.iv-guide-foot').textContent).toBe('General guidance. Stop if something hurts.')
+  })
+
+  it('labels English instructions only when the current locale lacks guide text', () => {
+    _setLangState('de', de, null, null)
+    try {
+      mount(<ExerciseGuide ex={EXIDX['0652']} />)
+      expect(container.querySelector('.iv-guide-cues li').textContent).toBe(de[guideFor('0652').cues[0]])
+      expect(container.textContent).not.toContain(de['instructions in English'])
+      act(() => root.render(<ExerciseGuide ex={EXIDX['1760']} />))
+      expect(container.textContent).toContain(de['instructions in English'])
+    } finally {
+      _setLangState('en', {}, null, null)
+    }
   })
 
   it('offers the easier and the harder version by name and opens the one tapped', () => {
@@ -60,5 +75,14 @@ describe('ExerciseGuide', () => {
     expect(container.innerHTML).toBe('')
     act(() => root.render(<ExerciseGuide ex={null} />))
     expect(container.innerHTML).toBe('')
+  })
+
+  it('shows the movement demo for a pattern that has one, and not for one that has none', async () => {
+    mount(<ExerciseGuide ex={EXIDX['1760']} />)
+    await act(async () => { await new Promise(r => setTimeout(r, 20)) })
+    expect(container.querySelector('.mm-demo')).toBeTruthy()
+    act(() => root.render(<ExerciseGuide ex={EXIDX['0652']} />))
+    await act(async () => { await new Promise(r => setTimeout(r, 20)) })
+    expect(container.querySelector('.mm-demo')).toBe(null)
   })
 })

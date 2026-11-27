@@ -5,6 +5,15 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
+
+A5 guest ownership fixes are prepared. Hosted verification of the revised sign-out and attachment behavior is pending.
+
+E3 is prepared. Confirmed workout saves add a vibration on supported browsers. Set, record and session feedback respects reduced motion, and the timer retains its configured alarm.
+
+D6 is prepared. The rule-based draft seed assigns 4,368 of 4,835 strength-eligible canonical exercises (90.34%), 4,388 of 5,632 canonical exercises (77.91%), and 5,135 of 6,554 IDs including aliases (78.35%).
+The cloud preview uses the hosted API and Coach. The shorter Beginner Settings and tour reached the preview in #116 and #117.
+
 Read after `NEXT-STEPS.md`. What is left, in order and as tasks for a coding agent, is in
 `AGENT-DEVELOPMENT-PLAN.md` (merged in #93).
 
@@ -26,7 +35,7 @@ on the hosted preview. See [the hosted account checks](CLOUD-SERVER.md#before-re
 Task A3 verified one hosted disk snapshot. A restore test awaits the owner’s decision. See
 [Backups](CLOUD-SERVER.md#backups).
 
-Task A5 passed in isolated browsers with ten guest workouts. Hosted verification is pending.
+Task A5 passed on the hosted preview on November 26, 2026. The server and both browsers showed all ten imported guest workouts. The owner decision of November 27 makes **Add them** a copy, not a transfer: the guest keeps the ten on this device after sign-out, and account workouts stay private to their account. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 The hosted Coach returned a chat reply and a full plan. Its MiniMax subscription usage for the
 test hour is recorded in `CLOUD-SERVER.md`. The beginner Home Coach card (B3) merged in #101.
@@ -111,7 +120,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP19-T02 | Schema: billing and content, RLS, tests | `supabase/migrations/…_billing.sql`, `…_content.sql`, `supabase/tests/rls.sql`, `run-rls-local.sh` | every expectation in `rls.sql` holds; breaking a policy makes it fail | done, same branch (run on PostgreSQL 16; **not** yet on a Supabase project) |
 | EP19-T03 | Sign-in, sign-up, reset, account and consent | NEW `frontend/src/lib/cloud/{auth,profile,client}.js`, `views/cloud/Account.jsx` | sign in, sign up, reset, change name, export, delete and approve, each tested; a real browser round trip on a real project | **done** in `next/EP19-cloud-backend` for sign in, name, reload and sign out (real browser, real project, phone and desktop). **Not exercised for real:** sign-up and reset emails (the project's built-in mail only reaches the owner's own address; custom SMTP is the owner's to set), and approving, because the project's OAuth server is off |
 | EP19-T04 | API accepts a cloud sign-in | `api/oidc/` (already there), `.env.example`; fallback `api/supabase-jwt.js` | ADR 0013: the API's existing OIDC sign-in is pointed at the project | **part**: on the real project the discovery document's issuer, PKCE S256, ES256 keys, the public-client method and `email_verified` all match what the API needs, and `api/supabase-jwt.js` verifies a real access token and refuses a forged one. **Not done:** a full sign-in through the API, which needs the OAuth server switched on in the dashboard and a running API |
-| EP19-T05 | Link an existing account; guest keeps their data | the OIDC flow's own link mode (ADR 0013) | a guest with 10 workouts signs in and has 10 on the server; a passkey user links without a second user | open: to be shown on a real project, not built |
+| EP19-T05 | Link an existing account; guest keeps their data | the OIDC flow's own link mode (ADR 0013) | a guest with 10 workouts signs in and has 10 on the server, and still has the 10 as a guest after sign-out; a passkey user links without a second user | guest import verified on the hosted preview, guest retention after sign-out held by `useStore.guest-import-ownership.test.jsx` (owner decision 2026-11-27); passkey linking remains open |
 | EP19-T06 | Delete account and export | NEW `supabase/functions/{export-account,delete-account}`, `_shared/{account,http}.js` | export returns only the caller's rows; delete needs the word, removes the auth user and every row with it, and is refused while a subscription runs | **done** in `next/EP19-cloud-backend`: both deployed and run on the real project, including a real deletion. **Not covered:** the app server's own `state-<uid>.json` (it has its own export and delete) and cancelling a Stripe subscription (refused instead, until Stripe is back) |
 | EP20-T01 | Stripe catalogue seed | NEW `scripts/stripe/seed.mjs` | product and two prices created idempotently in test mode | open; needs a Stripe account |
 | EP20-T02 | Checkout | `supabase/functions/create-checkout-session`, `_shared/handlers.js` | guest 403, unknown price 400, already subscribed 409, double tap one session | done against a pretend Stripe, same branch. **Not** run against Stripe |
@@ -127,15 +136,15 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 |---|---|---|---|---|
 | EP21-T01 | Experience levels | `frontend/src/lib/experience.js`, `experience-copy.js` | Beginner, Intermediate, Experienced write four detail modules and nothing that is connected or holds data | done, #57 |
 | EP21-T02 | Workout shows less to a Beginner | `views/Workout.jsx` | done: the set menu keeps failure, drop set and burst under More (#57); the exercise menu leads with How to do it (`next/EP23-exercise-guidance`). Supersets and ordering were already under More |
-| EP21-T03 | Level in Settings | `views/Settings.jsx`, `settings-pages.js` | **part**: the row, searchable. Still open: a shorter Settings root for a Beginner |
+| EP21-T03 | Level in Settings | `views/Settings.jsx`, `settings-pages.js` | **done** (#116): Beginner Settings has a shorter root, full search and a switch to show all settings. |
 | EP22-T01 | Planner | `frontend/src/lib/planner.js`, `lib/starter.js` `buildPlanFrom` | all 1,200 answer combinations give a valid plan, deterministic, equipment respected, within the minutes | done, same branch. Draws on the 8 starter plans; `routines/opengym/` is not used yet |
 | EP22-T02 | Find my plan | `views/Onboarding.jsx`, `App.jsx` `/start` | six questions, a plan with reasons, "Use this plan"; limitations never stored; E2E with axe | done, same branch |
 | EP22-T03 | Plan cards by goal in the starter chooser | `sheets.jsx` `StarterPlanChooser` | each card says days, minutes, level, equipment; the split name is the subtitle | **prepared**: all eight cards show these facts and adapt to the selected equipment profile |
 | EP22-T04 | First-session load finder | NEW `lib/load-finder.js`, `components/LoadFinder.jsx`, `Workout.jsx` | an exercise with no history offers "Find my weight": up to three test sets, a fifth up or down each time, and the weight found fills the open sets | **done** (#60), with review fixes in `next/EP22-load-finder-fixes`: it starts on the athlete's own bar and never suggests less, names only owned dumbbells or stack weights when those are listed, uses the column's own heading (each or both dumbbells), and writes to the first set still open. Test sets are not logged. Not offered for bodyweight, band, assisted-machine or per-side rows |
-| EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **part**: the first-run question no longer opens over the quiz. Still open: a Beginner tour of 8 stops or fewer |
+| EP22-T05 | Tour after the quiz, shorter for a Beginner | `lib/tour-offer.js`, `lib/tour.js` | **done** (#117): the tour follows the quiz. Beginners get at most eight stops and can replay it from Settings. |
 | EP23-T01 | Exercise guidance: level, pattern, cues, mistakes, feel, breathing, easier and harder | `frontend/src/content/exercise-guides.js`, `lib/exercise-guide.js` | `problems()` is empty: fields complete, ids real, ladders never circular, review status valid | done, `next/EP23-exercise-guidance`. **Kept out of `catalogue/` on purpose for now**: the generated catalogue files stay untouched and the text loads on demand. Moving it into `catalogue/exercises/*.json` is a mechanical step once upstream settles its own "top three mistakes" field |
 | EP23-T02 | Seed level and pattern | NEW `scripts/catalogue/seed-level.mjs` | 90% of exercises get a pattern; reviewed diff | open |
-| EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 exercises, which is every exercise a starter plan uses, so every Find my plan result is covered (a test holds that). All `draft`: **the owner or a named reviewer still has to read them** (ADR 0012). About 35 more for the routines library are open |
+| EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 starter-plan exercises plus 10 sourced routine exercises. Tests cover every exercise in Linear Strength, Twice a Week and Ganzkörper zu Hause. The 10 additions have text in all 25 packs. All 55 guides are `draft` pending named review (ADR 0012). 36 distinct routine exercise IDs still lack guides |
 | EP23-T04 | Guidance on the exercise sheet | `sheets.jsx`, `components/ExerciseGuide.jsx` | cues, mistakes with fixes, where to feel it, breathing, easier and harder open the other exercise; a draft is never called reviewed | done, `next/EP23-exercise-guidance` |
 | EP23-T05 | Library opens on guided exercises for a Beginner | `views/Library.jsx`, `lib/exercise-guide.js` | a Beginner's Library opens on the exercises with a form guide, as a chip anyone can set or clear; a search with nothing guided in it shows what it found | **done** (#60). The search index and the 50 ms target were not needed for this and are not built |
 | EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 searchable terms. The plan result, Workout, Plan and Progress expose definitions. Complete translations and native review of the entries remain open |
@@ -150,13 +159,13 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Status |
 |---|---|---|
-| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | open |
+| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | the rig and the squat (E5a) are prepared: the rig is its own chunk, the still key pose with words covers reduced motion and a device without WebGL, and the rig is freed when the sheet closes. The eight other patterns follow in E5b. Native-language review of the seven new strings remains open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
-| EP26-T03 | Coach Mode: one card at a time, spoken cues, "too hard" swaps to the easier version | open |
-| EP26-T04 | Ladder skill tree | open |
+| EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
+| EP26-T04 | Ladder skill tree | Prepared for review: Learn opens existing ladders as an ordered, read-only history view. Highest logged step and all earlier steps are marked reached. [Local evidence](evidence/EP26-T04/README.md); independent and native-language review pending. |
 | EP26-T05 | Haptics and sound kit that respects mute and reduced motion | open |
 | EP26-T06 | Second form-check movement (closes EP10-T04) | open; needs the owner's three clips first |
-| EP26-T07 | Routine builder shows weekly sets per muscle against the goal | open |
+| EP26-T07 | Routine builder shows weekly sets per muscle against the goal | Prepared locally; personal targets take precedence, draft defaults only for muscle growth; independent and named content review pending |
 
 ### Phase 5: proof
 
@@ -168,7 +177,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 ## Order from here
 
-1. Owner: read the 45 exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
+1. Owner: read the 55 draft exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
 2. Owner: create the Supabase project and the Stripe test account. Nothing more of the Cloud edition can be verified without them: ADR 0013's five checks, EP19-T03, T05, EP20-T01, T07 and EP18-T02 all wait on this.
 3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (glossary translations and native review).
 4. EP18-T04 and EP26-T01 before any live key.

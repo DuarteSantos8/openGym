@@ -3,6 +3,8 @@
 // put in the address bar on the way back. The phone app's own flow is in lib/oidc-app.js.
 import { t } from './i18n-core.js'
 import { appBase } from './app-base.js'
+import { logoutOwed, pendingCookieCleanup, trackCookieCleanup } from './cookie-cleanup.js'
+import { api } from './api.js'
 
 export const oidcOn = config => !!config?.oidc
 // The flow cookie belongs to the browser origin that starts sign-in.
@@ -15,7 +17,19 @@ export const startUrl = (mode = 'web') => appBase() + 'api/oidc/start' + (mode =
 
 /** Leaves for the provider. `mode`: 'web', 'reauth' (confirm it is you), or a link URL from the server. */
 export function startWebSignIn(mode = 'web', go = url => window.location.assign(url)) {
-  go(mode.startsWith('/api/') ? appBase() + mode.slice(1) : startUrl(mode))
+  const url = mode.startsWith('/api/') ? appBase() + mode.slice(1) : startUrl(mode)
+  if (mode === 'web' && (pendingCookieCleanup || logoutOwed())) {
+    return (async () => {
+      while (pendingCookieCleanup) await pendingCookieCleanup
+      if (logoutOwed()) {
+        await trackCookieCleanup(() => api('/api/logout', { method: 'POST', body: '{}', timeout: 5000 }))
+        while (pendingCookieCleanup) await pendingCookieCleanup
+        if (logoutOwed()) throw new Error('Logout pending')
+      }
+      go(url)
+    })()
+  }
+  go(url)
 }
 
 // What the last trip to the provider came back with, read once at boot and kept for the screen

@@ -35,18 +35,21 @@ const USERS = [
   { id: 'u_bumped', name: 'Bumped', created: new Date().toISOString(), sv: 1 }
 ];
 
-async function startServer(t) {
-  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-renew-'));
-  fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
-  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: USERS, creds: [], subs: [], invites: [] }));
+async function startServer(t, dataDir) {
+  if (!dataDir) {
+    dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-renew-'));
+    t.after(() => fs.rmSync(dataDir, { recursive: true, force: true }));
+    fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
+    fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: USERS, creds: [], subs: [], invites: [] }));
+  }
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', SESSION_DAYS: String(SESSION_DAYS) }
   });
-  const h = { api: '', log: '' };
+  const h = { api: '', log: '', dataDir };
   child.stdout.on('data', d => h.log += d);
   child.stderr.on('data', d => h.log += d);
-  t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  t.after(() => child.kill('SIGKILL'));
   // The boot line carries the port the listener bound, so it is both the address and the
   // readiness signal — see boundPort in helpers.mjs for why the test does not pick one.
   h.port = await boundPort(child, () => h.log);
@@ -100,4 +103,15 @@ test('revocation still works: an old session version is refused, and "sign out e
   const out = await fetch(`${h.api}/api/logout/all`, { method: 'POST', headers: { Cookie: `gymsid=${mint('u_phone', { daysLeft: 9 })}` } });
   assert.equal(out.status, 200);
   assert.equal((await me(bearer(token))).status, 401);
+});
+
+test('a server reading the durable store refuses a signed-out cookie while a paired phone stays signed in', async t => {
+  const h = await startServer(t);
+  const cookie = mint('u_phone', { daysLeft: 1 });
+  const phone = mint('u_phone', { daysLeft: 8 });
+  const out = await fetch(h.api + '/api/logout', { method: 'POST', headers: { Cookie: 'gymsid=' + cookie } });
+  assert.equal(out.status, 200);
+  const restored = await startServer(t, h.dataDir);
+  assert.equal((await fetch(restored.api + '/api/me', { headers: { Cookie: 'gymsid=' + cookie } })).status, 401);
+  assert.equal((await fetch(restored.api + '/api/me', { headers: bearer(phone) })).status, 200);
 });

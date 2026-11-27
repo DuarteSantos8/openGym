@@ -257,7 +257,17 @@ const NET_WAIT_MS = 3000
 // the content does, so a copy in this build's cache is the file, and a start serves them from
 // here instead of asking the network about each of them again (40-odd round trips before Home).
 const isHashedAsset = p => /\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/.test(p)
-const cacheFirst = e => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
+// The install request has no Origin, while a module import can send one. Retry this
+// same-origin content-hashed asset without that header, preserving every other Vary key.
+async function cachedAsset(request) {
+  const match = item => caches.match(item, { ignoreSearch: true })
+  const hit = await match(request)
+  if (hit || !request.headers?.has('origin')) return hit
+  const headers = new Headers(request.headers)
+  headers.delete('origin')
+  return match(new Request(request.url, { headers }))
+}
+const cacheFirst = e => cachedAsset(e.request).then(hit => hit || fetch(e.request).then(res => {
   // Only a real answer is kept: an auth proxy's login page would otherwise stand in for the chunk
   // for the rest of this build.
   if (res.ok && !res.redirected) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}) }

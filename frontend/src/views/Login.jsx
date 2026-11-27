@@ -100,7 +100,13 @@ export default function Login() {
   // Back from the provider with the browser's back button: the page comes out of the cache as it
   // was left, so the button wakes up again.
   useEffect(() => { const f = () => setLeaving(false); window.addEventListener('pageshow', f); return () => window.removeEventListener('pageshow', f) }, [])
-  const ssoGo = () => { setLeaving(true); startWebSignIn() }
+  const ssoGo = async () => {
+    setLeaving(true)
+    try { await startWebSignIn() } catch {
+      setLeaving(false)
+      useUI.getState().toast(t('Sign-in failed'))
+    }
+  }
   const ssoButton = sso && <>
     <Button variant="primary" icon="shield" onClick={ssoGo} disabled={leaving} aria-busy={leaving || undefined}>
       {leaving ? t('Off to {0}…', label) : t('Sign in with {0}', label)}
