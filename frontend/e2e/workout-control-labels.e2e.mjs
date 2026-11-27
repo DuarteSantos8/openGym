@@ -123,6 +123,14 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
         await expect.poll(() => last.evaluate(el =>
           el.getBoundingClientRect().bottom <= document.querySelector('#timer').getBoundingClientRect().top + 1
         )).toBe(true)
+        // The docked timer's own buttons must take taps too, not only clear the page above them.
+        await expect.poll(() => page.evaluate(() => {
+          const buttons = [...document.querySelectorAll('#timer button')].filter(b => b.getClientRects().length)
+          return buttons.length > 0 && buttons.every(b => {
+            const box = b.getBoundingClientRect()
+            return b.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2))
+          })
+        })).toBe(true)
       } else {
         const pause = page.locator('#timer .pause')
         for (let i = 0; i < 100 && !await pause.evaluate(el => el === document.activeElement); i++) {
