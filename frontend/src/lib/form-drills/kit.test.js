@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   angleAt, chainConf, createPhaseMachine, createSidePicker, createViewDetector, detectView, ema, fades,
   framing, framingHint, matchExercise, mid, pickCue, pickSide, seen, spread, tempo, viewHint, widthRatio,
-  GAP_MS, LOST_RESET_MS,
+  GAP_MS, LOST_RESET_MS, VIEW_EDGES,
 } from './kit.js'
 import { squatPose, project, film, squatSet, CAMERA } from './test-kit.js'
 
@@ -72,6 +72,14 @@ describe('the view', () => {
     expect([0, 15, 30, 45, 60, 75, 90, 135, 180].map(yaw => detectView(still(yaw)))).toEqual(
       ['side', 'side', 'diagonal', 'diagonal', 'diagonal', 'front', 'front', 'diagonal', 'side'])
     expect(detectView([])).toBe(null)
+  })
+
+  it('takes the edges a drill gives it, VIEW_EDGES by default', () => {
+    const read = (yaw, edges) => { const d = createViewDetector(edges); for (const f of still(yaw)) d.push(f, true); return d.view }
+    expect(read(22)).toBe('diagonal')
+    expect(read(22, { side: 0.235, front: VIEW_EDGES.front })).toBe('side')
+    expect(read(30, { side: 0.235, front: VIEW_EDGES.front })).toBe('diagonal')
+    expect(read(90, { side: 0.235, front: VIEW_EDGES.front })).toBe('front')
   })
 
   it('takes a far side Vision does not see for side-on', () => {

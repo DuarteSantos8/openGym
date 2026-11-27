@@ -100,8 +100,8 @@ export function widthRatio(frame) {
   return (width('Shoulder') + width('Hip')) / 2 / torso
 }
 
-const classify = (r, prev) => {
-  const lo = VIEW_EDGES.side, hi = VIEW_EDGES.front
+const classify = (r, prev, edges = VIEW_EDGES) => {
+  const lo = edges.side, hi = edges.front
   if (prev === 'side') return r > lo + VIEW_HYST ? (r > hi ? 'front' : 'diagonal') : 'side'
   if (prev === 'front') return r < hi - VIEW_HYST ? (r < lo ? 'side' : 'diagonal') : 'front'
   if (prev === 'diagonal') return r < lo - VIEW_HYST ? 'side' : r > hi + VIEW_HYST ? 'front' : 'diagonal'
@@ -111,8 +111,9 @@ const classify = (r, prev) => {
 /**
  * The view over time. push(frame, standing) reads the frame only when `standing` and returns the
  * view so far: 'side' | 'diagonal' | 'front', or null until a few standing frames were seen.
+ * `edges` ({ side, front } in widthRatio): VIEW_EDGES unless a drill reads its measure further round.
  */
-export function createViewDetector() {
+export function createViewDetector(edges = VIEW_EDGES) {
   let ratio = null, n = 0, view = null
   return {
     push(frame, standing) {
@@ -121,7 +122,7 @@ export function createViewDetector() {
       if (r == null) return view
       ratio = ema(ratio, r, 0.25)
       n++
-      if (n >= VIEW_SAMPLES) view = classify(ratio, view)
+      if (n >= VIEW_SAMPLES) view = classify(ratio, view, edges)
       return view
     },
     get view() { return view },
