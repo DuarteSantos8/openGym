@@ -746,8 +746,11 @@ export const useStore = create((set, get) => {
       try { localStorage.removeItem(SYNC_KEY) } catch { /* nothing to take back */ }
       if (!toldNoRoom) {
         toldNoRoom = true
+        const message = e?.name === 'QuotaExceededError'
+          ? t('This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.')
+          : t('Could not save')
         import('./useUI.js')
-          .then(({ useUI }) => useUI.getState().toast(t('This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.')))
+          .then(({ useUI }) => useUI.getState().toast(message))
           .catch(() => {})
       }
     }

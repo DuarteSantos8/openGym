@@ -364,13 +364,13 @@ describe('a save this device refuses', () => {
   // localStorage throwing (a device genuinely full, a private window with next to no quota) used
   // to take the change with it: persist wrote before it told the store, so Finish just did
   // nothing at all and said nothing either.
-  const refusingStorage = () => {
+  const refusingStorage = (name = 'QuotaExceededError') => {
     const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
     const store = globalThis.localStorage
     const guard = new Proxy(store, {
       get(target, prop) {
         const value = Reflect.get(target, prop)
-        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1') throw new DOMException('quota', 'QuotaExceededError'); return store.setItem(key, v) }
+        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1') throw new DOMException('write refused', name); return store.setItem(key, v) }
         return typeof value === 'function' ? value.bind(target) : value
       }
     })
@@ -378,6 +378,19 @@ describe('a save this device refuses', () => {
     return () => Object.defineProperty(globalThis, 'localStorage', real)
   }
 
+  it('reports a refused save without claiming the storage is full', async () => {
+    toast.mockClear()
+    useStore.setState({ S: clone(DEF), user: null, ready: true })
+    const undo = refusingStorage('SecurityError')
+    try {
+      useStore.getState().update(s => { s.restSec = 150 }, false)
+      expect(useStore.getState().S.restSec).toBe(150)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledWith('Could not save'))
+    } finally {
+      undo()
+      useStore.getState().update(s => { s.restSec = 90 }, false)
+    }
+  })
   it('keeps the change, marks it owed to the server, and says so once', async () => {
     toast.mockClear()
     useStore.setState({ S: clone(DEF), user: { id: 'user-1' }, ready: true })
