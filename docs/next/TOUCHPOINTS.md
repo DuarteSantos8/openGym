@@ -189,3 +189,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Nutrition.jsx`, `frontend/src/views/Nutrition.test.jsx` | `next/EP06-opennutritracker-import` | UI | Open a local food export and confirm its diary destination. |
 | `frontend/src/lib/zip.js` | `next/EP06-opennutritracker-import` | ZIP reader | Select bounded entries for a local import. Backup imports retain their store-only format. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP06-opennutritracker-import` | UI | Localize the file picker, destination, preview, result and error. |
+| `frontend/e2e/cloud/account.e2e.mjs` | 11.02h / EP27-T01 | Cloud Learn ladder journey | Exercises the shipped ladder from a linked account and checks that linked progress disappears on a clean device after sign-out; no runtime behavior changed. |

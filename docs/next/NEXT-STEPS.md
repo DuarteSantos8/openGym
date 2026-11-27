@@ -199,3 +199,5 @@ D2 follow-up bundles the 13 training-screen definitions for offline use and leav
 Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
 
 D3 prepares a short Beginner Settings root; full search, App help and Account stay available. The two new navigation labels in all locale packs await native review.
+
+- **11.02h, Learn ladders.** Cloud browser coverage follows progress across account linking, reload, a clean second browser and sign-out. Hosted and physical-device verification remain open.
