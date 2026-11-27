@@ -103,7 +103,7 @@ ENV RESOLVER=127.0.0.11
 # Railway uses runtime DNS, not Docker Compose's embedded resolver.
 # Source this before nginx's 20-envsubst-on-templates.sh; keep explicit overrides.
 USER root
-RUN printf '%s\n' '#!/bin/sh' 'if [ -n "$RAILWAY_ENVIRONMENT_ID" ] && [ "$RESOLVER" = "127.0.0.11" ]; then' '  RESOLVER=$(awk '\''$1 == "nameserver" {print $2; exit}'\'' /etc/resolv.conf)' '  [ -n "$RESOLVER" ] || { echo "Railway DNS resolver missing" >&2; exit 1; }' '  case "$RESOLVER" in *:*) RESOLVER="[$RESOLVER]";; esac' '  export RESOLVER' 'fi' > /docker-entrypoint.d/19-railway-resolver.envsh \
+RUN printf '%s\n' '#!/bin/sh' 'if [ -n "${RAILWAY_ENVIRONMENT_ID:-}" ] && [ "$RESOLVER" = "127.0.0.11" ]; then' '  RESOLVER=$(awk '\''$1 == "nameserver" {print $2; exit}'\'' /etc/resolv.conf)' '  [ -n "$RESOLVER" ] || { echo "Railway DNS resolver missing" >&2; exit 1; }' '  case "$RESOLVER" in *:*) RESOLVER="[$RESOLVER]";; esac' '  export RESOLVER' 'fi' > /docker-entrypoint.d/19-railway-resolver.envsh \
  && chmod 755 /docker-entrypoint.d/19-railway-resolver.envsh
 USER 101
 # Empty = the CF-Connecting-IP header is dropped before it reaches the API, so it cannot be

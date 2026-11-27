@@ -1,5 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
+Web image startup is prepared for Docker deployments with the Railway environment marker unset.
 OpenNutriTracker local ZIP import (09.01a) is prepared for guest and account diaries. Refresh is manual. The source archive stays on the device.
 B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval.
 06.03 narrow Workout actions and navigation labels are prepared. Four locales passed the 320 px control fit and accessible-name regression.
