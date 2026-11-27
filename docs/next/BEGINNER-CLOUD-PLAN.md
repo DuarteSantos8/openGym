@@ -2,7 +2,7 @@
 
 Web image startup is prepared for Docker deployments with the Railway environment marker unset.
 OpenNutriTracker local ZIP import (09.01a) is prepared for guest and account diaries. Refresh is manual. The source archive stays on the device.
-B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval.
+B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval and displays restart feedback before the retry.
 06.03 narrow Workout actions and navigation labels are prepared. Four locales passed the 320 px control fit and accessible-name regression.
 
 G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
@@ -10,6 +10,7 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner still needs to choose a production address and verify both email return journeys after cutover.
 Nutrition sync checks now cover three offline copies editing portions of the same diary entry and a repeated import of a legacy entry.
 A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
 
