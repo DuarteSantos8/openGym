@@ -51,6 +51,26 @@ scoped read and write flow, write refused on a read-only grant, refresh, revoke;
 ChatGPT connector; a near-1 MB `/mcp` body passes and an oversized one gets the MCP's own 413; web
 sign-in and a near-5 MB sync on the same domain; a rollback rehearsal to `ironvane-web`.
 
+## Integrations that can write configuration
+
+Observed 2026-11-27, not changed by this work:
+
+- A Supabase-side Vercel integration with access to **all** Vercel projects of the team wrote 18
+  Production variables into `opengym` at 16:21, including the service-role key, secret key, JWT
+  secret and Postgres password. They were removed (`ROLLBACK.md`). The frontend needs none of them:
+  there are no Vercel Functions and Vite bundles only `VITE_*`.
+- At the same time Supabase **branching** was enabled on the auth project, with its default branch
+  tied to git `main` (status `MIGRATIONS_FAILED`). The repository's migration files carry different
+  version numbers from the four already applied in production, so the run failed before changing
+  anything: auth users, profiles, OAuth consents, the OAuth client, the migration history and the
+  two edge functions were all unchanged afterwards. While it stays connected, every push to `main`
+  can run migrations against the production auth project and re-sync variables into Vercel.
+- Prevention (owner, dashboard): limit the integration's Vercel project access so it excludes
+  `opengym` (or disconnect the Vercel project in Supabase → Integrations), and disable branching
+  unless preview databases are wanted. Nothing in the app depends on either.
+- A separate Vercel Marketplace Supabase resource exists in the team (Free plan, connected to no
+  project). It is not used by IronVane.
+
 ## Preview isolation
 
 Preview deployments must not write production data. The `next/cloud-preview` build is the Cloud
