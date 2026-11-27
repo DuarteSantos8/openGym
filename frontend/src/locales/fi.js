@@ -1255,7 +1255,7 @@ export default {
   "Plan restored": "Suunnitelma palautettu",
   "Nothing to undo": "Ei kumottavaa",
   "Back": "Takaisin",
-  "Coach": "AI-valmentaja",
+  "Coach": "Valmentaja",
   "Ask for a review": "Pyydä katsaus",
   "{0} of {1} Coach runs used today": "AI-valmentajaa käytetty tänään {0}/{1} kertaa",
   "Controls": "Hallinta",
