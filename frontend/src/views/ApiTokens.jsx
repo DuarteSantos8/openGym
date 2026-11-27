@@ -24,10 +24,13 @@ export default function ApiTokensPage() {
   const toast = useUI(s => s.toast)
   const [data, setData] = useState(null)
   const [error, setError] = useState(false)
-  const load = useCallback(() => listTokens().then(d => { setData(d); setError(false) }).catch(() => setError(true)), [])
+  // Only a loaded list speaks for the server's connector address; a token change sends just tokens.
+  const [listed, setListed] = useState(false)
+  const load = useCallback(() => listTokens().then(d => { setData(d); setListed(true); setError(false) }).catch(() => setError(true)), [])
   useEffect(() => { load() }, [load])
-  const mcp = data?.mcp || !!config?.mcp
-  const address = mcpAddress()
+  const mcp = data?.mcp ?? !!config?.mcp
+  // A fresh list with no custom address uses the regular server address.
+  const address = (listed ? data : config)?.mcpAddress || mcpAddress()
   const tokens = data?.tokens || []
 
   const open = tok => sheet(close => <TokenDetail tok={tok} close={close} onRevoked={d => { setData(cur => ({ ...cur, tokens: d.tokens })); toast(t('Token revoked')) }} />)

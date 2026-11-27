@@ -17,6 +17,13 @@ const ROOT = path.join(API, '..');
 const read = f => fs.readFileSync(f, 'utf8');
 const spec = read(path.join(API, 'openapi.yaml'));
 
+test('config and token listing document the optional public connector address', () => {
+  for (const endpoint of ['/api/config', '/api/tokens']) {
+    const operation = spec.split('\n  ' + endpoint + ':\n')[1].split(/\n  \/[^ ]/)[0];
+    assert.match(operation, /\n +mcpAddress:/, endpoint);
+  }
+});
+
 /** Every `'GET /api/x': async (req, res)` key in the route table. */
 const routeKeys = src => [...src.matchAll(/^\s*'(GET|POST|PUT|PATCH|DELETE) (\/(?:api|\.well-known)\/[^']*)':/gm)].map(m => `${m[1]} ${m[2]}`);
 

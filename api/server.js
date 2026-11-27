@@ -58,6 +58,7 @@ import { createPermissions } from './permissions.js';
 import { createShareLog } from './share-log.js';
 import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, readCategories, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
 import * as oauth from './oauth.js';
+import { connectorOrigin } from './connector-origin.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
 import { libraryConfig, publicLibraryConfig } from './library/config.js';
 import { createLibraryStore } from './library/store.js';
@@ -2418,9 +2419,12 @@ if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers();
 
 /* ---------- the MCP connector's OAuth (oauth.js) ---------- */
 const APP_BASE = String(process.env.BASE_PATH || '').replace(/\/+$/, '');
-const OAUTH_ORIGIN = ORIGIN.replace(/\/+$/, '') + APP_BASE;
+const WEB_APP = ORIGIN.replace(/\/+$/, '') + APP_BASE;
+const publicConnector = connectorOrigin(process.env.MCP_PUBLIC_ORIGIN);
+const OAUTH_ORIGIN = publicConnector ? publicConnector + APP_BASE : WEB_APP;
 // The address people paste into Claude or ChatGPT; a `resource` parameter has to name it.
 const MCP_RESOURCE = OAUTH_ORIGIN + '/mcp';
+const connectorAddress = MCP_ON && publicConnector ? { mcpAddress: MCP_RESOURCE } : {};
 const oauthPending = new Map();
 const oauthCodes = new Map();
 // A form body, the way RFC 6749 sends the token request (JSON taken too), at most 16 KB.
@@ -2467,7 +2471,7 @@ function wellKnownPath(p) {
 function oauthRoutes() {
   const meta = (req, res) => json(res, 200, oauth.authServerMetadata(OAUTH_ORIGIN));
   const resource = (req, res) => json(res, 200, oauth.protectedResourceMetadata(OAUTH_ORIGIN));
-  return {
+  const handlers = {
     'GET /.well-known/oauth-authorization-server': meta,
     // The OpenID name for the same document: the MCP spec's clients try it after RFC 8414, and
     // under BASE_PATH it is the one address they look for below the prefix.
@@ -2492,7 +2496,7 @@ function oauthRoutes() {
         opts.client = c.client;
       }
       const r = oauth.startAuthorize(db, q, oauthPending, Date.now(), opts);
-      if (r.ok) return redirectTo(res, `${OAUTH_ORIGIN}/#/connect/${r.request.id}`);
+      if (r.ok) return redirectTo(res, `${WEB_APP}/#/connect/${r.request.id}`);
       if (r.redirect) return redirectTo(res, r.redirect);
       res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end('openGym could not start this sign-in: ' + r.error);
@@ -2554,6 +2558,16 @@ function oauthRoutes() {
       res.writeHead(200, { 'Cache-Control': 'no-store' }); res.end();
     }
   };
+  // A split connector can forward the four advertised OAuth endpoints with their base path intact.
+  if (publicConnector && APP_BASE) {
+    for (const [method, endpoint] of [['GET', 'authorize'], ['POST', 'register'], ['POST', 'token'], ['POST', 'revoke']]) {
+      const pathname = '/api/oauth/' + endpoint;
+      handlers[method + ' ' + APP_BASE + pathname] = handlers[method + ' ' + pathname];
+      // The alias is the same endpoint: a browser OAuth client is CSRF-exempt on it too.
+      if (CSRF_EXEMPT.has(method + ' ' + pathname)) CSRF_EXEMPT.add(method + ' ' + APP_BASE + pathname);
+    }
+  }
+  return handlers;
 }
 
 const routes = {
@@ -2608,7 +2622,7 @@ const routes = {
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a
       // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
-      ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
+      ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true, ...connectorAddress } : {}) } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
       ...(oidcApi ? { oidc: { label: OIDC.label, webOrigin: OIDC.webOrigin, deleteProfile: true, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
@@ -3028,7 +3042,7 @@ const routes = {
     'GET /api/tokens': async (req, res) => {
       const user = readSession(req);
       if (!user) return json(res, 401, { error: 'not signed in' });
-      json(res, 200, { tokens: listTokens(db, user), categories: TOKEN_CATEGORIES, days: TOKEN_DAYS, defaultDays: DEFAULT_DAYS, mcp: MCP_ON });
+      json(res, 200, { tokens: listTokens(db, user), categories: TOKEN_CATEGORIES, days: TOKEN_DAYS, defaultDays: DEFAULT_DAYS, mcp: MCP_ON, ...connectorAddress });
     },
     'POST /api/tokens': async (req, res) => {
       const user = readSession(req);

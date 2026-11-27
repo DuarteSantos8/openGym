@@ -78,7 +78,7 @@ async function signIn(api, { scope = 'workouts:view plans:view offline_access', 
   const back = new URL(ok.redirect);
   // Basic client authentication instead of client_id in the form: what some OAuth libraries send.
   const tok = await (await fetch(api + '/api/oauth/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', Authorization: 'Basic ' + Buffer.from(reg.client_id + ':').toString('base64') }, body: new URLSearchParams({ grant_type: 'authorization_code', code: back.searchParams.get('code'), code_verifier: verifier, redirect_uri: redirect }) })).json();
-  return { reg, back, tok, cookie };
+  return { consent: az.headers.get('location'), reg, back, tok, cookie };
 }
 
 test('refresh, revoke and the connector in the token list (assistant, last used)', async t => {
@@ -114,6 +114,75 @@ test('a resource naming another server is sent back as invalid_target', async t 
   const ok = await fetch(api + '/api/oauth/authorize?' + new URLSearchParams({ client_id: reg.client_id, redirect_uri: 'https://chatgpt.com/connector_platform_oauth_redirect', response_type: 'code', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256', resource: 'https://gym.example/mcp' }), { redirect: 'manual' });
   assert.match(ok.headers.get('location'), /\/#\/connect\//);
 });
+
+test('an invalid public connector origin stops the API before it listens', async t => {
+  await assert.rejects(start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example/path' }), /MCP_PUBLIC_ORIGIN must be an HTTPS origin/);
+});
+
+test('separate connector origin advertises its own issuer and resource but opens consent on the web app', async t => {
+  const api = await start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example/', BASE_PATH: '/gym' });
+  const issuer = 'https://connector.example/gym';
+  const audience = issuer + '/mcp';
+  const meta = await (await fetch(api + '/.well-known/oauth-authorization-server/gym')).json();
+  assert.equal(meta.issuer, issuer);
+  assert.equal(meta.authorization_endpoint, issuer + '/api/oauth/authorize');
+  const doc = await (await fetch(api + '/.well-known/oauth-protected-resource/gym/mcp')).json();
+  assert.equal(doc.resource, audience);
+  assert.deepEqual(doc.authorization_servers, [issuer]);
+  const cookie = { Cookie: `gymsid=${session('u1')}` };
+  const config = await (await fetch(api + '/api/config', { headers: cookie })).json();
+  assert.equal(config.mcpAddress, audience);
+  const redirect = 'http://localhost:3001/callback';
+  const { reg, back, tok, consent } = await signIn(api, { resource: audience, redirect });
+  assert.ok(consent.startsWith('https://gym.example/gym/#/connect/'));
+  assert.equal(back.searchParams.get('iss'), issuer);
+  assert.ok(tok.access_token);
+  const params = new URLSearchParams({ client_id: reg.client_id, redirect_uri: redirect, response_type: 'code', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256', resource: 'https://gym.example/gym/mcp' });
+  const wrong = await fetch(api + '/api/oauth/authorize?' + params, { redirect: 'manual' });
+  assert.equal(new URL(wrong.headers.get('location')).searchParams.get('error'), 'invalid_target');
+});
+
+test('a browser OAuth client on a prefixed connector is CSRF-exempt like the unprefixed endpoints', async t => {
+  const api = await start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example', BASE_PATH: '/gym' });
+  const browser = { 'Content-Type': 'application/json', Origin: 'https://claude.example' }
+  // What a browser sends first for a JSON POST from another origin.
+  const preflight = await fetch(api + '/gym/api/oauth/register', { method: 'OPTIONS', headers: { Origin: 'https://claude.example', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type' } })
+  assert.equal(preflight.status, 204)
+  assert.equal(preflight.headers.get('access-control-allow-origin'), 'https://claude.example')
+  assert.match(preflight.headers.get('access-control-allow-methods'), /POST/)
+  assert.match(preflight.headers.get('access-control-allow-headers'), /Content-Type/)
+  for (const pathname of ['/api/oauth/register', '/gym/api/oauth/register']) {
+    const r = await fetch(api + pathname, { method: 'POST', headers: browser, body: JSON.stringify({ redirect_uris: ['http://localhost:3001/callback'] }) });
+    assert.equal(r.status, 201, pathname);
+  }
+  const form = { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://claude.example' }
+  for (const endpoint of ['token', 'revoke']) {
+    const plain = await fetch(api + '/api/oauth/' + endpoint, { method: 'POST', headers: form, body: 'token=x&grant_type=authorization_code' });
+    const prefixed = await fetch(api + '/gym/api/oauth/' + endpoint, { method: 'POST', headers: form, body: 'token=x&grant_type=authorization_code' });
+    assert.notEqual(prefixed.status, 403, endpoint);
+    assert.equal(prefixed.status, plain.status, endpoint);
+  }
+});
+
+for (const [name, config] of [
+  ['MCP off', {}],
+  ['MCP off with a connector origin saved', { MCP_PUBLIC_ORIGIN: 'https://connector.example' }],
+  ['single-origin MCP', { MCP: 'on' }],
+  ['split-origin MCP', { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example' }],
+]) {
+  test(name + ' keeps ordinary API and web consent paths unprefixed', async t => {
+    const api = await start(t, { BASE_PATH: '/gym', ...config });
+    assert.equal((await fetch(api + '/api/health')).status, 200);
+    for (const pathname of ['/api/health', '/api/config', '/api/oauth/request']) {
+      assert.equal((await fetch(api + '/gym' + pathname)).status, 404, pathname);
+    }
+    const registration = await fetch(api + '/gym/api/oauth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ redirect_uris: ['http://localhost:3001/callback'] }),
+    });
+    assert.equal(registration.status, config.MCP && config.MCP_PUBLIC_ORIGIN ? 201 : 404);
+  });
+}
 
 test('under BASE_PATH: issuer, resource and every discovery address carry the prefix', async t => {
   const api = await start(t, { MCP: 'on', BASE_PATH: '/gym' });

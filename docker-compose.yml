@@ -16,6 +16,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      - MCP_PUBLIC_ORIGIN=${MCP_PUBLIC_ORIGIN:-}
       # The port the API listens on. web proxies to this same value, so the two
       # cannot drift — change it in .env and both follow.
       - PORT=${PORT:-3000}
@@ -90,5 +91,6 @@ services:
       - OPENGYM_API_URL=http://${BACKEND:-api}:${PORT:-3000}
       # The app's address, so a browser page from anywhere else is turned away (DNS rebinding).
       - ORIGIN=${ORIGIN:-}
+      - MCP_PUBLIC_ORIGIN=${MCP_PUBLIC_ORIGIN:-}
       # The prefix under a subpath deployment, for the sign-in pointer its 401 carries.
       - BASE_PATH=${BASE_PATH:-}
