@@ -3,7 +3,7 @@
 // stepping out and back; counting, depth and the standards, tempo, cues, the side-on extras, and
 // the catalogue.
 import { describe, expect, it } from 'vitest'
-import split, { CUE, FAST_DOWN_SEC, HIP_MARK, PARALLEL_R, depthShare, frontLeg } from './split-squat.js'
+import split, { CUE, FAST_DOWN_SEC, HIP_MARK, PARALLEL_R, depthOf, depthShare, frontLeg } from './split-squat.js'
 import { checkDrill } from './index.js'
 import { BODY, CAMERA, YAWS, ease, film, markHip, project, same } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
@@ -413,5 +413,16 @@ describe('splitSquat.matches', () => {
     for (const id of ['1460', '4295', '3582', '1410', '0881', '10906', '9042', '10328', '3356', '0043', '1459']) expect(split.matches(EXIDX[id])).toBe(false)
     expect(split.matches(null)).toBe(false)
     expect(split.matches({ id: 'c2', n: 'Lunge', cat: 'cardio' })).toBe(false)
+  })
+})
+
+describe('the split squat parallel edge, against what Vision reads', () => {
+  it('takes level front thighs read up to 0.1 over the mark, and refuses a partial read 0.2 over', () => {
+    // Side-on: a brisk set that all looked level read 0.03 to 0.10 over HIP_MARK, a partial
+    // stopped on a foam block 0.2 over.
+    for (const over of [0.03, 0.1, 0.12]) expect(depthOf(HIP_MARK + over)).toBe('parallel')
+    expect(depthOf(HIP_MARK + 0.2)).toBe('above')
+    expect(PARALLEL_R).toBeGreaterThan(0.1)
+    expect(PARALLEL_R).toBeLessThan(0.2)
   })
 })

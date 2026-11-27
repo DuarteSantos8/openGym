@@ -13,7 +13,9 @@
 //     wide the stance is, so stepping into the split is not a rep. The rep signal is 1 - r / r_top.
 //     Vision's hip sits on the pelvis above the crease (as for the squat), so depth takes HIP_MARK
 //     off r: real split squats with the back knee near the floor read r 0.22 to 0.25 from the
-//     front, and a partial one stopped on a foam block 0.4 side-on.
+//     front, and a partial one stopped on a foam block 0.4 side-on. Side-on, a brisk set whose
+//     front thighs all looked level read r 0.23 to 0.30 (0.03 to 0.10 over the mark), the
+//     partial 0.4 (0.2 over): PARALLEL_R sits between them, at 0.15, not at the edge of the first.
 //   - the top is also read on the hip's own height: r's shin is short, and with the front leg
 //     straight Vision slides the knee up and down it (r 0.62 to 1.13 standing still in one side-on
 //     set), so a lifter back at the height she stood at read a third of the way down and the rep
@@ -32,7 +34,7 @@ import {
   matchExercise, mean, mid, pickCue, round1, seen, spread, tempo, viewHint,
 } from './kit.js'
 
-export const PARALLEL_R = 0.1         // hip crease within this many front-shin heights above the front knee: parallel
+export const PARALLEL_R = 0.15        // hip crease within this many front-shin heights above the front knee: parallel
 export const HIP_MARK = 0.2           // Vision's hip above the hip crease at the bottom, in front-shin heights (as the squat's)
 export const TALL_R = 0.6             // hip at least this many front-shin heights above the front knee: up
 export const MAX_R = 2.5             // r above this: the knee read by the ankle (a back knee near the floor, or a Vision slip); never the front leg's
