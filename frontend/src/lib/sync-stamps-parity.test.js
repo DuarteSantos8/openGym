@@ -244,12 +244,40 @@ describe('nutrition amount groups merge atomically on client and API', () => {
       expect(results[0][0]).not.toHaveProperty('amountMl')
     }
   })
-  it('does not repair an already-malformed opaque amount row', () => {
-    const malformed = food({ amountG: 50, amountMl: 250, _ts: 10, _f: { amountG: 10, amountMl: 10 } })
+  it('keeps a malformed portion whole while it is newest, and lets a newer portion replace it whole', () => {
+    const malformed = at => food({ amountG: 50, amountMl: 250, _ts: at, _f: { amountG: at, amountMl: at } })
     for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
-      const row = merge([malformed], [grams(20)])[0]
-      expect(row.amountG).toBe(50)
-      expect(row.amountMl).toBe(250)
+      const newest = merge([malformed(30)], [grams(20)])[0]
+      expect(newest.amountG).toBe(50)
+      expect(newest.amountMl).toBe(250)
+      expect(newest).not.toHaveProperty('serving')
+      const older = merge([malformed(10)], [grams(20)])[0]
+      expect(older).toMatchObject({ amountG: 50, serving: { label: 'bowl', count: 1, size: 50, unit: 'g' } })
+      expect(older).not.toHaveProperty('amountMl')
+    }
+  })
+  it('gives one result for coherent, malformed, finely rounded and legacy copies in every sync order', () => {
+    const copies = [
+      food({ amountG: 50, _ts: 10, _f: { amountG: 10 } }),
+      food({ amountMl: 250, _ts: 20, _f: { amountMl: 20 } }),
+      food({ amountG: 50, amountMl: 250, _ts: 5, _f: { amountG: 5, amountMl: 5 } }),
+      // servingAmount rounds the count first, so 1.0004 x 50 is a readable 50 g (normalizeEntry agrees).
+      food({ amountG: 50, serving: { label: 'bowl', count: 1.0004, size: 50, unit: 'g' }, _ts: 15, _f: { amountG: 15, serving: 15 } }),
+      // A copy from before schemaVersion settles as a portion too.
+      (({ schemaVersion, ...legacy }) => legacy)(food({ amountG: 80, _ts: 18, _f: { amountG: 18 } })),
+      // Version 0 is legacy input too.
+      food({ schemaVersion: 0, amountMl: 90, serving: { label: 'cup', count: 1, size: 90, unit: 'mL' }, _ts: 8, _f: { amountMl: 8, serving: 8 } }),
+    ]
+    expect(normalizeEntry(copies[3]).supported).toBe(true)
+    const orders = [[0, 1, 2, 3, 4, 5], [4, 5, 2, 0, 1, 3], [3, 2, 4, 1, 0, 5], [5, 1, 3, 0, 4, 2], [2, 3, 0, 5, 1, 4]]
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      const results = orders.flatMap(o => {
+        const rows = o.map(i => [copies[i]])
+        return [rows.reduce((acc, r) => merge(acc, r)), rows.reduceRight((acc, r) => merge(r, acc))]
+      })
+      for (const r of results) expect(r).toEqual(results[0])
+      expect(results[0][0].amountMl).toBe(250)
+      expect(results[0][0]).not.toHaveProperty('amountG')
     }
   })
 
@@ -277,6 +305,49 @@ describe('nutrition amount groups merge atomically on client and API', () => {
         expect(reference[0]).not.toHaveProperty('amountMl')
         expect(normalizeEntry(reference[0]).supported).toBe(true)
       }
+    }
+  })
+
+  it('preserves the newest opaque future portion across mixed-schema merge orders and replay', () => {
+    const legacyG = { id: 'r', amountG: 100, _ts: 10, note: 'retain me' }
+    const legacyMl = { id: 'r', schemaVersion: 0, amountMl: 200, _ts: 20 }
+    const future = { id: 'r', schemaVersion: 2, _ts: 30, nextAmount: 'opaque' }
+    const futureEdit = { ...future, amountMl: 'future representation', _ts: 40 }
+    // A later future edit clears the amount with an explicit stamp; replaying futureEdit must not bring it back.
+    const futureClear = { id: 'r', schemaVersion: 2, nextAmount: 'opaque', _ts: 50, _f: { schemaVersion: 30, nextAmount: 30, amountMl: 50 } }
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      for (const copies of [[legacyG, legacyMl, future], [legacyMl, future, futureEdit], [legacyMl, futureEdit, futureClear]]) {
+        const [a, b, c] = copies.map(row => [row])
+        const reference = merge(merge(a, b), c)
+        for (const [x, y, z] of [[a,b,c],[a,c,b],[b,a,c],[b,c,a],[c,a,b],[c,b,a]]) {
+          expect(merge(x, merge(y, z))).toEqual(reference)
+          expect(merge(merge(x, y), z)).toEqual(reference)
+          expect(merge(reference, x)).toEqual(reference)
+        }
+        expect(reference[0]).toMatchObject({ schemaVersion: 2, nextAmount: 'opaque' })
+        expect(reference[0]).not.toHaveProperty('amountG')
+        if (copies.includes(futureClear)) expect(reference[0]).not.toHaveProperty('amountMl')
+        else if (copies.includes(futureEdit)) expect(reference[0].amountMl).toBe(futureEdit.amountMl)
+        else {
+          expect(reference[0]).not.toHaveProperty('amountMl')
+          expect(reference[0].note).toBe('retain me')
+        }
+      }
+    }
+  })
+
+  it('lets a newer supported portion, such as a restored backup, replace a future portion whole', () => {
+    const server = { nutritionEntries: [food({ schemaVersion: 2, amountMl: 'future representation', _ts: 30, _f: { schemaVersion: 30, amountMl: 30 } })] }
+    const backup = { nutritionEntries: [food({ amountG: 50, serving: { label: 'bowl', count: 1, size: 50, unit: 'g' } })] }
+    stampRestore(backup, [server], 60)
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      const restored = merge(server.nutritionEntries, backup.nutritionEntries)
+      expect(merge(backup.nutritionEntries, server.nutritionEntries)).toEqual(restored)
+      expect(restored[0]).toMatchObject({ schemaVersion: 1, amountG: 50 })
+      expect(restored[0]).not.toHaveProperty('amountMl')
+      expect(normalizeEntry(restored[0]).supported).toBe(true)
+      // Replaying the older future copy afterwards keeps the restore.
+      expect(merge(restored, server.nutritionEntries)).toEqual(restored)
     }
   })
 
