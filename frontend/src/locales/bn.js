@@ -2533,6 +2533,9 @@ export default {
   'Sent only to {0}, never to another server.': 'শুধু {0}-এ পাঠানো হয়, অন্য কোনো সার্ভারে কখনো নয়।',
   // --- search: similar exercises ---
   'Similar exercises': 'একই ধরনের ব্যায়াম',
+  'Mainly works {0}': 'মূলত {0} কাজ করে',
+  'Also works {0}': '{0}ও কাজ করে',
+  'Other matches': 'অন্যান্য ফলাফল',
   'No exact match. These come close:': 'হুবহু মিল নেই। এগুলো কাছাকাছি:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'ইনক্লাইন (%)',

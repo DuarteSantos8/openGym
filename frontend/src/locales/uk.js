@@ -2451,6 +2451,9 @@ export default {
   'Sent only to {0}, never to another server.': 'Надсилається лише на {0}, ніколи на інший сервер.',
   // --- search: similar exercises ---
   'Similar exercises': 'Схожі вправи',
+  'Mainly works {0}': 'Здебільшого навантажує: {0}',
+  'Also works {0}': 'Також навантажує: {0}',
+  'Other matches': 'Інші збіги',
   'No exact match. These come close:': 'Точного збігу немає. Ось що близько:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'Нахил (%)',

@@ -612,6 +612,95 @@ export const isClassicEx = e => !!e && CLASSIC.has(e.id)
 // Body part and target muscle words of an exercise, in English and in the reader's language.
 const bodyWordsOf = e => new Set(normalizeStr([e?.bp || '', t(e?.bp || ''), e?.tg || '', t(e?.tg || '')].join(' ')).split(' ').filter(Boolean))
 
+// The catalogue names one muscle several ways (`core`, `abdominals`, `lower abs` for abs; `chest`
+// in the muscle map, `pectorals` as a target). Each is read as the target vocabulary's word.
+const MUSCLE_CANON = {
+  core: 'abs', abdominals: 'abs', 'lower abs': 'abs', quadriceps: 'quads', gluteal: 'glutes', chest: 'pectorals',
+  'upper chest': 'pectorals', forearm: 'forearms', 'wrist flexors': 'forearms', 'wrist extensors': 'forearms',
+  'grip muscles': 'forearms', hamstring: 'hamstrings', trapezius: 'traps', 'lower back': 'spine',
+  serratus: 'serratus anterior', 'rear deltoids': 'rear delts', 'latissimus dorsi': 'lats',
+  'inner thighs': 'adductors', groin: 'adductors', soleus: 'calves', rhomboids: 'upper back',
+}
+const muscleKey = m => { const k = normalizeStr(m).replace(/-/g, ' '); return MUSCLE_CANON[k] || k }
+
+// The words of a muscle list, in English and in the reader's language ("lower-back" is "lower back"),
+// with the target vocabulary's name for each ("core" also counts as "abs").
+const wordsOfMuscles = list => new Set(normalizeStr(list.map(m => `${m} ${t(m)} ${muscleKey(m)}`).join(' ').replace(/-/g, ' ')).split(' ').filter(Boolean))
+
+/**
+ * How much an exercise trains the muscles a search names, for ranking: per word, 2 when it is a
+ * primary muscle (the target, the body part, or the muscle map's primaries), 1 when it is a
+ * secondary one, 0 when the word is only mentioned somewhere (a description). The words add up,
+ * so "abs obliques" puts an exercise that trains both first.
+ */
+export function muscleRole(e, tokens) {
+  const primary = new Set([...bodyWordsOf(e), ...wordsOfMuscles(Array.isArray(e?.primaries) ? e.primaries : [])])
+  const secondary = wordsOfMuscles([...smOf(e), ...(Array.isArray(e?.secondaries) ? e.secondaries : [])])
+  let role = 0
+  for (const tok of tokens) {
+    const forms = formsOf(tok)
+    role += forms.some(f => primary.has(f)) ? 2 : forms.some(f => secondary.has(f)) ? 1 : 0
+  }
+  return role
+}
+
+/**
+ * The results of a muscle-only search ("abs", "chest") in three buckets, for the section headers:
+ * 'main' (every searched muscle is a primary one), 'also' (it works the muscle on the side) and
+ * 'other' (it only matched in the text). Each bucket keeps the order it came in, so favourites and
+ * your own exercises still lead within their bucket. `heads` maps the id of the first exercise of
+ * each bucket to its key; it is empty when the search is not a muscle search or only one bucket
+ * has results, since a lone header says nothing.
+ */
+export function muscleGroups(list, query) {
+  const none = { list, heads: new Map(), name: '' }
+  const tokens = queryTokens(query)
+  if (!tokens.length || !list.length) return none
+  // 2: trains the muscle mainly, 1: works it on the side, 0: neither.
+  let roleOf, muscle = ''
+  if (tokens.every(tok => formsOf(tok).some(f => list.some(e => bodyWordsOf(e).has(f))))) {
+    // A muscle search ("abs"): the muscles are the words typed.
+    roleOf = e => { const r = muscleRole(e, tokens); return r === tokens.length * 2 ? 2 : r > 0 ? 1 : 0 }
+  } else {
+    // Any other search ("bicep curl", "squat"): the muscle most of the best matches train.
+    muscle = mainMuscleOf(list)
+    if (!muscle) return none
+    roleOf = e => roleOfMuscle(e, muscle)
+  }
+  const buckets = { main: [], also: [], other: [] }
+  for (const e of list) buckets[['other', 'also', 'main'][roleOf(e)]].push(e)
+  const used = Object.keys(buckets).filter(k => buckets[k].length)
+  const heads = new Map()
+  if (used.length > 1) for (const k of used) heads.set(buckets[k][0].id, k)
+  // The header names the muscle the way the catalogue and the reader's language do.
+  if (!muscle) muscle = mainMuscleOf(buckets.main)
+  const name = muscle ? t(muscle).toLowerCase() : tokens.join(' ')
+  return { list: used.flatMap(k => buckets[k]), heads, name }
+}
+
+// The muscle most of the first results train (ties go to the better-ranked one).
+function mainMuscleOf(list, take = 10) {
+  const count = new Map()
+  for (const e of list.slice(0, take)) if (e?.tg) count.set(e.tg, (count.get(e.tg) || 0) + 1)
+  let best = '', n = 0
+  for (const [tg, c] of count) if (c > n) { best = tg; n = c }
+  return best
+}
+
+// 2 when `muscle` (a target name such as "biceps") is the exercise's target or a muscle-map
+// primary, 1 when it is a secondary one, else 0.
+function roleOfMuscle(e, muscle) {
+  const want = muscleKey(muscle)
+  if (muscleKey(e?.tg || '') === want || (Array.isArray(e?.primaries) ? e.primaries : []).some(m => muscleKey(m) === want)) return 2
+  return [...smOf(e), ...(Array.isArray(e?.secondaries) ? e.secondaries : [])].some(m => muscleKey(m) === want) ? 1 : 0
+}
+
+// The header over a bucket of muscleGroups; `name` is the muscle it returned.
+export const muscleHeadLabel = (key, name) => {
+  const what = String(name || '').trim().toLowerCase()
+  return key === 'main' ? t('Mainly works {0}', what) : key === 'also' ? t('Also works {0}', what) : t('Other matches')
+}
+
 // A name that is the query itself wins outright: as typed or in the singular 50, with the typos
 // the search allows for its length 40 ("sqat" is the exercise called "squat", not "dumbbell squat").
 function wholeNameScore(plain, typedForms) {
@@ -636,10 +725,13 @@ function rankByRelevance(found, tokens) {
   const scored = found.map((e, i) => {
     const entry = corpusOf(e)
     if (bodyMode) {
-      const bw = bodyWordsOf(e)
-      const trains = tokens.every(tok => formsOf(tok).some(f => bw.has(f)))
+      // Strict tiers: everything that mainly trains the muscle, then what trains it on the side,
+      // then what only mentions it. The old score then orders each tier, so a primary stretch
+      // still comes before a secondary staple.
+      const role = muscleRole(e, tokens)
+      const trains = role === tokens.length * 2
       const named = Math.min(60, tokens.reduce((sum, tok) => sum + tokenScore(entry, tok, ctx), 0))
-      const score = (trains ? 70 : named) + (STAPLES.has(e.id) ? 30 : 0) + priorOf(e)
+      const score = role * 1000 + (trains ? 70 : named) + (STAPLES.has(e.id) ? 30 : 0) + priorOf(e)
         + (STRETCHY.has(e.cat) && !wantsStretch ? -25 : 0)
       return { e, i, score, len: entry.nameWords.length }
     }

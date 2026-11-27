@@ -2509,6 +2509,9 @@ export default {
   'Sent only to {0}, never to another server.': 'يُرسل إلى {0} فقط، ولا يُرسل إلى أي خادم آخر.',
   // --- search: similar exercises ---
   'Similar exercises': 'تمارين مشابهة',
+  'Mainly works {0}': 'يعمل بشكل أساسي على {0}',
+  'Also works {0}': 'يعمل أيضًا على {0}',
+  'Other matches': 'نتائج أخرى',
   'No exact match. These come close:': 'لا تطابق تام. هذه قريبة:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'الميل (%)',

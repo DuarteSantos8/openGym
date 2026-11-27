@@ -2475,6 +2475,9 @@ export default {
   'Sent only to {0}, never to another server.': 'Skickas bara till {0}, aldrig till någon annan server.',
   // --- search: similar exercises ---
   'Similar exercises': 'Liknande övningar',
+  'Mainly works {0}': 'Tränar främst: {0}',
+  'Also works {0}': 'Tränar också: {0}',
+  'Other matches': 'Övriga träffar',
   'No exact match. These come close:': 'Ingen exakt träff. De här ligger nära:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'Lutning (%)',
