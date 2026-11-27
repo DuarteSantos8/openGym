@@ -164,6 +164,22 @@ describe('push against a revisioned server', () => {
     expect(localStorage.getItem('gym_dirty')).toBeNull()
   })
 
+  it('does not send a merged copy over the sync limit after a 409, keeps it owed and says why once', async () => {
+    toast.mockClear()
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [workout('w1')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    const big = { ...clone(DEF), _ts: 200, workouts: [workout('w1')], notesBlob: 'x'.repeat(5 * 1024 * 1024 + 1), _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: big }))
+
+    await useStore.getState().pushState()
+    await new Promise(r => setTimeout(r, 0))
+
+    expect(puts()).toHaveLength(1)
+    expect(localStorage.getItem('gym_dirty')).not.toBeNull()
+    expect(toast).toHaveBeenCalledTimes(1)
+    expect(toast.mock.calls[0][0]).toMatch(/sync limit/)
+  })
+
   it('gives up after two conflicts in a row and leaves the copy dirty for the next pull', async () => {
     signedIn({ ...clone(DEF), _ts: 300, workouts: [workout('w1')] })
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))

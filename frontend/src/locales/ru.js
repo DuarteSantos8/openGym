@@ -6536,6 +6536,8 @@ export default {
   "Import into the diary on this device?": "Импортировать в дневник на этом устройстве?",
   "Import into your synced account diary?": "Импортировать в синхронизируемый дневник вашей учётной записи?",
   "{0} entries ready. {1} skipped.": "Записей готово: {0}. Пропущено: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Этот импорт превысит лимит синхронизации аккаунта. Попробуйте файл экспорта меньшего размера.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "Ваши данные превышают лимит синхронизации аккаунта, поэтому изменения останутся на этом устройстве, пока объём не уменьшится.",
   "Could not read this OpenNutriTracker export.": "Не удалось прочитать этот файл экспорта OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Добавлено: {0}. Обновлено: {1}. Без изменений: {2}.",
 }

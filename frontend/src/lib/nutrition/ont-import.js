@@ -1,4 +1,4 @@
-import { inflateSync } from 'three/addons/libs/fflate.module.js'
+import { Inflate } from 'three/addons/libs/fflate.module.js'
 import { parseCSV } from '../import-csv.js'
 import { sha256HexJs } from '../sha256.js'
 import { readZip } from '../zip.js'
@@ -9,7 +9,27 @@ const nutrients = [['energyKcal100', 'kcal_per_100g'], ['proteins100', 'protein_
   ['carbohydrates100', 'carbs_per_100g'], ['fat100', 'fat_per_100g']]
 const names = new Set(['user_intake.json', 'user_intake.csv', 'tracked_day_boundary.json', 'tracked_day_boundary.csv'])
 const limit = 8 * 1024 * 1024
+const conversionBatch = 200
+const compressedSlice = 64 * 1024
+const importerFields = new Set(['schemaVersion', 'createdBy', 'source', 'externalId', 'day', 'meal', 'label', 'occurredAt',
+  'amountG', 'amountMl', 'serving', ...NUTRIENTS])
 function invalid() { throw new Error('Invalid OpenNutriTracker export') }
+
+async function inflate(blob, size) {
+  const out = new Uint8Array(size)
+  let length = 0
+  const stream = new Inflate(chunk => {
+    if (length + chunk.length > size) invalid()
+    out.set(chunk, length)
+    length += chunk.length
+  })
+  for (let offset = 0; offset < blob.size; offset += compressedSlice) {
+    const end = Math.min(offset + compressedSlice, blob.size)
+    stream.push(new Uint8Array(await blob.slice(offset, end).arrayBuffer()), end === blob.size)
+  }
+  if (length !== size) invalid()
+  return out
+}
 
 function table(text, required) {
   const [first, ...rows] = parseCSV(text)
@@ -93,8 +113,7 @@ function convert(row, boundary) {
 export async function readOntArchive(file) {
   const entries = await readZip(file, { select: name => names.has(name), limit,
     async decode(blob, method, size) {
-      const bytes = new Uint8Array(await blob.arrayBuffer())
-      return method === 0 ? bytes : inflateSync(bytes, { out: new Uint8Array(size + 1) })
+      return method === 0 ? new Uint8Array(await blob.arrayBuffer()) : inflate(blob, size)
     } })
   const files = new Map()
   for (const {name, blob} of entries) {
@@ -109,10 +128,14 @@ export async function readOntArchive(file) {
   if (!Array.isArray(raw) || raw.length > 50000) invalid()
   const seen = new Set(), rows = []
   let skipped = 0
-  for (const row of raw) {
-    if (row?.id && seen.has(row.id)) { skipped++; continue }
-    if (row?.id) seen.add(row.id)
-    try { rows.push(convert(row, boundary)) } catch { skipped++ }
+  for (let i = 0; i < raw.length; i++) {
+    const row = raw[i]
+    if (row?.id && seen.has(row.id)) skipped++
+    else {
+      if (row?.id) seen.add(row.id)
+      try { rows.push(convert(row, boundary)) } catch { skipped++ }
+    }
+    if ((i + 1) % conversionBatch === 0 && i + 1 < raw.length) await new Promise(resolve => setTimeout(resolve, 0))
   }
   return { rows, skipped }
 }
@@ -120,7 +143,7 @@ export function mergeOntRows(state, rows) {
   const entries = [...(state.nutritionEntries || [])]
   const existing = new Map()
   entries.forEach((entry, i) => {
-    if (entry.source === source) existing.set(entry.externalId, i)
+    if (entry?.createdBy === 'file-import' && entry?.source === source) existing.set(entry.externalId, i)
   })
   const counts = { added: 0, updated: 0, unchanged: 0 }
   for (const imported of rows) {
@@ -133,11 +156,14 @@ export function mergeOntRows(state, rows) {
     }
     const old = entries[index]
     if (state.deleted?.nutritionEntries?.[old.id] > 0 || !normalizeEntry(old).supported) { counts.unchanged++; continue }
-    const updated = { ...imported, id: old.id, createdAt: old.createdAt, timeZone: old.timeZone }
-    if (Object.keys(old).every(key => key === '_f' || key === '_ts' || JSON.stringify(old[key]) === JSON.stringify(updated[key]))
+    const updated = { ...old, ...imported, id: old.id, timeZone: old.timeZone }
+    for (const key of importerFields) if (!Object.hasOwn(imported, key)) delete updated[key]
+    for (const key of ['createdAt', '_f', '_ts', '_u']) {
+      if (Object.hasOwn(old, key)) updated[key] = old[key]
+      else delete updated[key]
+    }
+    if (Object.keys(old).every(key => ['_f', '_ts', '_u'].includes(key) || JSON.stringify(old[key]) === JSON.stringify(updated[key]))
         && Object.keys(updated).every(key => Object.hasOwn(old, key))) { counts.unchanged++; continue }
-    if (old._f) updated._f = old._f
-    if (old._ts) updated._ts = old._ts
     entries[index] = updated
     counts.updated++
   }
