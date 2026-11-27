@@ -4,6 +4,8 @@
 "Start workout" = "شروع تمرین";
 "Done" = "انجام شد";
 "Warm-up" = "گرم‌کردن";
+"Remove" = "حذف";
+"Undo" = "واگرد";
 "Reps" = "تکرار";
 "Rest" = "استراحت";
 "Skip" = "رد کردن";
@@ -46,6 +48,9 @@
 "Looks like you left the gym" = "به نظر می‌رسد باشگاه را ترک کرده‌ای";
 "Keep going" = "ادامه بده";
 "Finish now" = "الان تمام کن";
+"Taken to failure" = "تا ناتوانی";
+"Drop set" = "دراپ‌ست";
+"More" = "بیشتر";
 "Back" = "برگشت";
 "Saved" = "ذخیره شد";
 "Hours" = "ساعت";
@@ -64,6 +69,9 @@
 "Skip for today" = "امروز رد شو";
 "Continue" = "ادامه دهید";
 "New record" = "رکورد جدید";
+"Set %lld" = "ست %lld";
+"Add set" = "افزودن";
+"Warm-up disc" = "گرم‌کردن";
 "Last time: %@" = "آخرین بار: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "مدتی است چیزی ثبت نشده. اگر تمام شد، در %@ خودش تمام می‌شود و با آخرین ست ذخیره می‌شود.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "تمرین را الان تمام کنیم؟ وگرنه در %@ خودش تمام می‌شود.";
@@ -113,4 +121,14 @@
 "+%lld more" = "+%lld مورد دیگر";
 "On iPhone" = "در iPhone";
 "%@ sets" = "%@ ست";
+"Failure" = "شکست";
+"Drop" = "دراپ";
+"Set %lld added" = "ست %lld اضافه شد";
+"Hold 1 s to remove" = "برای حذف ۱ ثانیه نگه دار";
+"Set %lld · %@ is lost" = "ست %lld · %@ از بین می‌رود";
+"Set %lld removed" = "ست %lld حذف شد";
+"at the end" = "در آخر";
+"Crown: half steps" = "Digital Crown: نیم‌گام";
+"Highest" = "بیشترین";
+"Lowest" = "کمترین";
 "Archived routines stay on your iPhone." = "روتین‌های بایگانی‌شده روی iPhone شما می‌مانند.";

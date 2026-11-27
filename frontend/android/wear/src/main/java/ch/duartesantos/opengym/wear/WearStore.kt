@@ -37,8 +37,9 @@ data class CountIn(val from: Long, val session: ReadySession? = null, val bw: Do
 
 /** A done set open on the set page to be fixed: its numbers, the side, and what was logged. */
 data class Fix(val ref: SetRef, val side: String?, val w: Double, val r: Double, val sec: Double,
-               val from: SetFix.Numbers, val effort: Double? = null) {
-    val changed get() = w != (from.w ?: 0.0) || r != (from.r ?: 0.0) || sec != (from.sec ?: 0.0) || effort != null
+               val from: SetFix.Numbers, val effort: Double? = null, val loggedEffort: Double? = null) {
+    val changed get() = w != (from.w ?: 0.0) || r != (from.r ?: 0.0) || sec != (from.sec ?: 0.0) ||
+        SetFix.changedEffort(effort, loggedEffort) != null
 }
 
 /** The session screen's pages, side by side like Apple Workout: Overview ← Set → Metrics → Media. */
@@ -118,7 +119,8 @@ object WearStore {
     private var idleSnooze = 0L
     /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
     private var demoOn = false
-    private val picked = mutableMapOf<Int, Int>()
+    // Snapshot state, so the set page sees a set picked in the same exercise (a skipped one leaves no other trace).
+    private val picked = androidx.compose.runtime.mutableStateMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
     /** The id of the last set ticked here until a snapshot names it applied (the phone's rest for it is ours). */
     private var echoOf: String? = null
@@ -156,6 +158,14 @@ object WearStore {
         snapAt = prefs.getString("snapAt", null)?.let { j ->
             try { WireJson.decodeFromString(SnapStamps.serializer(), j).at } catch (_: Exception) { null }
         } ?: emptyMap()
+        // A removal whose Undo time the app did not live through: it goes out now (after `clock`, for its `off`).
+        val held = SetMenu.held(_state.value)
+        for (id in held) {
+            val (next, ev) = SetMenu.release(_state.value, id)
+            _state.value = next
+            ev?.let { PhoneLink.send(app, it) }
+        }
+        if (held.isNotEmpty()) prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), _state.value)).apply()
         val endsAt = prefs.getLong("restEndsAt", 0)
         val pausedLeft = prefs.getLong("restPausedLeft", 0)
         if (pausedLeft > 0) armRest(Rest(now() + pausedLeft, prefs.getInt("restTotal", 90), pausedLeft = pausedLeft))
@@ -207,6 +217,11 @@ object WearStore {
     /** The set on the set page: the one being fixed, else the one up next. */
     fun shownRef(): SetRef? = fix.value?.ref ?: setIndex()?.let { SetRef(entryIndex, it) }
     fun touchAllowed() = touchLock.allows(now())
+
+    /** The crown is dead for a moment after a rest ends under an armed effort: the leftover turn moves nothing. */
+    private val crownLock = TouchLock()
+    fun lockCrown() = crownLock.lock(now(), Effort.CROWN_LOCK_MS)
+    fun crownAllowed() = crownLock.allows(now())
     fun canStep(d: Int) = target(d) != null
 
     /** When the workout started (the phone's start, else when this watch first had it). */
@@ -245,6 +260,8 @@ object WearStore {
         val before = _state.value
         val after = SessionCore.applySnapshot(before, snap, off)
         val gone = before.workout
+        // Another workout, or none: a removal held for Undo was the old one's (its Undo would point into this one).
+        if (gone?.id != after.workout?.id) { undo.flush(); clearRemoval() }
         // The phone ended the workout the watch had (finished or discarded there).
         if (gone != null && after.workout == null) {
             closeRest(now())
@@ -296,6 +313,8 @@ object WearStore {
         reportRoutines()
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
+        // A set logged on the phone ends a removal's Undo too (after commit: the release is on this state).
+        if (ticks.isNotEmpty()) flushRemoval()
         ticks.lastOrNull()?.let { followPhoneTick(it) }
         if (after.workout != null && after.workout != before.workout) noteActivity()
         loadTargets()
@@ -406,6 +425,7 @@ object WearStore {
 
     /** A set on the set page: a done one opens to be fixed, one still to do becomes the set up next. */
     fun open(ref: SetRef) {
+        menuOpen.value = false
         ackRestOver()
         val row = fixRow(ref)
         if (row != null) {
@@ -425,25 +445,27 @@ object WearStore {
         val row = fixRow(ref)
         val n = row?.let { SetFix.logged(it, side) }
         if (n == null) { closeFix(); return }
-        fix.value = Fix(ref, side, n.w ?: 0.0, n.r ?: 0.0, n.sec ?: 0.0, n)
+        val logged = SetFix.loggedEffort(row, side, _state.value.settings.effort)
+        fix.value = Fix(ref, side, n.w ?: 0.0, n.r ?: 0.0, n.sec ?: 0.0, n, logged, logged)
     }
 
     fun setFixSide(side: String) { fix.value?.let { loadFix(it.ref, side) } }
     fun editFix(f: Fix) { ackRestOver(); fix.value = f }
-    fun closeFix() { fix.value = null }
+    fun closeFix() { fix.value = null; menuOpen.value = false }
 
     /** Save on a set being fixed: the phone gets it as the set done again (SetFix.correct). */
     fun saveFix() {
         val f = fix.value ?: return
         if (!f.changed) return
         val kind = _state.value.settings.effort
-        val rated = if (kind != null && f.effort != null) EffortRating(kind, f.effort) else null
+        val sent = SetFix.changedEffort(f.effort, f.loggedEffort)
+        val rated = if (kind != null && sent != null) EffortRating(kind, sent) else null
         val (next, event) = SetFix.correct(_state.value, f.ref.entry, f.ref.set, f.side, SetFix.Numbers(f.w, f.r, f.sec), rated,
             now().toDouble(), UUID.randomUUID().toString(), clockOff())
         event ?: return
         PhoneLink.send(app, event)
         commit(next)
-        if (f.ref == lastLogged.value && f.effort != null) lastRated.value = f.effort
+        if (f.ref == lastLogged.value && sent != null) lastRated.value = sent
         closeFix()
         noteActivity()
         Haptics.tick(app)
@@ -460,25 +482,32 @@ object WearStore {
         if (side != null && fix.value != null) setFixSide(side)
     }
 
-    /** A chip during the rest: the set just done gets this effort (its setDone again, as logged). */
-    fun rateLast(v: Double) {
-        ackRestOver()
-        if (!touchAllowed()) return
-        val kind = _state.value.settings.effort ?: return
-        val ref = lastLogged.value ?: return
-        val row = _state.value.workout?.entries?.getOrNull(ref.entry)?.sets?.getOrNull(ref.set) ?: return
-        val n = SetFix.logged(row, lastSide) ?: return
+    /**
+     * The set just done gets this effort (its setDone again, as logged): a chip, or a burst of half steps sent once.
+     * `ref` is the set the screen meant; a set done since is not rated by an old value. `tap` false is the burst's
+     * own send: no buzz, and it does not silence the rest-over reminder. False if nothing was sent.
+     */
+    fun rateLast(v: Double, ref: SetRef? = lastLogged.value, tap: Boolean = true): Boolean {
+        if (tap) ackRestOver()
+        if (tap && !touchAllowed()) return false      // a burst going out as the rest ends (the page locks touches then) still lands
+        val kind = _state.value.settings.effort ?: return false
+        if (ref == null || ref != lastLogged.value) return false
+        val row = _state.value.workout?.entries?.getOrNull(ref.entry)?.sets?.getOrNull(ref.set) ?: return false
+        val n = SetFix.logged(row, lastSide) ?: return false
         val (next, event) = SetFix.correct(_state.value, ref.entry, ref.set, lastSide, n, EffortRating(kind, v),
             now().toDouble(), UUID.randomUUID().toString(), clockOff())
-        event ?: return
+        event ?: return false
         PhoneLink.send(app, event)
         commit(next)
         lastRated.value = v
-        Haptics.tick(app)
+        if (tap) Haptics.tick(app)
+        return true
     }
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
     fun completeSet(heldFor: Double? = null, held: Pair<Int, Int>? = null, heldW: Double? = null) {
+        // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
+        flushRemoval()
         val s0 = _state.value
         val w = s0.workout ?: return
         // A hold logs the set it started for, where it is now (the phone may have removed an earlier one).
@@ -548,6 +577,146 @@ object WearStore {
         noteActivity()
         loadTargets(force = true)
         if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
+    }
+
+    /* ---------- the set menu: marks, add, remove (the phone's set menu, from the watch) ---------- */
+
+    /** The set menu, open for the set on the page (shownRef). */
+    val menuOpen = MutableStateFlow(false)
+    private val _removed = MutableStateFlow<HeldRemoval?>(null)
+    /** A set taken out, held for Undo for 4 s; the page already shows it gone. */
+    val removed: StateFlow<HeldRemoval?> = _removed
+    private val undo = UndoWindow()
+    private var undoJob: Job? = null
+    /** The store's pointers at sets before the removal, put back by Undo. */
+    private data class Refs(val lastLogged: SetRef?, val lastRated: Double?, val restAfter: RestAfter?, val picked: Map<Int, Int>, val fix: Fix?)
+    private var heldRefs: Refs? = null
+
+    private fun shownRow(): SetRow? = shownRef()?.let { _state.value.workout?.entries?.getOrNull(it.entry)?.sets?.getOrNull(it.set) }
+
+    /** The page's set has a menu: the phone understands the set events, a set or a fix is on show, no hold, not cardio. */
+    fun menuAvailable(): Boolean {
+        if (!SetMenu.available(_state.value) || _hold.value != null || _holdCountIn.value != null) return false
+        val ref = shownRef() ?: return false
+        return _state.value.workout?.entries?.getOrNull(ref.entry)?.isCardio == false
+    }
+
+    /** A warm-up, failure or drop mark on the page's set. True when it went through (a refused tap does nothing). */
+    fun markSet(kind: MarkKind, on: Boolean, openedFor: SetRef? = null): Boolean {
+        if (!touchAllowed() || !menuAvailable()) return false
+        val ref = shownRef()?.takeIf { openedFor == null || it == openedFor } ?: return false
+        return applyEdit(SetMenu.mark(_state.value, ref.entry, ref.set, kind, on, now().toDouble(), UUID.randomUUID().toString()), ref.entry)
+    }
+
+    /** A copy of the last set at the end of the page's exercise. True when it went through. */
+    fun addSet(openedFor: SetRef? = null): Boolean {
+        if (!touchAllowed() || !menuAvailable()) return false
+        val ei = shownRef()?.takeIf { openedFor == null || it == openedFor }?.entry ?: return false
+        return applyEdit(SetMenu.addSet(_state.value, ei, now().toDouble(), UUID.randomUUID().toString()), ei)
+    }
+
+    /**
+     * A menu change goes out and shows at once; a refused one (the menu would not offer it) does nothing.
+     * It names its set by the set's id, so a removal still held for Undo needs no flush first.
+     */
+    private fun applyEdit(r: Pair<SessionState, Event?>, ei: Int): Boolean {
+        val event = r.second ?: return false
+        PhoneLink.send(app, event)
+        val old = _state.value
+        commit(r.first)
+        follow(old, ei)
+        menuOpen.value = false
+        noteActivity()
+        loadTargets()
+        Haptics.mark(app)
+        return true
+    }
+
+    /**
+     * Takes the page's set out at once and holds its event for 4 s, so Undo can still cancel it. The
+     * held removal is an edit like any other (replayed over snapshots, kept across a relaunch).
+     */
+    fun removeSet(openedFor: SetRef? = null) {
+        if (!touchAllowed() || !menuAvailable()) return
+        val ref = shownRef()?.takeIf { openedFor == null || it == openedFor } ?: return
+        val w = _state.value.workout ?: return
+        val e = w.entries.getOrNull(ref.entry) ?: return
+        val row = e.sets.getOrNull(ref.set) ?: return
+        val id = UUID.randomUUID().toString()
+        // One at a time: an earlier removal still held goes out first.
+        flushRemoval()
+        val s0 = _state.value
+        val next = SetMenu.removeSet(s0, ref.entry, ref.set, now().toDouble(), id) ?: return
+        // the number the page's pill showed, counted before the row is gone
+        val h = HeldRemoval(id, SetNav.place(e, ref.set).first, row.w, row.r, e.weightUnit(w.unit), System.currentTimeMillis(), undoMs())
+        heldRefs = Refs(lastLogged.value, lastRated.value, restAfter, picked.toMap(), fix.value)
+        undo.begin(h)
+        _removed.value = h
+        commit(next)
+        follow(s0, ref.entry)
+        menuOpen.value = false
+        undoJob?.cancel()
+        undoJob = scope.launch {
+            delay(h.ms)
+            flushRemoval() // the job is cancelled whenever the removal clears, so when it wakes the window is over
+        }
+        noteActivity()
+        // forced: the next set takes the removed one's place and key, not its crown numbers
+        loadTargets(force = true)
+        Haptics.remove(app)
+    }
+
+    /** 4 s, or what the watch's accessibility timeout asks for (TalkBack reads the chip and needs longer to act). */
+    private fun undoMs(): Long =
+        (app.getSystemService(Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager)
+            .getRecommendedTimeoutMillis(4000, android.view.accessibility.AccessibilityManager.FLAG_CONTENT_CONTROLS).toLong()
+
+    /** Undo: the set back in its place and the pointers as they were before the removal; nothing is sent. */
+    fun undoRemove() {
+        val h = undo.edit ?: return
+        val refs = heldRefs
+        undo.undo()
+        commit(SetMenu.undo(_state.value, h.id))
+        clearRemoval()
+        refs?.let {
+            lastLogged.value = it.lastLogged; lastRated.value = it.lastRated; restAfter = it.restAfter
+            picked.clear(); picked.putAll(it.picked); fix.value = it.fix
+        }
+        loadTargets()
+        Haptics.mark(app)
+    }
+
+    /** The Undo time is over, or the app left the screen: the removal goes to the phone now. */
+    fun flushRemoval() {
+        val h = undo.flush() ?: return
+        clearRemoval()
+        val (next, event) = SetMenu.release(_state.value, h.id)
+        // Queued before the held mark is cleared: the outbox is saved at once, the state a moment later, and
+        // a relaunch in between releases it again under the same id (the outbox keeps one).
+        event?.let { PhoneLink.send(app, it) }
+        commit(next)
+    }
+
+    private fun clearRemoval() {
+        undoJob?.cancel(); undoJob = null
+        _removed.value = null
+        heldRefs = null
+    }
+
+    /**
+     * After a menu edit on entry [ei] (the last of state.edits): the set the rest, the effort chips,
+     * the fix and the page point at is the same set, at its new row; a removed one is let go.
+     */
+    private fun follow(old: SessionState, ei: Int) {
+        val pe = _state.value.edits.lastOrNull() ?: return
+        val moved = old.workout?.let { SetMenu.apply(pe, it) }?.second ?: return
+        val ll = lastLogged.value
+        lastLogged.value = SetMenu.follow(ll, ei, moved)
+        if (ll != null && lastLogged.value == null) lastRated.value = null
+        restAfter?.let { r -> if (r.entryIdx == ei) restAfter = SetMenu.remapSet(r.setIdx, moved)?.let { r.copy(setIdx = it) } }
+        // the page's own set removed: nothing picked, the next open set comes up (SessionCore.setIndex)
+        picked[ei]?.let { p -> val to = SetMenu.remapSet(p, moved); if (to == null) picked.remove(ei) else picked[ei] = to }
+        fix.value?.let { f -> val to = SetMenu.follow(f.ref, ei, moved); if (to == null) closeFix() else fix.value = f.copy(ref = to) }
     }
 
     /* ---------- starting: the weigh-in, the 3-2-1, Go! ---------- */
@@ -1050,7 +1219,11 @@ object WearStore {
         if (s.workout != null && s.workout.copy(leftGymAt = null) != _state.value.workout?.copy(leftGymAt = null)) {
             activityAt = now(); sensorsResting = false
         }
+        val shown = if (menuOpen.value) shownRow() else null
         _state.value = s
+        // The menu's set is gone or another one is in its place (changed on the phone, another
+        // workout): it closes, so a tap cannot hit the wrong set.
+        if (menuOpen.value && (wasId != s.workout?.id || shownRow().let { it == null || it != shown })) menuOpen.value = false
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()
         if (had != (s.workout != null) || s.workout != null) WorkoutService.sync(app)
@@ -1168,6 +1341,7 @@ object WearStore {
             }
             "media" -> page.value = Page.MEDIA
             "fix" -> { completeSet(); stopRest(); fixLast() }
+            "menu" -> menuOpen.value = true
             "hold" -> { _state.value.workout?.entries?.indexOfFirst { it.isTimed }?.takeIf { it >= 0 }?.let { jump(it) }; startHold(auto = true) }
             // summary: a records day (gold); summary-steel: none; -back, -records and -end open it at the back, at the first records and at Done.
             "summary", "summary-steel", "summary-back", "summary-records", "summary-end" -> {

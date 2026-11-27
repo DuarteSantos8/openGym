@@ -50,6 +50,16 @@ enum SetFix {
         return row.done ? Numbers(w: row.w, r: row.r, sec: row.sec) : nil
     }
 
+    /// The effort logged on a set (one side's on a per-side set) in the profile's scale `kind`, or nil.
+    static func loggedEffort(_ row: SetRow, side: String?, kind: String?) -> Double? {
+        let (rpe, rir) = side.flatMap { s in row.sides.map { ($0[s].rpe, $0[s].rir) } } ?? (row.rpe, row.rir)
+        return kind == "rpe" ? rpe : kind == "rir" ? rir : nil
+    }
+
+    /// The rating to send when a done set is saved: only one that differs from what was logged.
+    /// Clearing it ("–") sends none, so the phone keeps what it has.
+    static func changedEffort(_ now: Double?, logged: Double?) -> Double? { now == logged ? nil : now }
+
     /// A done set with new numbers: the state with them and the event for the phone, the setDone
     /// it already knows, a moment later than the set's own tick so it wins there. Nil for a set
     /// that is not done, cardio (logged on the phone), or a row that is gone.
@@ -134,5 +144,24 @@ struct Keypad: Equatable {
     /// Whether ✓ answers: nothing typed (it keeps the number shown and closes) or a number that fits.
     func confirms(_ range: ClosedRange<Double>) -> Bool {
         text.isEmpty || fits(range)
+    }
+}
+
+/// The phone's "Last time" line, made to fit a watch: one load, then the reps of each set
+/// ("60 kg × 8, 60 kg × 8, 60 kg × 7" → "60 kg × 8, 8, 7"). Mixed loads, and anything but plain sets, stay as sent.
+public enum LastTime {
+    public static func compact(_ s: String) -> String {
+        let sets = s.components(separatedBy: ", ")
+        guard sets.count > 1 else { return s }
+        let parts = sets.map { set in set.range(of: "×", options: .backwards).map { (set[..<$0.upperBound], set[$0.upperBound...]) } }
+        // Only plain sets: a drop ("100×8 ↘ 80×6"), an "F", bursts ("10+4+2") or two sides stay as sent.
+        func plain(_ p: (Substring, Substring)?) -> Bool {
+            guard let p = p, !p.0.contains("↘"), !p.0.contains("/"), !p.0.contains(" · ") else { return false }
+            let reps = p.1.trimmingCharacters(in: .whitespaces)
+            return !reps.isEmpty && reps.allSatisfy(\.isNumber)
+        }
+        guard let first = parts[0], parts.allSatisfy({ plain($0) && $0?.0 == first.0 }) else { return s }
+        let gap = first.1.hasPrefix(" ") ? " " : ""
+        return first.0 + gap + parts.map { $0!.1.trimmingCharacters(in: .whitespaces) }.joined(separator: ", ")
     }
 }

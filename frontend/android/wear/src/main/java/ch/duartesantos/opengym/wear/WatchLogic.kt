@@ -135,6 +135,17 @@ object SetFix {
         return if (row.done) Numbers(row.w, row.r, row.sec) else null
     }
 
+    /** The effort logged on a set (one side's on a per-side set) in the profile's scale `kind`, or null. */
+    fun loggedEffort(row: SetRow, side: String?, kind: String?): Double? {
+        val o = side?.let { s -> row.sides?.get(s) }
+        val rpe = o?.rpe ?: row.rpe.takeIf { o == null }
+        val rir = o?.rir ?: row.rir.takeIf { o == null }
+        return if (kind == "rpe") rpe else if (kind == "rir") rir else null
+    }
+
+    /** The rating to send when a done set is saved: only one that differs from what was logged. Clearing it sends none. */
+    fun changedEffort(now: Double?, logged: Double?): Double? = if (now == logged) null else now
+
     /**
      * A done set with new numbers: the setDone the phone already knows, a moment later than the
      * set's own tick so it wins there (Workout.jsx setDone: the later tick wins), and without `hr`,
@@ -280,8 +291,41 @@ object Effort {
     fun chipLabel(kind: String, v: Double): String {
         if (kind == "rpe" && v <= 7) return "≤7"
         if (kind == "rir" && v >= 3) return "3+"
-        return if (v == floor(v)) v.toLong().toString() else v.toString()
+        return valueLabel(v)
     }
+
+    /** "1.5", "2", "3.5": a value as it is, never "3+" or "≤7" (those name a chip, not a rating). Same in every language. */
+    fun valueLabel(v: Double): String = if (v == floor(v)) v.toLong().toString() else v.toString()
+
+    /** What the crown and the - / + buttons reach (the phone's ranges). */
+    fun range(kind: String): ClosedFloatingPointRange<Double> = if (kind == "rpe") 6.0..10.0 else 0.0..5.0
+
+    /** The ticks under an armed capsule: one per half step across the range, and which one is `v` (-1 for none). */
+    fun ticks(kind: String, v: Double?): Pair<Int, Int> {
+        val r = range(kind)
+        val count = ((r.endInclusive - r.start) * 2).toInt() + 1
+        return count to (if (v == null) -1 else Math.round((v - r.start) * 2).toInt())
+    }
+
+    /**
+     * One half step up (d > 0) or down. From none the first step lands on RIR 2 or RPE 8; at an end it stays
+     * (the caller buzzes); with `clear`, one step below the floor gives none again (a set being fixed).
+     */
+    fun step(kind: String, v: Double?, d: Int, clear: Boolean): Double? {
+        val r = range(kind)
+        if (v == null) return if (kind == "rpe") 8.0 else 2.0
+        if (clear && d < 0 && v <= r.start) return null
+        return nudge(v, d, 0.5, r.start, r.endInclusive)
+    }
+
+    /** A burst of steps goes out once, this long after the last one. */
+    const val SEND_MS = 600L
+
+    /** The armed capsule lets go of the crown this long after the last touch or step. */
+    const val SETTLE_MS = 5000L
+
+    /** The crown is dead this long after a rest ends under a turn, so the leftover turn moves nothing. */
+    const val CROWN_LOCK_MS = 600L
 
     /** The phone's colour band (lib/effort.js EFFORT_BANDS), by RIR: 0 nothing left … 5 easy. */
     fun band(kind: String, value: Double): Int {
@@ -446,7 +490,7 @@ object Countdown {
 /** After the watch turns the page by itself, taps wait a second (the thumb that hit Done is still there). */
 class TouchLock {
     private var until = 0L
-    fun lock(at: Long) { until = at + 1000 }
+    fun lock(at: Long, ms: Long = 1000) { until = at + ms }
     fun unlock() { until = 0 }
     fun allows(at: Long) = at >= until
 }

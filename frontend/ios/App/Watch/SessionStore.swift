@@ -34,6 +34,13 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             // The page changed without a swipe (Done moved on, a snapshot): a moment without taps.
             if state.entryIndex != oldValue.entryIndex { touchLock.lock(at: Date()) }
             if state.workout?.id != oldValue.workout?.id { watchIdle() }
+            // The menu's set is gone (removed on the phone, the workout ended or changed): it closes,
+            // or its black layer would stay up with nothing on it (review 2026-11-12).
+            // Another set now at its index (the phone took out one before it) closes it too, so a tap cannot hit the wrong set.
+            if let m = menuFor, state.workout?.id != oldValue.workout?.id || state.workout?.entries[safe: m.entry]?.sets[safe: m.set] == nil
+                || state.workout?.entries[safe: m.entry]?.sets[safe: m.set] != oldValue.workout?.entries[safe: m.entry]?.sets[safe: m.set] {
+                menuFor = nil
+            }
         }
     }
 
@@ -93,7 +100,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// A hold's seconds, for the set up next (the crown turns it).
     @Published var seconds: Double = 0 { didSet { if seconds != oldValue { ackRestOver() } } }
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
-    var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
+    var effortKind: String? { Effort.range(state.settings.effort) != nil ? state.settings.effort : nil }
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
@@ -230,6 +237,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             WCSession.default.delegate = self
             WCSession.default.activate()
         }
+        // A removal whose Undo time the app did not live through: it goes out now (review 2026-11-12).
+        // (In init `state`'s didSet does not run: saved here.)
+        let held = SetMenu.held(state)
+        for id in held {
+            let (next, ev) = SetMenu.release(state, id: id)
+            state = next
+            if let ev = ev { send(event: ev) }
+        }
+        if !held.isEmpty && !isDemo { save() }
     }
 
     /* ---------- the heart-rate sensor in a workout nobody finishes (SensorPlan) ---------- */
@@ -454,28 +470,32 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         fixW = n.w ?? 0
         fixR = n.r ?? 0
         fixSec = n.sec ?? 0
-        fixEffort = nil
+        fixEffortFrom = SetFix.loggedEffort(row, side: fixSide, kind: effortKind)
+        fixEffort = fixEffortFrom
+        fixDial = EffortDial()
     }
 
     /// Whether the numbers on a set being fixed differ from what was logged.
     var fixChanged: Bool {
         guard let f = fixFrom, viewing != nil else { return false }
-        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0) || fixEffort != nil
+        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0) || SetFix.changedEffort(fixEffort, logged: fixEffortFrom) != nil
     }
 
     /// Save on a set being fixed: the phone gets it as the set done again (SetFix.correct).
     func saveFix() {
         guard let ref = viewing, fixChanged else { return }
-        let rated = effortKind.flatMap { k in fixEffort.map { Effort.Rating(kind: k, value: $0) } }
+        let changed = SetFix.changedEffort(fixEffort, logged: fixEffortFrom)
+        let rated = effortKind.flatMap { k in changed.map { Effort.Rating(kind: k, value: $0) } }
         let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: fixSide,
                                            to: SetFix.Numbers(w: fixW, r: fixR, sec: fixSec), effort: rated,
                                            now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, off: off)
         guard let ev = event else { return }
         send(event: ev)
         state = next
-        if ref == lastLogged, let r = fixEffort { lastRated = r }
+        if ref == lastLogged, let r = changed { lastRated = r }
         viewing = nil
         fixFrom = nil
+        fixDial = EffortDial()
         noteActivity()
         Haptics.done()
         loadTargets()
@@ -496,36 +516,139 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return !e.isCardio && !e.sets[ref.set].warmup
     }
 
-    /// A chip: the set just done gets this effort (the setDone again, its numbers as logged).
+    /// A chip: the set just done gets this effort (the setDone again, its numbers as logged), and the
+    /// capsule arms so the Crown or − / + can move it by half a step (WatchCore EffortDial).
     func rateLast(_ v: Double) {
-        guard touchAllowed, let kind = effortKind, let ref = lastLogged, let w = workout,
+        guard touchAllowed, sendRating(v, click: true) else { return }
+        armRating()
+    }
+
+    /// The setDone again with this effort; false when there is no such set to rate.
+    @discardableResult private func sendRating(_ v: Double, click: Bool) -> Bool {
+        guard let kind = effortKind, let ref = lastLogged, let w = workout,
               w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set),
-              let n = SetFix.logged(w.entries[ref.entry].sets[ref.set], side: lastSide) else { return }
+              let n = SetFix.logged(w.entries[ref.entry].sets[ref.set], side: lastSide) else { return false }
         ackRestOver()
         let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: lastSide, to: n,
                                            effort: Effort.Rating(kind: kind, value: v),
                                            now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, off: off)
-        guard let ev = event else { return }
+        guard let ev = event else { return false }
         send(event: ev)
         state = next
         lastRated = v
-        WKInterfaceDevice.current().play(.click)
+        if click { WKInterfaceDevice.current().play(.click) }
+        return true
+    }
+
+    /// The rating dial: armed by a chip (or a tap on the settled capsule), settled 5 s after the last touch.
+    @Published private(set) var dial = EffortDial()
+    /// The same on a set being fixed, where Save is what sends.
+    @Published private(set) var fixDial = EffortDial()
+
+    private func armRating() {
+        let now = Date()
+        dial.arm(at: now)
+        touchLock.lock(at: now) // the discs sit where the chip just was: a double tap must not nudge
+        after(EffortDial.settle) { if self.dial.settleDue(at: Date()) { self.letGoOfRating() } }
+    }
+
+    /// A tap on the settled capsule.
+    func rearmRating() {
+        guard touchAllowed, lastRated != nil else { return }
+        armRating()
+    }
+
+    /// The Crown or a disc: `steps` half steps. The phone gets one update 0.6 s after the last change.
+    func nudgeRating(_ steps: Int, disc: Bool) {
+        guard dial.armed, let kind = effortKind, let cur = lastRated else { return }
+        let to = Effort.nudged(kind, cur, by: steps, clear: false) ?? cur
+        let now = Date()
+        if to == cur {
+            dial.touch(at: now)
+            if disc { Haptics.stop() }
+        } else {
+            lastRated = to
+            dial.change(at: now)
+            if disc { WKInterfaceDevice.current().play(.click) } // the Crown clicks by itself
+            after(EffortDial.send) { if self.dial.sendDue(at: Date()), let v = self.lastRated { self.dial.sent(); self.sendRating(v, click: false) } }
+        }
+        after(EffortDial.settle) { if self.dial.settleDue(at: Date()) { self.letGoOfRating() } }
+    }
+
+    /// Settled, or the page changed, the wrist went down, the rest ended: the value that waits goes out now.
+    private func letGoOfRating() {
+        if dial.disarm(), let v = lastRated { sendRating(v, click: false) }
+    }
+
+    /// Wrist down or another page: both dials let go.
+    func letGoOfEffort() {
+        letGoOfRating()
+        _ = fixDial.disarm()
+    }
+
+    /// The rest ended (Skip, its own end): a leftover Crown turn must not land in the set page's number.
+    private func restEndedUnderDial() {
+        guard dial.armed else { return }
+        letGoOfRating()
+        touchLock.lockCrown(at: Date())
+    }
+
+    var crownAllowed: Bool { touchLock.crownAllows(at: Date()) }
+
+    func armFixEffort() {
+        guard touchAllowed else { return }
+        let now = Date()
+        fixDial.arm(at: now)
+        touchLock.lock(at: now)
+        after(EffortDial.settle) { if self.fixDial.settleDue(at: Date()) { _ = self.fixDial.disarm() } }
+    }
+
+    /// The Crown or a disc on a set being fixed: a step below the floor clears it back to "–" (left as it was).
+    func nudgeFixEffort(_ steps: Int, disc: Bool) {
+        guard fixDial.armed, let kind = effortKind else { return }
+        let to = Effort.nudged(kind, fixEffort, by: steps, clear: true)
+        let now = Date()
+        if to == fixEffort {
+            fixDial.touch(at: now)
+            if disc { Haptics.stop() }
+        } else {
+            fixEffort = to
+            fixDial.change(at: now)
+            if disc { WKInterfaceDevice.current().play(.click) }
+        }
+        after(EffortDial.settle) { if self.fixDial.settleDue(at: Date()) { _ = self.fixDial.disarm() } }
+    }
+
+    private func after(_ seconds: TimeInterval, _ work: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds + 0.05, execute: work)
+    }
+
+    /// The crown glyph pulses the first time the capsule ever arms on this watch, to say halves exist.
+    func takeEffortPulse() -> Bool {
+        let key = "effortDialPulsed"
+        guard !UserDefaults.standard.bool(forKey: key) else { return false }
+        UserDefaults.standard.set(true, forKey: key)
+        return true
     }
 
     /// ‹ on the rest: the set just done, open to be fixed while the rest runs on.
     func fixLast() {
         guard let ref = lastLogged else { return }
+        letGoOfRating() // the fix view's boxes take the Crown
         open(ref)
         if let side = lastSide, viewing != nil { setFixSide(side) }
     }
 
     /// The effort picked on a set being fixed (nil: left as it was).
     @Published var fixEffort: Double?
+    /// What the phone has logged on the set being fixed: Save sends an effort only when it differs.
+    private var fixEffortFrom: Double?
 
     /// Back to the set up next without saving.
     func closeFix() {
         viewing = nil
         fixFrom = nil
+        fixDial = EffortDial()
     }
 
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
@@ -611,6 +734,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.health.end(save: false)
                 self.ran(before.workout?.id)
             }
+            // Another workout, or none: a removal held for Undo was the old one's (its Undo would point into this one).
+            if next.workout?.id != before.workout?.id { self.undoWindow = UndoWindow(); self.clearRemoval() }
             if let ended = before.workout, next.workout == nil {
                 // Ended on the phone: the session here ends too. Finished there, it is saved to Apple
                 // Health and the watch says so instead of quietly going back to the start screen.
@@ -648,6 +773,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
             let ticks = SessionCore.phoneTicks(before.workout, next.workout)
+            // A set logged on the phone ends a removal's Undo too.
+            if !ticks.isEmpty { self.flushRemoval() }
             for tick in ticks {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
             }
@@ -724,6 +851,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if heldFor == nil, let last = lastTick, Date().timeIntervalSince(last) < 0.7 { return }
         // In a superset the page flips to the partner: a slower second tap would log its set.
         if heldFor == nil, !touchAllowed { return }
+        // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
+        flushRemoval()
         lastTick = Date()
         ackRestOver()
         let ei = entryIndex
@@ -759,6 +888,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         setStartedAt = now
         picked[ei] = nil
         noteActivity()
+        if heldFor == nil { doneRipple += 1 }
         if side != nil && !rest {
             Haptics.side()          // the other side now
         } else {
@@ -775,6 +905,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         lastLogged = SetRef(entry: ei, set: si)
         lastSide = side
         lastRated = nil
+        dial = EffortDial()
         lastStep = 1
         if to != ei { state.entryIndex = to }
         loadTargets()
@@ -822,6 +953,171 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         loadTargets()
         overviewIfDone()
         Haptics.skip()
+    }
+
+    /* ---------- set menu: marks, add, remove (the phone's set menu, from the watch) ---------- */
+
+    /// The phone understands the set events; otherwise the menu stays out of the page.
+    var menuAvailable: Bool { SetMenu.available(state) }
+
+    func offer(entry: Int, set: Int) -> MenuOffer {
+        guard let w = workout, w.entries.indices.contains(entry) else { return SetMenu.offer(Entry(id: "", name: "", mode: "reps", restSec: nil, last: nil, sets: []), set: set) }
+        return SetMenu.offer(w.entries[entry], set: set)
+    }
+
+    /// A set taken out, kept for Undo until `until`; the page already shows it gone.
+    struct RemovedSet: Equatable { var setNumber: Int; var w: Double?; var r: Double?; var until: Date }
+    @Published private(set) var removed: RemovedSet?
+    @Published private(set) var toast: String?
+    /// The held removal (its edit in state.edits waits for Undo), and the store's pointers from before it.
+    private var undoWindow = UndoWindow()
+    private var heldRefs: Refs?
+
+    /// The store's own pointers at sets, by row: a menu edit that moves or takes out rows moves them too.
+    private struct Refs { var lastLogged: SetRef?; var lastRated: Double?; var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date, sid: String?)?
+        var picked: [Int: Int]; var viewing: SetRef?; var fixFrom: SetFix.Numbers?; var menuFor: SetRef? }
+    private var refs: Refs {
+        get { Refs(lastLogged: lastLogged, lastRated: lastRated, restAfter: restAfter, picked: picked, viewing: viewing, fixFrom: fixFrom, menuFor: menuFor) }
+        set { lastLogged = newValue.lastLogged; lastRated = newValue.lastRated; restAfter = newValue.restAfter; picked = newValue.picked
+              viewing = newValue.viewing; fixFrom = newValue.fixFrom; menuFor = newValue.menuFor }
+    }
+
+    /// After a menu edit on entry `ei` (the last of state.edits): the set the rest, the effort chips, the fix
+    /// and the page point at is the same set, at its new row; a removed one is let go (review 2026-11-12).
+    private func follow(from old: SessionState, entry ei: Int) {
+        guard let pe = state.edits?.last, let w = old.workout, let moved = SetMenu.apply(pe, on: w)?.1 else { return }
+        func to(_ si: Int) -> Int? { moved.indices.contains(si) ? moved[si] : si }
+        if let r = lastLogged, r.entry == ei {
+            lastLogged = to(r.set).map { SetRef(entry: ei, set: $0) }
+            if lastLogged == nil { lastRated = nil }
+        }
+        if let r = restAfter, r.entryIdx == ei { if let n = to(r.setIdx) { restAfter?.setIdx = n } else { restAfter = nil } }
+        if let p = picked[ei] { picked[ei] = to(p) }
+        if let v = viewing, v.entry == ei {
+            if let n = to(v.set) { viewing = SetRef(entry: ei, set: n) } else { viewing = nil; fixFrom = nil }
+        }
+        if let m = menuFor, m.entry == ei { menuFor = to(m.set).map { SetRef(entry: ei, set: $0) } }
+    }
+    private var undoTimer: Timer?
+
+    /// A menu change goes out and shows at once; a refused one (the menu would not offer it) does nothing.
+    /// It names its set by the set's id, so a removal still held for Undo needs no flush first.
+    @discardableResult
+    private func applyEdit(_ r: (SessionState, Event?), entry ei: Int) -> Bool {
+        guard let event = r.1 else { return false }
+        send(event: event)
+        let old = state
+        state = r.0
+        follow(from: old, entry: ei)
+        noteActivity()
+        loadTargets()
+        Haptics.mark()
+        return true
+    }
+
+    /// True when the change went through (a locked or refused tap does nothing, and the menu stays).
+    @discardableResult
+    func mark(_ kind: MarkKind, on: Bool, entry: Int, set: Int) -> Bool {
+        guard touchAllowed, menuAvailable else { return false }
+        return applyEdit(SetMenu.mark(state, entry: entry, set: set, kind, on: on, at: Self.nowMs(), id: UUID().uuidString), entry: entry)
+    }
+
+    @discardableResult
+    func addSet(entry: Int) -> Bool {
+        guard touchAllowed, menuAvailable else { return false }
+        guard applyEdit(SetMenu.addSet(state, entry: entry, at: Self.nowMs(), id: UUID().uuidString), entry: entry) else { return false }
+        // The number the set page's pill shows for the new row (warm-ups are counted apart).
+        if let e = workout?.entries[safe: entry] { say(String(format: L("Set %lld added"), Int64(SetNav.place(e, e.sets.count - 1).n))) }
+        return true
+    }
+
+    /// Takes the set out at once and holds its event for 4 s, so Undo can still cancel it. The held
+    /// removal is an edit like any other (replayed over snapshots, kept across a relaunch).
+    func removeSet(entry: Int, set: Int) {
+        guard touchAllowed, menuAvailable, let row = workout?.entries[safe: entry]?.sets[safe: set] else { return }
+        let id = UUID().uuidString
+        let number = SetNav.place(workout!.entries[entry], set).n   // as the page's pill counts it, before the row is gone
+        // One at a time: an earlier removal still held goes out first.
+        flushRemoval()
+        let before = refs
+        guard let next = SetMenu.removeSet(state, entry: entry, set: set, at: Self.nowMs(), id: id) else { return }
+        let now = Date()
+        heldRefs = before
+        undoWindow.begin(id, at: now)
+        let old = state
+        state = next
+        follow(from: old, entry: entry)
+        removed = RemovedSet(setNumber: number, w: row.w, r: row.r, until: now.addingTimeInterval(UndoWindow.seconds))
+        undoTimer?.invalidate()
+        undoTimer = Timer.scheduledTimer(withTimeInterval: UndoWindow.seconds, repeats: false) { [weak self] _ in self?.sendDueRemoval() }
+        noteActivity()
+        loadTargets()
+        Haptics.skip()
+    }
+
+    /// Undo: the set back in its place, nothing sent.
+    func undoRemove() {
+        guard let id = undoWindow.id else { return }
+        undoWindow.undo()
+        state = SetMenu.undo(state, id: id)
+        if let r = heldRefs { refs = r }
+        clearRemoval()
+        loadTargets()
+        Haptics.mark()
+    }
+
+    private func sendDueRemoval() { if let id = undoWindow.due(at: Date()) { sendHeld(id) } }
+
+    /// The Undo time is over, or the app left the screen: the removal goes to the phone now.
+    func flushRemoval() { if let id = undoWindow.flush() { sendHeld(id) } }
+
+    private func sendHeld(_ id: String) {
+        clearRemoval()
+        let (next, ev) = SetMenu.release(state, id: id)
+        // Queued before the released state is saved: killed in between, the held edit is still there to release.
+        if let ev = ev { send(event: ev) }
+        state = next
+    }
+
+    private func clearRemoval() {
+        undoTimer?.invalidate(); undoTimer = nil; removed = nil; heldRefs = nil
+    }
+
+    private func say(_ text: String) {
+        toast = text
+        if !isDemo { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in if self?.toast == text { self?.toast = nil } } }
+    }
+
+    /// The menu opened: taps are ignored for a second (TouchLock).
+    func lockTouches() { touchLock.lock(at: Date()) }
+
+    /// The set menu, open for this set (SessionView's MenuLayer shows it).
+    @Published var menuFor: SetRef?
+    /// Where the set pill is on screen, for the menu to grow out of. Not published: read once as the menu opens.
+    var pillFrame: CGRect = .zero
+    /// Done's place on screen, and a count of sets done with it: the ring that ripples out from it (Direction B, 2026-11-11).
+    var doneFrame: CGRect = .zero
+    /// The set pill's last "n of" shown, so a new pill rolls from it.
+    var pillPlace: [Int]?
+    @Published var doneRipple = 0
+
+    /// The page's set has a menu: a set or a fix on show, not a hold, a rest or cardio.
+    /// The set page (pill first) or the rest page draws the badges itself, so they move with the page.
+    var ownTopRow: Bool {
+        restPanel || (holdCountFrom == nil && holdEndsAt == nil && shownRef != nil)
+    }
+
+    var menuShown: Bool {
+        menuAvailable && holdCountFrom == nil && holdEndsAt == nil && (viewing != nil || !restPanel)
+            && shownRef != nil && shownEntry?.isCardio == false
+    }
+
+    func openMenu() {
+        guard menuShown, touchAllowed, let ref = shownRef else { return }
+        letGoOfEffort() // the Crown must not move a rating hidden under the menu
+        lockTouches()
+        Haptics.mark()
+        menuFor = ref
     }
 
     /* ---------- holds (timed sets) ---------- */
@@ -1347,6 +1643,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
     func finish(at end: Date = Date(), idle: Bool = false, left: Bool = false) {
+        flushRemoval()   // a removal still in its Undo time goes out before the workout is saved
         // Finished mid-hold: the seconds held so far are that set, not lost.
         if !idle, holdEndsAt != nil { endHold(early: true) }
         closeRest(at: end)
@@ -1388,6 +1685,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// phone: the lifter's own Skip is skipRestAndGo, which does.
     func skipRest() {
         ackRestOver()
+        restEndedUnderDial()
         closeRest(at: Date())
         restTimer?.invalidate()
         restEndsAt = nil
@@ -1407,6 +1705,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // long ago while the app was away starts nothing (#884: a hold nobody saw start would be
         // logged at full length).
         let onTime = Date().timeIntervalSince(end) < 5
+        restEndedUnderDial()
         if onTime { restOver() }
         touchLock.lock(at: Date())
         closeRest(at: end)
@@ -1822,7 +2121,31 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "tap-done", "spin", "rest-end", "rate", "plus15", "synced", "marked", "next", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "set-failure", "set-both", "set-crowded":
+                // Set types: the page with the "…" button and the Failure / Drop tags.
+                self.picked[0] = 2
+                self.state.settings.setMenu = true
+                if var w = self.state.workout {
+                    w.entries[0].sets[2].failure = true
+                    if screen != "set-failure" { w.entries[0].sets[2].drop = 50 }
+                    if screen == "set-crowded" { w.entries[0].sets[2].band = "Red + Blue" }
+                    self.state.workout = w
+                }
+            case "menu", "menu-both", "menu-warmup", "menu-hint", "menu-hold", "removed", "toast":
+                // Set types: the set menu (opened by SetPanel), the Removed screen, the toast.
+                self.picked[0] = 2
+                self.state.settings.setMenu = true
+                if var w = self.state.workout {
+                    if screen == "menu" || screen == "menu-both" || screen == "menu-hint" || screen == "menu-hold" { w.entries[0].sets[2].failure = true }
+                    if screen == "menu-both" { w.entries[0].sets[2].drop = 50 }
+                    if screen == "menu-warmup" { w.entries[0].sets[2].warmup = true }
+                    // Remove needs the set's id, as the phone would have sent it.
+                    w.entries[0].sets[2].sid = "s2"
+                    self.state.workout = w
+                }
+                if screen == "removed" { self.removeSet(entry: 0, set: 2); self.undoTimer?.invalidate() }
+                if screen == "toast" { self.addSet(entry: 0) }
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "metrics", "metrics-pulse", "metrics-effort", "metrics-zones", "metrics-muscles":
                 self.picked[0] = 2; self.tab = .metrics
@@ -1897,22 +2220,45 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             self.loadTargets()
             // CI: "-OpenGymWatchRestSeconds 6" is a rest that ends within a test's wait.
             let restSeconds = SessionStore.argument("-OpenGymWatchRestSeconds").flatMap(Double.init) ?? 83
-            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(restSeconds), notify: false) }
+            if ["rest", "effort", "rate", "plus15"].contains(screen) { self.startRest(until: Date().addingTimeInterval(restSeconds), notify: false) }
             // CI: the rest as it stands while the phone has it paused (protocol 2, restPaused).
             if screen == "rest", ProcessInfo.processInfo.arguments.contains("-OpenGymWatchRestPaused") {
                 self.pauseRest(left: 47)
             }
-            if screen == "effort" {
-                self.state.settings.effort = "rir"
+            if screen == "effort" || screen == "rate" {
+                self.state.settings.effort = SessionStore.argument("-OpenGymWatchEffort") ?? "rir"   // CI: "rpe" for the RPE scale
                 self.lastLogged = SetRef(entry: 0, set: 1)
             }
-            if screen == "rest" || screen == "effort" {
+            if ["rest", "effort", "rate", "plus15"].contains(screen) {
                 self.health.setDemoHeartRate(128)
                 self.workoutSeenAt = Date().addingTimeInterval(-(24 * 60 + 10))
                 if let n = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init), screen == "effort" { self.lastRated = n }
+                // CI: the capsule armed, for good (a settle far off), to look at it.
+                if screen == "effort", ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmed") { self.dial.arm(at: .distantFuture) }
                 if let n = SessionStore.argument("-OpenGymWatchUnsynced").flatMap(Int.init) { self.unsentSets = n }
             }
+            if screen == "fix" {
+                self.state.settings.effort = "rir"
+                self.fixEffort = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init)
+                if ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmed") { self.fixDial.arm(at: .distantFuture) }
+                // CI clip: the pill arms after 8 s and settles 5 s later.
+                if ProcessInfo.processInfo.arguments.contains("-OpenGymWatchArmLater") { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.armFixEffort() } }
+            }
             if screen == "hold" { self.startHold() }
+            // CI clips of the motion: Done tapped, a fast Crown spin, a rest's last seconds.
+            if screen == "tap-done" { DispatchQueue.main.asyncAfter(deadline: .now() + 7) { self.completeSet() } }
+            if screen == "spin" {
+                for i in 0..<6 { DispatchQueue.main.asyncAfter(deadline: .now() + 7 + Double(i) * 0.12) { self.weight += 2.5 } }
+            }
+            if screen == "rate" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.rateLast(2) }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 15) { self.rearmRating() } // after the 5 s settle: the capsule opens again
+            }
+            if screen == "plus15" { for t in [8.0, 8.4, 10.5] { DispatchQueue.main.asyncAfter(deadline: .now() + t) { if t < 10 { self.addRest(15) } else { self.minusRest() } } } }
+            if screen == "synced" { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.unsentSets = 1 }; DispatchQueue.main.asyncAfter(deadline: .now() + 9.5) { self.unsentSets = 2 } }
+            if screen == "marked" { self.state.settings.setMenu = true; DispatchQueue.main.asyncAfter(deadline: .now() + 8) { if let r = self.shownRef { _ = self.mark(.failure, on: true, entry: r.entry, set: r.set) } } }
+            if screen == "next" { DispatchQueue.main.asyncAfter(deadline: .now() + 7) { self.completeSet() }; DispatchQueue.main.asyncAfter(deadline: .now() + 9) { self.skipRestAndGo() } }
+            if screen == "rest-end" { self.startRest(until: Date().addingTimeInterval(12), notify: false) }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
             if screen == "idle-away" { self.reachable = false }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
@@ -2017,10 +2363,17 @@ enum Haptics {
             (b.at, b.beat == .strike ? .stop : b.beat == .settled ? .success : .directionUp)
         })
     }
+    static func mark() { play([(0, .click)]) }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
     // A click is lost with the wrist down: the rest's last seconds take the firm tap.
     static func restCount() { play([(0, .notification)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
+    /// A disc tapped at the end of the scale: a light tick, no step.
+    static func stop() { play([(0, .directionUp)]) }
+}
+
+private extension Array {
+    subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
 }

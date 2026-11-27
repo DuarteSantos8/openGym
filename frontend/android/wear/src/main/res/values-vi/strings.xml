@@ -3,6 +3,8 @@
 <resources>
     <string name="add_birth_year">Thêm năm sinh trong ứng dụng trên điện thoại</string>
     <string name="add_session_note">Thêm ghi chú buổi tập</string>
+    <string name="add_set">Thêm hiệp</string>
+    <string name="add_short">Thêm</string>
     <string name="added_weight">Tạ thêm</string>
     <string name="all_done_q">Xong chưa?</string>
     <string name="all_sets_done">Đã xong tất cả hiệp</string>
@@ -36,11 +38,14 @@
     <string name="discard_workout">Hủy buổi tập</string>
     <string name="discard_workout_q">Hủy buổi tập?</string>
     <string name="done">Xong</string>
+    <string name="drop_set">Drop set</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Chỉnh sửa</string>
     <string name="edit_session_note">Sửa ghi chú buổi tập</string>
     <string name="effort">Độ gắng sức</string>
     <string name="ended_on_phone">Đã kết thúc trên điện thoại</string>
     <string name="exercises">Bài tập</string>
+    <string name="failure_tag">Kiệt sức</string>
     <string name="finish_and_save">Hoàn thành và lưu</string>
     <string name="finish_now">Kết thúc ngay</string>
     <string name="finish_workout">Kết thúc buổi tập</string>
@@ -103,6 +108,9 @@
     <string name="quick_checkin">Ghi nhận nhanh</string>
     <string name="quick_start">Bắt đầu nhanh</string>
     <string name="records">Kỷ lục</string>
+    <string name="remove_set">Xóa hiệp</string>
+    <string name="remove_short">Xóa</string>
+    <string name="removed">Đã xóa</string>
     <string name="reps">Reps</string>
     <string name="rest">Nghỉ</string>
     <string name="rest_day">Không có kế hoạch. Tùy bạn.</string>
@@ -112,7 +120,9 @@
     <string name="save">Lưu</string>
     <string name="save_and_start">Lưu &amp; bắt đầu buổi tập</string>
     <string name="saved">Đã lưu</string>
+    <string name="set_menu">Menu hiệp</string>
     <string name="set_of">Hiệp %1$d / %2$d</string>
+    <string name="set_of_tags">Hiệp %1$d / %2$d, %3$s</string>
     <string name="sets">Hiệp</string>
     <string name="sets_of">%1$d / %2$d hiệp</string>
     <string name="skip">Bỏ qua</string>
@@ -129,7 +139,9 @@
     <string name="tap_to_change">Chạm để thay đổi.</string>
     <string name="tile_desc">Chuỗi tuần của bạn và kế hoạch hôm nay.</string>
     <string name="time">Thời gian</string>
+    <string name="to_failure">Tập đến ngưỡng thất bại (Failure)</string>
     <string name="today">Hôm nay</string>
+    <string name="undo">Hoàn tác</string>
     <string name="up_next">Tiếp theo</string>
     <string name="up_next_set">%1$s, hiệp %2$d/%3$d</string>
     <string name="volume">Tổng khối lượng</string>

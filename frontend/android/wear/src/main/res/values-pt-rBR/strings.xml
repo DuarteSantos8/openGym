@@ -3,6 +3,8 @@
 <resources>
     <string name="add_birth_year">Ano de nascimento no celular</string>
     <string name="add_session_note">Adicionar nota da sessão</string>
+    <string name="add_set">Adicionar série</string>
+    <string name="add_short">Adicionar</string>
     <string name="added_weight">Peso adicional</string>
     <string name="all_done_q">Terminou?</string>
     <string name="all_sets_done">Todas as séries feitas</string>
@@ -36,11 +38,14 @@
     <string name="discard_workout">Descartar treino</string>
     <string name="discard_workout_q">Descartar treino?</string>
     <string name="done">Concluído</string>
+    <string name="drop_set">Drop set</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Editar</string>
     <string name="edit_session_note">Editar nota da sessão</string>
     <string name="effort">Esforço</string>
     <string name="ended_on_phone">Encerrado no celular</string>
     <string name="exercises">Exercícios</string>
+    <string name="failure_tag">Falha</string>
     <string name="finish_and_save">Terminar e salvar</string>
     <string name="finish_now">Terminar agora</string>
     <string name="finish_workout">Terminar treino</string>
@@ -103,6 +108,9 @@
     <string name="quick_checkin">Check-in rápido</string>
     <string name="quick_start">Início rápido</string>
     <string name="records">Recordes</string>
+    <string name="remove_set">Remover série</string>
+    <string name="remove_short">Remover</string>
+    <string name="removed">Removida</string>
     <string name="reps">Reps</string>
     <string name="rest">Descanso</string>
     <string name="rest_day">Nada planejado. Você decide.</string>
@@ -112,7 +120,9 @@
     <string name="save">Salvar</string>
     <string name="save_and_start">Salvar e iniciar treino</string>
     <string name="saved">Salvo</string>
+    <string name="set_menu">Menu da série</string>
     <string name="set_of">Série %1$d de %2$d</string>
+    <string name="set_of_tags">Série %1$d de %2$d, %3$s</string>
     <string name="sets">Séries</string>
     <string name="sets_of">%1$d de %2$d séries</string>
     <string name="skip">Pular</string>
@@ -129,7 +139,9 @@
     <string name="tap_to_change">Toque para mudar.</string>
     <string name="tile_desc">Sua sequência e o plano de hoje.</string>
     <string name="time">Tempo</string>
+    <string name="to_failure">Até a falha</string>
     <string name="today">Hoje</string>
+    <string name="undo">Desfazer</string>
     <string name="up_next">Próximo</string>
     <string name="up_next_set">%1$s, série %2$d/%3$d</string>
     <string name="volume">Volume</string>

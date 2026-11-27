@@ -4,6 +4,8 @@
 "Start workout" = "Start pas";
 "Done" = "Færdig";
 "Warm-up" = "Opvarmning";
+"Remove" = "Fjern";
+"Undo" = "Fortryd";
 "Reps" = "Reps";
 "Rest" = "Pause";
 "Skip" = "Spring over";
@@ -46,6 +48,9 @@
 "Looks like you left the gym" = "Det ser ud, som om du har forladt centret";
 "Keep going" = "Fortsæt";
 "Finish now" = "Afslut nu";
+"Taken to failure" = "Til failure";
+"Drop set" = "Dropsæt";
+"More" = "Mere";
 "Back" = "Tilbage";
 "Saved" = "Gemt";
 "Hours" = "Timer";
@@ -64,6 +69,9 @@
 "Skip for today" = "Spring over i dag";
 "Continue" = "Fortsæt";
 "New record" = "Ny rekord";
+"Set %lld" = "Sæt %lld";
+"Add set" = "Tilføj";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "Sidste gang: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Intet logget i et stykke tid. Er du færdig, slutter den af sig selv kl. %@, gemt ved dit sidste sæt.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Afslut træningen nu? Ellers slutter den af sig selv kl. %@.";
@@ -113,4 +121,14 @@
 "+%lld more" = "+%lld mere";
 "On iPhone" = "På iPhone";
 "%@ sets" = "%@ sæt";
+"Failure" = "Failure";
+"Drop" = "Drop";
+"Set %lld added" = "Sæt %lld tilføjet";
+"Hold 1 s to remove" = "Hold 1 s for at fjerne";
+"Set %lld · %@ is lost" = "Sæt %lld · %@ går tabt";
+"Set %lld removed" = "Sæt %lld fjernet";
+"at the end" = "til sidst";
+"Crown: half steps" = "Digital Crown: halve trin";
+"Highest" = "Højeste";
+"Lowest" = "Laveste";
 "Archived routines stay on your iPhone." = "Arkiverede rutiner bliver på din iPhone.";

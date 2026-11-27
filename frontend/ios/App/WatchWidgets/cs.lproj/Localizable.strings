@@ -4,6 +4,8 @@
 "Start workout" = "Začít trénink";
 "Done" = "Hotovo";
 "Warm-up" = "Rozcvička";
+"Remove" = "Odebrat";
+"Undo" = "Vrátit zpět";
 "Reps" = "Opak.";
 "Rest" = "Pauza";
 "Skip" = "Přeskočit";
@@ -46,6 +48,9 @@
 "Looks like you left the gym" = "Vypadá to, že jsi odešel z posilovny";
 "Keep going" = "Pokračovat";
 "Finish now" = "Ukončit teď";
+"Taken to failure" = "Do selhání";
+"Drop set" = "Dropset";
+"More" = "Více";
 "Back" = "Zpět";
 "Saved" = "Uloženo";
 "Hours" = "Hodiny";
@@ -64,6 +69,9 @@
 "Skip for today" = "Dnes přeskočit";
 "Continue" = "Pokračovat";
 "New record" = "Nový rekord";
+"Set %lld" = "Série %lld";
+"Add set" = "Přidat";
+"Warm-up disc" = "Rozcvička";
 "Last time: %@" = "Naposledy: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Chvíli nic zapsáno. Jestli máš hotovo, skončí sám v %@, uložený na poslední sérii.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Ukončit trénink teď? Jinak skončí sám v %@.";
@@ -113,4 +121,14 @@
 "+%lld more" = "+%lld další";
 "On iPhone" = "Na iPhonu";
 "%@ sets" = "Sérií: %@";
+"Failure" = "Selhání";
+"Drop" = "Drop";
+"Set %lld added" = "Přidána série %lld";
+"Hold 1 s to remove" = "Podrž 1 s pro odebrání";
+"Set %lld · %@ is lost" = "Série %lld · %@ se ztratí";
+"Set %lld removed" = "Série %lld odebrána";
+"at the end" = "na konci";
+"Crown: half steps" = "Digital Crown: půlkroky";
+"Highest" = "Maximum";
+"Lowest" = "Minimum";
 "Archived routines stay on your iPhone." = "Archivované rutiny zůstávají v iPhonu.";

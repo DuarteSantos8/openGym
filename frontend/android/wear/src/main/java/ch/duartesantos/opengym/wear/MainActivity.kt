@@ -150,6 +150,12 @@ class MainActivity : ComponentActivity() {
         WorkoutService.sync(this)
     }
 
+    /** Off the screen: a set removed a moment ago goes to the phone now, not after an Undo nobody can press. */
+    override fun onStop() {
+        super.onStop()
+        WearStore.flushRemoval()
+    }
+
     /** A workout is on screen: heart rate asked for once (Health Services), then the service. */
     private fun onWorkout() {
         if (demoShown) return
@@ -170,7 +176,7 @@ class MainActivity : ComponentActivity() {
      * Debug builds only: `adb shell am start -n <pkg>/ch.duartesantos.opengym.wear.MainActivity --es demo rest`
      * shows one screen with the demo workout in src/debug/assets (text and numbers, no media), for
      * the screenshots in the docs and the store listing. `--es ambient 1` draws it as Always On,
-     * `--es lang de` in another of the app's languages.
+     * `--es lang de` in another of the app's languages, `--es effort rpe` for RPE instead of RIR.
      */
     private fun demo(intent: Intent?) {
         if (!BuildConfig.DEBUG) return
@@ -183,6 +189,8 @@ class MainActivity : ComponentActivity() {
             .replace("\"lang\": \"en\"", "\"lang\": \"${intent.getStringExtra("lang") ?: "en"}\"")
             .let { if (intent.getStringExtra("names") == "long") longNames(it) else it }
             .let { demoMuscleNames(it, intent.getStringExtra("lang")) }
+            // `--es effort rpe`: the RPE scale instead of RIR (the widest value text, "RPE 8.5", for the capsule checks).
+            .let { if (intent.getStringExtra("effort") == "rpe") it.replace("\"effort\": \"rir\"", "\"effort\": \"rpe\"") else it }
             // `--es age none`: no birth year from the phone, for the Zones page's "add your birth year" card.
             .let { if (intent.getStringExtra("age") == "none") it.replace("\"birthYear\": 1988, ", "") else it }
         WearStore.ambient.value = intent.getStringExtra("ambient") == "1"
