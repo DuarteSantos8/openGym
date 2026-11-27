@@ -14,7 +14,8 @@
 // Speed and pitch are numbers in S (speechRateN, speechPitch, 0.5 to 2, 1 is normal) and sync;
 // `speechRate` (Slow, Normal, Fast) is how an app from before stored the speed, and is still
 // written, rounded to the nearest of the three, for those apps.
-import { MOBILE } from './mobile.js'
+import { MOBILE, nativePlatform } from './mobile.js'
+import { offlineBuild } from './build-caps.js'
 import { speakNative, hushNative, voicesNative } from './rest-alert.js'
 import { dateLocale } from './i18n-core.js'
 
@@ -48,7 +49,15 @@ export function setPickedVoice (id) {
 }
 
 /** What speak() needs from a profile: { rate, pitch, voice }. */
-export const voiceOpts = S => ({ rate: speechRateNum(S), pitch: speechPitchNum(S), voice: pickedVoice() })
+// With nothing picked, the automatic voice (the best one in the person's own accent, #1390) when
+// the list is in; until then '' (the phone's default), so the first cue never waits for the list.
+// It is never written to VOICE_KEY: it is chosen again on every refresh.
+// A cached automatic voice from another app language is not used: it would read the new language.
+export const voiceOpts = S => {
+  const fresh = voiceCache?.lang === speechLang()
+  if (MOBILE && voiceCache && !fresh) refreshOnce()
+  return { rate: speechRateNum(S), pitch: speechPitchNum(S), voice: pickedVoice() || (fresh ? voiceCache.auto?.id : '') || '' }
+}
 
 /** The app's language as a voice language: 'de-DE', 'pt-BR', 'ar' (no Unicode extensions). */
 export const speechLang = (loc = dateLocale()) => String(loc || 'en-GB').split('-u-')[0]
@@ -140,8 +149,8 @@ export function voiceLabel (v, ui = speechLang()) {
 }
 
 /**
- * The voices this device has for `lang`, as [{ id, name, lang, online }], sorted by name with the
- * exact region first. `online`: the voice needs the internet (some of Chrome's, a few of
+ * The voices this device has for `lang`, as [{ id, name, lang, online, quality? }], ranked by
+ * quality, then the exact region first, then by name. `online`: the voice needs the internet (some of Chrome's, a few of
  * Android's); `offline: true` leaves those out (openGym Offline has no network at all).
  * The phone's own list in the apps, the browser's elsewhere.
  */
@@ -163,8 +172,59 @@ export async function listVoices({ lang = speechLang(), offline = false } = {}) 
     const quality = v.quality === 'enhanced' || v.quality === 'premium' ? v.quality : null
     out.push({ id: v.id, name: String(v.name || v.id), lang: String(v.lang || ''), online, ...(quality ? { quality } : {}) })
   }
+  return rankVoices(out, lang)
+}
+
+const tier = v => (v.quality === 'premium' ? 0 : v.quality === 'enhanced' ? 1 : 2)
+const regionOf = tag => normLang(tag).split('-')[1] || ''
+
+/** The voices best first: premium, then enhanced, then the rest; each tier the exact region of `lang` first, then by name. */
+export function rankVoices(voices, lang) {
   const exact = v => (normLang(v.lang) === normLang(lang) ? 0 : 1)
-  return out.sort((a, b) => exact(a) - exact(b) || a.name.localeCompare(b.name))
+  return [...voices].sort((a, b) => tier(a) - tier(b) || exact(a) - exact(b) || a.name.localeCompare(b.name))
+}
+
+/** The accent the person means: the phone's tag when it has a region and speaks `lang`'s language ('en-US' in an English app), else `lang`. */
+export const accentTag = (lang, phoneLang = '') => (voiceSpeaks(phoneLang, lang) && regionOf(phoneLang) ? phoneLang : lang)
+
+/**
+ * The voice to use when none is picked: the best ranked voice that has a tier, is not online and
+ * is in the person's own region (the phone's when it speaks the app's language, else that of `lang`,
+ * else any). null: keep the default.
+ */
+export function autoVoice(voices, lang, phoneLang = '') {
+  const tag = accentTag(lang, phoneLang)
+  const region = regionOf(tag)
+  return rankVoices(voices, tag).find(v => v.quality && !v.online && (!region || regionOf(v.lang) === region)) || null
+}
+
+/** A language tag in words ("British English"), '' when the engine cannot. */
+export function langName(tag, ui = speechLang()) {
+  try { return new Intl.DisplayNames([ui], { type: 'language' }).of(String(tag).replace('_', '-')) || '' } catch { return '' }
+}
+
+let voiceCache = null // { lang, tag, voices, auto, ios }
+const voiceSubs = new Set()
+/** The phone's voices for the app's language, the automatic one, the accent tag it looks for, and whether this is an iPhone. voices: null before the first refresh. */
+export const voiceState = () => ({ voices: voiceCache?.voices ?? null, auto: voiceCache?.auto ?? null, tag: voiceCache?.tag || '', ios: !!voiceCache?.ios })
+/** Calls cb after each refresh; returns the way to stop. */
+export function onVoices(cb) { voiceSubs.add(cb); return () => voiceSubs.delete(cb) }
+/** Lists the voices again (app opened, back in front, language changed) and tells the listeners. */
+let seq = 0
+export async function refreshVoices() {
+  const n = ++seq
+  const lang = speechLang()
+  const voices = await listVoices({ lang, offline: offlineBuild() })
+  const ios = (await nativePlatform()) === 'ios'
+  if (n !== seq) return // a newer listing started meanwhile and wins
+  const phone = typeof navigator !== 'undefined' ? navigator.language : ''
+  voiceCache = { lang, tag: accentTag(lang, phone), voices, auto: autoVoice(voices, lang, phone), ios }
+  voiceSubs.forEach(cb => { try { cb() } catch { /* a listener must not stop the others */ } })
+}
+// Cues ask for options several times while a refresh is pending: they share one listing.
+let pending = null
+function refreshOnce() {
+  pending ??= refreshVoices().catch(() => {}).finally(() => { pending = null })
 }
 
 /** Stops speaking, and drops what was still waiting to be said. */

@@ -6,13 +6,14 @@ import { toneFor, REST_KINDS } from '../lib/user-sounds.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
-import { MOBILE } from '../lib/mobile.js'
+import { MOBILE, onAppActive } from '../lib/mobile.js'
 import { armRestAlert, bindNativeRest, disarmRestAlert, holdRestAlert, toneNative } from '../lib/rest-alert.js'
 import { useStore } from './useStore.js'
 import { REST_MAX } from '../lib/duration.js'
 import { accentValue } from '../lib/accent.js'
 import { COUNT_IN_SEC, chainCues, heldSec, phaseLeft, resumedEnd, shouldWait } from '../lib/auto-holds.js'
 import { cues, bindCueState } from '../lib/spoken-cues.js'
+import { refreshVoices } from '../lib/speech.js'
 import { restNextLine, restOverTitle } from '../lib/rest-next.js'
 
 // Timed holds that run themselves (lib/auto-holds.js): the workout screen hands in what comes
@@ -897,6 +898,13 @@ bindNativeRest(ev => {
 
 // Spoken cues read the profile (on or off, the rate, the running workout) from the store.
 bindCueState(() => useStore.getState?.()?.S)
+
+// The phone's voice list for the automatic voice (#1390): at load, and again whenever the app
+// comes back (a voice may have been downloaded or deleted in iPhone Settings meanwhile).
+if (MOBILE) {
+  refreshVoices().catch(() => {})
+  onAppActive(() => refreshVoices().catch(() => {}))
+}
 
 // A workout that begins gets its first set announced (#1210): only a rest announced anything
 // before, so the first exercise went unsaid until its first set was done. The id already running
