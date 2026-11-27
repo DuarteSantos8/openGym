@@ -11,6 +11,7 @@ D3 status: the short Beginner Settings root and reversible full-list preference 
 ## Status on November 26, 2026
 
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner still needs to choose a production address and verify both email return journeys after cutover.
+Learn checks every supported locale for explicit glossary labels, including loanwords spelled the same as in English.
 Nutrition sync checks now cover three offline copies editing portions of the same diary entry and a repeated import of a legacy entry.
 A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
 

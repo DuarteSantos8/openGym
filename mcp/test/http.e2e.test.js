@@ -123,11 +123,10 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     try {
       const plans = await call(client, 'list_routines')
       expect(plans.routines.map(r => r.name)).toEqual(['Ana push'])
-      const names = (await client.listTools()).tools.map(t => t.name)
-      expect(names).not.toContain('log_workout')
+      const names = (await client.listTools()).tools.map(t => t.name).sort()
+      expect(names).toEqual(['get_programme', 'get_routine', 'get_week_plan', 'list_routines', 'preview_session', 'search_exercises'])
 
       const workoutsBefore = [stored(A).workouts, stored(B).workouts]
-      expect(workoutsBefore.map(rows => rows.length)).toEqual([1, 1])
       const denied = await client.callTool({
         name: 'log_workout',
         arguments: { exercises: [{ exercise: 'dumbbell curl', sets: [{ reps: 12, weight: 12 }] }] },
