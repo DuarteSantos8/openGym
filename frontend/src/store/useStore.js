@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
-import { logoutOwed, trackCookieCleanup } from '../lib/cookie-cleanup.js'
+import { logoutOwed, recordSignIn, trackCookieCleanup } from '../lib/cookie-cleanup.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
@@ -1843,8 +1843,7 @@ export const useStore = create((set, get) => {
             adoptHold = wasHeld
             if (!MOBILE) {
               logoutOwed(true)
-              trackCookieCleanup(api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS })
-                .then(() => logoutOwed(false), () => {}))
+              trackCookieCleanup(api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS }))
             }
             const message = t('Could not save')
             import('./useUI.js').then(({ useUI }) => useUI.getState().toast(message))
@@ -1875,6 +1874,7 @@ export const useStore = create((set, get) => {
         seenOwner = u.id
         handedOver = false
         localStorage.setItem('gym_user', JSON.stringify(u)); localStorage.removeItem('gym_guest')
+        if (!MOBILE && (adopt || !rejoined)) recordSignIn()
         logoutOwed(false)   // this sign-in's cookie replaced the one a failed sign-out left behind
         // A profile created here (no question: this copy becomes it) is saved once under its owner
         // now. Another tab of this browser takes only a copy saved under the new owner, and went

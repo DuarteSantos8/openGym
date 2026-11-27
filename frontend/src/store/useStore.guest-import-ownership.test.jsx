@@ -299,6 +299,33 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     expect(useStore.getState().S.dayPhotos).toEqual({ [photo.id]: photo })
   })
 
+  it('a second tab signing in cancels the first tab’s old fallback logout on reload', async () => {
+    const { logoutOwed } = await import('../lib/cookie-cleanup.js')
+    const write = localStorage.setItem.bind(localStorage)
+    const deny = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'gym_logout_owed') throw new DOMException('full', 'QuotaExceededError')
+      write(key, value)
+    })
+    try { logoutOwed(true) } finally { deny.mockRestore() }
+    expect(logoutOwed()).toBe(true)
+    const key = 'gym_logout_owed'
+    const firstTabMarker = sessionStorage.getItem(key)
+    sessionStorage.removeItem(key)
+    signIn('acct-b', 'B')
+    sessionStorage.setItem(key, firstTabMarker)
+    api.mockImplementation(async path => {
+      if (path === '/api/config') return { signed_in: true, allow_guest: true, coach: null }
+      if (path === '/api/me') return { user: { id: 'acct-b', name: 'B' } }
+      return { state: null, rev: 0 }
+    })
+    try {
+      await reload()
+      await useStore.getState().boot()
+      expect(api.mock.calls.filter(([path]) => path === '/api/logout')).toEqual([])
+      expect(useStore.getState().user.id).toBe('acct-b')
+    } finally { sessionStorage.removeItem(key) }
+  })
+
   it('sign-out keeps actual guest media bytes and removes private account media', async () => {
     const { createMediaStore, memoryBackend, _setMediaStore } = await import('../lib/media-store.js')
     const media = createMediaStore(memoryBackend())
