@@ -389,6 +389,7 @@ const LOCK_CUE = {
  *   signal(f, torsoRef) -> number | null (0 at the start, about 1 at lockout), phases, topS
  *   lockViews: the views the lockout is judged from; unjudgedCue: () => text
  *   lockDeg: optional, the smoothed elbow angle that is locked out there (LOCK_DEG when not given)
+ *   lockPeak: optional, the rep's peak signal under which it is not locked out, in every view
  *   startHint(), readyHint(): translated status lines; tempoRow(down, up), tempoSub(): translated text
  *   lockSub(): the lockout tile's sub; notes: { view: () => text }
  *   side: optional extras as for createArmDropTracker
@@ -408,7 +409,12 @@ export function createLockoutTracker(drill, spec, viewDetector, { standard, view
   const judged = v => v != null && spec.lockViews.includes(v)
   const count = () => reps.filter(r => r.counted).length
   const lockDeg = spec.lockDeg ?? LOCK_DEG
-  const lockedOf = a => (a.judged && a.maxAng != null ? a.maxAng >= lockDeg : null)
+  // A rep whose way down stops under spec.lockPeak (signal units, any view) did not straighten,
+  // whatever the elbow angle read; otherwise the angle is judged where it can be.
+  const lockedOf = a => {
+    if (spec.lockPeak != null && a.rec.peak < spec.lockPeak) return false
+    return a.judged && a.maxAng != null ? a.maxAng >= lockDeg : null
+  }
   const reachedNow = () => !!acc && acc.rec.rawPeak >= P.minRep && lockMeets(lockedOf(acc), std)
 
   function figure(joints) {

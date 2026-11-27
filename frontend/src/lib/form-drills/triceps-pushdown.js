@@ -12,12 +12,19 @@ import { angleAt, createViewDetector, framing, matchExercise, seen } from './kit
 import { ARM, createLockoutTracker, LOCK_STANDARDS, SOFT_MISS } from './press-kit.js'
 
 export const DRIFT_DEG = 25           // the upper arm this far forward of the torso at most: the elbows drifted
-export const PHASES = { stand: 0.4, descent: 0.5, minRep: 0.7, bottomEps: 0.04, ascentRise: 0.15, topBand: 0.1 }
+export const PHASES = { stand: 0.4, descent: 0.5, minRep: 0.6, bottomEps: 0.04, ascentRise: 0.15, topBand: 0.1 }
 // Side-on at the bottom Vision reads a straight arm bent: the wrist sits on the hand wrapped round
 // the handle or rope and the shoulder on top of the deltoid. Fourteen lockouts that look straight
 // (four lifters, form lab) read 155 to 166 smoothed, against press-kit's 160; 150 keeps a margin
 // under them and still refuses an arm stopped 30 degrees short.
 export const LOCK_DEG_SIDE = 150
+// The angle alone cannot refuse a soft stop: deliberate partials stopped about 30 degrees short
+// (form lab) read 149 to 154 smoothed side-on, the line's side of the lowest real lockout (155).
+// Their wrists came down only 0.58 to 0.66 of the signal (0.29 to 0.33 torso lengths under the
+// elbow), against 0.89 and more for every real lockout (six lifters, side-on and at an angle). A rep
+// peaking under LOCK_PEAK is not locked out in any view, and minRep (0.6) sits under the partials,
+// so they are refused rather than not seen as reps at all (at 0.7, five of seven were not).
+export const LOCK_PEAK = 0.8
 
 // Two-handed pushdowns with a bar, a rope or a band. One arm at a time (the idle arm would be
 // read), straight-arm and lat pushdowns (another movement), incline and floor versions are left out.
@@ -56,6 +63,7 @@ const SPEC = {
   topS: 0.45,
   lockViews: ['side'],
   lockDeg: LOCK_DEG_SIDE,
+  lockPeak: LOCK_PEAK,
   unjudgedCue: () => t('Lockout could not be judged from this angle. Film from the side.'),
   startHint: () => t('Forearms level to start'),
   readyHint: () => t('Ready. Push when you are.'),
