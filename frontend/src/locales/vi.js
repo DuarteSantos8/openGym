@@ -6498,6 +6498,7 @@ export default {
   "Import into the diary on this device?": "Nhập vào nhật ký trên thiết bị này?",
   "Import into your synced account diary?": "Nhập vào nhật ký đã đồng bộ của tài khoản bạn?",
   "{0} entries ready. {1} skipped.": "Số mục sẵn sàng: {0}. Đã bỏ qua: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Lần nhập này sẽ vượt quá giới hạn đồng bộ của tài khoản. Hãy thử một tệp xuất nhỏ hơn.",
   "Could not read this OpenNutriTracker export.": "Không đọc được tệp xuất này của OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Đã thêm: {0}. Đã cập nhật: {1}. Không đổi: {2}.",
 };

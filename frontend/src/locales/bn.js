@@ -6611,6 +6611,7 @@ export default {
   "Import into the diary on this device?": "এই ডিভাইসের ডায়েরিতে আমদানি করবেন?",
   "Import into your synced account diary?": "আপনার অ্যাকাউন্টের সিঙ্ক করা ডায়েরিতে আমদানি করবেন?",
   "{0} entries ready. {1} skipped.": "{0}টি এন্ট্রি প্রস্তুত। {1}টি বাদ দেওয়া হয়েছে।",
+  "This import would exceed the account sync limit. Try a smaller export.": "এটি আমদানি করলে অ্যাকাউন্টের সিঙ্ক সীমা ছাড়িয়ে যাবে। আরও ছোট একটি এক্সপোর্ট ফাইল চেষ্টা করুন।",
   "Could not read this OpenNutriTracker export.": "OpenNutriTracker থেকে রপ্তানি করা এই ফাইলটি পড়া যায়নি।",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "যোগ হয়েছে: {0}। আপডেট হয়েছে: {1}। অপরিবর্তিত: {2}।",
 }

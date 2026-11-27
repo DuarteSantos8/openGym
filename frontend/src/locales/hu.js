@@ -6535,6 +6535,7 @@ export default {
   "Import into the diary on this device?": "Importálod az ezen az eszközön lévő naplóba?",
   "Import into your synced account diary?": "Importálod a fiókod szinkronizált naplójába?",
   "{0} entries ready. {1} skipped.": "Importálásra kész: {0}. Kihagyva: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Ez az importálás túllépné a fiók szinkronizálási korlátját. Próbálkozz kisebb exportfájllal.",
   "Could not read this OpenNutriTracker export.": "Nem sikerült beolvasni ezt az OpenNutriTracker-exportot.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Hozzáadva: {0}. Frissítve: {1}. Változatlan: {2}.",
 }

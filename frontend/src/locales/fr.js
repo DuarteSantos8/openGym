@@ -6532,6 +6532,7 @@ export default {
   "Import into the diary on this device?": "Importer dans le journal de cet appareil ?",
   "Import into your synced account diary?": "Importer dans le journal synchronisé de votre compte ?",
   "{0} entries ready. {1} skipped.": "Entrées prêtes : {0}. Ignorées : {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Cet import dépasserait la limite de synchronisation du compte. Essayez un fichier d’export plus petit.",
   "Could not read this OpenNutriTracker export.": "Impossible de lire cet export OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Ajoutées : {0}. Mises à jour : {1}. Inchangées : {2}.",
 }

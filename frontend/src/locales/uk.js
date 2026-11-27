@@ -6529,6 +6529,7 @@ export default {
   "Import into the diary on this device?": "Імпортувати до щоденника на цьому пристрої?",
   "Import into your synced account diary?": "Імпортувати до синхронізованого щоденника вашого облікового запису?",
   "{0} entries ready. {1} skipped.": "Записів готово: {0}. Пропущено: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Цей імпорт перевищить ліміт синхронізації облікового запису. Спробуйте менший файл експорту.",
   "Could not read this OpenNutriTracker export.": "Не вдалося прочитати цей файл експорту OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Додано: {0}. Оновлено: {1}. Без змін: {2}.",
 }

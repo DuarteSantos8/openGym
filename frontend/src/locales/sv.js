@@ -6579,6 +6579,7 @@ export default {
   "Import into the diary on this device?": "Importera till dagboken på den här enheten?",
   "Import into your synced account diary?": "Importera till den synkroniserade dagboken på ditt konto?",
   "{0} entries ready. {1} skipped.": "Poster redo: {0}. Överhoppade: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Den här importen skulle överskrida kontots synkroniseringsgräns. Prova en mindre exportfil.",
   "Could not read this OpenNutriTracker export.": "Det gick inte att läsa den här exportfilen från OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Tillagda: {0}. Uppdaterade: {1}. Oförändrade: {2}.",
 }

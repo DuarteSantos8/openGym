@@ -4942,6 +4942,7 @@ export const PT_BR_OVERRIDES = {
   "Import into the diary on this device?": "Importar para o diário deste dispositivo?",
   "Import into your synced account diary?": "Importar para o diário sincronizado da sua conta?",
   "{0} entries ready. {1} skipped.": "Registros prontos: {0}. Ignorados: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Esta importação excederia o limite de sincronização da conta. Tente um arquivo de exportação menor.",
   "Could not read this OpenNutriTracker export.": "Não foi possível ler este arquivo exportado do OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Adicionados: {0}. Atualizados: {1}. Sem alterações: {2}.",
 }

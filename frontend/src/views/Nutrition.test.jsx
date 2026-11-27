@@ -186,7 +186,18 @@ test('signed-in import rejects a complete UTF-8 sync envelope over 5 MiB before 
   await vi.waitFor(() => expect(host.textContent).toContain('Import into your synced account diary?'))
   await click('Import')
   expect(useStore.getState().S).toBe(before)
+  expect(host.textContent).toContain('This import would exceed the account sync limit. Try a smaller export.')
   expect(visible()).toHaveLength(1)
   expect(visible()[0].label).toBe('Existing')
   expect(api).not.toHaveBeenCalled()
+})
+
+test('an unreadable nutrition export still gets the file error before confirmation', async () => {
+  useStore.setState({ S: { ...structuredClone(DEF), modules: { nutrition: true } }, user: null, ready: true })
+  await render(<Nutrition />)
+  const picker = host.querySelector('input[type="file"]')
+  Object.defineProperty(picker, 'files', { configurable: true, value: [new Blob(['not a ZIP'])] })
+  await act(async () => picker.dispatchEvent(new Event('change', { bubbles: true })))
+  await vi.waitFor(() => expect(host.textContent).toContain('Could not read this OpenNutriTracker export.'))
+  expect(host.textContent).not.toContain('Try a smaller export.')
 })

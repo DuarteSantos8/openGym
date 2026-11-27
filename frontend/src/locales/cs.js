@@ -6498,6 +6498,7 @@ export default {
   "Import into the diary on this device?": "Importovat do deníku v tomto zařízení?",
   "Import into your synced account diary?": "Importovat do synchronizovaného deníku vašeho účtu?",
   "{0} entries ready. {1} skipped.": "Připravené záznamy: {0}. Přeskočené: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Tento import by překročil limit synchronizace účtu. Zkuste menší export.",
   "Could not read this OpenNutriTracker export.": "Tento export z OpenNutriTrackeru se nepodařilo přečíst.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Přidáno: {0}. Aktualizováno: {1}. Beze změny: {2}.",
 }

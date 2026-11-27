@@ -6587,6 +6587,7 @@ export default {
   "Import into the diary on this device?": "هل تريد الاستيراد إلى اليوميات على هذا الجهاز؟",
   "Import into your synced account diary?": "هل تريد الاستيراد إلى يوميات حسابك المتزامنة؟",
   "{0} entries ready. {1} skipped.": "إدخالات جاهزة: {0}. تم تخطي: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "سيتجاوز هذا الاستيراد حد مزامنة الحساب. جرّب ملف تصدير أصغر.",
   "Could not read this OpenNutriTracker export.": "تعذرت قراءة ملف التصدير هذا من OpenNutriTracker.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "تمت الإضافة: {0}. تم التحديث: {1}. دون تغيير: {2}.",
 }
