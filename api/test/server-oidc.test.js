@@ -72,6 +72,35 @@ async function roundTrip(h, { query = '', cookie, ip, edit, flowCookie } = {}) {
 }
 const landed = r => new URL(r.location, 'http://x').searchParams;
 
+test('ordinary logout ends only its incoming session and cannot expire a later browser login', async t => {
+  const h = await setup(t);
+  const first = await roundTrip(h);
+  const second = await roundTrip(h);
+  const me = cookie => h.get('/api/me', { cookie }).then(r => r.status);
+  const logout = cookie => fetch(h.api + '/api/logout', { method: 'POST', headers: { Cookie: cookie, Origin: ORIGIN } });
+  const response = await logout(first.session);
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.headers.getSetCookie(), [], 'a delayed response must leave the browser cookie alone');
+  assert.equal(await me(first.session), 401);
+  assert.equal(await me(second.session), 200);
+  assert.deepEqual((await logout(first.session)).headers.getSetCookie(), [], 'a retry must also leave the new cookie alone');
+  const token = first.session.slice(first.session.indexOf('=') + 1);
+  assert.equal((await fetch(h.api + '/api/me', { headers: { Authorization: 'Bearer ' + token } })).status, 401);
+
+  // The random generation makes even same-clock sign-ins distinct; normalization here
+  // removes time, user and auth_time so the assertion cannot pass just because time advanced.
+  const generation = cookie => cookie.split('.')[0].split(':')[5];
+  assert.ok(generation(first.session));
+  assert.notEqual(generation(first.session), generation(second.session));
+  const uid = h.db().users[0].id;
+  const legacyPayload = uid + ':' + (Date.now() + 3600000) + ':0';
+  const legacy = 'gymsid=' + legacyPayload + '.' + crypto.createHmac('sha256', SECRET).update(legacyPayload).digest('base64url');
+  assert.equal(await me(legacy), 200);
+  assert.equal((await logout(legacy)).status, 200);
+  assert.equal(await me(legacy), 401);
+  assert.equal(await me(second.session), 200);
+});
+
 test('config: the provider button is public, and so is OIDC_ONLY', async t => {
   const h = await setup(t, { env: { OIDC_ONLY: '1' } });
   const cfg = await (await h.get('/api/config')).json();
@@ -104,6 +133,24 @@ test('hosted deletion consumes a proof, removes the profile, and never opens a s
   const retry = await roundTrip(h, { query: '?mode=delete' });
   const absent = await h.post('/api/oidc/delete-profile', { subject: 'user-1', confirm: 'delete' }, { cookie: cookieNamed(retry.cb, 'gymoidc-delete') });
   assert.deepEqual(absent, { status: 200, body: { deleted: false }, cookie: null });
+});
+
+test('a disabled member can end their own browser session without regaining access on re-enable', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  h.mock.next = { sub: 'admin', name: 'Admin' };
+  const admin = await roundTrip(h);
+  h.mock.next = { sub: 'member', name: 'Member' };
+  const member = await roundTrip(h);
+  const other = await roundTrip(h);
+  const id = h.db().users.find(u => u.oidc?.sub === 'member').id;
+  const disable = disabled => h.post('/api/admin/user/disable', { id, disabled }, { cookie: admin.session });
+  assert.equal((await disable(true)).status, 200);
+  assert.equal((await h.get('/api/me', { cookie: member.session })).status, 401);
+  assert.equal((await h.post('/api/logout', {}, { cookie: member.session })).status, 200);
+  assert.equal((await h.get('/api/me', { cookie: other.session })).status, 401);
+  assert.equal((await disable(false)).status, 200);
+  assert.equal((await h.get('/api/me', { cookie: member.session })).status, 401);
+  assert.equal((await h.get('/api/me', { cookie: other.session })).status, 200);
 });
 
 test('hosted deletion refuses a disabled profile and never creates a session for it', async t => {
@@ -180,6 +227,7 @@ test('a first sign-in from the allowed group makes the profile, FIRST_USER_ADMIN
   assert.equal(r.status, 302);
   assert.equal(landed(r).get('oidc'), 'signed-in');
   assert.ok(r.session, 'a session cookie is set');
+  assert.equal(cookieNamed(r.cb, 'gym_logout_owed'), 'gym_logout_owed=0', 'the verified callback supersedes earlier logout debt');
   const me = await (await h.get('/api/me', { cookie: r.session })).json();
   assert.equal(me.user.name, 'Ana');
   assert.equal(me.user.admin, true);
@@ -340,6 +388,8 @@ test('phone app: exact return address, and the code is worth nothing without the
   assert.equal(ok.cookie, null);
   const me = await fetch(h.api + '/api/me', { headers: { Authorization: 'Bearer ' + ok.body.token } });
   assert.equal((await me.json()).user.name, 'Ana');
+  const proof = await h.post('/api/pair/create', { provider: true }, { headers: { Authorization: 'Bearer ' + ok.body.token } });
+  assert.equal(proof.status, 200, 'a fresh provider sign-in proves ownership on the phone');
 });
 
 test('phone app: a refusal goes back to the app with its reason and the app state', async t => {

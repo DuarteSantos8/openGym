@@ -299,6 +299,98 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     expect(useStore.getState().S.dayPhotos).toEqual({ [photo.id]: photo })
   })
 
+  it('a second tab signing in cancels the first tab’s old fallback logout on reload', async () => {
+    const { logoutOwed } = await import('../lib/cookie-cleanup.js')
+    const user = { id: 'acct-b', name: 'B' }
+    localStorage.setItem('gym_owner', user.id)
+    localStorage.setItem('gym_owner_name', user.name)
+    localStorage.setItem('gym_user', JSON.stringify(user))
+    const write = localStorage.setItem.bind(localStorage)
+    const deny = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (String(value).length > (localStorage.getItem(key)?.length ?? -1)) throw new DOMException('full', 'QuotaExceededError')
+      write(key, value)
+    })
+    logoutOwed(true)
+    expect(logoutOwed()).toBe(true)
+    const key = 'gym_logout_owed'
+    const firstTabMarker = sessionStorage.getItem(key)
+    sessionStorage.removeItem(key)
+    try { signIn(user.id, user.name) } finally { deny.mockRestore() }
+    if (firstTabMarker) sessionStorage.setItem(key, firstTabMarker)
+    api.mockImplementation(async path => {
+      if (path === '/api/config') return { signed_in: true, allow_guest: true, coach: null }
+      if (path === '/api/me') return { user: { id: 'acct-b', name: 'B' } }
+      return { state: null, rev: 0 }
+    })
+    try {
+      await reload()
+      await useStore.getState().boot()
+      expect(api.mock.calls.filter(([path]) => path === '/api/logout')).toEqual([])
+      expect(useStore.getState().user.id).toBe('acct-b')
+    } finally { sessionStorage.removeItem(key) }
+  })
+
+  it.each(['current', 'legacy'])('a passive cookie restore never cancels pending logout (%s marker)', async version => {
+    const { logoutOwed } = await import('../lib/cookie-cleanup.js')
+    const key = 'gym_logout_owed'
+    if (version === 'legacy') {
+      document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0'
+      sessionStorage.setItem(key, '1')
+    }
+    const firstTab = sessionStorage.getItem(key)
+    sessionStorage.removeItem(key)
+    let signedIn = true
+    api.mockImplementation(async path => {
+      if (path === '/api/config') return { signed_in: signedIn, allow_guest: true, coach: null }
+      if (path === '/api/logout') { signedIn = false; return {} }
+      if (path === '/api/me') {
+        if (signedIn) {
+          if (version === 'current') {
+            const deny = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
+            try { logoutOwed(true) } finally { deny.mockRestore() }
+          }
+          return { user: { id: 'acct-a', name: 'A' } }
+        }
+        throw Object.assign(new Error('signed out'), { status: 401 })
+      }
+      return { state: null, rev: 0 }
+    })
+    try {
+      await reload()
+      await useStore.getState().boot()
+      expect(useStore.getState().user?.id).toBe('acct-a')
+      if (firstTab) sessionStorage.setItem(key, firstTab)
+      await reload()
+      await useStore.getState().boot()
+      expect(signedIn).toBe(false)
+      expect(useStore.getState().user).toBeNull()
+    } finally { sessionStorage.removeItem(key) }
+  })
+
+  it.each([false, true])('verified provider callback settles queued logout before boot (full quota: %s)', async full => {
+    const { logoutOwed } = await import('../lib/cookie-cleanup.js')
+    const key = 'gym_logout_owed'
+    document.cookie = key + '=0; Path=/'
+    const deny = full && vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
+    try { logoutOwed(true) } finally { if (deny) deny.mockRestore() }
+    expect(logoutOwed()).toBe(true)
+    document.cookie = key + '=0; Path=/' // successful OIDC callback response
+    window.history.replaceState(null, '', '/?oidc=signed-in')
+    const user = { id: 'new', name: 'New' }
+    api.mockImplementation(async path => {
+      if (path === '/api/config') return { signed_in: true, allow_guest: true, coach: null }
+      if (path === '/api/me') return { user }
+      return { state: null, rev: 0 }
+    })
+    try {
+      await reload()
+      await useStore.getState().boot()
+      expect(api.mock.calls.filter(([path]) => path === '/api/logout')).toEqual([])
+      expect(useStore.getState().user).toEqual(user)
+      expect(localStorage.getItem(key)).toBeNull()
+    } finally { window.history.replaceState(null, '', '/') }
+  })
+
   it('sign-out keeps actual guest media bytes and removes private account media', async () => {
     const { createMediaStore, memoryBackend, _setMediaStore } = await import('../lib/media-store.js')
     const media = createMediaStore(memoryBackend())

@@ -59,7 +59,9 @@ function refusal(status, body) {
 }
 
 export async function api(path, opts) {
-  if (pendingCookieCleanup) await pendingCookieCleanup
+  if (path !== '/api/logout') {
+    while (pendingCookieCleanup) await pendingCookieCleanup
+  }
   const { timeout, ...init } = opts || {}
   // A phone with no server to talk to: local mode, or a pairing that is gone. There is no
   // relative URL to fall back on here — the WebView's own origin is Capacitor's local asset

@@ -1803,7 +1803,7 @@ export const useStore = create((set, get) => {
 
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
-    setUser(u, { adopt } = {}) {
+    setUser(u, { adopt, restored = false } = {}) {
       const was = get().user?.id ?? null
       const wasHeld = adoptHold   // the hold of the account signed in so far, before this one's goes on
       if (u) {
@@ -1843,8 +1843,7 @@ export const useStore = create((set, get) => {
             adoptHold = wasHeld
             if (!MOBILE) {
               logoutOwed(true)
-              trackCookieCleanup(api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS })
-                .then(() => logoutOwed(false), () => {}))
+              trackCookieCleanup(() => api('/api/logout', { method: 'POST', body: '{}', timeout: BOOT_WAIT_MS }))
             }
             const message = t('Could not save')
             import('./useUI.js').then(({ useUI }) => useUI.getState().toast(message))
@@ -1875,7 +1874,7 @@ export const useStore = create((set, get) => {
         seenOwner = u.id
         handedOver = false
         localStorage.setItem('gym_user', JSON.stringify(u)); localStorage.removeItem('gym_guest')
-        logoutOwed(false)   // this sign-in's cookie replaced the one a failed sign-out left behind
+        if (!MOBILE && !restored) logoutOwed(false)   // an explicit sign-in replaced the old cookie
         // A profile created here (no question: this copy becomes it) is saved once under its owner
         // now. Another tab of this browser takes only a copy saved under the new owner, and went
         // blank until this one happened to save something (takeSaved).
@@ -2096,7 +2095,9 @@ export const useStore = create((set, get) => {
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
       let out = null
-      try { out = await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
+      const endSession = () => api('/api/logout', { method: 'POST', body: '{}' })
+      if (!MOBILE) logoutOwed(true)
+      try { out = await (MOBILE ? endSession() : trackCookieCleanup(endSession)) } catch { /* boot retries the recorded web logout */ }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
       if (!MOBILE && typeof out?.provider_logout === 'string' && /^https?:\/\//.test(out.provider_logout)) window.location.assign(out.provider_logout)
@@ -2323,7 +2324,7 @@ export const useStore = create((set, get) => {
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
-        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false) } catch { /* owed until it is answered */ }
+        try { await trackCookieCleanup(() => api('/api/logout', bootOpts({ method: 'POST', body: '{}' }))) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
@@ -2337,7 +2338,7 @@ export const useStore = create((set, get) => {
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await (hurry ? api('/api/me', bootOpts({})) : api('/api/me'))
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-        get().setUser(me.user, arrived ? { adopt: true } : undefined)
+        get().setUser(me.user, arrived ? { adopt: true } : { restored: true })
         if (arrived) {
           finishBoot()
           const { askAddDeviceData } = await import('../sheets.jsx')

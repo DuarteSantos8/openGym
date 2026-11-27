@@ -5,6 +5,8 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
+
 A5 guest ownership fixes are prepared. Hosted verification of the revised sign-out and attachment behavior is pending.
 
 E3 is prepared. Confirmed workout saves add a vibration on supported browsers. Set, record and session feedback respects reduced motion, and the timer retains its configured alarm.

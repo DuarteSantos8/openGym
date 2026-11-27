@@ -17,6 +17,7 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast, stopRest: vi.f
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
 import { guestAllowed } from '../lib/guest.js'
+import { logoutOwed } from '../lib/cookie-cleanup.js'
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const USER = { id: 'user-1', name: 'One' }
@@ -107,6 +108,7 @@ describe('boot with a server that does not answer', () => {
   })
 
   it('a sign-out still owed waits no longer than the rest', async () => {
+    document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0' // legacy storage-only marker
     localStorage.setItem('gym_logout_owed', '1')
     const { done, took } = await bootSilently()
     expect(done).toBe(true)
@@ -117,6 +119,23 @@ describe('boot with a server that does not answer', () => {
 })
 
 describe('boot with a server that answers', () => {
+  it('a previous logout retry cannot settle another tab’s newer failed sign-out', async () => {
+    logoutOwed(true)
+    api.mockImplementation(async path => {
+      if (path === '/api/config') return { allow_guest: true }
+      if (path === '/api/logout') {
+        logoutOwed(false)
+        logoutOwed(true)
+        return {}
+      }
+      return { user: USER }
+    })
+    try {
+      await useStore.getState().boot()
+      expect(logoutOwed()).toBe(true)
+      expect(waits().map(([path]) => path)).not.toContain('/api/me')
+    } finally { logoutOwed(false) }
+  })
   it('a config that comes in after the budget still reaches the sign-in screen', async () => {
     const cfg = { allow_guest: false, password: true }
     const { done, took } = await bootSilently(() => slow({ '/api/config': 6000, '/api/me': 300 }, { '/api/config': cfg, '/api/me': unauth() }))
