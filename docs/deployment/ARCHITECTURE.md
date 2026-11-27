@@ -33,7 +33,7 @@ before the `/api/:path*` rule, each with `x-vercel-enable-rewrite-caching: 0`. L
 Evidence and constraints:
 
 - Vercel reserves only `/.well-known/acme-challenge`; other `/.well-known` paths can be rewritten.
-  `docs/MCP_REMOTE.md:362-363` says otherwise and needs correcting.
+  `docs/MCP_REMOTE.md` said otherwise; corrected in #157.
 - External rewrites time out at 120 s, equal to nginx's `/mcp` limit and the MCP `requestTimeout`.
   The transport is stateless JSON (`mcp/src/http.js:159`), so SSE through Vercel is not needed.
 - Neither API nor MCP reads `Host`/`X-Forwarded-Host`; the issuer comes from `ORIGIN`.
@@ -65,6 +65,8 @@ Observed 2026-11-27, not changed by this work:
   anything: auth users, profiles, OAuth consents, the OAuth client, the migration history and the
   two edge functions were all unchanged afterwards. While it stays connected, every push to `main`
   can run migrations against the production auth project and re-sync variables into Vercel.
+- Render's API and MCP belong to a Render Blueprint (`render.yaml`, Auto Sync on `main`): a merge
+  touching `render.yaml` re-applies it. `CUTOVER.md` G9 turns that off before the window.
 - Prevention (owner, dashboard): limit the integration's Vercel project access so it excludes
   `opengym` (or disconnect the Vercel project in Supabase → Integrations), and disable branching
   unless preview databases are wanted. Nothing in the app depends on either.

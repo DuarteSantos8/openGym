@@ -64,9 +64,10 @@ running and untouched as the rollback target (`ROLLBACK.md`).
 | 6 Railway restore (rehearsal) | DONE 2026-11-27 15:48Z | Railway's empty-instance `secret`/`vapid.json` archived to the VPS first; archive streamed in over `railway ssh`; Railway `/data` manifest == Render manifest; after `railway restart` `/api/health` users 0 → 3 |
 | 7 Persistence | DONE 2026-11-27 15:52Z | `railway redeploy` (deployment `<railway-deploy-id>`, SUCCESS): manifest still equal, `/api/health` users 3. Render unchanged: users 3 |
 | Render origin switch | DONE 2026-11-27 16:00Z | Render `/data` manifest equal to the 15:42 backup before and after the redeploy; `/api/health` users 3 |
-
 | Railway test-data change | 2026-11-27 19:55Z | MCP acceptance probe: one dynamic client registration (`hermes-acceptance-probe`, redirect `https://claude.ai/api/mcp/auth_callback`) through `ironvane-web`. Railway `db.json`/`db.json.bak` now differ from the Render copy; nothing else does. Render still equal to the 15:42 backup. The cutover sync replaces Railway `/data` whole, so the probe client does not survive it |
 
 Railway is now a point-in-time copy. Render keeps taking writes, so the copy goes stale; the
-cutover sync above repeats steps 1–7 under a write freeze. Until then nobody can sign in to
-Railway (its OIDC settings are unset), so the copy cannot diverge by use.
+cutover sync (`CUTOVER.md`) repeats steps 1–7 under Render maintenance mode, with Railway closed
+to traffic during the copy. Railway's OIDC settings are set (16:20) but Supabase does not yet
+list its callback, so sign-in there still fails; the only change since the restore is the
+recorded probe client.
