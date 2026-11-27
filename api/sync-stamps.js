@@ -106,19 +106,23 @@ function amountDimension(x) {
   }
   return key
 }
-function amountGroup(x, key) {
-  const group = { [key]: clone(x[key]) }
-  if (Object.hasOwn(x, 'serving')) group.serving = clone(x.serving)
+// A cleared or partly cleared portion is still a portion: its members move together.
+function amountGroup(x) {
+  const group = {}
+  for (const key of amountFields) if (Object.hasOwn(x, key)) group[key] = clone(x[key])
   return group
 }
 function settleAmountGroup(a, b, out) {
-  const ka = amountDimension(a), kb = amountDimension(b)
-  if (!ka || !kb) return
+  // Settle every pair of current-schema rows, coherent or not. Skipping a cleared copy let the
+  // field merge mix it with the others, so the result depended on which device synced first.
+  // A row that already holds both dimensions is malformed and keeps the ordinary field merge.
+  const settles = x => x.schemaVersion === 1 && !(Object.hasOwn(x, 'amountG') && Object.hasOwn(x, 'amountMl'))
+  if (!settles(a) || !settles(b) || (!amountDimension(a) && !amountDimension(b))) return
   // A change or removal of any member dates the whole portion, including after
   // earlier merges. Keeping the maximum makes this choice independent of grouping.
   const clock = row => Math.max(...amountFields.map(key => optionalTime(row._f?.[key])))
   const ta = clock(a), tb = clock(b)
-  const ga = amountGroup(a, ka), gb = amountGroup(b, kb)
+  const ga = amountGroup(a), gb = amountGroup(b)
   const take = ta > tb ? ga : tb > ta ? gb : optionalJSON(ga) >= optionalJSON(gb) ? ga : gb
   for (const key of amountFields) delete out[key]
   Object.assign(out, take)

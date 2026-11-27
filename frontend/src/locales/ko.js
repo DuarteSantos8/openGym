@@ -6533,6 +6533,7 @@ export default {
   "Import into your synced account diary?": "계정의 동기화된 일지로 가져올까요?",
   "{0} entries ready. {1} skipped.": "준비된 항목: {0}개. 건너뛴 항목: {1}개.",
   "This import would exceed the account sync limit. Try a smaller export.": "이 파일을 가져오면 계정 동기화 한도를 초과합니다. 더 작은 내보내기 파일로 시도하세요.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "데이터가 계정 동기화 한도를 넘었습니다. 크기가 줄어들 때까지 변경 사항은 이 기기에만 남습니다.",
   "Could not read this OpenNutriTracker export.": "이 OpenNutriTracker 내보내기 파일을 읽을 수 없습니다.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "추가: {0}개. 업데이트: {1}개. 변경 없음: {2}개.",
 }

@@ -6529,6 +6529,7 @@ export default {
   "Import into your synced account diary?": "Importuoti į sinchronizuojamą paskyros dienoraštį?",
   "{0} entries ready. {1} skipped.": "Paruošta įrašų: {0}. Praleista: {1}.",
   "This import would exceed the account sync limit. Try a smaller export.": "Importavus šį failą būtų viršyta paskyros sinchronizavimo riba. Pabandykite mažesnį eksporto failą.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "Jūsų duomenys viršija paskyros sinchronizavimo ribą, todėl pakeitimai lieka šiame įrenginyje, kol duomenų sumažės.",
   "Could not read this OpenNutriTracker export.": "Nepavyko perskaityti šio iš „OpenNutriTracker“ eksportuoto failo.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Pridėta: {0}. Atnaujinta: {1}. Nepakeista: {2}.",
 }

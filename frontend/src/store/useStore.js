@@ -890,8 +890,22 @@ export const useStore = create((set, get) => {
     replaceRev = null
     const legacy = readLegacy()
     const body = syncBody(S, force, asReplace)
+    const json = JSON.stringify(body)
+    // An import is checked against this device's copy; a 409 merge can still grow past the limit.
+    // Such a request would only bounce off the proxy, so it is kept owed and said once instead.
+    if (new TextEncoder().encode(json).byteLength > MAX_SYNC_BODY) {
+      markOwed(true)
+      failed(Object.assign(new Error('sync-too-large'), { status: 413 }), { pending: true })
+      if (!toldTooLarge) {
+        toldTooLarge = true
+        import('./useUI.js')
+          .then(({ useUI }) => useUI.getState().toast(t('Your data is over the account sync limit, so changes stay on this device until it is smaller.')))
+          .catch(() => {})
+      }
+      return
+    }
     try {
-      const r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
+      const r = await api('/api/data', { method: 'PUT', body: json })
       // Answered for an account or a server this device has left: none of it is this copy's.
       if (!isCurrent(tok)) return
       // A server from before revisions answers without one — then there is nothing to hold the

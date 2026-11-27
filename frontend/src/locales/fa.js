@@ -6499,6 +6499,7 @@ export default {
   "Import into your synced account diary?": "در دفتر روزانهٔ همگام‌شدهٔ حسابتان درون‌ریزی شود؟",
   "{0} entries ready. {1} skipped.": "آمادهٔ درون‌ریزی: {0}. ردشده: {1}.",
   "This import would exceed the account sync limit. Try a smaller export.": "این واردسازی از سقف همگام‌سازی حساب فراتر می‌رود. یک فایل خروجی کوچک‌تر را امتحان کنید.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "داده‌های شما از حد همگام‌سازی حساب بیشتر است، پس تغییرات تا کوچک‌تر شدن روی همین دستگاه می‌مانند.",
   "Could not read this OpenNutriTracker export.": "فایل خروجی OpenNutriTracker خوانده نشد.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "افزوده‌شده: {0}. به‌روزشده: {1}. بدون تغییر: {2}.",
 }

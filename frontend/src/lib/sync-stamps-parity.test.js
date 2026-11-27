@@ -230,6 +230,20 @@ describe('nutrition amount groups merge atomically on client and API', () => {
     expect(left[0]).not.toHaveProperty('amountMl')
     expect(normalizeEntry(left[0]).supported).toBe(true)
   })
+  it('settles a cleared portion the same way whichever device syncs first', () => {
+    const cleared = food({ serving: { label: 'bowl', count: 1, size: 50, unit: 'g' }, _ts: 30, _f: { amountG: 30, serving: 30 } })
+    const copies = [grams(10), millilitres(20, true), cleared]
+    const orders = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      const results = orders.flatMap(([x, y, z]) => [
+        merge(merge([copies[x]], [copies[y]]), [copies[z]]),
+        merge([copies[x]], merge([copies[y]], [copies[z]])),
+      ])
+      for (const r of results) expect(r).toEqual(results[0])
+      expect(results[0][0]).not.toHaveProperty('amountG')
+      expect(results[0][0]).not.toHaveProperty('amountMl')
+    }
+  })
   it('does not repair an already-malformed opaque amount row', () => {
     const malformed = food({ amountG: 50, amountMl: 250, _ts: 10, _f: { amountG: 10, amountMl: 10 } })
     for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
