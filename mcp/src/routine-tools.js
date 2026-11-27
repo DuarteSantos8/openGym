@@ -15,6 +15,7 @@ import { localUid, invalidate, withProfile, currentProfile } from './state.js'
 import { apiConfig, apiFetch, profilePaths } from './api-client.js'
 import { savesOf, WRITE_LIMIT } from './write-tools.js'
 import { createRoutine, updateRoutine, removeRoutine, routineWeekdays, ROUTINE_LIMITS, WEEKDAYS } from '../../frontend/src/lib/routine-write.js'
+import { BODY_PARTS } from '../../frontend/src/lib/log-workout.js'
 
 const MAX_ATTEMPTS = 3
 const fail = (code, message) => Object.assign(new Error(message), { code })
@@ -74,9 +75,16 @@ const routineView = (S, id) => {
   delete v.revision
   return { routine: { ...v, weekdays: routineWeekdays(S, id) } }
 }
+// The routine, and the user's own exercises the call made for it, so a preview shows both.
+const planView = (S, out, id) => ({
+  ...routineView(S, id),
+  ...(out.created?.length ? { new_custom_exercises: out.created.map(c => ({ id: c.id, name: c.n, body_part: c.bp })) } : {}),
+})
 
 const exerciseSchema = z.object({
   exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("barbell squat"), or an exercise id from search_exercises or an earlier answer (an id never matches the wrong exercise).'),
+  create_custom: z.boolean().optional().describe('Create this as the user\'s own exercise when the library has nothing matching, as log_workout does. Only after the user confirms the name.'),
+  body_part: z.enum(BODY_PARTS).optional().describe('Body part of a new custom exercise, when its name does not say.'),
   sets: z.number().int().min(1).max(ROUTINE_LIMITS.maxSets).optional().describe('Number of sets. Omit for the profile\'s default (3 unless they set their own).'),
   reps: z.number().int().min(1).max(ROUTINE_LIMITS.maxReps).optional().describe('Reps per set, for a rep exercise.'),
   seconds: z.number().int().min(1).max(ROUTINE_LIMITS.maxSec).optional().describe('Seconds per set, for a hold (plank). Not with reps.'),
@@ -91,6 +99,7 @@ export const createRoutineTool = {
   description: [
     'Create a routine in the user\'s openGym plan (it syncs to all their devices), e.g. "squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays".',
     'Exercises are matched against the library like log_workout: when a name matches several or none, nothing is saved and `problems` lists candidates to put to the user.',
+    'An exercise the user confirms is not in the library can be made as their own with create_custom (and body_part when the name does not say); the answer lists it under new_custom_exercises.',
     'Each exercise starts the way picking it in the app starts it; only what you pass is set on top. `weekdays` puts it on those days of the weekly plan, next to whatever is planned there already.',
     'Call with dry_run: true first when you interpreted anything, show the preview, and save once the user agrees.',
   ].join(' '),
@@ -104,7 +113,7 @@ export const createRoutineTool = {
   handler: async (p, { env = process.env, fetchImpl } = {}) => writePlan({
     env, fetchImpl, dryRun: p.dry_run === true,
     change: S => { const r = createRoutine(S, p); return r.problems ? r : { ...r, what: `new routine ${r.routine.id}` } },
-    view: (S, out) => routineView(S, out.routine.id),
+    view: (S, out) => planView(S, out, out.routine.id),
   }),
 }
 
@@ -112,7 +121,7 @@ export const updateRoutineTool = {
   name: 'update_routine',
   description: [
     'Change a routine: rename it, replace its exercise list, append exercises, or move it to other weekdays. Use routine_id from list_routines.',
-    '`exercises` is the whole new list in order; an exercise named again keeps everything its slot had (rest, warm-ups, progression, notes) except what you pass. `add_exercises` appends. `weekdays` is every day it should be on (it leaves the others); omit it to leave the schedule alone.',
+    '`exercises` is the whole new list in order; an exercise named again keeps everything its slot had (rest, warm-ups, progression, notes) except what you pass. `add_exercises` appends. create_custom makes an exercise the user confirms is not in the library, as in create_routine. `weekdays` is every day it should be on (it leaves the others); omit it to leave the schedule alone.',
     'Pass expected_revision (from get_routine) when the user confirmed a change against what they saw: if the profile moved since, nothing is saved and you get a conflict to read again.',
   ].join(' '),
   schema: {
@@ -132,7 +141,7 @@ export const updateRoutineTool = {
     return writePlan({
       env, fetchImpl, dryRun: p.dry_run === true, exact: p.expected_revision ?? null,
       change: S => { const r = updateRoutine(S, p.routine_id, p); return r.problems ? r : { ...r, what: `routine ${p.routine_id} changed` } },
-      view: S => routineView(S, p.routine_id),
+      view: (S, out) => planView(S, out, p.routine_id),
     })
   },
 }

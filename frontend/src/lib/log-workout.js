@@ -56,7 +56,8 @@ export function resolveExercise(S, ref) {
   // Own keys only: `constructor` or `__proto__` is on every object and names no exercise.
   const canon = canonicalExId(text)
   if (Object.hasOwn(EXIDX, text) && Object.hasOwn(EXIDX, canon)) return { id: canon, name: EXIDX[canon].n }
-  const named = customs.filter(c => nameKey(c.n) === nameKey(text))
+  // Compared as stored: a made exercise keeps the first 80 characters of its name.
+  const named = customs.filter(c => nameKey(c.n) === nameKey(text.slice(0, 80)))
   if (named.length === 1) return { id: named[0].id, name: named[0].n, custom: true }
   if (named.length > 1) {
     return { problem: 'several of your own exercises have this name; pass one id', candidates: named.map(c => ({ id: c.id, name: c.n })) }
@@ -69,6 +70,19 @@ export function resolveExercise(S, ref) {
       : 'more than one exercise matches; pass one id',
     candidates: candidates.filter(c => EXIDX[c]).map(candidateOf),
   }
+}
+
+/**
+ * One of the profile's own exercises, made from a name the library does not have (log_workout's
+ * and the routine tools' create_custom), or the problem with it. The body part is the one given,
+ * else read off the name.
+ */
+export function newCustomExercise(name, bodyPart) {
+  const n = String(name ?? '').trim().slice(0, 80)
+  const bp = bodyPart ?? bpFromName(n)
+  if (!BODY_PARTS.includes(bp)) return { problem: `needed for a new exercise: one of ${BODY_PARTS.join(', ')}` }
+  // From the name, like an import's: the same name made twice before a sync is one exercise.
+  return { custom: { id: importId('mc', nameKey(n)), n, custom: true, eq: 'custom', tg: '', desc: '', bp } }
 }
 
 // One described set as the row the app stores, or a reason it cannot be one. `mode` is the
@@ -187,14 +201,11 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
     const at = `exercises[${i}]`
     let hit = resolveExercise({ ...S, customEx: [...(S.customEx || []), ...customEx] }, ex?.exercise)
     if (hit.problem && ex?.createCustom === true && String(ex?.exercise ?? '').trim()) {
-      const name = String(ex.exercise).trim().slice(0, 80)
-      const bp = ex.bodyPart ?? bpFromName(name)
-      if (!BODY_PARTS.includes(bp)) {
-        problems.push({ field: at + '.bodyPart', problem: `needed for a new exercise: one of ${BODY_PARTS.join(', ')}` })
+      const { custom: c, problem } = newCustomExercise(ex.exercise, ex.bodyPart)
+      if (problem) {
+        problems.push({ field: at + '.bodyPart', problem })
         return
       }
-      // From the name, like an import's: the same name logged twice before a sync is one exercise.
-      const c = { id: importId('mc', nameKey(name)), n: name, custom: true, eq: 'custom', tg: '', desc: '', bp }
       customEx.push(c)
       hit = { id: c.id, name: c.n, custom: true, created: true }
     }

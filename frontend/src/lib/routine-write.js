@@ -8,8 +8,9 @@
 // a slot already had that the description does not mention (rest, warm-ups, progression, notes),
 // slot by slot, and a routine's place on the weekdays is changed only when weekdays are given.
 // Names resolve like log_workout's (resolveExercise): a name the library spells twice, or one it
-// does not have, comes back as a problem with candidates instead of a guess.
-import { resolveExercise } from './log-workout.js'
+// does not have, comes back as a problem with candidates instead of a guess, unless the description
+// says create_custom: then it becomes one of the profile's own exercises, as log_workout makes it.
+import { resolveExercise, newCustomExercise } from './log-workout.js'
 import { pickedExerciseConfig, cleanupSg } from './history.js'
 import { deleteRoutine } from './routines.js'
 import { isCardio } from './exercises.js'
@@ -35,13 +36,22 @@ export function weekdaysOf(list) {
 }
 
 // One described exercise as a slot. `base` is the slot it edits (its settings stay), else a fresh
-// pick. Weight is in `unit` and stored in the profile's.
-function slotOf(S, ex, base, unit, at, problems) {
+// pick. Weight is in `unit` and stored in the profile's. An exercise made for it goes into `made`.
+function slotOf(S, ex, base, unit, at, problems, made) {
   const want = ex?.exercise
   let hit
   if (base && (want == null || want === base.id)) hit = { id: base.id }
   else {
-    hit = resolveExercise(S, want)
+    // Made earlier in the same call counts as the profile's: one name twice is one exercise.
+    hit = resolveExercise({ ...S, customEx: [...(S.customEx || []), ...made] }, want)
+    if (hit.problem && ex?.create_custom === true && String(want ?? '').trim()) {
+      const { custom, problem } = newCustomExercise(want, ex.body_part)
+      if (problem) { problems.push({ field: at + '.body_part', problem }); return null }
+      // A routine plans cardio from the catalogue's speeds, which an exercise of one's own lacks.
+      if (custom.bp === 'cardio') { problems.push({ field: at + '.body_part', problem: 'a new cardio exercise is made in the app or with log_workout, not in a routine' }); return null }
+      made.push(custom)
+      hit = { id: custom.id }
+    }
     if (hit.problem) { problems.push({ field: at + '.exercise', input: want ?? null, problem: hit.problem, ...(hit.candidates ? { candidates: hit.candidates } : {}) }); return null }
   }
   const timed = ex?.seconds != null
@@ -79,7 +89,7 @@ function slotOf(S, ex, base, unit, at, problems) {
 
 // The slots a list of described exercises stands for. With `old` (an edit), each exercise named
 // again takes the next unused slot of that exercise, so repeated slots keep their own settings.
-function slotsOf(S, list, old, unit, field, problems) {
+function slotsOf(S, list, old, unit, field, problems, made) {
   if (!Array.isArray(list) || !list.length) { problems.push({ field, problem: 'at least one exercise' }); return [] }
   if (list.length > ROUTINE_LIMITS.maxExercises) { problems.push({ field, problem: `at most ${ROUTINE_LIMITS.maxExercises}` }); return [] }
   const used = new Set()
@@ -91,7 +101,7 @@ function slotsOf(S, list, old, unit, field, problems) {
       const j = old.findIndex((s, k) => !used.has(k) && s.id === id)
       if (j >= 0) { used.add(j); base = old[j] }
     }
-    return slotOf(S, ex, base, unit, `${field}[${i}]`, problems)
+    return slotOf(S, ex, base, unit, `${field}[${i}]`, problems, made)
   }).filter(Boolean)
 }
 
@@ -107,9 +117,16 @@ function placeOnWeekdays(S, id, days) {
   }
 }
 
+// The exercises a call made, into the profile, once nothing in the call has a problem.
+function keepMade(S, made) {
+  if (made.length) S.customEx = [...(S.customEx || []), ...made]
+  return made
+}
+
 /**
- * A new routine into `S` (mutated). `input`: { name, exercises: [{ exercise, sets?, reps? | seconds?,
- * weight?, rest_sec?, note? }], weekdays?, unit? }. → { routine } or { problems } (S untouched).
+ * A new routine into `S` (mutated). `input`: { name, exercises: [{ exercise, create_custom?,
+ * body_part?, sets?, reps? | seconds?, weight?, rest_sec?, note? }], weekdays?, unit? }.
+ * → { routine, created } or { problems } (S untouched).
  */
 export function createRoutine(S, input, { id } = {}) {
   const problems = []
@@ -119,20 +136,23 @@ export function createRoutine(S, input, { id } = {}) {
     problems.push({ field: 'name', problem: 'a routine with this name exists already; update it, or pick another name' })
   }
   const unit = input?.unit === 'lb' || input?.unit === 'kg' ? input.unit : S.unit === 'lb' ? 'lb' : 'kg'
-  const ex = slotsOf(S, input?.exercises, null, unit, 'exercises', problems)
+  const made = []
+  const ex = slotsOf(S, input?.exercises, null, unit, 'exercises', problems, made)
   const days = input?.weekdays == null ? { days: null } : weekdaysOf(input.weekdays)
   if (days.problem) problems.push({ field: 'weekdays', problem: days.problem })
   if (problems.length) return { problems }
   const routine = { id: id || 'mr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, emoji: 'figureStrength', ex }
   cleanupSg(routine.ex)
+  const created = keepMade(S, made)
   S.routines = [...(S.routines || []), routine]
   if (days.days) placeOnWeekdays(S, routine.id, days.days)
-  return { routine }
+  return { routine, created }
 }
 
 /**
  * An existing routine changed in `S` (mutated). `patch`: { name?, exercises? (the whole new list),
  * add_exercises? (appended), weekdays? (the days it is on, all of them), unit? }.
+ * → { routine, created } or { problems } (S untouched).
  */
 export function updateRoutine(S, routineId, patch) {
   const i = (S.routines || []).findIndex(r => r && r.id === routineId)
@@ -148,18 +168,20 @@ export function updateRoutine(S, routineId, patch) {
   }
   const unit = patch?.unit === 'lb' || patch?.unit === 'kg' ? patch.unit : S.unit === 'lb' ? 'lb' : 'kg'
   const oldEx = Array.isArray(old.ex) ? old.ex : []
-  if (patch?.exercises != null) next.ex = slotsOf(S, patch.exercises, oldEx, unit, 'exercises', problems)
-  if (patch?.add_exercises != null) next.ex = [...(next.ex || oldEx), ...slotsOf(S, patch.add_exercises, null, unit, 'add_exercises', problems)]
+  const made = []
+  if (patch?.exercises != null) next.ex = slotsOf(S, patch.exercises, oldEx, unit, 'exercises', problems, made)
+  if (patch?.add_exercises != null) next.ex = [...(next.ex || oldEx), ...slotsOf(S, patch.add_exercises, null, unit, 'add_exercises', problems, made)]
   if ((next.ex || []).length > ROUTINE_LIMITS.maxExercises) problems.push({ field: 'exercises', problem: `at most ${ROUTINE_LIMITS.maxExercises}` })
   const days = patch?.weekdays == null ? { days: null } : weekdaysOf(patch.weekdays)
   if (days.problem) problems.push({ field: 'weekdays', problem: days.problem })
   if (problems.length) return { problems }
   if (next.ex !== old.ex) { next.ex = next.ex.map(s => ({ ...s })); cleanupSg(next.ex) }
+  const created = keepMade(S, made)
   const routines = [...S.routines]
   routines[i] = next
   S.routines = routines
   if (days.days) placeOnWeekdays(S, routineId, days.days)
-  return { routine: next }
+  return { routine: next, created }
 }
 
 /** A routine gone from `S` (mutated), off every weekday and date it was planned on. */

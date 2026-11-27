@@ -41,6 +41,31 @@ describe('createRoutine', () => {
     expect(createRoutine(base(), { name: 'C', exercises: [{ exercise: 'treadmill', reps: 10 }] }).problems[0].problem).toMatch(/minutes/)
     expect(createRoutine(base(), { name: 'C', exercises: [{ exercise: 'treadmill' }] }).routine.ex[0]).toMatchObject({ id: '3666', min: 20 })
   })
+  test('create_custom makes the exercise once, as log_workout does, and plans it', () => {
+    const S = base()
+    const r = createRoutine(S, { name: 'Baseline', exercises: [
+      { exercise: 'Tindeq 20 mm HC max (L)', create_custom: true, body_part: 'lower arms', sets: 3, seconds: 5 },
+      { exercise: 'tindeq 20 mm hc max (l)', create_custom: true, sets: 1, seconds: 5 },
+      { exercise: 'squat', create_custom: true },
+    ] }, { id: 'n1' })
+    expect(r.problems).toBeUndefined()
+    expect(r.created).toHaveLength(1)
+    const own = r.created[0]
+    expect(own).toMatchObject({ n: 'Tindeq 20 mm HC max (L)', custom: true, eq: 'custom', bp: 'lower arms' })
+    expect(own.id).toMatch(/^mc/)
+    expect(S.customEx).toEqual([own])
+    expect(r.routine.ex.map(e => e.id)).toEqual([own.id, own.id, '0043'])
+    expect(r.routine.ex[0]).toMatchObject({ sets: 3, sec: 5, mode: 'time' })
+  })
+  test('create_custom needs a body part it can read or is told, never cardio, and changes nothing on a problem', () => {
+    const S = base()
+    const before = JSON.stringify(S)
+    const vague = createRoutine(S, { name: 'X', exercises: [{ exercise: 'Frobnicator', create_custom: true }, { exercise: 'Frobnicator 2', create_custom: true, body_part: 'back' }] })
+    expect(vague.problems.map(p => p.field)).toEqual(['exercises[0].body_part'])
+    expect(createRoutine(S, { name: 'X', exercises: [{ exercise: 'Frobnicator', create_custom: true, body_part: 'cardio' }] }).problems[0].problem).toMatch(/cardio/)
+    expect(createRoutine(S, { name: 'X', exercises: [{ exercise: 'Frobnicator' }] }).problems[0].field).toBe('exercises[0].exercise')
+    expect(JSON.stringify(S)).toBe(before)
+  })
 })
 
 describe('updateRoutine', () => {
@@ -66,6 +91,24 @@ describe('updateRoutine', () => {
     expect(updateRoutine(base(), 'nope', { name: 'A' }).problems[0].field).toBe('routine_id')
     const S = base(); S.routines.push({ id: 'r2', name: 'Pull', ex: [] })
     expect(updateRoutine(S, 'r1', { name: 'pull' }).problems[0].problem).toMatch(/another routine/)
+  })
+  test('add_exercises can make an exercise of the user\'s own, and finds it the next time', () => {
+    const S = base()
+    const r = updateRoutine(S, 'r1', { add_exercises: [{ exercise: '10/3 hang test 20 mm', create_custom: true, body_part: 'lower arms', reps: 8 }] })
+    expect(r.created).toHaveLength(1)
+    expect(r.routine.ex.at(-1)).toMatchObject({ id: r.created[0].id, reps: 8 })
+    const again = updateRoutine(S, 'r1', { add_exercises: [{ exercise: '10/3 hang test 20 mm', create_custom: true }] })
+    expect(again.created).toEqual([])
+    expect(S.customEx).toHaveLength(1)
+  })
+  test('a name longer than the 80 characters kept is still one exercise, in one call and the next', () => {
+    const S = base()
+    const long = 'Tindeq ' + 'x'.repeat(100)
+    const r = updateRoutine(S, 'r1', { add_exercises: [{ exercise: long, create_custom: true, body_part: 'lower arms' }, { exercise: long, create_custom: true }] })
+    expect(r.created).toHaveLength(1)
+    expect(updateRoutine(S, 'r1', { add_exercises: [{ exercise: long, create_custom: true }] }).created).toEqual([])
+    expect(S.customEx).toHaveLength(1)
+    expect(S.routines[0].ex.slice(-3).map(e => e.id)).toEqual(Array(3).fill(S.customEx[0].id))
   })
 })
 
