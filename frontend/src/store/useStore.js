@@ -44,6 +44,7 @@ const KEY = 'gym_state_v1'
 // in the store); this marker is written beside the saved copy for whichever tab loads it next.
 // See pushState/pullState.
 const SYNC_KEY = 'gym_sync'
+const MAX_SYNC_BODY = 5 * 1024 * 1024
 // Which write of the saved copy this is: a tab finds another tab's write by it (persist, joinSaved).
 const WID_KEY = 'gym_state_wid'
 // Whose copy that write was: the owner (gym_owner) the writing tab held, '' for a guest's. A tab
@@ -714,7 +715,7 @@ export const useStore = create((set, get) => {
     if (hasData(S)) keepAside(S, t('This device, before signing in'), staleUid).catch(() => {})
     return true
   }
-  const persist = (S, push = true, stamp = true) => {
+  const persist = (S, push = true, stamp = true, checkSyncLimit = false) => {
     if (sandbox) { set({ S }); return }
     if (refuseStale(S)) return
     const { base, owed } = metaOf()   // the copy being replaced; the new one stands where it stood
@@ -732,6 +733,9 @@ export const useStore = create((set, get) => {
     // nothing. The copy is kept in memory either way and marked as owed to the server, so a
     // signed-in device still gets it there; and it is said out loud once, because a change that
     // is not on the device is the one thing the screen cannot show on its own.
+    // A bulk import must not commit a locally stamped state whose complete request cannot sync.
+    if (checkSyncLimit && push && get().user &&
+        new TextEncoder().encode(JSON.stringify(syncBody(S))).byteLength > MAX_SYNC_BODY) throw new Error('sync-too-large')
     let saved = true
     try {
       // The marker goes first: a tab that loads the copy in between gets an older base than the
@@ -869,9 +873,18 @@ export const useStore = create((set, get) => {
   // Take the server's copy as this device's own, timestamp and all (see persist).
   const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts, next._wid); markOwed(false) }
 
+  // The exact request envelope used by a push, also available to a pre-mutation import guard.
+  const syncBody = (S, force = forceNext, asReplace = replaceRev) => {
+    const { base } = metaOf()
+    const legacy = readLegacy()
+    const body = { state: S, stamped: !(legacy && legacy.owner === get().user?.id) }
+    if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
+    else if (!force && base) { body.baseRev = base.rev; if (base.wid) body.baseWid = base.wid }
+    return body
+  }
+
   const doPush = async (tok, attempt = 0) => {
     const S = get().S
-    const { base } = metaOf()
     // A forced push is one attempt. One that fails is retried as an ordinary push against the
     // revision this copy descends from: kept armed, it went out later without a baseRev and
     // replaced whatever another device had written in the meantime.
@@ -879,16 +892,24 @@ export const useStore = create((set, get) => {
     forceNext = false
     const asReplace = replaceRev
     replaceRev = null
-    // `stamped`: this client stamps its own changes; the server stamps only for one that does not
-    // (api/sync-stamps.js).
-    // An older app's owed copy over the revision it read: the server stamps what that app changed
-    // against the copy it holds, exactly as it would for that app (api/sync-stamps.js).
     const legacy = readLegacy()
-    const body = { state: S, stamped: !(legacy && legacy.owner === get().user?.id) }
-    if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
-    else if (!force && base) { body.baseRev = base.rev; if (base.wid) body.baseWid = base.wid }
+    const body = syncBody(S, force, asReplace)
+    const json = JSON.stringify(body)
+    // An import is checked against this device's copy; a 409 merge can still grow past the limit.
+    // Such a request would only bounce off the proxy, so it is kept owed and said once instead.
+    if (new TextEncoder().encode(json).byteLength > MAX_SYNC_BODY) {
+      markOwed(true)
+      failed(Object.assign(new Error('sync-too-large'), { status: 413 }), { pending: true })
+      if (!toldTooLarge) {
+        toldTooLarge = true
+        import('./useUI.js')
+          .then(({ useUI }) => useUI.getState().toast(t('Your data is over the account sync limit, so changes stay on this device until it is smaller.')))
+          .catch(() => {})
+      }
+      return
+    }
     try {
-      const r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
+      const r = await api('/api/data', { method: 'PUT', body: json })
       // Answered for an account or a server this device has left: none of it is this copy's.
       if (!isCurrent(tok)) return
       // A server from before revisions answers without one — then there is nothing to hold the
@@ -1595,7 +1616,7 @@ export const useStore = create((set, get) => {
     saveNow() {
       return MOBILE ? nativePersist(true) : Promise.resolve()
     },
-    update(mut, push = true) {
+    update(mut, push = true, { checkSyncLimit = false } = {}) {
       const prev = get().S
       // Under test, every change proves it left the previous state as it was: the draft shares
       // whatever the producer did not touch, so a write into one of those would change history.
@@ -1615,7 +1636,7 @@ export const useStore = create((set, get) => {
       // (lib/sync-merge.js stampChange).
       S._ts = stampChange(prev, S, Date.now())
       if (prevJson !== null && JSON.stringify(prev) !== prevJson) throw new Error('update(): the previous state was changed in place')
-      persist(S, push)
+      persist(S, push, true, checkSyncLimit)
       // A photo or video added to a workout is a change worth the day's backup too: the one
       // finishing wrote went before the finish screen's pictures (autoBackupNow). Not a removal,
       // nor a workout deleted: the day's copy then still holds what was taken off, as a backup should.
