@@ -1,5 +1,6 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
+B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval.
 06.03 narrow Workout actions and navigation labels are prepared. Four locales passed the 320 px control fit and accessible-name regression.
 
 G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
