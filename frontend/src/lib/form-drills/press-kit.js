@@ -185,7 +185,11 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
   // else on the surer arm alone: side-on Vision guesses the far arm now and then at 0.3 to 0.5,
   // and averaging it in moved the "shoulder" and "wrist" by half the gap between the arms for
   // that frame (a bench dip read half way down at the top and back up at the bottom, and a rep
-  // was lost). Depth, straight arms and the camera checks still read the pairs' middles.
+  // was lost). The depth, the shoulder against the elbow, is read the same way: side-on at the
+  // bottom of a chair dip Vision guessed the far elbow at 0.23 to 0.4, lower than the near one by
+  // a quarter of an upper arm, and with it in the middle reps that sank as deep as the others read
+  // a quarter of an upper arm shallower and were refused; when that elbow fell under 0.2 and out of
+  // the middle, the same depth counted. Straight arms and the camera checks still read the middles.
   function armPart(joints, part) {
     const conf = sd => Math.min(...ARM.map(p => (seen(joints, sd + p) || [0, 0, 0])[2] ?? 1))
     const l = conf('left'), r = conf('right')
@@ -206,7 +210,9 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
     const ash = armPart(joints, 'Shoulder'), awr = armPart(joints, 'Wrist')
     const arm = ash && awr ? awr[1] - ash[1] : wr[1] - sh[1]
     if (!(fore > 0) || !(arm > 0)) return null
-    return { sh, el, wr, arm, upper, straight: upper > 0 && upper / fore >= DROP_STRAIGHT }
+    const ael = armPart(joints, 'Elbow')
+    const depthSh = ash && ael ? ash : sh, depthEl = ash && ael ? ael : el
+    return { sh, el, wr, arm, upper, depthSh, depthEl, straight: upper > 0 && upper / fore >= DROP_STRAIGHT }
   }
 
   function readTop(frame, f) {
@@ -260,7 +266,7 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
     const phase0 = machine.phase
     if (f && f.straight && (phase0 === 'waiting' || phase0 === 'standing') && (lastS == null || lastS < DROP_TOP_S)) readTop(fr, f)
     let s = f && armRef ? (armRef - f.arm) / armRef / DROP_FULL : null
-    if (f && upperRef > 0) f.hd = (f.sh[1] - f.el[1]) / upperRef + (spec.shoulderMark || 0)
+    if (f && upperRef > 0) f.hd = (f.depthSh[1] - f.depthEl[1]) / upperRef + (spec.shoulderMark || 0)
     if (s != null) lastS = s
     if (!supported(viewNow())) s = null
     const ev = machine.push(at, s, { canStart: !!f && f.straight && supported(viewNow()) })

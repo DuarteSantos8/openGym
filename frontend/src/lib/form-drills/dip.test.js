@@ -156,6 +156,21 @@ describe('the dip, whatever the angle', () => {
     expect(run(frames, ANY).res).toMatchObject({ count: 4, missed: 0 })
   })
 
+  it('side-on: a far elbow Vision guesses low and unsurely does not make a level dip shallow', () => {
+    const clean = dipSet(same(3, LEVEL), { yaw: 0 })
+    const top = clean[0].joints, upper = top.leftElbow[1] - top.leftShoulder[1]
+    const frames = clean.map(f => {
+      const j = { ...f.joints }
+      // The far (right) elbow guessed at 0.3, a third of a standing upper arm under the near one
+      // (as on a real chair dip), on every frame.
+      if (j.leftElbow) j.rightElbow = [j.leftElbow[0] + 0.01, j.leftElbow[1] + upper / 3, 0.3]
+      return { ...f, joints: j }
+    })
+    const { res } = run(frames)
+    expect(res).toMatchObject({ count: 3, missed: 0 })
+    expect(res.reps.map(r => r.measures.depth).every(d => d === 'level' || d === 'below')).toBe(true)
+  })
+
   it('side-on: a guessed frame at the bottom, the upper arm twice its length, neither ends the rep nor makes another', () => {
     const clean = dipSet(same(3, LEVEL), { yaw: 0 })
     const lowest = (from, to) => {
