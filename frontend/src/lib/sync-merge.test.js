@@ -230,6 +230,12 @@ describe('mergeStates', () => {
     expect(m.restSec).toBe(75)
     expect(m._ts).toBe(1002)
   })
+  it('how much the voice says (cueLevel) travels like any setting', () => {
+    const t0 = base({ _ts: 1000, workouts: [workout('w1')] })
+    const m = mergeStates({ ...t0, _ts: 1002, cueLevel: 'every' }, { ...t0, _ts: 1001, workouts: [workout('w1'), workout('w2', '2026-09-05')], _rev: 4 })
+    expect(m.cueLevel).toBe('every')
+    expect(ids(m.workouts)).toEqual(['w1', 'w2'])
+  })
 })
 
 describe('sign-in adoption helpers', () => {

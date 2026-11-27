@@ -51,7 +51,7 @@ const rowTitled = title => [...host.querySelectorAll('.lrow')].find(r => r.query
 describe('Settings → Timer alerts → Voice', () => {
   it('shows the voice, speed, pitch, the styles and the moments', async () => {
     await render(<VoiceSettings />)
-    expect(titles()).toEqual(['Voice', 'Speed', 'Pitch', 'Try it', 'Just the facts', 'Calm coach', 'Drill sergeant', 'Hype man', 'Deadpan', 'Your own lines',
+    expect(titles()).toEqual(['Voice', 'Speed', 'Pitch', 'Try it', 'Just the facts', 'Calm coach', 'Drill sergeant', 'Hype man', 'Deadpan', 'Your own lines', 'Records and the end', 'Once per rest', 'After every set',
       'When a rest starts', '10 seconds left', 'When the rest is over', 'Before the last set', 'New record'])
     expect(rowTitled('Voice').querySelector('.lrow-v').textContent).toBe('Default voice')
     expect(rowTitled('Just the facts').querySelector('.lrow-k')).not.toBeNull()
@@ -63,6 +63,14 @@ describe('Settings → Timer alerts → Voice', () => {
     await act(async () => { rowTitled('Hype man').click() })
     expect(mocks.S.cueStyle).toBe('hype')
     expect(spoken.at(-1).text).toBe('LET’S GO! ONE MORE, CHAMP!')
+  })
+  it('"How much it says": three levels, once per rest by default, a tap sets the level', async () => {
+    await render(<VoiceSettings />)
+    expect(titles()).toEqual(expect.arrayContaining(['Records and the end', 'Once per rest', 'After every set']))
+    expect(rowTitled('Once per rest').querySelector('.lrow-k')).not.toBeNull()
+    expect(rowTitled('After every set').querySelector('.lrow-k')).toBeNull()
+    await act(async () => { rowTitled('After every set').click() })
+    expect(mocks.S.cueLevel).toBe('every')
   })
   it('the voice sheet lists this language’s voices; a pick is kept on this device', async () => {
     await render(<VoiceSettings />)

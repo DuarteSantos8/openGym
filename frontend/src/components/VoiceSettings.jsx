@@ -17,7 +17,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { speak, hush, listVoices, voiceLabel, voiceOpts, pickedVoice, setPickedVoice, speechRateNum, speechPitchNum, setSpeechRate, setSpeechPitch, speechSupported, SPEECH_MIN, SPEECH_MAX } from '../lib/speech.js'
 import { sampleCue } from '../lib/spoken-cues.js'
-import { MOMENTS, MOMENT_COPY, STYLE_COPY, STYLE_IDS, cueStyleOf, linesFor, ownLines, setOwnLines, startOwnFrom, hasOwnLines, sampleLine, LINES_MAX, LINE_MAX } from '../lib/voice-styles.js'
+import { MOMENTS, MOMENT_COPY, STYLE_COPY, STYLE_IDS, CUE_LEVELS, LEVEL_COPY, cueStyleOf, cueLevelOf, linesFor, ownLines, setOwnLines, startOwnFrom, hasOwnLines, sampleLine, LINES_MAX, LINE_MAX } from '../lib/voice-styles.js'
 import { voiceClipsOf, addVoiceClip, removeVoiceClip, CLIPS_PER_MOMENT, CLIP_SEC } from '../lib/voice-clips.js'
 import { offlineBuild } from '../lib/build-caps.js'
 import { mediaStore } from '../lib/media-store.js'
@@ -253,6 +253,10 @@ export default function VoiceSettings() {
     <Section title={t('Style')} footer={t('Only the words change. The voice is always one of your device’s own.')}>
       {STYLE_IDS.map(id => <Row key={id} icon="chat" iconTint="var(--teal)" title={t(STYLE_COPY[id][0])} subtitle={t(STYLE_COPY[id][1])}
         accessory={style === id ? 'check' : 'none'} onClick={() => pickStyle(id)} />)}
+    </Section>
+    <Section title={t('How much it says')}>
+      {CUE_LEVELS.map(id => <Row key={id} icon="speaker" iconTint="var(--teal)" title={t(LEVEL_COPY[id][0])} subtitle={t(LEVEL_COPY[id][1])}
+        accessory={cueLevelOf(S) === id ? 'check' : 'none'} onClick={() => update(s => { s.cueLevel = id })} />)}
     </Section>
     {/* Where your own voice goes in (TestFlight 11-08: "upload my own voice, or a file"): said
         up front, since the clips sit one tap down, in each moment's sheet. */}

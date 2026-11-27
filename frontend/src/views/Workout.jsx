@@ -2310,7 +2310,7 @@ function ActiveWorkout() {
     vibrate([40, 60, 40, 60, 120])
     if (recordSoundOn(st)) { beep(st.sound, 1320, 0.1, 0.14); beep(st.sound, 1760, 0.22, 0.26) }
     // Spoken cues (Settings → Timer alerts → Voice): the style's line for a record, or a clip.
-    cues.record()
+    cues.record(idx, i)
   }
   const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the

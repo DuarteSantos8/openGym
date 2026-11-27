@@ -20,13 +20,15 @@
 // waits for a clip to finish, and a clip for the lines before it (by an estimate of how long
 // they take to say, since a phone's voice only says when it took a line, not when it is done).
 import { isWarmupRow, isSideSet } from './workout-model.js'
-import { modeOf, supersetUnits } from './history.js'
+import { modeOf, supersetUnits, lastEntryFor } from './history.js'
 import { fmtNum } from './format.js'
 import { t, tn, tnf, exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
-import { viewEntry, exUnitOf } from './ex-unit.js'
+import { viewEntry, exUnitOf, shownWeight } from './ex-unit.js'
 import { speak, voiceOpts } from './speech.js'
-import { pickLine, linesFor } from './voice-styles.js'
+import { pickLine, linesFor, cueLevelOf, cueStyleOf, NEWS } from './voice-styles.js'
+import { setOutcome } from './set-outcome.js'
+import { sessionHistory } from './backfill.js'
 import { pickClip, voiceClipsOf } from './voice-clips.js'
 import { MOBILE } from './mobile.js'
 
@@ -175,7 +177,7 @@ let clipPlayer = async clip => {
 }
 /** Test seam: how a clip is played. */
 export function _setClipPlayer(fn) { clipPlayer = fn }
-export function _resetCueQueue() { freeAt = 0; clipUntil = 0 }
+export function _resetCueQueue() { freeAt = 0; clipUntil = 0; recordFor = newsFor = null }
 
 // A clip after whatever was said before it; `fallback`, the moment's line, if it cannot play.
 function playClip(S, clip, fallback) {
@@ -201,33 +203,107 @@ function moment(S, name) {
 }
 const hasSomething = (S, name) => voiceClipsOf(S, name).length > 0 || linesFor(S, name).length > 0
 
+const nameOf = entry => { const ex = EXIDX[entry?.id]; return (ex ? exerciseNameFor(ex) : (entry?.n || '')) || '' }
+const repsWords = (r, side) => (side ? tn('{0} rep per side', '{0} reps per side', r) : tn('{0} rep', '{0} reps', r))
+
+// The set a record trophy was just shown for (cheerRecord runs before the rest starts), so that
+// set's rest says no outcome line: the record was its news. Cleared by the next rest, and by a
+// new or finished workout, so a record with no rest after it (the last set, rest off) cannot
+// leak onto a set of the same position later.
+let recordFor = null
+// The set whose news was said, so a rest restarted for it (+15 s, the wheel, a watch) does not
+// say it again. The tick time tells a set ticked again from the same one.
+let newsFor = null
+const setKey = (S, idx, i) => `${idx}:${i}:${S.active.entries[idx]?.sets?.[i]?.at ?? ''}`
+
+// What beat last time, in words: "1 rep", "2.5 kilos" (the unit the exercise is shown in).
+function beatLine(S, entry, beat) {
+  if (beat.kind === 'plan') return t(NEWS.beatPlan)
+  const words = beat.kind === 'reps' ? repsWords(beat.n, beat.side)
+    : beat.kind === 'sec' ? tn('{0} second', '{0} seconds', beat.n)
+    : weightWords(beat.n, exUnitOf(S, entry.id))
+  return t(NEWS.beatLast, words)
+}
+
+/** What is worth saying about the set just done and the one coming: the first that applies, or ''. */
+function newsLine(S, forIdx, forSet, next) {
+  if (cueStyleOf(S) === 'own') return ''
+  const done = S.active.entries[forIdx]
+  const o = Number.isInteger(forSet) ? setOutcome(S, done, forSet) : null
+  if (o?.outcome === 'short') return t(NEWS.short)
+  if (o?.outcome === 'hard') return t(NEWS.hard)
+  if (o?.outcome === 'beat') return beatLine(S, done, o.beat)
+  if (isLastSet(S.active, next)) { const name = nameOf(S.active.entries[next.idx]); return name ? t(NEWS.last, name) : '' }
+  return introLine(S, next)
+}
+
+// "Last time, 80 kilos for 8 reps." for the first set of an exercise that has a last time, in the
+// unit the exercise is shown in and per side for a per-side set.
+function introLine(S, next) {
+  const entry = S.active.entries[next.idx]
+  const row = entry.sets[next.i]
+  if (!row || isWarmupRow(row) || entry.sets.slice(0, next.i).some(x => !isWarmupRow(x))) return ''
+  const prev = lastEntryFor(sessionHistory(S), entry.id, entry.rid)?.sets?.[0]
+  if (!prev || modeOf({ ...(entry.target || {}), id: entry.id }) !== 'reps') return ''
+  const side = isSideSet(prev)
+  const reps = side ? Math.min(Number(prev.sides.L.r) || 0, Number(prev.sides.R.r) || 0) : Number(prev.r) || 0
+  const w = shownWeight(S, entry.id, Number(prev.w) || 0)
+  if (!(w > 0) || !(reps > 0)) return ''
+  return t(NEWS.intro, weightWords(w, exUnitOf(S, entry.id)), repsWords(reps, side))
+}
+
 export const cues = {
-  /** A rest began after a set of entry `forIdx`: the next set, then the style's line for it. */
-  restStarted(forIdx) {
+  /** A rest began after set `forSet` of entry `forIdx`: the next set, then what to say about the
+   *  set that was done and the one coming, by how much the profile wants said (voice-styles cueLevel). */
+  restStarted(forIdx, forSet) {
     const S = live()
     if (!S) return
     const next = nextSetAfter(S.active, forIdx)
+    const level = cueLevelOf(S)
+    const key = Number.isInteger(forSet) ? setKey(S, forIdx, forSet) : null
+    // A rest restarted for the set whose news was said: the facts again, never the news.
+    const again = !!key && newsFor?.key === key
+    const wasRecord = again ? newsFor.wasRecord : !!recordFor && recordFor.idx === forIdx && recordFor.i === forSet
+    if (key && !again) newsFor = { key, wasRecord }
+    recordFor = null
     if (!next) return
+    const m = isLastSet(S.active, next) && hasSomething(S, 'lastSet') ? 'lastSet' : 'restStart'
+    // A record set's news was the record line, said when the trophy showed. "Records and the end"
+    // says only that; an own clip for the moment is played in place of the news line.
+    let news = again || wasRecord || level === 'end' ? '' : newsLine(S, forIdx, forSet, next)
+    if (level === 'rest' && news && voiceClipsOf(S, m).length) news = ''
     say(S, restStartText(S, forIdx))
-    moment(S, isLastSet(S.active, next) && hasSomething(S, 'lastSet') ? 'lastSet' : 'restStart')
+    if (news) say(S, news)
+    if (level === 'end' || (news && level === 'rest')) return
+    if (wasRecord && level !== 'every') return
+    moment(S, m)
   },
   /** A rest's second ticked: 10 s before the end once, on rests long enough for it to help. */
   restLeft(left, total) { if (left === 10 && total >= 20) { const S = live(); if (S) moment(S, 'tenLeft') } },
   /** The rest ran out on screen. */
   restOver() { const S = live(); if (S) moment(S, 'restOver') },
-  /** A set just earned a record trophy (views/Workout.jsx cheerRecord). */
-  record() { const S = live(); if (S) moment(S, 'record') },
+  /** A set just earned a record trophy (views/Workout.jsx cheerRecord): a clip of one's own, else
+   *  the style's line, else "That's a new best on ..."; one record line, and that set's rest says
+   *  no outcome line after it. */
+  record(forIdx, forSet) {
+    const S = live()
+    if (!S) return
+    recordFor = { idx: forIdx, i: forSet }
+    if (hasSomething(S, 'record')) { moment(S, 'record'); return }
+    const name = nameOf(S.active.entries?.[forIdx])
+    if (cueStyleOf(S) !== 'own' && name) say(S, t(NEWS.record, name))
+  },
   /** A workout begins: the first exercise's first set, named. Only a rest announced anything
    *  before, so the first exercise went unsaid until its first set was done — worked around with
    *  a dummy rest before it (#1210). */
   began() {
     const S = live()
+    recordFor = newsFor = null
     const entry = S?.active?.entries?.[Number.isInteger(S?.active?.cur) ? S.active.cur : 0]
     const i = (entry?.sets || []).findIndex(notDone)
     if (!entry || i < 0) return
-    const ex = EXIDX[entry.id]
-    const name = (ex ? exerciseNameFor(ex) : (entry.n || '')) || null
-    say(S, setCueText(S, entry, i, { name }))
+    say(S, setCueText(S, entry, i, { name: nameOf(entry) || null }))
+    if (cueLevelOf(S) !== 'end' && cueStyleOf(S) !== 'own') { const intro = introLine(S, { idx: S.active.entries.indexOf(entry), i }); if (intro) say(S, intro) }
   },
   /** The focus moved to another exercise with no rest between (a superset's next member,
    *  views/Workout.jsx): its next set, named. A rest is what announced the next set before, and
@@ -238,6 +314,17 @@ export const cues = {
     if (!S) return
     const text = restStartText(S, forIdx)
     if (text) say(S, text)
+    const next = nextSetAfter(S.active, forIdx)
+    if (text && next && cueLevelOf(S) !== 'end' && cueStyleOf(S) !== 'own') { const intro = introLine(S, next); if (intro) say(S, intro) }
+  },
+  /** The workout is being saved (sheets.jsx doFinishWorkout, before it is cleared): how long it
+   *  took, the minutes the summary shows (`w`, the workout as built: its end is cut at a pause). */
+  finished(S, w) {
+    const A = S?.active
+    recordFor = newsFor = null
+    if (!A || A.backfill || !live() || cueStyleOf(S) === 'own' || !(A.entries || []).some(e => (e.sets || []).some(x => x.done && !isWarmupRow(x)))) return
+    const min = Math.floor(((Number(w?.end) || 0) - (Number(w?.start) || 0)) / 60000)
+    if (min >= 1) say(S, t(NEWS.closer, tnf('{0} minute', '{0} minutes', min, fmtNum(min))))
   },
   /** A count-in or the end of a hold: a number, cutting off whatever is still being said. */
   count(n) { if (n >= 1 && n <= 3) { const S = live(); if (S) say(S, String(n), { queue: false }) } },
