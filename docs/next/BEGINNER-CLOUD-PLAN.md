@@ -232,3 +232,7 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
 | Feature completeness (all in one) | 5 | 26 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
 | Technical quality and backend | 7 | A real project runs the schema, row level security, sign-in, export and deletion, and the app's client is tested against it. Still missing: email that reaches real people, the OIDC hand-off to the API, payments, and a deployed cloud build |
+
+### EP27-T01 Cloud ladder coverage (11.02h)
+
+The ten-workout Cloud account journey in `frontend/e2e/cloud/account.e2e.mjs` checks the push-up ladder on the original guest device, after linking and reloading, and on a second linked browser. After sign-out, the second browser returns to its empty device ladder and the API refuses the old session. This uses a local linked API and a simulated issuer. The device-only offline and accessibility checks remain in `frontend/e2e/learn-ladders.e2e.mjs`.

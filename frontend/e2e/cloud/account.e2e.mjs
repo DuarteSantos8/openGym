@@ -207,6 +207,16 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     await expect(p.getByRole('heading', { name: 'History' })).toBeVisible()
     await expect(p.getByText('10 workouts', { exact: true })).toBeVisible()
   }
+  const seeLadder = async (p, reached) => {
+    await p.goto('/#/learn')
+    await p.getByRole('button', { name: 'Skill ladders', exact: true }).click()
+    const dialog = p.getByRole('dialog', { name: 'Skill ladders' })
+    const rows = dialog.getByRole('list', { name: 'Push-up ladder' }).getByRole('listitem')
+    await expect(rows.getByText('Reached', { exact: true })).toHaveCount(reached)
+    await expect(rows.getByText('Not reached', { exact: true })).toHaveCount(7 - reached)
+    await expect(rows.nth(3)).toContainText(reached ? 'Reached' : 'Not reached')
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click()
+  }
   const link = async p => {
     await open(p)
     await signIn(p)
@@ -215,9 +225,13 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     await expect(p.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
   }
 
+  test.setTimeout(90_000)
+  const skipTour = () => localStorage.setItem('gym_tour_v1', JSON.stringify({ done: 1 }))
+  await page.addInitScript(skipTour)
   await pretendProject(page)
   await enterAsGuest(page, workouts)
   await expect.poll(() => savedIds(page)).toEqual(ids)
+  await seeLadder(page, 4)
   await link(page)
   await expect.poll(async () => {
     const response = await page.request.get('/api/data')
@@ -229,6 +243,7 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   await expect.poll(() => savedIds(page)).toEqual(ids)
 
   await seeHistory(page)
+  await seeLadder(page, 4)
 
   const second = await browser.newContext({ baseURL })
   try {
@@ -240,6 +255,7 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
       external.push(host)
       return route.abort()
     })
+    await other.addInitScript(skipTour)
     await pretendProject(other)
     await other.goto('/')
     expect(await savedIds(other)).toEqual([])
@@ -247,6 +263,14 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     await link(other)
     await expect.poll(() => savedIds(other)).toEqual(ids)
     await seeHistory(other)
+    await seeLadder(other, 4)
+    await open(other)
+    await other.locator('[data-signout]').click()
+    await expect(mode(other)).toHaveAttribute('data-mode', 'signin')
+    await expect.poll(async () => (await other.request.get('/api/me')).status()).toBe(401)
+    await other.goto('/')
+    await other.getByRole('button', { name: 'Continue without account' }).click()
+    await seeLadder(other, 0)
     expect(external).toEqual([])
   } finally {
     await second.close()
