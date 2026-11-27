@@ -84,7 +84,7 @@ Eleven read-only tools, and four that write:
 | `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
 | `search_exercises` | Which exercise ids match "romanian deadlift" or "rear delt, dumbbell"? The library (built in plus your own) with body part, target and equipment, so a routine the assistant writes uses the exact exercise. |
 | `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Cardio too: "20 min treadmill at 3.5 mph, incline 7". Needs pairing or a token: [Logging workouts](#logging-workouts). |
-| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. |
+| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. An exercise you confirm the library lacks is made as your own (`create_custom`), with no session logged to make it. |
 | `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention. `expected_revision` makes it all-or-nothing against what you saw. |
 | `delete_routine` | *Writes.* Only with `confirm: true` and the `expected_revision` from `get_routine`. |
 

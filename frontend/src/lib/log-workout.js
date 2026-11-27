@@ -71,6 +71,19 @@ export function resolveExercise(S, ref) {
   }
 }
 
+/**
+ * One of the profile's own exercises, made from a name the library does not have (log_workout's
+ * and the routine tools' create_custom), or the problem with it. The body part is the one given,
+ * else read off the name.
+ */
+export function newCustomExercise(name, bodyPart) {
+  const n = String(name ?? '').trim().slice(0, 80)
+  const bp = bodyPart ?? bpFromName(n)
+  if (!BODY_PARTS.includes(bp)) return { problem: `needed for a new exercise: one of ${BODY_PARTS.join(', ')}` }
+  // From the name, like an import's: the same name made twice before a sync is one exercise.
+  return { custom: { id: importId('mc', nameKey(n)), n, custom: true, eq: 'custom', tg: '', desc: '', bp } }
+}
+
 // One described set as the row the app stores, or a reason it cannot be one. `mode` is the
 // exercise's: reps and seconds are two different exercises' worth of meaning, never one row.
 function rowOf(set, mode, toProfile) {
@@ -187,14 +200,11 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
     const at = `exercises[${i}]`
     let hit = resolveExercise({ ...S, customEx: [...(S.customEx || []), ...customEx] }, ex?.exercise)
     if (hit.problem && ex?.createCustom === true && String(ex?.exercise ?? '').trim()) {
-      const name = String(ex.exercise).trim().slice(0, 80)
-      const bp = ex.bodyPart ?? bpFromName(name)
-      if (!BODY_PARTS.includes(bp)) {
-        problems.push({ field: at + '.bodyPart', problem: `needed for a new exercise: one of ${BODY_PARTS.join(', ')}` })
+      const { custom: c, problem } = newCustomExercise(ex.exercise, ex.bodyPart)
+      if (problem) {
+        problems.push({ field: at + '.bodyPart', problem })
         return
       }
-      // From the name, like an import's: the same name logged twice before a sync is one exercise.
-      const c = { id: importId('mc', nameKey(name)), n: name, custom: true, eq: 'custom', tg: '', desc: '', bp }
       customEx.push(c)
       hit = { id: c.id, name: c.n, custom: true, created: true }
     }

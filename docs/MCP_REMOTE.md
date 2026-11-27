@@ -130,6 +130,10 @@ preview writes with `dry_run`, save after the user agrees.
 | log_workout | Workouts: Change directly |
 | create_routine, update_routine, delete_routine | Plans: Change directly |
 
+A custom exercise made for a routine (`create_custom` on `create_routine` or `update_routine`) is
+part of that plan write, so it needs Plans: Change directly too; `log_workout` makes one under
+Workouts.
+
 `update_routine` with `expected_revision` and `delete_routine` (which needs it, and
 `confirm: true`) write over exactly the revision the user saw, or not at all: a profile that moved
 comes back as a conflict to read again, never a retry against data nobody looked at.

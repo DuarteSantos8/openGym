@@ -166,6 +166,25 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     await client.close()
   })
 
+  test('plans at apply: create_routine makes an exercise of the user\'s own without logging a session', async () => {
+    const { token } = await makeToken(A, { plans: 'apply' })
+    const client = await connect(token)
+    const ask = { name: 'Baseline test', exercises: [{ exercise: 'Tindeq 20 mm HC max (L)', create_custom: true, body_part: 'lower arms', sets: 3, seconds: 5 }] }
+    const preview = await call(client, 'create_routine', { ...ask, dry_run: true })
+    expect(preview).toMatchObject({ saved: false, dry_run: true })
+    expect(preview.would_save.new_custom_exercises).toEqual([expect.objectContaining({ name: 'Tindeq 20 mm HC max (L)', body_part: 'lower arms' })])
+    expect(stored(A).routines.map(r => r.name)).not.toContain('Baseline test')
+
+    const made = await call(client, 'create_routine', ask)
+    expect(made.saved).toBe(true)
+    const own = made.new_custom_exercises[0]
+    expect(made.routine.exercises[0]).toMatchObject({ id: own.id, name: 'Tindeq 20 mm HC max (L)' })
+    const S = stored(A)
+    expect(S.customEx.map(c => c.id)).toContain(own.id)
+    expect(S.workouts).toHaveLength(1)
+    await client.close()
+  })
+
   test('workouts at apply: log_workout goes through the token route', async () => {
     const { token } = await makeToken(B, { workouts: 'apply' })
     const client = await connect(token)
