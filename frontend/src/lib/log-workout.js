@@ -94,6 +94,19 @@ function rowOf(set, mode, toProfile) {
     if (v == null || v < e.min || v > e.max) return { problem: `${e.hd} must be between ${e.min} and ${e.max}` }
     row[kind] = v
   }
+  if (set.lengthenedPartials != null) {
+    const lp = num(set.lengthenedPartials)
+    if (mode === 'time') return { problem: 'lengthened partials are counted on rep sets only' }
+    if (set.warmup === true) return { problem: 'a warm-up set has no lengthened partials' }
+    if (!Number.isInteger(lp) || lp < 1 || lp > LOG_LIMITS.maxReps) return { problem: `lengthened partials must be a whole number 1–${LOG_LIMITS.maxReps}` }
+    // Partials only follow failure. A set rated short of it contradicts them; an unrated one is
+    // taken as a set the user forgot to mark, so it is marked as failure here.
+    if ((row.rir != null && row.rir > 0) || (row.rpe != null && row.rpe < 10)) {
+      return { problem: 'lengthened partials only happen on a set taken to failure (RIR 0 / RPE 10)' }
+    }
+    row.lp = lp
+    if (row.rir !== 0 && row.rpe !== 10) row.failure = true
+  }
   return { row }
 }
 
@@ -145,7 +158,7 @@ function cardioRows(sets, at, ex, speedUnit, problems) {
  *
  * `input`: { date: 'YYYY-MM-DD', start?: 'HH:MM', durationMin?, name?, note?, unit?: 'kg'|'lb',
  *   exercises: [{ exercise, createCustom?, bodyPart?, note?,
- *     sets: [{ reps? | seconds?, weight?, warmup?, failure?, rir? | rpe? }] }] }
+ *     sets: [{ reps? | seconds?, weight?, warmup?, failure?, rir? | rpe?, lengthenedPartials? }] }] }
  *
  * Returns { workout, past, customEx, resolved } or { problems }: every problem in the whole
  * description at once, so one round trip to the user settles them all.
@@ -303,6 +316,9 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
     exercises.map(ex => [ex.exercise, ex.createCustom === true, ex.note ?? null,
       ex.sets.map(s => {
         const row = [s.reps ?? null, s.seconds ?? null, s.weight ?? null, s.warmup === true, s.failure === true, s.rir ?? null, s.rpe ?? null]
+        // Lengthened partials join only when given, the same way: a lifting description without them
+        // keeps the id it always had, so a retry across versions still finds its workout.
+        if (s.lengthenedPartials != null) row.push(s.lengthenedPartials)
         // Cardio's fields join only when there are any: every lifting description keeps the id it
         // always had, so a retry across versions still finds its workout.
         const cardio = [s.minutes, s.speed, s.distance, s.incline]

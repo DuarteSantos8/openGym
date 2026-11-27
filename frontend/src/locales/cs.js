@@ -2444,6 +2444,7 @@ export default {
   'Nothing left in the tank': 'V rezervě nic nezbylo',
   'Last set to failure': 'Poslední série do selhání',
   'The last set goes until nothing is left, and counts as all-out effort unless you rate it.': 'Poslední série jde, dokud nic nezbyde, a pokud ji neohodnotíš, počítá se jako maximální náročnost.',
+  'Keep the last exercise open': 'Poslední cvik nechat otevřený',
   'Plan the final set as an all-out one.': 'Naplánuj poslední sérii naplno.',
   'Triple progression': 'Trojitá progrese',
   'Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.': 'Opakování rostou k horní hranici rozsahu, pak přibude série, až do tvého maxima sérií. Když jsou všechny na horní hranici, váha jde nahoru a vracíš se k výchozímu počtu sérií a opakování.',

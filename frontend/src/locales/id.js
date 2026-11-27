@@ -2503,6 +2503,9 @@ export default {
   "Nothing left in the tank": "Tenaga terkuras habis (sampai failure)",
   "Last set to failure": "Set terakhir hingga tak kuat lagi",
   "The last set goes until nothing is left, and counts as all-out effort unless you rate it.": "Set terakhir berlangsung hingga tidak ada yang tersisa, dan dihitung sebagai upaya habis-habisan kecuali kamu menilainya.",
+  "+ Partials": "+ Bagian",
+  "Partial reps": "Reps Parsial",
+
   "Plan the final set as an all-out one.": "Rencanakan set terakhir sebagai set habis-habisan.",
   "Triple progression": "Progresi tripel",
   "Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.": "Repetisi naik hingga batas atas rentang, lalu satu set ditambahkan hingga set terbanyakmu. Ketika semua set mencapai batas atas, beban dinaikkan dan kembali ke set serta repetisi awal.",

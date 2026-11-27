@@ -2444,6 +2444,9 @@ export default {
   'Nothing left in the tank': 'Hết sạch sức',
   'Last set to failure': 'Hiệp cuối tập đến thất bại',
   'The last set goes until nothing is left, and counts as all-out effort unless you rate it.': 'Hiệp cuối tập đến khi hết sạch sức, và được tính là nỗ lực tối đa trừ khi bạn tự đánh giá.',
+  "+ Partials": "+ Phần thép",
+  "Partial reps": "Thép phần",
+
   'Plan the final set as an all-out one.': 'Lên kế hoạch tập hiệp cuối dốc toàn lực.',
   'Triple progression': 'Tăng tiến ba bước (Triple progression)',
   'Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.': 'Số reps tăng dần đến cận trên, sau đó thêm một hiệp cho đến số hiệp tối đa. Khi tất cả các hiệp đạt mức cao nhất, mức tạ sẽ tăng và quay lại số hiệp và reps ban đầu.',
