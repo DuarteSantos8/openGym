@@ -2,7 +2,7 @@
 // the hips rising and leaning forward not counted and said, the standards, views, a missing knee,
 // a lost pose, the result, and the exercises it takes.
 import { describe, expect, it } from 'vitest'
-import wallSit, { GRACE_MS, thighText } from './wall-sit.js'
+import wallSit, { GRACE_MS, THIGH_MARK, thighText } from './wall-sit.js'
 import { checkDrill } from './index.js'
 import { BODY, film, project, squatPose } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
@@ -12,11 +12,13 @@ const rad = d => d * Math.PI / 180
 /**
  * Sitting against a wall, facing +u, the shins upright: `thigh` the thigh's angle above level
  * (the hip over the knee, degrees; negative below), `lean` the torso's angle forward of upright.
+ * The hip is drawn where Vision puts it, on the pelvis above the crease: the thigh line reads
+ * THIGH_MARK degrees above the real thigh (`mark` to change it).
  */
-export function wallSitPose({ thigh = 0, lean = 0 } = {}) {
+export function wallSitPose({ thigh = 0, lean = 0, mark = THIGH_MARK } = {}) {
   const b = BODY
   const knee = [0, b.ankleH + b.shin]
-  const hip = [knee[0] - b.thigh * Math.cos(rad(thigh)), knee[1] + b.thigh * Math.sin(rad(thigh))]
+  const hip = [knee[0] - b.thigh * Math.cos(rad(thigh + mark)), knee[1] + b.thigh * Math.sin(rad(thigh + mark))]
   const up = [Math.sin(rad(lean)), Math.cos(rad(lean))]
   const sh = [hip[0] + up[0] * b.torso, hip[1] + up[1] * b.torso]
   const neck = [sh[0] + up[0] * b.neck, sh[1] + up[1] * b.neck]
@@ -57,7 +59,16 @@ describe('the wall sit drill', () => {
 
   it('films the pose helper as meant', () => {
     const j = project(wallSitPose())
-    expect(Math.abs(j.rightHip[1] - j.rightKnee[1])).toBeLessThan(0.01)
+    expect(Math.abs(j.rightHip[1] - j.rightKnee[1])).toBeGreaterThan(0.01)
+    const real = project(wallSitPose({ mark: 0 }))
+    expect(Math.abs(real.rightHip[1] - real.rightKnee[1])).toBeLessThan(0.01)
+  })
+
+  it('takes THIGH_MARK off the thigh: Vision reads level thighs a few degrees above level', () => {
+    // Real level holds read 3 to 15 degrees above level, a hips-high one 21 to 24.
+    expect(THIGH_MARK).toBeGreaterThan(0)
+    expect(run(wallSitFrames([{ sec: 10, thigh: 8, mark: 0 }])).res.count).toBeGreaterThanOrEqual(9)
+    expect(run(wallSitFrames([{ sec: 10, thigh: 20, mark: 0 }])).res.count).toBe(0)
   })
 })
 
@@ -142,9 +153,12 @@ describe('the wall sit, standards and edges', () => {
     expect(outs.at(-1).hint).toBe('Get into position')
   })
 
-  it('from the front: asks to turn side-on and counts nothing', () => {
+  it('from the front: counts nothing, and asks to turn side-on once it sees the seat', () => {
     for (const yaw of [90, -90]) {
-      const { res, outs } = run(wallSitFrames([{ sec: 8 }], { yaw }))
+      expect(run(wallSitFrames([{ sec: 8 }], { yaw })).res.count).toBe(0)
+      // From the front the knee's angle is foreshortened: with the hip drawn at the joint it reads
+      // seated and the view is named; with Vision's mark it may read standing ('Get into position').
+      const { res, outs } = run(wallSitFrames([{ sec: 8, mark: 0 }], { yaw }))
       expect(res.count).toBe(0)
       expect(outs.at(-1).hint).toBe('Turn side-on to the camera')
     }

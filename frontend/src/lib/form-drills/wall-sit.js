@@ -11,6 +11,9 @@
 // real wall sits filmed "from the side" (form lab) were turned 37 to 48 degrees by the shoulders'
 // and hips' width and were refused whole. From the front the thigh points at the camera: refused.
 // A knee straighter than SEATED_DEG is standing, not sitting: the clock waits.
+// Vision's hip sits on the pelvis above the crease (the squat's HIP_MARK), so a level thigh reads
+// above level: real holds that looked level read 3 to 15 degrees, one with the hips high 21 to 24.
+// THIGH_MARK comes off before the thigh is judged.
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
@@ -26,6 +29,7 @@ export const GRACE_MS = 800           // out of position this long before it is 
 export const REPEAT_MS = 5000         // and said again this often while it lasts
 export const FULL_WIDTH = 0.58        // shoulders' and hips' width over the torso facing the camera (kit's view detector)
 export const MAX_SIN = 0.9            // the turn's sine taken at most this (about 64 degrees, the front view's edge)
+export const THIGH_MARK = 5           // degrees Vision's thigh reads above the real one (its hip sits above the crease)
 export const MILESTONE = 10           // the count is said every this many seconds held
 const CHAIN = ['Hip', 'Knee', 'Ankle']
 
@@ -78,7 +82,7 @@ function read(fr, side, views) {
   // are stretched back by it, so a lean or a raised thigh reads about as it would side-on.
   const sinYaw = views.ratio == null ? 0 : Math.min(MAX_SIN, views.ratio / FULL_WIDTH)
   const ax = a / Math.sqrt(1 - sinYaw * sinYaw)
-  const thigh = deg(Math.atan2(knee[1] - hip[1], Math.abs(knee[0] - hip[0]) * ax))
+  const thigh = deg(Math.atan2(knee[1] - hip[1], Math.abs(knee[0] - hip[0]) * ax)) - THIGH_MARK
   const lean = deg(Math.atan2((sh[0] - hip[0]) * ax * fwd, hip[1] - sh[1]))
   return { view, pose: { thigh, lean, knee: kneeAng, joints: [sd + 'Hip', sd + 'Knee', sd + 'Ankle'] } }
 }
