@@ -5,6 +5,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 ## 1. State
 
 - **OpenNutriTracker manual file import (09.01a, prepared).** Export a JSON or CSV ZIP in [OpenNutriTracker v2.7](https://github.com/simonoppowa/OpenNutriTracker/blob/5048a9b57f4ab08b17699af556c280f7f058e07c/docs/export-format.md), open Nutrition diary, select the file, review the destination and confirm. A second export refreshes matching intake IDs. The guest diary stays on this device. A signed-in diary uses its normal account sync. Only selected nutrition fields are saved. Photos, links, account settings, weight and raw exports are excluded. Blank IDs, unknown units and rows without enough information are counted as skipped. Native-language review of the import strings is pending.
+- **Connector permissions (10.02, isolated).** The loopback acceptance test checks that a plans-only reader cannot log workouts and that revocation ends access. Hosted client verification remains open.
 - Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
 
 - **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
