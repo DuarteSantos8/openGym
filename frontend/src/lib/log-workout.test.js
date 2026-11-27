@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildLoggedWorkout, appendLoggedWorkout, resolveExercise, findDuplicate } from './log-workout.js'
+import { buildLoggedWorkout, appendLoggedWorkout, resolveExercise, findDuplicate, createCustomExercise } from './log-workout.js'
 import { setLabel, workoutVolume, setsDone } from './history.js'
 import { best1RM } from './onerm.js'
 import { mergeStates, stampChange } from './sync-merge.js'
@@ -419,5 +419,38 @@ describe('cardio (#942): minutes at a speed, as a cardio set finished on the pho
     const a = build(profile(), { date: TODAY, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 20 }] }] }).workout.id
     const b = build(profile(), { date: TODAY, exercises: [{ exercise: 'treadmill', sets: [{ minutes: 21 }] }] }).workout.id
     expect(a).not.toBe(b)
+  })
+})
+
+describe('create_exercise', () => {
+  it('adds one of the profile\'s own exercises, and log_workout finds it by name', () => {
+    const S = { customEx: [] }
+    const r = createCustomExercise(S, { name: '  Tindeq 20 mm HC max (L) ', body_part: 'lower arms', equipment: 'weighted', description: 'Pull 5 s on the 20 mm edge, half crimp.' })
+    expect(r.problems).toBeUndefined()
+    expect(r.exercise).toMatchObject({ n: 'Tindeq 20 mm HC max (L)', bp: 'lower arms', eq: 'weighted', desc: 'Pull 5 s on the 20 mm edge, half crimp.', custom: true })
+    expect(S.customEx).toEqual([r.exercise])
+    expect(resolveExercise(S, 'tindeq 20 mm hc max (l)')).toMatchObject({ id: r.exercise.id, custom: true })
+    // The same id log_workout's create_custom would give it, so neither makes it twice.
+    expect(r.exercise.id).toBe(buildLoggedWorkout({ customEx: [] }, { date: '2026-01-01', exercises: [{ exercise: 'Tindeq 20 mm HC max (L)', createCustom: true, bodyPart: 'lower arms', sets: [{ seconds: 5 }] }] }, { today: '2026-01-02' }).customEx[0].id)
+  })
+  it('refuses a name it already has, in any case, and changes nothing on a problem', () => {
+    const S = { customEx: [{ id: 'c1', n: 'Board pull', bp: 'back', custom: true }] }
+    const before = JSON.stringify(S)
+    expect(createCustomExercise(S, { name: 'board PULL' }).problems[0]).toMatchObject({ field: 'name', candidates: [{ id: 'c1', name: 'Board pull' }] })
+    expect(createCustomExercise(S, { name: 'Barbell Squat' }).problems[0].candidates[0].id).toMatch(/^\d{4}$/)
+    expect(createCustomExercise(S, { name: 'Frobnicator' }).problems[0].field).toBe('body_part')
+    expect(createCustomExercise(S, { name: 'Frobnicator', body_part: 'back', equipment: 'spaceship' }).problems[0].field).toBe('equipment')
+    expect(createCustomExercise(S, { name: '   ' }).problems[0].field).toBe('name')
+    expect(JSON.stringify(S)).toBe(before)
+  })
+  it('refuses a name whose exercise was renamed or merged since, which still holds its id', () => {
+    const S = { customEx: [] }
+    const first = createCustomExercise(S, { name: 'Tindeq', body_part: 'lower arms' }).exercise
+    S.customEx[0].n = 'Tindeq max'
+    expect(createCustomExercise(S, { name: 'Tindeq', body_part: 'back' }).problems[0].candidates).toEqual([{ id: first.id, name: 'Tindeq max' }])
+    S.customEx = []
+    S.exMerged = { [first.id]: { into: '0652' } }
+    expect(createCustomExercise(S, { name: 'Tindeq', body_part: 'lower arms' }).problems[0].candidates[0].id).toBe('0652')
+    expect(S.customEx).toEqual([])
   })
 })

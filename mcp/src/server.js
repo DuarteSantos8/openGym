@@ -21,9 +21,11 @@ export const TOOL_NEEDS = {
   search_exercises: [['workouts', 'view'], ['plans', 'view']],
   log_workout: ['workouts', 'apply'],
   create_routine: ['plans', 'apply'], update_routine: ['plans', 'apply'], delete_routine: ['plans', 'apply'],
+  // The profile's own exercises are both categories' (api/tokens.js KEY_CATEGORY.customEx).
+  create_exercise: [['workouts', 'apply'], ['plans', 'apply']],
 }
 const RANK = { off: 0, view: 1, apply: 2 }
-const WRITES = new Set(['log_workout', 'create_routine', 'update_routine', 'delete_routine'])
+const WRITES = new Set(['log_workout', 'create_routine', 'update_routine', 'delete_routine', 'create_exercise'])
 
 /** Whether a token holding `scopes` can use tool `name`. No scopes (the data folder, a paired
  *  session): every tool. A tool not in TOOL_NEEDS is never offered to a scoped token. */
@@ -42,6 +44,7 @@ export const INSTRUCTIONS = [
   'Read before you advise: list_routines and get_week_plan for the plan, list_workouts and estimate_1rm for how training went, muscle_balance for what is under- or over-trained.',
   'To build or change a plan, find each exercise with search_exercises and pass its id, then call create_routine or update_routine with dry_run: true, show the user the preview and save only after they agree.',
   'To log a session the user describes, use log_workout (dry_run first if you had to guess anything).',
+  'An exercise the library lacks can be added as the user\'s own with create_exercise, once they confirm the name.',
   'Weights are in the profile\'s unit (kg or lb) unless you say otherwise. Deleting needs the user\'s explicit yes.',
   'A tool that is missing was not granted: the user picks what you may see and change when they connect openGym.',
 ].join(' ')
