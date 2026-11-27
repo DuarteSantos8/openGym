@@ -1,7 +1,7 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
 OpenNutriTracker local ZIP import (09.01a) is prepared for guest and account diaries. Refresh is manual. The source archive stays on the device.
-B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval.
+B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval, including when restart feedback waits for an idle poll.
 06.03 narrow Workout actions and navigation labels are prepared. Four locales passed the 320 px control fit and accessible-name regression.
 
 G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
@@ -9,7 +9,7 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
-A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
+A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner still needs to choose a production address and verify both email return journeys after cutover.
 
 10.02 has a loopback regression for denied workout writes with a plans-only grant. Live connector acceptance remains open.
 Nutrition account isolation is prepared. Shared-device tests cover expired sessions, profile switches and delayed pairing. Hosted checks remain open.
