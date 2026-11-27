@@ -314,7 +314,7 @@ self.addEventListener('fetch', e => {
       resolve(res)
     }, () => {
       clearTimeout(slow)
-      resolve(fromCache())
+      resolve(fromCache().then(hit => hit || new Response(null, { status: 503 })))
     })
   }))
 })

@@ -4,7 +4,7 @@
 // skeleton in poses.js, plays a pattern's loop only while it is asked to, and frees everything
 // on dispose().
 import * as THREE from 'three'
-import { RIG, skeletonAt, keyFrameFor, loopFor, poseFor, frameIndexAt, VIEW_BETA } from './poses.js'
+import { RIG, skeletonAt, keyFrameFor, loopFor, poseFor, captionFrameAt, VIEW_BETA } from './poses.js'
 
 const BODY = {
   torso: 0.115, shoulder: 0.055, hip: 0.075, upperArm: 0.05, forearm: 0.04,
@@ -64,6 +64,7 @@ export async function createMannequinScene(container, { pattern, onFrame, onErro
   const distance = overhead || supine ? 3.95 : 3.4
   camera.position.copy(target).addScaledVector(dir, -distance).add(new THREE.Vector3(0, 0.35, 0))
   camera.lookAt(target)
+  camera.updateMatrixWorld()
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x303038, 1.7))
   const keyLight = new THREE.DirectionalLight(0xffffff, 1.5); keyLight.position.set(-2.5, 3, 2); scene.add(keyLight)
@@ -113,16 +114,40 @@ export async function createMannequinScene(container, { pattern, onFrame, onErro
     place(parts.footR, s.heelR, s.toeR)
   }
 
+  // Measure the complete rig once, including both hands and head. Sampling each
+  // segment includes reaching poses between keyframes. Use one fit for the loop
+  // so playback never zooms as limbs move.
+  const frames = poseFor(pattern)
+  const center = new THREE.Vector3()
+  const halfFov = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+  let halfWidth = 0, halfHeight = 0
+  for (const mesh of Object.values(parts)) mesh.geometry.computeBoundingSphere()
+  for (const [i, frame] of frames.entries()) {
+    const end = frames[i + 1]?.at ?? loop
+    for (let step = 0; step < 16; step++) {
+      apply(skeletonAt(pattern, frame.at + (end - frame.at) * step / 16))
+      scene.updateMatrixWorld()
+      for (const mesh of Object.values(parts)) {
+        const sphere = mesh.geometry.boundingSphere
+        center.copy(sphere.center).applyMatrix4(mesh.matrixWorld).applyMatrix4(camera.matrixWorldInverse)
+        const radius = sphere.radius + 0.03 // Leave room between sampled poses.
+        const depth = (-center.z - radius) * halfFov
+        halfWidth = Math.max(halfWidth, (Math.abs(center.x) + radius) / depth)
+        halfHeight = Math.max(halfHeight, (Math.abs(center.y) + radius) / depth)
+      }
+    }
+  }
+
   const key = keyFrameFor(pattern)
   let clock = key ? key.at : 0
-  let playing = false, raf = 0, last = 0, disposed = false, shown = -1
+  let playing = false, raf = 0, last = 0, disposed = false, shown = null
 
   const paint = () => {
     const s = skeletonAt(pattern, clock)
     if (s) apply(s)
     // The words beside the rig follow the pose, but only when the pose actually changes.
-    const i = frameIndexAt(pattern, clock)
-    if (i !== shown) { shown = i; onFrame?.(poseFor(pattern)[i]) }
+    const frame = captionFrameAt(pattern, clock)
+    if (frame !== shown) { shown = frame; onFrame?.(frame) }
   }
   const render = () => { if (!disposed) renderer.render(scene, camera) }
 
@@ -143,8 +168,10 @@ export async function createMannequinScene(container, { pattern, onFrame, onErro
 
   const resize = () => {
     const w = container.clientWidth || 260, h = container.clientHeight || 340
-    renderer.setSize(w, h, false)
+    // Keep the canvas at the panel's CSS size even when its backing buffer is HiDPI.
+    renderer.setSize(w, h)
     camera.aspect = w / h
+    camera.zoom = Math.min(1, 0.95 / Math.max(halfWidth / camera.aspect, halfHeight))
     camera.updateProjectionMatrix()
     render()
   }

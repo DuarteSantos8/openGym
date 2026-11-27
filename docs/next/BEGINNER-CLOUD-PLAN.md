@@ -6,6 +6,7 @@ D3 status: the short Beginner Settings root and reversible full-list preference 
 ## Status on November 26, 2026
 
 06.01 is prepared. The device save warning distinguishes quota exhaustion from refused writes.
+Nutrition account isolation is prepared. Shared-device tests cover expired sessions, profile switches and delayed pairing. Hosted checks remain open.
 
 A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
 
@@ -161,7 +162,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Status |
 |---|---|---|
-| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | E5a (rig and squat) merged in #130. E5b (eight original family examples; [matrix and evidence](evidence/EP26-T01/patterns.md)) is prepared locally. Independent code, named movement and native-language review remain open |
+| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | E5a (rig and squat) merged in #130. E5b (eight original family examples; [matrix and evidence](evidence/EP26-T01/patterns.md)) merged in #136. Phone framing and offline playback have follow-up coverage. Named movement and native-language review remain open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
 | EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
 | EP26-T04 | Ladder skill tree | Prepared for review: Learn opens existing ladders as an ordered, read-only history view. Highest logged step and all earlier steps are marked reached. [Local evidence](evidence/EP26-T04/README.md); independent and native-language review pending. |
