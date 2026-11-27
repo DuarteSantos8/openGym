@@ -159,8 +159,9 @@ credentials, a path, query or fragment. Both services append BASE_PATH when conf
 Check GET /mcp/health on the connector origin for HTTP 200.
 
 Connector OAuth requires one reachable HTTPS origin serving MCP transport, /.well-known
-discovery and /api/oauth. Vercel reserves /.well-known and cannot rewrite it, and preview
-deployment protection can block connectors. Choose and verify a suitable HTTPS origin and
+discovery and /api/oauth. Vercel reserves only /.well-known/acme-challenge, so external
+rewrites can serve the other /.well-known discovery paths (vercel.com/docs/routing/rewrites);
+external rewrites time out at 120 s, and preview deployment protection can block connectors. Choose and verify a suitable HTTPS origin and
 route /mcp and /mcp/health to MCP, and the discovery and /api/oauth/* paths to the same API
 that serves the web app. For a base path, the API accepts the advertised prefixed OAuth endpoints directly, but only when MCP_PUBLIC_ORIGIN is set; without it, strip the prefix before /api/oauth as the bundled nginx proxy does. Strip the prefix for the MCP transport;
 forward the root /.well-known discovery paths to the API intact. The web app still proxies /api/* to that API, so the consent screen
