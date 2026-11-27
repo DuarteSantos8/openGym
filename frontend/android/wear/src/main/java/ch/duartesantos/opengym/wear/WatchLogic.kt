@@ -117,6 +117,16 @@ object SetNav {
 
     /** The set `by` rows away from `si` in the exercise, or null past either end. */
     fun step(e: Entry, from: Int, by: Int): Int? = (from + by).takeIf { it in e.sets.indices }
+
+    /** ‹ or › from `ref`: inside the exercise, else in a superset the partner's last (‹) or first (›) set; null at the ends of the group and outside a superset. */
+    fun cross(entries: List<Entry>, ref: SetRef, d: Int): SetRef? {
+        val e = entries.getOrNull(ref.entry) ?: return null
+        step(e, ref.set, d)?.let { return SetRef(ref.entry, it) }
+        val n = ref.entry + if (d < 0) -1 else 1
+        val p = entries.getOrNull(n) ?: return null
+        if (!Overview.inSuperset(entries, ref.entry) || p.group != e.group || p.sets.isEmpty()) return null
+        return SetRef(n, if (d < 0) p.sets.lastIndex else 0)
+    }
 }
 
 /** RPE or RIR on a set, in the scale the phone's profile logs (lib/history.js EFFORT). */
