@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { test, expect, enterAsGuest, openRoute, workout } from './fixtures.mjs'
+import { test, expect, click, enterAsGuest, openRoute, workout } from './fixtures.mjs'
 
 for (const width of [390, 1440]) {
   test(`Learn shows ordered ladder progress offline at ${width}px`, async ({ page, context }, testInfo) => {
@@ -79,3 +79,54 @@ for (const width of [390, 1440]) {
     await testInfo.attach('Learn skill ladders', { path: screenshot, contentType: 'image/png' })
   })
 }
+
+test('Learn marks a rung reached after saving a workout through the UI', async ({ page, context }) => {
+  await context.route(/\/(?:catalogue|exercise-media|exercise-photos|exercise-demos|exercise-stills|img|gif)\//, route => route.abort())
+  await page.addInitScript(() => localStorage.setItem('gym_tour_v1', JSON.stringify({ done: 1 })))
+  await enterAsGuest(page)
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('gym_state_v1') || '{}')
+    const customEx = ['Supported press', 'Practice press', 'Advanced press'].map((n, i) => ({
+      id: `practice-press-${i}`, n, bp: 'chest', primaries: ['chest'], custom: true,
+    }))
+    Object.assign(state, {
+      customEx, gifSize: 'off', lang: 'en', langAuto: false, workoutView: 'list',
+      ladders: [{ id: 'practice-press', name: 'Practice ladder', steps: customEx.map(ex => ex.id) }],
+      routines: [{ id: 'ladder-practice', name: 'Ladder practice', emoji: 'dumbbell', ex: [
+        { id: customEx[1].id, sets: 2, reps: 5, mode: 'reps', weight: 0, bodyweight: true },
+      ] }],
+    })
+    localStorage.setItem('gym_state_v1', JSON.stringify(state))
+  })
+  await page.reload()
+
+  const openLadders = async () => {
+    await openRoute(page, '/learn')
+    await page.getByRole('button', { name: 'Skill ladders', exact: true }).click()
+  }
+  const dialog = page.getByRole('dialog', { name: 'Skill ladders' })
+  const ladder = dialog.getByRole('list', { name: 'Practice ladder' })
+  await openLadders()
+  await expect(ladder.getByText('Not reached', { exact: true })).toHaveCount(3)
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click()
+
+  await openRoute(page, '/workout')
+  await click(page.getByText('Ladder practice', { exact: true }))
+  await page.getByRole('button', { name: 'Start without weighing in' }).click()
+  await expect(page.getByText('Practice press', { exact: true }).first()).toBeVisible()
+  const set = page.getByRole('checkbox', { name: 'Set 1 done, Practice press', exact: true })
+  await expect(set).not.toBeChecked()
+  await set.click()
+  await expect(set).toBeChecked()
+  await page.getByRole('button', { name: 'Finish', exact: true }).click()
+  await page.getByRole('button', { name: 'Finish and save', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Workout complete!' })).toBeVisible()
+  await page.getByRole('button', { name: 'Nice!', exact: true }).click()
+  await page.reload()
+
+  await openLadders()
+  const rung = name => ladder.getByRole('listitem').filter({ hasText: name })
+  await expect(rung('Supported press').getByText('Reached', { exact: true })).toBeVisible()
+  await expect(rung('Practice press').getByText('Reached', { exact: true })).toBeVisible()
+  await expect(rung('Advanced press').getByText('Not reached', { exact: true })).toBeVisible()
+})

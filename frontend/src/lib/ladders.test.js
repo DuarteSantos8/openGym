@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, saveLadder, deleteLadder, ownLadders } from './ladders.js'
+import { LADDERS, allLadders, ladderOf, nextRung, prevRung, reachedRung, visibleLadderProgress, saveLadder, deleteLadder, ownLadders } from './ladders.js'
 import { nextPrescription, POLICIES_FOR, LADDER_TOP } from './progression.js'
 import { EXIDX } from './exercises.js'
 
@@ -43,6 +43,22 @@ describe('ladders', () => {
     const middle = done('2026-11-01', '0662', 8)
     expect(reachedRung({ workouts: [middle] }, push)).toBe(3)
     expect(reachedRung({ workouts: [incomplete, done('2026-11-03', '0659', 8), middle, done('2026-11-02', '0662', 8)] }, push)).toBe(3)
+  })
+})
+
+describe('visible ladder progress', () => {
+  const steps = ['easier', 'removed', 'harder', 'removed-top']
+  const isVisible = id => id === 'easier' || id === 'harder'
+
+  it.each([
+    [-1, -1], [1, 0], [2, 1], [3, 1],
+  ])('maps original rung %i to visible rung %i', (reached, top) => {
+    expect(visibleLadderProgress(steps, reached, isVisible)).toEqual({ steps: ['easier', 'harder'], top })
+  })
+
+  it('reports no reached rung if nothing at or below it is visible', () => {
+    expect(visibleLadderProgress(['removed', 'harder'], 0, isVisible)).toEqual({ steps: ['harder'], top: -1 })
+    expect(visibleLadderProgress(['removed'], 0, isVisible)).toEqual({ steps: [], top: -1 })
   })
 })
 

@@ -5,7 +5,7 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { EXIDX, exOr } from '../lib/exercises.js'
-import { allLadders, reachedRung, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
+import { allLadders, reachedRung, visibleLadderProgress, saveLadder, deleteLadder, STEPS_MAX, NAME_MAX } from '../lib/ladders.js'
 import { LADDER_TOP, LADDER_BOTTOM } from '../lib/progression.js'
 import { exerciseDetailSheet, exercisePicker, confirmSheet } from '../sheets.jsx'
 import { DEFAULT_GLYPH, glyphOf } from '../lib/glyphs.js'
@@ -158,12 +158,7 @@ function LearnLaddersSheet ({ close }) {
   const S = useStore(s => s.S)
   const ladders = allLadders(S).flatMap(ladder => {
     const reached = reachedRung(S, ladder)
-    let top = -1
-    const steps = ladder.steps.filter((id, index) => {
-      if (!Object.hasOwn(EXIDX, id)) return false
-      if (index <= reached) top++
-      return true
-    })
+    const { steps, top } = visibleLadderProgress(ladder.steps, reached, id => Object.hasOwn(EXIDX, id))
     return steps.length ? [{ ladder: { ...ladder, steps }, top }] : []
   })
   return <div className="ladders">
