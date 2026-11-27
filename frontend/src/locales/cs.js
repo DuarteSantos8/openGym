@@ -1,5 +1,10 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Odhad podle opakujícího se plánu. Rozcvičovací série a změny jednotlivých dnů se nepočítají.",
+  "No working sets in the recurring plan.": "V opakujícím se plánu nejsou žádné pracovní série.",
+  "below range": "pod rozmezím",
+  "Personal target": "Vlastní cíl",
+  "Default ranges adapted from RP Strength volume landmarks.": "Výchozí rozmezí vycházejí z orientačních objemů tréninku od RP Strength.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Uchopte hrazdu o něco šířeji než na šířku ramen, dlaněmi od sebe.",
   "Hang with straight arms, then pull yourself up.": "Zavěste se s nataženými pažemi a přitáhněte se nahoru.",
   "Pull your elbows down toward your ribs.": "Táhněte lokty dolů k žebrům.",

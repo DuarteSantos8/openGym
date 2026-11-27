@@ -1,6 +1,11 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Skøn for den tilbagevendende plan. Opvarmningssæt og ændringer på enkelte datoer tæller ikke med.",
+  "No working sets in the recurring plan.": "Der er ingen arbejdssæt i den tilbagevendende plan.",
+  "below range": "under intervallet",
+  "Personal target": "Personligt mål",
+  "Default ranges adapted from RP Strength volume landmarks.": "Standardintervallerne er tilpasset efter RP Strengths retningslinjer for træningsmængde.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Tag fat lidt bredere end skulderbredde med håndfladerne fremad.",
   "Hang with straight arms, then pull yourself up.": "Hæng med strakte arme, og træk dig op.",
   "Pull your elbows down toward your ribs.": "Træk albuerne ned mod ribbenene.",

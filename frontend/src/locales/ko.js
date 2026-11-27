@@ -1,5 +1,10 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "반복 일정의 추정치입니다. 준비 운동 세트와 특정 날짜의 변경 사항은 제외됩니다.",
+  "No working sets in the recurring plan.": "반복 일정에 본 운동 세트가 없습니다.",
+  "below range": "범위 미만",
+  "Personal target": "개인 목표",
+  "Default ranges adapted from RP Strength volume landmarks.": "기본 범위는 RP Strength의 훈련량 지표를 바탕으로 조정했습니다.",
   "Grip the bar just wider than your shoulders, palms facing away.": "손등이 자신을 향하게 하고 어깨보다 약간 넓게 봉을 잡으세요.",
   "Hang with straight arms, then pull yourself up.": "팔을 편 채 매달린 다음 몸을 끌어올리세요.",
   "Pull your elbows down toward your ribs.": "팔꿈치를 갈비뼈 쪽으로 끌어내리세요.",

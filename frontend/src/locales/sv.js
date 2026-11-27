@@ -1,5 +1,10 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Uppskattning för det återkommande schemat. Uppvärmningsset och ändringar för enskilda datum räknas inte.",
+  "No working sets in the recurring plan.": "Det finns inga arbetsset i det återkommande schemat.",
+  "below range": "under intervallet",
+  "Personal target": "Personligt mål",
+  "Default ranges adapted from RP Strength volume landmarks.": "Standardintervallen är anpassade från RP Strengths riktvärden för träningsvolym.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Greppa stången något bredare än axelbrett med handflatorna framåt.",
   "Hang with straight arms, then pull yourself up.": "Häng med raka armar och dra dig upp.",
   "Pull your elbows down toward your ribs.": "Dra armbågarna nedåt mot revbenen.",

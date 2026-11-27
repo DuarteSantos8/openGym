@@ -49,13 +49,22 @@ export const TARGET_MAX = 40
 // Ranges saved before the 1.4.5 split (#638): "Shoulders" set the side and rear heads' (the ones
 // that need their own sets), "Lats & upper back" both of its halves. A range set since wins.
 const LEGACY_TARGET = { 'side-delts': 'deltoids', 'rear-delts': 'deltoids', lats: 'upper-back' }
-export function targetOf(S, slug) {
-  const own = S?.muscleTargets?.[slug] ?? (LEGACY_TARGET[slug] ? S?.muscleTargets?.[LEGACY_TARGET[slug]] : undefined)
+const savedTargetOf = (S, slug) => S?.muscleTargets?.[slug] ?? (LEGACY_TARGET[slug] ? S?.muscleTargets?.[LEGACY_TARGET[slug]] : undefined)
+function validRange(own) {
   if (Array.isArray(own) && own.length === 2) {
     const lo = Math.round(Number(own[0])), hi = Math.round(Number(own[1]))
     if (Number.isFinite(lo) && Number.isFinite(hi) && lo >= 0 && hi >= lo && hi <= TARGET_MAX) return [lo, hi]
   }
-  return DEFAULT_TARGETS[slug] ? [...DEFAULT_TARGETS[slug]] : null
+  return null
+}
+/** A valid saved range, without falling back to an app default. */
+export function personalTargetOf(S, slug) {
+  const own = savedTargetOf(S, slug)
+  if (!Array.isArray(own) || !own.every(value => typeof value === 'number' || (typeof value === 'string' && value.trim()))) return null
+  return validRange(own)
+}
+export function targetOf(S, slug) {
+  return validRange(savedTargetOf(S, slug)) ?? (DEFAULT_TARGETS[slug] ? [...DEFAULT_TARGETS[slug]] : null)
 }
 
 /** 'below', 'in' or 'above' the range. */

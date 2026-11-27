@@ -3857,6 +3857,16 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wsets-edit-r{flex:none;display:flex;align-items:center;gap:6px;margin-inline-start:auto}
 .wsets-edit-r .stp{flex:none;width:108px}
 
+/* The builder's recurring-plan estimate. Let long labels wrap independently of their numbers. */
+.routine-weekly-sets{margin-block-start:12px;overflow-wrap:anywhere}
+.routine-weekly-sets summary{min-height:44px;padding-block:10px;cursor:pointer}
+.routine-weekly-sets summary:focus-visible{outline:2px solid var(--label);outline-offset:2px}
+.routine-weekly-sets ul{margin-block:8px;padding-inline-start:20px}
+.routine-weekly-sets li{padding-block:6px}
+.routine-weekly-sets .below{color:var(--orange-ink)}
+.routine-weekly-sets .in{color:var(--green-ink)}
+.routine-weekly-sets .above{color:var(--red-ink)}
+
 /* Strength level: five steps, the reached ones in the accent's ink (a bar that carries meaning
    keeps 3:1, as the streak's do). */
 .slevel-name{font-size:var(--fs-title3);font-weight:600;line-height:var(--lh-title);letter-spacing:var(--ls-title)}

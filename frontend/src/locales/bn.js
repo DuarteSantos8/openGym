@@ -1,5 +1,10 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "পুনরাবৃত্ত পরিকল্পনার আনুমানিক হিসাব। ওয়ার্ম-আপ ও নির্দিষ্ট দিনের পরিবর্তন বাদ দেওয়া হয়েছে।",
+  "No working sets in the recurring plan.": "পুনরাবৃত্ত পরিকল্পনায় কোনো ওয়ার্কিং সেট নেই।",
+  "below range": "সীমার নিচে",
+  "Personal target": "ব্যক্তিগত লক্ষ্য",
+  "Default ranges adapted from RP Strength volume landmarks.": "ডিফল্ট সীমাগুলি RP Strength-এর প্রশিক্ষণের পরিমাণের নির্দেশিকা থেকে অভিযোজিত।",
   "Grip the bar just wider than your shoulders, palms facing away.": "কাঁধের চেয়ে একটু বেশি ফাঁক করে বার ধরুন, তালু সামনে।",
   "Hang with straight arms, then pull yourself up.": "হাত সোজা করে ঝুলুন, তারপর নিজেকে টেনে তুলুন।",
   "Pull your elbows down toward your ribs.": "কনুই নিচে পাঁজরের দিকে টানুন।",
