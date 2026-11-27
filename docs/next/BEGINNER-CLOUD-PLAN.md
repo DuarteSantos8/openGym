@@ -9,6 +9,8 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+Learn checks every supported locale for explicit glossary labels, including loanwords spelled the same as in English.
+
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
 
 10.02 has a loopback regression for denied workout writes with a plans-only grant. Live connector acceptance remains open.

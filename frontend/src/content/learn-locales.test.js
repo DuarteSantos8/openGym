@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterAll, describe, expect, it } from 'vitest'
 import { GLOSSARY } from './learn.js'
-import { LANGS, getLang, setLang, t } from '../lib/i18n.js'
+import { LANGS, getLang, hasTranslation, setLang, t } from '../lib/i18n.js'
 
 afterAll(async () => { await setLang('en') })
 
@@ -13,7 +13,7 @@ describe('the glossary in every supported language', () => {
       const missing = []
       for (const { id, term, def } of GLOSSARY) {
         const label = t(term), definition = t(def)
-        if (typeof label !== 'string' || !label.trim()) missing.push(id + ' label')
+        if (!hasTranslation(term) || typeof label !== 'string' || !label.trim()) missing.push(id + ' label')
         if (typeof definition !== 'string' || !definition.trim() || definition === def) missing.push(id + ' definition')
       }
       expect(missing).toEqual([])
