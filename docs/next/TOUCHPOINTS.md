@@ -8,6 +8,8 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Cache size limit | Preserve original guest and stashed attachments when trimming downloaded files. |
+| `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Media cleanup | Protect original guest and stashed attachments when the cache exceeds its size limit. |
 | `frontend/src/store/useStore.js` | `next/EP19-guest-privacy-followup` | Account transitions | Protect guest training and attachments, and clean up a login or pairing when the guest snapshot cannot be saved. |
 | `frontend/src/store/useStore.mobile-remote.test.jsx` | `next/EP19-guest-privacy-followup` | Pairing | Cover refused guest storage and the next successful pairing. |
 | `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js` | `next/EP19-guest-privacy-followup` | Sign-in | Wait for a failed adoption's cookie cleanup before the next sign-in. |

@@ -1835,7 +1835,8 @@ export const useStore = create((set, get) => {
         syncFromSaved()
         if (!owner && !was) {
           try {
-            if (hasData(get().S)) localStorage.setItem(GUEST_KEY, stateJson(get().S))
+            const guest = get().S
+            if (hasData(guest) || keptHashes(guest).size) localStorage.setItem(GUEST_KEY, stateJson(guest))
             else localStorage.removeItem(GUEST_KEY)
           } catch {
             // Keep the guest copy in place. Boot must end the new cookie before it can adopt data.

@@ -284,6 +284,21 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     } finally { releaseLogout?.(); window.history.replaceState(null, '', '/') }
   })
 
+  it('a guest whose only training record is a day photo keeps it after sign-in and sign-out', async () => {
+    serve()
+    const hash = 'e'.repeat(64)
+    const photo = { id: 'guest-photo', d: '2026-11-26', m: {
+      kind: 'image', hash, mime: 'image/webp', size: 1, width: 8, height: 8, at: 1,
+    } }
+    useStore.getState().setGuest(true)
+    useStore.getState().update(s => { s.dayPhotos = { [photo.id]: photo } }, false)
+    signIn('acct-a', 'A')
+    expect(await useStore.getState().stashedMediaHashes()).toContain(hash)
+    await useStore.getState().signOut({ force: true })
+    await reload()
+    expect(useStore.getState().S.dayPhotos).toEqual({ [photo.id]: photo })
+  })
+
   it('sign-out keeps actual guest media bytes and removes private account media', async () => {
     const { createMediaStore, memoryBackend, _setMediaStore } = await import('../lib/media-store.js')
     const media = createMediaStore(memoryBackend())
