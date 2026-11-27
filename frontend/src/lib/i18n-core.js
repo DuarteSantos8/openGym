@@ -12,6 +12,7 @@ export const LANGS = {
 }
 // Languages with exercise instructions / names, generated from catalogue/i18n by
 // scripts/catalogue/build.mjs. A pack can be partial; what it lacks shows in English.
+import { brandText, keepsName } from './brand.js'
 import { INSTR_LANGS, EXERCISE_NAME_LANGS } from './catalogue-langs.js'
 // Other names an exercise may be shown by (#903).
 import { shownNameOf } from './exercise-aliases.js'
@@ -81,6 +82,8 @@ export const getLang = () => lang
 export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
 export const getVersion = () => version
 
+export const hasTranslation = key => Object.hasOwn(dict, key)
+
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
   let v = dict[s] || s
@@ -90,6 +93,13 @@ export function t(s, ...args) {
     const forms = v
     v = (typeof args[0] === 'number' && forms[pluralCategory(args[0])]) || forms.other || forms.many || forms.one || s
   }
+  // Brand the template, then fill it: a routine, folder or profile named "openGym" is the
+  // person's own word and keeps it.
+  if (!keepsName(s)) v = brandText(v)
+  return fill(v, args)
+}
+
+const fill = (v, args) => {
   for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
   return v
 }
@@ -125,10 +135,7 @@ export function tn(one, other, n, ...rest) {
   if (forms && typeof forms === 'object') {
     const form = forms[pluralCategory(n)] || forms.other || forms.many || forms.one
     if (form) {
-      let v = form
-      const args = [n, ...rest]
-      for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
-      return v
+      return fill(keepsName(other) ? form : brandText(form), [n, ...rest])
     }
   }
   return t(n === 1 ? one : other, n, ...rest)
@@ -142,9 +149,7 @@ export function tnf(one, other, n, shown, ...rest) {
   const forms = dict[other]
   let v = forms && typeof forms === 'object' ? (forms[pluralCategory(n)] || forms.other || forms.many || forms.one) : null
   if (!v) v = (n === 1 ? dict[one] : (typeof forms === 'string' ? forms : null)) || (n === 1 ? one : other)
-  const args = [shown, ...rest]
-  for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
-  return v
+  return fill(keepsName(other) ? v : brandText(v), [shown, ...rest])
 }
 
 // The English steps and descriptions of 5,000+ exercises are too big to sit in the bundle every

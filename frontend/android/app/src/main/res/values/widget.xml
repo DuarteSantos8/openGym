@@ -10,7 +10,7 @@
     <color name="widget_flame">#FFFF9500</color>
     <color name="widget_freeze">#FF32ADE6</color>
 
-    <string name="widget_name">openGym</string>
+    <string name="widget_name">Ironvane</string>
     <string name="widget_desc">Your streak, weight goal, week, next workout, records or volume. You pick.</string>
     <string name="widget_what">What to show</string>
     <string name="widget_beside">And beside it (wide widget)</string>
@@ -22,7 +22,7 @@
     <string name="widget_kind_records">Records</string>
     <string name="widget_kind_volume">Volume</string>
     <string name="widget_kind_challenges">Challenges</string>
-    <string name="widget_empty">Open openGym once to fill this in.</string>
+    <string name="widget_empty">Open Ironvane once to fill this in.</string>
 
     <style name="WidgetConfigTheme" parent="@android:style/Theme.Material.Light.Dialog.NoActionBar" />
 </resources>

@@ -8,7 +8,8 @@
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
-import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { accessoriesOf, eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { sessionMinutes, writtenRestFor } from './planner.js'
 import { defaultConfig } from './history.js'
 import { STARTER_PLANS, AWAY_PLANS } from '../../../api/coach/core/starter-plans.js'
 export { AWAY_PLANS }
@@ -31,10 +32,22 @@ const build = routines =>
 // top of exactly these three, so this entry point keeps its shape.
 export const starterRoutines = () => build(PPL)
 
-// [{ id, days }] for the chooser. The day count is read off the schedule rather than stored
-// beside it, so the two can never disagree.
-export const starterPlanOptions = () =>
-  Object.entries(PLANS).map(([id, { schedule }]) => ({ id, days: schedule.length }))
+// Preview the same sessions the loader will put on the week, including a local equipment fit.
+export const starterPlanOptions = (equipment, machines) =>
+  Object.entries(PLANS).map(([id, plan]) => {
+    const fitted = equipment && fitRoutines(plan.routines, equipment, machines)
+    const routines = fitted ? fitted.routines : plan.routines
+    const days = plan.schedule.filter(([, key]) => routines.some(r => r[0] === key)).length
+    const times = routines.map(r => sessionMinutes(r[3], writtenRestFor(id))).sort((a, b) => a - b)
+    const first = times[0] ?? 0, last = times.at(-1) ?? 0
+    const minutes = first === last ? String(first) : `${first}–${last}`
+    let kit = null
+    if (fitted && (fitted.swapped || fitted.dropped)) {
+      const exercises = routines.flatMap(r => r[3].map(([exId]) => EXIDX[exId])).filter(Boolean)
+      kit = [...new Set(exercises.flatMap(ex => [ex.eq, ...accessoriesOf(ex)]))]
+    }
+    return { id, days, minutes, kit }
+  })
 
 // The weekdays a plan would claim, or null for an unknown id.
 export const starterPlanDays = id => PLANS[id]?.schedule.map(([day]) => day) ?? null
@@ -104,9 +117,13 @@ export const fitRoutines = (routines, equipment, machines) => {
 // treats null as "change nothing" can never half-apply a plan. With an equipment list the
 // plan is fitted to it first, and `fit` reports how many exercises that swapped or dropped.
 // `machines`, the profile's machine kinds (lib/machine-kinds.js), narrows the machines it may use.
-export const buildStarterPlan = (id, equipment, machines) => {
-  const plan = PLANS[id]
-  if (!plan) return null
+export const buildStarterPlan = (id, equipment, machines) => buildPlanFrom(PLANS[id], equipment, machines)
+
+// The same, for a plan handed in as data rather than named: { routines, schedule } in the
+// catalogue's own shape (lib/planner.js builds one from the quiz answers). null for anything
+// that is not a plan.
+export const buildPlanFrom = (plan, equipment, machines) => {
+  if (!plan || !Array.isArray(plan.routines) || !Array.isArray(plan.schedule)) return null
   const fit = equipment ? fitRoutines(plan.routines, equipment, machines) : null
   const source = fit ? fit.routines : plan.routines
   const routines = build(source)

@@ -1,0 +1,14 @@
+{
+  "name": "locales",
+  "sha": "4cf4bad31575d1f94cf208a8482de5f372488b69",
+  "node": "v22.23.5",
+  "cwd": "/code/openGym-fork/frontend",
+  "command": [
+    "node",
+    "scripts/check-locales.mjs"
+  ],
+  "started": "2026-11-14T10:59:27.509491+00:00",
+  "status": "passed",
+  "ended": "2026-11-14T10:59:27.869828+00:00",
+  "exit": 0
+}

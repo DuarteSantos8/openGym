@@ -1,0 +1,26 @@
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+
+ ❯ src/components/nutrition/EntrySheet.source.test.jsx (1 test | 1 failed) 66ms
+   × manual creation blocks repeated synchronous submits while the sheet closes 64ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/nutrition/EntrySheet.source.test.jsx > manual creation blocks repeated synchronous submits while the sheet closes
+AssertionError: expected [ { …(12) }, { …(12) } ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/components/nutrition/EntrySheet.source.test.jsx:15:52
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  10:27:06
+   Duration  2.35s (transform 1.43s, setup 35ms, import 1.76s, tests 66ms, environment 325ms)

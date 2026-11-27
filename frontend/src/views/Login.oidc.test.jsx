@@ -3,6 +3,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Login from './Login.jsx'
+import { OidcRow } from '../components/OidcAccount.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -10,9 +11,9 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    where the server offers it, OIDC_ONLY leaves it alone (passkeys tucked away for admins), and a
    refusal on the way back is said on the screen. */
 const mocks = vi.hoisted(() => {
-  const state = { webauthn: true, config: null, sheets: [] }
+  const state = { webauthn: true, config: null, mobile: false, user: null, sheets: [] }
   state.snapshot = () => ({
-    config: state.config, S: {},
+    config: state.config, user: state.user, S: {},
     setUser: vi.fn(), adoptProfile: vi.fn(), setGuest: vi.fn(), loadConfig: vi.fn(async () => state.config),
     pushState: vi.fn(), pullState: vi.fn(),
   })
@@ -34,6 +35,7 @@ vi.mock('../lib/api.js', () => ({
   api: vi.fn(), passkeyAssertion: vi.fn(), passwordLogin: vi.fn(), passwordRegister: vi.fn(), passwordResetRedeem: vi.fn(),
 }))
 vi.mock('../lib/oidc.js', async orig => ({ ...(await orig()), startWebSignIn: vi.fn() }))
+vi.mock('../lib/mobile.js', async orig => ({ ...(await orig()), get MOBILE() { return mocks.mobile } }))
 vi.mock('../lib/demo.js', () => ({ DEMO: false, REPO: 'https://example.invalid' }))
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: vi.fn(), confirmSheet: vi.fn() }))
 
@@ -49,12 +51,42 @@ function mount(el) {
 const buttons = host => [...host.querySelectorAll('button')].map(b => b.textContent)
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent === text)
 
-beforeEach(() => { mocks.webauthn = true; mocks.config = null; mocks.sheets.length = 0 })
+beforeEach(() => { mocks.webauthn = true; mocks.config = null; mocks.mobile = false; mocks.user = null; mocks.sheets.length = 0 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { root.unmount(); host.remove() }) }) })
 
 import { startWebSignIn, takeOidcReturn } from '../lib/oidc.js'
 
 describe('Login with an identity provider', () => {
+  it('offers only device use when the provider-only server belongs to another origin', () => {
+    mocks.config = { oidc: { label: 'Ironvane', only: true, webOrigin: 'https://other.example' }, allow_guest: true }
+    expect(buttons(mount(<Login />))).toEqual(['Continue without account'])
+  })
+
+  it('explains why sign-in is unavailable when the origin differs and guest use is off', () => {
+    mocks.config = { oidc: { label: 'Ironvane', only: true, webOrigin: 'https://other.example' }, allow_guest: false }
+    const page = mount(<Login />)
+    expect(buttons(page)).toEqual([])
+    expect(page.textContent).toContain('Sign-in is only available on the server’s configured website.')
+  })
+
+  it('keeps the linked provider row visible in mobile Settings', () => {
+    mocks.mobile = true
+    mocks.user = { oidc: true }
+    mocks.config = { oidc: { label: 'Ironvane', webOrigin: 'https://other.example' } }
+    expect(mount(<OidcRow />).textContent).toContain('Linked. Ironvane signs you in here.')
+  })
+
+  it('keeps the browser-only link action out of mobile Settings', () => {
+    mocks.mobile = true
+    mocks.user = {}
+    mocks.config = { oidc: { label: 'Ironvane', webOrigin: 'https://other.example' } }
+    expect(mount(<OidcRow />).textContent).toBe('')
+  })
+
+  it('offers provider sign-in when the browser and callback share an origin', () => {
+    mocks.config = { oidc: { label: 'Ironvane', only: true, webOrigin: window.location.origin } }
+    expect(buttons(mount(<Login />))).toContain('Sign in with Ironvane')
+  })
   it('no oidc in the config: no provider button', () => {
     const page = mount(<Login />)
     expect(buttons(page).some(b => /Sign in with (?!passkey)/.test(b))).toBe(false)

@@ -1,0 +1,14 @@
+final-no-preference run1 try1
+final-reduce run1 try1
+base-no-preference run1 try2
+base-reduce run1 try1
+final-no-preference run2 try1
+final-reduce run2 try1
+base-no-preference run2 try2
+base-reduce run2 try1
+final-no-preference run3 try2
+final-reduce run3 try1
+base-no-preference run3 try1
+base-reduce run3 try1
+final-no-preference run4 try1
+final-reduce run4 try1

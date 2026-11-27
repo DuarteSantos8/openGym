@@ -66,3 +66,9 @@ describe('a missed planned day', () => {
     expect(explainMissedDay(null)).toMatch(/would have counted/)
   })
 })
+
+it('names the mobility sessions that earned a freeze in the selected week', () => {
+  const workouts = ['2026-10-26', '2026-10-28'].map(d => ({ id: d, d, restDayMobility: d }))
+  const { log } = streakWeeks({ workouts }, '2026-10-28')
+  expect(explainWeek(log.get('2026-10-26'))).toContain('Two rest-day mobility sessions earned a freeze.')
+})

@@ -42,6 +42,15 @@ afterEach(() => { act(() => root.unmount()); host.remove() })
 const rows = () => [...host.querySelectorAll('.sbar-row')].map(el => el.textContent)
 
 describe('Stats — time per exercise', () => {
+  it('offers 1W and leaves out older ticked sessions', () => {
+    const workouts = [...S.workouts, session(10, s => [{ id: '0032', sets: [tick(s, 30)] }])]
+    act(() => root.render(<ExerciseTimeCard S={{ ...S, workouts }} />))
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent === '1W').click())
+    expect(rows()).toHaveLength(2)
+    expect(rows()[0]).toContain('8 min')
+    expect(rows()[1]).toContain('2 min')
+  })
+
   it('lists each exercise’s average a session, longest first, over the last 3 months', () => {
     act(() => root.render(<ExerciseTimeCard S={S} />))
     expect(rows()).toHaveLength(2)

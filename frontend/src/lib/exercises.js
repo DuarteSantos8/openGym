@@ -608,6 +608,9 @@ const STRETCHY = new Set(['stretching', 'mobility', 'rehab', 'yoga', 'pilates'])
  * familiar; the session builder (lib/session-builder.js) leans on it.
  */
 export const everydayScore = e => (e ? (STAPLES.has(e.id) ? 6 : 0) + priorOf(e) : 0)
+// A list with the gym staples lifted to the top, the rest in its order: what a first-time lifter
+// is looking for (bench, squat, pulldown) before the long tail of variations (release pass).
+export const staplesFirst = list => [...list.filter(e => STAPLES.has(e.id)), ...list.filter(e => !STAPLES.has(e.id))]
 export const isClassicEx = e => !!e && CLASSIC.has(e.id)
 // Body part and target muscle words of an exercise, in English and in the reader's language.
 const bodyWordsOf = e => new Set(normalizeStr([e?.bp || '', t(e?.bp || ''), e?.tg || '', t(e?.tg || '')].join(' ')).split(' ').filter(Boolean))

@@ -1,0 +1,58 @@
+/* Approved Progress hierarchy. Scoped selectors preserve the existing analytics components. */
+.iv-stats{width:100%;max-width:860px;margin:0 auto;padding-bottom:calc(5rem + 128px + var(--sab))}
+.iv-stats .hdr .sub,.iv-stats .stats-sect-h,.iv-stats .sec,.iv-stats .small,.iv-stats .empty,.iv-stats .ex-day-d,.iv-stats .ex-day-s,.iv-stats .ex-eff,.iv-stats .sbar-l,.iv-stats .sbar-v,.iv-stats .lrow-s,.iv-stats .tile .l{font-size:var(--fs-body)}
+.iv-stats-month{margin:22px 0}
+.iv-stats-month>h2{margin:0 2px 12px;font-size:var(--fs-title3);line-height:var(--lh-title)}
+.iv-stats-month-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,7rem),1fr));margin:0}
+.iv-stats-month-grid .tile{padding:16px 8px}
+.iv-stats-month-grid .tile .v{font-size:var(--fs-title3);line-height:1.25;font-variant-numeric:tabular-nums}
+.iv-stats-unit{font-size:var(--fs-body);margin-inline-start:2px}
+.iv-stats-more{border-bottom:var(--hair) solid var(--sep);margin:0 0 16px}
+.iv-stats-more>summary{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-size:var(--fs-body);font-weight:600;list-style:none}
+.iv-stats-more>summary::-webkit-details-marker{display:none}
+.iv-stats-more>summary::after{content:'+';font-size:var(--fs-title3);color:var(--acc-ink)}
+.iv-stats-more[open]>summary::after{content:'−'}
+.iv-stats-more-body{padding-top:12px}
+.iv-stats-report{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.iv-stats-report .btn{width:auto;min-height:48px;font-size:var(--fs-body)}
+.iv-stats .seg{gap:8px}
+.iv-stats .seg-sel{width:calc((100% - 4px - (var(--n) - 1)*8px)/var(--n));transform:translateX(calc((100% + 8px)*var(--i)))}
+[dir="rtl"] .iv-stats .seg-sel{transform:translateX(calc((-100% - 8px)*var(--i)))}
+.iv-stats .seg button{min-height:48px;font-size:var(--fs-body);line-height:1.25}
+.iv-stats .seg button span{overflow-wrap:anywhere}
+.iv-stats .stats-index{margin-bottom:20px}
+.iv-stats .stats-index-seg{margin:0}
+.iv-stats .card h2{overflow-wrap:anywhere}
+.iv-stats .ex-pick .lrow{min-height:56px}
+.iv-stats .lrow-v,.iv-stats .kpis .tile .l{white-space:normal;overflow-wrap:anywhere}
+.iv-stats .stats-links .lrow-v{max-width:48%;text-align:end}
+.iv-stats .ex-day{min-height:56px}
+.iv-stats .ex-day:focus-visible,.iv-stats .plan-day:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px}
+.iv-stats button,.iv-stats [role="button"]{min-width:48px;min-height:48px}
+.iv-stats .btn{width:auto;font-size:var(--fs-body)}
+.iv-stats .stats-list-h .btn,.iv-stats .mus-key .btn,.iv-stats .weekly-volume-toggle{min-height:48px}
+.iv-stats .mus-ctl,.iv-stats .mus-week,.iv-stats .mus-key,.iv-stats .bw-head .row,.iv-stats .stats-list-h{gap:8px}
+.iv-stats .mchips{gap:8px}
+.iv-stats .mchip{min-height:48px;font-size:var(--fs-body)}
+.iv-stats .stats-links .lrow{min-height:56px}
+.iv-stats-primary{margin:4px 0 16px}
+.iv-stats-primary .btn{width:100%;min-height:52px;font-size:var(--fs-body)}
+/* The global timer sits above the tab bar. Keep History and the final content above it too. */
+body.resting .iv-stats{padding-bottom:calc(11rem + 88px + var(--sab))}
+:root[data-theme="light"] .iv-stats .btn.tinted,:root[data-theme="light"] .iv-stats .btn.plain,:root[data-theme="light"] .iv-stats .btn.ghost,:root[data-theme="light"] .iv-stats-more>summary::after{color:#873006}
+@media (max-width:560px){
+  .iv-stats .ex-day{grid-template-columns:minmax(0,1fr);gap:4px;padding:10px 6px}
+  .iv-stats .ex-day-s,.iv-stats .ex-day-e{text-align:start}
+  .iv-stats .bw-head{flex-wrap:wrap}
+  .iv-stats .stats-index-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:transparent;padding:0;gap:8px}
+  .iv-stats .stats-index-seg .seg-sel{display:none}
+  .iv-stats .stats-index-seg button{background:var(--surface-3);border-radius:8px;padding:8px}
+  .iv-stats .stats-index-seg button.on{background:#636366}
+  :root[data-theme="light"] .iv-stats .stats-index-seg button{background:rgba(118,118,128,.12)}
+  :root[data-theme="light"] .iv-stats .stats-index-seg button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.16)}
+}
+@media (min-width:1000px){
+  .iv-stats{padding-bottom:calc(6.25rem + 128px + var(--sab))}
+  body.resting .iv-stats{padding-bottom:calc(13rem + 88px + var(--sab))}
+}
+@media (prefers-reduced-motion:reduce){.iv-stats *,.iv-stats *::before,.iv-stats *::after{transition:none!important;animation:none!important}}

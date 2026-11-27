@@ -30,8 +30,11 @@ function render(el) {
 }
 const renderTop = () => {
   const sheet = useUI.getState().sheets.at(-1)
-  return render(sheet.render(() => useUI.getState().closeSheet(sheet.id)))
+  return openSetup(render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
 }
+// The exercise sheet folds what you set once under "Setup for this exercise" (redesign step 4).
+const openSetup = host => { const h = host.querySelector('.ex-setup-h[aria-expanded="false"]'); if (h) act(() => h.click()); return host }
+
 const buttons = host => [...host.querySelectorAll('button')].map(b => b.textContent.trim())
 const click = (host, sel, text) => {
   const el = [...host.querySelectorAll(sel)].find(e => e.textContent.trim() === text)

@@ -3,7 +3,7 @@
        native app, the home-screen PWA and the website favicon all show the same icon.
        Generate platform icons + splash via `npx @capacitor/assets generate` — docs/MOBILE.md. -->
   <rect width="512" height="512" fill="#0c0e12"/>
-  <g fill="#a3e635">
+  <g fill="#ff6b2c">
     <rect x="80" y="242" width="352" height="28"/>
     <rect x="80" y="199" width="36" height="114"/>
     <rect x="131" y="169" width="47" height="174"/>

@@ -137,3 +137,28 @@ describe('streakCelebration', () => {
     expect(streakCelebration({ streakSeen: { badge: 0 } }, info(3, false), { done: 0, planned: 3 })).toBeNull()
   })
 })
+
+describe('rest-day mobility freezes', () => {
+  const session = (id, d) => ({ id, d, restDayMobility: d })
+  const one = session('one', '2026-10-26'), two = session('two', '2026-10-27')
+  const three = session('three', '2026-10-28')
+  it('earns one per week for two completed sessions, deduplicated by workout ID', () => {
+    const count = workouts => streakInfo(S(workouts), TODAY).freezes
+    expect(count([one, one])).toBe(0)
+    expect(count([one, two])).toBe(1)
+    expect(count([one, two, three])).toBe(1)
+    const saved = S([one, two, three])
+    expect(streakInfo(saved, TODAY)).toEqual(streakInfo(JSON.parse(JSON.stringify(saved)), TODAY))
+    expect(count([one, { ...two, restDayMobility: undefined, name: 'Hip mobility', circuits: [{ sg: 'mobility-hips' }] }])).toBe(0)
+    expect(count([one, { ...two, d: '2026-10-28' }])).toBe(0)
+    expect(count([one, session('next', '2026-10-29')])).toBe(0)
+    expect(count([one, session('previous', '2026-10-25')])).toBe(0)
+  })
+  it('shares the existing bank and its rule with the fourth trained week', () => {
+    const workouts = [...weeks(1, 2, 3), one, two, three]
+    expect(streakInfo(S(workouts), TODAY).freezes).toBe(FREEZE_MAX)
+    for (const [rule, cap] of [['off', 0], ['gentle', 1]]) {
+      expect(streakInfo(S(workouts, { streakRule: { rule, since: null } }), TODAY).freezes).toBe(cap)
+    }
+  })
+})

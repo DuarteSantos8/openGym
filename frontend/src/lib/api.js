@@ -2,6 +2,7 @@
 import { t } from './i18n-core.js'
 import { MOBILE } from './mobile.js'
 import { appBase } from './app-base.js'
+import { pendingCookieCleanup } from './cookie-cleanup.js'
 import { nativeFetch, inAndroidApp } from './capacitor-fetch.js'
 
 export const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
@@ -58,6 +59,7 @@ function refusal(status, body) {
 }
 
 export async function api(path, opts) {
+  if (pendingCookieCleanup) await pendingCookieCleanup
   const { timeout, ...init } = opts || {}
   // A phone with no server to talk to: local mode, or a pairing that is gone. There is no
   // relative URL to fall back on here — the WebView's own origin is Capacitor's local asset

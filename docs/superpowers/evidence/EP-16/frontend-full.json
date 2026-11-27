@@ -1,0 +1,16 @@
+{
+  "name": "frontend-full",
+  "sha": "4cf4bad31575d1f94cf208a8482de5f372488b69",
+  "node": "v22.23.5",
+  "cwd": "/code/openGym-fork/frontend",
+  "command": [
+    "npm",
+    "test",
+    "--",
+    "--maxWorkers=1"
+  ],
+  "started": "2026-11-14T10:45:59.581895+00:00",
+  "status": "passed",
+  "ended": "2026-11-14T10:57:07.931891+00:00",
+  "exit": 0
+}

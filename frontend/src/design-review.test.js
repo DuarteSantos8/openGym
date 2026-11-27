@@ -217,7 +217,11 @@ describe('Card dismiss pass', () => {
     expect(src('components/Recap.jsx')).toMatch(/className="card tap-host recap-card"[\s\S]*open=\{\{ onClick: \(\) => recapSheet\(r\)/)
     expect(src('views/Home.jsx')).toMatch(/className="card tap-host streak-card"/)
     expect(src('views/Home.jsx')).toMatch(/className="card tap-host checkin-card"/)
-    for (const f of ['views/Library.jsx', 'components/MuscleExplorer.jsx', 'sheets.jsx', 'views/RoutineEdit.jsx']) expect(src(f), f).toMatch(/className="grow item-open tap-main"/)
+    for (const f of ['components/MuscleExplorer.jsx', 'sheets.jsx', 'views/RoutineEdit.jsx']) expect(src(f), f).toMatch(/className="grow item-open tap-main"/)
+    // Library's separate Select control chooses for the single Add action, so its Details button
+    // deliberately has no stretched overlay; the controls remain siblings, never nested.
+    expect(src('views/Library.jsx')).toMatch(/className="grow item-open"/)
+    expect(src('views/Library.jsx')).toMatch(/className="iv-lib-select"/)
     expect(src('components/CardHead.jsx')).toMatch(/className="card-head-main tap-main"/)
     // with nothing nested, no control has to stop its click from reaching a card any more
     for (const f of ['components/Recap.jsx', 'components/WeeklySets.jsx', 'views/Library.jsx', 'components/MuscleExplorer.jsx']) expect(src(f), f).not.toMatch(/stopPropagation/)

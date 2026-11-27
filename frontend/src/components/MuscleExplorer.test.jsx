@@ -207,3 +207,23 @@ describe('MuscleExplorer per-muscle counts', () => {
     expect(checked).toBeGreaterThan(5)
   })
 })
+
+// Ironvane: Today's body picker opens the explorer on several muscles at once, matching any of them.
+describe('MuscleExplorer opened on several muscles', () => {
+  it('starts with every one of them picked and "Any of them" on', () => {
+    const host = render({ initial: ['front-delts', 'calves'], initialMatch: 'any' })
+    expect(isOn(muscleChip(host, 'Front delts'))).toBe(true)
+    expect(isOn(muscleChip(host, 'Calves'))).toBe(true)
+    const any = [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Any of them')
+    expect(any.getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('still opens on one muscle with "All of them", as Stats asks for it', () => {
+    const host = render({ initial: 'biceps' })
+    expect(isOn(muscleChip(host, 'Biceps'))).toBe(true)
+    // The All/Any switch shows from two muscles on: pick a second one to read what it starts on.
+    act(() => muscleChip(host, 'Triceps').click())
+    const all = [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'All of them')
+    expect(all.getAttribute('aria-pressed')).toBe('true')
+  })
+})

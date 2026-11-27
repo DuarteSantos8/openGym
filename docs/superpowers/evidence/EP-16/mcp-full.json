@@ -1,0 +1,16 @@
+{
+  "name": "mcp-full",
+  "sha": "4cf4bad31575d1f94cf208a8482de5f372488b69",
+  "node": "v22.23.5",
+  "cwd": "/code/openGym-fork/mcp",
+  "command": [
+    "npm",
+    "test",
+    "--",
+    "--maxWorkers=2"
+  ],
+  "started": "2026-11-14T10:59:21.273734+00:00",
+  "status": "passed",
+  "ended": "2026-11-14T10:59:25.265151+00:00",
+  "exit": 0
+}
