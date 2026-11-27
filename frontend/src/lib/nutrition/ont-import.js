@@ -58,25 +58,28 @@ function filingDay(stamp, boundary) {
   if (+match[2] * 60 + +match[3] >= boundary) return match[1]
   return new Date(Date.parse(match[1]) - 86400000).toISOString().slice(0, 10)
 }
-const unitOf = raw => raw === 'mL' || raw === 'ml' ? 'mL' : raw
+const mass = new Set(['g', 'kg', 'mg', 'µg', 'oz'])
+const volume = new Set(['ml', 'l', 'dl', 'cl', 'fl.oz', 'fl oz'])
+function dimension(unit) {
+  const name = String(unit || '').trim().toLowerCase()
+  if (mass.has(name)) return 'g'
+  if (volume.has(name)) return 'mL'
+}
 function convert(row, boundary) {
   if (typeof row?.id !== 'string' || !row.id.trim() || row.id.length > 200) invalid()
-  const meal = row.meal
-  const amount = numeric(row.amount), unit = unitOf(row.unit)
-  if (!amount || !['g', 'mL', 'serving'].includes(unit)) invalid()
-  const input = { day: filingDay(row.dateTime, boundary), meal: row.type, label: meal.name, amount, unit }
-  let base = amount, dimension = unit
-  if (unit === 'serving') {
-    input.servingSize = numeric(meal.servingQuantity)
-    input.servingUnit = dimension = unitOf(meal.servingUnit)
-    input.servingLabel = meal.servingSize || String(input.servingSize) + ' ' + dimension
-    base *= input.servingSize
-  }
-  // No density conversion: scale only on a matching nutritional basis. Older exports default to grams.
-  if (dimension !== unitOf(meal.mealUnit || 'g')) invalid()
+  const meal = row.meal, amount = numeric(row.amount)
+  const unit = String(row.unit || '').trim().toLowerCase()
+  const serving = /^serving(?:#\d+)?$/.test(unit)
+  if (!amount || !(serving || ['g', 'ml', 'g/ml', 'oz', 'fl.oz', 'fl oz'].includes(unit))) invalid()
+  // v2.7 writes totalQuantityConverted alongside the dropdown label. Even 'oz' and
+  // 'serving' amounts are already grams or millilitres; applying a multiplier here doubles it.
+  const measure = dimension(unit) || (unit.startsWith('serving#') ? 'g' : undefined)
+    || dimension(meal.mealUnit) || (serving ? dimension(meal.servingUnit) : undefined)
+  const input = { day: filingDay(row.dateTime, boundary), meal: row.type, label: meal.name }
+  if (measure) { input.amount = amount; input.unit = measure }
   for (let i = 0; i < nutrients.length; i++) {
     const value = meal.nutriments?.[nutrients[i][0]]
-    if (value != null && value !== '') input[NUTRIENTS[i]] = numeric(value) * base / 100
+    if (value != null && value !== '') input[NUTRIENTS[i]] = numeric(value) * amount / 100
   }
   const entry = createEntry(input, { source, externalId: row.id })
   // The sync engine joins by local UUID. Independent imports must choose the same one.
