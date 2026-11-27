@@ -1,35 +1,35 @@
 // A delayed logout response expires the browser cookie. Let it finish before starting another login.
 export let pendingCookieCleanup = null
 
-// The cookie is HttpOnly. Boot retries logout until the server acknowledges it. A full device
-// store may still let this tab record the retry in its session storage.
+// Boot retries logout until the server acknowledges it. The fallback must be shared across
+// tabs even when localStorage is full. This session cookie carries only the pending flag.
 const LOGOUT_OWED_KEY = 'gym_logout_owed'
-const SIGN_IN_KEY = 'gym_sign_in_generation'
-const signInGeneration = () => {
-  try { return localStorage.getItem(SIGN_IN_KEY) || '1' } catch { return null }
+const debtCookie = () => {
+  try { return document.cookie.match(/(?:^|;\s*)gym_logout_owed=([01])(?:;|$)/)?.[1] } catch { return undefined }
 }
-
-export function recordSignIn() {
-  try { localStorage.setItem(SIGN_IN_KEY, Date.now().toString(36) + Math.random().toString(36)) } catch { /* storage is unavailable */ }
+const writeDebtCookie = value => {
+  try {
+    document.cookie = LOGOUT_OWED_KEY + '=' + value + '; Path=/; SameSite=Strict' + (location.protocol === 'https:' ? '; Secure' : '')
+    return debtCookie() === value
+  } catch { return false }
 }
 
 export function logoutOwed(on) {
-  for (const name of ['localStorage', 'sessionStorage']) {
-    try {
-      const storage = window[name]
-      if (on === undefined) {
-        const marker = storage.getItem(LOGOUT_OWED_KEY)
-        if (!marker) continue
-        const current = name === 'sessionStorage' ? signInGeneration() : null
-        if (!current || marker === '?' || marker === current) return true
-        storage.removeItem(LOGOUT_OWED_KEY)
-      } else if (on) {
-        storage.setItem(LOGOUT_OWED_KEY, name === 'sessionStorage' ? signInGeneration() || '?' : '1')
-        return true
-      } else storage.removeItem(LOGOUT_OWED_KEY)
-    } catch { /* try the other storage */ }
+  if (on === true) {
+    try { localStorage.setItem(LOGOUT_OWED_KEY, '1'); return true } catch { /* quota */ }
+    if (writeDebtCookie('1')) return true
+    try { sessionStorage.setItem(LOGOUT_OWED_KEY, '1'); return true } catch { return false }
   }
-  return false
+  if (on === false) {
+    try { localStorage.removeItem(LOGOUT_OWED_KEY) } catch { /* unavailable */ }
+    try { sessionStorage.removeItem(LOGOUT_OWED_KEY) } catch { /* unavailable */ }
+    writeDebtCookie('0')
+    return false
+  }
+  try { if (localStorage.getItem(LOGOUT_OWED_KEY)) return true } catch { /* unavailable */ }
+  const cookie = debtCookie()
+  if (cookie !== undefined) return cookie === '1'
+  try { return !!sessionStorage.getItem(LOGOUT_OWED_KEY) } catch { return false }
 }
 
 export function trackCookieCleanup(request) {

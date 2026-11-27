@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
-import { logoutOwed, recordSignIn, trackCookieCleanup } from '../lib/cookie-cleanup.js'
+import { logoutOwed, trackCookieCleanup } from '../lib/cookie-cleanup.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
@@ -1803,7 +1803,7 @@ export const useStore = create((set, get) => {
 
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
-    setUser(u, { adopt } = {}) {
+    setUser(u, { adopt, restored = false } = {}) {
       const was = get().user?.id ?? null
       const wasHeld = adoptHold   // the hold of the account signed in so far, before this one's goes on
       if (u) {
@@ -1874,8 +1874,7 @@ export const useStore = create((set, get) => {
         seenOwner = u.id
         handedOver = false
         localStorage.setItem('gym_user', JSON.stringify(u)); localStorage.removeItem('gym_guest')
-        if (!MOBILE && (adopt || !rejoined)) recordSignIn()
-        logoutOwed(false)   // this sign-in's cookie replaced the one a failed sign-out left behind
+        if (!MOBILE && !restored) logoutOwed(false)   // an explicit sign-in replaced the old cookie
         // A profile created here (no question: this copy becomes it) is saved once under its owner
         // now. Another tab of this browser takes only a copy saved under the new owner, and went
         // blank until this one happened to save something (takeSaved).
@@ -2337,7 +2336,7 @@ export const useStore = create((set, get) => {
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await (hurry ? api('/api/me', bootOpts({})) : api('/api/me'))
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-        get().setUser(me.user, arrived ? { adopt: true } : undefined)
+        get().setUser(me.user, arrived ? { adopt: true } : { restored: true })
         if (arrived) {
           finishBoot()
           const { askAddDeviceData } = await import('../sheets.jsx')

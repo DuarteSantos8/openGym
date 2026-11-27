@@ -301,18 +301,22 @@ describe('guest training after import — owner contract 2026-11-27', () => {
 
   it('a second tab signing in cancels the first tab’s old fallback logout on reload', async () => {
     const { logoutOwed } = await import('../lib/cookie-cleanup.js')
+    const user = { id: 'acct-b', name: 'B' }
+    localStorage.setItem('gym_owner', user.id)
+    localStorage.setItem('gym_owner_name', user.name)
+    localStorage.setItem('gym_user', JSON.stringify(user))
     const write = localStorage.setItem.bind(localStorage)
     const deny = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
-      if (key === 'gym_logout_owed') throw new DOMException('full', 'QuotaExceededError')
+      if (String(value).length > (localStorage.getItem(key)?.length ?? -1)) throw new DOMException('full', 'QuotaExceededError')
       write(key, value)
     })
-    try { logoutOwed(true) } finally { deny.mockRestore() }
+    logoutOwed(true)
     expect(logoutOwed()).toBe(true)
     const key = 'gym_logout_owed'
     const firstTabMarker = sessionStorage.getItem(key)
     sessionStorage.removeItem(key)
-    signIn('acct-b', 'B')
-    sessionStorage.setItem(key, firstTabMarker)
+    try { signIn(user.id, user.name) } finally { deny.mockRestore() }
+    if (firstTabMarker) sessionStorage.setItem(key, firstTabMarker)
     api.mockImplementation(async path => {
       if (path === '/api/config') return { signed_in: true, allow_guest: true, coach: null }
       if (path === '/api/me') return { user: { id: 'acct-b', name: 'B' } }
@@ -323,6 +327,36 @@ describe('guest training after import — owner contract 2026-11-27', () => {
       await useStore.getState().boot()
       expect(api.mock.calls.filter(([path]) => path === '/api/logout')).toEqual([])
       expect(useStore.getState().user.id).toBe('acct-b')
+    } finally { sessionStorage.removeItem(key) }
+  })
+
+  it.each(['current', 'legacy'])('a passive cookie restore never cancels pending logout (%s marker)', async version => {
+    const { logoutOwed } = await import('../lib/cookie-cleanup.js')
+    const key = 'gym_logout_owed'
+    if (version === 'legacy') {
+      document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0'
+      sessionStorage.setItem(key, '1')
+    } else {
+      const deny = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
+      try { logoutOwed(true) } finally { deny.mockRestore() }
+    }
+    const firstTab = sessionStorage.getItem(key)
+    sessionStorage.removeItem(key)
+    let signedIn = true
+    api.mockImplementation(async path => {
+      if (path === '/api/config') return { signed_in: signedIn, allow_guest: true, coach: null }
+      if (path === '/api/logout') { signedIn = false; return {} }
+      if (path === '/api/me' && signedIn) return { user: { id: 'acct-a', name: 'A' } }
+      return { state: null, rev: 0 }
+    })
+    try {
+      await reload()
+      await useStore.getState().boot()
+      if (firstTab) sessionStorage.setItem(key, firstTab)
+      await reload()
+      await useStore.getState().boot()
+      expect(signedIn).toBe(false)
+      expect(useStore.getState().user).toBeNull()
     } finally { sessionStorage.removeItem(key) }
   })
 
