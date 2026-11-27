@@ -51,6 +51,7 @@ const byText = (h, txt) => [...h.querySelectorAll('button, .lrow, [role=button]'
 const TOK = { id: 't_1', name: 'Claude', hint: 'abcdef', scopes: { workouts: 'view', plans: 'apply', bodyweight: 'off', measurements: 'off', notes: 'off' }, created: Date.now() - 3600e3, exp: null, used: null }
 beforeEach(() => {
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
+  mocks.config = { api_tokens: true }
   mocks.sheets = []; mocks.calls = []; mocks.toasts = []; mocks.confirm = null
   mocks.answers = { '/api/tokens': b => (b ? { token: 'ogt_' + 'x'.repeat(43), tokens: [TOK], id: 't_1' } : { tokens: [], days: [7, 30, 90, 365, 0], defaultDays: 90, mcp: true }) }
 })
@@ -76,14 +77,21 @@ describe('API tokens page', () => {
     expect(host.textContent).toContain('https://connector.example/mcp')
   })
 
-    it('does not keep a retired connector address once the token list stops sending one', async () => {
-          mocks.config = { api_tokens: true, mcp: true, mcpAddress: 'https://connector.example/mcp' }
-          mocks.answers['/api/tokens'] = { tokens: [], mcp: true }
-          await render(<ApiTokensPage />)
-          expect(host.textContent).not.toContain('https://connector.example/mcp')
-          expect(host.textContent).toContain('http://localhost:3000/mcp'.replace('http://localhost:3000', location.origin))
-          mocks.config = { api_tokens: true }
-    })
+  it('does not keep a retired connector address once the token list stops sending one', async () => {
+    mocks.config = { api_tokens: true, mcp: true, mcpAddress: 'https://connector.example/mcp' }
+    mocks.answers['/api/tokens'] = { tokens: [], mcp: true }
+    await render(<ApiTokensPage />)
+    expect(host.textContent).not.toContain('https://connector.example/mcp')
+    expect(host.textContent).toContain(location.origin + '/mcp')
+  })
+
+  it('hides the connector address when the server disables MCP after config was cached', async () => {
+    mocks.config = { api_tokens: true, mcp: true, mcpAddress: 'https://connector.example/mcp' }
+    mocks.answers['/api/tokens'] = { tokens: [], mcp: false }
+    await render(<ApiTokensPage />)
+    expect(host.textContent).not.toContain('MCP address')
+    expect(host.textContent).toContain('No tokens yet')
+  })
 
   it('lists a token with what it may do, and revokes it', async () => {
     mocks.answers['/api/tokens'] = { tokens: [TOK], mcp: false }

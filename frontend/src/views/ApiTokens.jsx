@@ -26,10 +26,9 @@ export default function ApiTokensPage() {
   const [error, setError] = useState(false)
   const load = useCallback(() => listTokens().then(d => { setData(d); setError(false) }).catch(() => setError(true)), [])
   useEffect(() => { load() }, [load])
-  const mcp = data?.mcp || !!config?.mcp
-    // A fresh token list is authoritative: once it has arrived, a missing mcpAddress means no
-     // connector address is advertised, so the cached config must not resurrect a retired one.
-     const address = data ? (data.mcpAddress || mcpAddress()) : (config?.mcpAddress || mcpAddress())
+  const mcp = data?.mcp ?? !!config?.mcp
+  // A fresh list with no custom address uses the regular server address.
+  const address = (data ?? config)?.mcpAddress || mcpAddress()
   const tokens = data?.tokens || []
 
   const open = tok => sheet(close => <TokenDetail tok={tok} close={close} onRevoked={d => { setData(cur => ({ ...cur, tokens: d.tokens })); toast(t('Token revoked')) }} />)
