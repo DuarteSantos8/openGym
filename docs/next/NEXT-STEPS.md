@@ -5,6 +5,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 ## 1. State
 
 - **Coach recovery (07.02, prepared).** A local Chromium test runs the provider timeout, API restart, retry, approval and reload on one disposable profile. Hosted MiniMax acceptance remains open.
+- **Connector permissions (10.02, isolated).** The loopback acceptance test checks that a plans-only reader cannot log workouts and that revocation ends access. Hosted client verification remains open.
 - Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
 
 - **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
