@@ -162,7 +162,7 @@ Connector OAuth requires one reachable HTTPS origin serving MCP transport, /.wel
 discovery and /api/oauth. Vercel reserves /.well-known and cannot rewrite it, and preview
 deployment protection can block connectors. Choose and verify a suitable HTTPS origin and
 route /mcp and /mcp/health to MCP, and the discovery and /api/oauth/* paths to the same API
-that serves the web app. For a base path, the API accepts the advertised prefixed OAuth endpoints directly. Strip the prefix for the MCP transport;
+that serves the web app. For a base path, the API accepts the advertised prefixed OAuth endpoints directly, but only when MCP_PUBLIC_ORIGIN is set; without it, strip the prefix before /api/oauth as the bundled nginx proxy does. Strip the prefix for the MCP transport;
 forward the root /.well-known discovery paths to the API intact. The web app still proxies /api/* to that API, so the consent screen
 uses the existing signed-in session. With MCP enabled, verify that discovery advertises the
 connector as issuer and its /mcp as resource. The authorize redirect must open the web app at

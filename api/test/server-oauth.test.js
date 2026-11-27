@@ -142,6 +142,22 @@ test('separate connector origin advertises its own issuer and resource but opens
   assert.equal(new URL(wrong.headers.get('location')).searchParams.get('error'), 'invalid_target');
 });
 
+test('a browser OAuth client on a prefixed connector is CSRF-exempt like the unprefixed endpoints', async t => {
+  const api = await start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example', BASE_PATH: '/gym' });
+  const browser = { 'Content-Type': 'application/json', Origin: 'https://claude.example' }
+  for (const pathname of ['/api/oauth/register', '/gym/api/oauth/register']) {
+    const r = await fetch(api + pathname, { method: 'POST', headers: browser, body: JSON.stringify({ redirect_uris: ['http://localhost:3001/callback'] }) });
+    assert.equal(r.status, 201, pathname);
+  }
+  const form = { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://claude.example' }
+  for (const endpoint of ['token', 'revoke']) {
+    const plain = await fetch(api + '/api/oauth/' + endpoint, { method: 'POST', headers: form, body: 'token=x&grant_type=authorization_code' });
+    const prefixed = await fetch(api + '/gym/api/oauth/' + endpoint, { method: 'POST', headers: form, body: 'token=x&grant_type=authorization_code' });
+    assert.notEqual(prefixed.status, 403, endpoint);
+    assert.equal(prefixed.status, plain.status, endpoint);
+  }
+});
+
 for (const [name, config] of [
   ['MCP off', {}],
   ['MCP off with a connector origin saved', { MCP_PUBLIC_ORIGIN: 'https://connector.example' }],

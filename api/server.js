@@ -2563,6 +2563,8 @@ function oauthRoutes() {
     for (const [method, endpoint] of [['GET', 'authorize'], ['POST', 'register'], ['POST', 'token'], ['POST', 'revoke']]) {
       const pathname = '/api/oauth/' + endpoint;
       handlers[method + ' ' + APP_BASE + pathname] = handlers[method + ' ' + pathname];
+      // The alias is the same endpoint: a browser OAuth client is CSRF-exempt on it too.
+      if (CSRF_EXEMPT.has(method + ' ' + pathname)) CSRF_EXEMPT.add(method + ' ' + APP_BASE + pathname);
     }
   }
   return handlers;
