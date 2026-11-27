@@ -1796,7 +1796,7 @@ export const useStore = create((set, get) => {
         const other = !!owner && owner !== u.id
         // The hold goes on before anything else can run: a poll, a resume, a debounced push.
         if (adopt) {
-          adoptHold = true
+          setHold(true)
           clearTimeout(pushTm)
           pushTm = null
         } else {
@@ -2011,13 +2011,14 @@ export const useStore = create((set, get) => {
       const tok = currentSession()   // first: a session another account left drops its adoption
       if (adopting) return adopting
       setHold(true)
+      setSync({ adopting: true })
       // Whatever throws on the way (the server, the question itself): a sign-in that marked it
       // stays held, and the next check or "Sync now" runs it again; a bare call has nothing to
       // hold for and lets go.
       adopting = runAdopt(ask, opts, tok)
         .then(r => { if (isCurrent(tok)) claimSaved(); return r })
         .catch(e => { if (isCurrent(tok) && !adoptOwed()) releaseAdopt(); throw e })
-        .finally(() => { if (tok === syncSession) adopting = null })
+        .finally(() => { if (tok === syncSession) adopting = null; if (!adopting) setSync({ adopting: false }) })
       return adopting
     },
     // The adoption a sign-in still owes — the app was closed with its question open, or the server

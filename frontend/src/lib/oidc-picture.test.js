@@ -163,10 +163,10 @@ describe('taking the provider\'s picture', () => {
     } finally { vi.useRealTimers() }
   })
 
-  it('a sign-in question or a failed sync that comes up while it waits holds the fetch too', async () => {
+  it('a sign-in question, an adoption still under way or a failed sync that comes up while it waits holds the fetch too', async () => {
     vi.useFakeTimers()
     try {
-      for (const [blocked, open] of [[{ sync: { held: true } }, { sync: {} }], [{ sync: { lastError: { status: 503, code: 'http' } } }, { sync: { lastError: null } }]]) {
+      for (const [blocked, open] of [[{ sync: { held: true } }, { sync: {} }], [{ sync: { adopting: true } }, { sync: {} }], [{ sync: { lastError: { status: 503, code: 'http' } } }, { sync: { lastError: null } }]]) {
         const store = fakeStore({ user: user(), S: {} })
         const d = deps()
         const stop = startProviderPicture(store, d)

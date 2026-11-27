@@ -72,11 +72,11 @@ function passedOver (S, seen, config) {
   return !(mark && mark.at >= seen) && !!avatarOf(S) && !fromProvider(S)
 }
 
-/** Wires it to the app store: once boot is done, signed in, no sign-in question is open, and the
- *  last sync reached the server, so the profile in hand is the server's. */
+/** Wires it to the app store: once boot is done, signed in, the sign-in has settled what becomes
+ *  of this device's copy, and the last sync reached the server, so the profile in hand is the server's. */
 export function startProviderPicture (store, deps) {
   let timer = null
-  const shut = s => !s.ready || !s.user || s.sync?.held || s.sync?.offline || s.sync?.lastError
+  const shut = s => !s.ready || !s.user || s.sync?.held || s.sync?.adopting || s.sync?.offline || s.sync?.lastError
   const check = () => {
     const s = store.getState()
     if (timer || shut(s)) return
