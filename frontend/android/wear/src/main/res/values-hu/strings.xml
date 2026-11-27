@@ -3,6 +3,8 @@
 <resources>
     <string name="add_birth_year">Add meg a születési éved a telefonos appban</string>
     <string name="add_session_note">Edzésjegyzet hozzáadása</string>
+    <string name="add_set">Sorozat hozzáadása</string>
+    <string name="add_short">Hozzáadás</string>
     <string name="added_weight">Plusz súly</string>
     <string name="all_done_q">Végeztél?</string>
     <string name="all_sets_done">Minden sorozat kész</string>
@@ -36,11 +38,14 @@
     <string name="discard_workout">Edzés elvetése</string>
     <string name="discard_workout_q">Elveted az edzést?</string>
     <string name="done">Kész</string>
+    <string name="drop_set">Drop szett</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Szerkesztés</string>
     <string name="edit_session_note">Edzésjegyzet szerkesztése</string>
     <string name="effort">Megerőltetés</string>
     <string name="ended_on_phone">A telefonon befejezve</string>
     <string name="exercises">Gyakorlatok</string>
+    <string name="failure_tag">Kudarc</string>
     <string name="finish_and_save">Befejezés és mentés</string>
     <string name="finish_now">Befejezés most</string>
     <string name="finish_workout">Edzés befejezése</string>
@@ -103,6 +108,9 @@
     <string name="quick_checkin">Gyors bejelentkezés</string>
     <string name="quick_start">Gyors indítás</string>
     <string name="records">Rekordok</string>
+    <string name="remove_set">Sorozat eltávolítása</string>
+    <string name="remove_short">Eltávolítás</string>
+    <string name="removed">Törölve</string>
     <string name="reps">Ism.</string>
     <string name="rest">Pihenő</string>
     <string name="rest_day">Nincs terv. Rajtad áll.</string>
@@ -112,7 +120,9 @@
     <string name="save">Mentés</string>
     <string name="save_and_start">Mentés és edzés indítása</string>
     <string name="saved">Elmentve</string>
+    <string name="set_menu">Sorozat menü</string>
     <string name="set_of">%1$d. sorozat / %2$d</string>
+    <string name="set_of_tags">%1$d. sorozat / %2$d, %3$s</string>
     <string name="sets">Sorozatok</string>
     <string name="sets_of">%1$d / %2$d sorozat</string>
     <string name="skip">Kihagyás</string>
@@ -129,7 +139,9 @@
     <string name="tap_to_change">Koppints a módosításhoz.</string>
     <string name="tile_desc">A heti sorozatod és a mai terv.</string>
     <string name="time">Idő</string>
+    <string name="to_failure">Bukásig</string>
     <string name="today">Ma</string>
+    <string name="undo">Visszavonás</string>
     <string name="up_next">Következő</string>
     <string name="up_next_set">%1$s, sorozat %2$d/%3$d</string>
     <string name="volume">Volumen</string>

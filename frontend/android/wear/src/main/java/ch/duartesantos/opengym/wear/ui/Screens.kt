@@ -72,6 +72,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -85,8 +90,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -121,6 +128,7 @@ import androidx.wear.compose.material3.timeTextCurvedText
 import androidx.wear.compose.material3.timeTextSeparator
 import ch.duartesantos.opengym.wear.BuildConfig
 import ch.duartesantos.opengym.wear.Effort
+import ch.duartesantos.opengym.wear.SetMenu
 import ch.duartesantos.opengym.wear.Entry
 import ch.duartesantos.opengym.wear.Fix
 import ch.duartesantos.opengym.wear.Keypad
@@ -137,6 +145,7 @@ import ch.duartesantos.opengym.wear.SetNav
 import ch.duartesantos.opengym.wear.SetRef
 import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
+import ch.duartesantos.opengym.wear.HeldRemoval
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.DailyForm
@@ -232,7 +241,9 @@ fun OgTimeText() {
     val holdCount by WearStore.holdCountIn.collectAsState()
     val go by WearStore.goAt.collectAsState()
     val pg by WearStore.page.collectAsState()
-    if (countIn != null || go != null || (holdCount != null && pg == Page.SET)) return
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    // the set menu is full screen: no clock over it
+    if (countIn != null || go != null || (holdCount != null && pg == Page.SET) || (menuOpen && pg == Page.SET && WearStore.menuAvailable())) return
     // At the largest text sizes the curved line ran off its arc into the title below: it grows at most 10 %.
     val d = LocalDensity.current
     androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
@@ -556,10 +567,12 @@ fun SessionScreen() {
         }
     }
     LaunchedEffect(pager) {
-        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it] }
+        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it]; if (Page.entries[it] != Page.SET) WearStore.menuOpen.value = false }
     }
     // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
-    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    val menuShown = menuOpen && page == Page.SET && WearStore.menuAvailable()
+    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { if (!menuShown) key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
         // A square watch has no curve under the content for the dots: the pages end above them (watch
         // round 1.4.5, 360 px square emulator: Done, the effort chips and the sets row ran under the dots).
         val square = !LocalRound.current
@@ -586,15 +599,19 @@ fun LivePage(onScreen: Boolean) {
     val fix by WearStore.fix.collectAsState()
     val ambient = LocalAmbient.current
     val reduce = LocalReduceMotion.current
+    // reads `s` here (not only inside the panels) so the choice is made again when the state changes: a removal can leave no open set
+    val open = s.workout != null && WearStore.shownRef() != null
     val panel = when {
         holdCount != null -> "count"
         hold != null -> "hold"
         fix != null -> "set"
         rest != null -> "rest"
-        WearStore.shownRef() != null -> "set"
+        open -> "set"
         else -> "done"
     }
+    val removed by WearStore.removed.collectAsState()
     CapText {
+      Box(Modifier.fillMaxSize()) {
         AnimatedContent(panel, transitionSpec = { Motion.fade(reduce, ambient) }, label = "panel") { p ->
             when (p) {
                 "count" -> holdCount?.let { from ->
@@ -607,6 +624,10 @@ fun LivePage(onScreen: Boolean) {
                 else -> DonePanel(s)
             }
         }
+        // The set panel draws the chip in the Done bar's place; the others (all sets done, the rest) get it along the bottom, where
+        // the bar would be, for the Undo window only.
+        if (removed != null && panel != "set") Box(Modifier.align(Alignment.BottomCenter).padding(bottom = if (LocalRound.current) 24.dp else 6.dp)) { UndoChip(removed) }
+      }
     }
 }
 
@@ -619,6 +640,7 @@ fun SetPanel(onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     val draft by WearStore.draft.collectAsState()
     val fix by WearStore.fix.collectAsState()
+    val removed by WearStore.removed.collectAsState()
     val rest by WearStore.rest.collectAsState()
     val lastStep by WearStore.lastStep.collectAsState()
     val ambient = LocalAmbient.current
@@ -629,6 +651,7 @@ fun SetPanel(onScreen: Boolean) {
     val e = w.entries.getOrNull(ref.entry) ?: return
     val row = e.sets.getOrNull(ref.set) ?: return
     val fixing = fix != null
+    val menu = WearStore.menuAvailable()
     val unit = e.weightUnit(w.unit)
     val fields = when {
         e.isCardio -> emptyList()
@@ -671,6 +694,12 @@ fun SetPanel(onScreen: Boolean) {
             range = when (f) { Field.W -> 0.0..hi; Field.R -> 0.0..200.0; Field.SEC -> 1.0..3600.0 },
             start = value(f), onSave = { set(f, it); keypad = null }, onClose = { keypad = null },
         )
+        return
+    }
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    if (menuOpen && menu) {
+        SetMenuView(e, ref.set, SetMenu.offer(e, ref.set), { k, on -> WearStore.markSet(k, on, ref) }, { WearStore.addSet(ref) }, { WearStore.removeSet(ref) },
+            onClose = { WearStore.menuOpen.value = false })
         return
     }
     if (confirmSkip) {
@@ -727,7 +756,20 @@ fun SetPanel(onScreen: Boolean) {
             @Suppress("UnusedContentLambdaTargetStateParameter")
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                // The pill's 18 dp slot cannot hear taps outside itself: this column takes the 48 dp tap on its behalf
+                // (a child that takes the tap, like a box, still wins).
+                var pill by remember { mutableStateOf<Rect?>(null) }
+                var origin by remember { mutableStateOf(Offset.Zero) }
+                val tap = with(LocalDensity.current) { Og.Tap.toPx() }
+                Column(Modifier.fillMaxWidth().onGloballyPositioned { origin = it.positionInRoot() }
+                    .pointerInput(menu) {
+                        if (menu) detectTapGestures { o ->
+                            val r = pill ?: return@detectTapGestures
+                            val p = o + origin; val grow = ((tap - r.height) / 2).coerceAtLeast(0f)
+                            if (p.x in r.left..r.right && p.y in (r.top - grow)..(r.bottom + grow)) WearStore.menuOpen.value = true
+                        }
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (!tight) Row(Modifier.padding(horizontal = if (round) TitleInset else 0.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (clipShown) {
                             ClipView(clipFile!!, animating = onScreen && !reduce, modifier = Modifier.size(28.dp))
@@ -737,7 +779,7 @@ fun SetPanel(onScreen: Boolean) {
                             maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     }
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight)
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu, onPill = { pill = it })
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (sides && !tight) SideSwitch(fix?.side)
                     if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
@@ -757,6 +799,7 @@ fun SetPanel(onScreen: Boolean) {
                                 }),
                                 selected = sel == f, tint = tint, showLabel = boxLabels, modifier = Modifier.weight(1f).fillMaxHeight(),
                                 onAdjust = { d -> bump(f, d) },
+                                onLongClick = if (menu) ({ WearStore.menuOpen.value = true }) else null,
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
@@ -765,7 +808,8 @@ fun SetPanel(onScreen: Boolean) {
                 }
             }
             Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (removed != null) UndoChip(removed)
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 ArrowButton(left = true, enabled = WearStore.canStep(-1)) { WearStore.step(-1) }
                 when {
                     fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, enabled = fix?.changed == true) { WearStore.saveFix() }
@@ -781,17 +825,17 @@ fun SetPanel(onScreen: Boolean) {
     }
 }
 
-/** "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix). */
+/** "Set 2 of 4" with its tags (the pill that opens the set menu), the side up, done (when it is a fix). */
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
-                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false) {
+                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false,
+                      onPill: (Rect) -> Unit = {}) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        // With the L/R switch here, "Set 2 of 4" gives way to it on a narrow line.
-        Quiet(stringResource(R.string.set_of, n, of), 12.sp, lines = 1, modifier = if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier)
-        if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
+        // With the L/R switch here, the pill shrinks (and loses its "n/of") rather than push the switch out.
+        SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
         if (sideSwitch) SideSwitch(fix?.side)
@@ -804,6 +848,30 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
             Text(clock(kotlin.math.ceil(rest.leftMs(now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold, style = Og.Number)
         }
+    }
+}
+
+/** "Removed | Undo" in the place of the bar for the 4 s a taken-out set can still come back; the line along the bottom runs out. */
+@Composable
+private fun UndoChip(held: HeldRemoval?) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val start = held?.at ?: System.currentTimeMillis()
+    val shape = CircleShape
+    // a polite live region: TalkBack says "Removed" when the chip appears
+    Box(Modifier.semantics { liveRegion = LiveRegionMode.Polite }.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
+        .then(if (dim) Modifier.border(1.dp, Og.Surface2, shape) else Modifier)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = Og.Tap), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                FitText(stringResource(R.string.removed), Og.Text, 15.sp, FontWeight.SemiBold)
+            }
+            Box(Modifier.width(62.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else a.accent)
+                .then(if (dim) Modifier.border(1.5.dp, a.accent, shape) else Modifier)
+                .combinedClickable(role = Role.Button) { WearStore.undoRemove() }, contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.undo), color = if (dim) a.accent else a.on, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            }
+        }
+        TimeBar(start, start + (held?.ms ?: 4000L), a.accent, Modifier.align(Alignment.BottomCenter))
     }
 }
 

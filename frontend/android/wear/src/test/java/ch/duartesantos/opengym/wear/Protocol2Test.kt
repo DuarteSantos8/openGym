@@ -219,6 +219,16 @@ class Protocol2Test {
         assertEquals("a1", SessionCore.phoneTicks(before, after).single().sid)
     }
 
+    // CodeRabbit #1185: sets the phone moves are no tick, or a removal's Undo ends early.
+    @Test fun setsMovedOnThePhoneAreMatchedByTheirId() {
+        val a = SetRow(w = 60.0, r = 8.0, done = true, at = 5.0, sid = "s1")
+        val b = SetRow(w = 60.0, r = 8.0, sid = "s2")
+        val before = wk("w1", ex("sq", a, b))
+        assertEquals(emptyList<PhoneTick>(), SessionCore.phoneTicks(before, wk("w1", ex("sq", b, a))))
+        val ticked = wk("w1", ex("sq", b.copy(done = true, at = 9.0), a))
+        assertEquals(listOf(PhoneTick("sq", 0, 0, 9.0, "s2")), SessionCore.phoneTicks(before, ticked))
+    }
+
     /* ---------- protocol 1 left as it was, with the wider margin ---------- */
 
     @Test fun aPhoneRestThatRanOutIsNotTakenForASkip() {

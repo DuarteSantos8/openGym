@@ -117,4 +117,17 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 201).last, 201, "a synced 201 opens on 201, not on 0")
         XCTAssertEqual(CrownWheel.choices(step: 1e-6, range: 0...700, current: 60), [60], "a bogus phone step builds no giant wheel")
     }
+
+    func testLastTimeKeepsOneLoadAndTheReps() {
+        XCTAssertEqual(LastTime.compact("60 kg × 8, 60 kg × 8, 60 kg × 7"), "60 kg × 8, 8, 7")
+        XCTAssertEqual(LastTime.compact("135×5, 135×5"), "135×5, 5")
+        XCTAssertEqual(LastTime.compact("60 kg × 8, 62.5 kg × 6"), "60 kg × 8, 62.5 kg × 6") // mixed loads as sent
+        XCTAssertEqual(LastTime.compact("60 kg × 8"), "60 kg × 8")
+        XCTAssertEqual(LastTime.compact("30 s, 30 s"), "30 s, 30 s") // no ×: as sent
+        // review 2026-11-12: drops, failure, bursts stay as sent
+        XCTAssertEqual(LastTime.compact("100×8 ↘ 80×6, 100×8 ↘ 80×5"), "100×8 ↘ 80×6, 100×8 ↘ 80×5")
+        XCTAssertEqual(LastTime.compact("60×8 F, 60×8"), "60×8 F, 60×8")
+        XCTAssertEqual(LastTime.compact("L 20×8 · R 20×8, L 20×8 · R 20×7"), "L 20×8 · R 20×8, L 20×8 · R 20×7")   // two sides as sent
+        XCTAssertEqual(LastTime.compact("60×10+4+2, 60×10+4+2"), "60×10+4+2, 60×10+4+2")
+    }
 }

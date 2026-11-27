@@ -60,11 +60,32 @@ struct RestView: View {
                 GeometryReader { t in
                     // The ±15 circle sits right of the digits, which step left for it: same size, nothing overlaps.
                     HStack(spacing: 5) {
-                        countdown
-                            .font(.system(size: min(76, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
-                            .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
+                        let digits = countdown
+                            .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
                             .lineLimit(1)
                             .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
+                        if dimmed {
+                            // Always On: the system ticks the seconds, nothing of ours moves them. A timeline, a content
+                            // transition or a keyframe here can roll the digits both ways between the dimmed frames.
+                            digits.foregroundStyle(accent.opacity(0.75))
+                        } else {
+                            // The last three seconds (Direction B): orange, and each one punches in. Redrawn only at those three moments.
+                            // 3.5: a timeline's first entry counts as already shown, so 3 would never fire.
+                            TimelineView(.explicit([3.5, 3, 2, 1].map { end.addingTimeInterval(-$0) })) { ctx in
+                                let left = end.timeIntervalSince(ctx.date > Date() ? Date() : ctx.date) // before its first entry ctx.date is that future entry, not now
+                                let last = !paused && left > 0.5 && left < 3.5 ? Int(left.rounded()) : 0
+                                digits
+                                    .foregroundStyle(last > 0 ? Theme.orange : accent)
+                                    .contentTransition(.numericText(countsDown: true))
+                                    .animation(reduceMotion ? nil : .snappy(duration: 0.25), value: end) // ±15 rolls the digits
+                                    .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion ? 0 : last) { digits, s in
+                                        digits.scaleEffect(s)
+                                    } keyframes: { _ in
+                                        SpringKeyframe(1.12, duration: 0.1, spring: Spring(response: 0.12, dampingRatio: 0.9))
+                                        SpringKeyframe(1.0, duration: 0.45, spring: Spring(response: 0.35, dampingRatio: 0.45))
+                                    }
+                            }
+                        }
                         if let label = RestMath.shift(store.restShift) {
                             RestShiftCircle(label: label, added: store.restShift > 0)
                         }
@@ -142,13 +163,14 @@ struct RestView: View {
                 .accessibilityLabel(Text("Rest"))
                 .accessibilityValue(Text(verbatim: RestMath.clock(end.timeIntervalSince(paused))))
         } else {
-            Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+            // The range starts when the rest did, not at Date(): a body that moves its own range is redrawn wrongly in Always On.
+            Text(timerInterval: SafeNum.timerRange(store.restStartedAt ?? end.addingTimeInterval(-90), end), countsDown: true)
                 .accessibilityLabel(Text("Rest"))
         }
     }
 
     private var upNextLabel: some View {
-        Text("Up next").font(.system(.footnote, design: .rounded).weight(.bold)).foregroundStyle(accent)
+        Text("Up next").font(TypeScale.body).foregroundStyle(accent)
             .lineLimit(1).minimumScaleFactor(0.7) // "Als Nächstes" gives way to the readouts on 41 mm
     }
 
@@ -167,7 +189,7 @@ struct RestView: View {
                             Text("\(e.name), set \(Int64(place.n))/\(Int64(place.of))")
                         }
                     }
-                    .font(.system(.footnote, design: .rounded))
+                    .font(TypeScale.second)
                     .foregroundStyle(Theme.label2)
                     .lineLimit(roomy ? 2 : 1)
                     .truncationMode(.middle)
@@ -175,7 +197,7 @@ struct RestView: View {
                 }
                 if let numbers = store.nextSetNumbers {
                     Text(verbatim: numbers)
-                        .font(.system(roomy ? .callout : .footnote, design: .rounded).weight(.semibold).monospacedDigit())
+                        .font(TypeScale.second.weight(.semibold).monospacedDigit())
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -252,7 +274,7 @@ struct RestReadouts: View {
     var body: some View {
         if let start = store.workoutStart {
             Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
-                .font(.system(.footnote, design: .rounded).weight(.bold).monospacedDigit())
+                .font(TypeScale.second.weight(.bold).monospacedDigit())
                 .foregroundStyle(Theme.label2)
                 .opacity(dimmed ? 0.75 : 1)
                 .lineLimit(1)
@@ -285,6 +307,10 @@ struct EffortChips: View {
     let label: Bool // the "RIR · exercise" line above the chips
     let tall: Bool // 38 pt chips; 34 where the screen is short
     @State private var again = false
+    @Namespace private var chip
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The tapped chip grows into the rated capsule, and back (Direction B).
+    private var morph: Animation? { reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.62) }
     /// The label's line grows with the text size (it is footnote, allowed up to accessibility2).
     @ScaledMetric(relativeTo: .footnote) private var labelHeight: CGFloat = 22
 
@@ -303,7 +329,7 @@ struct EffortChips: View {
     @ViewBuilder private var content: some View {
         let kind = store.effortKind ?? "rir"
         if let rated = store.lastRated, !again {
-            Button { again = true } label: {
+            Button { withAnimation(morph) { again = true } } label: {
                 HStack(spacing: 4) {
                     Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, rated))")
                     Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
@@ -313,6 +339,7 @@ struct EffortChips: View {
                 .padding(.horizontal, 10)
                 .frame(minHeight: tall ? 38 : 34)
                 .glass(Capsule(), tint: Effort.color(kind, rated).opacity(0.35), fill: Effort.color(kind, rated).opacity(0.18), dimmed: false)
+                .matchedGeometryEffect(id: rated, in: chip)
                 .contentShape(Capsule())
             }
             .buttonStyle(PressStyle())
@@ -334,8 +361,7 @@ struct EffortChips: View {
                 HStack(spacing: 4) {
                     ForEach(Effort.chips(kind), id: \.self) { v in
                         Button {
-                            store.rateLast(v)
-                            again = false
+                            withAnimation(morph) { store.rateLast(v); again = false }
                         } label: {
                             Text(verbatim: Effort.chipLabel(kind, v))
                                 .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
@@ -343,6 +369,7 @@ struct EffortChips: View {
                                 .frame(maxWidth: .infinity, minHeight: tall ? 38 : 34, maxHeight: tall ? 38 : 34)
                                 .overlay(Capsule().strokeBorder(Effort.color(kind, v), lineWidth: 1.5))
                                 .contentShape(Capsule())
+                                .matchedGeometryEffect(id: v, in: chip)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, v))"))
@@ -361,6 +388,7 @@ struct TimeBar: View {
     let end: Date
     var color: Color
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: dimmed ? 1 : 0.25)) { ctx in
@@ -369,6 +397,7 @@ struct TimeBar: View {
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.surface2)
                     Capsule().fill(color.opacity(dimmed ? 0.6 : 1)).frame(width: max(0, g.size.width * left))
+                        .animation(dimmed || reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.7), value: end) // ±15 slides, not jumps
                 }
             }
         }
@@ -381,13 +410,13 @@ struct HoldView: View {
     @EnvironmentObject var store: SessionStore
     let end: Date
     @Environment(\.isLuminanceReduced) private var dimmed
-    @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = 52
+    @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = TypeScale.hero
 
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
                 Text(verbatim: store.entry?.name ?? "")
-                    .font(.system(.footnote, design: .rounded).weight(.semibold))
+                    .font(TypeScale.title)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 if store.sideUp == "L" { Tag(text: Text("Left"), color: Theme.teal) }
@@ -409,7 +438,7 @@ struct HoldView: View {
                         .padding(.horizontal, 8)
                 }
             }
-            Text("Hold").font(.system(.caption2, design: .rounded)).foregroundStyle(Theme.label2)
+            Text("Hold").font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
             Spacer(minLength: 0)
             Button { store.endHold(early: true) } label: {
                 Label { Text("Stop") } icon: { Image(systemName: "stop.fill") }

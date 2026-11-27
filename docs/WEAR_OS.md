@@ -102,9 +102,12 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   Connect with the workout instead of its own estimate, less the resting burn (1 kcal per kg of
   body weight per hour) since Health Connect takes active calories (lib/health-connect.js), when
   Health Connect lets openGym write calories (#724).
+- **The set menu** (1.4.6, #1185): tap the set pill (or long-press a number box) to mark the
+  set as warm-up, failure or drop, add a set at the end, or remove one that is not done yet
+  (with 4 s to Undo). The same events as the Apple Watch, by the set's id (docs/WATCH_SYNC.md).
+  It shows only when the phone handles it.
 
-Still not on Wear OS: marking a set as warm-up, failure or drop and adding or removing sets from
-the watch (#1185), and a Settings page on the watch (the phone's settings apply).
+Still not on Wear OS: a Settings page on the watch (the phone's settings apply).
 
 ### Screenshots
 

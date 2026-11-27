@@ -84,6 +84,9 @@ struct SessionState: Codable, Equatable {
     /// picks the countdown up instead of losing it (a snapshot does not bring back an older rest).
     var restEnd: Double?
     var restFrom: Double?
+    /// Set menu edits made here (SetMenu: marks, sets added or taken out), in the order made, until
+    /// the phone has applied them (`acked`): replayed over every snapshot before the ticks.
+    var edits: [PendingEdit]?
     /// The workout's note edited here, until the phone acks it (its snapshot cannot flash it away).
     var noteDraft: NoteDraft?
 }
@@ -157,6 +160,8 @@ enum SessionCore {
                 guard let id = item.value.id else { return true }
                 return !acked.contains(id)
             }
+            s.edits = s.edits?.filter { !acked.contains($0.id) }
+            if s.edits?.isEmpty == true { s.edits = nil }
         }
 
         // A session started here that the phone has not reported back yet stays, whatever it sends,
@@ -170,6 +175,7 @@ enum SessionCore {
             s.noteDraft = nil
             s.workout = nil
             s.pending = [:]
+            s.edits = nil
             s.restAt = nil
             s.restEnd = nil
             s.restFrom = nil
@@ -188,12 +194,16 @@ enum SessionCore {
             s.pending = [:]
             s.skipped = nil
             s.efforts = nil
+            s.edits = nil
             s.entryIndex = next.cur
             // Its rest is that workout's (rule 2): this one's rest stamp starts afresh.
             s.restAt = nil
             s.restEnd = nil
             s.restFrom = nil
         }
+        // The watch's set menu edits the phone has not applied yet, in the order made (a tick may be on
+        // a set one added or moved); a held removal too, so a snapshot does not end its Undo (#1162).
+        if let edits = s.edits { next = SetMenu.replay(edits, on: next) }
         // The watch's ticks the phone has not shown yet win; the later tick wins on a set both changed.
         // The row's time is the phone's clock, the tick's the watch's own (`off` apart).
         for (ei, e) in next.entries.enumerated() {
@@ -229,8 +239,24 @@ enum SessionCore {
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
+        if same, let was = s0.workout, let m = s.efforts { s.efforts = followEfforts(m, from: was, to: next) }
         s.workout = next
         return s
+    }
+
+    /// Ratings are keyed by place: each follows its set by the set's id from the rows it was keyed on to
+    /// where that set is now (a replay that refuses a local move puts the rows back; Wear's followEfforts).
+    /// A rating whose set is gone is dropped; one on a set without an id keeps its place.
+    static func followEfforts(_ m: [String: Double], from: ActiveWorkout, to: ActiveWorkout) -> [String: Double] {
+        var out: [String: Double] = [:]
+        for (k, v) in m {
+            let at = from.entries.indices.lazy.flatMap { ei in from.entries[ei].sets.indices.map { (ei, $0) } }
+                .first { placeKey(from, entry: $0.0, set: $0.1) == k }
+            guard let (ei0, si0) = at, let sid = from.entries[ei0].sets[si0].sid else { if out[k] == nil { out[k] = v }; continue }
+            guard let (ei, si) = SetMenu.find(to, sid: sid) else { continue }
+            out[placeKey(to, entry: ei, set: si)] = v
+        }
+        return out
     }
 
     /// One side of a per-side set done, the row's own numbers following both sides (as the phone's
@@ -408,15 +434,22 @@ enum SessionCore {
     /// first. A set the watch ticked itself is done in `before` already (tick), so only the phone's
     /// show up here; a set without the phone's `at` is left out (no time to measure up to).
     /// One side of a per-side set counts too: the row's `at` is that side's tick.
+    /// A set is matched by its id, so sets the phone moves are no tick; one without an id by place.
     static func phoneTicks(_ before: ActiveWorkout?, _ after: ActiveWorkout?) -> [PhoneTick] {
         guard let b = before, let a = after, let wid = a.id, wid == b.id else { return [] }
         var out: [PhoneTick] = []
         for (ei, e) in a.entries.enumerated() {
-            guard b.entries.indices.contains(ei), b.entries[ei].id == e.id else { continue }
-            let old = b.entries[ei].sets
+            let old = b.entries.indices.contains(ei) && b.entries[ei].id == e.id ? b.entries[ei].sets : []
             for (si, row) in e.sets.enumerated() {
-                guard let at = row.at, old.indices.contains(si) else { continue }
-                let was = old[si]
+                guard let at = row.at else { continue }
+                let was: SetRow
+                if let sid = row.sid, !sid.isEmpty {
+                    guard let (pe, ps) = SetMenu.find(b, sid: sid) else { continue }
+                    was = b.entries[pe].sets[ps]
+                } else {
+                    guard old.indices.contains(si) else { continue }
+                    was = old[si]
+                }
                 let newSide = ["L", "R"].contains { row.sides?[$0].done == true && was.sides?[$0].done != true }
                 if (row.done && !was.done) || newSide { out.append(PhoneTick(exId: e.id, entryIdx: ei, setIdx: si, at: at, sid: row.sid)) }
             }
@@ -461,6 +494,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.entryIndex = 0
         s.restAt = nil
         s.restEnd = nil
@@ -480,6 +514,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.startedHere = nil
         s.startId = nil
         s.restAt = nil
