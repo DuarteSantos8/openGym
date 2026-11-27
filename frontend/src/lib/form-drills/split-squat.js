@@ -11,6 +11,17 @@
 //   - the hip's height over the front knee in front-shin heights, r = (knee - hip) / (floor - knee):
 //     about 1 standing tall, 0 with the front thigh parallel, negative below. It does not care how
 //     wide the stance is, so stepping into the split is not a rep. The rep signal is 1 - r / r_top.
+//     Vision's hip sits on the pelvis above the crease (as for the squat), so depth takes HIP_MARK
+//     off r: real split squats with the back knee near the floor read r 0.22 to 0.25 from the
+//     front, and a partial one stopped on a foam block 0.4 side-on. Side-on, a brisk set whose
+//     front thighs all looked level read r 0.23 to 0.30 (0.03 to 0.10 over the mark), the
+//     partial 0.4 (0.2 over): PARALLEL_R sits between them, at 0.15, not at the edge of the first.
+//   - the top is also read on the hip's own height: r's shin is short, and with the front leg
+//     straight Vision slides the knee up and down it (r 0.62 to 1.13 standing still in one side-on
+//     set), so a lifter back at the height she stood at read a third of the way down and the rep
+//     never ended. On the way up, with the hip back within the top band of its standing height
+//     (its drop over HIP_DROP standing hip heights), the signal is the lesser of that and
+//     1 - r / r_top. The standing levels and the start of a rep stay on r alone.
 // Where this breaks: perspective, as for the squat. From the front or at an angle the front knee
 // comes towards the camera and the hips stay back, so the depth is judged there only with the
 // phone at knee height and level (the standing knees near the middle row, the body upright);
@@ -23,10 +34,14 @@ import {
   matchExercise, mean, mid, pickCue, round1, seen, spread, tempo, viewHint,
 } from './kit.js'
 
-export const PARALLEL_R = 0.1         // hip within this many front-shin heights above the front knee: parallel
+export const PARALLEL_R = 0.15        // hip crease within this many front-shin heights above the front knee: parallel
+export const HIP_MARK = 0.2           // Vision's hip above the hip crease at the bottom, in front-shin heights (as the squat's)
 export const TALL_R = 0.6             // hip at least this many front-shin heights above the front knee: up
-export const FOOT_SLACK = 0.2         // an ankle within this many torso lengths of the lowest one is on the floor
+export const MAX_R = 2.5             // r above this: the knee read by the ankle (a back knee near the floor, or a Vision slip); never the front leg's
+export const TOP_STEP = 1.2           // one standing frame raises the standing r by at most this factor
+export const FOOT_SLACK = 0.3         // an ankle within this many torso lengths of the lowest one is on the floor
 export const SWITCH_SLACK = 0.15      // the other knee this many torso lengths higher: it is the front one now
+export const HIP_DROP = 0.4           // the hip's drop at a full rep, in standing hip heights over the floor (real ones 0.33 to 0.51)
 export const TOP_S = 0.06             // signal under this: at the top, where the standing figure is read
 export const LEVEL_ROW = 0.12         // standing knees at most this far from the middle row: camera at knee height
 export const LEVEL_ROLL = 12          // degrees the standing torso may lean in the image: camera upright
@@ -52,7 +67,7 @@ const STANDARDS = [
 ]
 
 /** The depth's name from r, the hip's height over the front knee in front-shin heights. */
-export const depthOf = r => (r == null ? null : r <= PARALLEL_R ? 'parallel' : 'above')
+export const depthOf = r => (r == null ? null : r - HIP_MARK <= PARALLEL_R ? 'parallel' : 'above')
 
 // parallel: the front thigh came down to level, within PARALLEL_R; any: every real descent. A
 // depth not seen (no front knee at the bottom, or a camera that cannot judge it) is given the rep.
@@ -108,7 +123,11 @@ export function frontLeg(joints, aspect = 1, prefer = null) {
   // when the other knee is clearly the higher one, at the bottom of a rep on the other leg.
   const kept = prefer && down.find(l => l.side === prefer)
   if (kept && kept !== leg && kept.knee[1] - leg.knee[1] < SWITCH_SLACK * torso) leg = kept
-  const rOf = l => (floor - l.knee[1] > 0 ? (l.knee[1] - hip[1]) / (floor - l.knee[1]) : null)
+  // A knee Vision puts down by the ankle reads the shin as nothing and r as 5 or 160: not read.
+  const rOf = l => {
+    const r = floor - l.knee[1] > 0 ? (l.knee[1] - hip[1]) / (floor - l.knee[1]) : null
+    return r != null && r <= MAX_R ? r : null
+  }
   const r = rOf(leg)
   if (r == null) return null
   // Every leg on the floor with its r, for the standing level of each (the two differ a little
@@ -123,6 +142,7 @@ function create({ standard, view: fixedView } = {}) {
   const views = createViewDetector()
   const reps = []                 // { rec, counted, reason, measures }
   const rTop = { left: null, right: null }   // r standing tall, per leg
+  let hipTop = null, hipH = null    // the hip's height standing (image y) and its height over the floor
   let frontSide = null
   let levelRow = null, levelRoll = null
   let lastS = null
@@ -134,10 +154,20 @@ function create({ standard, view: fixedView } = {}) {
   const count = () => reps.filter(r => r.counted).length
   const reachedNow = () => !!acc && acc.rec.rawPeak >= PHASES.minRep && meets(acc.judged ? depthOf(acc.minR) : null, std)
 
-  // Standing tall at the top: r there for each leg, the view, the camera. r_top leans to the higher readings,
-  // so the first frames of a descent, still under TOP_S, do not drag it down.
+  // Standing tall at the top: r there for each leg, the view, the camera. r_top leans to the higher
+  // readings, so the first frames of a descent, still under TOP_S, do not drag it down, but one
+  // frame raises it by at most TOP_STEP. The rep is read against the lower of the two levels, the
+  // front leg's: in a split stance Vision now and then swaps the legs' names for a frame or puts a
+  // knee low (r 1.1 to 1.5 against the front leg's 0.7 in a brisk side-on set), and read against
+  // its own side's level the front leg then looked half way down at the top, so the set never
+  // came back to the top.
   function readStanding(frame, f) {
-    for (const { side, r } of f.all) rTop[side] = ema(rTop[side], r, rTop[side] == null || r > rTop[side] ? 0.2 : 0.1)
+    for (const { side, r: r0 } of f.all) {
+      const r = rTop[side] == null ? r0 : Math.min(r0, rTop[side] * TOP_STEP)
+      rTop[side] = ema(rTop[side], r, rTop[side] == null || r > rTop[side] ? 0.2 : 0.1)
+    }
+    hipTop = ema(hipTop, f.hip[1], 0.2)
+    hipH = ema(hipH, f.floor - f.hip[1], 0.2)
     if (!fixedView) views.push(frame, true)
     // The camera upright: the torso stands near vertical in the image (the feet are apart, so
     // unlike the squat the body's line runs from the hips, not the feet).
@@ -161,7 +191,7 @@ function create({ standard, view: fixedView } = {}) {
     const a = acc
     const depth = a.judged ? depthOf(a.minR) : null
     const counted = rec.lost || meets(depth, std)
-    const measures = { view: a.view, depth, hipOverKnee: a.judged && a.minR != null ? Math.round(a.minR * 100) / 100 : null, peak: Math.round(rec.peak * 100) / 100 }
+    const measures = { view: a.view, depth, hipOverKnee: a.judged && a.minR != null ? Math.round((a.minR - HIP_MARK) * 100) / 100 : null, peak: Math.round(rec.peak * 100) / 100 }
     if (a.view === 'side') {
       measures.minKnee = a.minKnee == null ? null : Math.round(a.minKnee)
       measures.lean = a.lean == null ? null : Math.round(a.lean)
@@ -191,9 +221,11 @@ function create({ standard, view: fixedView } = {}) {
     const tall = !!f && f.r >= TALL_R
     const phase0 = machine.phase
     if (tall && (phase0 === 'waiting' || phase0 === 'standing') && (lastS == null || lastS < TOP_S)) readStanding(fr, f)
-    const top = f && (rTop[f.side] ?? rTop[f.side === 'left' ? 'right' : 'left'])
-    const s = top > 0 ? 1 - f.r / top : null
-    if (s != null) lastS = s
+    const tops = [rTop.left, rTop.right].filter(x => x > 0)
+    const sR = f && tops.length ? 1 - f.r / Math.min(...tops) : null
+    const sH = f && hipH > 0 ? (f.hip[1] - hipTop) / (HIP_DROP * hipH) : null
+    const s = phase0 === 'ascending' && sR != null && sH != null && sH <= PHASES.stand ? Math.min(sR, sH) : sR
+    if (sR != null) lastS = sR
     const ev = machine.push(at, s, { canStart: tall })
     let justCounted = false, justMissed = false, reason = null
     if (ev.dropped || (!ev.rep && acc)) acc = null

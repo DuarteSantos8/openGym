@@ -264,7 +264,9 @@ export function createHoldClock({ graceMs = 800, repeatMs = 5000, milestone = 10
       badSince = null
       if (!cur) open(true, null, t)
       else if (!cur.good) {
-        // A stretch out of line shorter than the grace folds back into the line.
+        // A stretch out of line shorter than the grace folds back into the line, its time with it:
+        // it was never said, and a reading that wavers on the line does not cost the lifter time.
+        if (cur.ms < graceMs) { goodMs += cur.ms; badMs -= cur.ms }
         if (cur.ms < graceMs && list.length && list[list.length - 1].good && list[list.length - 1].endT >= cur.startT - GAP_MS) {
           const prev = list.pop()
           prev.ms += cur.ms; prev.endT = t; prev.bends.push(...cur.bends); prev.lost = prev.lost || cur.lost

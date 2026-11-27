@@ -100,8 +100,8 @@ export function widthRatio(frame) {
   return (width('Shoulder') + width('Hip')) / 2 / torso
 }
 
-const classify = (r, prev) => {
-  const lo = VIEW_EDGES.side, hi = VIEW_EDGES.front
+const classify = (r, prev, edges = VIEW_EDGES) => {
+  const lo = edges.side, hi = edges.front
   if (prev === 'side') return r > lo + VIEW_HYST ? (r > hi ? 'front' : 'diagonal') : 'side'
   if (prev === 'front') return r < hi - VIEW_HYST ? (r < lo ? 'side' : 'diagonal') : 'front'
   if (prev === 'diagonal') return r < lo - VIEW_HYST ? 'side' : r > hi + VIEW_HYST ? 'front' : 'diagonal'
@@ -111,8 +111,9 @@ const classify = (r, prev) => {
 /**
  * The view over time. push(frame, standing) reads the frame only when `standing` and returns the
  * view so far: 'side' | 'diagonal' | 'front', or null until a few standing frames were seen.
+ * `edges` ({ side, front } in widthRatio): VIEW_EDGES unless a drill reads its measure further round.
  */
-export function createViewDetector() {
+export function createViewDetector(edges = VIEW_EDGES) {
   let ratio = null, n = 0, view = null
   return {
     push(frame, standing) {
@@ -121,7 +122,7 @@ export function createViewDetector() {
       if (r == null) return view
       ratio = ema(ratio, r, 0.25)
       n++
-      if (n >= VIEW_SAMPLES) view = classify(ratio, view)
+      if (n >= VIEW_SAMPLES) view = classify(ratio, view, edges)
       return view
     },
     get view() { return view },
@@ -185,6 +186,9 @@ export function viewHint(view, views) {
  *   stand, descent, minRep     the top, the start of a descent, the least depth of a rep
  *   bottomEps, ascentRise      back up this far from the deepest point: at the bottom, on the way up
  *   topBand                    within this of the standing level (an average of the top): still at the top, where tempo starts
+ *   turnTop                    optional: on the way up, back under this and then down again by
+ *                              ascentRise ends the rep where it turned (touch-and-go reps that stop
+ *                              short of the top they started from); off when not given
  * Lost pose: a gap over GAP_MS marks the rep under way `lost`; one over LOST_RESET_MS drops it.
  *
  * push(t, s, { canStart }) -> { phase, seen, rep, started, ended, dropped }: `rep` the record of
@@ -192,7 +196,7 @@ export function viewHint(view, views) {
  * frame it starts or ends, `dropped` when a lost rep was given up. Records: { startT, bottomT,
  * endT, upEndT, peak, rawPeak, lost }; `upEndT` is set once the lifter is back at the top.
  */
-export function createPhaseMachine({ stand, descent, minRep, bottomEps, ascentRise, topBand }) {
+export function createPhaseMachine({ stand, descent, minRep, bottomEps, ascentRise, topBand, turnTop = null }) {
   let phase = 'waiting'
   let sm = null              // smoothed signal
   let lastSeenT = null
@@ -237,8 +241,19 @@ export function createPhaseMachine({ stand, descent, minRep, bottomEps, ascentRi
       return out(true, { dropped })
     }
     const r = rep
+    // A touch-and-go turn near the top: the way up got back under turnTop and the signal is down
+    // again by ascentRise from there. The rep ends where it turned and the next starts there.
+    if (turnTop != null && phase === 'ascending' && r.upLow != null && r.upLow <= turnTop && sm > r.upLow + ascentRise && r.rawPeak >= minRep) {
+      const next = { startT: r.upLowT, bottomT: t, endT: null, upEndT: null, ref: r.upLow, peak: sm, rawPeak: raw, lost: false }
+      r.endT = r.upLowT
+      r.upEndT = r.upLowT
+      rep = next
+      phase = 'descending'
+      return out(true, { rep: r, ended: true, dropped })
+    }
     if (raw > r.rawPeak) r.rawPeak = raw
     if (sm > r.peak) { r.peak = sm; r.bottomT = t }
+    if (phase === 'ascending' && (r.upLow == null || sm < r.upLow)) { r.upLow = sm; r.upLowT = t }
     if (phase === 'descending') {
       if (sm < r.peak - ascentRise) phase = 'ascending'
       else if (sm < r.peak - bottomEps) phase = 'bottom'

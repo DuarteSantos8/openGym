@@ -8,7 +8,11 @@
 // which also cancels the perspective of one arm coming towards the camera and the other going away.
 // Side-on the arms swing straight at the camera and the far one hides behind the body: not judged.
 // The top is judged against shoulder height, so the phone stands at shoulder height (LEVEL): a
-// phone far below makes an elbow that comes forward look higher than it is.
+// phone far below makes an elbow that comes forward look higher than it is. That error only ever
+// adds height, so with the phone below (the shoulders high in the frame) a rep that still reads
+// short of shoulder height is short, and is not counted; one that reads past it is counted
+// unjudged. Real footage is mostly filmed from below (a phone on the floor or a low stand: lab
+// clips read 0.8 to 0.9 torso), where a set of half raises read 51 to 58 degrees and all counted.
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import { createViewDetector, fades, framing, framingHint, matchExercise, mean, pickCue, round1, viewHint } from './kit.js'
@@ -64,6 +68,7 @@ function create({ standard, view: fixedView } = {}) {
   const viewNow = () => fixedView || views.view
   const isLevel = () => (level == null ? null : level >= LEVEL[0] && level <= LEVEL[1])
   const judgedIn = v => v != null && lateral.views.includes(v) && isLevel() === true
+  const belowIn = v => v != null && lateral.views.includes(v) && level != null && level > LEVEL[1]
   const count = () => reps.filter(r => r.counted).length
   const reachedNow = () => !!acc && acc.judged && liftDeg(acc.rec.peak) >= TOP
 
@@ -75,7 +80,8 @@ function create({ standard, view: fixedView } = {}) {
 
   function finish(rec) {
     const a = acc
-    const top = a.judged ? liftDeg(rec.peak) : null
+    const read = liftDeg(rec.peak)
+    const top = a.judged || (a.below && read < TOP) ? read : null
     const reason = rec.lost ? null : missOf(top, std)
     const measures = { view: a.view, top: top == null ? null : Math.round(top) }
     if (a.view === 'front') {
@@ -111,7 +117,7 @@ function create({ standard, view: fixedView } = {}) {
     if (ev.rep) {
       if (!acc || acc.rec !== ev.rep) {
         const v = viewNow()
-        acc = { rec: ev.rep, view: v, judged: judgedIn(v), left: null, right: null }
+        acc = { rec: ev.rep, view: v, judged: judgedIn(v), below: belowIn(v), left: null, right: null }
       }
       if (arm && arm.sides.length === 2) {
         if (acc.left == null || arm.each.left > acc.left) acc.left = arm.each.left

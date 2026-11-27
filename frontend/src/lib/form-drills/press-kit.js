@@ -111,6 +111,7 @@ export const DROP_LEVEL_ROLL = 12     // degrees the arms at the top may lean in
 export const FAST_DOWN_SEC = 1        // an average way down under this: "slow the way down"
 export const FADE_S = 0.17            // the last reps' drop this much under the first ones'
 export const DROP_PHASES = { stand: 0.08, descent: 0.14, minRep: 0.35, bottomEps: 0.04, ascentRise: 0.15, topBand: 0.015 }
+export const DROP_UPPER_MAX = 1.5     // an upper arm over this many standing upper arms (image-vertical): not a body, not read
 
 export const DROP_STANDARDS = [
   { id: 'level', label: 'Shoulders to elbow height' },
@@ -119,8 +120,11 @@ export const DROP_STANDARDS = [
 ]
 export const SHALLOW_MISS = { shallow: { line: 'Too shallow. Not counted.', say: 'Too shallow', row: 'Not counted: too shallow' } }
 
-/** The depth's name from the shoulder's height against the elbow (upper arms, positive below). */
-export const dropDepthOf = hd => (hd == null ? null : hd > LEVEL_BAND ? 'below' : hd < -LEVEL_BAND ? 'above' : 'level')
+/**
+ * The depth's name from the shoulder's height against the elbow (upper arms, positive below).
+ * `above`: how far above the elbow the shoulder may read and still be level (LEVEL_BAND when not given).
+ */
+export const dropDepthOf = (hd, above = LEVEL_BAND) => (hd == null ? null : hd > LEVEL_BAND ? 'below' : hd < -above ? 'above' : 'level')
 
 /** Whether a depth meets a standard; a depth not seen is given the rep. */
 export const dropMeets = (depth, standard) => standard === 'any' || depth == null || (standard === 'below' ? depth === 'below' : depth !== 'above')
@@ -155,12 +159,19 @@ export function dropDepthShare(reps, standard) {
  * The arm-drop tracker. `drill` is the drill definition (views); `spec` holds what differs:
  *   framing(frame) -> reason | null, viewDetector() -> { push(frame, atTop), view }
  *   startHint(), readyHint(): translated status lines; notes: { side, diagonal, front } -> string
+ *   shoulderMark: optional, how far Vision's shoulder sits above the joint at the bottom, in upper
+ *         arms (0 when not given): added to the shoulder's depth before it is judged and reported
+ *   aboveBand: optional, how far above the elbow (upper arms, after shoulderMark) the shoulder may
+ *         read and the depth still be level (LEVEL_BAND when not given): the camera's band on the
+ *         short side, where a rep is given the benefit of the doubt
+ *   turnTop: optional, the phase machine's turnTop (signal units): touch-and-go reps that turn back
+ *         down short of the top the set started from end where they turn (off when not given)
  *   side: optional { track(acc, frame, sidePick), finish(acc, measures), summary(m) -> {}, cues: [[id, (summary, n) => bool, () => text]],
  *         tile(summary) -> tile | null, rows(measures) -> rows }   (side-on extras)
  */
 export function createArmDropTracker(drill, spec, { standard, view: fixedView } = {}) {
   const std = DROP_STANDARDS.some(s => s.id === standard) ? standard : 'level'
-  const machine = createPhaseMachine(DROP_PHASES)
+  const machine = createPhaseMachine(spec.turnTop != null ? { ...DROP_PHASES, turnTop: spec.turnTop } : DROP_PHASES)
   const views = spec.viewDetector()
   const side = createSidePicker(ARM)
   const extra = spec.side || null
@@ -175,15 +186,43 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
   const supported = v => !v || drill.views.includes(v)
   const judged = v => v != null && (v === 'side' || level() !== false)
   const count = () => reps.filter(r => r.counted).length
-  const reachedNow = () => !!acc && acc.rec.rawPeak >= DROP_PHASES.minRep && dropMeets(acc.judged ? dropDepthOf(acc.maxHd) : null, std)
+  const aboveBand = spec.aboveBand ?? LEVEL_BAND
+  const depthOf = hd => dropDepthOf(hd, aboveBand)
+  const reachedNow = () => !!acc && acc.rec.rawPeak >= DROP_PHASES.minRep && dropMeets(acc.judged ? depthOf(acc.maxHd) : null, std)
 
-  // The arm's image-vertical facts, null without shoulder, elbow and wrist under them.
+  // The arm's image-vertical facts, null without shoulder, elbow and wrist under them. The rep's
+  // signal, the arm's height, is read on both arms only when both are seen surely (BOTH_CONF),
+  // else on the surer arm alone: side-on Vision guesses the far arm now and then at 0.3 to 0.5,
+  // and averaging it in moved the "shoulder" and "wrist" by half the gap between the arms for
+  // that frame (a bench dip read half way down at the top and back up at the bottom, and a rep
+  // was lost). The depth, the shoulder against the elbow, is read the same way: side-on at the
+  // bottom of a chair dip Vision guessed the far elbow at 0.23 to 0.4, lower than the near one by
+  // a quarter of an upper arm, and with it in the middle reps that sank as deep as the others read
+  // a quarter of an upper arm shallower and were refused; when that elbow fell under 0.2 and out of
+  // the middle, the same depth counted. Straight arms and the camera checks still read the middles.
+  function armPart(joints, part) {
+    const conf = sd => Math.min(...ARM.map(p => (seen(joints, sd + p) || [0, 0, 0])[2] ?? 1))
+    const l = conf('left'), r = conf('right')
+    if (l >= BOTH_CONF && r >= BOTH_CONF) return mid(joints, part)
+    if (!l && !r) return mid(joints, part)
+    return seen(joints, (l >= r ? 'left' : 'right') + part)
+  }
+
+  // A frame whose upper arm reads far longer than it stood (DROP_UPPER_MAX) is Vision guessing a
+  // body it barely sees: a 320x240 bench dip lost the body for a few frames, and the frames between
+  // put a few joints on one side, the upper arm twice its length, the shoulder far above the wrist.
+  // Read as the top, one ended a rep at its bottom and the way up counted as another rep.
   function figure(joints) {
     const sh = mid(joints, 'Shoulder'), el = mid(joints, 'Elbow'), wr = mid(joints, 'Wrist')
     if (!sh || !el || !wr) return null
-    const arm = wr[1] - sh[1], upper = el[1] - sh[1], fore = wr[1] - el[1]
+    const upper = el[1] - sh[1], fore = wr[1] - el[1]
+    if (upperRef > 0 && upper > DROP_UPPER_MAX * upperRef) return null
+    const ash = armPart(joints, 'Shoulder'), awr = armPart(joints, 'Wrist')
+    const arm = ash && awr ? awr[1] - ash[1] : wr[1] - sh[1]
     if (!(fore > 0) || !(arm > 0)) return null
-    return { sh, el, wr, arm, upper, straight: upper > 0 && upper / fore >= DROP_STRAIGHT }
+    const ael = armPart(joints, 'Elbow')
+    const depthSh = ash && ael ? ash : sh, depthEl = ash && ael ? ael : el
+    return { sh, el, wr, arm, upper, depthSh, depthEl, straight: upper > 0 && upper / fore >= DROP_STRAIGHT }
   }
 
   function readTop(frame, f) {
@@ -206,7 +245,7 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
 
   function finish(rec) {
     const a = acc
-    const depth = a.judged ? dropDepthOf(a.maxHd) : null
+    const depth = a.judged ? depthOf(a.maxHd) : null
     const counted = rec.lost || dropMeets(depth, std)
     const measures = { view: a.view, depth, shoulderDepth: a.judged && a.maxHd != null ? Math.round(a.maxHd * 100) / 100 : null, peak: Math.round(rec.peak * 100) / 100 }
     if (a.view === 'side') {
@@ -237,7 +276,7 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
     const phase0 = machine.phase
     if (f && f.straight && (phase0 === 'waiting' || phase0 === 'standing') && (lastS == null || lastS < DROP_TOP_S)) readTop(fr, f)
     let s = f && armRef ? (armRef - f.arm) / armRef / DROP_FULL : null
-    if (f && upperRef > 0) f.hd = (f.sh[1] - f.el[1]) / upperRef
+    if (f && upperRef > 0) f.hd = (f.depthSh[1] - f.depthEl[1]) / upperRef + (spec.shoulderMark || 0)
     if (s != null) lastS = s
     if (!supported(viewNow())) s = null
     const ev = machine.push(at, s, { canStart: !!f && f.straight && supported(viewNow()) })
@@ -349,10 +388,20 @@ export const SOFT_MISS = { soft: { line: 'Arms not locked out. Not counted.', sa
 /** Whether a rep's lockout meets a standard; a lockout not seen is given the rep. */
 export const lockMeets = (locked, standard) => standard === 'any' || locked == null || locked
 
-/** The elbow angle a frame shows: the more bent arm when both are seen surely, else the picked side's. */
-export function elbowAngle(frame, sidePicked) {
+/**
+ * The elbow angle a frame shows: the more bent arm when both are seen surely, else the picked side's.
+ * `shoulderOut`: with both shoulders seen, each is first moved out, away from the other, by this
+ * share of the shoulders' image width (spec.shoulderOut: where Vision puts them sits inside the joint).
+ */
+export function elbowAngle(frame, sidePicked, shoulderOut = 0) {
   const j = frame.joints
-  const at = s => angleAt(seen(j, s + 'Shoulder'), seen(j, s + 'Elbow'), seen(j, s + 'Wrist'), frame.aspect)
+  const L = seen(j, 'leftShoulder'), R = seen(j, 'rightShoulder')
+  const dx = shoulderOut && L && R ? shoulderOut * (L[0] - R[0]) : 0
+  const shoulder = s => {
+    const S = seen(j, s + 'Shoulder')
+    return S && dx ? [S[0] + (s === 'left' ? dx : -dx), S[1], S[2]] : S
+  }
+  const at = s => angleAt(shoulder(s), seen(j, s + 'Elbow'), seen(j, s + 'Wrist'), frame.aspect)
   const sure = s => ARM.every(p => (seen(j, s + p) || [0, 0, 0])[2] >= BOTH_CONF)
   if (sure('left') && sure('right')) {
     const l = at('left'), r = at('right')
@@ -373,6 +422,10 @@ const LOCK_CUE = {
  * The lockout tracker. `spec` holds what differs:
  *   signal(f, torsoRef) -> number | null (0 at the start, about 1 at lockout), phases, topS
  *   lockViews: the views the lockout is judged from; unjudgedCue: () => text
+ *   lockDeg: optional, the smoothed elbow angle that is locked out there (LOCK_DEG when not given)
+ *   shoulderOut: optional, the share of the shoulders' width each shoulder is moved out before the
+ *         elbow is read (elbowAngle), 0 when not given
+ *   lockPeak: optional, the rep's peak signal under which it is not locked out, in every view
  *   startHint(), readyHint(): translated status lines; tempoRow(down, up), tempoSub(): translated text
  *   lockSub(): the lockout tile's sub; notes: { view: () => text }
  *   side: optional extras as for createArmDropTracker
@@ -391,7 +444,13 @@ export function createLockoutTracker(drill, spec, viewDetector, { standard, view
   const supported = v => !v || drill.views.includes(v)
   const judged = v => v != null && spec.lockViews.includes(v)
   const count = () => reps.filter(r => r.counted).length
-  const lockedOf = a => (a.judged && a.maxAng != null ? a.maxAng >= LOCK_DEG : null)
+  const lockDeg = spec.lockDeg ?? LOCK_DEG
+  // A rep whose way down stops under spec.lockPeak (signal units, any view) did not straighten,
+  // whatever the elbow angle read; otherwise the angle is judged where it can be.
+  const lockedOf = a => {
+    if (spec.lockPeak != null && a.rec.peak < spec.lockPeak) return false
+    return a.judged && a.maxAng != null ? a.maxAng >= lockDeg : null
+  }
   const reachedNow = () => !!acc && acc.rec.rawPeak >= P.minRep && lockMeets(lockedOf(acc), std)
 
   function figure(joints) {
@@ -405,7 +464,7 @@ export function createLockoutTracker(drill, spec, viewDetector, { standard, view
     const a = acc
     const sd = side(frame.joints)
     if (a.judged) {
-      const ang = elbowAngle(frame, sd)
+      const ang = elbowAngle(frame, sd, spec.shoulderOut || 0)
       if (ang != null) {
         a.ang = ema(a.ang, ang, 0.5)
         if (a.maxAng == null || a.ang > a.maxAng) a.maxAng = a.ang

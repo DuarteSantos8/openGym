@@ -61,6 +61,8 @@ describe('a body lying down: its yaw and its view', () => {
 describe('depth and lockout', () => {
   it('names the shoulder depth against the elbow, and what each standard takes', () => {
     expect([dropDepthOf(LEVEL_BAND + 0.01), dropDepthOf(0), dropDepthOf(-LEVEL_BAND - 0.01), dropDepthOf(null)]).toEqual(['below', 'level', 'above', null])
+    // A wider band on the short side (the dip's): level down to it, above past it; below unchanged.
+    expect([dropDepthOf(-LEVEL_BAND - 0.01, 0.3), dropDepthOf(-0.29, 0.3), dropDepthOf(-0.31, 0.3), dropDepthOf(LEVEL_BAND + 0.01, 0.3)]).toEqual(['level', 'level', 'above', 'below'])
     expect(dropMeets('level', 'level')).toBe(true)
     expect(dropMeets('above', 'level')).toBe(false)
     expect(dropMeets('level', 'below')).toBe(false)
@@ -87,5 +89,20 @@ describe('depth and lockout', () => {
     expect(both).toBeLessThan(160)
     const unsure = { ...j, rightWrist: [0.65, 0.2, 0.3] }
     expect(elbowAngle({ aspect: 1, joints: unsure }, 'left')).toBeCloseTo(180, 5)
+  })
+
+  it('reads the elbow from shoulders moved out by a share of their width when asked', () => {
+    // Shoulders marked in from the joints, which sit under the straight arms.
+    const j = {
+      leftShoulder: [0.45, 0.4, 0.9], leftElbow: [0.4, 0.3, 0.9], leftWrist: [0.4, 0.2, 0.9],
+      rightShoulder: [0.55, 0.4, 0.9], rightElbow: [0.6, 0.3, 0.9], rightWrist: [0.6, 0.2, 0.9],
+    }
+    expect(elbowAngle({ aspect: 1, joints: j }, 'left')).toBeLessThan(160)
+    expect(elbowAngle({ aspect: 1, joints: j }, 'left', 0.5)).toBeCloseTo(180, 5)
+    // Either way round in the image, and not with one shoulder unseen.
+    const mirrored = Object.fromEntries(Object.entries(j).map(([k, [x, y, c]]) => [k, [1 - x, y, c]]))
+    expect(elbowAngle({ aspect: 1, joints: mirrored }, 'left', 0.5)).toBeCloseTo(180, 5)
+    const { rightShoulder, ...one } = j
+    expect(elbowAngle({ aspect: 1, joints: one }, 'left', 0.5)).toBeLessThan(160)
   })
 })

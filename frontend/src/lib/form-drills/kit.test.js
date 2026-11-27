@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   angleAt, chainConf, createPhaseMachine, createSidePicker, createViewDetector, detectView, ema, fades,
   framing, framingHint, matchExercise, mid, pickCue, pickSide, seen, spread, tempo, viewHint, widthRatio,
-  GAP_MS, LOST_RESET_MS,
+  GAP_MS, LOST_RESET_MS, VIEW_EDGES,
 } from './kit.js'
 import { squatPose, project, film, squatSet, CAMERA } from './test-kit.js'
 
@@ -72,6 +72,14 @@ describe('the view', () => {
     expect([0, 15, 30, 45, 60, 75, 90, 135, 180].map(yaw => detectView(still(yaw)))).toEqual(
       ['side', 'side', 'diagonal', 'diagonal', 'diagonal', 'front', 'front', 'diagonal', 'side'])
     expect(detectView([])).toBe(null)
+  })
+
+  it('takes the edges a drill gives it, VIEW_EDGES by default', () => {
+    const read = (yaw, edges) => { const d = createViewDetector(edges); for (const f of still(yaw)) d.push(f, true); return d.view }
+    expect(read(22)).toBe('diagonal')
+    expect(read(22, { side: 0.235, front: VIEW_EDGES.front })).toBe('side')
+    expect(read(30, { side: 0.235, front: VIEW_EDGES.front })).toBe('diagonal')
+    expect(read(90, { side: 0.235, front: VIEW_EDGES.front })).toBe('front')
   })
 
   it('takes a far side Vision does not see for side-on', () => {
@@ -158,6 +166,19 @@ describe('the phase machine', () => {
     const m = createPhaseMachine(T)
     expect(m.push(0, 0, { canStart: false }).phase).toBe('waiting')
     expect(m.push(66, 0).phase).toBe('standing')
+  })
+
+  it('with turnTop, ends touch-and-go reps where they turn back down near the top; without it, one long rep', () => {
+    // Down to 1, back up to 0.25 only, down again, three times, then back to 0.
+    const ramp = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * (i + 1) / n)
+    const vals = [...Array(10).fill(0), ...ramp(0, 1, 15), ...ramp(1, 0.25, 10), ...ramp(0.25, 1, 10), ...ramp(1, 0.25, 10), ...ramp(0.25, 1, 10), ...ramp(1, 0, 12), ...Array(10).fill(0)]
+    expect(drive(vals).filter(e => e.ended)).toHaveLength(1)
+    const ends = drive(vals, createPhaseMachine({ ...T, turnTop: 0.35 })).filter(e => e.ended)
+    expect(ends).toHaveLength(3)
+    expect(ends.every(e => e.rep.peak > 0.9 && e.rep.endT > e.rep.bottomT)).toBe(true)
+    // A bounce at the bottom (back up to 0.6) does not split the rep.
+    const bounce = [...Array(10).fill(0), ...ramp(0, 1, 15), ...ramp(1, 0.6, 6), ...ramp(0.6, 1, 6), ...ramp(1, 0, 12), ...Array(10).fill(0)]
+    expect(drive(bounce, createPhaseMachine({ ...T, turnTop: 0.35 })).filter(e => e.ended)).toHaveLength(1)
   })
 
   it('marks a rep lost over a short gap and drops it over a long one', () => {

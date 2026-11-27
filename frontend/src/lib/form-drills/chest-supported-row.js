@@ -8,11 +8,23 @@
 // line runs through the middle of the torso, not along the back; ROW_PAST puts the elbows about
 // level with the back). From any other angle the back is a surface, not a line, and the top cannot
 // be read: it asks to turn side-on, counts, and says the top was not judged.
+//
+// Side-on runs to about 35 degrees here (VIEW_EDGES), not pull-kit's 20: the line and the elbow are
+// mid-joints, which turning the lifter only squeezes along x, so the reading holds that far round.
+// A bench set at a slight angle to the camera is how a bench row gets filmed: real ones taken as
+// side-on read the shoulders 0.37 to 0.50 sin(yaw) wide at rest (20 to 30 degrees), and were told to
+// turn side-on while every rep counted.
+//
+// The rest between reps is often short of the first hang (pull-kit's settle): lying on the bench
+// the lifter sinks the shoulders and lets the arms hang a little forward between reps, and Vision's
+// shoulder drops with the shoulder blades, so the reach at rest read 0.75 of the first one and the
+// first rep never ended.
 import { t } from '../i18n-core.js'
 import { matchExercise, mid } from './kit.js'
-import { createArmTracker } from './pull-kit.js'
+import { ARM_VIEW_EDGES, createArmTracker } from './pull-kit.js'
 
 export const ROW_PAST = 0.2           // elbows this many upper arms over the shoulder-hip line: past the torso
+export const VIEW_EDGES = { side: 0.574, front: ARM_VIEW_EDGES.front }  // sin(yaw): side to about 35 degrees
 export const PHASES = { stand: 0.1, descent: 0.15, minRep: 0.25, bottomEps: 0.04, ascentRise: 0.1, topBand: 0.03 }
 
 // Two-armed dumbbell rows lying chest-down on a bench. One arm, machines, the Smith machine,
@@ -42,9 +54,11 @@ const SPEC = {
   distal: 'Elbow',
   above: false,
   k: 1.27,
+  viewEdges: VIEW_EDGES,
   farRef: 0.03,
   phases: PHASES,
   hang: false,
+  settle: true,
   needs: { torso: { top: true }, any: {} },
   topOf: pastOf,
   topNeed: ROW_PAST,

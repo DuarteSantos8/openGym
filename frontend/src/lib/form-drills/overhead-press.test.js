@@ -14,9 +14,11 @@ const rad = d => d * Math.PI / 180
  * wrists a little above them) to 1 (overhead). The forearms stay upright and the upper arms rise
  * from 60° to `lock` degrees off hanging, so the elbow angle at the top is `lock` (180 straight).
  * The arms rise in a plane `flare` degrees out from straight ahead (0: elbows forward, 90: out to
- * the sides); `lean` degrees tips the torso back at the top.
+ * the sides); `lean` degrees tips the torso back at the top. `mark`: metres each shoulder is moved
+ * in towards the neck after the arms are posed, where Vision puts it with the arms up (SHOULDER_IN).
  */
-export function pressPose(p, { lock = 180, flare = 45, lean = 0 } = {}) {
+export const SHOULDER_IN = 0.06
+export function pressPose(p, { lock = 180, flare = 45, lean = 0, mark = SHOULDER_IN } = {}) {
   const out = squatPose(176)
   const hip = out.leftHip
   const back = rad(lean * p)
@@ -30,6 +32,7 @@ export function pressPose(p, { lock = 180, flare = 45, lean = 0 } = {}) {
     const el = [S[0] + 0.3 * Math.sin(a) * Math.cos(f), S[1] - 0.3 * Math.cos(a), S[2] + sign * 0.3 * Math.sin(a) * Math.sin(f)]
     out[side + 'Elbow'] = el
     out[side + 'Wrist'] = [el[0], el[1] + 0.27, el[2]]
+    out[side + 'Shoulder'] = [S[0], S[1], S[2] - sign * mark]
   }
   return out
 }
@@ -38,9 +41,9 @@ export function pressPose(p, { lock = 180, flare = 45, lean = 0 } = {}) {
 export function pressSet(reps, { stand = 1, fps = 15, height = 1.2, ...opts } = {}) {
   const poses = []
   const hold = (p, n, o) => { for (let i = 0; i < n; i++) poses.push(pressPose(p, o)) }
-  hold(0, Math.round(stand * fps), {})
+  hold(0, Math.round(stand * fps), { mark: reps.length ? reps[0].mark ?? SHOULDER_IN : SHOULDER_IN })
   for (const r of reps) {
-    const o = { lock: r.lock ?? 180, flare: r.flare ?? 45, lean: r.lean || 0 }
+    const o = { lock: r.lock ?? 180, flare: r.flare ?? 45, lean: r.lean || 0, mark: r.mark ?? SHOULDER_IN }
     const up = Math.max(2, Math.round(r.up * fps)), dn = Math.max(2, Math.round(r.down * fps))
     for (let i = 1; i <= up; i++) poses.push(pressPose(ease(i / up), o))
     hold(1, 3, o)
@@ -197,6 +200,28 @@ describe('the overhead press, whatever the angle', () => {
     const waiting = overheadPress.create()
     const over = project(pressPose(1), { yaw: 90, height: 1.2 })
     expect(waiting.push({ t: 0, aspect: CAMERA.aspect, joints: over }).hint).toBe('Weight at your shoulders to start')
+  })
+
+  it('reads a straight press locked out with the shoulders in by the neck, a 150 degree one not', () => {
+    // Vision's shoulders in by the neck tip the upper arms out; the drill reads from them moved out.
+    for (const mark of [SHOULDER_IN, 0.08]) {
+      const { res } = run(pressSet([FULL, NEAR, SOFT].map(r => ({ ...r, mark })), { yaw: 90 }), { view: 'front' })
+      expect(locks(res)).toEqual([true, true, false])
+    }
+  })
+
+  it('cannot see a soft lockout when Vision puts the shoulders on the joint (the known limit)', () => {
+    // Moving shoulders already on the joint out bends the read arm the other way, which hides a soft
+    // bend out to the sides: straight arms still count, a soft press counts too.
+    const { res } = run(pressSet([FULL, SOFT].map(r => ({ ...r, mark: 0 })), { yaw: 90 }))
+    expect(locks(res)).toEqual([true, true])
+  })
+
+  it('names a frontal lifter front whether Vision puts the shoulders in or on the joint', () => {
+    for (const mark of [0, SHOULDER_IN]) {
+      expect(run(pressSet(same(2, { ...FULL, mark }), { yaw: 90 })).res.view).toBe('front')
+      expect(run(pressSet(same(2, { ...FULL, mark }), { yaw: 45 })).res.view).toBe('diagonal')
+    }
   })
 
   it('can be held to a view', () => {

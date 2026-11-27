@@ -181,13 +181,27 @@ describe('the lateral raise, whatever the angle', () => {
     expect(run(raiseSet(reps, { yaw: 90 })).res.cueId).toBe('fade')
   })
 
-  it('asks for the phone at shoulder height and leaves the height unjudged when it is not', () => {
-    for (const cam of [{ height: 0.5 }, { height: 2.3 }]) {
-      const { outs, res } = run(raiseSet(same(3, LOW), { yaw: 60, ...cam }))
-      expect(outs.some(o => o.hint === 'Put the phone at shoulder height')).toBe(true)
-      expect(res).toMatchObject({ count: 3, missed: 0, cueId: 'level' })
-      expect(res.tiles.map(x => x.id)).not.toContain('height')
+  it('asks for the phone at shoulder height and leaves the height unjudged above it', () => {
+    const { outs, res } = run(raiseSet(same(3, LOW), { yaw: 60, height: 2.3 }))
+    expect(outs.some(o => o.hint === 'Put the phone at shoulder height')).toBe(true)
+    expect(res).toMatchObject({ count: 3, missed: 0, cueId: 'level' })
+    expect(res.tiles.map(x => x.id)).not.toContain('height')
+  })
+
+  it('with the phone below, refuses a raise that still reads short, and counts the rest unjudged', () => {
+    // From below an elbow that comes forward only reads higher, so a short reading is short.
+    for (const yaw of [30, 60, 90]) {
+      for (const height of [0, 0.5, 0.9]) {
+        const { outs, res } = run(raiseSet([FULL, { top: 50, up: 1.2, down: 1.8 }, FULL], { yaw, height }))
+        expect(outs.some(o => o.hint === 'Put the phone at shoulder height')).toBe(true)
+        expect({ yaw, height, counted: res.reps.map(r => r.counted) }).toEqual({ yaw, height, counted: [true, false, true] })
+        expect(res.reps[1].reason).toBe('low')
+        expect([res.reps[0].measures.top, res.reps[2].measures.top]).toEqual([null, null])
+      }
     }
+    const low = run(raiseSet(same(3, LOW), { yaw: 60, height: 0.5 })).res
+    expect(low).toMatchObject({ count: 0, missed: 3, cueId: 'missed' })
+    expect(run(raiseSet(same(3, LOW), { yaw: 60, height: 0.5 }), { standard: 'any' }).res).toMatchObject({ count: 3, missed: 0 })
   })
 
   it('judges the height the same with the phone around shoulder height, from every judged angle', () => {

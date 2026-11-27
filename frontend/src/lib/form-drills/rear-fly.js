@@ -7,6 +7,12 @@
 // shoulders at any bench angle (the bench tips the body about the left-right axis, which stays
 // level), so "elbows to shoulder height" is one image-vertical test from every view: the signal
 // at least FLY_TOP (the elbows within about 3 cm of the shoulders).
+//
+// The rest between reps is often short of the first hang (pull-kit's settle): bent over, lifters
+// keep the dumbbells off the full hang between reps to keep the back of the shoulders working, and
+// Vision reads that rest 0.12 to 0.16 of the reach short of the first one, over the kit's start
+// line. Read against the first hang one rest never came back far enough, so two reps ran into one.
+// A still pause on the way back ends the rep and becomes the new rest.
 import { t } from '../i18n-core.js'
 import { matchExercise, mean, seen } from './kit.js'
 import { createArmTracker } from './pull-kit.js'
@@ -36,6 +42,7 @@ const SPEC = {
   farRef: 0.03,
   phases: PHASES,
   hang: false,
+  settle: true,
   needs: { shoulder: { top: true }, any: {} },
   topOf: ({ s }) => s,
   topNeed: FLY_TOP,

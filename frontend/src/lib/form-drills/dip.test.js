@@ -2,9 +2,9 @@
 // elbows' height at the top as the setup asks outside a side view), filmed from side-on to facing
 // the camera: counting, depth and the standards, tempo, the elbow angle, cues, matches.
 import { describe, expect, it } from 'vitest'
-import dip from './dip.js'
+import dip, { ABOVE_BAND, SHOULDER_MARK } from './dip.js'
 import { checkDrill } from './index.js'
-import { LEVEL_BAND } from './press-kit.js'
+import { BOTH_CONF, LEVEL_BAND } from './press-kit.js'
 import { CAMERA, ease, film, project, same, YAWS } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
@@ -15,7 +15,8 @@ const ELBOW_TOP = 1.27     // the elbows' height at the top: where the phone goe
  * A dip in body coordinates (u forward, v up, w left) from the elbow angle (180 straight). The
  * hands stay on bars 1 m high with the forearms upright; the upper arm turns back, so the
  * shoulder is at elbow height at 90. The torso leans forward a little more the deeper the dip;
- * the knees are bent, the feet behind.
+ * the knees are bent, the feet behind. The shoulders are drawn where Vision puts them, SHOULDER_MARK
+ * upper arms above the joint.
  */
 export function dipPose(elbow) {
   const thDeg = 180 - elbow, th = rad(thDeg)
@@ -33,7 +34,7 @@ export function dipPose(elbow) {
   }
   pair('Wrist', wr, 0.25)
   pair('Elbow', el, 0.24)
-  pair('Shoulder', S, 0.19)
+  pair('Shoulder', [S[0], S[1] + SHOULDER_MARK * 0.3], 0.19)
   pair('Hip', hip, 0.1)
   pair('Knee', knee, 0.08)
   pair('Ankle', ankle, 0.06)
@@ -73,11 +74,18 @@ const depths = res => res.reps.map(r => r.measures.depth)
 const viewAt = yaw => (yaw === 0 ? 'side' : yaw === 90 ? 'front' : 'diagonal')
 
 function elbowForDepth(d, yaw) {
-  const y = (j, p) => (j['left' + p][1] + j['right' + p][1]) / 2
+  // Read as the drill reads depth: both arms' middle when both are seen surely, else the surer arm.
+  const conf = (j, s) => Math.min(...['Shoulder', 'Elbow', 'Wrist'].map(p => j[s + p][2]))
+  const y = (j, p) => {
+    const l = conf(j, 'left'), r = conf(j, 'right')
+    if (l >= BOTH_CONF && r >= BOTH_CONF) return (j['left' + p][1] + j['right' + p][1]) / 2
+    return j[(l >= r ? 'left' : 'right') + p][1]
+  }
+  const yMid = (j, p) => (j['left' + p][1] + j['right' + p][1]) / 2
   const cam = { yaw, height: ELBOW_TOP }
   const top = project(dipPose(175), cam)
-  const upper = y(top, 'Elbow') - y(top, 'Shoulder')
-  const at = e => { const j = project(dipPose(e), cam); return (y(j, 'Shoulder') - y(j, 'Elbow')) / upper }
+  const upper = yMid(top, 'Elbow') - yMid(top, 'Shoulder')
+  const at = e => { const j = project(dipPose(e), cam); return (y(j, 'Shoulder') - y(j, 'Elbow')) / upper + SHOULDER_MARK }
   let lo = 40, hi = 150
   for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (at(m) > d) lo = m; else hi = m }
   return (lo + hi) / 2
@@ -116,10 +124,41 @@ describe.each(YAWS)('the dip filmed at yaw %i°', yaw => {
     expect(run(frames, ANY).res).toMatchObject({ count: 5, missed: 0 })
   })
 
-  it('takes the level band at its edge, as filmed from this angle', () => {
-    const edge = elbowForDepth(-LEVEL_BAND, yaw)
+  it('takes the level band at its short edge, ABOVE_BAND, as filmed from this angle', () => {
+    const edge = elbowForDepth(-ABOVE_BAND, yaw)
     expect(run(set([{ min: edge - 2, down: 1.5, up: 1 }])).res.reps[0]).toMatchObject({ counted: true, measures: { depth: 'level' } })
     expect(run(set([{ min: edge + 2, down: 1.5, up: 1 }])).res.reps[0]).toMatchObject({ counted: false, reason: 'shallow', measures: { depth: 'above' } })
+  })
+
+  it('gives a dip the camera cannot tell from level the benefit of the doubt, and names it level', () => {
+    // Between the push-up's LEVEL_BAND and ABOVE_BAND: where real bench dips a little short of
+    // level and level ones both read, depending on the lifter.
+    for (const d of [-LEVEL_BAND - 0.03, -(LEVEL_BAND + ABOVE_BAND) / 2, -ABOVE_BAND + 0.03]) {
+      const { res } = run(set([{ min: elbowForDepth(d, yaw), down: 1.5, up: 1 }]))
+      expect(res).toMatchObject({ count: 1, missed: 0 })
+      expect(res.reps[0].measures.depth).toBe('level')
+    }
+  })
+
+  it('counts touch-and-go dips that turn back down short of the lockout they started from', () => {
+    // Locked out at 175 to start, then down to 85 and up to 150 only between reps.
+    const fps = 15, poses = []
+    const ramp = (a, b, sec) => { const n = Math.round(sec * fps); for (let i = 1; i <= n; i++) poses.push(dipPose(a + (b - a) * ease(i / n))) }
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    let at = 175
+    for (let k = 0; k < 5; k++) { ramp(at, 85, 0.8); ramp(85, k === 4 ? 175 : 150, 0.7); at = 150 }
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    const { counted, res } = run(film(poses, { fps, yaw, height: ELBOW_TOP, noise: 0.002 }))
+    expect([counted, res.count, res.missed]).toEqual([5, 5, 0])
+  })
+
+  it('does not split a rep that bounces at the bottom', () => {
+    const fps = 15, poses = []
+    const ramp = (a, b, sec) => { const n = Math.round(sec * fps); for (let i = 1; i <= n; i++) poses.push(dipPose(a + (b - a) * ease(i / n))) }
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    ramp(175, 85, 0.8); ramp(85, 125, 0.4); ramp(125, 85, 0.4); ramp(85, 175, 0.8)
+    for (let i = 0; i < fps; i++) poses.push(dipPose(175))
+    expect(run(film(poses, { fps, yaw, height: ELBOW_TOP, noise: 0.002 })).res).toMatchObject({ count: 1, missed: 0 })
   })
 
   it('times the way down and up', () => {
@@ -139,9 +178,63 @@ describe.each(YAWS)('the dip filmed at yaw %i°', yaw => {
 })
 
 describe('the dip, whatever the angle', () => {
+  it('side-on: a far arm Vision guesses now and then, unsurely and out of place, does not break the count', () => {
+    const frames = dipSet(same(4, LEVEL), { yaw: 0 }).map((f, i) => {
+      if (i % 5) return f
+      const j = { ...f.joints }
+      // The far (right) arm guessed at 0.3 and squashed: its shoulder put level with the near
+      // elbow, its wrist on the near one (as on a real bench dip).
+      if (j.leftShoulder && j.leftElbow && j.leftWrist) {
+        j.rightShoulder = [j.leftShoulder[0] + 0.02, j.leftElbow[1], 0.3]
+        j.rightElbow = [j.leftElbow[0] + 0.02, (j.leftElbow[1] + j.leftWrist[1]) / 2, 0.3]
+        j.rightWrist = [j.leftWrist[0] + 0.02, j.leftWrist[1], 0.3]
+      }
+      return { ...f, joints: j }
+    })
+    expect(run(frames, ANY).res).toMatchObject({ count: 4, missed: 0 })
+  })
+
+  it('side-on: a far elbow Vision guesses low and unsurely does not make a level dip shallow', () => {
+    const clean = dipSet(same(3, LEVEL), { yaw: 0 })
+    const top = clean[0].joints, upper = top.leftElbow[1] - top.leftShoulder[1]
+    const frames = clean.map(f => {
+      const j = { ...f.joints }
+      // The far (right) elbow guessed at 0.3, a third of a standing upper arm under the near one
+      // (as on a real chair dip), on every frame.
+      if (j.leftElbow) j.rightElbow = [j.leftElbow[0] + 0.01, j.leftElbow[1] + upper / 3, 0.3]
+      return { ...f, joints: j }
+    })
+    const { res } = run(frames)
+    expect(res).toMatchObject({ count: 3, missed: 0 })
+    expect(res.reps.map(r => r.measures.depth).every(d => d === 'level' || d === 'below')).toBe(true)
+  })
+
+  it('side-on: a guessed frame at the bottom, the upper arm twice its length, neither ends the rep nor makes another', () => {
+    const clean = dipSet(same(3, LEVEL), { yaw: 0 })
+    const lowest = (from, to) => {
+      let k = from
+      for (let i = from; i < to; i++) if (clean[i].joints.leftShoulder[1] > clean[k].joints.leftShoulder[1]) k = i
+      return k
+    }
+    const per = Math.floor(clean.length / 3)
+    const bottoms = [lowest(0, per), lowest(per, 2 * per), lowest(2 * per, clean.length)]
+    const frames = clean.map((f, i) => {
+      if (!bottoms.includes(i)) return f
+      // A few joints on one side only, as Vision guessed them on a 320x240 bench dip: the
+      // shoulder far above the elbow, the wrist below, the arm longer than it stood.
+      const j = f.joints
+      const sh = j.leftShoulder, el = j.leftElbow, wr = j.leftWrist
+      const up = el[1] - sh[1] + 0.1
+      return { ...f, joints: { leftShoulder: [sh[0], el[1] - 2.5 * Math.abs(up), 0.4], leftElbow: [el[0], el[1], 0.4], leftWrist: [wr[0], wr[1] + 0.02, 0.4] } }
+    })
+    expect(run(frames).res).toMatchObject({ count: 3, missed: 0 })
+  })
+
   it('side-on: the bottom elbow angle, its spread across the set, and the note', () => {
     const { res } = run(dipSet([{ min: 80, down: 1.5, up: 1 }, { min: 90, down: 1.5, up: 1 }, { min: 85, down: 1.5, up: 1 }]))
-    expect(res.reps[0].measures.minElbow).toBeCloseTo(80, -1)
+    // Read through Vision's shoulder, SHOULDER_MARK above the joint, an 80 degree elbow reads a little more open.
+    expect(res.reps[0].measures.minElbow).toBeGreaterThan(80)
+    expect(res.reps[0].measures.minElbow).toBeLessThan(95)
     expect(res.summary.consistency).toBeGreaterThan(6)
     expect(res.summary.consistency).toBeLessThan(14)
     expect(res.details[0].map(d => d.label)).toEqual(['Depth', 'Tempo', 'Elbow angle'])
@@ -159,6 +252,15 @@ describe('the dip, whatever the angle', () => {
     }
     const side = run(dipSet([SHALLOW], { yaw: 0, height: 0.5 }))
     expect(side.res.missed).toBe(1)
+  })
+
+  it('reads a lifter turned up to about 25 degrees off side-on as side-on, depth judged with the camera low', () => {
+    for (const yaw of [18, 26]) {
+      const { res } = run(dipSet([DEEP, SHALLOW], { yaw, height: 0.5 }))
+      expect(res.view).toBe('side')
+      expect(res).toMatchObject({ count: 1, missed: 1 })
+    }
+    expect(run(dipSet([LEVEL], { yaw: 32, height: 0.5 })).res.view).toBe('diagonal')
   })
 
   it('marks a rep where the pose was lost and still counts it; drops one lost for good', () => {

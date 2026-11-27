@@ -54,6 +54,17 @@ describe.each(YAWS)('the rear fly filmed at yaw %i°', yaw => {
     expect(run(S(same(6, FULL), { noise: 0.003, drop: 0.03 })).res.count).toBe(6)
   })
 
+  it('ends a rep at a still rest short of the first hang (the arms kept off the full hang)', () => {
+    // 30 degrees out: the reach at rest is under 0.88 of the first hang, past the start line.
+    const short = { ...FULL, bottom: 30 }
+    expect(run(S([short, short, short, FULL], { noise: 0.002 })).res.count).toBe(4)
+  })
+
+  it('does not end a rep at a pause half way back down', () => {
+    const { res } = run(S([{ ...FULL, bottom: 60 }, { top: 60, up: 0.2, down: 1.2 }]))
+    expect(res.reps).toHaveLength(1)
+  })
+
   it('does not count a twitch of the arms', () => {
     expect(run(S([{ top: 30, up: 0.4, down: 0.4 }, FULL], { noise: 0.002 })).res.reps).toHaveLength(1)
   })
