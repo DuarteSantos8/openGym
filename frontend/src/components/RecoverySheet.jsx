@@ -126,7 +126,7 @@ function RecoveryLog({ id = null, day = null, close }) {
   const [note, setNote] = useState(had?.note || '')
   const [dayWorkouts, setDayWorkouts] = useState({ d: null, records: [], src: null })
   const [checkingDay, setCheckingDay] = useState(null)
-  const [picked, setPicked] = useState(null)
+  const [pickedItems, setPickedItems] = useState([])
   const prevMinRef = useRef(null)
   const autoNoteRef = useRef('')
   const noteRef = useRef(null)
@@ -160,15 +160,28 @@ function RecoveryLog({ id = null, day = null, close }) {
     return matchingRecoverySessions(dayWorkouts.records, S, { d, kind, src: dayWorkouts.src })
   }, [canSuggest, dayWorkouts, d, kind, S])
 
+  const pickedSet = useMemo(() => new Set(pickedItems.map(m => m.id)), [pickedItems])
+  const singlePicked = pickedItems.length === 1 ? pickedItems[0] : null
+  const multiPicked = pickedItems.length > 1
+  const allSelected = matches.length > 0 && matches.every(m => pickedSet.has(m.id))
+
   const clearAutoNote = () => {
     if (autoNoteRef.current && note === autoNoteRef.current) setNote('')
     autoNoteRef.current = ''
   }
 
+  const applyAutoNote = text => {
+    const prefill = text ? text.slice(0, NOTE_MAX) : ''
+    if (!note.trim() || note === autoNoteRef.current) {
+      setNote(prefill)
+      autoNoteRef.current = prefill
+    }
+  }
+
   const pickKind = k => {
-    const wasPicked = !!picked
+    const wasPicked = pickedItems.length > 0
     setKind(k)
-    setPicked(null)
+    setPickedItems([])
     prevMinRef.current = null
     clearAutoNote()
     // A preset of the old kind (or a picked device session) becomes the middle preset of the new;
@@ -178,8 +191,8 @@ function RecoveryLog({ id = null, day = null, close }) {
 
   const pickDate = nextD => {
     setD(nextD)
-    if (picked) {
-      setPicked(null)
+    if (pickedItems.length > 0) {
+      setPickedItems([])
       setMin(prevMinRef.current ?? RECOVERY_PRESETS[kind][1])
       prevMinRef.current = null
       clearAutoNote()
@@ -188,27 +201,45 @@ function RecoveryLog({ id = null, day = null, close }) {
 
   const setManualMin = nextMin => {
     setMin(nextMin)
-    if (picked && nextMin !== picked.min) {
-      setPicked(null)
+    if (singlePicked && nextMin !== singlePicked.min) {
+      setPickedItems([])
       prevMinRef.current = null
     }
   }
 
   const togglePick = item => {
-    if (picked?.id === item.id) {
-      setPicked(null)
+    const exists = pickedItems.some(x => x.id === item.id)
+    const nextList = exists ? pickedItems.filter(x => x.id !== item.id) : [...pickedItems, item]
+    if (!exists && pickedItems.length === 0) prevMinRef.current = min
+    setPickedItems(nextList)
+    if (nextList.length === 0) {
+      setMin(prevMinRef.current ?? RECOVERY_PRESETS[kind][1])
+      prevMinRef.current = null
+      clearAutoNote()
+    } else if (nextList.length === 1) {
+      setMin(nextList[0].min)
+      applyAutoNote(nextList[0].notes)
+    } else {
+      // Multi-select keeps each session's own recorded note unless the user types a shared one.
+      clearAutoNote()
+    }
+  }
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setPickedItems([])
       setMin(prevMinRef.current ?? RECOVERY_PRESETS[kind][1])
       prevMinRef.current = null
       clearAutoNote()
       return
     }
-    if (!picked) prevMinRef.current = min
-    setPicked(item)
-    setMin(item.min)
-    const prefill = item.notes ? item.notes.slice(0, NOTE_MAX) : ''
-    if (!note.trim() || note === autoNoteRef.current) {
-      setNote(prefill)
-      autoNoteRef.current = prefill
+    if (pickedItems.length === 0) prevMinRef.current = min
+    setPickedItems(matches)
+    if (matches.length === 1) {
+      setMin(matches[0].min)
+      applyAutoNote(matches[0].notes)
+    } else {
+      clearAutoNote()
     }
   }
 
@@ -217,15 +248,47 @@ function RecoveryLog({ id = null, day = null, close }) {
     km: o.km, kcal: o.kcal, steps: o.steps, hr: o.hr, elev: o.elev,
     speed: o.speed, cadence: o.cadence, floors: o.floors, laps: o.laps,
   })
-  const activeSpec = picked
-    ? specFrom(picked)
+  const activeSpec = singlePicked
+    ? specFrom(singlePicked)
     : (had && had.kind === kind && had.d === d ? specFrom(had) : null)
 
   const save = () => {
-    if (!(min >= 1) || d > todayISO()) return
+    if (d > todayISO()) return
+    if (!id && multiPicked) {
+      const ordered = [...pickedItems].sort((a, b) => (a.start || 0) - (b.start || 0))
+      const typedNote = note.trim().slice(0, NOTE_MAX)
+      let count = 0
+      const baseNow = Date.now()
+      update(s => {
+        const existing = recoverySessionsOf(s)
+        const seenSrc = new Set(existing.map(r => r.srcId).filter(Boolean))
+        let map = s.recoverySessions
+        for (const item of ordered) {
+          const dup = (item.srcId && seenSrc.has(item.srcId))
+            || existing.some(r => r.d === d && r.kind === kind && r.at > 0 && Math.abs(r.at - item.start) < 60e3)
+          if (dup) continue
+          if (item.srcId) seenSrc.add(item.srcId)
+          const itemNote = typedNote || (item.notes ? item.notes.slice(0, NOTE_MAX) : '')
+          map = withRecovery(map, uid(), {
+            d, kind, min: item.min, note: itemNote, ...specFrom(item),
+          }, baseNow + count)
+          count++
+        }
+        if (count > 0) s.recoverySessions = map
+      })
+      close()
+      if (count === 1) toast(t('{0} logged. Your muscles say thanks.', t(RECOVERY_LABEL[kind])))
+      else if (count > 1) toast(t('{0} sessions logged. Your muscles say thanks.', count))
+      return
+    }
+    if (!(min >= 1)) return
     let inserted = true
     update(s => {
-      const logged = !id && picked?.srcId && recoverySessionsOf(s).some(r => r.srcId === picked.srcId)
+      const existing = recoverySessionsOf(s)
+      const logged = !id && singlePicked && (
+        (singlePicked.srcId && existing.some(r => r.srcId === singlePicked.srcId))
+        || existing.some(r => r.d === d && r.kind === kind && r.at > 0 && Math.abs(r.at - singlePicked.start) < 60e3)
+      )
       if (logged) { inserted = false; return }
       s.recoverySessions = withRecovery(s.recoverySessions, id || uid(), {
         d, kind, min, note: note.trim().slice(0, NOTE_MAX), ...(activeSpec || {}),
@@ -239,6 +302,8 @@ function RecoveryLog({ id = null, day = null, close }) {
     close()
     toast(t('Recovery session removed'))
   }
+  const totalMin = multiPicked ? pickedItems.reduce((sum, m) => sum + (m.min || 0), 0) : 0
+  const totalKm = multiPicked ? pickedItems.reduce((sum, m) => sum + (m.km > 0 ? m.km : 0), 0) : 0
   return <>
     <h3>{had ? t('Edit recovery') : t('Log recovery')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Sauna, ice bath, massage: the work between the workouts. It shows in your history, not in your sets.')}</div>
@@ -252,10 +317,15 @@ function RecoveryLog({ id = null, day = null, close }) {
       <span>{t('Checking…')}</span>
     </div>}
     {matches.length > 0 && <>
-      <div className="small muted" style={{ marginBottom: 6 }}>{dayWorkouts.src === 'ah' ? t('From Apple Health') : t('From Health Connect')}</div>
+      <div className="rec-picks-head">
+        <div className="small muted">{dayWorkouts.src === 'ah' ? t('From Apple Health') : t('From Health Connect')}</div>
+        {matches.length > 1 && <button type="button" className="rec-select-all" onClick={toggleAll}>
+          {allSelected ? t('Clear') : t('Select all')}
+        </button>}
+      </div>
       <div className="rec-picks">
         {matches.map(m => {
-          const on = picked?.id === m.id
+          const on = pickedSet.has(m.id)
           return <button key={m.id} type="button" className={'rec-pick' + (on ? ' on' : '')}
             aria-pressed={on} onClick={() => togglePick(m)}>
             <span className={'rec-pick-i' + (on ? '' : ' rec-i')} aria-hidden="true"><Icon name={on ? 'check' : RECOVERY_ICON[m.kind]} /></span>
@@ -267,13 +337,22 @@ function RecoveryLog({ id = null, day = null, close }) {
         })}
       </div>
     </>}
+    {multiPicked && <div className="rec-batch-summary small muted" role="status" aria-live="polite">
+      {[
+        t('{0} selected', pickedItems.length),
+        t('{0} min total', totalMin),
+        isRecoveryMetricOn(S, 'km') && totalKm > 0 ? distText(S, totalKm) : null,
+      ].filter(Boolean).join(' · ')}
+    </div>}
     {activeSpec && <RecoverySpecs S={S} spec={activeSpec} min={min} update={update} />}
-    <div className="small muted" style={{ marginBottom: 6 }}>{t('How long')}</div>
-    <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
-      {RECOVERY_PRESETS[kind].map(m => <button key={m} type="button" className={'chip nocap' + (min === m ? ' on' : '')}
-        aria-pressed={min === m} onClick={() => setManualMin(m)}>{t('{0} min', m)}</button>)}
-      <Stepper value={min} min={1} max={RECOVERY_MIN_MAX} step={1} decimal={false} onChange={setManualMin} unit={t('min')} ariaLabel={t('Minutes')} />
-    </div>
+    {!multiPicked && <>
+      <div className="small muted" style={{ marginBottom: 6 }}>{t('How long')}</div>
+      <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+        {RECOVERY_PRESETS[kind].map(m => <button key={m} type="button" className={'chip nocap' + (min === m ? ' on' : '')}
+          aria-pressed={min === m} onClick={() => setManualMin(m)}>{t('{0} min', m)}</button>)}
+        <Stepper value={min} min={1} max={RECOVERY_MIN_MAX} step={1} decimal={false} onChange={setManualMin} unit={t('min')} ariaLabel={t('Minutes')} />
+      </div>
+    </>}
     <label className="measure-date">
       <span>{t('Date')}</span>
       <DateField value={d} max={todayISO()} onChange={pickDate} label={t('Date')} />
@@ -281,7 +360,9 @@ function RecoveryLog({ id = null, day = null, close }) {
     <textarea ref={noteRef} className="input" rows={2} maxLength={NOTE_MAX} value={note}
       placeholder={t('How was it? (optional)')} onFocus={onNoteFocus} onChange={e => { autoNoteRef.current = ''; setNote(e.target.value) }} />
     <div style={{ height: 16 }} />
-    <Button variant="primary" icon="check" onClick={save} disabled={!(min >= 1)}>{t('Save')}</Button>
+    <Button variant="primary" icon="check" onClick={save} disabled={!multiPicked && !(min >= 1)}>
+      {multiPicked ? t('Log {0} sessions', pickedItems.length) : t('Save')}
+    </Button>
     {had && <><div style={{ height: 8 }} /><Button variant="ghost" icon="trash" onClick={remove}>{t('Remove')}</Button></>}
   </>
 }

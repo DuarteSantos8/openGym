@@ -3024,7 +3024,11 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .rec-i{background:color-mix(in srgb,var(--teal) 16%,transparent);color:var(--teal-ink)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.rec-i{background:var(--surface-3)}}
 /* Detected Health Connect / Apple Health sessions inside RecoverySheet. */
+.rec-picks-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.rec-select-all{border:0;padding:4px 8px;margin:-4px -8px;border-radius:8px;background:transparent;color:var(--acc-ink);font:inherit;font-size:var(--fs-footnote);font-weight:500;cursor:pointer;touch-action:manipulation}
+.rec-select-all:active{background:var(--press-fill)}
 .rec-picks{display:grid;gap:6px;margin-bottom:12px}
+.rec-batch-summary{padding:8px 12px;border-radius:var(--r);background:var(--surface);margin-bottom:12px;font-variant-numeric:tabular-nums}
 .rec-pick{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast),box-shadow var(--fast)}
 .rec-pick:active{background:var(--press-fill)}
 .rec-pick.on{background:var(--acc-soft);box-shadow:inset 0 0 0 1.5px var(--acc)}

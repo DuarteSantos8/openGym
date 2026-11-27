@@ -5917,4 +5917,7 @@ export default {
   "{0} kcal": "{0} ккал",
   "{0} steps": "{0} шагов",
   "Avg speed": "Сред. скорость",
+  "{0} min total": "Всего {0} мин",
+  "Log {0} sessions": "Записать сессий: {0}",
+  "{0} sessions logged. Your muscles say thanks.": "Записано сессий: {0}. Мышцы скажут спасибо.",
 }

@@ -5879,4 +5879,7 @@ export default {
   "{0} kcal": "{0} کیلوکالری",
   "{0} steps": "{0} گام",
   "Avg speed": "سرعت میانگین",
+  "{0} min total": "مجموع {0} دقیقه",
+  "Log {0} sessions": "ثبت {0} جلسه",
+  "{0} sessions logged. Your muscles say thanks.": "{0} جلسه ثبت شد. عضلاتت سپاسگزارند.",
 }

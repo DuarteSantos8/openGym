@@ -5916,4 +5916,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} lépés",
   "Avg speed": "Átlagsebesség",
+  "{0} min total": "Összesen {0} perc",
+  "Log {0} sessions": "{0} alkalom naplózása",
+  "{0} sessions logged. Your muscles say thanks.": "{0} alkalom naplózva. Az izmaid megköszönik.",
 }

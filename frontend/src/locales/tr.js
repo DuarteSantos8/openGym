@@ -5913,4 +5913,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} adım",
   "Avg speed": "Ort. hız",
+  "{0} min total": "Toplam {0} dk",
+  "Log {0} sessions": "{0} seansı kaydet",
+  "{0} sessions logged. Your muscles say thanks.": "{0} seans kaydedildi. Kasların sana teşekkür ediyor.",
 }

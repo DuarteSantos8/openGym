@@ -5910,4 +5910,7 @@ export default {
   "{0} kcal": "{0} ккал",
   "{0} steps": "{0} кроків",
   "Avg speed": "Сер. швидкість",
+  "{0} min total": "Усього {0} хв",
+  "Log {0} sessions": "Записати сесій: {0}",
+  "{0} sessions logged. Your muscles say thanks.": "Записано сесій: {0}. М’язи вдячні.",
 }

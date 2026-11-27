@@ -263,4 +263,102 @@ describe('RecoverySheet: Health Connect / Apple Health suggestions', () => {
     expect(recoverySessionsOf(useStore.getState().S)).toHaveLength(1)
     expect(mocks.toast).not.toHaveBeenCalled()
   })
+
+  it('supports selecting 1, 2, or all detected walks and logging them in one batch', async () => {
+    mocks.readDayWorkouts.mockResolvedValue({
+      src: 'hc',
+      records: [
+        { id: 'w-a', sport: 'walk', start: at('2026-11-21', 8, 0), end: at('2026-11-21', 8, 12), title: 'Walk A to B', notes: 'Leg 1', km: 1.0, steps: 1200, origin: 'com.garmin.android.apps.connectmobile' },
+        { id: 'w-b', sport: 'walk', start: at('2026-11-21', 12, 30), end: at('2026-11-21', 12, 45), title: 'Walk B to C', km: 1.3, steps: 1600, origin: 'com.garmin.android.apps.connectmobile' },
+        { id: 'w-c', sport: 'walk', start: at('2026-11-21', 17, 10), end: at('2026-11-21', 17, 30), title: 'Walk C to D', notes: 'Evening', km: 1.7, steps: 2100, origin: 'com.garmin.android.apps.connectmobile' },
+      ],
+    })
+    await mount()
+    await act(async () => { kindBtn('Easy walk').click() })
+    await flush()
+
+    const picks = [...host.querySelectorAll('.rec-pick')]
+    expect(picks).toHaveLength(3)
+    const selectAllBtn = () => host.querySelector('.rec-select-all')
+    expect(selectAllBtn().textContent.trim()).toBe('Select all')
+
+    // Selecting 1 shows specs and keeps single-session Save.
+    await act(async () => { picks[0].click() })
+    expect(host.querySelector('.rec-specs')).toBeTruthy()
+    expect(host.querySelector('.rec-batch-summary')).toBeNull()
+    expect(saveBtn()).toBeTruthy()
+
+    // Selecting a 2nd switches to batch mode with combined summary and "Log 2 sessions" button.
+    await act(async () => { picks[1].click() })
+    expect(host.querySelector('.rec-specs')).toBeNull()
+    expect(host.querySelector('input[aria-label="Minutes"]')).toBeNull()
+    expect(host.querySelector('.rec-batch-summary').textContent).toContain('2 selected')
+    expect(host.querySelector('.rec-batch-summary').textContent).toContain('35 min total')
+    expect(host.textContent).toContain('Log 2 sessions')
+    expect(selectAllBtn().textContent.trim()).toBe('Select all')
+
+    // Select all selects all 3 walks and switches the toggle to Clear.
+    await act(async () => { selectAllBtn().click() })
+    expect(picks.every(p => p.getAttribute('aria-pressed') === 'true')).toBe(true)
+    expect(selectAllBtn().textContent.trim()).toBe('Clear')
+    expect(host.querySelector('.rec-batch-summary').textContent).toContain('3 selected')
+    expect(host.querySelector('.rec-batch-summary').textContent).toContain('47 min total')
+    expect(host.querySelector('.rec-batch-summary').textContent).toContain('4 km')
+
+    // Deselecting 2 brings back single-session specs; Clear returns to manual entry.
+    await act(async () => { picks[0].click() })
+    await act(async () => { picks[1].click() })
+    expect(host.querySelector('.rec-specs')).toBeTruthy()
+    expect(host.querySelector('input[aria-label="Minutes"]').value).toBe('12')
+
+    // Select all again and log all 3 walks at once, preserving each walk's own duration, metrics, and note.
+    await act(async () => { selectAllBtn().click() })
+    const logAll = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Log 3 sessions')
+    expect(logAll).toBeTruthy()
+    await act(async () => { logAll.click() })
+    expect(close).toHaveBeenCalledTimes(1)
+    const saved = recoverySessionsOf(useStore.getState().S)
+    expect(saved).toHaveLength(3)
+    expect(saved.map(r => r.srcId).sort()).toEqual(['w-a', 'w-b', 'w-c'])
+    expect(saved.find(r => r.srcId === 'w-a')).toMatchObject({ min: 12, km: 1, note: 'Leg 1', title: 'Walk A to B' })
+    expect(saved.find(r => r.srcId === 'w-b')).toMatchObject({ min: 15, km: 1.3, title: 'Walk B to C' })
+    expect(saved.find(r => r.srcId === 'w-b').note).toBeUndefined()
+    expect(saved.find(r => r.srcId === 'w-c')).toMatchObject({ min: 20, km: 1.7, note: 'Evening', title: 'Walk C to D' })
+    expect(mocks.toast).toHaveBeenCalledWith('3 sessions logged. Your muscles say thanks.')
+  })
+
+  it('skips already-logged walks during a batch save and applies a typed shared note to newly logged ones', async () => {
+    mocks.readDayWorkouts.mockResolvedValue({
+      src: 'hc',
+      records: [
+        { id: 'w-1', sport: 'walk', start: at('2026-11-21', 9, 0), end: at('2026-11-21', 9, 15), km: 1.2 },
+        { id: 'w-2', sport: 'walk', start: at('2026-11-21', 14, 0), end: at('2026-11-21', 14, 25), km: 2.0 },
+      ],
+    })
+    await mount()
+    await act(async () => { kindBtn('Easy walk').click() })
+    await flush()
+    await act(async () => { host.querySelector('.rec-select-all').click() })
+    const ta = host.querySelector('textarea')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
+    await act(async () => {
+      setter.call(ta, 'Errand walks')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    // Simulate w-1 arriving from another device before save.
+    await act(async () => {
+      useStore.getState().update(s => {
+        s.recoverySessions = withRecovery(s.recoverySessions, 'synced-w1', {
+          d: '2026-11-21', kind: 'walk', min: 15, at: at('2026-11-21', 9, 0), src: 'hc', srcId: 'w-1',
+        })
+      })
+    })
+    const logBtn = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Log 2 sessions')
+    await act(async () => { logBtn.click() })
+    const saved = recoverySessionsOf(useStore.getState().S)
+    expect(saved).toHaveLength(2)
+    expect(saved.map(r => r.srcId).sort()).toEqual(['w-1', 'w-2'])
+    expect(saved.find(r => r.srcId === 'w-2').note).toBe('Errand walks')
+    expect(mocks.toast).toHaveBeenCalledWith('Easy walk logged. Your muscles say thanks.')
+  })
 })

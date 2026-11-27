@@ -5968,4 +5968,7 @@ export default {
   "{0} kcal": "{0} سعرة",
   "{0} steps": "{0} خطوة",
   "Avg speed": "متوسط السرعة",
+  "{0} min total": "الإجمالي {0} د",
+  "Log {0} sessions": "تسجيل {0} جلسات",
+  "{0} sessions logged. Your muscles say thanks.": "تم تسجيل {0} جلسات. عضلاتك تشكرك.",
 }

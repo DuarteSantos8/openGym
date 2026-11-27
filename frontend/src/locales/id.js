@@ -5878,4 +5878,7 @@ export default {
   "{0} kcal": "{0} kkal",
   "{0} steps": "{0} langkah",
   "Avg speed": "Kecepatan rata-rata",
+  "{0} min total": "Total {0} mnt",
+  "Log {0} sessions": "Catat {0} sesi",
+  "{0} sessions logged. Your muscles say thanks.": "{0} sesi dicatat. Ototmu berterima kasih.",
 };

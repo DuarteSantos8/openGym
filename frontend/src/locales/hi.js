@@ -5913,4 +5913,7 @@ export default {
   "{0} kcal": "{0} किलो कैलोरी",
   "{0} steps": "{0} कदम",
   "Avg speed": "औसत गति",
+  "{0} min total": "कुल {0} मिनट",
+  "Log {0} sessions": "{0} सत्र लॉग करें",
+  "{0} sessions logged. Your muscles say thanks.": "{0} सत्र लॉग किए गए। आपकी मांसपेशियाँ धन्यवाद कहती हैं।",
 }

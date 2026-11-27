@@ -5913,4 +5913,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0}걸음",
   "Avg speed": "평균 속도",
+  "{0} min total": "총 {0}분",
+  "Log {0} sessions": "세션 {0}개 기록",
+  "{0} sessions logged. Your muscles say thanks.": "세션 {0}개가 기록되었습니다. 근육이 고마워해요.",
 }

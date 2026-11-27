@@ -5879,4 +5879,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} kroků",
   "Avg speed": "Prům. rychlost",
+  "{0} min total": "Celkem {0} min",
+  "Log {0} sessions": "Zapsat {0} relace",
+  "{0} sessions logged. Your muscles say thanks.": "Zapsáno {0} relací. Svaly děkují.",
 }

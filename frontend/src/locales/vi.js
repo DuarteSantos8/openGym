@@ -5879,4 +5879,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} bước",
   "Avg speed": "Tốc độ TB",
+  "{0} min total": "Tổng {0} phút",
+  "Log {0} sessions": "Ghi {0} buổi",
+  "{0} sessions logged. Your muscles say thanks.": "Đã ghi {0} buổi. Cơ bắp của bạn sẽ cảm ơn đấy.",
 };

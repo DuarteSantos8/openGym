@@ -5933,4 +5933,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} Schritte",
   "Avg speed": "Ø Geschwindigkeit",
+  "{0} min total": "{0} Min. gesamt",
+  "Log {0} sessions": "{0} Einheiten erfassen",
+  "{0} sessions logged. Your muscles say thanks.": "{0} Einheiten erfasst. Deine Muskeln danken es dir.",
 }

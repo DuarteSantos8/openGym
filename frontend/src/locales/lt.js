@@ -5909,4 +5909,7 @@ export default {
   "{0} kcal": "{0} kcal",
   "{0} steps": "{0} žingsn.",
   "Avg speed": "Vid. greitis",
+  "{0} min total": "Iš viso {0} min.",
+  "Log {0} sessions": "Įrašyti {0} sesijas",
+  "{0} sessions logged. Your muscles say thanks.": "Įrašyta sesijų: {0}. Raumenys dėkoja.",
 }

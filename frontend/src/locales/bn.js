@@ -5992,4 +5992,7 @@ export default {
   "{0} kcal": "{0} কিলোক্যালোরি",
   "{0} steps": "{0} ধাপ",
   "Avg speed": "গড় গতি",
+  "{0} min total": "মোট {0} মিনিট",
+  "Log {0} sessions": "{0}টি সেশন লগ করুন",
+  "{0} sessions logged. Your muscles say thanks.": "{0}টি সেশন লগ করা হয়েছে। আপনার পেশিগুলো ধন্যবাদ জানাচ্ছে।",
 }

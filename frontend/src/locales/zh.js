@@ -5913,4 +5913,7 @@ export default {
   "{0} kcal": "{0} 千卡",
   "{0} steps": "{0} 步",
   "Avg speed": "平均速度",
+  "{0} min total": "共 {0} 分钟",
+  "Log {0} sessions": "记录 {0} 次训练",
+  "{0} sessions logged. Your muscles say thanks.": "已记录 {0} 次，肌肉会感谢你的。",
 }
