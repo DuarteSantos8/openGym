@@ -50,7 +50,7 @@ In `index.js` order (`drillFor()` asks them in this order), with the views each 
 | `front-raise` | reps | side, diagonal | wrists to shoulder height and back to the hang, lean, elbows |
 | `side-plank` | hold | front | the body line |
 | `plank` | hold | side | the body line |
-| `wall-sit` | hold | side | thigh against level, torso against upright |
+| `wall-sit` | hold | side, diagonal | thigh against level, torso against upright |
 
 The registry test (`index.test.js`) checks that no catalogue exercise matches two drills and pins
 the neighbours that look alike (lateral and front raise, pull-up and hanging leg raise,

@@ -5,7 +5,12 @@
 //
 // Side-on the legs and the torso lie in the plane the camera sees, so the thigh's angle against
 // level (hip over knee) and the torso's against upright are plain image geometry, whatever the
-// phone's height. A knee straighter than SEATED_DEG is standing, not sitting: the clock waits.
+// phone's height. At an angle a level thigh still reads level and an upright torso upright (turning
+// about the vertical shortens them sideways only), and a lean or a raised thigh, shortened sideways
+// by the cosine of the turn, is stretched back by the turn the shoulders' width gives. Three of four
+// real wall sits filmed "from the side" (form lab) were turned 37 to 48 degrees by the shoulders'
+// and hips' width and were refused whole. From the front the thigh points at the camera: refused.
+// A knee straighter than SEATED_DEG is standing, not sitting: the clock waits.
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
@@ -19,6 +24,8 @@ export const KNEE_MAX = 115           // the knee opened past this: the hips hav
 export const LEAN_DEG = 20            // the torso this far forward of upright: off the wall
 export const GRACE_MS = 800           // out of position this long before it is said
 export const REPEAT_MS = 5000         // and said again this often while it lasts
+export const FULL_WIDTH = 0.58        // shoulders' and hips' width over the torso facing the camera (kit's view detector)
+export const MAX_SIN = 0.9            // the turn's sine taken at most this (about 64 degrees, the front view's edge)
 export const MILESTONE = 10           // the count is said every this many seconds held
 const CHAIN = ['Hip', 'Knee', 'Ankle']
 
@@ -66,8 +73,13 @@ function read(fr, side, views) {
   const view = views.push(fr, seated)
   if (!seated) return { view, pose: null }
   const fwd = Math.sign(knee[0] - hip[0])
-  const thigh = deg(Math.atan2(knee[1] - hip[1], Math.abs(knee[0] - hip[0]) * a))
-  const lean = deg(Math.atan2((sh[0] - hip[0]) * a * fwd, hip[1] - sh[1]))
+  // At an angle the body's forward direction shows shortened by the cosine of the turn, which the
+  // shoulders' and hips' width gives (about FULL_WIDTH times its sine): image-horizontal lengths
+  // are stretched back by it, so a lean or a raised thigh reads about as it would side-on.
+  const sinYaw = views.ratio == null ? 0 : Math.min(MAX_SIN, views.ratio / FULL_WIDTH)
+  const ax = a / Math.sqrt(1 - sinYaw * sinYaw)
+  const thigh = deg(Math.atan2(knee[1] - hip[1], Math.abs(knee[0] - hip[0]) * ax))
+  const lean = deg(Math.atan2((sh[0] - hip[0]) * ax * fwd, hip[1] - sh[1]))
   return { view, pose: { thigh, lean, knee: kneeAng, joints: [sd + 'Hip', sd + 'Knee', sd + 'Ankle'] } }
 }
 
@@ -159,7 +171,7 @@ const wallSit = {
   id: 'wall-sit',
   name: 'Wall sit',
   kind: 'hold',
-  views: ['side'],
+  views: ['side', 'diagonal'],
   setup: 'Phone side-on at knee height, 2 to 3 m away, your whole body in the frame. Seconds count while your thighs stay level and your back stays on the wall.',
   matches: ex => matchExercise(ex, { ids: IDS, name: /\bwall sits?\b|\bsit \(wall\)/i, not: NOT_A_PLAIN_SIT, cats: new Set(['isometric']) }),
   standards: STANDARDS.map(({ id, label }) => ({ id, label })),

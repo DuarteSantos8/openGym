@@ -1,4 +1,4 @@
-// The wall sit hold against synthetic lifters (test-kit.js), side-on: seconds held in position,
+// The wall sit hold against synthetic lifters (test-kit.js), side-on and at an angle: seconds held in position,
 // the hips rising and leaning forward not counted and said, the standards, views, a missing knee,
 // a lost pose, the result, and the exercises it takes.
 import { describe, expect, it } from 'vitest'
@@ -52,7 +52,7 @@ const run = (frames, opts = {}) => {
 describe('the wall sit drill', () => {
   it('keeps the contract', () => {
     expect(checkDrill(wallSit)).toEqual([])
-    expect(wallSit).toMatchObject({ kind: 'hold', views: ['side'], defaultStandard: 'level' })
+    expect(wallSit).toMatchObject({ kind: 'hold', views: ['side', 'diagonal'], defaultStandard: 'level' })
   })
 
   it('films the pose helper as meant', () => {
@@ -61,7 +61,7 @@ describe('the wall sit drill', () => {
   })
 })
 
-describe.each([0, 10, 180, -10])('the wall sit filmed side-on, yaw %i°', yaw => {
+describe.each([0, 10, 180, -10, 30, 45, -45, 135])('the wall sit filmed side-on or at an angle, yaw %i°', yaw => {
   it('counts the seconds held in position, says every ten', () => {
     const { res, said, outs } = run(wallSitFrames([{ sec: 2, pose: 'stand' }, { sec: 25 }, { sec: 2, pose: 'stand' }], { yaw }))
     expect(res.count).toBeGreaterThanOrEqual(23)
@@ -81,6 +81,12 @@ describe.each([0, 10, 180, -10])('the wall sit filmed side-on, yaw %i°', yaw =>
     expect(res.reps.map(r => [r.counted, r.reason])).toEqual([[true, null], [false, 'high'], [true, null]])
     expect(res.cue).toMatch(/^Out of position for \d s: the hips rose/)
     expect(res.tiles.map(x => x.id)).toEqual(['longest', 'thighs', 'out'])
+  })
+
+  it('does not take time for a reading that wavers over the line for less than the grace', () => {
+    const { res, missed } = run(wallSitFrames([{ sec: 5 }, { sec: 0.4, thigh: 25 }, { sec: 5 }, { sec: 0.4, thigh: 25 }, { sec: 5 }], { yaw }))
+    expect(missed).toEqual([])
+    expect(res.count).toBeGreaterThanOrEqual(15)
   })
 
   it('stops the clock while leaning forward off the wall', () => {
@@ -136,8 +142,8 @@ describe('the wall sit, standards and edges', () => {
     expect(outs.at(-1).hint).toBe('Get into position')
   })
 
-  it('from the front or at an angle: asks to turn side-on and counts nothing', () => {
-    for (const yaw of [45, 90]) {
+  it('from the front: asks to turn side-on and counts nothing', () => {
+    for (const yaw of [90, -90]) {
       const { res, outs } = run(wallSitFrames([{ sec: 8 }], { yaw }))
       expect(res.count).toBe(0)
       expect(outs.at(-1).hint).toBe('Turn side-on to the camera')
