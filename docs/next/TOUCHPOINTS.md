@@ -8,6 +8,12 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Cache size limit | Preserve original guest and stashed attachments when trimming downloaded files. |
+| `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Media cleanup | Protect original guest and stashed attachments when the cache exceeds its size limit. |
+| `frontend/src/store/useStore.js` | `next/EP19-guest-privacy-followup` | Account transitions | Protect guest training and attachments, and clean up a login or pairing when the guest snapshot cannot be saved. |
+| `frontend/src/store/useStore.mobile-remote.test.jsx` | `next/EP19-guest-privacy-followup` | Pairing | Cover refused guest storage and the next successful pairing. |
+| `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js` | `next/EP19-guest-privacy-followup` | Sign-in | Wait for a failed adoption's cookie cleanup before the next sign-in. |
+| `frontend/src/views/Login.jsx` | `next/EP19-guest-privacy-followup` | Sign-in | Restore the provider sign-in button when cookie cleanup cannot reach the server. |
 | `frontend/src/components/ExerciseGuide.jsx` | `next/EP26-mannequin-squat` | Demo | Show the movement demo for the guide's pattern, loaded on demand, so the 3D code stays out of the app's first download. |
 | `frontend/public/sw.js` | `next/EP26-T03-guided-workout` | Hashed assets | Reuse the installed immutable module when an offline module request sends an Origin header. |
 | `frontend/src/views/Workout.jsx` | `next/EP26-T03-guided-workout` | Layout | Offer the session layout and pass its active exercise to the existing swap flow. |

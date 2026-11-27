@@ -152,6 +152,10 @@ Not needed for the owner's own bring-up, required before anyone else is let in.
   `VITE_CLOUD_SERVER=off`.
 - **Signing in a second time** works on the hosted service since #91 (three sign-ins on
   2026-11-24 went through with no consent step, as the hosted project's log shows).
+  When repeating this check on the revised preview, attach a photo to an original guest
+  exercise, add a separate account-only workout, sign out, and reload offline. Confirm the
+  guest photo opens and the account-only workout is absent. Use a disposable account for
+  the separate account reset check. These checks are pending on the hosted build.
 - **Hosted account checks (A1), November 26, 2026.** On the preview, a disposable linked
   profile showed no Admin dashboard in Settings > Account. Opening `GET /api/admin/oidc`
   returned `{"error":"forbidden"}`. Choosing Sign out on the account screen brought back

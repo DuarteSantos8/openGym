@@ -349,8 +349,10 @@ export function createMediaSync(deps = {}) {
         const raw = d.storage?.getItem(PERSISTED_KEY)
         if (raw) for (const h of keptHashes(JSON.parse(raw))) live.add(h)
       } catch { /* an unreadable copy keeps nothing extra */ }
+      let originals
       try {
-        if (typeof st.stashedMediaHashes === 'function') for (const h of await st.stashedMediaHashes()) live.add(h)
+        originals = await st.stashedMediaHashes?.() ?? new Set()
+        for (const h of originals) live.add(h)
       } catch { return }   // the stash could not be read: delete nothing rather than guess
       // A second guard on a phone: the mirror is read even after boot, since a copy that failed
       // to reach localStorage lives only there and in memory, and memory may already have moved on.
@@ -373,7 +375,7 @@ export function createMediaSync(deps = {}) {
       const posters = new Set(refs.filter(f => f.poster).map(f => f.hash))
       const inState = new Set(refs.map(f => f.hash))
       const candidates = left
-        .filter(r => !r.pending && !posters.has(r.hash) && !held(r) && (r.putAt || 0) < cutoff)
+        .filter(r => !r.pending && !originals.has(r.hash) && !posters.has(r.hash) && !held(r) && (r.putAt || 0) < cutoff)
         .sort((a, b) => (inState.has(a.hash) - inState.has(b.hash)) || ((a.shownAt || 0) - (b.shownAt || 0)))
       for (const r of candidates) {
         if (bytes <= LOCAL_CACHE_MAX_MB * MB || !mine()) break

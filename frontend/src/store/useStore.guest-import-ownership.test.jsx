@@ -142,9 +142,7 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     expect(new Set(guestIds()).size).toBe(10)
   })
 
-  // "Reset everything" leaves nothing on this device — the guest profile kept across a sign-in is
-  // device data too, and must not come back at the next sign-out.
-  it('regression: Reset everything keeps nothing of the guest profile for the next sign-out', async () => {
+  it('regression: resetting an account preserves the guest workouts on sign-out', async () => {
     doc = { ...JSON.parse(JSON.stringify(DEF)), _ts: 50, restSec: 70, routines: [{ id: 'ra', name: 'A', ex: [] }], _rev: 2 }
     rev = 2
     serve()
@@ -152,11 +150,178 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     signIn('acct-a', 'A')
     await useStore.getState().adoptProfile(vi.fn(async () => true))
     await useStore.getState().pushState()
-    useStore.getState().resetEverything()
+    await useStore.getState().resetEverything()
     await useStore.getState().pushState()
     await useStore.getState().signOut({ force: true })
     useStore.getState().setGuest(true)
     await reload()
-    expect(guestIds()).toEqual([])
+    expect(guestIds()).toEqual(G_IDS)
   })
+
+  it('creating a profile preserves the current guest copy, including guest deletions', async () => {
+    serve()
+    seedGuest()
+    signIn('acct-a', 'A')
+    await useStore.getState().signOut({ force: true })
+    useStore.getState().setGuest(true)
+    useStore.getState().update(s => { s.workouts = s.workouts.slice(1) }, false)
+    useStore.getState().setUser({ id: 'new-account', name: 'New' })
+    await useStore.getState().signOut({ force: true })
+    expect(guestIds()).toEqual(G_IDS.slice(1))
+  })
+
+  it('a refused backup write stops account adoption and preserves the guest workouts across reload', async () => {
+    serve()
+    seedGuest()
+    const write = localStorage.setItem.bind(localStorage)
+    const refuse = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'gym_guest_state') throw new DOMException('quota', 'QuotaExceededError')
+      write(key, value)
+    })
+    try {
+      expect(() => signIn('acct-a', 'A')).toThrow('Could not save')
+      expect(useStore.getState().user).toBeNull()
+      expect(localStorage.getItem('gym_owner')).toBeNull()
+      expect(api.mock.calls.some(([, o]) => o?.method === 'PUT')).toBe(false)
+      await reload()
+      expect(guestIds()).toEqual(G_IDS)
+    } finally { refuse.mockRestore() }
+  })
+
+  it('keeps a workout saved by another guest tab just before sign-in', async () => {
+    serve()
+    seedGuest()
+    const latest = JSON.parse(localStorage.getItem('gym_state_v1'))
+    latest.workouts.push(w('G-extra', '2026-11-15'))
+    latest._ts += 1
+    localStorage.setItem('gym_state_v1', JSON.stringify(latest))
+    localStorage.setItem('gym_state_wid', 'second-guest-tab')
+    signIn('acct-a', 'A')
+    await useStore.getState().signOut({ force: true })
+    await reload()
+    expect(guestIds()).toEqual([...G_IDS, 'G-extra'])
+  })
+
+  it('guest reset still clears active training when removal of the old guest snapshot is denied', async () => {
+    seedGuest()
+    const remove = localStorage.removeItem.bind(localStorage)
+    const deny = vi.spyOn(localStorage, 'removeItem').mockImplementation(key => {
+      if (key === 'gym_guest_state') throw new DOMException('denied', 'SecurityError')
+      remove(key)
+    })
+    try {
+      await useStore.getState().resetEverything()
+      expect(guestIds()).toEqual([])
+    } finally { deny.mockRestore() }
+  })
+
+  it('ends a refused web sign-in even at full quota, and a later sign-in can retry', async () => {
+    seedGuest()
+    let active = true
+    let logoutAttempts = 0
+    const user = { id: 'acct-a', name: 'A' }
+    api.mockImplementation(async path => {
+      if (path === '/api/logout') {
+        if (++logoutAttempts === 1) throw netErr()
+        active = false
+        return {}
+      }
+      if (path === '/api/config') return { allow_guest: true, signed_in: active }
+      if (path === '/api/me' && active) return { user }
+      throw Object.assign(new Error('signed out'), { status: 401 })
+    })
+    const deny = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
+    try {
+      expect(() => signIn(user.id, user.name)).toThrow('Could not save')
+    } finally { deny.mockRestore() }
+    await reload()
+    await useStore.getState().boot()
+    expect(logoutAttempts).toBe(2)
+    expect(active).toBe(false)
+    expect(useStore.getState().user).toBeNull()
+    expect(guestIds()).toEqual(G_IDS)
+    active = true
+    signIn(user.id, user.name)
+    expect(useStore.getState().user).toEqual(user)
+  })
+
+  it.each([true, false])('waits for old cookie cleanup before OIDC retry and boot (first logout succeeds: %s)', async firstSucceeds => {
+    seedGuest()
+    const { startWebSignIn } = await import('../lib/oidc.js')
+    const user = { id: 'acct-a', name: 'A' }
+    let releaseLogout, signedIn = true, attempts = 0
+    api.mockImplementation(async path => {
+      if (path === '/api/logout') {
+        if (++attempts === 1) {
+          await new Promise(resolve => { releaseLogout = resolve })
+          if (!firstSucceeds) throw netErr()
+        }
+        signedIn = false
+        return {}
+      }
+      if (path === '/api/config') return { allow_guest: true, signed_in: signedIn, oidc: {}, coach: null }
+      if (path === '/api/me' && signedIn) return { user }
+      if (path === '/api/data') return { state: clone(DEF), rev: 1 }
+      return {}
+    })
+    const deny = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
+    try { expect(() => signIn(user.id, user.name)).toThrow('Could not save') } finally { deny.mockRestore() }
+    const navigate = vi.fn(() => {
+      signedIn = true
+      window.history.replaceState(null, '', '/?oidc=signed-in')
+    })
+    try {
+      const retry = startWebSignIn('web', navigate)
+      expect(navigate).not.toHaveBeenCalled()
+      releaseLogout()
+      await retry
+      expect(navigate).toHaveBeenCalledOnce()
+      expect(sessionStorage.getItem('gym_logout_owed')).toBeNull()
+      await reload()
+      await useStore.getState().boot()
+      expect(useStore.getState().user).toEqual(user)
+      expect(attempts).toBe(firstSucceeds ? 1 : 2)
+    } finally { releaseLogout?.(); window.history.replaceState(null, '', '/') }
+  })
+
+  it('a guest whose only training record is a day photo keeps it after sign-in and sign-out', async () => {
+    serve()
+    const hash = 'e'.repeat(64)
+    const photo = { id: 'guest-photo', d: '2026-11-26', m: {
+      kind: 'image', hash, mime: 'image/webp', size: 1, width: 8, height: 8, at: 1,
+    } }
+    useStore.getState().setGuest(true)
+    useStore.getState().update(s => { s.dayPhotos = { [photo.id]: photo } }, false)
+    signIn('acct-a', 'A')
+    expect(await useStore.getState().stashedMediaHashes()).toContain(hash)
+    await useStore.getState().signOut({ force: true })
+    await reload()
+    expect(useStore.getState().S.dayPhotos).toEqual({ [photo.id]: photo })
+  })
+
+  it('sign-out keeps actual guest media bytes and removes private account media', async () => {
+    const { createMediaStore, memoryBackend, _setMediaStore } = await import('../lib/media-store.js')
+    const media = createMediaStore(memoryBackend())
+    _setMediaStore(media)
+    const guestHash = 'a'.repeat(64), accountHash = 'b'.repeat(64)
+    try {
+      serve()
+      seedGuest()
+      useStore.getState().update(s => {
+        s.customEx = [{ id: 'guest-ex', n: 'Guest', custom: true, media: {
+          kind: 'image', hash: guestHash, mime: 'image/webp', size: 1, width: 8, height: 6, at: 1,
+        } }]
+      }, false)
+      for (const hash of [guestHash, accountHash]) await media.put(hash, new Blob(['x']), { mime: 'image/webp', pending: false })
+      doc = { ...clone(DEF), _ts: 50, routines: [{ id: 'a', name: 'A', ex: [] }] }
+      rev = 2
+      signIn('acct-a', 'A')
+      await useStore.getState().adoptProfile(vi.fn(async () => true))
+      await useStore.getState().pushState()
+      expect(await useStore.getState().signOut()).toEqual({ owed: false })
+      await vi.waitFor(async () => expect(await media.has(accountHash)).toBe(false))
+      expect(await media.has(guestHash)).toBe(true)
+    } finally { _setMediaStore(null) }
+  })
+
 })
