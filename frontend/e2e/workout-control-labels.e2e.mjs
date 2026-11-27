@@ -24,12 +24,20 @@ async function overlaysFit(page) {
     const timer = document.querySelector('#timer')
     const app = document.querySelector('#app')
     if (!bar || !timer || !app) return false
-    const height = bar.getBoundingClientRect().height
-    const measured = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tabbar-height'))
-    const reserve = document.body.classList.contains('totop-on') ? 144 : 78
-    return Math.abs(measured - height) <= 1
-      && Math.abs(timer.getBoundingClientRect().bottom - bar.getBoundingClientRect().top) <= 1
-      && Math.abs(parseFloat(getComputedStyle(app).paddingBottom) - height - reserve) <= 1
+    const start = bar.querySelector('.start').getBoundingClientRect()
+    const timerBox = timer.getBoundingClientRect()
+    const tolerance = 1
+    if (timerBox.bottom > Math.min(bar.getBoundingClientRect().top, start.top) + tolerance) return false
+    let top = timerBox.top
+    if (document.body.classList.contains('totop-on')) {
+      const button = document.querySelector('#totop')
+      const box = button.getBoundingClientRect()
+      if (box.bottom > timerBox.top + tolerance) return false
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+      if (!button.contains(hit)) return false
+      top = Math.min(top, box.top)
+    }
+    return parseFloat(getComputedStyle(app).paddingBottom) >= innerHeight - top - tolerance
   })
 }
 for (const lang of ['de', 'ru', 'ar', 'fa']) {
@@ -93,7 +101,24 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
         await click(page.locator('[data-tour="tick"]').first())
         await expect(page.locator('#timer')).toBeVisible()
       } else {
+        const pause = page.locator('#timer .pause')
+        for (let i = 0; i < 100 && !await pause.evaluate(el => el === document.activeElement); i++) {
+          await page.keyboard.press('Tab')
+        }
+        await expect(pause).toBeFocused()
+        await page.setViewportSize({ width: 390, height: 844 })
+        await expect(pause).toBeFocused()
+        await page.keyboard.press('Shift+Tab')
+        await page.keyboard.press('Tab')
+        await expect(pause).toBeFocused()
         await page.reload()
+        await expect(page.locator('#tabbar .start .tab-resume')).toBeVisible()
+        await expect(page.locator('#timer')).toBeVisible()
+        await openRoute(page, '/workout')
+        const rows = page.locator('[data-tour="tick"]')
+        await expect(rows).toHaveCount(2)
+        await expect(rows.first()).toBeChecked()
+        await expect(rows.last()).not.toBeChecked()
       }
     }
   })

@@ -41,7 +41,9 @@ export default function TabBar({ onStart, onPick }) {
     if (!shown || !el) return undefined
     const root = document.documentElement
     const measure = () => {
-      const height = el.getBoundingClientRect().height
+      const box = el.getBoundingClientRect()
+      const start = el.querySelector('.start').getBoundingClientRect()
+      const height = box.bottom - Math.min(box.top, start.top)
       // The rendered height already includes the safe-area padding. Only replace the fallback
       // once there is a real box, so a hidden first render cannot collapse the page offset.
       if (height > 0) root.style.setProperty('--tabbar-height', height + 'px')

@@ -114,6 +114,7 @@
   --conn:0px;
   /* TabBar.jsx replaces this with the rendered height, safe-area padding included. */
   --tabbar-height:calc(88px + var(--sab));
+  --rest-bar-height:72px;
 }
 
 :root[data-theme="light"] {
@@ -322,7 +323,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 :root[data-native-kb] #app,:root[data-native-kb] body.resting #app,:root[data-native-kb] body.no-tabbar.resting #app{padding-bottom:calc(88px + var(--native-kb))}
 /* Keep the last workout controls clear of the mobile overlays without adding a second
    screenful of blank scroll space. The stacked rest timer needs the larger reserve. */
-body.resting #app{padding-bottom:calc(var(--tabbar-height) + 78px)}
+body.resting #app{padding-bottom:calc(var(--tabbar-height) + var(--rest-bar-height) + 8px)}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
@@ -2966,7 +2967,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    without one. Visibility goes last on the way out, so a hidden button takes no taps or focus.
    The Halloween decorations live at the top of the screen and on the cards, never down here. */
 #totop{
-  position:fixed;inset-inline-end:max(16px,calc(50vw - 264px));bottom:calc(80px + var(--sab));z-index:45;
+  position:fixed;inset-inline-end:max(16px,calc(50vw - 264px));bottom:calc(var(--tabbar-height) + 8px);z-index:45;
   width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
   background:var(--surface-raised);color:var(--acc-ink);border:var(--hair) solid var(--raised-line);
   box-shadow:0 8px 22px -8px rgba(0,0,0,.5);
@@ -2981,11 +2982,11 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 #totop:active{transform:scale(var(--press-scale-sm))}
 #totop:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 #totop .icn{font-size:1.3125rem;--icon-stroke:2.1}
-body.resting #totop{bottom:calc(172px + var(--sab))}
+body.resting #totop{bottom:calc(var(--tabbar-height) + var(--rest-bar-height) + 8px)}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
 body.totop-on #app{padding-bottom:calc(var(--tabbar-height) + 56px)}
-body.totop-on.resting #app{padding-bottom:calc(var(--tabbar-height) + 144px)}
+body.totop-on.resting #app{padding-bottom:calc(var(--tabbar-height) + var(--rest-bar-height) + 64px)}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
