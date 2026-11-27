@@ -5,7 +5,10 @@
 // From the front the leg swings in the plane the camera sees, so its angle off upright (hip to
 // ankle) is plain image geometry. Each leg is measured against how it stands at rest (a wide stance
 // already points the feet out a little), and the working leg is the one further out. Side-on the
-// leg swings straight at the camera and the two legs overlap: not judged.
+// leg swings straight at the camera and the two legs overlap: not judged. At an angle it counts
+// and times, the range measured but not judged (it foreshortens): a slender lifter squarely
+// facing the camera reads shoulders and hips 0.52 to 0.55 of the torso apart, on the kit's front
+// edge (0.53), and was refused as "at an angle".
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
@@ -19,7 +22,22 @@ export const LEAN_DEG = 10            // the torso this far further from the wor
 export const FAST_BACK_SEC = 1
 export const FADE_S = 0.15
 export const PHASES = { stand: 0.25, descent: 0.33, minRep: 0.5, bottomEps: 0.04, ascentRise: 0.12, topBand: 0.03 }
+export const REST_SPREAD = 12         // the angle between the legs under this: together, at rest
+export const UPRIGHT_DEG = 3          // both legs tipped the same way at most this: upright
 const CHAIN = ['Hip', 'Knee', 'Ankle']
+
+/**
+ * Whether a frame with both legs can be read as the rest: the legs together (the angle between
+ * them under REST_SPREAD) and upright (tipped the same way at most UPRIGHT_DEG). Until a rest was
+ * read, together is enough: a lifter who stands with the hips shifted over one leg, or a camera
+ * not quite level, tips both legs the same way from the start (7 to 8 degrees each on real video),
+ * and with upright required nothing was ever counted. Later tipped frames (the hips staying over
+ * the standing leg between lifts) do not move the rest.
+ */
+export function atRestPose(f, haveRest) {
+  const l = f.legs.left.out, r = f.legs.right.out
+  return Math.abs(l + r) < REST_SPREAD && (!haveRest || Math.abs(l - r) < UPRIGHT_DEG * 2)
+}
 const SIDES = ['left', 'right']
 
 // Standing hip abduction with a straight leg, bodyweight, a band or an ankle cable. Left out:
@@ -80,7 +98,7 @@ function create({ standard, view: fixedView } = {}) {
   const viewNow = () => fixedView || views.view
   const supported = v => !v || hipAbduction.views.includes(v)
   const count = () => reps.filter(r => r.counted).length
-  const reachedNow = () => !!acc && acc.top != null && acc.top >= need && acc.rec.rawPeak >= PHASES.minRep
+  const reachedNow = () => !!acc && acc.rec.rawPeak >= PHASES.minRep && (acc.view === 'diagonal' || (acc.top != null && acc.top >= need))
 
   // How far out each leg is against its rest; the working one is the further out. `swing`, what
   // the rep is counted on: the angle between the legs against theirs at rest, when the other leg
@@ -103,9 +121,11 @@ function create({ standard, view: fixedView } = {}) {
     return best
   }
 
-  function readRest(fr, f) {
-    for (const s of SIDES) if (f.legs[s]) base[s] = ema(base[s], f.legs[s].out, 0.2)
-    if (f.lean != null) leanBase = ema(leanBase, f.lean, 0.2)
+  function readRest(fr, f, upright) {
+    if (upright) {
+      for (const s of SIDES) if (f.legs[s]) base[s] = ema(base[s], f.legs[s].out, 0.2)
+      if (f.lean != null) leanBase = ema(leanBase, f.lean, 0.2)
+    }
     const j = fr.joints
     if (!fixedView && ['leftShoulder', 'rightShoulder', 'leftHip', 'rightHip'].every(k => seen(j, k))) views.push(fr, true)
   }
@@ -113,7 +133,8 @@ function create({ standard, view: fixedView } = {}) {
   function finish(rec) {
     const a = acc
     const top = a.top == null ? null : Math.round(a.top)
-    const counted = rec.lost || top == null || std === 'any' || top >= need
+    // At an angle the sideways swing foreshortens (30 degrees out reads about 22 at 45): measured, not judged.
+    const counted = rec.lost || top == null || std === 'any' || a.view === 'diagonal' || top >= need
     const high = a.frames.filter(x => x.s >= rec.peak - 0.1)
     const lefts = high.filter(x => x.side === 'left').length
     const knees = high.map(x => x.knee).filter(x => x != null)
@@ -146,10 +167,15 @@ function create({ standard, view: fixedView } = {}) {
     const phase0 = machine.phase
     const atRest = phase0 === 'waiting' || phase0 === 'standing'
     const both = f && f.legs.left && f.legs.right
-    // At rest with both legs in view and near upright: each leg's own upright, the torso's, the view.
-    if (both && atRest && Math.abs(f.legs.left.out - f.legs.right.out) < 6 && (acc == null)) readRest(fr, f)
+    // At rest with both legs in view and together: each leg's own upright, the torso's, the view.
+    if (both && atRest && acc == null) {
+      const rest = atRestPose(f, base.left != null && base.right != null)
+      if (rest || Math.abs(f.legs.left.out + f.legs.right.out) < REST_SPREAD) readRest(fr, f, rest)
+    }
     const w = f ? working(f) : null
-    let s = w ? Math.max(0, w.swing) / SCALE_DEG : null
+    // With one leg unseen the other cannot be told from it at rest: a lifted leg Vision drops for a
+    // frame read as both down and ended the rep half way up. Such a frame is not read (a gap).
+    let s = w && both ? Math.max(0, w.swing) / SCALE_DEG : null
     if (!supported(viewNow())) s = null
     const ev = machine.push(at, s, { canStart: !!both && s != null })
     let justCounted = false, justMissed = false, reason = null
@@ -230,7 +256,7 @@ const hipAbduction = {
   id: 'hip-abduction',
   name: 'Hip abduction',
   kind: 'reps',
-  views: ['front'],
+  views: ['front', 'diagonal'],
   setup: 'Phone at hip height, 2 to 3 m away, facing you, your whole body and both feet in the frame. Hold a support with the far hand if you need one.',
   matches: ex => matchExercise(ex, { ids: IDS, name: /\bhip abduction\b/i, not: NOT_STANDING, cats: new Set(['strength', 'calisthenics']) }),
   standards: STANDARDS.map(({ id, label }) => ({ id, label })),

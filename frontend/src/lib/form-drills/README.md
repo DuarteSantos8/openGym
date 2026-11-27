@@ -33,7 +33,7 @@ In `index.js` order (`drillFor()` asks them in this order), with the views each 
 | `split-squat` | reps | side, diagonal, front | hip over the front knee |
 | `side-lunge` | reps | front, diagonal | hip drop, hip against the bending knee, the other knee |
 | `romanian-deadlift` | reps | side, diagonal, front | the hinge, hands against the legs |
-| `hip-abduction` | reps | front | the working leg's angle out from upright, torso lean, knee |
+| `hip-abduction` | reps | front, diagonal | the working leg's angle out from upright, torso lean, knee |
 | `pull-up` | reps | front, side, diagonal | wrists over shoulders, nose over the wrists |
 | `hanging-leg-raise` | reps | side, diagonal | thigh lift against the torso while hanging, knees, swing (side-on) |
 | `inverted-row` | reps | side, diagonal | chest to the bar |

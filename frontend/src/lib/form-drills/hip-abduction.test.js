@@ -70,7 +70,7 @@ const FULL = { top: 38, out: 1, back: 1.5 }, LOW = { top: 22, out: 1, back: 1.5 
 describe('the hip abduction drill', () => {
   it('keeps the contract', () => {
     expect(checkDrill(hipAbduction)).toEqual([])
-    expect(hipAbduction).toMatchObject({ kind: 'reps', views: ['front'], defaultStandard: 'wide' })
+    expect(hipAbduction).toMatchObject({ kind: 'reps', views: ['front', 'diagonal'], defaultStandard: 'wide' })
   })
 
   it('films the pose helper as meant', () => {
@@ -181,12 +181,44 @@ describe('the hip abduction, other angles and edges', () => {
     expect(res).toMatchObject({ count: 4, missed: 0 })
   })
 
-  it('side-on or at an angle: asks to face the camera and counts nothing', () => {
-    for (const yaw of [0, 45]) {
-      const { outs, res } = run(abductionSet(same(3, FULL), { yaw }))
-      expect(outs.at(-1).hint).toBe('Face the camera')
-      expect(res.count).toBe(0)
+  it('side-on: asks to face the camera and counts nothing', () => {
+    const { outs, res } = run(abductionSet(same(3, FULL), { yaw: 0 }))
+    expect(outs.at(-1).hint).toBe('Face the camera')
+    expect(res.count).toBe(0)
+  })
+
+  it('at an angle: counts and measures, does not judge the range', () => {
+    for (const yaw of [45, -45, 60]) {
+      const { res } = run(abductionSet([FULL, { ...FULL, top: 34 }, FULL], { yaw }))
+      expect(res).toMatchObject({ count: 3, missed: 0, view: 'diagonal' })
+      expect(res.reps.every(r => r.measures.top != null)).toBe(true)
     }
+  })
+
+  it('reads a frame with the lifted ankle dropped as a gap, not as the leg back down', () => {
+    const frames = abductionSet(same(4, FULL)).map((f, i) => {
+      const j = f.joints
+      if (i % 7 === 3 && j.leftAnkle && j.leftHip && Math.abs(j.leftAnkle[0] - j.leftHip[0]) > 0.03) {
+        const { leftAnkle, ...rest } = j
+        return { ...f, joints: rest }
+      }
+      return f
+    })
+    expect(run(frames).res).toMatchObject({ count: 4, missed: 0 })
+  })
+
+  it('counts a lifter who stands with both legs tipped the same way from the start', () => {
+    // The hips shifted over the standing leg before the first lift and kept there (or a camera
+    // rolled a little): both legs read about 8 degrees off upright the same way at rest.
+    const tipped = p => { const q = abductionPose(p); for (const k of Object.keys(q)) { const [u, v, w] = q[k]; const a = 8 * Math.PI / 180; q[k] = [u * Math.cos(a) - (v - 0.9) * Math.sin(a), 0.9 + u * Math.sin(a) + (v - 0.9) * Math.cos(a), w] } return q }
+    const poses = []
+    for (let i = 0; i < 20; i++) poses.push(tipped(0))
+    for (let r = 0; r < 3; r++) {
+      for (let i = 1; i <= 15; i++) poses.push(tipped(FULL.top * ease(i / 15)))
+      for (let i = 1; i <= 20; i++) poses.push(tipped(FULL.top * (1 - ease(i / 20))))
+      for (let i = 0; i < 12; i++) poses.push(tipped(0))
+    }
+    expect(run(film(poses, { yaw: 90, height: 0.8 })).res).toMatchObject({ count: 3, missed: 0 })
   })
 
   it('marks a rep where the pose was lost and still counts it; drops one lost for good', () => {
