@@ -6393,4 +6393,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Underarmene bøjes opad, mens overarmene bliver langs siden.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Hofterne tilbage og ned mellem hælene, brystet op, knæene over tæerne.",
   "Push through the floor: hips and chest rise together.": "Pres ned i gulvet: hofter og bryst rejser sig sammen.",
+  "Import OpenNutriTracker export": "Importér eksport fra OpenNutriTracker",
+  "Import into the diary on this device?": "Importér til dagbogen på denne enhed?",
+  "Import into your synced account diary?": "Importér til din kontos synkroniserede dagbog?",
+  "{0} entries ready. {1} skipped.": "Poster klar: {0}. Sprunget over: {1}.",
+  "Could not read this OpenNutriTracker export.": "Denne eksport fra OpenNutriTracker kunne ikke læses.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Tilføjet: {0}. Opdateret: {1}. Uændret: {2}.",
 }

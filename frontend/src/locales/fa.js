@@ -6419,4 +6419,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "ساعدها بالا می‌آیند و بازوها کنار بدن می‌مانند.",
   "Hips back and down between the heels, chest up, knees over the toes.": "لگن به عقب و پایین بین پاشنه‌ها، سینه بالا، زانوها روی انگشتان پا.",
   "Push through the floor: hips and chest rise together.": "به زمین فشار بدهید: لگن و سینه با هم بالا می‌آیند.",
+  "Import OpenNutriTracker export": "درون‌ریزی فایل خروجی OpenNutriTracker",
+  "Import into the diary on this device?": "در دفتر روزانهٔ این دستگاه درون‌ریزی شود؟",
+  "Import into your synced account diary?": "در دفتر روزانهٔ همگام‌شدهٔ حسابتان درون‌ریزی شود؟",
+  "{0} entries ready. {1} skipped.": "آمادهٔ درون‌ریزی: {0}. ردشده: {1}.",
+  "Could not read this OpenNutriTracker export.": "فایل خروجی OpenNutriTracker خوانده نشد.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "افزوده‌شده: {0}. به‌روزشده: {1}. بدون تغییر: {2}.",
 }

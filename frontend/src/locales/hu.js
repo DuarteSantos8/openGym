@@ -6456,4 +6456,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Az alkarok megemelkednek, miközben a felkarok a test mellett maradnak.",
   "Hips back and down between the heels, chest up, knees over the toes.": "A csípőd hátra és le a sarkok közé, mellkas a magasban, térd a lábujjak fölött.",
   "Push through the floor: hips and chest rise together.": "Nyomd a padlót: a csípőd és a mellkasod együtt emelkedik.",
+  "Import OpenNutriTracker export": "OpenNutriTracker-export importálása",
+  "Import into the diary on this device?": "Importálod az ezen az eszközön lévő naplóba?",
+  "Import into your synced account diary?": "Importálod a fiókod szinkronizált naplójába?",
+  "{0} entries ready. {1} skipped.": "Importálásra kész: {0}. Kihagyva: {1}.",
+  "Could not read this OpenNutriTracker export.": "Nem sikerült beolvasni ezt az OpenNutriTracker-exportot.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Hozzáadva: {0}. Frissítve: {1}. Változatlan: {2}.",
 }

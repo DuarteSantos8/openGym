@@ -6453,4 +6453,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Os antebraços sobem enquanto a parte superior dos braços fica junto ao corpo.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Ancas para trás e para baixo entre os calcanhares, peito alto, joelhos por cima dos dedos dos pés.",
   "Push through the floor: hips and chest rise together.": "Empurre o chão: ancas e peito sobem em conjunto.",
+  "Import OpenNutriTracker export": "Importar ficheiro exportado do OpenNutriTracker",
+  "Import into the diary on this device?": "Importar para o diário neste dispositivo?",
+  "Import into your synced account diary?": "Importar para o diário sincronizado da sua conta?",
+  "{0} entries ready. {1} skipped.": "Registos prontos: {0}. Ignorados: {1}.",
+  "Could not read this OpenNutriTracker export.": "Não foi possível ler este ficheiro exportado do OpenNutriTracker.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Adicionados: {0}. Atualizados: {1}. Sem alterações: {2}.",
 }

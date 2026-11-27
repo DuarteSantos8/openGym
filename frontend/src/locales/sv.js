@@ -6500,4 +6500,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Underarmarna förs uppåt medan överarmarna stannar längs sidorna.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Höfterna bakåt och ned mellan hälarna, bröstet upp, knäna över tårna.",
   "Push through the floor: hips and chest rise together.": "Tryck mot golvet: höfterna och bröstet stiger tillsammans.",
+  "Import OpenNutriTracker export": "Importera exportfil från OpenNutriTracker",
+  "Import into the diary on this device?": "Importera till dagboken på den här enheten?",
+  "Import into your synced account diary?": "Importera till den synkroniserade dagboken på ditt konto?",
+  "{0} entries ready. {1} skipped.": "Poster redo: {0}. Överhoppade: {1}.",
+  "Could not read this OpenNutriTracker export.": "Det gick inte att läsa den här exportfilen från OpenNutriTracker.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Tillagda: {0}. Uppdaterade: {1}. Oförändrade: {2}.",
 }

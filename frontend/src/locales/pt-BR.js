@@ -4863,5 +4863,11 @@ export const PT_BR_OVERRIDES = {
   "The forearms curl up while the upper arms stay by the sides.": "Os antebraços sobem enquanto a parte superior dos braços fica junto ao corpo.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Quadris para trás e para baixo entre os calcanhares, peito erguido, joelhos sobre os dedos dos pés.",
   "Push through the floor: hips and chest rise together.": "Empurre o chão: quadris e peito sobem juntos.",
+  "Import OpenNutriTracker export": "Importar arquivo exportado do OpenNutriTracker",
+  "Import into the diary on this device?": "Importar para o diário deste dispositivo?",
+  "Import into your synced account diary?": "Importar para o diário sincronizado da sua conta?",
+  "{0} entries ready. {1} skipped.": "Registros prontos: {0}. Ignorados: {1}.",
+  "Could not read this OpenNutriTracker export.": "Não foi possível ler este arquivo exportado do OpenNutriTracker.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Adicionados: {0}. Atualizados: {1}. Sem alterações: {2}.",
 }
 export default { ...pt, ...PT_BR_OVERRIDES }

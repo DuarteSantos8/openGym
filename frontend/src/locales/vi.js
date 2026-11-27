@@ -6419,4 +6419,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Cẳng tay gập lên trong khi cánh tay trên vẫn ở hai bên thân người.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Hông ra sau và xuống giữa hai gót chân, ngực thẳng lên, đầu gối vượt qua các ngón chân.",
   "Push through the floor: hips and chest rise together.": "Đẩy sàn: hông và ngực cùng đi lên.",
+  "Import OpenNutriTracker export": "Nhập tệp xuất từ OpenNutriTracker",
+  "Import into the diary on this device?": "Nhập vào nhật ký trên thiết bị này?",
+  "Import into your synced account diary?": "Nhập vào nhật ký đã đồng bộ của tài khoản bạn?",
+  "{0} entries ready. {1} skipped.": "Số mục sẵn sàng: {0}. Đã bỏ qua: {1}.",
+  "Could not read this OpenNutriTracker export.": "Không đọc được tệp xuất này của OpenNutriTracker.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Đã thêm: {0}. Đã cập nhật: {1}. Không đổi: {2}.",
 };

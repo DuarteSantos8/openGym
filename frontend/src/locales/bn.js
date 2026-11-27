@@ -6532,4 +6532,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "বাহুর ওপরের অংশ পাশে স্থির থাকে, নিচের অংশ ভাঁজ হয়ে ওপরে ওঠে।",
   "Hips back and down between the heels, chest up, knees over the toes.": "কোমর পিছনে ও নিচে, গোড়ালির মাঝে, বুক উঁচু, হাঁটু আঙুলের উপরে।",
   "Push through the floor: hips and chest rise together.": "মেঝেতে চাপ দিন: কোমর আর বুক একসাথে ওঠে।",
+  "Import OpenNutriTracker export": "OpenNutriTracker থেকে রপ্তানি করা ফাইল আমদানি করুন",
+  "Import into the diary on this device?": "এই ডিভাইসের ডায়েরিতে আমদানি করবেন?",
+  "Import into your synced account diary?": "আপনার অ্যাকাউন্টের সিঙ্ক করা ডায়েরিতে আমদানি করবেন?",
+  "{0} entries ready. {1} skipped.": "{0}টি এন্ট্রি প্রস্তুত। {1}টি বাদ দেওয়া হয়েছে।",
+  "Could not read this OpenNutriTracker export.": "OpenNutriTracker থেকে রপ্তানি করা এই ফাইলটি পড়া যায়নি।",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "যোগ হয়েছে: {0}। আপডেট হয়েছে: {1}। অপরিবর্তিত: {2}।",
 }

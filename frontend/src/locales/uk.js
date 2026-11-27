@@ -6450,4 +6450,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Передпліччя підіймаються, а плечові частини рук залишаються біля тулуба.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Стегна назад і вниз між п'ятами, груди підняті, коліна над пальцями ніг.",
   "Push through the floor: hips and chest rise together.": "Відштовхніться від підлоги: стегна й груди піднімаються разом.",
+  "Import OpenNutriTracker export": "Імпортувати файл експорту OpenNutriTracker",
+  "Import into the diary on this device?": "Імпортувати до щоденника на цьому пристрої?",
+  "Import into your synced account diary?": "Імпортувати до синхронізованого щоденника вашого облікового запису?",
+  "{0} entries ready. {1} skipped.": "Записів готово: {0}. Пропущено: {1}.",
+  "Could not read this OpenNutriTracker export.": "Не вдалося прочитати цей файл експорту OpenNutriTracker.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Додано: {0}. Оновлено: {1}. Без змін: {2}.",
 }

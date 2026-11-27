@@ -6464,4 +6464,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "ปลายแขนยกขึ้นขณะที่ต้นแขนยังอยู่ข้างลำตัว",
   "Hips back and down between the heels, chest up, knees over the toes.": "สะโพกไปด้านหลังและลงต่ำระหว่างส้มเท้า หน้าอกยกสูง เข่าอยู่เหนือปลายเท้า",
   "Push through the floor: hips and chest rise together.": "ดันพื้น: สะโพกและหน้าอกยกขึ้นพร้อมกัน",
+  "Import OpenNutriTracker export": "นำเข้าไฟล์ที่ส่งออกจาก OpenNutriTracker",
+  "Import into the diary on this device?": "นำเข้าไปยังบันทึกประจำวันบนอุปกรณ์นี้หรือไม่",
+  "Import into your synced account diary?": "นำเข้าไปยังบันทึกประจำวันของบัญชีที่ซิงค์ไว้หรือไม่",
+  "{0} entries ready. {1} skipped.": "พร้อมนำเข้า {0} รายการ ข้าม {1} รายการ",
+  "Could not read this OpenNutriTracker export.": "ไม่สามารถอ่านไฟล์นี้ที่ส่งออกจาก OpenNutriTracker ได้",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "เพิ่มแล้ว {0} รายการ อัปเดตแล้ว {1} รายการ ไม่เปลี่ยนแปลง {2} รายการ",
 }

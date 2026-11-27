@@ -6449,4 +6449,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Dilbiai keliami aukštyn, o žastai lieka prie šonų.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Klubai atgal ir žemai tarp kulų, krūtinė aukštai, keliai virš pirštų.",
   "Push through the floor: hips and chest rise together.": "Spauskite grindis: klubai ir krūtinė kyla kartu.",
+  "Import OpenNutriTracker export": "Importuoti iš „OpenNutriTracker“ eksportuotą failą",
+  "Import into the diary on this device?": "Importuoti į šio įrenginio dienoraštį?",
+  "Import into your synced account diary?": "Importuoti į sinchronizuojamą paskyros dienoraštį?",
+  "{0} entries ready. {1} skipped.": "Paruošta įrašų: {0}. Praleista: {1}.",
+  "Could not read this OpenNutriTracker export.": "Nepavyko perskaityti šio iš „OpenNutriTracker“ eksportuoto failo.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Pridėta: {0}. Atnaujinta: {1}. Nepakeista: {2}.",
 }
