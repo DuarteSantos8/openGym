@@ -35,7 +35,7 @@ In `index.js` order (`drillFor()` asks them in this order), with the views each 
 | `romanian-deadlift` | reps | side, diagonal, front | the hinge, hands against the legs |
 | `hip-abduction` | reps | front | the working leg's angle out from upright, torso lean, knee |
 | `pull-up` | reps | front, side, diagonal | wrists over shoulders, nose over the wrists |
-| `hanging-leg-raise` | reps | side | thigh lift against the torso while hanging, knees, swing |
+| `hanging-leg-raise` | reps | side, diagonal | thigh lift against the torso while hanging, knees, swing (side-on) |
 | `inverted-row` | reps | side, diagonal | chest to the bar |
 | `chest-supported-row` | reps | side | elbows past the shoulder-hip line |
 | `seated-cable-row` | reps | side | wrist in to the shoulder, elbows to the torso, straight-arm start |

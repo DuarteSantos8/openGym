@@ -70,7 +70,7 @@ const STRAIGHT = { ...FULL, straight: true }
 describe('the hanging leg raise drill', () => {
   it('keeps the contract', () => {
     expect(checkDrill(legRaise)).toEqual([])
-    expect(legRaise).toMatchObject({ kind: 'reps', views: ['side'], defaultStandard: 'level' })
+    expect(legRaise).toMatchObject({ kind: 'reps', views: ['side', 'diagonal'], defaultStandard: 'level' })
   })
 })
 
@@ -156,12 +156,31 @@ describe('the hanging leg raise, swing and other angles', () => {
     expect(run(legRaiseSet(same(3, FULL))).res.reps.every(r => r.measures.swung === false)).toBe(true)
   })
 
-  it('refuses a view at an angle or from the front: asks to turn side-on and counts nothing', () => {
-    for (const yaw of [45, 90]) {
-      const { outs, res } = run(legRaiseSet(same(3, FULL), { yaw }))
-      expect(outs.at(-1).hint).toBe('Turn side-on to the camera')
-      expect(res.count).toBe(0)
+  it('refuses a view from the front: asks to turn side-on and counts nothing', () => {
+    const { outs, res } = run(legRaiseSet(same(3, FULL), { yaw: 90 }))
+    expect(outs.at(-1).hint).toBe('Turn side-on to the camera')
+    expect(res.count).toBe(0)
+  })
+
+  it.each([45, -45, 135])('counts at an angle (yaw %i°), judges level, leaves the swing out', yaw => {
+    // 70 degrees up reads about 63 at 45 degrees: still a raise, below level.
+    const { res } = run(legRaiseSet([FULL, { ...LOW, top: 70 }, STRAIGHT], { yaw, noise: 0.002 }))
+    expect(res).toMatchObject({ count: 2, missed: 1, view: 'diagonal' })
+    expect(res.reps.map(r => r.reason)).toEqual([null, 'low', null])
+    expect(res.reps.every(r => r.measures.swing === null && r.measures.swung === null)).toBe(true)
+    // A swinging body reads low at an angle (about 70 for this level raise at 45 degrees): its
+    // height is measured, not judged, and the rep counts.
+    expect(run(legRaiseSet(same(2, { ...FULL, swing: 25 }), { yaw })).res).toMatchObject({ count: 2, missed: 0 })
+  })
+
+  it('reads the other side when the surer knee drops out at the hang', () => {
+    const frames = legRaiseSet(same(3, FULL), { yaw: 10 })
+    // The near (left) knee is lost whenever the thighs are back near the hang.
+    for (const f of frames) {
+      const k = f.joints.leftKnee, h = f.joints.leftHip
+      if (k && h && k[1] - h[1] > 0.08) delete f.joints.leftKnee
     }
+    expect(run(frames).res.count).toBe(3)
   })
 
   it('counts nothing standing on the floor with the knees coming up (not hanging)', () => {

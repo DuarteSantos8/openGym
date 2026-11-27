@@ -4,15 +4,19 @@
 // The rep is the thighs' lift against the torso: 180 minus the angle at the hip between the
 // shoulder and the knee, on the side nearest the camera. 0 hanging, 90 with the thighs level with
 // the floor whatever the body's swing. Side-on the legs swing in the plane the camera sees, so it is
-// plain image geometry; at an angle or from the front the thighs come towards the camera and
-// foreshorten, so those views are refused. Nothing counts unless the lifter hangs: the wrists over
+// plain image geometry. At an angle (people film this at about 45 degrees) the thighs come towards
+// the camera and their forward reach shortens, but level stays image-horizontal while the torso
+// hangs upright, so height is still judged (a thigh 80 degrees up reads about 76 at 45 degrees);
+// the swing, forward and back, shortens with the yaw and is not judged there. From the front the
+// thighs point at the camera: refused. Real 720p clips at 45 degrees had a body in every frame.
+// Nothing counts unless the lifter hangs: the wrists over
 // the shoulders with the forearms up (pull-kit forearmsUp), so knees raised standing on the floor
 // are not reps. A rep ends back under HANG_DEG, so it must return near the hang.
 // "Straight legs" adds the knees: the knee angle at least STRAIGHT_DEG through the rep.
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
-  angleAt, createPhaseMachine, createSidePicker, createViewDetector, deg, dist, fades, framingHint,
+  angleAt, createPhaseMachine, createSidePicker, createViewDetector, deg, dist, ema, fades, framingHint,
   matchExercise, mean, mid, pickCue, pickSide, round1, seen, tempo, viewHint,
 } from './kit.js'
 import { forearmsUp } from './pull-kit.js'
@@ -21,6 +25,7 @@ export const LEVEL_DEG = 80           // the thighs this far up from hanging at 
 export const HANG_DEG = 30            // back under this: down at the hang, the rep ends
 export const STRAIGHT_DEG = 150       // the knee angle at least this through the rep: straight legs
 export const SWING_DEG = 15           // the torso's angle moving this much over the rep: swung
+export const DIAG_SWING_DEG = 10      // at an angle, the torso moving more than this in the image: height not judged
 export const FAST_DOWN_SEC = 1
 export const FAR_TORSO = 0.07         // shoulder to hip under this share of the frame: too far
 export const FADE_S = 0.1
@@ -102,6 +107,7 @@ function create({ standard, view: fixedView } = {}) {
   const side = createSidePicker(CHAIN)
   const reps = []
   let acc = null
+  let restLean = null      // the torso's image angle at the hang, averaged
 
   const viewNow = () => fixedView || views.view
   const supported = v => !v || legRaise.views.includes(v)
@@ -111,8 +117,15 @@ function create({ standard, view: fixedView } = {}) {
   function finish(rec) {
     const a = acc
     const top = a.top == null ? null : Math.round(a.top), knee = a.knee == null ? null : Math.round(a.knee)
-    const reason = rec.lost ? null : missOf(top, knee, std)
-    const swing = a.leans.length >= 2 ? Math.round(Math.max(...a.leans) - Math.min(...a.leans)) : null
+    const spreadLean = a.leans.length >= 2 ? Math.max(...a.leans) - Math.min(...a.leans) : null
+    // How far the torso left its angle at the hang (the swing starts before the rep's signal does).
+    const moved = a.rest != null && a.leans.length ? Math.max(...a.leans.map(l => Math.abs(l - a.rest))) : spreadLean
+    // At an angle the hip angle is level-true only with the torso hanging still; a swinging body
+    // reads low there (15 degrees of swing takes about 12 off at 45 degrees), so such a rep's
+    // height is measured, not judged.
+    const judgedTop = a.view === 'diagonal' && moved != null && moved > DIAG_SWING_DEG ? null : top
+    const reason = rec.lost ? null : missOf(judgedTop, knee, std)
+    const swing = a.view !== 'diagonal' && spreadLean != null ? Math.round(spreadLean) : null
     const measures = { view: a.view, top, knee, peak: Math.round(rec.peak * 100) / 100, swing, swung: swing == null ? null : swing > SWING_DEG }
     reps.push({ rec, counted: !reason, reason, measures })
     acc = null
@@ -133,17 +146,23 @@ function create({ standard, view: fixedView } = {}) {
     const fr = { t: at, aspect: frame && frame.aspect > 0 ? frame.aspect : 1, joints }
     const why = hangFraming(fr)
     const hangs = !why && hanging(joints, fr.aspect)
-    const sd = side(joints)
+    // The surer side over time; when its knee drops out for a frame, the other side if it is seen
+    // (Vision loses the near knee at the hang more often than the thighs at the top).
+    const pick = side(joints)
+    const sd = hangs && thighLift(joints, pick, fr.aspect) == null && thighLift(joints, pick === 'left' ? 'right' : 'left', fr.aspect) != null
+      ? (pick === 'left' ? 'right' : 'left') : pick
     const lift = hangs ? thighLift(joints, sd, fr.aspect) : null
     const phase0 = machine.phase
-    if (lift != null && lift < HANG_DEG && (phase0 === 'waiting' || phase0 === 'standing') && !fixedView) views.push(fr, true)
+    const atHang = lift != null && lift < HANG_DEG && (phase0 === 'waiting' || phase0 === 'standing')
+    if (atHang && !fixedView) views.push(fr, true)
+    if (atHang) { const l = torsoAngle(joints, fr.aspect); if (l != null) restLean = ema(restLean, l, 0.3) }
     let s = lift == null ? null : lift / 90
     if (!supported(viewNow())) s = null
     const ev = machine.push(at, s, { canStart: s != null })
     let justCounted = false, justMissed = false, reason = null
     if (ev.dropped || (!ev.rep && acc)) acc = null
     if (ev.rep) {
-      if (!acc || acc.rec !== ev.rep) acc = { rec: ev.rep, view: viewNow(), top: null, knee: null, leans: [] }
+      if (!acc || acc.rec !== ev.rep) acc = { rec: ev.rep, view: viewNow(), top: null, knee: null, leans: [], rest: restLean }
       if (s != null) {
         if (acc.top == null || lift > acc.top) acc.top = lift
         const k = angleAt(seen(joints, sd + 'Hip'), seen(joints, sd + 'Knee'), seen(joints, sd + 'Ankle'), fr.aspect)
@@ -221,7 +240,7 @@ const legRaise = {
   id: 'hanging-leg-raise',
   name: 'Hanging leg raise',
   kind: 'reps',
-  views: ['side'],
+  views: ['side', 'diagonal'],
   setup: 'Phone side-on at hip height, 2 to 3 m away, the bar, your hands and your feet in the frame.',
   matches: ex => matchExercise(ex, { ids: IDS, name: /\bhanging\b.*\b(knee|leg)s?\b.*\braises?\b/i, not: NOT_A_PLAIN_RAISE, cats: new Set(['strength', 'calisthenics']) }),
   standards: STANDARDS,
