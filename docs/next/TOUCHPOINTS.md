@@ -10,6 +10,9 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 |---|---|---|---|
 | `api/server.js`, `api/openapi.yaml`, `api/test/server-token-refresh.test.js` | #133 | Browser logout | End the presented session while leaving a later browser sign-in and other devices signed in. |
 | `api/oidc/routes.js`, `api/test/server-oidc.test.js` | #133 | Verified provider callback | Clear the pending logout fallback when issuing the replacement browser session. |
+| `frontend/src/lib/sister-nutrition.js`, `frontend/src/lib/sister-nutrition.test.js` | next/EP27-nutrition-isolation-proof | Nutrition pairing | Keep cached totals and pending requests within their owning profile. |
+| `frontend/src/store/useStore.js`, `frontend/src/store/useStore.signout-nutrition.test.jsx` | next/EP27-nutrition-isolation-proof | Session transitions | Gate nutrition on confirmed identity and test shared-device privacy. |
+| `frontend/src/components/SisterApps.jsx` | next/EP27-nutrition-isolation-proof | Pairing sheet | Reset drafts and scope unlink confirmations to the pairing shown. |
 | `frontend/src/store/useStore.js`, `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js`, `frontend/src/lib/oidc.test.js` | #133 | Sign-in retry | Preserve the newer session when logout responses overlap or storage is full. |
 | `frontend/src/components/Ladders.jsx`, `frontend/src/index.css` | `next/EP26-learn-ladder` | Learn sheet | Reuse the existing ladder cards and history calculation for a read-only, text-only Learn view. |
 | `frontend/src/lib/ladders.test.js` | `next/EP26-learn-ladder` | Test | Pin built-in rung counts and push-up order; cover unrelated, incomplete, repeated and out-of-order sets. |

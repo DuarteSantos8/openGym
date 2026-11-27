@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
+import { unlink as unlinkNutrition, nutritionUserChanged } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { logoutOwed, trackCookieCleanup } from '../lib/cookie-cleanup.js'
 import { localTZ } from '../lib/format.js'
@@ -980,6 +980,7 @@ export const useStore = create((set, get) => {
     handedOver = true
     const user = get().user
     set({ ...(user && user.id !== owner ? { user: null } : {}), S })
+    nutritionUserChanged(get().user?.id, serverBase())
     // The copy in memory is no longer the one the requests in flight were made for.
     newSession()
     takeSaved()
@@ -1042,6 +1043,7 @@ export const useStore = create((set, get) => {
     if (!base) return false
     meta.set(get().S, { base, owed: storedOwed() })
     set({ user: u })
+    nutritionUserChanged(u.id, serverBase())
     newSession()
     setSync({ held: false })
     return true
@@ -1105,6 +1107,8 @@ export const useStore = create((set, get) => {
   // it sees the new copy, or it joins its own copy of the account into it (QA 2026-10-06).
   const clearLocalSession = () => {
     const hadMedia = keptHashes(get().S).size > 0
+    // A pending cold boot has no confirmed pairing. Never select the guest's link for it.
+    if (get().user) unlinkNutrition().catch(() => {})
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     forgetSync()
@@ -1112,6 +1116,7 @@ export const useStore = create((set, get) => {
     localStorage.removeItem(KEY)
     localStorage.removeItem('gym_owner_name')
     localStorage.removeItem('gym_owner')
+    nutritionUserChanged(null)
     seenOwner = null   // a guest's tab now: it joins what other signed-out tabs save (as setUser)
     handedOver = false
     const guest = readGuestProfile() || freshState()
@@ -1119,10 +1124,6 @@ export const useStore = create((set, get) => {
     // Today's body picker keeps a photo and the picks outside the state (lib/body-photo.js): a
     // shared device keeps nothing of them either.
     forgetBodyFocus()
-    // The openNutrition link (lib/sister-nutrition.js) is this device's, but what it cached is what
-    // the signed-out person ate: on a shared device it must not show on the next account's Home,
-    // report or month story. Their token goes too; linking again is one code.
-    unlinkNutrition().catch(() => {})
     setSync({ offline: false, auth: false, lastError: null, pending: false, lastSynced: 0 })
     // On a phone the file is wiped with it, now rather than after the usual wait: a start in
     // between would open in local mode on the signed-out account's data, since that boot takes
@@ -1775,6 +1776,7 @@ export const useStore = create((set, get) => {
     setGuest(v) {
       if (v) localStorage.setItem('gym_guest', '1'); else localStorage.removeItem('gym_guest')
       set({})
+      if (v && !get().user) nutritionUserChanged(null)
       if (v) setSync({ auth: false, offline: false, lastError: null })
     },
 
@@ -1803,7 +1805,7 @@ export const useStore = create((set, get) => {
 
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
     // decides what becomes of this copy; until it has, nothing is pulled or pushed (ADOPT_KEY).
-    setUser(u, { adopt, restored = false } = {}) {
+    setUser(u, { adopt, restored = false, nutritionAccess = 'online' } = {}) {
       const was = get().user?.id ?? null
       const wasHeld = adoptHold   // the hold of the account signed in so far, before this one's goes on
       if (u) {
@@ -1891,6 +1893,7 @@ export const useStore = create((set, get) => {
         else if (configFetch) configFetch.then(c => { if (c && !('coach' in c)) get().refreshConfig() })   // Ironvane: one in flight (boot's re-ask) left before this sign-in
       } else { rejoined = false; adoptHold = false; localStorage.removeItem('gym_user') }
       set({ user: u })
+      nutritionUserChanged(nutritionAccess === 'denied' ? null : u?.id, serverBase(), nutritionAccess === 'cached')
       // Another account, or none: what is in flight was for the previous one (GHSA-656w-p99j-x8hf).
       if ((u?.id ?? null) !== was) newSession()
       setSync({ held: adoptHold })
@@ -2086,6 +2089,7 @@ export const useStore = create((set, get) => {
        Otherwise { owed: false } or { owed: true, count, stashed: true }, signed out. A workout
        running here is kept aside either way (stashActive), and the rest and hold timers stop. */
     async signOut({ force = false } = {}) {
+      const session = currentSession()
       await settle()
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
@@ -2094,10 +2098,12 @@ export const useStore = create((set, get) => {
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
+      if (!isCurrent(session)) return { owed: false }
       let out = null
       const endSession = () => api('/api/logout', { method: 'POST', body: '{}' })
       if (!MOBILE) logoutOwed(true)
       try { out = await (MOBILE ? endSession() : trackCookieCleanup(endSession)) } catch { /* boot retries the recorded web logout */ }
+      if (!isCurrent(session)) return { owed: false }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
       if (!MOBILE && typeof out?.provider_logout === 'string' && /^https?:\/\//.test(out.provider_logout)) window.location.assign(out.provider_logout)
@@ -2164,13 +2170,16 @@ export const useStore = create((set, get) => {
     // valid, and wiping this device's copy of the data would sign the user out of the one place
     // the bump didn't reach. Caller reports the error.
     async signOutAll({ force = false } = {}) {
+      const session = currentSession()
       await settle()
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
       await stopTimers()
+      if (!isCurrent(session)) return { owed: false }
       await api('/api/logout/all', { method: 'POST', body: '{}' })
       if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
+      if (!isCurrent(session)) return { owed: false }
       await clearLocalSession()
       return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
     },
@@ -2217,6 +2226,7 @@ export const useStore = create((set, get) => {
 
     // Boot: ask the server who we are, then pull.
     async boot() {
+      nutritionUserChanged(null)
       // Mobile build: no backend by default — restore from the file mirror (the durable copy;
       // localStorage may have been evicted since the last run) and go straight in. Unless this
       // device was paired to a server ("connect to my server" mode, lib/remote.js), in which
@@ -2261,7 +2271,7 @@ export const useStore = create((set, get) => {
             // the account: every change after that "synced" into the app's own files (see
             // lib/api.js) and was gone on the next Disconnect. Now the screens say the server
             // refuses this phone, and pairing it again merges what it kept.
-            get().setUser(remote.user || get().user)
+            get().setUser(remote.user || get().user, { nutritionAccess: isNetworkError(e) ? 'cached' : 'denied' })
             failed(e, { pending: owes() })
           }
           syncReminder(get().S)
@@ -2379,11 +2389,16 @@ export const useStore = create((set, get) => {
         // Started without a network (a home-screen app reopened in the gym's basement), or
         // behind a proxy answering for the server: keep the signed-in copy and say so from the
         // first screen, not only after the first failed push.
-        else if (get().user) failed(e, { pending: owes() })
+        else if (get().user) {
+          if (isNetworkError(e)) nutritionUserChanged(get().user.id, serverBase(), true)
+          failed(e, { pending: owes() })
+        }
       }
       finishBoot()
     }
   }
 })
+
+nutritionUserChanged(null) // a persisted account is confirmed by boot before its nutrition can open
 
 export { hasData }

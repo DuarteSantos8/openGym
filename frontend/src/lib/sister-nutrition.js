@@ -110,28 +110,87 @@ export function cleanSummary(body) {
 
 /* ---------------------------------------------------------------- the link ---- */
 
-/** This device's link, or null: { url, hint, linkedAt, show: { report, story, home }, days: { iso: day }, fasting, at, error }. */
-export function loadLink() {
-  if (offlineBuild()) return null
+// The persisted identity can change in another tab before this tab joins it. Until the
+// store and disk agree, neither profile's nutrition belongs on this screen.
+let userId = null
+let server = ''
+let cachedOnly = false
+let generation = 0
+let running = null
+export function nutritionProfileKey() {
   try {
-    const v = JSON.parse(store()?.getItem(NUTRITION_KEY) || 'null')
-    if (!isObj(v) || !cleanUrl(v.url)) return null
-    return { show: { report: true, story: true, home: true }, days: {}, fasting: null, at: 0, error: null, ...v, show: { report: true, story: true, home: true, ...(isObj(v.show) ? v.show : {}) }, days: isObj(v.days) ? v.days : {} }
+    if (!store()) return null
+    const persisted = JSON.parse(store().getItem('gym_user'))?.id ?? null
+    const owner = store().getItem('gym_owner')
+    if (persisted !== userId || (userId && owner !== userId)) return null
+    if (!userId && owner && !store().getItem('gym_guest')) return null
+    return NUTRITION_KEY + (userId ? '.account.' + JSON.stringify([server, userId]) : '.guest')
   } catch { return null }
 }
 
-export function saveLink(v) {
-  // Never the token: that one lives in secure storage only.
+const credential = (key, pairId) => TOKEN_KEY + '.' + key + '.' + pairId
+
+function notify() {
+  const current = loadLink()
+  listeners.forEach(cb => { try { cb(current) } catch { /* a closed screen */ } })
+}
+
+export function nutritionUserChanged(id, base = '', offline = false) {
+  // An old device-wide pairing cannot safely be assigned to the first person to sign in.
+  try {
+    if (store()?.getItem(NUTRITION_KEY)) {
+      store().removeItem(NUTRITION_KEY)
+      secureRemove(TOKEN_KEY).catch(() => {})
+    }
+  } catch { /* inaccessible storage */ }
+  userId = id ?? null
+  server = base || ''
+  cachedOnly = offline
+  generation++
+  running = null
+  notify()
+}
+
+if (typeof window !== 'undefined') window.addEventListener('storage', ({ key }) => {
+  if (key === null || key === 'gym_user' || key === 'gym_guest' || key === 'gym_owner') {
+    nutritionUserChanged(userId, server, cachedOnly)
+  } else if (key === nutritionProfileKey()) notify()
+})
+
+/** Unscoped legacy links have no knowable owner and are never opened. */
+export function loadLink() {
+  if (offlineBuild()) return null
+  try {
+    const key = nutritionProfileKey()
+    const v = key && JSON.parse(store()?.getItem(key) || 'null')
+    if (!isObj(v) || !cleanUrl(v.url)) return null
+    return { ...v, show: { report: true, story: true, home: true, ...(isObj(v.show) ? v.show : {}) }, days: isObj(v.days) ? v.days : {} }
+  } catch { return null }
+}
+
+function saveLink(v) {
+  const key = nutritionProfileKey()
+  if (!key) return null
   const { token: _t, ...keep } = v || {}
-  try { if (v) store()?.setItem(NUTRITION_KEY, JSON.stringify(keep)); else store()?.removeItem(NUTRITION_KEY) } catch { /* not kept */ }
-  listeners.forEach(cb => { try { cb(v || null) } catch { /* a closed screen */ } })
+  try { if (v) store().setItem(key, JSON.stringify(keep)); else store().removeItem(key) }
+  catch { return null }
+  notify()
   return v || null
 }
 
-/** Forget the link and everything it brought. openNutrition's token stays valid until revoked there. */
-export async function unlink() {
-  await secureRemove(TOKEN_KEY).catch(() => {})
-  return saveLink(null)
+/** Forget this profile's link. Each pairing has a separate secure key, so an old cleanup
+ * can finish after another profile pairs without erasing the new credential. */
+export async function unlink(expectedPairId) {
+  const key = nutritionProfileKey()
+  const previous = loadLink()
+  if (expectedPairId && previous?.pairId !== expectedPairId) return false
+  try { if (key) store().removeItem(key + '.attempt') } catch { /* inaccessible storage */ }
+  generation++
+  running = null
+  saveLink(null)
+  try { store()?.removeItem(NUTRITION_KEY) } catch { /* inaccessible legacy cache */ }
+  await Promise.all([secureRemove(TOKEN_KEY), previous?.pairId && secureRemove(credential(key, previous.pairId))])
+  return true
 }
 
 /** The switch for one place it shows ('report' | 'story' | 'home'). */
@@ -179,11 +238,21 @@ export async function readSummary(url, token, from, to, fetchFn = doFetch) {
  * 'revoked', 'missing', 'notnutrition', 'busy', 'failed').
  */
 export async function link(rawUrl, secret, { fetchFn = doFetch, now = Date.now() } = {}) {
-  if (offlineBuild()) throw new LinkError('unreachable')
+  if (offlineBuild() || cachedOnly) throw new LinkError('unreachable')
+  const key = nutritionProfileKey()
+  if (!key) throw new LinkError('failed')
+  const attempt = ++generation
   const url = cleanUrl(rawUrl)
   if (!url) throw new LinkError('url')
   const s = String(secret || '').trim()
   if (!s) throw new LinkError('code')
+  const pairId = Array.from(crypto.getRandomValues(new Uint32Array(4))).join('-')
+  // A second tab can cancel a first pairing even before its cache exists.
+  try { store().setItem(key + '.attempt', pairId) } catch { throw new LinkError('failed') }
+  const stillHere = () => {
+    try { return attempt === generation && key === nutritionProfileKey() && store().getItem(key + '.attempt') === pairId }
+    catch { return false }
+  }
   let token = s
   if (!/^on_[A-Za-z0-9_-]{16,}$/.test(s)) {
     const code = s.replace(/[\s-]/g, '').toUpperCase()
@@ -198,10 +267,21 @@ export async function link(rawUrl, secret, { fetchFn = doFetch, now = Date.now()
     if (!isObj(res) || typeof res.token !== 'string' || !res.token) throw new LinkError('notnutrition')
     token = res.token
   }
+  if (!stillHere()) throw new LinkError('failed')
   const sum = await readSummary(url, token, isoAt(now - 13 * DAY), isoAt(now), fetchFn)
-  await secureSet(TOKEN_KEY, token)
-  const l = { url, hint: token.slice(-4), linkedAt: now, show: { report: true, story: true, home: true }, days: {}, fasting: null, at: 0, error: null }
-  return saveLink({ ...withSummary(l, sum, now), from: isoAt(now - 13 * DAY), to: isoAt(now) })
+  if (!stillHere()) throw new LinkError('failed')
+  const previous = loadLink()
+  const tokenKey = credential(key, pairId)
+  await secureSet(tokenKey, token)
+  const l = { url, pairId, hint: token.slice(-4), linkedAt: now, show: { report: true, story: true, home: true }, days: {}, fasting: null, at: 0, error: null }
+  const kept = stillHere() && saveLink({ ...withSummary(l, sum, now), from: isoAt(now - 13 * DAY), to: isoAt(now) })
+  if (!kept) {
+    await secureRemove(tokenKey)
+    throw new LinkError('failed')
+  }
+  if (previous?.pairId) await secureRemove(credential(key, previous.pairId))
+  if (!stillHere()) throw new LinkError('failed')
+  return kept
 }
 
 /** The link with a fresh answer folded in: days replaced, the oldest dropped past KEEP_DAYS. */
@@ -213,31 +293,30 @@ export function withSummary(l, sum, now = Date.now()) {
   return { ...l, days, fasting: sum.fasting, at: now, error: null }
 }
 
-let running = null
 /**
  * Bring the cache up to date for [from, to] (default: the last 14 days), at most every FRESH_MS
  * unless `force`. Never throws: a failure is kept on the link as `error` and the old numbers stay.
  */
 export function refresh({ from, to, force = false, now = Date.now(), fetchFn = doFetch } = {}) {
   const l = loadLink()
-  if (!l) return Promise.resolve(null)
+  if (!l || cachedOnly) return Promise.resolve(l)
   const f = from || isoAt(now - 13 * DAY), t2 = to || isoAt(now)
   const covered = l.at > now - FRESH_MS && l.from <= f && l.to >= t2
   if (covered && !force) return Promise.resolve(l)
-  if (running) return running
-  running = secureGet(TOKEN_KEY)
-    .then(token => { if (!token) throw new LinkError('revoked'); return readSummary(l.url, token, f, t2, fetchFn) })
-    .then(sum => {
-      const cur = loadLink()
-      if (!cur || cur.linkedAt !== l.linkedAt) return cur
-      return saveLink({ ...withSummary(cur, sum, now), from: f, to: t2 })
+  if (running && running.pairId === l.pairId) return running.job
+  const key = nutritionProfileKey(), epoch = generation
+  const current = () => key === nutritionProfileKey() && epoch === generation && loadLink()?.pairId === l.pairId
+  const job = secureGet(credential(key, l.pairId))
+    .then(token => {
+      if (!current()) return null
+      if (!token) throw new LinkError('revoked')
+      return readSummary(l.url, token, f, t2, fetchFn)
     })
-    .catch(e => {
-      const cur = loadLink()
-      return cur ? saveLink({ ...cur, error: e?.code || 'failed', errorAt: now }) : null
-    })
-    .finally(() => { running = null })
-  return running
+    .then(sum => current() && sum ? saveLink({ ...withSummary(loadLink(), sum, now), from: f, to: t2 }) : null)
+    .catch(e => current() ? saveLink({ ...loadLink(), error: e?.code || 'failed', errorAt: now }) : null)
+    .finally(() => { if (running?.job === job) running = null })
+  running = { pairId: l.pairId, job }
+  return job
 }
 
 /* ----------------------------------------------------------------- reading ---- */
