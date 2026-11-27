@@ -14,6 +14,12 @@
 //     Vision's hip sits on the pelvis above the crease (as for the squat), so depth takes HIP_MARK
 //     off r: real split squats with the back knee near the floor read r 0.22 to 0.25 from the
 //     front, and a partial one stopped on a foam block 0.4 side-on.
+//   - the top is also read on the hip's own height: r's shin is short, and with the front leg
+//     straight Vision slides the knee up and down it (r 0.62 to 1.13 standing still in one side-on
+//     set), so a lifter back at the height she stood at read a third of the way down and the rep
+//     never ended. On the way up, with the hip back within the top band of its standing height
+//     (its drop over HIP_DROP standing hip heights), the signal is the lesser of that and
+//     1 - r / r_top. The standing levels and the start of a rep stay on r alone.
 // Where this breaks: perspective, as for the squat. From the front or at an angle the front knee
 // comes towards the camera and the hips stay back, so the depth is judged there only with the
 // phone at knee height and level (the standing knees near the middle row, the body upright);
@@ -33,6 +39,7 @@ export const MAX_R = 2.5             // r above this: the knee read by the ankle
 export const TOP_STEP = 1.2           // one standing frame raises the standing r by at most this factor
 export const FOOT_SLACK = 0.3         // an ankle within this many torso lengths of the lowest one is on the floor
 export const SWITCH_SLACK = 0.15      // the other knee this many torso lengths higher: it is the front one now
+export const HIP_DROP = 0.4           // the hip's drop at a full rep, in standing hip heights over the floor (real ones 0.33 to 0.51)
 export const TOP_S = 0.06             // signal under this: at the top, where the standing figure is read
 export const LEVEL_ROW = 0.12         // standing knees at most this far from the middle row: camera at knee height
 export const LEVEL_ROLL = 12          // degrees the standing torso may lean in the image: camera upright
@@ -133,6 +140,7 @@ function create({ standard, view: fixedView } = {}) {
   const views = createViewDetector()
   const reps = []                 // { rec, counted, reason, measures }
   const rTop = { left: null, right: null }   // r standing tall, per leg
+  let hipTop = null, hipH = null    // the hip's height standing (image y) and its height over the floor
   let frontSide = null
   let levelRow = null, levelRoll = null
   let lastS = null
@@ -156,6 +164,8 @@ function create({ standard, view: fixedView } = {}) {
       const r = rTop[side] == null ? r0 : Math.min(r0, rTop[side] * TOP_STEP)
       rTop[side] = ema(rTop[side], r, rTop[side] == null || r > rTop[side] ? 0.2 : 0.1)
     }
+    hipTop = ema(hipTop, f.hip[1], 0.2)
+    hipH = ema(hipH, f.floor - f.hip[1], 0.2)
     if (!fixedView) views.push(frame, true)
     // The camera upright: the torso stands near vertical in the image (the feet are apart, so
     // unlike the squat the body's line runs from the hips, not the feet).
@@ -210,8 +220,10 @@ function create({ standard, view: fixedView } = {}) {
     const phase0 = machine.phase
     if (tall && (phase0 === 'waiting' || phase0 === 'standing') && (lastS == null || lastS < TOP_S)) readStanding(fr, f)
     const tops = [rTop.left, rTop.right].filter(x => x > 0)
-    const s = f && tops.length ? 1 - f.r / Math.min(...tops) : null
-    if (s != null) lastS = s
+    const sR = f && tops.length ? 1 - f.r / Math.min(...tops) : null
+    const sH = f && hipH > 0 ? (f.hip[1] - hipTop) / (HIP_DROP * hipH) : null
+    const s = phase0 === 'ascending' && sR != null && sH != null && sH <= PHASES.stand ? Math.min(sR, sH) : sR
+    if (sR != null) lastS = sR
     const ev = machine.push(at, s, { canStart: tall })
     let justCounted = false, justMissed = false, reason = null
     if (ev.dropped || (!ev.rep && acc)) acc = null

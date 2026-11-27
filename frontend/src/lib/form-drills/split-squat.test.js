@@ -299,6 +299,21 @@ describe('the split squat, whatever the angle', () => {
     }
   })
 
+  it('ends the last rep with the hip back up when the straight front knee reads lower between reps', () => {
+    // Standing between reps Vision slid the straight front knee down its leg (r up from 0.6 to
+    // 1.1 in a real side-on set); back at the same hip height after the last rep it did not.
+    for (const yaw of [0, 45, 90]) {
+      const frames = splitSet(same(3, FULL), { yaw })
+      const hip0 = frames[0].joints.leftHip[1]
+      const slid = frames.map((f, i) => {
+        const j = f.joints
+        if (i < 15 || i >= frames.length - 15 || Math.abs(j.leftHip[1] - hip0) > 1e-4) return f
+        return { ...f, joints: { ...j, leftKnee: [j.leftKnee[0], j.leftKnee[1] + 0.025, j.leftKnee[2]] } }
+      })
+      expect(run(slid).res).toMatchObject({ count: 3, missed: 0 })
+    }
+  })
+
   it('does not count anything before the lifter has stood tall once', () => {
     const tr = split.create()
     for (let i = 0; i < 20; i++) tr.push({ t: i * 66, aspect: CAMERA.aspect, joints: project(splitPose(0.5)) })
