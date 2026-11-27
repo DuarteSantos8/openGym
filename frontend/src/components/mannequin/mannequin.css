@@ -4,7 +4,7 @@
 .mm-demo{margin-top:16px}
 .mm-demo .sec{margin:0 0 8px}
 .mm-rig{width:100%;height:min(46vh,340px);min-height:240px;border-radius:var(--r-md,14px);overflow:hidden;background:var(--bg-el)}
-.mm-still{display:block;width:100%;max-width:250px;height:auto;margin:0 auto}
+.mm-still{display:block;width:100%;max-width:250px;height:auto;max-height:min(46vh,340px);margin:0 auto}
 .mm-still path,.mm-still line{fill:none;stroke-linecap:round;stroke-linejoin:round}
 .mm-still-body{stroke:var(--acc-ink);stroke-width:.075}
 .mm-still-near path{stroke:var(--label);stroke-width:.07}

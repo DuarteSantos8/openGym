@@ -40,7 +40,8 @@ async function withoutWebGL(page) {
 }
 
 async function enterAsGuestInDarkMode(page) {
-  await page.route(/\/(exercise-(?:media|photos|demos)|img|gif)\//, route => route.fulfill({ status: 404 }))
+  await page.route(/\/(exercise-(?:media|photos|demos)|img|gif)\//, route => route.fulfill({ status: 204 }))
+  await page.addInitScript(() => localStorage.setItem('gym_tour_v1', JSON.stringify({ offered: true })))
   await enterAsGuest(page)
   await page.evaluate(() => {
     const state = JSON.parse(localStorage.getItem('gym_state_v1') || '{}')
@@ -155,27 +156,6 @@ test('without WebGL, the key pose is shown in words and the demo says why', asyn
   await testInfo.attach('mannequin-no-webgl-390-dark', { path: screenshot, contentType: 'image/png' })
 })
 
-test('the movement demo works offline, once the app has been opened with a network', async ({ page, context }) => {
-  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' })
-  await enterAsGuestInDarkMode(page)
-  await openSquatSheet(page)
-  // The production app registers its worker on HTTPS. Playwright serves this same build on HTTP loopback.
-  await page.evaluate(() => navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready))
-  await page.waitForFunction(() => !!navigator.serviceWorker.controller)
-  await page.reload()
-  await openSquatSheet(page)
-  await expect(page.locator('.mm-demo')).toBeVisible({ timeout: 10_000 })
-
-  await context.setOffline(true)
-  await page.keyboard.press('Escape')
-  await expect(page.locator('.mm-demo')).toHaveCount(0)
-  await openSquatSheet(page)
-  await expect(page.locator('.mm-demo')).toBeVisible({ timeout: 10_000 })
-  await expect(page.locator('.mm-demo [data-mm-still]')).toBeVisible()
-  await expect(page.locator('.mm-demo-text')).toContainText(KEY_WORDS)
-  await context.setOffline(false)
-})
-
 const examples = [
   ['lunge', '0781', 'split squat'],
   ['hinge', '1459', 'dumbbell romanian deadlift'],
@@ -186,6 +166,55 @@ const examples = [
   ['core', '0276', 'dead bug'],
   ['isolation', '0294', 'dumbbell biceps curl'],
 ]
+
+test('new movement examples open and play from the service worker after an offline reload', async ({ page, context, browserName }, testInfo) => {
+  test.setTimeout(90_000)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await countDraws(page)
+  await enterAsGuestInDarkMode(page)
+  const webgl = await page.evaluate(() => {
+    const gl = document.createElement('canvas').getContext('webgl2')
+    gl?.getExtension('WEBGL_lose_context')?.loseContext()
+    return !!gl
+  })
+  if (browserName === 'chromium') expect(webgl, 'Chromium must exercise offline WebGL playback').toBe(true)
+  // The production worker normally registers on HTTPS; this preview uses HTTP loopback.
+  await page.evaluate(() => navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready))
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller)
+  await context.setOffline(true)
+  try {
+    const response = await page.reload()
+    expect(response.fromServiceWorker()).toBe(true)
+    await openRoute(page, '/library')
+    for (const [pattern, id, exercise] of [...examples, ['squat', '1760', 'dumbbell goblet squat']]) {
+      await page.getByPlaceholder(/Search/).fill(exercise)
+      const row = page.locator('.item-open').filter({ has: page.getByText(exercise, { exact: true }) })
+      await expect(row).toHaveCount(1)
+      await click(row)
+      const demo = page.locator(`[data-guide="${id}"] .mm-demo`)
+      await expect(demo.locator('.mm-demo-text')).toHaveText(stillTextFor(pattern))
+      if (webgl) {
+        await expect(demo.locator('canvas')).toBeVisible()
+        const before = await page.evaluate(() => window.__draws)
+        await click(demo.getByRole('button', { name: 'Play', exact: true }))
+        await expect.poll(() => page.evaluate(() => window.__draws)).toBeGreaterThan(before + 20)
+        await expect(demo.getByRole('button', { name: 'Pause', exact: true })).toBeVisible()
+        await expect(demo.locator('.mm-demo-text')).not.toHaveText(stillTextFor(pattern))
+      } else {
+        await expect(demo.locator(`[data-mm-still="${pattern}"]`)).toBeVisible()
+      }
+      await page.keyboard.press('Escape')
+      await expect(demo).toHaveCount(0)
+    }
+    testInfo.annotations.push({ type: 'offline', description: webgl ? '9 examples played in WebGL' : '9 still fallbacks opened' })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await openSquatSheet(page)
+    await expect(page.locator('.mm-demo [data-mm-still="squat"]')).toBeVisible()
+    await expect(page.locator('.mm-demo-text')).toContainText(KEY_WORDS)
+  } finally {
+    await context.setOffline(false)
+  }
+})
 
 for (const [pattern, id, exercise] of examples) {
   test(`${pattern} on its dark phone sheet: key pose, keyboard playback and still fallbacks`, async ({ page }, testInfo) => {
@@ -215,10 +244,14 @@ for (const [pattern, id, exercise] of examples) {
       await expect(demo).toHaveCount(0)
     }
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-    await expect(demo.getByText('Movement pattern example')).toBeVisible()
+    await expect(demo.getByText('Movement pattern example')).toBeVisible({ timeout: 15_000 })
     await expect(caption).toHaveText(stillTextFor(pattern))
     if (await page.evaluate(() => !!document.createElement('canvas').getContext('webgl2'))) {
-      await expect(canvas).toBeVisible()
+      await expect(canvas).toBeVisible({ timeout: 15_000 })
+      await expect.poll(() => canvas.evaluate(el => ({
+        width: el.clientWidth - el.parentElement.clientWidth,
+        height: el.clientHeight - el.parentElement.clientHeight,
+      }))).toEqual({ width: 0, height: 0 })
       await expect.poll(draws).toBeGreaterThan(0)
       const pixels = () => canvas.evaluate(el => el.toDataURL())
       const blankImage = await canvas.evaluate(el => {
@@ -236,9 +269,10 @@ for (const [pattern, id, exercise] of examples) {
       await expect(play).toBeFocused()
       await page.keyboard.press('Enter')
       await expect(pause).toBeFocused()
-      // The rig starts at the key pose. Step just past the wrap to the first pose.
-      await page.clock.runFor(loopFor(pattern) - keyFrameFor(pattern).at + 32)
+      // Draw several real frames, then jump just past the wrap to the first pose.
+      await page.clock.runFor(64)
       expect(await draws()).toBeGreaterThan(beforePlayback + 20)
+      await page.clock.fastForward(loopFor(pattern) - keyFrameFor(pattern).at - 32)
       await expect(caption).toHaveText(poseFor(pattern)[0].note)
       await page.keyboard.press('Space')
       await expect(play).toBeFocused()
