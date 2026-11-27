@@ -87,6 +87,7 @@ Eleven read-only tools, and four that write:
 | `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. An exercise you confirm the library lacks is made as your own (`create_custom`), with no session logged to make it. |
 | `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention. `expected_revision` makes it all-or-nothing against what you saw. |
 | `delete_routine` | *Writes.* Only with `confirm: true` and the `expected_revision` from `get_routine`. |
+| `create_exercise` | *Writes.* "Add Tindeq 20 mm half crimp pull, lower arms" → one of your own exercises, with no routine and no session logged. A name the library or you already have is refused with its id. |
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.

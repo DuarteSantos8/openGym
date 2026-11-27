@@ -11,7 +11,8 @@
 // variant ("shoulder press" is the barbell one), and the reply says which; what it does not do is
 // pick between names the catalogue spells alike or invent an exercise: those come back as a
 // problem to put to the user instead of a workout filed under the wrong lift.
-import { EXIDX, canonicalExId, betterWeight, beatsWeight, isCardio } from './exercises.js'
+import { EXIDX, canonicalExId, betterWeight, beatsWeight, isCardio, allExercises } from './exercises.js'
+import { ALL_EQUIPMENT } from './equipment.js'
 import { exerciseCandidates, importId, bpFromName } from './import-csv.js'
 import { bestWeightFor, bestWeightForEntry, workoutVolume, EFFORT } from './history.js'
 import { buildCompletedWorkout } from './finish-workout.js'
@@ -83,6 +84,26 @@ export function newCustomExercise(name, bodyPart) {
   if (!BODY_PARTS.includes(bp)) return { problem: `needed for a new exercise: one of ${BODY_PARTS.join(', ')}` }
   // From the name, like an import's: the same name made twice before a sync is one exercise.
   return { custom: { id: importId('mc', nameKey(n)), n, custom: true, eq: 'custom', tg: '', desc: '', bp } }
+}
+
+/**
+ * create_exercise: one of the profile's own exercises added to `S.customEx`, with no session
+ * logged and no routine. → { exercise } or { problems }, and then S is untouched.
+ */
+export function createCustomExercise(S, { name, body_part, equipment, description } = {}) {
+  const n = String(name ?? '').trim().slice(0, 80)
+  if (!n) return { problems: [{ field: 'name', problem: 'needed' }] }
+  // As the app's form: a name the library or the profile already has, in any case, is not made twice.
+  const dup = allExercises(S).find(e => nameKey(e.n) === nameKey(n))
+  if (dup) return { problems: [{ field: 'name', problem: 'this exercise already exists; use its id', candidates: [{ id: dup.id, name: dup.n }] }] }
+  const { custom, problem } = newCustomExercise(n, body_part)
+  if (problem) return { problems: [{ field: 'body_part', problem }] }
+  if (equipment != null && !ALL_EQUIPMENT.includes(equipment)) return { problems: [{ field: 'equipment', problem: `one of ${ALL_EQUIPMENT.join(', ')}` }] }
+  if (equipment != null) custom.eq = equipment
+  const desc = String(description ?? '').trim().slice(0, 1000)
+  if (desc) custom.desc = desc
+  S.customEx = [...(S.customEx || []), custom]
+  return { exercise: custom }
 }
 
 // One described set as the row the app stores, or a reason it cannot be one. `mode` is the

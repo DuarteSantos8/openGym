@@ -185,6 +185,31 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     await client.close()
   })
 
+  test('create_exercise: under workouts or plans at apply, no routine and no session', async () => {
+    const { token } = await makeToken(B, { workouts: 'apply' })
+    const client = await connect(token)
+    expect((await client.listTools()).tools.map(t => t.name)).toContain('create_exercise')
+    const ask = { name: 'Tindeq 20 mm HC max (R)', body_part: 'lower arms', description: 'Half crimp, 5 s.' }
+    const preview = await call(client, 'create_exercise', { ...ask, dry_run: true })
+    expect(preview).toMatchObject({ saved: false, dry_run: true, would_save: { exercise: { name: 'Tindeq 20 mm HC max (R)', body_part: 'lower arms', equipment: 'custom' } } })
+    expect(stored(B).customEx || []).toHaveLength(0)
+
+    const made = await call(client, 'create_exercise', ask)
+    expect(made.saved).toBe(true)
+    const S = stored(B)
+    expect(S.customEx).toEqual([expect.objectContaining({ id: made.exercise.id, n: 'Tindeq 20 mm HC max (R)', desc: 'Half crimp, 5 s.' })])
+    expect(S.workouts).toHaveLength(1)
+    expect(S.routines).toHaveLength(1)
+    // Asked again in another case: refused with the id, nothing saved twice.
+    const again = await call(client, 'create_exercise', { name: 'tindeq 20 mm hc max (r)' })
+    expect(again).toMatchObject({ saved: false, problems: [{ field: 'name', candidates: [{ id: made.exercise.id }] }] })
+    expect(stored(B).customEx).toHaveLength(1)
+    await client.close()
+    // Plans alone may make one too; seeing only is not enough.
+    expect((await (await connect((await makeToken(A, { plans: 'apply' })).token)).listTools()).tools.map(t => t.name)).toContain('create_exercise')
+    expect((await (await connect((await makeToken(A, { plans: 'view', workouts: 'view' })).token)).listTools()).tools.map(t => t.name)).not.toContain('create_exercise')
+  })
+
   test('workouts at apply: log_workout goes through the token route', async () => {
     const { token } = await makeToken(B, { workouts: 'apply' })
     const client = await connect(token)

@@ -129,6 +129,7 @@ preview writes with `dry_run`, save after the user agrees.
 | get_bodyweight | Body weight: See |
 | log_workout | Workouts: Change directly |
 | create_routine, update_routine, delete_routine | Plans: Change directly |
+| create_exercise | Workouts or Plans: Change directly (your own exercises belong to both) |
 
 A custom exercise made for a routine (`create_custom` on `create_routine` or `update_routine`) is
 part of that plan write, so it needs Plans: Change directly too; `log_workout` makes one under

@@ -1,4 +1,5 @@
-/* The plan's write tools: create_routine, update_routine and delete_routine (#960, #310). They save
+/* The plan's write tools: create_routine, update_routine and delete_routine (#960, #310), and
+   create_exercise (#116), the user's own exercise with no routine and no session. They save
    through the openGym api like log_workout (api-client.js), with a paired session or a scoped token
    that holds Plans at "Change directly". The rules are frontend/src/lib/routine-write.js.
 
@@ -15,7 +16,8 @@ import { localUid, invalidate, withProfile, currentProfile } from './state.js'
 import { apiConfig, apiFetch, profilePaths } from './api-client.js'
 import { savesOf, WRITE_LIMIT } from './write-tools.js'
 import { createRoutine, updateRoutine, removeRoutine, routineWeekdays, ROUTINE_LIMITS, WEEKDAYS } from '../../frontend/src/lib/routine-write.js'
-import { BODY_PARTS } from '../../frontend/src/lib/log-workout.js'
+import { BODY_PARTS, createCustomExercise } from '../../frontend/src/lib/log-workout.js'
+import { ALL_EQUIPMENT } from '../../frontend/src/lib/equipment.js'
 
 const MAX_ATTEMPTS = 3
 const fail = (code, message) => Object.assign(new Error(message), { code })
@@ -166,4 +168,26 @@ export const deleteRoutineTool = {
   },
 }
 
-export const ROUTINE_TOOLS = [createRoutineTool, updateRoutineTool, deleteRoutineTool]
+export const createExerciseTool = {
+  name: 'create_exercise',
+  description: [
+    'Add an exercise of the user\'s own to their openGym library (it syncs to all their devices, and only they see it), for something the library does not have, e.g. "Tindeq 20 mm half crimp pull".',
+    'Search first with search_exercises: a name the library or the user already has, in any case, is refused with its id to use instead.',
+    'body_part is needed when the name does not say it. The new id works in create_routine, update_routine and log_workout at once.',
+    'Call with dry_run: true first, show the user the name, and save once they agree.',
+  ].join(' '),
+  schema: {
+    name: z.string().min(1).max(80),
+    body_part: z.enum(BODY_PARTS).optional().describe('Body part, when the name does not say.'),
+    equipment: z.enum(ALL_EQUIPMENT).optional().describe('What it is done with. Omit when none of these fit.'),
+    description: z.string().max(1000).optional().describe('How to do it, shown on the exercise in the app.'),
+    dry_run: z.boolean().optional(),
+  },
+  handler: async (p, { env = process.env, fetchImpl } = {}) => writePlan({
+    env, fetchImpl, dryRun: p.dry_run === true,
+    change: S => { const r = createCustomExercise(S, p); return r.problems ? r : { ...r, what: `new exercise ${r.exercise.id}` } },
+    view: (S, { exercise: c }) => ({ exercise: { id: c.id, name: c.n, body_part: c.bp, equipment: c.eq, ...(c.desc ? { description: c.desc } : {}) } }),
+  }),
+}
+
+export const ROUTINE_TOOLS = [createRoutineTool, updateRoutineTool, deleteRoutineTool, createExerciseTool]
