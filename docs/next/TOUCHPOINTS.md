@@ -8,6 +8,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `mcp/test/http.e2e.test.js` | next/EP27-mcp-plans-readonly | Scoped HTTP tools | Check a plans-only grant against both workout histories, then revoke it. |
 | `api/server.js`, `api/openapi.yaml`, `api/test/server-token-refresh.test.js` | #133 | Browser logout | End the presented session while leaving a later browser sign-in and other devices signed in. |
 | `api/oidc/routes.js`, `api/test/server-oidc.test.js` | #133 | Verified provider callback | Clear the pending logout fallback when issuing the replacement browser session. |
 | `frontend/src/store/useStore.js`, `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js`, `frontend/src/lib/oidc.test.js` | #133 | Sign-in retry | Preserve the newer session when logout responses overlap or storage is full. |
