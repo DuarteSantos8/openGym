@@ -4,6 +4,20 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Web image startup (prepared).** The nginx entrypoint can run outside Railway when its environment marker is unset. The ordinary Docker image smoke test covers this case.
+
+- **Glossary locale review (06.03).** The coverage test checks glossary label presence in the active dictionary. Deleting the French bracing label triggered a failing test, and restoring it passed.
+- **Offline workout durability (06.01, prepared).** Device write failures report a full device only when storage raises a quota error. The change remains available in memory.
+- **Nutrition sync and import (09.01a).** Serving and amount fields move together when offline edits merge. Browser and API tests check every ordering of three copies, repeated sync and a legacy import with no creation timestamp. Merging restarts the API.
+- **Guest workout adoption (A5, prepared).** The local Cloud journey covers saving the tenth workout and attaching its photo from another tab, carrying both into the account, and decoding the photo from signed-out History after an offline reload. Hosted desktop and physical phone evidence is recorded separately.
+
+- **OpenNutriTracker manual file import (09.01a, prepared).** Export a JSON or CSV ZIP in [OpenNutriTracker v2.7](https://github.com/simonoppowa/OpenNutriTracker/blob/5048a9b57f4ab08b17699af556c280f7f058e07c/docs/export-format.md), open Nutrition diary, select the file, review the destination and confirm. A second export refreshes matching intake IDs. The guest diary stays on this device. A signed-in diary uses its normal account sync. Only selected nutrition fields are saved. Photos, links, account settings, weight and raw exports are excluded. Blank IDs, unknown units and rows without enough information are counted as skipped. Native-language review of the import strings is pending.
+- **Coach recovery (07.02, prepared).** A local Chromium test runs the provider timeout, API restart, retry, approval and reload on one disposable profile. Restart feedback can arrive on the next idle poll. Hosted MiniMax acceptance remains open.
+- **Production domain (A4, prepared).** [Cutover and rollback checklist](CLOUD-SERVER.md#production-address-cutover-a4) awaits the owner’s choice of addresses and cutover window. Verify disposable signup and recovery emails after the API is live on the new origin.
+- **Accessible workout controls (06.03, prepared).** Workout actions wrap on narrow phones. The rest timer and return-to-top button clear the raised Start control and enlarged labels. The progression control includes its displayed guidance and exercise settings in its accessible name. Resume has a stable visible label and a separate visual clock. Physical VoiceOver and TalkBack review remain pending.
+- **Connector permissions (10.02, isolated).** The loopback acceptance test checks that a plans-only reader cannot log workouts and that revocation ends access. Hosted client verification remains open.
+- Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
+
 - **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
 - **Skill ladders from Learn (11.02c / EP26-T04, prepared for review).** Learn → Skill ladders shows the existing exercise sequences from easier to harder. A completed set marks its step and all earlier steps as reached; the marks describe workout history, not technique or readiness. [Local browser evidence](evidence/EP26-T04/README.md). Independent and native-language review remain open.
 
@@ -12,7 +26,9 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
 
-- **Movement demo (E5a, prepared).** An exercise with a form guide now shows the movement it asks for: the mannequin rig on the exercise sheet, in a chunk of its own, with the words that go with the pose. With reduced motion, or on a device that cannot show 3D, the key pose is shown as a picture with the same words and nothing moves. [English phone view](evidence/EP26-T01/mannequin-rig-390-dark.png), [the still without WebGL](evidence/EP26-T01/mannequin-still-390-dark.png).
+- **Movement patterns (11.02e / E5b, merged in #136).** The exercise sheet shows eight additional symbolic movement-family examples. Each has its own still and matching caption. The [pattern matrix](evidence/EP26-T01/patterns.md) records fixtures, sources and draft status. Named movement review and native-language review are pending.
+
+- **Movement demo (E5a, merged in #130).** An exercise with a form guide now shows the movement it asks for: the mannequin rig on the exercise sheet, in a chunk of its own, with the words that go with the pose. With reduced motion, or on a device that cannot show 3D, the key pose is shown as a picture with the same words and nothing moves. [English phone view](evidence/EP26-T01/mannequin-rig-390-dark.png), [the still without WebGL](evidence/EP26-T01/mannequin-still-390-dark.png).
 
 - **Workout feedback (E3, prepared).** Set checks, records, completed rest timers and confirmed workout saves use the profile’s sound and vibration settings. Reduced motion suppresses the optional cues. Configured rest alarms still announce when to resume.
 
@@ -25,7 +41,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 
-- D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
+- D2 includes keyboard-accessible definitions on Workout, Plan and Progress. All 49 glossary entries have translations in the 25 locale packs. Native-language review is pending (task 7).
 - **Hosted account checks (A1, partial).** The owner opened the Admin dashboard. The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
@@ -151,13 +167,13 @@ With no routines or with a proposed plan open, a message uses the plan builder i
 | 4 | **EP10-T04 second movement** (hinge or lunge). Record 3 short clips on a phone first, then tune thresholds against them. | agent, after clips exist | Rep count within ±1 on the 3 clips |
 | 5 | Report the upstream a11y baseline (`a11y.md`: label-in-name on /home, /plan, /stats) to DuarteSantos8/openGym. Drop each baseline entry once fixed upstream. | owner | Upstream issue linked in `a11y.md` |
 | 6 | Manual a11y: VoiceOver/TalkBack, 200 % text, keyboard through the 3D map list | owner | Notes in `a11y.md` |
-| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, and the twelve EP24-T03 strings in all packs) | reviewer | Reviewer named in a PR |
+| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, the twelve EP24-T03 strings in all packs, and all 49 glossary entries in each pack including the derived Swiss German text) | reviewer | Reviewer named in a PR |
 | 8 | EP09-T03 (apply a progression rule to a routine). Only if users ask for it. | — | — |
 | 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
 | 10 | **Read the 55 draft exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the 36 remaining distinct routine exercises (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
 | 11 | Named review of the eight EP24-T03 Learn sessions prepared on `next/EP24-learn-sessions`, EP24-T01 (the glossary on more screens), the remaining exercises of EP23-T03 | agent | Per the plan's acceptance column |
 | 12 | Cloud, owner's dashboard steps (`supabase/README.md`, "What only the owner can switch on"): leaked-password protection, custom SMTP, the email templates' links, the OAuth server for ADR 0013, `APP_ORIGIN`, and the cloud build's three variables in Vercel | owner | Sign-up and reset emails arrive; the API's "Sign in with Ironvane" completes on a preview |
-| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos). The rig and the squat (E5a) are prepared; the eight other patterns follow in E5b | agent | Before any live Stripe key |
+| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos). The squat rig (E5a) merged in #130; the eight draft E5b examples await independent and named movement review | agent | Before any live Stripe key |
 
 ## 4. Environment (WSL2 Ubuntu)
 
@@ -194,3 +210,5 @@ D2 follow-up bundles the 13 training-screen definitions for offline use and leav
 Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
 
 D3 prepares a short Beginner Settings root; full search, App help and Account stay available. The two new navigation labels in all locale packs await native review.
+
+- **11.02h, Learn ladders.** Cloud browser coverage follows progress across account linking, reload, a clean second browser and sign-out. Hosted and physical-device verification remain open.

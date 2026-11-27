@@ -1,9 +1,25 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
+Web image startup is prepared for Docker deployments with the Railway environment marker unset.
+OpenNutriTracker local ZIP import (09.01a) is prepared for guest and account diaries. Refresh is manual. The source archive stays on the device.
+B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval and displays restart feedback before the retry.
+06.03 narrow Workout actions and navigation labels are prepared. Four locales cover 320 px control fit, accessible names, and separate timer, Start and return-to-top hit targets when text is enlarged.
+
 G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.
 
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
+
+A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner still needs to choose a production address and verify both email return journeys after cutover.
+Learn checks every supported locale for explicit glossary labels, including loanwords spelled the same as in English.
+06.01 is prepared. The device save warning distinguishes quota exhaustion from refused writes.
+Nutrition sync checks now cover three offline copies editing portions of the same diary entry and a repeated import of a legacy entry.
+A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
+
+A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
+
+10.02 has a loopback regression for denied workout writes with a plans-only grant. Live connector acceptance remains open.
+Nutrition account isolation is prepared. Shared-device tests cover expired sessions, profile switches and delayed pairing. Hosted checks remain open.
 
 A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
 
@@ -52,8 +68,8 @@ The owner accepted [ADR 0015](adr/0015-coach-app-help.md). B4 app help is prepar
 implementation PR after owner approval. Hosted verification is pending. Coach App Help
 daily-limit guidance is prepared. Local search remains available after a refused request.
 
-D2 status: English glossary access is prepared on Workout, Plan and Progress. Complete glossary
-translations and native review are pending. D3 status: the short Beginner Settings root and
+D2 status: Glossary access is prepared on Workout, Plan and Progress. The 25 locale packs include all 49 entries.
+The machine translations await native review. D3 status: the short Beginner Settings root and
 reversible full-list preference are prepared. D4 prepares an eight-stop beginner tour with
 offline keyboard replay. D5 prepares goal-led starter cards that show weekly frequency, session
 length, experience level and equipment. The local chooser works offline.
@@ -147,7 +163,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP23-T03 | Essentials written by hand | `frontend/src/content/exercise-guides.js` | each: 3 or 4 cues, 2 or 3 mistakes with fixes, where to feel it, breathing, a ladder where one exists | **part**: 45 starter-plan exercises plus 10 sourced routine exercises. Tests cover every exercise in Linear Strength, Twice a Week and Ganzkörper zu Hause. The 10 additions have text in all 25 packs. All 55 guides are `draft` pending named review (ADR 0012). 36 distinct routine exercise IDs still lack guides |
 | EP23-T04 | Guidance on the exercise sheet | `sheets.jsx`, `components/ExerciseGuide.jsx` | cues, mistakes with fixes, where to feel it, breathing, easier and harder open the other exercise; a draft is never called reviewed | done, `next/EP23-exercise-guidance` |
 | EP23-T05 | Library opens on guided exercises for a Beginner | `views/Library.jsx`, `lib/exercise-guide.js` | a Beginner's Library opens on the exercises with a form guide, as a chip anyone can set or clear; a search with nothing guided in it shows what it found | **done** (#60). The search index and the 50 ms target were not needed for this and are not built |
-| EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 searchable terms. The plan result, Workout, Plan and Progress expose definitions. Complete translations and native review of the entries remain open |
+| EP24-T01 | Glossary and words that explain themselves | `content/learn.js`, `lib/learn.js`, `components/Term.jsx` | **part**: 49 searchable terms. The plan result, Workout, Plan and Progress expose definitions. All 25 packs include the complete glossary. Native review remains open |
 | EP24-T02 | Learn | `views/Learn.jsx`, `App.jsx` `/learn` | done, same branch: 8 guides and the glossary, offline, no link out, axe clean |
 | EP24-T03 | Warm-up, cool-down and mobility as guided sessions | NEW `routines/learn/*.json`, circuit player | 8 routines playable with spoken cues | prepared, content in draft pending named review |
 | EP24-T04 | Food, sleep and safety basics | `content/learn.js` | done, same branch: every number names its source; English only for now |
@@ -159,7 +175,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Status |
 |---|---|---|
-| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | the rig and the squat (E5a) are prepared: the rig is its own chunk, the still key pose with words covers reduced motion and a device without WebGL, and the rig is freed when the sheet closes. The eight other patterns follow in E5b. Native-language review of the seven new strings remains open |
+| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | E5a (rig and squat) merged in #130. E5b (eight original family examples; [matrix and evidence](evidence/EP26-T01/patterns.md)) merged in #136. Phone framing and offline playback have follow-up coverage. Named movement and native-language review remain open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
 | EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
 | EP26-T04 | Ladder skill tree | Prepared for review: Learn opens existing ladders as an ordered, read-only history view. Highest logged step and all earlier steps are marked reached. [Local evidence](evidence/EP26-T04/README.md); independent and native-language review pending. |
@@ -179,7 +195,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 1. Owner: read the 55 draft exercise guides (`frontend/src/content/exercise-guides.js`) and either correct them or mark them reviewed. They are general cues, but they are the first thing here that tells someone how to move.
 2. Owner: create the Supabase project and the Stripe test account. Nothing more of the Cloud edition can be verified without them: ADR 0013's five checks, EP19-T03, T05, EP20-T01, T07 and EP18-T02 all wait on this.
-3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (glossary translations and native review).
+3. Agent: EP23-T03's remaining exercises (the routines library), EP24-T03 (warm-up sessions), EP24-T01 (native review of glossary translations).
 4. EP18-T04 and EP26-T01 before any live key.
 
 ## What "production ready" still needs, and who can give it
@@ -232,3 +248,7 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
 | Feature completeness (all in one) | 5 | 26 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
 | Technical quality and backend | 7 | A real project runs the schema, row level security, sign-in, export and deletion, and the app's client is tested against it. Still missing: email that reaches real people, the OIDC hand-off to the API, payments, and a deployed cloud build |
+
+### EP27-T01 Cloud ladder coverage (11.02h)
+
+The ten-workout Cloud account journey in `frontend/e2e/cloud/account.e2e.mjs` checks the push-up ladder on the original guest device, after linking and reloading, and on a second linked browser. After sign-out, the second browser returns to its empty device ladder and the API refuses the old session. This uses a local linked API and a simulated issuer. The device-only offline and accessibility checks remain in `frontend/e2e/learn-ladders.e2e.mjs`.

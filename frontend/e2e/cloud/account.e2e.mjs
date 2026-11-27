@@ -199,36 +199,93 @@ test('the first screen offers the account and this device; signed in, Continue g
 // way in is an identity provider (./linked-server.mjs). The provider is a stand-in that signs the
 // person straight in; the hosted one shows our consent page first, which the test above covers.
 test('ten guest workouts survive linked sign-in and reach a clean browser', async ({ page, browser, baseURL }) => {
-  const workouts = Array.from({ length: 10 }, (_, i) => ({ ...workout(i, '0662', 2), id: 'guest-workout-' + i }))
+  const workouts = Array.from({ length: 9 }, (_, i) => ({
+    ...workout(i, '0662', 2), id: 'guest-workout-' + i, name: 'Guest workout ' + (i + 1),
+  }))
   const ids = workouts.map(w => w.id).sort()
   const savedIds = p => p.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1') || '{}').workouts?.map(w => w.id).sort() || [])
-  const seeHistory = async p => {
+  const seeHistory = async (p, count = 10) => {
     await p.goto('/#/history')
     await expect(p.getByRole('heading', { name: 'History' })).toBeVisible()
-    await expect(p.getByText('10 workouts', { exact: true })).toBeVisible()
+    await expect(p.getByText(count + ' workouts', { exact: true })).toBeVisible()
+  }
+  const seeLadder = async (p, reached) => {
+    await p.goto('/#/learn')
+    await p.getByRole('button', { name: 'Skill ladders', exact: true }).click()
+    const dialog = p.getByRole('dialog', { name: 'Skill ladders' })
+    const rows = dialog.getByRole('list', { name: 'Push-up ladder' }).getByRole('listitem')
+    await expect(rows.getByText('Reached', { exact: true })).toHaveCount(reached)
+    await expect(rows.getByText('Not reached', { exact: true })).toHaveCount(7 - reached)
+    await expect(rows.nth(3)).toContainText(reached ? 'Reached' : 'Not reached')
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click()
   }
   const link = async p => {
-    await open(p)
     await signIn(p)
     await expect(mode(p)).toHaveAttribute('data-mode', 'account')
     await p.click('[data-continue]')
     await expect(p.getByRole('heading', { name: 'Hi Sam' })).toBeVisible({ timeout: 20_000 })
   }
 
+  test.setTimeout(90_000)
+  const skipTour = () => localStorage.setItem('gym_tour_v1', JSON.stringify({ done: 1 }))
+  await page.addInitScript(skipTour)
   await pretendProject(page)
   await enterAsGuest(page, workouts)
   await expect.poll(() => savedIds(page)).toEqual(ids)
+  await seeLadder(page, 4)
+  await open(page)
+  const writer = await page.context().newPage()
+  const unexpected = []
+  writer.on('pageerror', error => unexpected.push(error.message))
+  await writer.route(/^https?:/, route => {
+    if (['localhost', '127.0.0.1'].includes(new URL(route.request().url()).hostname)) return route.continue()
+    unexpected.push('External request from the guest tab')
+    return route.abort()
+  })
+  await writer.goto('/')
+  const finishSession = async (p, index, name) => {
+    await p.evaluate(active => {
+      const s = JSON.parse(localStorage.getItem('gym_state_v1'))
+      s.active = { ...active, start: Date.now(), cur: 0, workoutView: 'list' }
+      localStorage.setItem('gym_state_v1', JSON.stringify(s))
+    }, { ...workout(index, '0662', 2), name })
+    await p.goto('/#/workout')
+    await p.reload()
+    await p.locator('[data-tour="finish"]').click()
+    await p.getByRole('button', { name: /Finish and save/ }).click()
+  }
+  await finishSession(writer, 10, 'Guest photo workout')
+  const photo = await writer.evaluate(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 32
+    canvas.height = 24
+    canvas.getContext('2d').fillRect(0, 0, 32, 24)
+    return canvas.toDataURL().split(',')[1]
+  })
+  await writer.locator('.wmedia input[type=file]').setInputFiles({
+    name: 'guest.png', mimeType: 'image/png', buffer: Buffer.from(photo, 'base64'),
+  })
+  await expect(writer.getByRole('button', { name: 'Photo or video 1 of 1' })).toBeVisible()
+  const tenth = await writer.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1'))
+    .workouts.find(w => w.name === 'Guest photo workout'))
+  expect(tenth.media).toHaveLength(1)
+  ids.push(tenth.id)
+  ids.sort()
+  await writer.close()
+  expect(unexpected).toEqual([])
   await link(page)
   await expect.poll(async () => {
     const response = await page.request.get('/api/data')
     expect(response.ok()).toBe(true)
-    return (await response.json()).state?.workouts?.map(w => w.id).sort() || []
-  }, { timeout: 15_000 }).toEqual(ids)
+    const saved = (await response.json()).state?.workouts || []
+    return { ids: saved.map(w => w.id).sort(), photo: saved.find(w => w.id === tenth.id)?.media?.[0]?.hash }
+  }, { timeout: 15_000 }).toEqual({ ids, photo: tenth.media[0].hash })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible()
   await expect.poll(() => savedIds(page)).toEqual(ids)
 
   await seeHistory(page)
+  await seeLadder(page, 4)
 
   const second = await browser.newContext({ baseURL })
   try {
@@ -240,17 +297,59 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
       external.push(host)
       return route.abort()
     })
+    await other.addInitScript(skipTour)
     await pretendProject(other)
     await other.goto('/')
     expect(await savedIds(other)).toEqual([])
     expect((await other.request.get('/api/me')).status()).toBe(401)
+    await open(other)
     await link(other)
     await expect.poll(() => savedIds(other)).toEqual(ids)
     await seeHistory(other)
+    await seeLadder(other, 4)
+    await open(other)
+    await other.locator('[data-signout]').click()
+    await expect(mode(other)).toHaveAttribute('data-mode', 'signin')
+    await expect.poll(async () => (await other.request.get('/api/me')).status()).toBe(401)
+    await other.goto('/')
+    await other.getByRole('button', { name: 'Continue without account' }).click()
+    await seeLadder(other, 0)
     expect(external).toEqual([])
   } finally {
     await second.close()
   }
+  await finishSession(page, 11, 'Freestyle')
+  await page.getByRole('button', { name: 'Nice!', exact: true }).click()
+  await seeHistory(page, 11)
+  await expect(page.getByText('Freestyle', { exact: true })).toBeVisible()
+  await expect.poll(async () => {
+    const response = await page.request.get('/api/data')
+    expect(response.ok()).toBe(true)
+    const saved = (await response.json()).state.workouts
+    return { total: saved.length, privateCount: saved.filter(w => w.name === 'Freestyle' && !ids.includes(w.id)).length }
+  }, { timeout: 15_000 }).toEqual({ total: 11, privateCount: 1 })
+  await open(page)
+  await page.locator('[data-signout]').click()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Continue without account' }).click()
+  await seeHistory(page)
+  await expect(page.getByText('Freestyle', { exact: true })).toHaveCount(0)
+  await page.evaluate(() => navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready))
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller)
+  await page.context().setOffline(true)
+  const restored = await page.reload()
+  expect(restored.fromServiceWorker()).toBe(true)
+  await expect(page.getByText('10 workouts', { exact: true })).toBeVisible()
+  expect(await savedIds(page)).toEqual(ids)
+  await expect(page.getByText('Freestyle', { exact: true })).toHaveCount(0)
+  const restoredHash = await page.evaluate(id => JSON.parse(localStorage.getItem('gym_state_v1'))
+    .workouts.find(w => w.id === id)?.media?.[0]?.hash, tenth.id)
+  expect(restoredHash).toBe(tenth.media[0].hash)
+  await page.getByText('Guest photo workout', { exact: true }).first().click()
+  await page.getByRole('button', { name: 'Photo or video 1 of 1' }).click()
+  const image = page.getByRole('dialog', { name: 'Photos & videos' }).locator('img')
+  await expect.poll(() => image.evaluate(el => [el.naturalWidth, el.naturalHeight])).toEqual([32, 24])
 })
 
 test('Continue links a member profile and keeps the Admin dashboard unavailable after reload', async ({ page }) => {

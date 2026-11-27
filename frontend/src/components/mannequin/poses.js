@@ -80,10 +80,66 @@ export const POSES = {
       joints: { thighL: 35, shinL: 40, footL: 5, thighR: 35, shinR: 40, footR: 5, spine: 11, head: -3, armLU: 40, armLL: 14, armRU: 40, armRL: 14 },
     },
   ],
+  // Original family examples, draft pending movement review (EP26-T01/patterns.md).
+  lunge: [
+    { at: 0, name: 'split stance', note: 'One foot is forward and the rear heel is raised.',
+      joints: { thighL: 30, shinL: 22, footL: -8, thighR: -12, shinR: 30, footR: 15 } },
+    { at: 1300, name: 'lowered', key: true, note: 'Both knees are bent, with one foot ahead of the other.',
+      joints: { thighL: 65, shinL: 85, footL: 20, thighR: 2, shinR: 80, footR: 51 } },
+  ],
+  hinge: [
+    { at: 0, name: 'upright', note: 'The torso is upright and the arms hang down.',
+      joints: { thighL: 2, shinL: 8, footL: 6, thighR: 2, shinR: 8, footR: 6 } },
+    { at: 1400, name: 'hinged', key: true, note: 'The hips are back and the torso tilts forward.',
+      joints: { thighL: 22, shinL: 24, footL: 2, thighR: 22, shinR: 24, footR: 2, spine: 59, armLU: -5, armRU: -5 } },
+  ],
+  'push-h': [
+    { at: 0, name: 'close', note: 'The elbows are bent and the hands are near the chest.',
+      joints: { armLU: -23, armLL: 110, armRU: -23, armRL: 110 } },
+    { at: 1050, name: 'forward', key: true, note: 'The arms reach straight forward at chest height.',
+      joints: { armLU: 87, armLL: 3, armRU: 87, armRL: 3 } },
+  ],
+  'push-v': [
+    { at: 0, name: 'shoulder height', note: 'The hands begin near shoulder height.',
+      joints: { armLU: 45, armLL: 120, armRU: 45, armRL: 120 } },
+    { at: 1200, name: 'overhead', key: true, note: 'The arms extend overhead.',
+      joints: { armLU: 173, armLL: 7, armRU: 173, armRL: 7 } },
+  ],
+  'pull-h': [
+    { at: 0, name: 'reach', note: 'The arms reach forward with the elbows nearly straight.',
+      joints: { armLU: 78, armLL: 7, armRU: 78, armRL: 7 } },
+    { at: 950, name: 'row', key: true, note: 'The elbows draw back and the hands come toward the ribs.',
+      joints: { armLU: -38, armLL: 135, armRU: -38, armRL: 135 } },
+  ],
+  'pull-v': [
+    { at: 0, name: 'high reach', note: 'The hands are high and the arms reach up.',
+      joints: { armLU: 154, armLL: 4, armRU: 154, armRL: 4 } },
+    { at: 1150, name: 'downward pull', key: true, note: 'The elbows move down as the hands come toward the chest.',
+      joints: { armLU: 11, armLL: 150, armRU: 11, armRL: 150 } },
+  ],
+  core: [
+    { at: 0, name: 'raised limbs', note: 'Lying on the back with arms raised and knees bent.',
+      joints: { armLU: 90, armRU: 90, thighL: 90, shinL: 90, thighR: 90, shinR: 90 } },
+    { at: 1100, name: 'left arm reach', key: true, note: 'Lying on the back, one arm reaches back as the opposite leg extends.',
+      joints: { armLU: 171, armRU: 90, thighL: 90, shinL: 90, thighR: 9, shinR: 4 } },
+    { at: 2200, name: 'return', note: 'Lying on the back with arms raised and knees bent.',
+      joints: { armLU: 90, armRU: 90, thighL: 90, shinL: 90, thighR: 90, shinR: 90 } },
+    { at: 3300, name: 'right arm reach', note: 'Lying on the back, one arm reaches back as the opposite leg extends.',
+      joints: { armLU: 90, armRU: 171, thighL: 9, shinL: 4, thighR: 90, shinR: 90 } },
+  ],
+  isolation: [
+    { at: 0, name: 'lowered', note: 'The arms hang by the sides with the elbows nearly straight.',
+      joints: { armLU: 2, armLL: 8, armRU: 2, armRL: 8 } },
+    { at: 1050, name: 'curl', key: true, note: 'The forearms curl up while the upper arms stay by the sides.',
+      joints: { armLU: 2, armLL: 145, armRU: 2, armRL: 145 } },
+  ],
 }
 
 /** How long one loop of each pattern takes, in milliseconds. */
-export const POSE_LOOPS = { squat: 2800 }
+export const POSE_LOOPS = {
+  squat: 2800, lunge: 2600, hinge: 2800, 'push-h': 2100, 'push-v': 2400,
+  'pull-h': 1900, 'pull-v': 2300, core: 4400, isolation: 2100,
+}
 
 export const poseFor = pattern => (Object.hasOwn(POSES, pattern) ? POSES[pattern] : null)
 export const loopFor = pattern => (Object.hasOwn(POSE_LOOPS, pattern) ? POSE_LOOPS[pattern] : null)
@@ -114,8 +170,8 @@ export function frameIndexAt(pattern, at) {
   return i
 }
 
-/** The joint angles at a moment in the loop, read from the frames around it. */
-export function jointsAt(pattern, at) {
+// Keep the caption and the rig on the same interpolation segment, including at wrap.
+function poseSegmentAt(pattern, at) {
   const frames = poseFor(pattern)
   const loop = loopFor(pattern)
   if (!frames || !loop) return null
@@ -124,7 +180,21 @@ export function jointsAt(pattern, at) {
   const cur = frames[i]
   const next = frames[(i + 1) % frames.length]
   const nextAt = i + 1 < frames.length ? next.at : loop + next.at
-  const u = nextAt > cur.at ? Math.min(1, Math.max(0, (t - cur.at) / (nextAt - cur.at))) : 0
+  return { cur, next, u: (t - cur.at) / (nextAt - cur.at) }
+}
+
+/** Describe the closer of the two poses blended into the rig. */
+export function captionFrameAt(pattern, at) {
+  const segment = poseSegmentAt(pattern, at)
+  if (!segment) return null
+  return segment.u < 0.5 ? segment.cur : segment.next
+}
+
+/** The joint angles at a moment in the loop, read from the frames around it. */
+export function jointsAt(pattern, at) {
+  const segment = poseSegmentAt(pattern, at)
+  if (!segment) return null
+  const { cur, next, u } = segment
   const out = {}
   for (const joint of new Set([...Object.keys(cur.joints), ...Object.keys(next.joints)])) {
     const a = cur.joints[joint] ?? 0
@@ -135,7 +205,7 @@ export function jointsAt(pattern, at) {
 }
 
 /** One leg, hung off the sole of its foot. */
-function leg(side, j) {
+function leg(side, j, toeSupport = false) {
   const thigh = j['thigh' + side] ?? 0
   const shin = j['shin' + side] ?? 0
   const foot = j['foot' + side] ?? 0
@@ -144,7 +214,7 @@ function leg(side, j) {
   // between the hip and the knee, so the knee travels forwards over the toe as the hips go.
   const sole = (thigh - shin + foot) * D
   const dir = [0, Math.sin(sole), Math.cos(sole)]
-  const heel = [x, 0, 0]
+  const heel = [x, toeSupport ? -dir[1] * RIG.footLen : 0, 0]
   const toe = [heel[0] + dir[0] * RIG.footLen, heel[1] + dir[1] * RIG.footLen, heel[2] + dir[2] * RIG.footLen]
   const ankle = [
     heel[0] + dir[0] * RIG.ankleInFoot,
@@ -174,12 +244,24 @@ export function skeletonAt(pattern, at) {
   const j = jointsAt(pattern, at)
   if (!j) return null
   const L = leg('L', j)
-  const R = leg('R', j)
+  const R = leg('R', j, pattern === 'lunge')
   const pelvis = [
     (L.hip[0] + R.hip[0]) / 2,
     (L.hip[1] + R.hip[1]) / 2,
     (L.hip[2] + R.hip[2]) / 2,
   ]
+  // Align the split stance front-to-back. In the supine pose both legs hang from
+  // the pelvis before the whole figure is turned; neither foot anchors it.
+  if (pattern === 'lunge' || pattern === 'core') {
+    for (const leg of [L, R]) {
+      const dy = pattern === 'core' ? pelvis[1] - leg.hip[1] : 0
+      const dz = pelvis[2] - leg.hip[2]
+      for (const point of Object.values(leg)) {
+        point[1] += dy
+        point[2] += dz
+      }
+    }
+  }
   const lean = ((j.pelvisTilt ?? 0) + (j.spine ?? 0)) * D
   const up = [0, Math.cos(lean), Math.sin(lean)]
   const chest = [pelvis[0], pelvis[1] + RIG.torso * up[1], pelvis[2] + RIG.torso * up[2]]
@@ -197,13 +279,18 @@ export function skeletonAt(pattern, at) {
   const armL = arm('L', RIG.shoulderHalf, j.armLU ?? 0, j.armLL ?? 0)
   const armR = arm('R', -RIG.shoulderHalf, j.armRU ?? 0, j.armRL ?? 0)
 
-  return {
+  const skeleton = {
     ankleL: L.ankle, kneeL: L.knee, hipL: L.hip, heelL: L.heel, toeL: L.toe,
     ankleR: R.ankle, kneeR: R.knee, hipR: R.hip, heelR: R.heel, toeR: R.toe,
     pelvis, chest, head,
     shoulderL: armL.shoulder, elbowL: armL.elbow, wristL: armL.wrist,
     shoulderR: armR.shoulder, elbowR: armR.elbow, wristR: armR.wrist,
   }
+  if (pattern === 'core') {
+    return Object.fromEntries(Object.entries(skeleton).map(([name, [x, y, z]]) =>
+      [name, [x, 0.13 + z - pelvis[2], pelvis[1] - y]]))
+  }
+  return skeleton
 }
 
 /** How far round the rig the picture is taken from: a little past its side, so both legs show. */

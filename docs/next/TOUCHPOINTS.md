@@ -8,8 +8,15 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `web/Dockerfile` | `next/EP19-nginx-optional-railway-env` | Startup | Preserve ordinary Docker startup when the optional Railway marker is unset. |
+| `frontend/src/components/TabBar.jsx`, `frontend/src/components/RestTimer.jsx`, `frontend/src/index.css` | `next/EP27-accessible-layout-review` | Layout | Keep the raised Start control, timer and return-to-top button clear as their sizes change. |
+| `frontend/src/store/useStore.js`, `frontend/src/store/useStore.restore.test.jsx` | next/EP27-offline-beginner | Local save warning | Give a truthful warning when the browser denies writes. |
+| `mcp/test/http.e2e.test.js` | next/EP27-mcp-plans-readonly | Scoped HTTP tools | Check a plans-only grant against both workout histories, then revoke it. |
 | `api/server.js`, `api/openapi.yaml`, `api/test/server-token-refresh.test.js` | #133 | Browser logout | End the presented session while leaving a later browser sign-in and other devices signed in. |
 | `api/oidc/routes.js`, `api/test/server-oidc.test.js` | #133 | Verified provider callback | Clear the pending logout fallback when issuing the replacement browser session. |
+| `frontend/src/lib/sister-nutrition.js`, `frontend/src/lib/sister-nutrition.test.js` | next/EP27-nutrition-isolation-proof | Nutrition pairing | Keep cached totals and pending requests within their owning profile. |
+| `frontend/src/store/useStore.js`, `frontend/src/store/useStore.signout-nutrition.test.jsx`, `frontend/src/store/useStore.stash-unit.test.jsx` | next/EP27-nutrition-isolation-proof | Session transitions | Gate nutrition on confirmed identity and test shared-device privacy. |
+| `frontend/src/components/SisterApps.jsx` | next/EP27-nutrition-isolation-proof | Pairing sheet | Reset drafts and scope unlink confirmations to the pairing shown. |
 | `frontend/src/store/useStore.js`, `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js`, `frontend/src/lib/oidc.test.js` | #133 | Sign-in retry | Preserve the newer session when logout responses overlap or storage is full. |
 | `frontend/src/components/Ladders.jsx`, `frontend/src/index.css` | `next/EP26-learn-ladder` | Learn sheet | Reuse the existing ladder cards and history calculation for a read-only, text-only Learn view. |
 | `frontend/src/lib/ladders.test.js` | `next/EP26-learn-ladder` | Test | Pin built-in rung counts and push-up order; cover unrelated, incomplete, repeated and out-of-order sets. |
@@ -19,6 +26,13 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/store/useStore.mobile-remote.test.jsx` | `next/EP19-guest-privacy-followup` | Pairing | Cover refused guest storage and the next successful pairing. |
 | `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js` | `next/EP19-guest-privacy-followup` | Sign-in | Wait for a failed adoption's cookie cleanup before the next sign-in. |
 | `frontend/src/views/Login.jsx` | `next/EP19-guest-privacy-followup` | Sign-in | Restore the provider sign-in button when cookie cleanup cannot reach the server. |
+| `frontend/public/sw.js`, `frontend/src/lib/sw-offline-launch.test.js` | `next/EP26-mannequin-framing` | Offline exercise sheet | Answer uncached offline resource requests with HTTP 503. |
+| `frontend/src/components/mannequin/`, `frontend/e2e/mannequin-demo.e2e.mjs` | `next/EP26-mannequin-framing` | Exercise demo | Fit the rig in narrow panels, follow the nearest pose caption and exercise playback from an offline reload. |
+| `frontend/public/sw.js`, `frontend/src/lib/sw-media.test.js` | `next/EP26-mannequin-patterns` | Offline exercise sheets | Return a non-cacheable HTTP failure when uncached media cannot be fetched offline. |
+| `frontend/src/components/ExerciseGuide.test.jsx` | `next/EP26-mannequin-patterns` | Guide integration | Cover switching from the squat to a newly supported pull demo. |
+| `frontend/src/components/mannequin/` | `next/EP26-mannequin-patterns` | Demo | Complete the nine-family pose table; keep the existing lazy loader and match the still caption after WebGL loss. |
+| `frontend/e2e/mannequin-demo.e2e.mjs` | `next/EP26-mannequin-patterns` | Tests | Verify each family from its normal Library sheet with exercise media blocked. |
+| `frontend/src/locales/*.js` | `next/EP26-mannequin-patterns` | Copy | Translate one heading and sixteen pose captions across 25 packs. |
 | `frontend/src/components/ExerciseGuide.jsx` | `next/EP26-mannequin-squat` | Demo | Show the movement demo for the guide's pattern, loaded on demand, so the 3D code stays out of the app's first download. |
 | `frontend/public/sw.js` | `next/EP26-T03-guided-workout` | Hashed assets | Reuse the installed immutable module when an offline module request sends an Origin header. |
 | `frontend/src/views/Workout.jsx` | `next/EP26-T03-guided-workout` | Layout | Offer the session layout and pass its active exercise to the existing swap flow. |
@@ -175,3 +189,17 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/components/ExerciseGuide.jsx`, `frontend/src/lib/i18n{,-core}.js` | `next/EP23-routine-guide-batch-1` | UI | Show the English notice only when a guide actually falls back to English. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP23-routine-guide-batch-1` | Copy | Translate the cues, mistake and correction pairs, muscle descriptions and breathing for ten routine exercises. |
 | `frontend/src/store/useStore.js` | `next/EP19-guest-import-ownership` | +32 −3 | **Store (Tier A area):** the device's own guest profile is snapshotted into `gym_guest_state` when a sign-in adopts the device data, and `clearLocalSession` (every sign-out) puts it back instead of a blank profile — **Add them** copies a guest's workouts into the account, it never consumes them (owner decision 2026-11-27, `DECISION-01.01.md`). Account workouts never reach the guest slot. Just over the 30-line guide; the owner decision is the design note. |
+| `frontend/src/views/Nutrition.jsx`, `frontend/src/views/Nutrition.test.jsx` | `next/EP06-opennutritracker-import` | UI | Open a local food export and confirm its diary destination. |
+| `frontend/src/lib/zip.js` | `next/EP06-opennutritracker-import` | ZIP reader | Select bounded entries for a local import. Backup imports retain their store-only format. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP06-opennutritracker-import` | UI | Localize the file picker, destination, preview, result and error. |
+| `frontend/src/index.css` | `next/EP27-accessible-workout-labels` | UI | Wrap workout action labels and mobile navigation text within their controls. |
+| `frontend/src/components/TabBar.jsx`, `frontend/src/components/TabBar.test.jsx`, `frontend/src/App.workout-tabbar.test.jsx` | `next/EP27-accessible-workout-labels` | UI | Keep Resume visible with an independently ticking visual timer. |
+| `frontend/src/views/Workout.jsx`, `frontend/src/views/Workout.test.jsx` | `next/EP27-accessible-workout-labels` | UI | Include the visible progression guidance and the settings purpose in the accessible name. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP24-glossary-translations` | Copy | Add the missing 26 labels and 49 definitions per pack for the training glossary. |
+| `frontend/e2e/cloud/account.e2e.mjs` | 11.02h / EP27-T01 | Cloud Learn ladder journey | Exercises the shipped ladder from a linked account and checks that linked progress disappears on a clean device after sign-out; no runtime behavior changed. |
+| `frontend/src/content/learn-locales.test.js`, `frontend/src/locales/{cs,fr,hu,it,lt,pl,zh}.js`, `frontend/src/views/Learn.jsx`, `frontend/src/views/Learn.test.jsx`, `frontend/e2e/learn-ladders.e2e.mjs` | `next/EP27-locale-mcp-review` | Learn | Check explicit translated labels, guide fallback notices, and distinct training terms. |
+| `mcp/test/http.e2e.test.js` | `next/EP27-locale-mcp-review` | MCP transport test | Check the exact plans-read tool list and verify a denied write leaves both profiles unchanged. |
+| `frontend/src/components/nutrition/OntImport.jsx`, `frontend/src/lib/nutrition/ont-import.js`, `frontend/src/lib/nutrition/ont-import.test.js`, `frontend/src/store/useStore.js`, `frontend/src/views/Nutrition.test.jsx` | `next/EP06-nutrition-sync-review` | Nutrition | Preserve legacy entries and check the account sync request size before confirming an import. |
+| `api/sync-stamps.js`, `frontend/src/lib/sync-merge.js`, `frontend/src/lib/sync-stamps-parity.test.js` | `next/EP06-nutrition-sync-review` | Sync | Resolve nutrition serving and amount fields together on browser and API. |
+| `frontend/src/locales/*.js` (25 packs) | `next/EP06-nutrition-sync-review` | Nutrition | Explain when a smaller export is needed to fit the account sync limit. |
+| `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-two-tab-guest-adoption` | E2E | Save the tenth guest workout and its photo in another tab, then reopen the photo from signed-out History offline. |

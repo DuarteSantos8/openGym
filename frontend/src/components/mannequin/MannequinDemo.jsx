@@ -45,7 +45,7 @@ function MannequinStill({ pattern }) {
     'shoulderL', 'elbowL', 'wristL', 'shoulderR', 'elbowR', 'wristR', 'pelvis', 'chest', 'head']
   const xs = used.map(n => p[n][0])
   const ys = used.map(n => p[n][1])
-  const pad = 0.10
+  const pad = RIG.headR + 0.015 // Bounds use joint centers; leave room for the whole head.
   const left = Math.min(...xs) - pad
   const top = Math.min(...ys) - pad
   const width = Math.max(...xs) - Math.min(...xs) + pad * 2
@@ -82,11 +82,11 @@ export default function MannequinDemo({ pattern, createScene }) {
 
   const key = keyFrameFor(pattern)
   if (!key) return null
-  const note = (frame || key).note
   const still = why !== null
+  const note = (still ? key : frame || key).note
 
   return <section className="mm-demo" aria-label={t('Movement demo')}>
-    <h4 className="sec">{t('Movement demo')}</h4>
+    <h4 className="sec">{pattern === 'squat' ? t('Movement demo') : t('Movement pattern example')}</h4>
     {still
       ? <MannequinStill pattern={pattern} />
       : <Suspense fallback={null}>

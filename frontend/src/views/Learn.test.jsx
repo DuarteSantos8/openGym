@@ -83,6 +83,31 @@ describe('Learn', () => {
     expect(container.querySelectorAll('[data-term]').length).toBe(GLOSSARY.length)
   })
 
+  it('puts the English fallback note in the open affected guide, not over the whole page', async () => {
+    const { setLang } = await import('../lib/i18n.js')
+    await act(() => setLang('fr'))
+    try {
+      mount(<Learn />, '/learn?g=first-week')
+      expect(container.querySelector('.iv-learn > .iv-learn-note')).toBeNull()
+      expect(container.querySelectorAll('.iv-learn-note')).toHaveLength(1)
+      expect(container.querySelector('[data-guide="first-week"] .iv-learn-body > .iv-learn-note')).not.toBeNull()
+    } finally { await act(() => setLang('en')) }
+  })
+
+  it('omits the fallback notice for a fully translated open guide in a non-English locale', async () => {
+    const { _setLangState } = await import('../lib/i18n-core.js')
+    const { setLang } = await import('../lib/i18n.js')
+    const guide = GUIDES.find(g => g.id === 'safety')
+    const keys = [guide.title, guide.summary, ...guide.blocks.flatMap(b => [b.h, b.p, ...(b.list || [])])].filter(Boolean)
+    const fixture = Object.fromEntries(keys.map(key => [key, 'Texte du guide']))
+    try {
+      _setLangState('fr', fixture, null, null)
+      mount(<Learn />, '/learn?g=safety')
+      expect(container.querySelector('[data-guide="safety"] .iv-learn-body').textContent).toContain('Texte du guide')
+      expect(container.querySelector('.iv-learn-note')).toBeNull()
+    } finally { await act(() => setLang('en')) }
+  })
+
   it('opens a guide in place and closes it again, saying so to a screen reader', () => {
     mount(<Learn />)
     const btn = container.querySelector('[data-guide="how-heavy"] button')

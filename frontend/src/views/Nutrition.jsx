@@ -11,11 +11,13 @@ import DateField from '../components/DateField.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import DiarySummary from '../components/nutrition/DiarySummary.jsx'
 import EntrySheet, { mealLabels } from '../components/nutrition/EntrySheet.jsx'
+import OntImport from '../components/nutrition/OntImport.jsx'
 import FoodLookup from '../components/nutrition/FoodLookup.jsx'
 import '../components/nutrition/nutrition.css'
 
 export default function Nutrition() {
   const S = useStore(s => s.S), ready = useStore(s => s.ready)
+  const owner = useStore(s => s.user?.id ?? null)
   const nav = useNavigate()
   const [day, setDay] = useState(localDay)
   const [query, setQuery] = useState(''), [order, setOrder] = useState('recent')
@@ -52,6 +54,7 @@ export default function Nutrition() {
         })}
       </ul></section>
     })}
+    <OntImport key={owner ?? 'guest'} owner={owner} />
     <section className="card"><h2>{t('Your foods')}</h2><p className="ss">{t('Choose an earlier entry to prefill a new one.')}</p>
       <label className="nutrition-field"><span>{t('Search your foods')}</span><input type="search" value={query} onChange={e => setQuery(e.target.value)} /></label>
       <label className="nutrition-field"><span>{t('Order')}</span><select value={order} onChange={e => setOrder(e.target.value)}><option value="recent">{t('Recent')}</option><option value="frequent">{t('Frequent')}</option></select></label>

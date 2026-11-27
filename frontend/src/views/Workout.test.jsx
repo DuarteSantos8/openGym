@@ -1187,7 +1187,9 @@ describe('progression guidance', () => {
     expect(button.tagName).toBe('BUTTON')
     expect(button.getAttribute('type')).toBe('button')
     // In a superset the name says which exercise's settings (P4).
-    expect(button.getAttribute('aria-label')).toMatch(/^Open exercise settings, \S/)
+    expect(button.getAttribute('aria-label')).toBeNull()
+    expect(button.querySelector('.vh')?.textContent).toMatch(/Open exercise settings, \S/)
+    expect(button.textContent).toContain('Linear progression')
     expect(mocks.exConfigSheet).toHaveBeenCalledOnce()
     // An entry with no stamped plan opens at its target.
     expect(mocks.exConfigSheet.mock.calls[0][1]).toEqual(second.target)
