@@ -2,7 +2,7 @@
 // calendar app is strict about, and the finished workouts when asked.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildIcs, dayRoutines, icsText, fold } from '../integrations/calendar.js';
+import { buildIcs, dayRoutines, icsText, fold, glyphEmoji } from '../integrations/calendar.js';
 
 const NOW = Date.parse('2026-11-04T10:00:00Z');   // a Wednesday
 const S = {
@@ -67,4 +67,19 @@ test('text and folding by the rules', () => {
   assert.ok(f.length > 1 && f.slice(1).every(l => l.startsWith(' ')));
   assert.ok(f.every(l => Buffer.byteLength(l) <= 75));
   assert.equal(f.map((l, i) => (i ? l.slice(1) : l)).join(''), long);
+});
+
+test('a routine icon key becomes an emoji in the title, never the key itself', () => {
+  assert.equal(glyphEmoji('figureStrength'), '🏋️');
+  assert.equal(glyphEmoji('figureRun'), '🏃');
+  assert.equal(glyphEmoji('💪'), '💪');         // a legacy emoji passes through
+  assert.equal(glyphEmoji('someNewIcon'), '');   // an unknown key is left out, not printed
+  assert.equal(glyphEmoji(''), '');
+  assert.equal(glyphEmoji(undefined), '');
+  assert.equal(glyphEmoji('toString'), '');      // no prototype keys
+});
+
+test('every routine icon the app can hold has an emoji for the calendar', async () => {
+  const { ROUTINE_GLYPHS, LEGACY_ROUTINE_GLYPHS } = await import('../coach/core/glyphs.js');
+  for (const key of [...ROUTINE_GLYPHS, ...LEGACY_ROUTINE_GLYPHS]) assert.ok(glyphEmoji(key), key);
 });

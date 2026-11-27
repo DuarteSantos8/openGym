@@ -19,6 +19,22 @@ import { effectiveRoutineId, queueLiveOn } from '../queue.js';
 import { libraryName } from '../coach/core/library.js';
 import { workoutTime } from './events.js';
 
+// A routine's `emoji` holds an icon key now ('figureStrength', coach/core/glyphs.js), which the
+// app draws itself. A calendar app can only show text, so the key becomes the nearest emoji; a
+// legacy emoji passes through, and anything else is left out rather than printed as a word.
+const GLYPH_EMOJI = {
+  figureStrength: '🏋️', arm: '💪', abs: '🔥', legs: '🦵', pullup: '🧗',
+  dumbbell: '🏋️', barbell: '🏋️', kettlebell: '🏋️', plate: '🏋️', machine: '⚙️',
+  figureRun: '🏃', bike: '🚴', swim: '🏊', boxing: '🥊', timer: '⏱️',
+  stretch: '🧘', moon: '🌙', heart: '❤️', flame: '🔥', bolt: '⚡',
+  trophy: '🏆', medal: '🥇', crown: '👑', flag: '🚩', star: '⭐', target: '🎯', shield: '🛡️',
+};
+export const glyphEmoji = v => {
+  if (typeof v !== 'string' || !v) return '';
+  if (Object.hasOwn(GLYPH_EMOJI, v)) return GLYPH_EMOJI[v];
+  return /\p{L}|\p{N}/u.test(v) ? '' : v;
+};
+
 export const PAST_DAYS = 7;
 export const AHEAD_DAYS = 56;
 export const DONE_DAYS = 90;
@@ -132,7 +148,7 @@ export function buildIcs(S, { uid = 'u', now = Date.now(), tz = S?.reminder?.tz,
         'UID:' + icsText(`plan-${iso}-${String(id).slice(0, 60)}-${uid}@opengym`),
         'DTSTAMP:' + stamp(now),
         'DTSTART;VALUE=DATE:' + dateValue(iso), 'DTEND;VALUE=DATE:' + dateValue(addDays(iso, 1)),
-        'SUMMARY:' + icsText([r.emoji, String(r.name || 'Workout').slice(0, NAME_MAX)].filter(Boolean).join(' ')),
+        'SUMMARY:' + icsText([glyphEmoji(r.emoji), String(r.name || 'Workout').slice(0, NAME_MAX)].filter(Boolean).join(' ')),
         ...(exNames.length ? ['DESCRIPTION:' + icsText(exNames.join('\n'))] : []),
         'CATEGORIES:openGym,Plan', 'TRANSP:TRANSPARENT',
       ]);
