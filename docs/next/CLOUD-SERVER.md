@@ -142,7 +142,8 @@ photos and verify the import on a disposable profile.
 - [ ] **Owner and operator.** Record the old DNS records and TTLs, Vercel domain assignment,
   Cloud build settings and deployment ID/SHA, Render service and live revision, effective
   `ORIGIN`, `RP_ID`, any explicit `OIDC_REDIRECT_URI`, OAuth client's redirect URI list,
-  Supabase Site URL and authorization path. Record the old functions `APP_ORIGIN` from its
+  Supabase Site URL and authorization path. Separately record the authorized email Redirect URLs.
+  Record the old functions `APP_ORIGIN` from its
   authorized configuration source. Keep actual names and values in private operator notes.
   Confirm an existing owner provider sign-in reaches the expected server profile and Admin
   dashboard. Keep that recovery method available. Identify a separate disposable member.
@@ -158,9 +159,15 @@ photos and verify the import on a disposable profile.
 |---|---|---|
 | [ ] Owner adds the approved API domain to the existing Render API service and the DNS administrator sets only the records Render specifies. | Render verifies the name and issues TLS. Direct HTTPS `/api/health` returns 200 JSON with `ok: true`. | DNS administrator restores the recorded RRsets and TTLs. Operator removes only the new domain association after traffic has moved back. [Render domains](https://render.com/docs/custom-domains) |
 | [ ] Owner assigns the web domain to the approved Vercel Production Cloud deployment. DNS administrator applies the records Vercel shows. | Vercel verifies DNS and HTTPS. Cloud Account loads at the web domain. Its `/api/health` returns API JSON. The existing rewrite can continue to use the current Render destination. If its destination must change, use a separate tested draft PR and owner merge. | Operator restores the previous domain/deployment assignment, DNS records and any changed rewrite. [Vercel domains](https://vercel.com/docs/domains/working-with-domains/add-a-domain) |
-| [ ] Owner updates the existing Supabase public OAuth client's callback to `<NEW_WEB_ORIGIN>/api/oidc/callback`, sets Authentication → URL Configuration → Site URL to `<NEW_WEB_ORIGIN>`, and adds `<NEW_WEB_ORIGIN>` to the separate Redirect URLs used by email links. Preserve other approved callbacks, redirect URLs and the working authorization path. | Read back the exact OAuth callback list, Site URL and email Redirect URLs. | Owner restores the recorded client redirect list, Site URL and email Redirect URLs. [Supabase OAuth setup](https://supabase.com/docs/guides/auth/oauth-server/getting-started) |
+| [ ] Owner sets the existing public OAuth client's callback to `<NEW_WEB_ORIGIN>/api/oidc/callback` and the Supabase Site URL to `<NEW_WEB_ORIGIN>`. Preserve the other approved callbacks, consent path and authorized email Redirect URLs. | Read back the exact OAuth callbacks and Site URL. Compare email Redirect URLs with the separate snapshot. | Owner restores the recorded OAuth callbacks and Site URL. [Supabase OAuth setup](https://supabase.com/docs/guides/auth/oauth-server/getting-started) |
 | [ ] Operator sets Render `ORIGIN=<NEW_WEB_ORIGIN>` (HTTPS, no trailing slash) and `RP_ID=<NEW_WEB_HOST>` (hostname only). If an explicit `OIDC_REDIRECT_URI` overrides the derived callback, update it in the same save. Save and deploy. | Wait for **Live**. Through the web domain, `/api/config` reports the new `oidc.webOrigin`. Verify the API revision and health after restart. Only then start provider sign-in and confirm consent for this app opens on the new web origin. With a disposable member, complete real signup-confirmation and password-recovery email journeys; follow both links and verify they return to the new web origin and finish the respective flow. | Operator restores recorded values, including whether the override was unset, deploys, and rechecks health and config. [Render environment](https://render.com/docs/configure-environment-variables) |
 | [ ] Owner sets the existing Supabase functions setting `APP_ORIGIN=<NEW_WEB_ORIGIN>`. | Send an OPTIONS preflight from the new web origin to a deployed account function. Its `Access-Control-Allow-Origin` must equal the new web origin. | Owner restores the previous `APP_ORIGIN` and repeats the preflight for the old origin. [Function settings](https://supabase.com/docs/guides/functions/secrets) |
+
+The app requests its current web address ending in `#/account` for signup and recovery emails.
+Supabase Auth accepts a return address on the Site URL's scheme, host and port. If a disposable
+email journey returns elsewhere, inspect the exact requested return URI and the Site URL.
+Any additional allow-list entry requires separate owner approval of that exact URI. Record and
+undo such an exception separately. [Supabase redirect validation](https://github.com/supabase/auth/blob/master/internal/utilities/request.go)
 
 Passkeys registered under the preview RP ID stop working at the new RP ID. The owner uses the
 hosted provider to sign in to the **same** server account, checks the Account ID privately,
