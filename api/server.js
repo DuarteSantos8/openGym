@@ -3778,7 +3778,13 @@ const server = http.createServer(async (req, res) => {
   // keys on the path could be stepped around the same way. No client sends such a path.
   const sent = req.url.split('?')[0];
   if (sent.startsWith('/') && sent !== url.pathname) return json(res, 400, { error: 'bad request' });
-  let key = req.method + ' ' + (MCP_ON ? wellKnownPath(url.pathname) : url.pathname);
+      // The base path in front of /api/ is stripped before the lookup: a connector reaches this
+       // server straight at its own origin, so its requests carry the base path the discovery
+       // document advertises (<connector><BASE_PATH>/api/oauth/...), where wellKnownPath above
+       // does the same for the discovery documents.
+       let routePath = MCP_ON ? wellKnownPath(url.pathname) : url.pathname;
+       if (APP_BASE && routePath.startsWith(APP_BASE + '/api/')) routePath = routePath.slice(APP_BASE.length);
+       let key = req.method + ' ' + routePath;
   // The one route with a parameter in its path. Mapped onto its template key here so the table
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
