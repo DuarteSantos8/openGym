@@ -616,6 +616,25 @@ describe('the first-start permission steps (views/PermissionSteps.jsx)', () => {
     return useStore
   }
 
+  it('removes a new pairing if the guest copy cannot be saved and permits a retry', async () => {
+    const useStore = await firstLaunch()
+    await useStore.getState().chooseLocalMode()
+    useStore.getState().update(s => { s.workouts = [workout('guest', '2026-09-10')] }, false)
+    serverWith(SERVER_STATE)
+    const put = localStorage.setItem.bind(localStorage)
+    const deny = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'gym_guest_state') throw new DOMException('full', 'QuotaExceededError')
+      put(key, value)
+    })
+    const pair = () => useStore.getState().connectToServer(BASE, 'ABCD2345', vi.fn(async () => false))
+    try { await expect(pair()).rejects.toThrow('Could not save') } finally { deny.mockRestore() }
+    expect(readFile('opengym-remote.json')).toEqual({ mode: 'local' })
+    expect(useStore.getState().user).toBeNull()
+    expect(ids(useStore.getState().S.workouts)).toEqual(['guest'])
+    await pair()
+    expect(useStore.getState().user.id).toBe(USER.id)
+  })
+
   it('are due once "Use on this device" is picked', async () => {
     const useStore = await firstLaunch()
     await useStore.getState().chooseLocalMode()

@@ -266,7 +266,7 @@ export default function Account({ client = cloud(), go = url => { location.assig
     if (!lasting || (how !== 'link' && how !== 'switch')) { nav('/home'); return }
     note.leaving(session.user.id)
     setLeaving(true)
-    link()
+    try { await link() } catch (error) { setLeaving(false); throw error }
   })
   // Signing out is immediate where there is only the account: a slow server cannot undo what is
   // tapped next. With a server profile open, that one ends first, and only then the account.
