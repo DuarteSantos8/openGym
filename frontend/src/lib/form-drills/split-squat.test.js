@@ -3,9 +3,9 @@
 // stepping out and back; counting, depth and the standards, tempo, cues, the side-on extras, and
 // the catalogue.
 import { describe, expect, it } from 'vitest'
-import split, { CUE, FAST_DOWN_SEC, PARALLEL_R, depthShare, frontLeg } from './split-squat.js'
+import split, { CUE, FAST_DOWN_SEC, HIP_MARK, PARALLEL_R, depthShare, frontLeg } from './split-squat.js'
 import { checkDrill } from './index.js'
-import { BODY, CAMERA, YAWS, ease, film, project, same } from './test-kit.js'
+import { BODY, CAMERA, YAWS, ease, film, markHip, project, same } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
 const rad = d => d * Math.PI / 180
@@ -25,7 +25,8 @@ function kneeOf(h, a, l1, l2, pick) {
  * A split stance in body coordinates: the hips at height `H` (metres), `hipU` forward; the front
  * ankle `front` metres ahead on the floor, the back ankle at `rear` [u, v] (on the toes, up on a
  * bench, or in the air mid-step). The front knee bends forward, the back knee down. The torso
- * leans `lean` degrees; `frontSide` names the front leg.
+ * leans `lean` degrees; `frontSide` names the front leg. The hips are drawn where Vision puts them
+ * (test-kit markHip), above the crease as the front knee bends.
  */
 export function splitPose(H, { front = 0.4, rear = [-0.45, 0.12], hipU = 0, lean = 8, frontSide = 'left', body = BODY } = {}) {
   const b = body
@@ -42,8 +43,11 @@ export function splitPose(H, { front = 0.4, rear = [-0.45, 0.12], hipU = 0, lean
   out[backSide + 'Ankle'] = [rear[0], rear[1], w(backSide) * 0.1]
   out[frontSide + 'Knee'] = [fk[0], fk[1], w(frontSide) * 0.1]
   out[backSide + 'Knee'] = [rk[0], rk[1], w(backSide) * 0.1]
+  // Vision's hip (markHip): up the torso as the front knee bends, all of the mark by 90 degrees.
+  const kneeDeg = Math.acos(Math.max(-1, Math.min(1, ((hip[0] - fk[0]) * (fa[0] - fk[0]) + (hip[1] - fk[1]) * (fa[1] - fk[1])) / (b.thigh * b.shin)))) * 180 / Math.PI
+  const vh = markHip(hip, L, (180 - kneeDeg) / 90, b)
   for (const s of ['left', 'right']) {
-    out[s + 'Hip'] = [hip[0], hip[1], w(s) * b.hipHalf]
+    out[s + 'Hip'] = [vh[0], vh[1], w(s) * b.hipHalf]
     out[s + 'Shoulder'] = [sh[0], sh[1], w(s) * b.shoulderHalf]
     out[s + 'Elbow'] = [sh[0], sh[1] - 0.3, w(s) * (b.shoulderHalf + 0.02)]
     out[s + 'Wrist'] = [sh[0], sh[1] - 0.58, w(s) * (b.shoulderHalf + 0.03)]
@@ -113,7 +117,9 @@ const run = (frames, opts = {}) => {
   return { tr, counted, missed, missedAt, outs, res: tr.result() }
 }
 const ANY = { standard: 'any' }
-const FULL = { bottom: 0.48, down: 2, up: 1 }, SHALLOW = { bottom: 0.66, down: 2, up: 1 }
+const FULL = { bottom: 0.45, down: 2, up: 1 }, SHALLOW = { bottom: 0.58, down: 2, up: 1 }
+// Halfway down: still a rep with the phone high (a high camera shrinks the drop).
+const HALF = { bottom: 0.5, down: 2, up: 1 }
 const depths = res => res.reps.map(r => r.measures.depth)
 const viewAt = yaw => (yaw === 0 ? 'side' : yaw === 90 ? 'front' : 'diagonal')
 
@@ -164,7 +170,7 @@ describe.each(YAWS)('the split squat filmed at yaw %i°', yaw => {
     })
 
     it('takes the parallel band at its edge, as filmed from this angle', () => {
-      const edge = hipForR(PARALLEL_R, yaw, stance)
+      const edge = hipForR(PARALLEL_R + HIP_MARK, yaw, stance)
       expect(run(set([{ bottom: edge - 0.015, down: 2, up: 1 }])).res.reps[0]).toMatchObject({ counted: true, measures: { depth: 'parallel' } })
       expect(run(set([{ bottom: edge + 0.015, down: 2, up: 1 }])).res.reps[0]).toMatchObject({ counted: false, reason: 'shallow', measures: { depth: 'above' } })
     })
@@ -249,9 +255,9 @@ describe('the split squat, whatever the angle', () => {
   it('picks the front leg: not the foot on the bench, not the back knee, not a foot in the air', () => {
     const bul = frontLeg(project(splitPose(0.5, STANCE.bulgarian.o)), CAMERA.aspect)
     expect(bul.side).toBe('left')
-    const low = frontLeg(project(splitPose(0.48)), CAMERA.aspect)
+    const low = frontLeg(project(splitPose(0.45)), CAMERA.aspect)
     expect(low.side).toBe('left')
-    expect(low.r).toBeLessThan(PARALLEL_R)
+    expect(low.r - HIP_MARK).toBeLessThan(PARALLEL_R)
     const mid = frontLeg(project(lungePose(0.5, 0.94, 'right')), CAMERA.aspect)
     expect(mid.side).toBe('right')
     expect(frontLeg({}, 1)).toBeNull()
@@ -272,6 +278,24 @@ describe('the split squat, whatever the angle', () => {
       const { res } = run(frames)
       expect(res.count).toBe(2)
       expect(depths(res)).toEqual(['parallel', 'parallel'])
+    }
+  })
+
+  it('keeps the top when Vision swaps the legs for a frame or reads a knee at the ankle', () => {
+    for (const yaw of [0, 45, 90]) {
+      const frames = splitSet(same(4, FULL), { yaw, stand: 0.6 }).map((f, i) => {
+        const j = { ...f.joints }
+        if (i % 4 === 1) {
+          // The legs' names swapped (the back leg called the front one).
+          ;[j.leftKnee, j.rightKnee, j.leftAnkle, j.rightAnkle] = [j.rightKnee, j.leftKnee, j.rightAnkle, j.leftAnkle]
+        } else if (i % 9 === 3 && j.leftKnee && j.leftAnkle) {
+          // The front knee put down by its ankle.
+          j.leftKnee = [j.leftAnkle[0], j.leftAnkle[1] - 0.005, j.leftKnee[2]]
+        }
+        return { ...f, joints: j }
+      })
+      const { res } = run(frames)
+      expect(res).toMatchObject({ count: 4, missed: 0 })
     }
   })
 
@@ -304,9 +328,10 @@ describe('the split squat, whatever the angle', () => {
   })
 
   it('side-on: the front knee at the bottom, the torso lean and the spread', () => {
-    const { res } = run(splitSet([{ bottom: 0.48, down: 2, up: 1 }, { bottom: 0.53, down: 2, up: 1 }, FULL]))
+    const { res } = run(splitSet([{ bottom: 0.45, down: 2, up: 1 }, { bottom: 0.5, down: 2, up: 1 }, { bottom: 0.47, down: 2, up: 1 }]))
     expect(res.reps[0].measures.minKnee).toBeGreaterThan(70)
-    expect(res.reps[0].measures.minKnee).toBeLessThan(95)
+    // Read at Vision's hip, above the crease, so a little more open than the real knee.
+    expect(res.reps[0].measures.minKnee).toBeLessThan(105)
     expect(res.reps[0].measures.lean).toBeGreaterThan(4)
     expect(res.reps[0].measures.lean).toBeLessThan(14)
     expect(res.summary.consistency).toBeGreaterThan(3)
@@ -317,7 +342,7 @@ describe('the split squat, whatever the angle', () => {
 
   it('outside a side view, asks for the phone at knee height and leaves depth unjudged when it is not', () => {
     for (const cam of [{ height: 0.95 }, { pitch: 15 }]) {
-      const { outs, res } = run(splitSet(same(3, SHALLOW), { yaw: 90, ...cam }))
+      const { outs, res } = run(splitSet(same(3, HALF), { yaw: 90, ...cam }))
       expect(outs.some(o => o.hint === 'Put the phone at knee height and level')).toBe(true)
       expect(res).toMatchObject({ count: 3, missed: 0, cueId: 'level' })
       expect(depths(res)).toEqual([null, null, null])
