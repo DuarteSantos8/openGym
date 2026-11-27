@@ -145,6 +145,12 @@ test('separate connector origin advertises its own issuer and resource but opens
 test('a browser OAuth client on a prefixed connector is CSRF-exempt like the unprefixed endpoints', async t => {
   const api = await start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example', BASE_PATH: '/gym' });
   const browser = { 'Content-Type': 'application/json', Origin: 'https://claude.example' }
+  // What a browser sends first for a JSON POST from another origin.
+  const preflight = await fetch(api + '/gym/api/oauth/register', { method: 'OPTIONS', headers: { Origin: 'https://claude.example', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type' } })
+  assert.equal(preflight.status, 204)
+  assert.equal(preflight.headers.get('access-control-allow-origin'), 'https://claude.example')
+  assert.match(preflight.headers.get('access-control-allow-methods'), /POST/)
+  assert.match(preflight.headers.get('access-control-allow-headers'), /Content-Type/)
   for (const pathname of ['/api/oauth/register', '/gym/api/oauth/register']) {
     const r = await fetch(api + pathname, { method: 'POST', headers: browser, body: JSON.stringify({ redirect_uris: ['http://localhost:3001/callback'] }) });
     assert.equal(r.status, 201, pathname);
