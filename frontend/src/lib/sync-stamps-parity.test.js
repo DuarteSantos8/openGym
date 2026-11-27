@@ -244,12 +244,34 @@ describe('nutrition amount groups merge atomically on client and API', () => {
       expect(results[0][0]).not.toHaveProperty('amountMl')
     }
   })
-  it('does not repair an already-malformed opaque amount row', () => {
-    const malformed = food({ amountG: 50, amountMl: 250, _ts: 10, _f: { amountG: 10, amountMl: 10 } })
+  it('keeps a malformed portion whole while it is newest, and lets a newer portion replace it whole', () => {
+    const malformed = at => food({ amountG: 50, amountMl: 250, _ts: at, _f: { amountG: at, amountMl: at } })
     for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
-      const row = merge([malformed], [grams(20)])[0]
-      expect(row.amountG).toBe(50)
-      expect(row.amountMl).toBe(250)
+      const newest = merge([malformed(30)], [grams(20)])[0]
+      expect(newest.amountG).toBe(50)
+      expect(newest.amountMl).toBe(250)
+      expect(newest).not.toHaveProperty('serving')
+      const older = merge([malformed(10)], [grams(20)])[0]
+      expect(older).toMatchObject({ amountG: 50, serving: { label: 'bowl', count: 1, size: 50, unit: 'g' } })
+      expect(older).not.toHaveProperty('amountMl')
+    }
+  })
+  it('gives one result for coherent, malformed and finely rounded copies in every sync order', () => {
+    const copies = [
+      food({ amountG: 50, _ts: 10, _f: { amountG: 10 } }),
+      food({ amountMl: 250, _ts: 20, _f: { amountMl: 20 } }),
+      food({ amountG: 50, amountMl: 250, _ts: 5, _f: { amountG: 5, amountMl: 5 } }),
+      food({ amountG: 50.02, serving: { label: 'bowl', count: 1.0004, size: 50, unit: 'g' }, _ts: 15, _f: { amountG: 15, serving: 15 } }),
+    ]
+    const orders = [[0, 1, 2, 3], [2, 0, 1, 3], [3, 2, 1, 0], [1, 3, 0, 2], [2, 3, 0, 1]]
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      const results = orders.flatMap(o => {
+        const rows = o.map(i => [copies[i]])
+        return [rows.reduce((acc, r) => merge(acc, r)), rows.reduceRight((acc, r) => merge(r, acc))]
+      })
+      for (const r of results) expect(r).toEqual(results[0])
+      expect(results[0][0].amountMl).toBe(250)
+      expect(results[0][0]).not.toHaveProperty('amountG')
     }
   })
 
