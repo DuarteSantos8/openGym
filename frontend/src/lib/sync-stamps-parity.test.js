@@ -3,7 +3,8 @@
    its own changes (an older app, an API planner) must hold in this side's merge. */
 import { describe, expect, it } from 'vitest'
 import * as S from '../../../api/sync-stamps.js'
-import { highestStamp, mergeDeletions, mergeEdits, mergeStates, stampChange, stampEntry, stampEdits, stampRestore, stampOptionalCollections, visibleOptionalEntries } from './sync-merge.js'
+import { highestStamp, mergeDeletions, mergeEdits, mergeOptionalEntries, mergeStates, stampChange, stampEntry, stampEdits, stampRestore, stampOptionalCollections, visibleOptionalEntries } from './sync-merge.js'
+import { normalizeEntry } from './nutrition/entry.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 it('optional stamping preserves malformed retained elements during unrelated edits on both sides', () => {
@@ -170,6 +171,71 @@ describe('optional collection helper parity', () => {
       expect(S.stampOptionalCollections(a, clone(b), 20)).toEqual(C.stampOptionalCollections(a, clone(b), 20))
       expect(S.highestStamp(a)).toBe(C.highestStamp(a))
       expect(S.mergeDeletions(a.deleted, b.deleted)).toEqual(C.mergeDeletions(a.deleted, b.deleted))
+    }
+  })
+})
+
+describe('nutrition amount groups merge atomically on client and API', () => {
+  const food = fields => ({
+    id: '22d16a0e-fdb7-4956-b785-a1ffe219b60c', schemaVersion: 1,
+    createdAt: '2026-02-01T03:30:00.000Z', createdBy: 'file-import', source: 'OpenNutriTracker',
+    externalId: 'beans', day: '2026-02-01', timeZone: 'UTC', meal: 'lunch', label: 'Beans',
+    ...fields,
+  })
+  const grams = (at = 10, serving = true) => food({
+    amountG: 50, ...(serving ? { serving: { label: 'bowl', count: 1, size: 50, unit: 'g' } } : {}),
+    _ts: at, _f: { amountG: at, ...(serving ? { serving: at } : {}) },
+  })
+  const millilitres = (at = 20, serving = false) => food({
+    amountMl: 250, ...(serving ? { serving: { label: 'glass', count: 1, size: 250, unit: 'mL' } } : {}),
+    _ts: at, _f: { amountMl: at, ...(serving ? { serving: at } : {}) },
+  })
+  const bothOrders = (a, b, check) => {
+    const ab = mergeOptionalEntries([a], [b]), ba = mergeOptionalEntries([b], [a])
+    expect(ab).toEqual(ba)
+    expect(S.mergeOptionalEntries([a], [b])).toEqual(ab)
+    expect(S.mergeOptionalEntries([b], [a])).toEqual(ab)
+    check(ab[0])
+    return ab[0]
+  }
+  it('chooses the newest complete dimension in either argument order and keeps field evidence', () => {
+    const merged = bothOrders(grams(10), millilitres(20), row => {
+      expect(row).toMatchObject({ amountMl: 250, _f: { amountG: 10, amountMl: 20, serving: 10 } })
+      expect(row).not.toHaveProperty('amountG')
+      expect(row).not.toHaveProperty('serving')
+      expect(normalizeEntry(row).supported).toBe(true)
+    })
+    expect(mergeOptionalEntries([merged], [millilitres(20)])).toEqual([merged])
+    expect(S.mergeOptionalEntries([merged], [millilitres(20)])).toEqual([merged])
+  })
+  it('reverses the winner with the timestamps, including atomic serving removal', () => {
+    bothOrders(grams(30, false), millilitres(20, true), row => {
+      expect(row).toMatchObject({ amountG: 50 })
+      expect(row).not.toHaveProperty('amountMl')
+      expect(row).not.toHaveProperty('serving')
+      expect(normalizeEntry(row).supported).toBe(true)
+    })
+  })
+  it('breaks equal group timestamps deterministically and converges with a third copy', () => {
+    const a = grams(10), b = millilitres(10), third = food({ amountG: 75, fatG: 3, _ts: 15, _f: { amountG: 15, fatG: 15 } })
+    const first = bothOrders(a, b, row => expect(normalizeEntry(row).supported).toBe(true))
+    const left = mergeOptionalEntries([first], [third])
+    const right = mergeOptionalEntries([third], mergeOptionalEntries([b], [a]))
+    const reverse = mergeOptionalEntries([third], [first])
+    expect(left).toEqual(right)
+    expect(left).toEqual(reverse)
+    expect(S.mergeOptionalEntries([first], [third])).toEqual(left)
+    expect(left[0].amountG).toBe(75)
+    expect(left[0].fatG).toBe(3)
+    expect(left[0]).not.toHaveProperty('amountMl')
+    expect(normalizeEntry(left[0]).supported).toBe(true)
+  })
+  it('does not repair an already-malformed opaque amount row', () => {
+    const malformed = food({ amountG: 50, amountMl: 250, _ts: 10, _f: { amountG: 10, amountMl: 10 } })
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      const row = merge([malformed], [grams(20)])[0]
+      expect(row.amountG).toBe(50)
+      expect(row.amountMl).toBe(250)
     }
   })
 })

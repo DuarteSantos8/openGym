@@ -11,6 +11,7 @@ import { isOn } from '../lib/modules.js'
 import { localDay, createEntry } from '../lib/nutrition/entry.js'
 import { setWeightDecimals } from '../lib/format.js'
 import { visibleOptionalEntries } from '../lib/sync-merge.js'
+import { api } from '../lib/api.js'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let host, root
 const visible = () => visibleOptionalEntries(useStore.getState().S, 'nutritionEntries')
@@ -22,6 +23,7 @@ const input = async (name, value) => act(async () => {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 })
 beforeEach(() => {
+  api.mockReset(); api.mockRejectedValue(new Error('offline'))
   localStorage.clear(); useUI.setState({ sheets: [] })
   useStore.setState({ S: { ...structuredClone(DEF), modules: { nutrition: true } }, user: null, ready: true })
   host = document.createElement('div'); document.body.append(host); root = createRoot(host)
@@ -139,4 +141,52 @@ test('account import names the destination and discards the preview after an acc
   expect(visible()).toHaveLength(0)
   await act(async () => switchTo('B'))
   expect(host.textContent).not.toContain('entries ready.')
+})
+
+test('signed-in file import stamps, pushes and reaches a second clean session', async () => {
+  let stored
+  api.mockImplementation(async (path, options) => {
+    if (options?.method === 'PUT') {
+      stored = JSON.parse(options.body).state
+      return { ok: true, rev: 2, wid: 'server-write' }
+    }
+    return { state: stored, rev: 2 }
+  })
+  localStorage.setItem('gym_user', JSON.stringify({ id: 'A' }))
+  localStorage.setItem('gym_owner', 'A')
+  localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 0 }))
+  useStore.setState({ user: { id: 'A' } })
+  await render(<Nutrition />)
+  await selectNutritionFile(host.querySelector('input[type="file"]'))
+  await vi.waitFor(() => expect(host.textContent).toContain('Import into your synced account diary?'))
+  await click('Import')
+  expect(visible()[0]).toMatchObject({ label: 'QA oats', proteinG: 5 })
+  expect(visible()[0]._f.amountG).toBeGreaterThan(0)
+  await useStore.getState().pushState()
+  expect(stored.nutritionEntries[0]).toMatchObject({ label: 'QA oats', proteinG: 5 })
+  expect(new TextEncoder().encode(JSON.stringify({ state: stored, stamped: true, baseRev: 1 })).byteLength).toBeLessThanOrEqual(5 * 1024 * 1024)
+
+  const synced = structuredClone(stored)
+  localStorage.removeItem('gym_sync')
+  useStore.setState({ S: { ...structuredClone(DEF), modules: { nutrition: true } }, user: { id: 'A' }, ready: true })
+  await useStore.getState().pullState()
+  expect(visible()).toHaveLength(1)
+  expect(visible()[0]).toEqual(synced.nutritionEntries[0])
+})
+
+test('signed-in import rejects a complete UTF-8 sync envelope over 5 MiB before mutation', async () => {
+  localStorage.setItem('gym_user', JSON.stringify({ id: 'A' }))
+  localStorage.setItem('gym_owner', 'A')
+  const existing = createEntry({ label: 'Existing', day: localDay(), meal: 'snack' })
+  existing.futureExtension = '😀'.repeat(1_320_000)
+  const before = { ...structuredClone(DEF), modules: { nutrition: true }, nutritionEntries: [existing] }
+  useStore.setState({ S: before, user: { id: 'A' }, ready: true })
+  await render(<Nutrition />)
+  await selectNutritionFile(host.querySelector('input[type="file"]'))
+  await vi.waitFor(() => expect(host.textContent).toContain('Import into your synced account diary?'))
+  await click('Import')
+  expect(useStore.getState().S).toBe(before)
+  expect(visible()).toHaveLength(1)
+  expect(visible()[0].label).toBe('Existing')
+  expect(api).not.toHaveBeenCalled()
 })

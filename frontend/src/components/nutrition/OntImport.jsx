@@ -43,7 +43,7 @@ export default function OntImport({ owner }) {
     if (!preview || !sameDiary(owner)) return
     let counts
     try {
-      useStore.getState().update(state => { counts = preview.mergeOntRows(state, preview.rows) })
+      useStore.getState().update(state => { counts = preview.mergeOntRows(state, preview.rows) }, true, { checkSyncLimit: true })
       setStatus('')
       useUI.getState().toast(t('Added: {0}. Updated: {1}. Unchanged: {2}.', counts.added, counts.updated, counts.unchanged))
     } catch { setStatus(t('Could not read this OpenNutriTracker export.')) }
