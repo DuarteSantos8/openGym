@@ -4,6 +4,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Production domain (A4, prepared).** [Cutover and rollback checklist](CLOUD-SERVER.md#production-address-cutover-a4) awaits the owner’s choice of addresses and cutover window.
 - **Accessible workout controls (06.03, prepared).** Workout actions wrap on narrow phones. The progression control includes its displayed guidance and exercise settings in its accessible name. Resume has a stable visible label and a separate visual clock. Physical VoiceOver and TalkBack review remain pending.
 - **Connector permissions (10.02, isolated).** The loopback acceptance test checks that a plans-only reader cannot log workouts and that revocation ends access. Hosted client verification remains open.
 - Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
