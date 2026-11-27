@@ -6921,7 +6921,7 @@
     ]
   },
   "1628": {
-    "name": "Spider-hauiskääntö mutkatangolla",
+    "name": "Spider-hauiskääntö mutkatangolla v. 2",
     "description": "Spider-hauiskääntö mutkatangolla vatsallaan vinopenkillä maaten. Se eristää hauikset ilman heijausta.",
     "instructions": [
       "Asetu päinmakuulle vinopenkille jalat lattialla.",
@@ -58820,7 +58820,7 @@
     ]
   },
   "0454": {
-    "name": "Spider-hauiskääntö seisten mutkatangolla",
+    "name": "Spider-hauiskääntö mutkatangolla",
     "description": "Rinta vinopenkkiä vasten tehty hauiskääntö mutkatangolla roikkuvasta asennosta. Eristää hauiksen tarkalla liikeradalla.",
     "instructions": [
       "Seiso jalat hartioiden leveydellä ja tartu mutkatankoon vastaotteella kämmenet ylöspäin.",
@@ -60102,7 +60102,7 @@
     ]
   },
   "0577": {
-    "name": "Rintapunnerrus laitteessa",
+    "name": "Rintapunnerrus vipuvarsilaitteessa v. 3",
     "description": "Laitepunnerrus, jossa työnnät kahvoja eteenpäin rintakehältä. Työstää rintaa, etuolkapäitä ja ojentajia.",
     "instructions": [
       "Säädä istuimen korkeus ja asetu laitteeseen niin, että selkä on tasaisesti pehmustetta vasten.",
