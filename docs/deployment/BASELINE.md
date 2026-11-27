@@ -1,5 +1,9 @@
 # Deployment baseline — 2026-11-27
 
+> Snapshot at audit start. Later platform changes (Vercel project, Render `ORIGIN`, Railway
+> variables, data restore) are logged with their reverts in `ROLLBACK.md`, which supersedes
+> the state described here.
+
 Evidence gathered read-only by Hermes from a clean clone, the platform CLIs and public HTTP
 probes. No secret values are recorded here: variables are listed by name only.
 

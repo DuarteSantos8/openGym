@@ -27,7 +27,10 @@ confirmed against the backup's `db.json` link count before cutover.
 ## Procedure
 
 1. **Manifest live Render** — pipe `api/scripts/data-manifest.mjs` into the running container
-   (`node --input-type=module - /data`). Counts and hashes only.
+   (`node --input-type=module - /data`). Hashes and counts, no names or contents, but file paths
+   carry account ids (`state-<id>.json`, `uploads/<id>/`): keep manifests and `--compare` output
+   in the 0700 backup directory with the archive and quote only counts and `equal`. Exit codes:
+   0 equal, 1 differ, 2 could not tell.
 2. **Archive** — `tar -C /data -czf - .` streamed over `render ssh` to the VPS backup directory
    (`/root/backups/ironvane/<UTC timestamp>/`, mode 0700, root only, never committed).
 3. **Consistency** — every API write is temp-file + fsync + rename (`api/durable.js`), so each file

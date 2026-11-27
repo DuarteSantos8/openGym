@@ -1,12 +1,15 @@
 /* data-manifest.mjs: what a copy of DATA_DIR has to match after a backup, restore or migration.
- * A checksum per file plus record counts, and nothing that identifies a person: no ids, names or
- * contents leave the function, so the manifest can be kept beside the archive or quoted in a
- * report. Two manifests are equal exactly when the two directories hold the same bytes. */
+ * A checksum per file plus record counts. No names or record contents leave the function, but the
+ * file paths carry account ids (state-<id>.json, uploads/<id>/), so a manifest is as private as
+ * the archive beside it; only its counts and `equal` go into a report. Two manifests are equal
+ * exactly when the two directories hold the same bytes. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { dataManifest, compareManifests } from '../scripts/data-manifest.mjs';
 
 function fixture() {
@@ -62,4 +65,37 @@ test('an unreadable db.json is reported, not guessed at', () => {
   fs.writeFileSync(path.join(a, 'db.json'), '{broken');
   assert.equal(dataManifest(a).counts.users, null);
   assert.equal(dataManifest(a).dbReadable, false);
+});
+
+test('the paths carry account ids, so the output is private: names and contents still never appear', () => {
+  const text = JSON.stringify(dataManifest(fixture()));
+  assert.ok(text.includes('state-u1.json') && text.includes('uploads/u1/'), 'paths are kept so a mismatch can be found');
+  for (const secretish of ['Ana', 'Ben', '"workouts"', 'kkkk', '"img"']) assert.ok(!text.includes(secretish), secretish);
+});
+
+test('uploads still in flight (uploads/<id>/.tmp/) are left out like the other transient files', () => {
+  const a = fixture();
+  fs.mkdirSync(path.join(a, 'uploads/u1/.tmp'), { recursive: true });
+  fs.writeFileSync(path.join(a, 'uploads/u1/.tmp/r4nd0m'), 'half an upload');
+  assert.equal(dataManifest(a).counts.files, 7);
+  assert.equal(dataManifest(a).counts.uploadFiles, 1);
+});
+
+const CLI = fileURLToPath(new URL('../scripts/data-manifest.mjs', import.meta.url));
+const run = (...args) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
+
+test('the command line separates "they differ" (1) from "could not tell" (2)', () => {
+  const dir = fixture();
+  const m = path.join(dir, '..', path.basename(dir) + '.json');
+  fs.writeFileSync(m, run(dir).stdout);
+  assert.equal(run('--compare', m, m).status, 0);
+  const other = fixture(); fs.writeFileSync(path.join(other, 'state-u3.json'), '{}');
+  const m2 = m + '.2'; fs.writeFileSync(m2, run(other).stdout);
+  assert.equal(run('--compare', m, m2).status, 1);
+  assert.equal(run('--compare', m, m + '.missing').status, 2);
+  assert.equal(run('--compare', m).status, 2);
+  assert.equal(run(path.join(dir, 'no-such-dir')).status, 2);
+  const none = run();
+  assert.equal(none.status, 2);
+  assert.match(none.stderr, /usage/i);
 });

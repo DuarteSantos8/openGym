@@ -18,7 +18,8 @@ plan deletes Render, its disk, the Supabase project, auth users or the OAuth cli
 | 2026-11-27 15:58 | Render `ironvane-api` (owner-chosen sign-in origin): `ORIGIN` `https://opengym-git-next-cloud-preview-sorensadr-gmailcoms-projects.vercel.app` → `https://ironvane-cloud-preview.vercel.app`; `RP_ID` same host change; redeployed the already-live commit `da96e4002` (deploy `dep-dc4qhdlg1s2s73fes2ig`, live 16:00), no new code. `/data` manifest equal before and after | Set both back in Render → Environment, then Manual Deploy → the same commit. No passkeys or connector tokens existed on the old host (`creds 0`, `apiTokens 0`) |
 | 2026-11-27 16:20 | Railway `ironvane-api`: set `OIDC_ISSUER` (the existing Supabase project), `OIDC_CLIENT_ID` (the existing public client), `ADMIN_UIDS` (same account id as Render). Deployment `5e36e1fc` SUCCESS; `/data` manifest still equal to the Render backup. Sign-in needs the owner to add `https://ironvane-web-production.up.railway.app/api/oidc/callback` to the client | `railway variables -s ironvane-api` → delete the three (with `OIDC_ONLY=1` still set, nobody can sign in again) |
 
-Both affect only the Railway candidate stack, which serves no real users.
+The two 14:52–14:54 rows affect only the Railway candidate stack, which serves no real users. The
+Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch production.
 
 ## Frontend
 
@@ -29,8 +30,10 @@ Both affect only the Railway candidate stack, which serves no real users.
 
 ## API data (when a cutover has happened)
 
-1. Freeze writes on the side being abandoned (scale Railway API to 0 or set `INVITE_ONLY=1` and
-   stop the frontend rewrite).
+1. Freeze writes on the side being abandoned by stopping its API process (Railway: scale
+   `ironvane-api` to 0 replicas, or remove its active deployment). Nothing weaker freezes it:
+   `INVITE_ONLY=1` only gates new sign-ups, and the MCP service reaches the API over the private
+   network (`ironvane-api.railway.internal`) whatever the frontend rewrite says.
 2. Archive Railway `/data` the same way as the Render backup and diff it against the cutover
    manifest. Anything newer than the cutover is user data created on Railway: reconcile it into
    Render before Render takes writes again. Never overwrite the newer file with the older one.
