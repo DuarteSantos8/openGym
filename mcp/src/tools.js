@@ -22,6 +22,7 @@ import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles
 import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
+import { activeRoutines, inArchive } from '../../frontend/src/lib/routine-folders.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
 
@@ -125,19 +126,20 @@ function prTable(S, formula) {
 /** list_routines — names + counts of each routine in the user's plan. */
 export const listRoutines = {
   name: 'list_routines',
-  description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
-  schema: {},
-  handler: () => {
+  description: 'List the workout routines saved in the user\'s openGym profile (the same list the Plan screen shows). Each routine is a named set of exercises with set/rep targets. Routines the user put in their Archive folder are left out unless `include_archived` is true. Use this to discover the plan structure before diving into a specific routine or today\'s workout.',
+  schema: { include_archived: z.boolean().optional() },
+  handler: ({ include_archived } = {}) => {
     const S = getState()
     if (!S) return noState()
     return {
       unit: S.unit || 'kg',
       // The profile's revision: what update_routine and delete_routine take as expected_revision.
       revision: typeof S._rev === 'number' ? S._rev : null,
-      routines: (S.routines || []).map(r => ({
+      routines: (include_archived ? (S.routines || []) : activeRoutines(S.routines)).map(r => ({
         id: r.id,
         name: r.name,
         emoji: r.emoji || null,
+        archived: inArchive(r),
         exercise_count: (r.ex || []).length,
         superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
         policy: policyFor(null, r, 'reps', profileRule(S)),
@@ -151,11 +153,11 @@ export const listRoutines = {
 export const getRoutine = {
   name: 'get_routine',
   description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
-  schema: { routine_id: z.string().min(1) },
-  handler: ({ routine_id }) => {
+  schema: { routine_id: z.string().min(1), include_archived: z.boolean().optional() },
+  handler: ({ routine_id, include_archived }) => {
     const S = getState()
     if (!S) return noState()
-    const r = (S.routines || []).find(x => x.id === routine_id)
+    const r = (S.routines || []).find(x => x.id === routine_id && (include_archived || !inArchive(x)))
     if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
     return {
       id: r.id,
@@ -216,7 +218,7 @@ export const getWeekPlan = {
     const today = new Date()
     const isoToday = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
     const todayWd = today.getDay()
-    const routines = S.routines || []
+    const routines = activeRoutines(S.routines)
     const nameOf = id => routines.find(x => x.id === id)?.name || null
     // A weekday holds a routine-id list (combine routines); older states hold one id.
     const weekdayIds = d => [].concat(S.week?.[d] || []).filter(id => routines.some(x => x.id === id))
@@ -591,7 +593,7 @@ export const previewSession = {
 
     let r
     if (routine_id) {
-      r = (S.routines || []).find(x => x.id === routine_id)
+      r = (S.routines || []).find(x => x.id === routine_id && !inArchive(x))
       if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
     } else {
       r = effectiveRoutine(S, iso)

@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Include archived workouts": "संग्रहीत वर्कआउट शामिल करें",
+  "Include “{0}” workouts": "“{0}” के वर्कआउट शामिल करें",
+  "Include everything": "सब कुछ शामिल करें",
 }

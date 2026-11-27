@@ -72,8 +72,8 @@ Eleven read-only tools, and four that write:
 
 | Tool | What it answers |
 |---|---|
-| `list_routines` | What routines are saved in my profile? (names + exercise counts) |
-| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) |
+| `list_routines` | What routines are saved in my profile? (names + exercise counts) Routines in the Archive folder are left out; pass `include_archived: true` to see them (each carries `archived`). |
+| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) An archived routine is only returned with `include_archived: true`. |
 | `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
 | `get_week_plan` | What's planned when: the next seven days with their routines and how each was decided (coach week, a pinned session, an override, the weekday plan), the current coach week when one is running, and the weekday table. |
 | `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |

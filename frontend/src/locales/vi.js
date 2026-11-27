@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Include archived workouts": "Bao gồm bài tập đã lưu trữ",
+  "Include “{0}” workouts": "Bao gồm bài tập trong “{0}”",
+  "Include everything": "Bao gồm tất cả",
 };

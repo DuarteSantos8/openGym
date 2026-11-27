@@ -5917,4 +5917,7 @@ export default {
   "Preview on": "Vorschau auf",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "etwas kürzer",
+  "Include archived workouts": "Archivierte Workouts einbeziehen",
+  "Include “{0}” workouts": "Workouts aus „{0}“ einbeziehen",
+  "Include everything": "Alles einbeziehen",
 }

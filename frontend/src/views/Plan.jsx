@@ -32,7 +32,7 @@ import {
   chooseRotation, chooseFixedWeek, sequenceOf, isSimpleSequence, segmentAt, REST,
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
-import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routine-folders.js'
+import { groupRoutines, folderOpen, setFolderOpen, folderOf, activeRoutines, isArchive } from '../lib/routine-folders.js'
 import { isFavRoutine } from '../lib/routine-favs.js'
 import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
 import { routineSources } from '../lib/session-routines.js'
@@ -165,7 +165,7 @@ export default function Plan() {
       subtitle: has ? null : t('Add an exercise to a routine first. An empty plan has nothing to share.'),
       items: [
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
-        { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
+        { icon: 'note', label: t('Print / Save as PDF'), disabled: !(S.routines || []).some(r => r.ex?.length), onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
         { icon: 'qr', label: t('Scan a QR code'), sub: t('A routine from a friend’s phone, the website or the poster by the squat rack.'), onClick: () => import('../components/ScanCode.jsx').then(m => m.scanQrCode()) },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
@@ -270,7 +270,7 @@ function Schedule({ S, update, nav, mode }) {
     title: t('Add to the rotation'),
     items: [
       ...(seq.length ? [{ icon: 'moon', label: t('Rest day'), sub: t('A day off before the next one'), onClick: () => setSeq([...seq, REST]) }] : []),
-      ...S.routines.map(r => ({
+      ...activeRoutines(S.routines).map(r => ({
         icon: glyphOf(r.emoji), label: r.name, sub: seq.includes(r.id) ? t('Already in the loop: adds it again') : undefined, onClick: () => setSeq([...seq, r.id]),
       })),
     ],
@@ -520,7 +520,7 @@ function Routines({ S, update, nav }) {
           // A folder's header folds its routines away; where it was left is remembered here.
           return <div key={'f' + g.folder} className="plan-folder-sect">
             <button type="button" className="plan-folder" aria-expanded={open} onClick={() => toggleFolder(g.folder, !open)}>
-              <Icon name="folder" /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span>
+              <Icon name={isArchive(g.folder) ? 'archive' : 'folder'} /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span>
               <Icon name="chevronRight" className="chev" />
             </button>
             {list}

@@ -5900,4 +5900,7 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Include archived workouts": "Archivált edzések belevétele",
+  "Include “{0}” workouts": "„{0}” edzéseinek belevétele",
+  "Include everything": "Minden belevétele",
 }

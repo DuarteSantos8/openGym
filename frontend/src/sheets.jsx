@@ -38,6 +38,7 @@ import DateField from './components/DateField.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
 import { cleanBackups, cleanBackupConfigs, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
 import { replaceSlotExercise } from './lib/routines.js'
+import { activeRoutines, inArchive } from './lib/routine-folders.js'
 import KitChips from './components/KitChips.jsx'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
@@ -3294,7 +3295,7 @@ export const effortPickerSheet = (kind, value, onPick, { cardio = false } = {}) 
 
 /* ============================ share / print / import a plan ============================ */
 // What the Plan menu does with a plan: export it, print it, import a friend's.
-export const planHasRoutines = st => (st.routines || []).some(r => r.ex && r.ex.length)
+export const planHasRoutines = st => activeRoutines(st.routines).some(r => r.ex && r.ex.length)
 export async function exportPlanFile() {
   const st = S(), user = useStore.getState().user
   const bundle = buildPlanBundle(st, user?.name ? t('{0}’s plan', user.name) : '')
@@ -3456,7 +3457,7 @@ function DayOverride({ iso, close }) {
       <div className="list" style={{ marginBottom: 8 }}>{coach.map(row)}</div>
     </>}
     <div className="list">
-      {st.routines.filter(r => !remaining.includes(r.id)).map(row)}
+      {activeRoutines(st.routines).filter(r => !remaining.includes(r.id)).map(row)}
       <div className="item" {...tappable(() => set('rest'))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="moon" /></span><div className="grow"><div className="tt">{t('Rest / skip this day')}</div></div>{effIds.length === 0 && <Icon name="check" className="accent" />}</div>
       {hasOvr && <div className="item" {...tappable(() => set(''))}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="reset" /></span><div className="grow"><div className="tt">{t('Back to weekly plan')}</div></div></div>}
     </div>
@@ -3519,7 +3520,7 @@ function DayAssign({ day, close }) {
     <div className="muted small" style={{ marginBottom: 10 }}>{t('Pick one routine, or more to train them together.')}</div>
     <div className="list menu-list">
       <div className="item menu-item" {...tappable(rest)}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="moon" /></span><div className="grow"><div className="tt">{t('Rest day')}</div></div><span className={'menu-on' + (!cur.length ? ' is-on' : '')}><Icon name="check" /></span></div>
-      {st.routines.map(r => {
+      {st.routines.filter(r => !inArchive(r) || cur.includes(r.id)).map(r => {
         const on = cur.includes(r.id)
         return <div key={r.id} className="item menu-item" aria-pressed={on} {...tappable(() => toggle(r.id))}>
           <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>

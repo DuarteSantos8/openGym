@@ -5894,4 +5894,7 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Include archived workouts": "Додати архівні тренування",
+  "Include “{0}” workouts": "Додати тренування з «{0}»",
+  "Include everything": "Додати все",
 }

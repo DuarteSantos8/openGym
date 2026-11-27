@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it } from 'vitest'
-import { cleanFolder, foldersOf, groupRoutines, isArchive, folderOpen, setFolderOpen } from './routine-folders.js'
+import { cleanFolder, foldersOf, groupRoutines, isArchive, folderOpen, setFolderOpen, activeRoutines, inArchive, printableRoutines } from './routine-folders.js'
 
 const r = (id, folder) => ({ id, name: id, ex: [], ...(folder !== undefined ? { folder } : {}) })
 
@@ -18,6 +18,20 @@ describe('routine folders', () => {
     expect(g[0].routines.map(x => x.id)).toEqual(['b', 'e'])
     expect(g[1].routines.map(x => x.id)).toEqual(['a', 'd'])
     expect(foldersOf(list)).toEqual(['Block 2', 'Archive'])
+  })
+  it('keeps archived routines out of the active list', () => {
+    const list = [r('a'), r('b', 'Archive'), r('c', 'archive'), r('d', 'Block 2')]
+    expect(activeRoutines(list).map(x => x.id)).toEqual(['a', 'd'])
+    expect(inArchive(list[1])).toBe(true)
+    expect(inArchive(list[3])).toBe(false)
+    expect(activeRoutines(null)).toEqual([])
+  })
+  it('picks the routines a printout takes by folder', () => {
+    const list = [r('a'), r('b', 'Archive'), r('c', 'Block 2'), r('d', 'block 2')]
+    expect(printableRoutines(list).map(x => x.id)).toEqual(['a', 'c', 'd'])
+    expect(printableRoutines(list, ['archive']).map(x => x.id)).toEqual(['a', 'b'])
+    expect(printableRoutines(list, ['archive', 'block 2']).map(x => x.id)).toEqual(['a', 'b', 'c', 'd'])
+    expect(printableRoutines(list, []).map(x => x.id)).toEqual(['a'])
   })
   it('folds the archive by default and remembers what was left open', () => {
     expect(isArchive('archive')).toBe(true)

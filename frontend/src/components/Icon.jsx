@@ -116,6 +116,8 @@ const P = {
   list: <path d="M8.4 6.6h11.2M8.4 12h11.2M8.4 17.4h11.2M4.6 6.6h.01M4.6 12h.01M4.6 17.4h.01" />,
   grid: <><rect x="4" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" /></>,
   folder: <path d="M3.6 7.4a2 2 0 0 1 2-2h3.1l2 2.4h6.7a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" />,
+  // The archive folder (lib/routine-folders.js): a box with a lid and a handle.
+  archive: <><rect x="3.6" y="5" width="16.8" height="4.2" rx="1.3" /><path d="M5.2 9.2v8.2a2 2 0 0 0 2 2h9.6a2 2 0 0 0 2-2V9.2M10 13h4" /></>,
   globe: <><circle cx="12" cy="12" r="8.2" /><path d="M3.8 12h16.4M12 3.8c2.1 2.2 3.2 5.1 3.2 8.2s-1.1 6-3.2 8.2c-2.1-2.2-3.2-5.1-3.2-8.2s1.1-6 3.2-8.2Z" /></>,
   // Seasonal themes (lib/seasonal.js): two halves of a pumpkin and its stem.
   pumpkin: <><path d="M12 7.4c-1.6-1.2-4.9-1.4-6.8.6-2.4 2.6-2.4 8.4 0 11 1.9 2 5.2 1.8 6.8.6 1.6 1.2 4.9 1.4 6.8-.6 2.4-2.6 2.4-8.4 0-11-1.9-2-5.2-1.8-6.8-.6Z" /><path d="M12 7.4c-1.4 2.2-1.4 10 0 12.2M12 7.4c.1-1.6.6-2.9 1.8-3.8" /></>,

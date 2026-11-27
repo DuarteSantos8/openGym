@@ -29,6 +29,7 @@ import { clampIncline, hasIncline, clampLevel, hasLevel } from './incline.js'
 import { MUSCLES, MUSCLE_MODEL, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
+import { printableRoutines } from './routine-folders.js'
 import { MEDIA_CREDIT, isPrintPicture, loadPrintPictures } from './print-pictures.js'
 import { normalizeAliases } from './exercise-aliases.js'
 import { bundleProgramme, importedProgramme, programmeById, programmeRoutineIds, programmesOf, IMPORT_MAX_PROGRAMMES } from './programmes.js'
@@ -551,11 +552,12 @@ function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '
   return `<section class="routine">${blocks.join('')}</section>`
 }
 
-function weekHTML(S, m) {
+function weekHTML(S, m, folders = null) {
+  const shown = printableRoutines(S.routines, folders)
   // The printout is read by whoever exported it, so the week runs in their order.
   const rows = weekOrder(weekStartOf(S)).map(d => {
     const names = [].concat(S.week?.[d] || [])
-      .map(id => S.routines.find(x => x.id === id)?.name)
+      .map(id => shown.find(x => x.id === id)?.name)
       .filter(Boolean)
     const val = names.length ? esc(deriveSessionName(names)) : `<span class="rest">${esc(t('Rest'))}</span>`
     return `<tr><th scope="row">${esc(t(DAYN[d]))}</th><td>${val}</td></tr>`
@@ -690,12 +692,12 @@ const GRID_CSS = `
  * With no picture for any printed exercise the page is the plain list. The licence's credit line
  * is added only when a catalogue picture is on the page.
  */
-export function planPrintHTML(S, owner, { routineId, probe = false, pictures = null } = {}) {
+export function planPrintHTML(S, owner, { routineId, probe = false, pictures = null, folders = null } = {}) {
   const m = probeMarks(probe)
   const unit = S.unit || 'kg'
   const speedUnit = speedUnitOf(S)
   const single = routineId ? (S.routines || []).find(r => r.id === routineId) || null : null
-  const routines = routineId ? [single].filter(Boolean) : (S.routines || []).filter(r => r.ex && r.ex.length)
+  const routines = routineId ? [single].filter(Boolean) : printableRoutines(S.routines, folders).filter(r => r.ex && r.ex.length)
   const pics = {}
   if (pictures && typeof pictures === 'object') {
     for (const r of routines) for (const e of r.ex || []) if (isPrintPicture(pictures[e.id])) pics[e.id] = pictures[e.id]
@@ -714,7 +716,7 @@ export function planPrintHTML(S, owner, { routineId, probe = false, pictures = n
   const facts = single ? [exCount(single.ex.length)] : [routineCount(routines.length)]
   return printShell({
     title, kicker: single ? t('Routine') : t('Training plan'), facts, owner, date: todayISO(),
-    body: (routineId ? '' : weekHTML(S, m)) + body,
+    body: (routineId ? '' : weekHTML(S, m, folders)) + body,
     css: PLAN_CSS + (grid ? GRID_CSS : ''),
     credit,
   })
@@ -731,7 +733,7 @@ export function planPrintHTML(S, owner, { routineId, probe = false, pictures = n
 export async function printPlan(S, owner, { withPictures = false, name, beforePrint, loadPictures = loadPrintPictures, ...opts } = {}) {
   let pictures = null
   if (withPictures) {
-    try { pictures = await loadPictures(S, { routineId: opts.routineId }) } catch { pictures = null }
+    try { pictures = await loadPictures(S, { routineId: opts.routineId, folders: opts.folders }) } catch { pictures = null }
   }
   const job = name || (opts.routineId ? (S.routines || []).find(r => r.id === opts.routineId)?.name || t('Routine') : t('Weekly Training Plan'))
   const html = planPrintHTML(S, owner, { ...opts, pictures })

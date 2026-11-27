@@ -5952,4 +5952,7 @@ export default {
   "Preview on": "المعاينة على",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "أقصر قليلًا",
+  "Include archived workouts": "تضمين التمارين المؤرشفة",
+  "Include “{0}” workouts": "تضمين تمارين «{0}»",
+  "Include everything": "تضمين كل شيء",
 }
