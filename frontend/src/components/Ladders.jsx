@@ -69,9 +69,8 @@ function TrainIt ({ ladder, rung, close }) {
   </>
 }
 
-function LadderCard ({ S, ladder, onEdit, readOnly }) {
+function LadderCard ({ S, ladder, onEdit, readOnly, top = reachedRung(S, ladder) }) {
   const Row = readOnly ? 'div' : 'button'
-  const top = reachedRung(S, ladder)
   const next = Math.min(ladder.steps.length - 1, top + 1)
   const ui = useUI.getState()
   return <div className="card ladder-card" data-ladder={ladder.id}>
@@ -157,15 +156,23 @@ export const laddersSheet = () => useUI.getState().openSheet(() => <LaddersSheet
 
 function LearnLaddersSheet ({ close }) {
   const S = useStore(s => s.S)
-  const ladders = allLadders(S).map(ladder => ({ ...ladder, steps: ladder.steps.filter(id => Object.hasOwn(EXIDX, id)) }))
-    .filter(ladder => ladder.steps.length >= 2)
+  const ladders = allLadders(S).flatMap(ladder => {
+    const reached = reachedRung(S, ladder)
+    let top = -1
+    const steps = ladder.steps.filter((id, index) => {
+      if (!Object.hasOwn(EXIDX, id)) return false
+      if (index <= reached) top++
+      return true
+    })
+    return steps.length ? [{ ladder: { ...ladder, steps }, top }] : []
+  })
   return <div className="ladders">
     <div className="row between" style={{ gap: 8 }}>
       <h2 style={{ margin: 0 }}>{t('Skill ladders')}</h2>
       <Button size="sm" variant="ghost" onClick={close}>{t('Close')}</Button>
     </div>
     <p className="small muted" style={{ margin: '8px 0 14px' }}>{t('Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.')}</p>
-    {ladders.length ? ladders.map(ladder => <LadderCard key={(ladder.own ? 'own:' : '') + ladder.id} S={S} ladder={ladder} readOnly />)
+    {ladders.length ? ladders.map(({ ladder, top }) => <LadderCard key={(ladder.own ? 'own:' : '') + ladder.id} S={S} ladder={ladder} top={top} readOnly />)
       : <p>{t('No ladders are available.')}</p>}
   </div>
 }
