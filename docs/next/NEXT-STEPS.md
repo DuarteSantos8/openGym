@@ -30,7 +30,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 
-- D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
+- D2 includes keyboard-accessible definitions on Workout, Plan and Progress. All 49 glossary entries have translations in the 25 locale packs. Native-language review is pending (task 7).
 - **Hosted account checks (A1, partial).** The owner opened the Admin dashboard. The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
@@ -156,7 +156,7 @@ With no routines or with a proposed plan open, a message uses the plan builder i
 | 4 | **EP10-T04 second movement** (hinge or lunge). Record 3 short clips on a phone first, then tune thresholds against them. | agent, after clips exist | Rep count within ±1 on the 3 clips |
 | 5 | Report the upstream a11y baseline (`a11y.md`: label-in-name on /home, /plan, /stats) to DuarteSantos8/openGym. Drop each baseline entry once fixed upstream. | owner | Upstream issue linked in `a11y.md` |
 | 6 | Manual a11y: VoiceOver/TalkBack, 200 % text, keyboard through the 3D map list | owner | Notes in `a11y.md` |
-| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, and the twelve EP24-T03 strings in all packs) | reviewer | Reviewer named in a PR |
+| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, the twelve EP24-T03 strings in all packs, and all 49 glossary entries in each pack including the derived Swiss German text) | reviewer | Reviewer named in a PR |
 | 8 | EP09-T03 (apply a progression rule to a routine). Only if users ask for it. | — | — |
 | 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
 | 10 | **Read the 55 draft exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the 36 remaining distinct routine exercises (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
