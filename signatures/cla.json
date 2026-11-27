@@ -1727,6 +1727,14 @@
       "created_at": "2026-11-27T07:41:46Z",
       "repoId": 1305213943,
       "pullRequestNo": 1518
+    },
+    {
+      "name": "fraatti",
+      "id": 186409767,
+      "comment_id": 7214863737,
+      "created_at": "2026-11-27T09:35:36Z",
+      "repoId": 1305213943,
+      "pullRequestNo": 1593
     }
   ]
 }
