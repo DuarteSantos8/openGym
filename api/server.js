@@ -2471,7 +2471,7 @@ function wellKnownPath(p) {
 function oauthRoutes() {
   const meta = (req, res) => json(res, 200, oauth.authServerMetadata(OAUTH_ORIGIN));
   const resource = (req, res) => json(res, 200, oauth.protectedResourceMetadata(OAUTH_ORIGIN));
-  return {
+  const handlers = {
     'GET /.well-known/oauth-authorization-server': meta,
     // The OpenID name for the same document: the MCP spec's clients try it after RFC 8414, and
     // under BASE_PATH it is the one address they look for below the prefix.
@@ -2558,6 +2558,14 @@ function oauthRoutes() {
       res.writeHead(200, { 'Cache-Control': 'no-store' }); res.end();
     }
   };
+  // A split connector can forward the four advertised OAuth endpoints with their base path intact.
+  if (publicConnector && APP_BASE) {
+    for (const [method, endpoint] of [['GET', 'authorize'], ['POST', 'register'], ['POST', 'token'], ['POST', 'revoke']]) {
+      const pathname = '/api/oauth/' + endpoint;
+      handlers[method + ' ' + APP_BASE + pathname] = handlers[method + ' ' + pathname];
+    }
+  }
+  return handlers;
 }
 
 const routes = {
@@ -3778,13 +3786,7 @@ const server = http.createServer(async (req, res) => {
   // keys on the path could be stepped around the same way. No client sends such a path.
   const sent = req.url.split('?')[0];
   if (sent.startsWith('/') && sent !== url.pathname) return json(res, 400, { error: 'bad request' });
-      // The base path in front of /api/ is stripped before the lookup: a connector reaches this
-       // server straight at its own origin, so its requests carry the base path the discovery
-       // document advertises (<connector><BASE_PATH>/api/oauth/...), where wellKnownPath above
-       // does the same for the discovery documents.
-       let routePath = MCP_ON ? wellKnownPath(url.pathname) : url.pathname;
-       if (APP_BASE && routePath.startsWith(APP_BASE + '/api/')) routePath = routePath.slice(APP_BASE.length);
-       let key = req.method + ' ' + routePath;
+  let key = req.method + ' ' + (MCP_ON ? wellKnownPath(url.pathname) : url.pathname);
   // The one route with a parameter in its path. Mapped onto its template key here so the table
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);

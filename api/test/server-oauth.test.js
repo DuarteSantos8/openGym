@@ -142,6 +142,26 @@ test('separate connector origin advertises its own issuer and resource but opens
   assert.equal(new URL(wrong.headers.get('location')).searchParams.get('error'), 'invalid_target');
 });
 
+for (const [name, config] of [
+  ['MCP off', {}],
+  ['MCP off with a connector origin saved', { MCP_PUBLIC_ORIGIN: 'https://connector.example' }],
+  ['single-origin MCP', { MCP: 'on' }],
+  ['split-origin MCP', { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example' }],
+]) {
+  test(name + ' keeps ordinary API and web consent paths unprefixed', async t => {
+    const api = await start(t, { BASE_PATH: '/gym', ...config });
+    assert.equal((await fetch(api + '/api/health')).status, 200);
+    for (const pathname of ['/api/health', '/api/config', '/api/oauth/request']) {
+      assert.equal((await fetch(api + '/gym' + pathname)).status, 404, pathname);
+    }
+    const registration = await fetch(api + '/gym/api/oauth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ redirect_uris: ['http://localhost:3001/callback'] }),
+    });
+    assert.equal(registration.status, config.MCP && config.MCP_PUBLIC_ORIGIN ? 201 : 404);
+  });
+}
+
 test('under BASE_PATH: issuer, resource and every discovery address carry the prefix', async t => {
   const api = await start(t, { MCP: 'on', BASE_PATH: '/gym' });
   for (const p of ['/.well-known/oauth-authorization-server', '/.well-known/oauth-authorization-server/gym', '/.well-known/openid-configuration', '/.well-known/openid-configuration/gym']) {
