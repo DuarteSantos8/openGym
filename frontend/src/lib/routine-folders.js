@@ -1,6 +1,7 @@
 // Folders for routines (Q11, Discord "Allow routine grouping into folders", D#858): one optional
 // name on the routine, `folder`, and Plan lists them under it in a section that folds away.
-// "Archive" (in English or the reader's language) starts folded, for last block's routines.
+// "Archive" (in English or the reader's language) starts folded, for last block's routines, and
+// its routines stay out of the schedule and rotation pickers, the printed plan and the MCP tools.
 // No new model: a routine without the key is in no folder, and an older app keeps the key as it
 // keeps any other it does not know. Which folders are open is this device's own (localStorage).
 import { t } from './i18n-core.js'
@@ -43,6 +44,29 @@ export function groupRoutines(routines) {
 export const isArchive = name => {
   const n = cleanFolder(name).toLowerCase()
   return !!n && (n === 'archive' || n === String(t('Archive')).toLowerCase())
+}
+
+/** Whether a routine sits in the archive folder. */
+export const inArchive = r => isArchive(folderOf(r))
+
+/**
+ * The routines that are in play: everything but the archive. The archive is for routines you are
+ * done with, so they stay out of the schedule and rotation pickers, the printed plan and the MCP
+ * tools. They are still in S.routines, and Plan's Routines tab still lists them.
+ */
+export const activeRoutines = routines => (routines || []).filter(r => !inArchive(r))
+
+/** A folder's key for matching: lower case, as groupRoutines matches names. */
+export const folderKey = name => cleanFolder(name).toLowerCase()
+
+/**
+ * The routines a printout takes. `folders` is the lower-case names of the folders to include
+ * (routines in no folder always are); null is the default, every folder but the archive.
+ */
+export function printableRoutines(routines, folders = null) {
+  if (!folders) return activeRoutines(routines)
+  const on = folders instanceof Set ? folders : new Set(folders)
+  return (routines || []).filter(r => !folderOf(r) || on.has(folderKey(folderOf(r))))
 }
 
 const KEY = 'og_plan_folders'

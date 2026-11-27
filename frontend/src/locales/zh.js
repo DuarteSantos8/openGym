@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "预览位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "缩短一点",
+  "Include archived workouts": "包含已归档的训练",
+  "Include “{0}” workouts": "包含“{0}”的训练",
+  "Include everything": "包含全部",
 }

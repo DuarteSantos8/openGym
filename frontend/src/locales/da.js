@@ -5837,4 +5837,7 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Include archived workouts": "Medtag arkiverede træninger",
+  "Include “{0}” workouts": "Medtag træninger i “{0}”",
+  "Include everything": "Medtag alt",
 }

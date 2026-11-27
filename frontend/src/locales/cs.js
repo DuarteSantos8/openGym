@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Include archived workouts": "Zahrnout archivované tréninky",
+  "Include “{0}” workouts": "Zahrnout tréninky „{0}“",
+  "Include everything": "Zahrnout vše",
 }

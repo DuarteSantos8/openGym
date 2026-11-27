@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  "Include archived workouts": "شامل تمرین‌های بایگانی‌شده",
+  "Include “{0}” workouts": "شامل تمرین‌های «{0}»",
+  "Include everything": "شامل همه چیز",
 }

@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Include archived workouts": "보관된 운동 포함",
+  "Include “{0}” workouts": "“{0}” 운동 포함",
+  "Include everything": "모두 포함",
 }

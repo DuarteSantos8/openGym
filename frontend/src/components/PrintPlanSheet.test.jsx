@@ -52,6 +52,25 @@ describe('PrintPlanSheet', () => {
     expect(close).toHaveBeenCalledOnce()
   })
 
+  it('offers a button per folder, the archive off to begin with, and one for everything', async () => {
+    const ex = [{ id: 'x', sets: 1, reps: 5 }]
+    const S = JSON.parse(JSON.stringify(DEF))
+    S.routines = [{ id: 'a', name: 'A', ex }, { id: 'b', name: 'B', ex, folder: 'Archive' }, { id: 'c', name: 'C', ex, folder: 'Block 2' }]
+    useStore.setState({ S })
+    mount()
+    const sw = label => host.querySelector(`[role="switch"][aria-label="${label}"]`)
+    expect(sw('Include archived workouts').getAttribute('aria-checked')).toBe('false')
+    expect(sw('Include “Block 2” workouts').getAttribute('aria-checked')).toBe('true')
+    act(() => button('Include everything').click())
+    expect(sw('Include archived workouts').getAttribute('aria-checked')).toBe('true')
+    expect(button('Include everything').disabled).toBe(true)
+    act(() => sw('Include “Block 2” workouts').click())
+    expect(button('Include everything').disabled).toBe(false)
+    await act(async () => button('Print / Save as PDF').click())
+    expect(printPlan.mock.calls[0][2].folders.sort()).toEqual(['archive'])
+    await act(async () => env.resolve())
+  })
+
   it('remembers "off" on this device and prints the plain list then', async () => {
     mount()
     act(() => toggle().click())

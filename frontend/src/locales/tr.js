@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Include archived workouts": "Arşivlenmiş antrenmanları dahil et",
+  "Include “{0}” workouts": "“{0}” antrenmanlarını dahil et",
+  "Include everything": "Her şeyi dahil et",
 }

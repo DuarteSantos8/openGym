@@ -18,6 +18,7 @@
 // deadline: whatever is not decoded by then is left out and that exercise prints as text.
 import { EXIDX, imgSrc, figureOf, isCustomEx } from './exercises.js'
 import { mediaOf } from './media-refs.js'
+import { printableRoutines } from './routine-folders.js'
 
 /** The largest catalogue picture a printout may carry, in px on either side. */
 export const PRINT_PICTURE_MAX_PX = 180
@@ -42,10 +43,10 @@ export const PLACEHOLDER_PICTURE = 'data:image/svg+xml;base64,' + btoa(
 export const isPrintPicture = v => typeof v === 'string' && /^data:image\/(png|jpeg|webp|gif|svg\+xml)[;,]/.test(v)
 
 /** The exercise ids a printout shows: one routine's, or every routine's with exercises. */
-export function printedExerciseIds(S, routineId) {
+export function printedExerciseIds(S, routineId, folders = null) {
   const routines = routineId
     ? (S?.routines || []).filter(r => r.id === routineId)
-    : (S?.routines || [])
+    : printableRoutines(S?.routines, folders)
   const ids = new Set()
   for (const r of routines) for (const e of r?.ex || []) if (e?.id) ids.add(e.id)
   return [...ids]
@@ -127,11 +128,11 @@ async function loadOne(src, { fetchImpl, store, decode }) {
  *  - `fetchImpl`, `store`, `decode` for tests
  */
 export async function loadPrintPictures(S, {
-  routineId, placeholder = false, timeoutMs = PRINT_PICTURES_TIMEOUT_MS,
+  routineId, folders = null, placeholder = false, timeoutMs = PRINT_PICTURES_TIMEOUT_MS,
   fetchImpl = globalThis.fetch, store, decode = decodedSize, index = EXIDX,
 } = {}) {
   const out = {}
-  const jobs = printedExerciseIds(S, routineId)
+  const jobs = printedExerciseIds(S, routineId, folders)
     .map(id => [id, printPictureSource(S, id, index)])
     .filter(([, src]) => src)
   if (placeholder) {

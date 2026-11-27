@@ -44,6 +44,17 @@ Play test, or `openGym-Wear-X.Y.Z.apk` from the GitHub release next to the phone
 1.4.5 or later on the phone, see [GARMIN.md](GARMIN.md)). The phone runs the workout and the watch
 follows it. The F-Droid build and openGym Offline have no watch link.
 
+### What does the Archive folder do?
+
+Put a routine in a folder called **Archive** (Plan → Routines → the routine → Folder) and it is
+set aside: it starts folded in the list, is not offered when you pick routines for a weekday, a
+one-off day or the rotation, stays out of **Print / Save as PDF**, and is hidden from the MCP
+tools. It is not deleted, and your history keeps it. Changed your mind? Take it out of the folder.
+In the print step, **Include archived workouts** (and one switch per folder of your own) brings a
+folder back for that printout, and **Include everything** turns them all on. The MCP tools
+`list_routines` and `get_routine` take `include_archived` for the same. A routine already on a
+weekday or in the loop when you archive it stays there until you remove it.
+
 ### Where is my data?
 
 On a self-hosted instance, in the `./data` folder next to `docker-compose.yml`: one JSON file per
