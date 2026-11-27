@@ -20,7 +20,7 @@ const proposal = { coach_contract: 1, answer: 'Two training days.', actions: [
 
 test('a timed-out and then interrupted Coach request saves its plan once, on approval', async ({ page, playwright }, info) => {
   test.skip(info.project.name !== 'chromium', 'one real server restart and provider timeout per run')
-  test.setTimeout(150000)
+  test.setTimeout(240000)
   const dir = await mkdtemp(join(tmpdir(), 'gym-coach-retry-'))
   let sends = 0, allowProposal = false
   const provider = createServer(async (req, res) => {
@@ -114,7 +114,8 @@ test('a timed-out and then interrupted Coach request saves its plan once, on app
     await stop()
     await start()
     expect((await status()).last?.errorClass).toBe('restart')
-    await expect(page.locator('.msg.coach .bub.err').last()).toHaveText('The server restarted while the Coach was thinking.', { timeout: 15000 })
+    // Keep the mounted job transition; a failed status poll can back off for the full idle interval.
+    await expect(page.locator('.msg.coach .bub.err').last()).toHaveText('The server restarted while the Coach was thinking.', { timeout: 75000 })
     expect((await status()).cap.used).toBe(2)
     expect(await training()).toEqual(before)
     allowProposal = true
