@@ -1,5 +1,9 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  "Reached": "رسیده‌اید",
+  "Not reached": "هنوز نرسیده‌اید",
+  "No ladders are available.": "هیچ نردبان پیشرفتی در دسترس نیست.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "مراحل از آسان‌تر به دشوارتر مرتب شده‌اند. ثبت یک ست کامل، آن مرحله و همهٔ مراحل قبلی را به‌عنوان طی‌شده علامت می‌زند. این کار تکنیک یا آمادگی شما را ارزیابی نمی‌کند.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "برآورد برنامهٔ تکرارشونده. ست‌های گرم‌کردن و تغییرات تاریخ‌های خاص حساب نمی‌شوند.",
   "No working sets in the recurring plan.": "در برنامهٔ تکرارشونده ست کاری وجود ندارد.",
   "below range": "کمتر از بازه",

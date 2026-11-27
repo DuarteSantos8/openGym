@@ -4,6 +4,10 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Reached": "Alcançado",
+  "Not reached": "Não alcançado",
+  "No ladders are available.": "Nenhuma progressão disponível.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "As etapas vão da mais fácil à mais difícil. Registrar uma série concluída marca essa etapa e todas as anteriores como alcançadas. Isso não avalia sua técnica nem seu preparo.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Estimativa do plano recorrente. Séries de aquecimento e alterações em datas específicas ficam de fora.",
   "No working sets in the recurring plan.": "Não há séries de trabalho no plano recorrente.",
   "below range": "abaixo da faixa",

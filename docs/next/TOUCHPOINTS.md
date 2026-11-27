@@ -8,6 +8,9 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/src/components/Ladders.jsx`, `frontend/src/index.css` | `next/EP26-learn-ladder` | Learn sheet | Reuse the existing ladder cards and history calculation for a read-only, text-only Learn view. |
+| `frontend/src/lib/ladders.test.js` | `next/EP26-learn-ladder` | Test | Pin built-in rung counts and push-up order; cover unrelated, incomplete, repeated and out-of-order sets. |
+| `frontend/src/locales/*.js` | `next/EP26-learn-ladder` | +4 each | Translate rung status, the meaning of reached, and the empty state in all 25 packs. |
 | `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Cache size limit | Preserve original guest and stashed attachments when trimming downloaded files. |
 | `frontend/src/lib/media-sync.js`, `frontend/src/lib/media-sync.test.js` | `next/EP19-guest-privacy-followup` | Media cleanup | Protect original guest and stashed attachments when the cache exceeds its size limit. |
 | `frontend/src/store/useStore.js` | `next/EP19-guest-privacy-followup` | Account transitions | Protect guest training and attachments, and clean up a login or pairing when the guest snapshot cannot be saved. |

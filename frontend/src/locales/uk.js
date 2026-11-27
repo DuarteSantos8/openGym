@@ -1,5 +1,9 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Досягнуто",
+  "Not reached": "Не досягнуто",
+  "No ladders are available.": "Немає доступних драбин прогресії.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Сходинки йдуть від легших до складніших. Запис завершеного підходу позначає цю сходинку та всі попередні як досягнуті. Це не оцінка вашої техніки чи готовності.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Оцінка за повторюваним планом. Розминочні підходи та зміни на окремі дати не враховуються.",
   "No working sets in the recurring plan.": "У повторюваному плані немає робочих підходів.",
   "below range": "нижче діапазону",

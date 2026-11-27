@@ -1,5 +1,9 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Dosaženo",
+  "Not reached": "Nedosaženo",
+  "No ladders are available.": "Nejsou dostupné žádné žebříčky.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Kroky jsou seřazeny od nejlehčího po nejtěžší. Zapsaná dokončená série označí daný krok i všechny předchozí jako dosažené. Nehodnotí to vaši techniku ani připravenost.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Odhad podle opakujícího se plánu. Rozcvičovací série a změny jednotlivých dnů se nepočítají.",
   "No working sets in the recurring plan.": "V opakujícím se plánu nejsou žádné pracovní série.",
   "below range": "pod rozmezím",

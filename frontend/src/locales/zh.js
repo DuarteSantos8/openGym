@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "已达成",
+  "Not reached": "未达成",
+  "No ladders are available.": "暂无可用的进阶阶梯。",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "各阶段由易到难排列。记录一组已完成的训练后，该阶段和之前的所有阶段都会标记为已达成。这不代表对你的动作技巧或准备程度作出了评估。",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "按重复计划估算，不计入热身组和个别日期的调整。",
   "No working sets in the recurring plan.": "重复计划中没有正式训练组。",
   "below range": "低于范围",

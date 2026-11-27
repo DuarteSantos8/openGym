@@ -1,5 +1,9 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Tercapai",
+  "Not reached": "Belum tercapai",
+  "No ladders are available.": "Tidak ada jenjang progresi yang tersedia.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Urutan langkah dimulai dari yang lebih mudah hingga yang lebih sulit. Mencatat satu set yang selesai menandai langkah itu dan semua langkah sebelumnya sebagai tercapai. Ini tidak menilai teknik atau kesiapanmu.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Perkiraan jadwal berulang. Set pemanasan dan perubahan pada tanggal tertentu tidak dihitung.",
   "No working sets in the recurring plan.": "Tidak ada set kerja dalam jadwal berulang.",
   "below range": "di bawah rentang",

@@ -1,5 +1,9 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Reached": "Uppnått",
+  "Not reached": "Inte uppnått",
+  "No ladders are available.": "Det finns inga tillgängliga stegar.",
+  "Steps go from easier to harder. A completed set marks that step and all earlier steps as reached. This does not assess your technique or readiness.": "Stegen går från lättare till svårare. När du loggar ett genomfört set markeras det steget och alla tidigare steg som uppnådda. Det bedömer inte din teknik eller hur redo du är.",
   "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Uppskattning för det återkommande schemat. Uppvärmningsset och ändringar för enskilda datum räknas inte.",
   "No working sets in the recurring plan.": "Det finns inga arbetsset i det återkommande schemat.",
   "below range": "under intervallet",
