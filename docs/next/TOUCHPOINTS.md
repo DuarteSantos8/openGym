@@ -186,7 +186,6 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/components/ExerciseGuide.jsx`, `frontend/src/lib/i18n{,-core}.js` | `next/EP23-routine-guide-batch-1` | UI | Show the English notice only when a guide actually falls back to English. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP23-routine-guide-batch-1` | Copy | Translate the cues, mistake and correction pairs, muscle descriptions and breathing for ten routine exercises. |
 | `frontend/src/store/useStore.js` | `next/EP19-guest-import-ownership` | +32 −3 | **Store (Tier A area):** the device's own guest profile is snapshotted into `gym_guest_state` when a sign-in adopts the device data, and `clearLocalSession` (every sign-out) puts it back instead of a blank profile — **Add them** copies a guest's workouts into the account, it never consumes them (owner decision 2026-11-27, `DECISION-01.01.md`). Account workouts never reach the guest slot. Just over the 30-line guide; the owner decision is the design note. |
-
 | `frontend/src/views/Nutrition.jsx`, `frontend/src/views/Nutrition.test.jsx` | `next/EP06-opennutritracker-import` | UI | Open a local food export and confirm its diary destination. |
 | `frontend/src/lib/zip.js` | `next/EP06-opennutritracker-import` | ZIP reader | Select bounded entries for a local import. Backup imports retain their store-only format. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP06-opennutritracker-import` | UI | Localize the file picker, destination, preview, result and error. |

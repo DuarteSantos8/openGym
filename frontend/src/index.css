@@ -112,6 +112,8 @@
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
+  /* TabBar.jsx replaces this with the rendered height, safe-area padding included. */
+  --tabbar-height:calc(88px + var(--sab));
 }
 
 :root[data-theme="light"] {
@@ -312,7 +314,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 
 /* ---------------------------------------------------------------- layout -- */
 #app{
-  padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) calc(88px + var(--sab));
+  padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) var(--tabbar-height);
   max-width:560px;margin:0 auto;
 }
 /* Android 15 with the keyboard up: room to scroll the last field on a page above the keys.
@@ -320,7 +322,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 :root[data-native-kb] #app,:root[data-native-kb] body.resting #app,:root[data-native-kb] body.no-tabbar.resting #app{padding-bottom:calc(88px + var(--native-kb))}
 /* Keep the last workout controls clear of the mobile overlays without adding a second
    screenful of blank scroll space. The stacked rest timer needs the larger reserve. */
-body.resting #app{padding-bottom:calc(166px + var(--sab))}
+body.resting #app{padding-bottom:calc(var(--tabbar-height) + 78px)}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
@@ -2154,7 +2156,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    no tab bar (body.no-tabbar, App.jsx), the bar is docked to the bottom edge; anywhere else it
    sits just above the tab bar. */
 #timer{
-  position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(88px + var(--sab));z-index:60;
+  position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:var(--tabbar-height);z-index:60;
   /* nearly opaque: the set rows underneath were reading through the old 82% and made the
      clock hard to pick out mid-set. The blur stays, so it still sits above the page. */
   background:var(--surface-raised);background:color-mix(in srgb,var(--surface-raised) 97%,transparent);
@@ -2982,8 +2984,8 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 body.resting #totop{bottom:calc(172px + var(--sab))}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
-body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
-body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
+body.totop-on #app{padding-bottom:calc(var(--tabbar-height) + 56px)}
+body.totop-on.resting #app{padding-bottom:calc(var(--tabbar-height) + 144px)}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}

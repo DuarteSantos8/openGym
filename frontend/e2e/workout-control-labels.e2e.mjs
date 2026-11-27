@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { test, expect, enterAsGuest, openRoute } from './fixtures.mjs'
+import { test, expect, enterAsGuest, openRoute, click } from './fixtures.mjs'
 
 async function textFits(locator) {
   return locator.evaluateAll(els => els.every(el => {
@@ -18,6 +18,20 @@ async function doubleText(page) {
     for (const [el, size] of sizes) el.style.setProperty('font-size', size * 2 + 'px', 'important')
   })
 }
+async function overlaysFit(page) {
+  return page.evaluate(() => {
+    const bar = document.querySelector('#tabbar')
+    const timer = document.querySelector('#timer')
+    const app = document.querySelector('#app')
+    if (!bar || !timer || !app) return false
+    const height = bar.getBoundingClientRect().height
+    const measured = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tabbar-height'))
+    const reserve = document.body.classList.contains('totop-on') ? 144 : 78
+    return Math.abs(measured - height) <= 1
+      && Math.abs(timer.getBoundingClientRect().bottom - bar.getBoundingClientRect().top) <= 1
+      && Math.abs(parseFloat(getComputedStyle(app).paddingBottom) - height - reserve) <= 1
+  })
+}
 for (const lang of ['de', 'ru', 'ar', 'fa']) {
   test('workout labels stay readable and named at 320px in ' + lang, async ({page}, testInfo) => {
     await page.setViewportSize({width:320,height:844})
@@ -27,7 +41,7 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
       const s = JSON.parse(localStorage.getItem('gym_state_v1') || '{}')
       s.lang = lang; s.langAuto = false; s.theme = 'dark'; s.workoutView = 'cards'
       s.active = { id:'qa', d:'2026-11-27', start:Date.now(), name:'QA', cur:0, entries:[
-        {id:'0025',target:{mode:'reps',sets:2,reps:8},sets:[{w:60,r:8,done:false}],
+        {id:'0025',target:{mode:'reps',sets:2,reps:8},sets:[{w:60,r:8,done:false},{w:60,r:8,done:false}],
           plan:{policy:'linear',kind:'up',weight:62.5,why:['Every rep last time. {0} {1} more.',2.5,'kg']}},
       ] }
       localStorage.setItem('gym_state_v1', JSON.stringify(s))
@@ -35,10 +49,13 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
     await page.reload()
     for (const route of ['workout', 'settings']) {
       await openRoute(page, '/' + route)
-      const sel = route === 'workout' ? '.wk-acts button span' : '#tabbar button:not(.start) > span:last-child'
+      const sel = route === 'workout'
+        ? '.wk-acts button span, .progline > span:not(.vh)'
+        : '#tabbar button:not(.start) > span:last-child, #tabbar .tab-resume'
       const labels = page.locator(sel)
       await expect(labels.first()).toBeVisible()
       expect.soft(await textFits(labels)).toBe(true)
+      if (route === 'settings') await expect.poll(() => overlaysFit(page)).toBe(true)
       if (lang === 'de' && route === 'workout') {
         await page.setViewportSize({width:390,height:844})
         await labels.first().scrollIntoViewIfNeeded()
@@ -62,11 +79,22 @@ for (const lang of ['de', 'ru', 'ar', 'fa']) {
       expect.soft(violations.map(v => v.id)).toEqual([])
       await doubleText(page)
       expect.soft(await textFits(labels)).toBe(true)
+      if (route === 'settings') {
+        await expect.poll(() => overlaysFit(page)).toBe(true)
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+        await expect(page.locator('body')).toHaveClass(/totop-on/)
+        await expect.poll(() => overlaysFit(page)).toBe(true)
+      }
       if (lang === 'de') {
         await labels.first().scrollIntoViewIfNeeded()
         await testInfo.attach(route + '-de-320-double-text', {body: await page.screenshot({mask:[page.locator('img,canvas,video')]}), contentType:'image/png'})
       }
-      await page.reload()
+      if (route === 'workout') {
+        await click(page.locator('[data-tour="tick"]').first())
+        await expect(page.locator('#timer')).toBeVisible()
+      } else {
+        await page.reload()
+      }
     }
   })
 }
