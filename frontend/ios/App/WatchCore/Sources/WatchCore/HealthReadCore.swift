@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(HealthKit)
+import HealthKit
+#endif
 
 /// What AppleHealthPlugin hands to JS when it reads (openGym v1.4.3): plain values, no HealthKit,
 /// so `swift test` covers it on the Mac (HealthReadCoreTests). Compiled straight into the iPhone
@@ -55,4 +58,34 @@ public enum HealthReadCore {
                 return o
             }
     }
+
+#if canImport(HealthKit)
+    /// Apple Health's activity types to lib/activities.js SPORTS, plus 'strength', 'gym' (machines,
+    /// HIIT, classes), 'walk' and 'stretch', which JS keeps out of the activities ('walk' and
+    /// 'stretch' are offered inside Log recovery instead). Anything else is 'other'.
+    public static func sportName(_ type: HKWorkoutActivityType) -> String {
+        switch type {
+        case .running: return "run"
+        case .cycling, .handCycling: return "ride"
+        case .swimming, .swimBikeRun, .waterSports, .surfingSports: return "swim"
+        case .hiking: return "hike"
+        case .climbing: return "climb"
+        case .rowing, .paddleSports, .sailing: return "row"
+        case .downhillSkiing, .crossCountrySkiing, .snowboarding, .snowSports, .skatingSports: return "ski"
+        case .soccer: return "football"
+        case .tennis, .badminton, .squash, .tableTennis, .racquetball: return "racket"
+        case .basketball, .volleyball, .handball, .rugby, .hockey, .baseball, .softball, .cricket,
+             .americanFootball, .australianFootball, .lacrosse, .waterPolo, .discSports: return "ball"
+        case .boxing, .kickboxing, .martialArts, .wrestling, .fencing: return "fight"
+        case .yoga, .pilates, .mindAndBody, .taiChi: return "yoga"
+        case .socialDance, .cardioDance, .barre: return "dance"
+        case .walking, .wheelchairWalkPace, .wheelchairRunPace: return "walk"
+        case .flexibility, .cooldown, .preparationAndRecovery: return "stretch"
+        case .traditionalStrengthTraining, .functionalStrengthTraining, .coreTraining: return "strength"
+        case .elliptical, .stairClimbing, .stairs, .stepTraining, .highIntensityIntervalTraining, .mixedCardio,
+             .crossTraining, .jumpRope, .fitnessGaming: return "gym"
+        default: return "other"
+        }
+    }
+#endif
 }

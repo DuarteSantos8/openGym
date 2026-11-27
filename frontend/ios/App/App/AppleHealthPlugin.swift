@@ -96,8 +96,12 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             if read.contains("restingHeartRate"), let rhr = HKObjectType.quantityType(forIdentifier: .restingHeartRate) { types.insert(rhr) }
             if read.contains("hrv"), let hrv = HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN) { types.insert(hrv) }
             if read.contains("steps"), let steps = HKObjectType.quantityType(forIdentifier: .stepCount) { types.insert(steps) }
-            // Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts, as activities.
+            // Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts, as activities and recovery suggestions.
             if read.contains("exercise") { types.insert(HKObjectType.workoutType()) }
+            if read.contains("distance"), let dist = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) { types.insert(dist) }
+            if (read.contains("calories") || read.contains("totalCalories")), let kcal = activeEnergy { types.insert(kcal) }
+            if read.contains("floors"), let fl = HKObjectType.quantityType(forIdentifier: .flightsClimbed) { types.insert(fl) }
+            if read.contains("speed"), let ws = HKObjectType.quantityType(forIdentifier: .walkingSpeed) { types.insert(ws) }
             var share: Set<HKSampleType> = []
             if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
@@ -300,51 +304,147 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    /// Workouts since `since` (ms) from any app, openGym's own included (JS skips those by origin,
-    /// lib/activities.js isOwnRecord), as { id, sport, start, end, km?, origin, clientId? }, the
-    /// sport named the way lib/activities.js names it (sportName). Not allowed reads nothing.
+    /// Workouts since `since` (ms), or in [since, until] when `until` is passed, from any app,
+    /// openGym's own included (JS skips those by origin, lib/activities.js isOwnRecord), as
+    /// { id, sport, start, end, km?, kcal?, elev?, speedAvg?, speedMax?, steps?, floors?, hrAvg?,
+    ///   hrMin?, hrMax?, laps?, title?, sourceName?, origin, clientId? }. Not allowed reads nothing.
     @objc func readWorkouts(_ call: CAPPluginCall) {
         guard let since = call.getDouble("since") else { call.reject("since is needed", "failed"); return }
-        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: nil)
+        let until = call.getDouble("until").flatMap { $0 > since ? Date(timeIntervalSince1970: $0 / 1000) : nil }
+        let details = call.getBool("details") ?? false
+        let sportsFilter = Set((call.getArray("sports") as? [String]) ?? [])
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: until)
         query(HKObjectType.workoutType(), predicate) { found in
-            let rows: [[String: Any]] = found.compactMap { $0 as? HKWorkout }.map { w in
+            let workouts = found.compactMap { $0 as? HKWorkout }.filter { w in
+                sportsFilter.isEmpty || sportsFilter.contains(AppleHealthPlugin.sportName(w.workoutActivityType))
+            }
+            let baseRow: (HKWorkout) -> [String: Any] = { w in
                 var r: [String: Any] = [
                     "id": w.uuid.uuidString, "sport": AppleHealthPlugin.sportName(w.workoutActivityType),
                     "start": w.startDate.timeIntervalSince1970 * 1000, "end": w.endDate.timeIntervalSince1970 * 1000,
                     "origin": w.sourceRevision.source.bundleIdentifier,
                 ]
+                let sourceName = w.sourceRevision.source.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !sourceName.isEmpty { r["sourceName"] = sourceName }
                 if let km = w.totalDistance?.doubleValue(for: .meterUnit(with: .kilo)), km > 0 { r["km"] = km }
+                if let kcal = self.workoutKcal(w), kcal > 0 { r["kcal"] = kcal.rounded() }
+                if let elev = (w.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity)?.doubleValue(for: .meter()), elev > 0 {
+                    r["elev"] = elev.rounded()
+                }
+                let mps = HKUnit.meter().unitDivided(by: .second())
+                if let avgMps = (w.metadata?[HKMetadataKeyAverageSpeed] as? HKQuantity)?.doubleValue(for: mps), avgMps > 0 {
+                    r["speedAvg"] = avgMps * 3.6
+                }
+                if let maxMps = (w.metadata?[HKMetadataKeyMaximumSpeed] as? HKQuantity)?.doubleValue(for: mps), maxMps > 0 {
+                    r["speedMax"] = maxMps * 3.6
+                }
+                if let title = (w.metadata?["OpenGymTitle"] as? String) ?? (w.metadata?[HKMetadataKeyWorkoutBrandName] as? String), !title.isEmpty {
+                    r["title"] = title
+                }
                 if let sync = w.metadata?[HKMetadataKeySyncIdentifier] as? String { r["clientId"] = sync }
                 return r
             }
-            call.resolve(["records": rows])
+            guard details else {
+                call.resolve(["records": workouts.map(baseRow)])
+                return
+            }
+            Task {
+                var rows: [[String: Any]] = []
+                for w in workouts {
+                    var r = baseRow(w)
+                    let own = HealthReadCore.isOwn(source: w.sourceRevision.source.bundleIdentifier, syncId: w.metadata?[HKMetadataKeySyncIdentifier] as? String)
+                    if !own {
+                        let laps = self.workoutLaps(w)
+                        if !laps.isEmpty { r["laps"] = laps }
+                        async let steps = self.sessionSum(.stepCount, from: w.startDate, to: w.endDate)
+                        async let floors = self.sessionSum(.flightsClimbed, from: w.startDate, to: w.endDate)
+                        async let hr = self.sessionHeartRate(from: w.startDate, to: w.endDate)
+                        async let spd = self.sessionWalkingSpeed(from: w.startDate, to: w.endDate)
+                        if let st = await steps, st > 0 { r["steps"] = st }
+                        if let fl = await floors, fl > 0 { r["floors"] = fl }
+                        let h = await hr
+                        if let avg = h.avg { r["hrAvg"] = avg }
+                        if let min = h.min { r["hrMin"] = min }
+                        if let max = h.max { r["hrMax"] = max }
+                        let s = await spd
+                        if r["speedAvg"] == nil, let avg = s.avg { r["speedAvg"] = avg }
+                        if r["speedMax"] == nil, let max = s.max { r["speedMax"] = max }
+                    }
+                    rows.append(r)
+                }
+                call.resolve(["records": rows])
+            }
         } failed: { self.fail(call, $0) }
     }
 
-    /// Apple Health's activity types to lib/activities.js SPORTS, plus 'strength', 'gym' (machines,
-    /// HIIT, classes) and 'walk', which JS keeps out of the activities. Anything else is 'other'.
-    static func sportName(_ type: HKWorkoutActivityType) -> String {
-        switch type {
-        case .running: return "run"
-        case .cycling, .handCycling: return "ride"
-        case .swimming, .swimBikeRun, .waterSports, .surfingSports: return "swim"
-        case .hiking: return "hike"
-        case .climbing: return "climb"
-        case .rowing, .paddleSports, .sailing: return "row"
-        case .downhillSkiing, .crossCountrySkiing, .snowboarding, .snowSports, .skatingSports: return "ski"
-        case .soccer: return "football"
-        case .tennis, .badminton, .squash, .tableTennis, .racquetball: return "racket"
-        case .basketball, .volleyball, .handball, .rugby, .hockey, .baseball, .softball, .cricket,
-             .americanFootball, .australianFootball, .lacrosse, .waterPolo, .discSports: return "ball"
-        case .boxing, .kickboxing, .martialArts, .wrestling, .fencing: return "fight"
-        case .yoga, .pilates, .mindAndBody, .taiChi: return "yoga"
-        case .socialDance, .cardioDance, .barre: return "dance"
-        case .walking, .wheelchairWalkPace, .wheelchairRunPace: return "walk"
-        case .traditionalStrengthTraining, .functionalStrengthTraining, .coreTraining: return "strength"
-        case .elliptical, .stairClimbing, .stairs, .stepTraining, .highIntensityIntervalTraining, .mixedCardio,
-             .crossTraining, .jumpRope, .flexibility, .cooldown, .preparationAndRecovery, .fitnessGaming: return "gym"
-        default: return "other"
+    private func workoutKcal(_ w: HKWorkout) -> Double? {
+        if #available(iOS 16.0, *), let kcalType = activeEnergy,
+           let sum = w.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), sum > 0 {
+            return sum
         }
+        if let legacy = w.totalEnergyBurned?.doubleValue(for: .kilocalorie()), legacy > 0 { return legacy }
+        return nil
+    }
+
+    private func workoutLaps(_ w: HKWorkout) -> [[String: Any]] {
+        guard let events = w.workoutEvents else { return [] }
+        var out: [[String: Any]] = []
+        for ev in events where ev.type == .lap || ev.type == .segment {
+            let sec = Int(ev.dateInterval.duration.rounded())
+            if sec >= 1 { out.append(["sec": sec]) }
+            if out.count >= 50 { break }
+        }
+        return out
+    }
+
+    private func sessionSum(_ id: HKQuantityTypeIdentifier, from start: Date, to end: Date) async -> Int? {
+        guard end > start, let type = HKQuantityType.quantityType(forIdentifier: id) else { return nil }
+        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
+        return await withCheckedContinuation { cont in
+            let q = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: pred, options: .cumulativeSum) { _, stat, _ in
+                let n = stat?.sumQuantity()?.doubleValue(for: .count()) ?? 0
+                cont.resume(returning: n > 0 ? Int(n.rounded()) : nil)
+            }
+            store.execute(q)
+        }
+    }
+
+    private func sessionHeartRate(from start: Date, to end: Date) async -> (avg: Int?, min: Int?, max: Int?) {
+        guard end > start, let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return (nil, nil, nil) }
+        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
+        let perMinute = HKUnit.count().unitDivided(by: .minute())
+        return await withCheckedContinuation { cont in
+            let q = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: pred, options: [.discreteAverage, .discreteMin, .discreteMax]) { _, stat, _ in
+                let clean: (Double?) -> Int? = { $0.flatMap { HealthReadCore.bpmRange.contains($0.rounded()) ? Int($0.rounded()) : nil } }
+                let avg = clean(stat?.averageQuantity()?.doubleValue(for: perMinute))
+                let min = clean(stat?.minimumQuantity()?.doubleValue(for: perMinute))
+                let max = clean(stat?.maximumQuantity()?.doubleValue(for: perMinute))
+                cont.resume(returning: (avg, min, max))
+            }
+            store.execute(q)
+        }
+    }
+
+    private func sessionWalkingSpeed(from start: Date, to end: Date) async -> (avg: Double?, max: Double?) {
+        guard end > start, let type = HKQuantityType.quantityType(forIdentifier: .walkingSpeed) else { return (nil, nil) }
+        let pred = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
+        let mps = HKUnit.meter().unitDivided(by: .second())
+        return await withCheckedContinuation { cont in
+            let q = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: pred, options: [.discreteAverage, .discreteMax]) { _, stat, _ in
+                let kmh: (Double?) -> Double? = { $0.flatMap { $0 > 0 ? $0 * 3.6 : nil } }
+                let avg = kmh(stat?.averageQuantity()?.doubleValue(for: mps))
+                let max = kmh(stat?.maximumQuantity()?.doubleValue(for: mps))
+                cont.resume(returning: (avg, max))
+            }
+            store.execute(q)
+        }
+    }
+
+    /// Apple Health's activity types to lib/activities.js SPORTS, plus 'strength', 'gym' (machines,
+    /// HIIT, classes), 'walk' and 'stretch', which JS keeps out of the activities ('walk' and
+    /// 'stretch' are offered inside Log recovery instead). Anything else is 'other'.
+    static func sportName(_ type: HKWorkoutActivityType) -> String {
+        HealthReadCore.sportName(type)
     }
 
     /// Every sample of `type` matching `predicate`, or none when reading is not allowed or fails.

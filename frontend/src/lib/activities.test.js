@@ -80,7 +80,7 @@ describe('activities: from the health store', () => {
     expect(isOwnRecord({ origin: 'ch.opengym.app.watchkitapp' })).toBe(true)
     expect(isOwnRecord({ clientId: 'opengym-w-1' })).toBe(true)
     expect(activityFromHealth({ ...rec, origin: 'ch.opengym.app' }, {}, 'ah', now)).toBe(null)
-    for (const sport of ['strength', 'gym', 'walk']) expect(activityFromHealth({ ...rec, sport }, {}, 'hc', now)).toBe(null)
+    for (const sport of ['strength', 'gym', 'walk', 'stretch']) expect(activityFromHealth({ ...rec, sport }, {}, 'hc', now)).toBe(null)
     expect(activityFromHealth({ ...rec, end: rec.start + 3 * 60e3 }, {}, 'hc', now)).toBe(null)
     expect(activityFromHealth(rec, {}, 'hc', at('2026-11-01'))).toBe(null)
   })
@@ -109,14 +109,18 @@ describe('activities: imports', () => {
     expect(sportOfName('Rowing machine')).toBe(null)
     expect(sportOfName('Bench Press (Barbell)')).toBe(null)
     expect(hkSportName('HKWorkoutActivityTypeSoccer')).toBe('football')
+    expect(hkSportName('HKWorkoutActivityTypeFlexibility')).toBe('stretch')
+    expect(hkSportName('HKWorkoutActivityTypeCooldown')).toBe('stretch')
+    expect(hkSportName('HKWorkoutActivityTypePreparationAndRecovery')).toBe('stretch')
     expect(hkSportName('HKWorkoutActivityTypeSomethingNew')).toBe('other')
   })
-  it('reads the runs and matches of an Apple Health export, and skips openGym, strength and walks', () => {
+  it('reads the runs and matches of an Apple Health export, and skips openGym, strength, walks and stretches', () => {
     const xml = `<?xml version="1.0"?><HealthData>
       <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="42.5" durationUnit="min" totalDistance="8.2" totalDistanceUnit="km" sourceName="Strava" startDate="2026-10-05 07:00:00 +0200" endDate="2026-10-05 07:42:30 +0200"><MetadataEntry key="x" value="y"/></Workout>
       <Workout workoutActivityType="HKWorkoutActivityTypeTennis" duration="1.5" durationUnit="hr" sourceName="Watch" startDate="2026-10-06 18:00:00 +0200" endDate="2026-10-06 19:30:00 +0200"/>
       <Workout workoutActivityType="HKWorkoutActivityTypeTraditionalStrengthTraining" duration="60" durationUnit="min" sourceName="openGym" startDate="2026-10-07 18:00:00 +0200"/>
       <Workout workoutActivityType="HKWorkoutActivityTypeWalking" duration="30" durationUnit="min" sourceName="Watch" startDate="2026-10-08 12:00:00 +0200"/>
+      <Workout workoutActivityType="HKWorkoutActivityTypeFlexibility" duration="20" durationUnit="min" sourceName="Watch" startDate="2026-10-08 18:00:00 +0200"/>
       <Workout workoutActivityType="HKWorkoutActivityTypeSoccer" duration="90" durationUnit="min" sourceName="openGym" startDate="2026-10-09 12:00:00 +0200"/>
     </HealthData>`
     const list = activitiesFromHealthExport(xml)

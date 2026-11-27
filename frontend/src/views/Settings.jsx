@@ -6,6 +6,7 @@ import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { readWatchPrefs, writeWatchPrefs } from '../lib/watch-settings.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, allowBirthDate } from '../lib/health-sync.js'
+import { RECOVERY_METRIC_KEYS, RECOVERY_METRIC_LABEL, isRecoveryMetricOn, withRecoveryMetric } from '../lib/recovery-sessions.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -2161,6 +2162,7 @@ function HealthLinkRow({ android, nav }) {
 
 function HealthConnectCard({ S, toast, android, page = false }) {
   const getState = () => useStore.getState().S
+  const update = useStore(s => s.update)
   const [st, setSt] = useState(null)
   const [h, setH] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -2233,7 +2235,12 @@ function HealthConnectCard({ S, toast, android, page = false }) {
     ],
   })
 
-  return (
+  const toggleRecoveryMetric = key => {
+    const nextOn = !isRecoveryMetricOn(S, key)
+    update(s => { s.recoveryMetrics = withRecoveryMetric(s.recoveryMetrics, key, nextOn) })
+  }
+
+  return <>
     <Section title={c.section}
       footer={[h.on && c.footer, h.on && ios && airpods && t('AirPods Pro 3 or Powerbeats Pro 2 in? Your iPhone measures the heart rate for every set, unless your Apple Watch is already on it.'), reading && (h.readWeight && h.wHistory ? t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.') : t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last 30 days. Older workouts stay as they are.'))].filter(Boolean).join(' ') || null}>
       <Row icon="heart" iconTint="var(--red)" title={c.write}
@@ -2287,5 +2294,14 @@ function HealthConnectCard({ S, toast, android, page = false }) {
       {(h.on || reading) && <Row icon="list" iconTint="var(--blue)" title={c.open}
         accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
     </Section>
-  )
+    <Section title={t('Recovery details')} footer={t('Choose which recorded metrics appear on recovery sessions.')}>
+      <div className="chips rec-set-chips" role="group" aria-label={t('Recovery details')}>
+        {RECOVERY_METRIC_KEYS.map(k => {
+          const on = isRecoveryMetricOn(S, k)
+          return <button key={k} type="button" className={'chip nocap' + (on ? ' on' : '')}
+            aria-pressed={on} onClick={() => toggleRecoveryMetric(k)}>{t(RECOVERY_METRIC_LABEL[k])}</button>
+        })}
+      </div>
+    </Section>
+  </>
 }

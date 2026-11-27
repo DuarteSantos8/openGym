@@ -48,6 +48,12 @@ vi.mock('@capacitor/core', () => ({
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return h.vitals || {}
     },
+    readWorkouts: async arg => {
+      h.calls.push(['readWorkouts', arg])
+      if (h.workoutsHook) return h.workoutsHook(arg)
+      if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
+      return { records: (h.workouts || []).filter(r => r.start >= arg.since) }
+    },
     write: async () => { h.calls.push(['write']) },
     remove: async () => {},
     openSettings: async () => {},
@@ -71,7 +77,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(NOW)
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.fail = null
+  h.files.clear(); h.calls = []; h.platform = 'android'; h.granted = { heartRate: true, weight: true }; h.hr = []; h.weights = []; h.workouts = []; h.fail = null
   S = { unit: 'kg', workouts: [workout('w1')], bodyweight: [] }
   applied = 0
   hs = await import('./health-sync.js')
@@ -302,5 +308,93 @@ describe('vitals (v1.4.5)', () => {
   it('turns down when none of the four was allowed', async () => {
     h.granted = { heartRate: false, weight: false, vitals: false }
     expect((await hs.enableRead('vitals', getState, { apply })).reason).toBe('denied')
+  })
+})
+
+describe('day workouts for recovery suggestions', () => {
+  const day = '2026-10-15'
+  const walk = { id: 'hc-w1', sport: 'walk', start: new Date(2026, 9, 15, 8, 30).getTime(), end: new Date(2026, 9, 15, 9, 5).getTime(), title: 'Morning Walk', origin: 'com.garmin.android.apps.connectmobile' }
+
+  it('on Android, reads workouts only when exercise read permission is already granted and never prompts', async () => {
+    h.granted = { heartRate: false, weight: false, exercise: false }
+    h.workouts = [walk]
+    expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [], src: 'hc' })
+    expect(reads('request')).toEqual([])
+    expect(reads('readWorkouts')).toEqual([])
+
+    h.granted.exercise = true
+    const res = await hs.readDayWorkouts(day, S)
+    expect(res).toEqual({ records: [walk], src: 'hc' })
+    expect(reads('request')).toEqual([])
+    expect(reads('readWorkouts')).toHaveLength(1)
+    expect(reads('readWorkouts')[0][1]).toEqual({
+      since: new Date('2026-10-15T00:00:00').getTime(),
+      until: new Date('2026-10-16T00:00:00').getTime(),
+      details: true,
+      sports: ['walk', 'stretch'],
+    })
+    // Subsequent call within TTL hits the in-memory cache without a second native query.
+    expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [walk], src: 'hc' })
+    expect(reads('readWorkouts')).toHaveLength(1)
+  })
+
+  it('on iOS, reads silently when Health is enabled and does nothing while Health is off', async () => {
+    vi.resetModules(); h.platform = 'ios'; hs = await import('./health-sync.js')
+    h.workouts = [walk]
+    expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [], src: 'ah' })
+    expect(reads('readWorkouts')).toEqual([])
+
+    h.files.set('opengym-health.json', JSON.stringify({ on: false, readSport: true }))
+    vi.resetModules(); hs = await import('./health-sync.js')
+    expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [walk], src: 'ah' })
+    expect(reads('request')).toEqual([])
+  })
+
+  it('stays silent when the Health module is disabled or the plugin throws', async () => {
+    h.granted = { exercise: true }
+    h.workouts = [walk]
+    expect(await hs.readDayWorkouts(day, { ...S, modules: { health: false } })).toEqual({ records: [], src: null })
+    expect(reads('readWorkouts')).toEqual([])
+
+    h.fail = 'permission'
+    expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [], src: null })
+  })
+
+  it('does not cache or clobber pending reads when clearDayWorkoutsCache runs mid-flight', async () => {
+    h.granted = { exercise: true }
+    const resolvers = []
+    h.workoutsHook = async () => new Promise(resolve => { resolvers.push(resolve) })
+    try {
+      // Case 1: p1 finishes while p2 is still pending -> p1 must not remove p2 from dayWorkoutPending.
+      const p1 = hs.readDayWorkouts(day, S)
+      await vi.waitFor(() => expect(resolvers).toHaveLength(1))
+      hs.clearDayWorkoutsCache()
+      const p2 = hs.readDayWorkouts(day, S)
+      await vi.waitFor(() => expect(resolvers).toHaveLength(2))
+      resolvers[0]({ records: [] })
+      expect(await p1).toEqual({ records: [], src: 'hc' })
+      // p3 must share the still-pending p2 rather than triggering a third native read.
+      const p3 = hs.readDayWorkouts(day, S)
+      expect(reads('readWorkouts')).toHaveLength(2)
+      resolvers[1]({ records: [walk] })
+      expect(await p2).toEqual({ records: [walk], src: 'hc' })
+      expect(await p3).toEqual({ records: [walk], src: 'hc' })
+
+      // Case 2: stale read resolves AFTER a newer read has already cached -> must not overwrite cache.
+      hs.clearDayWorkoutsCache()
+      const stale = hs.readDayWorkouts(day, S)
+      await vi.waitFor(() => expect(resolvers).toHaveLength(3))
+      hs.clearDayWorkoutsCache()
+      const fresh = hs.readDayWorkouts(day, S)
+      await vi.waitFor(() => expect(resolvers).toHaveLength(4))
+      resolvers[3]({ records: [walk] })
+      expect(await fresh).toEqual({ records: [walk], src: 'hc' })
+      resolvers[2]({ records: [] })
+      expect(await stale).toEqual({ records: [], src: 'hc' })
+      expect(await hs.readDayWorkouts(day, S)).toEqual({ records: [walk], src: 'hc' })
+      expect(reads('readWorkouts')).toHaveLength(4)
+    } finally {
+      h.workoutsHook = null
+    }
   })
 })

@@ -95,8 +95,16 @@ final class HealthRead {
             case "restingHeartRate": return "android.permission.health.READ_RESTING_HEART_RATE";
             case "hrv": return "android.permission.health.READ_HEART_RATE_VARIABILITY";
             case "steps": return "android.permission.health.READ_STEPS";
-            // Sport (v1.4.5, gm-hooks): other apps' exercise sessions, as activities.
+            // Sport (v1.4.5, gm-hooks): other apps' exercise sessions, as activities and recovery suggestions.
             case "exercise": return "android.permission.health.READ_EXERCISE";
+            case "distance": return "android.permission.health.READ_DISTANCE";
+            case "calories": return "android.permission.health.READ_ACTIVE_CALORIES_BURNED";
+            case "totalCalories": return "android.permission.health.READ_TOTAL_CALORIES_BURNED";
+            case "elevation": return "android.permission.health.READ_ELEVATION_GAINED";
+            case "speed": return "android.permission.health.READ_SPEED";
+            // StepsCadenceRecord shares READ_STEPS in Health Connect.
+            case "cadence": return "android.permission.health.READ_STEPS";
+            case "floors": return "android.permission.health.READ_FLOORS_CLIMBED";
             // Not a data type: data older than 30 days before the first grant (#801).
             case "history": return "android.permission.health.READ_HEALTH_DATA_HISTORY";
             default: return null;
@@ -104,7 +112,8 @@ final class HealthRead {
     }
 
     // Health Connect's exercise types to the sports lib/activities.js knows (SPORTS), plus
-    // 'strength', 'gym' (machines, HIIT, classes) and 'walk', which JS keeps out of the activities.
+    // 'strength', 'gym' (machines, HIIT, classes), 'walk' and 'stretch', which JS keeps out of
+    // the activities ('walk' and 'stretch' are offered inside Log recovery instead).
     private static final java.util.Map<Integer, String> SPORT = new java.util.HashMap<>();
     private static void sport(String name, int... types) { for (int t : types) SPORT.put(t, name); }
     static {
@@ -132,14 +141,14 @@ final class HealthRead {
         sport("yoga", ExerciseSessionRecord.EXERCISE_TYPE_YOGA, ExerciseSessionRecord.EXERCISE_TYPE_PILATES);
         sport("dance", ExerciseSessionRecord.EXERCISE_TYPE_DANCING);
         sport("walk", ExerciseSessionRecord.EXERCISE_TYPE_WALKING, ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR);
+        sport("stretch", ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING);
         sport("strength", ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING, ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
                 ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS);
         sport("gym", ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL, ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
                 ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL, ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
                 ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE, ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING,
                 ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING, ExerciseSessionRecord.EXERCISE_TYPE_BOOT_CAMP,
-                ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS, ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING,
-                ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING);
+                ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS, ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING);
     }
 
     /** The sport name JS reads (lib/activities.js), 'other' for anything not listed. */

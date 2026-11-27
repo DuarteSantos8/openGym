@@ -11,8 +11,9 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 // already written. lib/health-sync.js is mocked; its own tests cover the writing.
 const mocks = vi.hoisted(() => {
   const state = { S: null, MOBILE: true, android: true, status: { status: 'available', granted: false }, health: { on: false, written: {}, error: null } }
+  state.update = vi.fn(fn => { fn(state.S) })
   state.snapshot = () => ({
-    S: state.S, user: null, update: vi.fn(),
+    S: state.S, user: null, update: state.update,
     replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(),
     signOut: vi.fn(), signOutAll: vi.fn(), resetDemo: vi.fn(), disconnectServer: vi.fn(),
   })
@@ -79,7 +80,7 @@ beforeEach(() => {
   mocks.status = { status: 'available', granted: false }
   mocks.health = { on: false, written: {}, error: null }
   mocks.readGrant = true
-  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead', 'allowBirthDate']) mocks[k].mockClear()
+  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead', 'allowBirthDate', 'update']) mocks[k].mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -254,5 +255,18 @@ describe('Settings — reading back', () => {
     await act(async () => { sw('Weigh-ins from other apps').click() })
     expect(mocks.disableRead).toHaveBeenCalledWith('weight')
     expect(mocks.menuSheet).not.toHaveBeenCalled()
+  })
+
+  it('lets the user hide or show recovery metrics from the health settings page', async () => {
+    await mount()
+    const group = host.querySelector('[role="group"][aria-label="Recovery details"]')
+    expect(group).toBeTruthy()
+    const chips = [...group.querySelectorAll('button')]
+    expect(chips.length).toBeGreaterThanOrEqual(8)
+    expect(chips.every(b => b.getAttribute('aria-pressed') === 'true')).toBe(true)
+    const elevChip = chips.find(b => b.textContent === 'Elevation')
+    await act(async () => { elevChip.click() })
+    expect(mocks.update).toHaveBeenCalledTimes(1)
+    expect(mocks.S.recoveryMetrics).toEqual({ elev: false })
   })
 })

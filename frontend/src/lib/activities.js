@@ -168,10 +168,11 @@ export function activityStimuli(S, now = Date.now(), windowMs = 30 * 86400e3) {
 /* ----------------------------------------------------------- from elsewhere ---- */
 
 // The names the native readWorkouts answer with (HealthConnectPlugin.java / AppleHealthPlugin.swift
-// sportName): the sports above, plus three that are not activities. 'strength' and 'gym' (an
+// sportName): the sports above, plus four that are not activities. 'strength' and 'gym' (an
 // elliptical, a stair machine, a treadmill, a spin bike, HIIT) belong in a workout, where openGym
-// logs them itself; 'walk' would bring every stroll a watch noticed.
-export const NOT_ACTIVITY = new Set(['strength', 'gym', 'walk'])
+// logs them itself; 'walk' and 'stretch' are offered on demand inside Log recovery instead of
+// bringing every stroll or stretch into Activities automatically.
+export const NOT_ACTIVITY = new Set(['strength', 'gym', 'walk', 'stretch'])
 
 // openGym's own records in the hub, and the watch app's: never read back as activities.
 const OWN_ORIGIN = /^(ch\.duartesantos\.opengym|ch\.opengym\.app)(\.|$)/
@@ -183,7 +184,7 @@ export const isOwnRecord = rec => /^opengym-/.test(String(rec?.clientId || '')) 
 export const healthActivityId = (rec, src) => src + hashId(String(rec?.id || `${rec?.start}|${rec?.sport}`))
 
 // A workout logged in openGym over the same time (a treadmill run the watch also saved as a run).
-function overlapsWorkout(S, start, end) {
+export function overlapsWorkout(S, start, end) {
   for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
     const ws = Number(w?.start), we = Number(w?.end) || ws
     if (ws > 0 && start < we && end > ws) return true
@@ -274,10 +275,10 @@ const HK_SPORT = {
   Yoga: 'yoga', Pilates: 'yoga', MindAndBody: 'yoga', TaiChi: 'yoga',
   SocialDance: 'dance', CardioDance: 'dance', Dance: 'dance', DanceInspiredTraining: 'dance', Barre: 'dance',
   Walking: 'walk', WheelchairWalkPace: 'walk', WheelchairRunPace: 'walk',
+  Flexibility: 'stretch', Cooldown: 'stretch', PreparationAndRecovery: 'stretch',
   TraditionalStrengthTraining: 'strength', FunctionalStrengthTraining: 'strength', CoreTraining: 'strength',
   Elliptical: 'gym', StairClimbing: 'gym', Stairs: 'gym', StepTraining: 'gym', HighIntensityIntervalTraining: 'gym',
-  MixedCardio: 'gym', MixedMetabolicCardioTraining: 'gym', CrossTraining: 'gym', JumpRope: 'gym', Flexibility: 'gym',
-  Cooldown: 'gym', PreparationAndRecovery: 'gym', FitnessGaming: 'gym',
+  MixedCardio: 'gym', MixedMetabolicCardioTraining: 'gym', CrossTraining: 'gym', JumpRope: 'gym', FitnessGaming: 'gym',
 }
 export const hkSportName = type => HK_SPORT[String(type || '').replace(/^HKWorkoutActivityType/, '')] || 'other'
 
