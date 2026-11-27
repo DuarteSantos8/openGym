@@ -3965,6 +3965,11 @@ export default {
   "Not in this build": "Não nesta versão",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Os relógios Wear OS falam com o telemóvel através dos serviços Google Play, que as apps do F-Droid deixam de fora. O APK de opengym.ch e a app do Google Play têm a ligação ao relógio.",
   // Stats redesign
+  "Collapse": "Recolher",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Média {0} · Máx. {1} bpm",
+  "Heart rate curve": "Curva da frequência cardíaca",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Uma linha sob a barra de progresso enquanto o teu Apple Watch a mede. Toca para veres a sessão toda.",
   "Muscles": "Músculos",
   "Chart": "Gráfico",
   "Harder": "Mais difícil",

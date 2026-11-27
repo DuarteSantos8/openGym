@@ -3965,6 +3965,11 @@ export default {
   "Not in this build": "Bu sürümde yok",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS saatler telefonla Google Play hizmetleri üzerinden konuşur, F-Droid uygulamalarında bunlar yok. opengym.ch’deki APK ve Google Play uygulaması saat bağlantısına sahip.",
   // Stats redesign
+  "Collapse": "Daralt",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "Ortalama {0} · Maks. {1} bpm",
+  "Heart rate curve": "Nabız eğrisi",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch ölçerken ilerleme çubuğunun altında bir satır. Tüm antrenman için dokun.",
   "Muscles": "Kaslar",
   "Chart": "Grafik",
   "Harder": "Daha zor",

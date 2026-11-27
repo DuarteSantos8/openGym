@@ -34,6 +34,49 @@ export function hrLabel(set) {
   return hr ? ` ♥ ${hr.avg}/${hr.max}` : ''
 }
 
+// More points than this would only be finer than the graph can draw.
+const CURVE_POINTS = 240
+
+/**
+ * A session's samples from the hub ([ms, bpm]) as a curve to draw: { points: [{ t, hr }], avg, max },
+ * `t` from the start, each point the average of its slice of the session. The average and maximum
+ * are the samples'. null with too little to draw a line.
+ */
+export function heartCurve(samples, start, end) {
+  const span = end - start
+  if (!(span > 0) || !Array.isArray(samples)) return null
+  const kept = samples.filter(s => Array.isArray(s) && s[0] >= start && s[0] <= end && s[1] >= BPM_MIN && s[1] <= BPM_MAX)
+  if (kept.length < 2) return null
+  const slices = new Map()
+  let sum = 0, max = 0
+  for (const [ms, bpm] of kept) {
+    sum += bpm
+    if (bpm > max) max = bpm
+    const at = Math.min(CURVE_POINTS - 1, Math.floor((ms - start) / span * CURVE_POINTS))
+    const slice = slices.get(at) || { t: 0, hr: 0, n: 0 }
+    slice.t += ms - start; slice.hr += bpm; slice.n++
+    slices.set(at, slice)
+  }
+  const points = [...slices.values()].map(s => ({ t: Math.round(s.t / s.n), hr: Math.round(s.hr / s.n) }))
+  return { points, avg: Math.round(sum / kept.length), max: Math.round(max) }
+}
+
+/**
+ * A session's samples ([ms, bpm]) as one reading a minute from the start: each minute's average,
+ * null for a minute with no sample in it. For the copied text, where a curve has to be numbers.
+ */
+export function heartPerMinute(samples, start, end) {
+  const span = end - start
+  if (!(span > 0) || !Array.isArray(samples)) return []
+  const mins = Array.from({ length: Math.ceil(span / 60000) }, () => ({ hr: 0, n: 0 }))
+  for (const s of samples) {
+    if (!Array.isArray(s) || !(s[0] >= start && s[0] <= end && s[1] >= BPM_MIN && s[1] <= BPM_MAX)) continue
+    const m = mins[Math.min(mins.length - 1, Math.floor((s[0] - start) / 60000))]
+    m.hr += s[1]; m.n++
+  }
+  return mins.map(m => (m.n ? Math.round(m.hr / m.n) : null))
+}
+
 /* ------------------------------------------------ heart rate read back from the phone's hub -- */
 //
 // Health Connect (Android) and Apple Health (iPhone) collect the heart rate every watch and band

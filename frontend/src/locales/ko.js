@@ -3965,6 +3965,11 @@ export default {
   "Not in this build": "이 빌드에는 없어요",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS 워치는 Google Play 서비스를 통해 휴대폰과 연결되는데, F-Droid 앱에는 이게 빠져 있어요. opengym.ch의 APK와 Google Play 앱에는 워치 연결이 있어요.",
   // Stats redesign
+  "Collapse": "접기",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "평균 {0} · 최대 {1} bpm",
+  "Heart rate curve": "심박수 곡선",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch가 측정하는 동안 진행 막대 아래에 한 줄로 표시돼요. 탭하면 운동 전체를 볼 수 있어요.",
   "Muscles": "근육",
   "Chart": "차트",
   "Harder": "더 힘들게",

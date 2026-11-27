@@ -49,6 +49,10 @@ import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import LinkSign, { showLinkSign } from '../components/LinkSign.jsx'
+import HeartBand from '../components/HeartBand.jsx'
+import { heartBandShown } from '../lib/session-heart.js'
+import { MOBILE } from '../lib/mobile.js'
+import { platformNow } from '../lib/platform-now.js'
 import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -1312,6 +1316,8 @@ function ActiveWorkout() {
   const readyRestEnds = useUI(s => (s.timer?.ready ? s.timer.endsAt : undefined))
   const A = S.active
   const editing = !!A.editingWorkoutId
+  // The watch's heart band, and the header's ♥ that follows it, on one condition (lib/session-heart.js).
+  const heartBand = heartBandShown(S, A, { editing, ios: MOBILE && platformNow() === 'ios' })
   const paused = isPaused(A)
   // Paused here, by a reload of a paused workout or on another device (#976): the timers hold too.
   useEffect(() => { if (paused) useUI.getState().pauseAuto() }, [paused])
@@ -2821,7 +2827,7 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name"><span className="whdr-title">{A.name}</span></div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
+      <div className="whdr-mid"><div className="whdr-name"><span className="whdr-title">{A.name}</span></div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate wid={A.id} curve={heartBand} />}</div>{gymShown && (gymSwitchable
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
@@ -2837,6 +2843,9 @@ function ActiveWorkout() {
       ? <div className="wprog-row"><div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
         <span className="wvol" data-session-volume>{fmtVol(vol, S.unit)}</span></div>
       : <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>}
+    {/* The Apple Watch's heart rate through the session, one line until it is opened: the iPhone app
+        only, the one the watch streams to. Off in Settings → Workout. */}
+    {heartBand && <HeartBand A={A} />}
     {/* In the list the chips ride in the pinned header, so any exercise is one tap away from
         anywhere in a long stack. */}
     {listMode && chipRow}

@@ -3958,6 +3958,11 @@ export default {
   "Not in this build": "此版本沒有",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS 手錶透過 Google Play 服務和手機溝通，而 F-Droid 的 App 不包含它。opengym.ch 的 APK 和 Google Play 上的 App 可以連接手錶。",
   // Stats redesign
+  "Collapse": "收合",
+  "bpm": "次/分",
+  "Average {0} · Max {1} bpm": "平均 {0} · 最高 {1} bpm",
+  "Heart rate curve": "心率曲線",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "Apple Watch 測量時，在進度條下方顯示一行。輕點查看整場訓練。",
   "Muscles": "肌肉",
   "Chart": "圖表",
   "Harder": "更難",

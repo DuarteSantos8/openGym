@@ -4044,6 +4044,11 @@ export default {
   "Not in this build": "এই বিল্ডে নেই",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS ঘড়ি Google Play সার্ভিসের মাধ্যমে ফোনের সাথে যোগাযোগ করে, যা F-Droid অ্যাপে থাকে না। opengym.ch-এর APK আর Google Play অ্যাপে ঘড়ির সংযোগ আছে।",
   // Stats redesign
+  "Collapse": "গুটিয়ে নিন",
+  "bpm": "bpm",
+  "Average {0} · Max {1} bpm": "গড় {0} · সর্বোচ্চ {1} bpm",
+  "Heart rate curve": "হৃদস্পন্দনের রেখা",
+  "A line under the progress bar while your Apple Watch measures it. Tap it for the whole session.": "অগ্রগতি দণ্ডের নিচে একটি লাইন, যতক্ষণ আপনার Apple Watch এটি মাপে। পুরো সেশন দেখতে ট্যাপ করুন।",
   "Muscles": "পেশি",
   "Chart": "চার্ট",
   "Harder": "আরও কঠিন",
