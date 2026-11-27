@@ -3,11 +3,18 @@
 // for an exercise that has a guide (content/exercise-guides.js); every other sheet is unchanged.
 //
 // Loaded on demand from sheets.jsx, so the text is not in the app's first download.
+import { lazy, Suspense } from 'react'
 import { t, hasTranslation, getLang, baseLang, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exOr } from '../lib/exercises.js'
 import { guideFor, ladderFor, isReviewed } from '../lib/exercise-guide.js'
+import { hasPose } from './mannequin/poses.js'
 import { Button } from './ui.jsx'
 import '../views/onboarding.css'
+
+// The movement demo for the guide's pattern (EP26-T01): the rig when the device can show it, and
+// a still key pose with the words that go with it when it cannot. Loaded on demand, so the 3D
+// code and the poses stay out of the app's first download.
+const MannequinDemo = lazy(() => import('./mannequin/MannequinDemo.jsx'))
 
 export default function ExerciseGuide({ ex, onOpen }) {
   const g = guideFor(ex?.id)
@@ -24,6 +31,10 @@ export default function ExerciseGuide({ ex, onOpen }) {
   return <div className="iv-guide" data-guide={ex.id}>
     <h4 className="sec">{t('Do it well')}{hasEnglishText && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4>
     <ul className="iv-guide-cues">{g.cues.map((c, i) => <li key={i}>{t(c)}</li>)}</ul>
+
+    {hasPose(g.pattern) && <Suspense fallback={null}>
+      <MannequinDemo key={g.pattern} pattern={g.pattern} />
+    </Suspense>}
 
     <h4 className="sec">{t('Common mistakes')}</h4>
     <ul className="iv-guide-mistakes">

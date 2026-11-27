@@ -6420,4 +6420,11 @@ export default {
   "No matching help found.": "Nenhum tópico de ajuda encontrado.",
   "Show all settings": "Mostrar todas as definições",
   "Show fewer": "Mostrar menos",
+  "Movement demo": "Demonstração do movimento",
+  "Motion is off on this device, so the key position is shown instead.": "O movimento está desligado neste dispositivo, por isso mostra-se a posição-chave.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Este dispositivo não consegue mostrar o movimento em 3D, por isso mostra-se a posição-chave.",
+  "Standing tall, feet about shoulder width apart.": "De pé, com os pés à largura dos ombros.",
+  "Knees and hips bend together as you sit down.": "Joelhos e ancas dobram-se ao mesmo tempo enquanto se senta.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Ancas para trás e para baixo entre os calcanhares, peito alto, joelhos por cima dos dedos dos pés.",
+  "Push through the floor: hips and chest rise together.": "Empurre o chão: ancas e peito sobem em conjunto.",
 }

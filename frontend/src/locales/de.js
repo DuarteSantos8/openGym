@@ -6440,4 +6440,11 @@ export default {
   "No matching help found.": "Keine passende Hilfe gefunden.",
   "Show all settings": "Alle Einstellungen anzeigen",
   "Show fewer": "Weniger anzeigen",
+  "Movement demo": "Bewegungsdemo",
+  "Motion is off on this device, so the key position is shown instead.": "Auf diesem Gerät ist die Bewegung ausgeschaltet, deshalb wird stattdessen die Schlüsselposition gezeigt.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Dieses Gerät kann die 3D-Bewegung nicht zeigen, deshalb wird stattdessen die Schlüsselposition gezeigt.",
+  "Standing tall, feet about shoulder width apart.": "Aufrecht stehen, die Füße etwa schulterbreit auseinander.",
+  "Knees and hips bend together as you sit down.": "Knie und Hüften beugen sich gemeinsam, wenn Sie sich setzen.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Hüften nach hinten und unten zwischen die Fersen, Brust hoch, Knie über den Zehen.",
+  "Push through the floor: hips and chest rise together.": "Drücken Sie in den Boden: Hüften und Brust steigen gemeinsam.",
 }

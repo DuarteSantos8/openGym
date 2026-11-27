@@ -6,6 +6,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
 
+- **Movement demo (E5a, prepared).** An exercise with a form guide now shows the movement it asks for: the mannequin rig on the exercise sheet, in a chunk of its own, with the words that go with the pose. With reduced motion, or on a device that cannot show 3D, the key pose is shown as a picture with the same words and nothing moves. [English phone view](evidence/EP26-T01/mannequin-rig-390-dark.png), [the still without WebGL](evidence/EP26-T01/mannequin-still-390-dark.png).
+
 - **Workout feedback (E3, prepared).** Set checks, records, completed rest timers and confirmed workout saves use the profile’s sound and vibration settings. Reduced motion suppresses the optional cues. Configured rest alarms still announce when to resume.
 
 - **Catalogue level and pattern (D6, prepared).** Rebuild the draft index with `node scripts/catalogue/seed-level.mjs`. All strength, calisthenics, isometric, olympic and plyometric entries count, including unclassified ones. Exercises in mixed categories also count unless text identifies a non-strength activity. The classifier uses the movement name, target and equipment. All 45 authored guides take precedence, and variants inherit their canonical entry. Unknown IDs stay absent. Review the sample before using draft levels in the app.
@@ -149,7 +151,7 @@ With no routines or with a proposed plan open, a message uses the plan builder i
 | 10 | **Read the 55 draft exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the 36 remaining distinct routine exercises (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
 | 11 | Named review of the eight EP24-T03 Learn sessions prepared on `next/EP24-learn-sessions`, EP24-T01 (the glossary on more screens), the remaining exercises of EP23-T03 | agent | Per the plan's acceptance column |
 | 12 | Cloud, owner's dashboard steps (`supabase/README.md`, "What only the owner can switch on"): leaked-password protection, custom SMTP, the email templates' links, the OAuth server for ADR 0013, `APP_ORIGIN`, and the cloud build's three variables in Vercel | owner | Sign-up and reset emails arrive; the API's "Sign in with Ironvane" completes on a preview |
-| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos) | agent | Before any live Stripe key |
+| 13 | EP18-T04 (media manifest) and EP26-T01 (mannequin demos). The rig and the squat (E5a) are prepared; the eight other patterns follow in E5b | agent | Before any live Stripe key |
 
 ## 4. Environment (WSL2 Ubuntu)
 

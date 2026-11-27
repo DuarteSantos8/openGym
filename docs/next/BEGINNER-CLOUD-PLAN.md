@@ -155,7 +155,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Status |
 |---|---|---|
-| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | open |
+| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | the rig and the squat (E5a) are prepared: the rig is its own chunk, the still key pose with words covers reduced motion and a device without WebGL, and the rig is freed when the sheet closes. The eight other patterns follow in E5b. Native-language review of the seven new strings remains open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
 | EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
 | EP26-T04 | Ladder skill tree | open |

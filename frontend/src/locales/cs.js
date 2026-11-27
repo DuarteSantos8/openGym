@@ -6386,4 +6386,11 @@ export default {
   "No matching help found.": "Žádná odpovídající nápověda.",
   "Show all settings": "Zobrazit všechna nastavení",
   "Show fewer": "Zobrazit méně",
+  "Movement demo": "Ukázka pohybu",
+  "Motion is off on this device, so the key position is shown instead.": "Na tomto zařízení je pohyb vypnutý, takže se místo něj zobrazí klíčová poloha.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Toto zařízení neumí zobrazit 3D pohyb, takže se místo něj zobrazí klíčová poloha.",
+  "Standing tall, feet about shoulder width apart.": "Stůjte vzpřímeně, chodidla od sebe přibližně na šířku ramen.",
+  "Knees and hips bend together as you sit down.": "Kolena i kyče se při sedání zazpětně ohnou současně.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Kyče dozadu a dolů mezi paty, hrudník vzhůru, kolena nad prsty.",
+  "Push through the floor: hips and chest rise together.": "Tlačte do podlahy: kyče a hrudník stoupají společně.",
 }

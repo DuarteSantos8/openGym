@@ -6420,4 +6420,11 @@ export default {
   "No matching help found.": "Eşleşen yardım bulunamadı.",
   "Show all settings": "Tüm ayarları göster",
   "Show fewer": "Daha az göster",
+  "Movement demo": "Hareket demosu",
+  "Motion is off on this device, so the key position is shown instead.": "Bu cihazda hareket kapalı, bu yüzden bunun yerine ana konum gösteriliyor.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Bu cihaz 3B hareketi gösteremiyor, bu yüzden bunun yerine ana konum gösteriliyor.",
+  "Standing tall, feet about shoulder width apart.": "Dik durun, ayaklar omuz genişliğinde.",
+  "Knees and hips bend together as you sit down.": "Otururken dizler ve kalçalar birlikte bükülür.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Kalçalar topukların arasına geriye ve aşağı, göğüs yukarıda, dizler parmak uçlarının üzerinde.",
+  "Push through the floor: hips and chest rise together.": "Yeri itin: kalça ve göğüs birlikte yükselir.",
 }

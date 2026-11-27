@@ -1,0 +1,16 @@
+/* The movement demo on the exercise sheet (components/mannequin/). The rig and the still picture
+   are drawn from the same skeleton, so they use the same colours: the accent for the body, the
+   plain label colour for the limbs, and a quieter one for the far side of the figure. */
+.mm-demo{margin-top:16px}
+.mm-demo .sec{margin:0 0 8px}
+.mm-rig{width:100%;height:min(46vh,340px);min-height:240px;border-radius:var(--r-md,14px);overflow:hidden;background:var(--bg-el)}
+.mm-still{display:block;width:100%;max-width:250px;height:auto;margin:0 auto}
+.mm-still path,.mm-still circle,.mm-still line{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mm-still-body{stroke:var(--acc-ink);stroke-width:.075}
+.mm-still-near path{stroke:var(--label);stroke-width:.07}
+.mm-still-far path{stroke:var(--label-3);stroke-width:.055}
+.mm-still-head{fill:var(--acc-ink);stroke:none}
+.mm-still-floor{stroke:var(--label-4);stroke-width:.018}
+.mm-demo-text{margin:10px 0 0;font-size:var(--fs-body);line-height:var(--lh-body)}
+.mm-demo-note{margin:8px 0 0;font-size:var(--fs-footnote);line-height:var(--lh-footnote,1.4);color:var(--label-2)}
+.mm-demo-play{margin-top:12px}

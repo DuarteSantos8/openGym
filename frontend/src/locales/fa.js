@@ -6386,4 +6386,11 @@ export default {
   "No matching help found.": "راهنمایی مرتبطی پیدا نشد.",
   "Show all settings": "نمایش همهٔ تنظیمات",
   "Show fewer": "نمایش کمتر",
+  "Movement demo": "نمایش حرکت",
+  "Motion is off on this device, so the key position is shown instead.": "در این دستگاه حرکت خاموش است، بنابراین به جای آن، وضعیت کلیدی نشان داده می‌شود.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "این دستگاه نمی‌تواند حرکت سه‌بعدی را نشان دهد، بنابراین به جای آن، وضعیت کلیدی نشان داده می‌شود.",
+  "Standing tall, feet about shoulder width apart.": "صاف بایستید، پاها حدود به اندازه عرض شانه.",
+  "Knees and hips bend together as you sit down.": "زانوها و لگن با هم خم می‌شوند تا بنشینید.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "لگن به عقب و پایین بین پاشنه‌ها، سینه بالا، زانوها روی انگشتان پا.",
+  "Push through the floor: hips and chest rise together.": "به زمین فشار بدهید: لگن و سینه با هم بالا می‌آیند.",
 }

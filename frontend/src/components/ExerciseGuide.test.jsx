@@ -76,4 +76,13 @@ describe('ExerciseGuide', () => {
     act(() => root.render(<ExerciseGuide ex={null} />))
     expect(container.innerHTML).toBe('')
   })
+
+  it('shows the movement demo for a pattern that has one, and not for one that has none', async () => {
+    mount(<ExerciseGuide ex={EXIDX['1760']} />)
+    await act(async () => { await new Promise(r => setTimeout(r, 20)) })
+    expect(container.querySelector('.mm-demo')).toBeTruthy()
+    act(() => root.render(<ExerciseGuide ex={EXIDX['0652']} />))
+    await act(async () => { await new Promise(r => setTimeout(r, 20)) })
+    expect(container.querySelector('.mm-demo')).toBe(null)
+  })
 })

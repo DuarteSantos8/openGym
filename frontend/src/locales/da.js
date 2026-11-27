@@ -6360,4 +6360,11 @@ export default {
   "No matching help found.": "Ingen matchende hjælp fundet.",
   "Show all settings": "Vis alle indstillinger",
   "Show fewer": "Vis færre",
+  "Movement demo": "Bevægelsesdemo",
+  "Motion is off on this device, so the key position is shown instead.": "Bevægelse er slået fra på denne enhed, så der vises i stedet nøglepositionen.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Denne enhed kan ikke vise 3D-bevægelsen, så der vises i stedet nøglepositionen.",
+  "Standing tall, feet about shoulder width apart.": "Stå rankt med fødderne cirka skulderbredde fra hinanden.",
+  "Knees and hips bend together as you sit down.": "Knæ og hofter bøjer sammen, mens du sætter dig.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Hofterne tilbage og ned mellem hælene, brystet op, knæene over tæerne.",
+  "Push through the floor: hips and chest rise together.": "Pres ned i gulvet: hofter og bryst rejser sig sammen.",
 }

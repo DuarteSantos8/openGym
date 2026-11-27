@@ -6467,4 +6467,11 @@ export default {
   "No matching help found.": "Ingen matchande hjälp hittades.",
   "Show all settings": "Visa alla inställningar",
   "Show fewer": "Visa färre",
+  "Movement demo": "Rörelsedemo",
+  "Motion is off on this device, so the key position is shown instead.": "Rörelsen är avstängd på den här enheten, så nyckelpositionen visas i stället.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Den här enheten kan inte visa 3D-rörelsen, så nyckelpositionen visas i stället.",
+  "Standing tall, feet about shoulder width apart.": "Stå upprätt med fötterna ungefär en axelbredd isär.",
+  "Knees and hips bend together as you sit down.": "Knä och höfter böjs tillsammans när du sätter dig.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Höfterna bakåt och ned mellan hälarna, bröstet upp, knäna över tårna.",
+  "Push through the floor: hips and chest rise together.": "Tryck mot golvet: höfterna och bröstet stiger tillsammans.",
 }
