@@ -1,7 +1,7 @@
 # Beginner-first and Cloud edition plan (EP17 to EP27)
 
 OpenNutriTracker local ZIP import (09.01a) is prepared for guest and account diaries. Refresh is manual. The source archive stays on the device.
-B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval, including when restart feedback waits for an idle poll.
+B2 recovery coverage prepared. A local browser checks that retrying an interrupted Coach request keeps Monday and saves the two requested days on approval and displays restart feedback before the retry.
 06.03 narrow Workout actions and navigation labels are prepared. Four locales passed the 320 px control fit and accessible-name regression.
 
 G1 covers a linked member opening Account before and after reload. The local training API returned 403 and both visits hid the Admin dashboard. A1 still needs the protected preview's member 403 and signed-out 401.

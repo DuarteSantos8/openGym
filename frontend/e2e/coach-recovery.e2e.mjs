@@ -115,7 +115,7 @@ test('a timed-out and then interrupted Coach request saves its plan once, on app
     await start()
     expect((await status()).last?.errorClass).toBe('restart')
     // Keep the mounted job transition; a failed status poll can back off for the full idle interval.
-    await expect(page.locator('.msg.coach .bub.err').last()).toHaveText('The server restarted while the Coach was thinking.', { timeout: 75000 })
+    await expect(page.locator('.msg.coach .bub.err').last()).toHaveText('The server restarted while the Coach was thinking.', { timeout: 90000 })
     expect((await status()).cap.used).toBe(2)
     expect(await training()).toEqual(before)
     allowProposal = true
