@@ -85,6 +85,21 @@ describe('API tokens page', () => {
     expect(host.textContent).toContain(location.origin + '/mcp')
   })
 
+  it('keeps the configured connector address after making a token while the list has failed', async () => {
+    mocks.config = { api_tokens: true, mcp: true, mcpAddress: 'https://connector.example/mcp' }
+    mocks.answers['/api/tokens'] = b => {
+      if (b) return { token: 'ogt_' + 'x'.repeat(43), tokens: [TOK], id: 't_1' }
+      throw new Error('offline')
+    }
+    await render(<ApiTokensPage />)
+    expect(host.textContent).toContain('https://connector.example/mcp')
+    await click(byText(host, 'New token'))
+    const sheet = await openSheet()
+    await click(byText(sheet, 'Make token'))
+    expect(host.textContent).toContain('Claude')
+    expect(host.textContent).toContain('https://connector.example/mcp')
+  })
+
   it('hides the connector address when the server disables MCP after config was cached', async () => {
     mocks.config = { api_tokens: true, mcp: true, mcpAddress: 'https://connector.example/mcp' }
     mocks.answers['/api/tokens'] = { tokens: [], mcp: false }
