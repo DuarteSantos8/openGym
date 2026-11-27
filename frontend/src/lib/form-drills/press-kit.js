@@ -372,10 +372,20 @@ export const SOFT_MISS = { soft: { line: 'Arms not locked out. Not counted.', sa
 /** Whether a rep's lockout meets a standard; a lockout not seen is given the rep. */
 export const lockMeets = (locked, standard) => standard === 'any' || locked == null || locked
 
-/** The elbow angle a frame shows: the more bent arm when both are seen surely, else the picked side's. */
-export function elbowAngle(frame, sidePicked) {
+/**
+ * The elbow angle a frame shows: the more bent arm when both are seen surely, else the picked side's.
+ * `shoulderOut`: with both shoulders seen, each is first moved out, away from the other, by this
+ * share of the shoulders' image width (spec.shoulderOut: where Vision puts them sits inside the joint).
+ */
+export function elbowAngle(frame, sidePicked, shoulderOut = 0) {
   const j = frame.joints
-  const at = s => angleAt(seen(j, s + 'Shoulder'), seen(j, s + 'Elbow'), seen(j, s + 'Wrist'), frame.aspect)
+  const L = seen(j, 'leftShoulder'), R = seen(j, 'rightShoulder')
+  const dx = shoulderOut && L && R ? shoulderOut * (L[0] - R[0]) : 0
+  const shoulder = s => {
+    const S = seen(j, s + 'Shoulder')
+    return S && dx ? [S[0] + (s === 'left' ? dx : -dx), S[1], S[2]] : S
+  }
+  const at = s => angleAt(shoulder(s), seen(j, s + 'Elbow'), seen(j, s + 'Wrist'), frame.aspect)
   const sure = s => ARM.every(p => (seen(j, s + p) || [0, 0, 0])[2] >= BOTH_CONF)
   if (sure('left') && sure('right')) {
     const l = at('left'), r = at('right')
@@ -397,6 +407,8 @@ const LOCK_CUE = {
  *   signal(f, torsoRef) -> number | null (0 at the start, about 1 at lockout), phases, topS
  *   lockViews: the views the lockout is judged from; unjudgedCue: () => text
  *   lockDeg: optional, the smoothed elbow angle that is locked out there (LOCK_DEG when not given)
+ *   shoulderOut: optional, the share of the shoulders' width each shoulder is moved out before the
+ *         elbow is read (elbowAngle), 0 when not given
  *   lockPeak: optional, the rep's peak signal under which it is not locked out, in every view
  *   startHint(), readyHint(): translated status lines; tempoRow(down, up), tempoSub(): translated text
  *   lockSub(): the lockout tile's sub; notes: { view: () => text }
@@ -436,7 +448,7 @@ export function createLockoutTracker(drill, spec, viewDetector, { standard, view
     const a = acc
     const sd = side(frame.joints)
     if (a.judged) {
-      const ang = elbowAngle(frame, sd)
+      const ang = elbowAngle(frame, sd, spec.shoulderOut || 0)
       if (ang != null) {
         a.ang = ema(a.ang, ang, 0.5)
         if (a.maxAng == null || a.ang > a.maxAng) a.maxAng = a.ang

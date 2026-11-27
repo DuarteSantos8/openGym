@@ -1,8 +1,9 @@
 // The overhead press drill against a synthetic lifter (test-kit.js), filmed from side-on to facing
 // the camera: the side refused, counting, lockout and the standards, tempo, cues, matches.
 import { describe, expect, it } from 'vitest'
-import overheadPress, { LOCK_FRONT_DEG } from './overhead-press.js'
+import overheadPress from './overhead-press.js'
 import { checkDrill } from './index.js'
+import { LOCK_DEG } from './press-kit.js'
 import { CAMERA, ease, film, project, same, squatPose } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
@@ -146,8 +147,8 @@ describe('the overhead press, whatever the angle', () => {
 
   it('reads the straightest elbow of the rep, smoothed, against the lockout line', () => {
     const { res } = run(pressSet([FULL, SOFT], { yaw: 90 }))
-    expect(res.reps[0].measures.elbow).toBeGreaterThanOrEqual(LOCK_FRONT_DEG + 10)
-    expect(res.reps[1].measures.elbow).toBeLessThan(LOCK_FRONT_DEG)
+    expect(res.reps[0].measures.elbow).toBeGreaterThanOrEqual(LOCK_DEG + 10)
+    expect(res.reps[1].measures.elbow).toBeLessThan(LOCK_DEG)
     expect(res.details[1][0]).toEqual({ label: 'Lockout', value: 'Not locked out' })
     expect(res.details[0]).toContainEqual({ label: 'Elbow angle', value: res.reps[0].measures.elbow + '°' })
     expect(res.note).toBe('Filmed from the front: lockout and tempo.')
@@ -202,11 +203,18 @@ describe('the overhead press, whatever the angle', () => {
   })
 
   it('reads a straight press locked out with the shoulders in by the neck, a 150 degree one not', () => {
-    // Straight arms read about 169 with the shoulder mark in, under the kit's 160 plus its margin.
-    const { res } = run(pressSet([FULL, NEAR, SOFT], { yaw: 90 }))
-    expect(res.view).toBe('front')
-    expect(res.reps[0].measures.elbow).toBeLessThan(172)
-    expect(locks(res)).toEqual([true, true, false])
+    // Vision's shoulders in by the neck tip the upper arms out; the drill reads from them moved out.
+    for (const mark of [SHOULDER_IN, 0.08]) {
+      const { res } = run(pressSet([FULL, NEAR, SOFT].map(r => ({ ...r, mark })), { yaw: 90 }), { view: 'front' })
+      expect(locks(res)).toEqual([true, true, false])
+    }
+  })
+
+  it('cannot see a soft lockout when Vision puts the shoulders on the joint (the known limit)', () => {
+    // Moving shoulders already on the joint out bends the read arm the other way, which hides a soft
+    // bend out to the sides: straight arms still count, a soft press counts too.
+    const { res } = run(pressSet([FULL, SOFT].map(r => ({ ...r, mark: 0 })), { yaw: 90 }))
+    expect(locks(res)).toEqual([true, true])
   })
 
   it('names a frontal lifter front whether Vision puts the shoulders in or on the joint', () => {
