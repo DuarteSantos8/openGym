@@ -55,5 +55,12 @@ running and untouched as the rollback target (`ROLLBACK.md`).
 | Step | State | Evidence / blocker |
 |---|---|---|
 | Manifest tool | DONE | `api/test/data-manifest.test.js` 5/5 |
-| 1–5 Render backup | BLOCKED | `render ssh`: `Permission denied (publickey)` until the backup key is added to the Render account |
-| 6–7 Railway restore | NOT RUN | depends on 1–5 |
+| 1–5 Render backup | DONE 2026-11-27 15:42Z | manifest before == after the archive (no write during copy); archive extracted == live (`--compare` equal); independent `sha256sum` (Render coreutils vs VPS) match; archive sha256 `9a26a73e…0e9d59`, 22,752 B; counts users 3, state files 3, upload files 2, files 17, creds/subs/invites 0 |
+| 5 Restore test (local) | DONE | API started on a scratch copy, loopback only: `/api/health` `{"ok":true,"users":3,"writable":true}`; copy unchanged afterwards (`--compare` equal); scratch removed |
+| Reconciliation | DONE | all 3 API profiles carry an `oidc` link with one issuer; their 3 `sub`s are 3 Supabase accounts, each with a profile row and a live OAuth consent. The other 2 accounts never signed in to this API. No orphan state or upload files |
+| 6 Railway restore (rehearsal) | DONE 2026-11-27 15:48Z | Railway's empty-instance `secret`/`vapid.json` archived to the VPS first; archive streamed in over `railway ssh`; Railway `/data` manifest == Render manifest; after `railway restart` `/api/health` users 0 → 3 |
+| 7 Persistence | DONE 2026-11-27 15:52Z | `railway redeploy` (deployment `cd5fcc9e`, SUCCESS): manifest still equal, `/api/health` users 3. Render unchanged: users 3 |
+
+Railway is now a point-in-time copy. Render keeps taking writes, so the copy goes stale; the
+cutover sync above repeats steps 1–7 under a write freeze. Until then nobody can sign in to
+Railway (its OIDC settings are unset), so the copy cannot diverge by use.

@@ -9,6 +9,11 @@ plan deletes Render, its disk, the Supabase project, auth users or the OAuth cli
 |---|---|---|
 | 2026-11-27 14:52 | Railway `ironvane-web`: `NGINX_PORT` 8080 → 3000 | `railway variables -s ironvane-web --set NGINX_PORT=8080` |
 | 2026-11-27 14:54 | Railway `ironvane-web` service domain `c5a1b502…` target port 8080 → 3000 | `railway domain update c5a1b502-597a-4450-982c-bd028caf1dcc -s ironvane-web --port 8080` |
+| 2026-11-27 15:29 | Vercel Pro team: project `opengym` (`prj_cAY5SKDfpjnLdsOemSMTgvCzOGdZ`) recreated, root `frontend`, git-linked, production branch `main`; 3 Preview variables scoped to `next/cloud-preview` | Remove the variables in Project → Settings → Environment Variables. Deleting the project is not a rollback: production `opengym-sage.vercel.app` runs on it |
+| 2026-11-27 15:38 | `next/cloud-preview` fast-forward merge of `main` (`f9e6b6068`), normal push | Earlier branch head `7c3695325` is its parent; redeploy that commit from Vercel if needed. No force-push |
+| 2026-11-27 15:40 | Vercel domain `ironvane-cloud-preview.vercel.app` added, git branch `next/cloud-preview` (the old branch alias is held by another Vercel account, 409) | Project → Domains → remove |
+| 2026-11-27 15:44 | Railway SSH key `hermes-vps-ironvane-railway` registered; Render SSH key `hermes-vps-ironvane-backup` (owner-added) | `railway ssh keys remove`; Render Account Settings → SSH Public Keys |
+| 2026-11-27 15:48 | Railway `ironvane-api` `/data`: Render copy restored over the empty volume, then restart + redeploy | Stream `/root/backups/ironvane/railway-pre-restore-*/data.tar.gz` back after emptying `/data` (it holds only the empty instance's `secret` and `vapid.json`), restart |
 
 Both affect only the Railway candidate stack, which serves no real users.
 
