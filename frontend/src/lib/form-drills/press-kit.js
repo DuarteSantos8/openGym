@@ -120,8 +120,11 @@ export const DROP_STANDARDS = [
 ]
 export const SHALLOW_MISS = { shallow: { line: 'Too shallow. Not counted.', say: 'Too shallow', row: 'Not counted: too shallow' } }
 
-/** The depth's name from the shoulder's height against the elbow (upper arms, positive below). */
-export const dropDepthOf = hd => (hd == null ? null : hd > LEVEL_BAND ? 'below' : hd < -LEVEL_BAND ? 'above' : 'level')
+/**
+ * The depth's name from the shoulder's height against the elbow (upper arms, positive below).
+ * `above`: how far above the elbow the shoulder may read and still be level (LEVEL_BAND when not given).
+ */
+export const dropDepthOf = (hd, above = LEVEL_BAND) => (hd == null ? null : hd > LEVEL_BAND ? 'below' : hd < -above ? 'above' : 'level')
 
 /** Whether a depth meets a standard; a depth not seen is given the rep. */
 export const dropMeets = (depth, standard) => standard === 'any' || depth == null || (standard === 'below' ? depth === 'below' : depth !== 'above')
@@ -158,6 +161,9 @@ export function dropDepthShare(reps, standard) {
  *   startHint(), readyHint(): translated status lines; notes: { side, diagonal, front } -> string
  *   shoulderMark: optional, how far Vision's shoulder sits above the joint at the bottom, in upper
  *         arms (0 when not given): added to the shoulder's depth before it is judged and reported
+ *   aboveBand: optional, how far above the elbow (upper arms, after shoulderMark) the shoulder may
+ *         read and the depth still be level (LEVEL_BAND when not given): the camera's band on the
+ *         short side, where a rep is given the benefit of the doubt
  *   side: optional { track(acc, frame, sidePick), finish(acc, measures), summary(m) -> {}, cues: [[id, (summary, n) => bool, () => text]],
  *         tile(summary) -> tile | null, rows(measures) -> rows }   (side-on extras)
  */
@@ -178,7 +184,9 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
   const supported = v => !v || drill.views.includes(v)
   const judged = v => v != null && (v === 'side' || level() !== false)
   const count = () => reps.filter(r => r.counted).length
-  const reachedNow = () => !!acc && acc.rec.rawPeak >= DROP_PHASES.minRep && dropMeets(acc.judged ? dropDepthOf(acc.maxHd) : null, std)
+  const aboveBand = spec.aboveBand ?? LEVEL_BAND
+  const depthOf = hd => dropDepthOf(hd, aboveBand)
+  const reachedNow = () => !!acc && acc.rec.rawPeak >= DROP_PHASES.minRep && dropMeets(acc.judged ? depthOf(acc.maxHd) : null, std)
 
   // The arm's image-vertical facts, null without shoulder, elbow and wrist under them. The rep's
   // signal, the arm's height, is read on both arms only when both are seen surely (BOTH_CONF),
@@ -235,7 +243,7 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
 
   function finish(rec) {
     const a = acc
-    const depth = a.judged ? dropDepthOf(a.maxHd) : null
+    const depth = a.judged ? depthOf(a.maxHd) : null
     const counted = rec.lost || dropMeets(depth, std)
     const measures = { view: a.view, depth, shoulderDepth: a.judged && a.maxHd != null ? Math.round(a.maxHd * 100) / 100 : null, peak: Math.round(rec.peak * 100) / 100 }
     if (a.view === 'side') {

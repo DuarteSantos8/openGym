@@ -27,6 +27,17 @@ const DIP = /^\s*(weighted |ring |chest |triceps? |bench |parallel bar |straight
 // HIP_MARK, for the hip); the push-up, with no shallow clip to place it, keeps 0.
 export const SHOULDER_MARK = 0.15
 
+// How far above the elbow the shoulder may read (upper arms, after SHOULDER_MARK) and the dip
+// still be called level. Where Vision's shoulder sits over the joint differs from lifter to lifter
+// by about a tenth of an upper arm (form lab, side-on bench and chair dips at the bottom): reps
+// that look level on full-size frames read 0.12 above the elbow to 0.05 below, and bench dips that
+// look 5 to 10 degrees shorter than those read 0.03 to 0.2 above, the same reading for a different
+// depth, and one lifter's same-looking reps spread over 0.14. The camera cannot tell those apart,
+// so they are given the benefit of the doubt and named level; a dip is refused when it reads more
+// than 0.3 above, a tenth of an upper arm past the shortest of those (a chair dip stopped with the
+// knees bent, clearly short by eye, read 0.41 above). The push-up keeps LEVEL_BAND.
+export const ABOVE_BAND = 0.3
+
 // Side-on runs to about 25 degrees here (VIEW_EDGES), not the kit's 20: a bench dip filmed from
 // the side with the torso leaning back read 0.20 to 0.25 (the shoulders retracted on the bench
 // read wider than the hips), so its depth went unjudged and the camera was asked to move. Side-on
@@ -39,6 +50,7 @@ export const VIEW_EDGES = { side: 0.245, front: KIT_VIEW_EDGES.front }  // width
 
 const SPEC = {
   shoulderMark: SHOULDER_MARK,
+  aboveBand: ABOVE_BAND,
   framing: frame => framing(frame, ARM),
   viewDetector: () => createViewDetector(VIEW_EDGES),
   startHint: () => t('Arms straight to start'),

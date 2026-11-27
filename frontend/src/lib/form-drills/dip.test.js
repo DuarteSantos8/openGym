@@ -2,9 +2,9 @@
 // elbows' height at the top as the setup asks outside a side view), filmed from side-on to facing
 // the camera: counting, depth and the standards, tempo, the elbow angle, cues, matches.
 import { describe, expect, it } from 'vitest'
-import dip, { SHOULDER_MARK } from './dip.js'
+import dip, { ABOVE_BAND, SHOULDER_MARK } from './dip.js'
 import { checkDrill } from './index.js'
-import { LEVEL_BAND } from './press-kit.js'
+import { BOTH_CONF, LEVEL_BAND } from './press-kit.js'
 import { CAMERA, ease, film, project, same, YAWS } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
@@ -74,10 +74,17 @@ const depths = res => res.reps.map(r => r.measures.depth)
 const viewAt = yaw => (yaw === 0 ? 'side' : yaw === 90 ? 'front' : 'diagonal')
 
 function elbowForDepth(d, yaw) {
-  const y = (j, p) => (j['left' + p][1] + j['right' + p][1]) / 2
+  // Read as the drill reads depth: both arms' middle when both are seen surely, else the surer arm.
+  const conf = (j, s) => Math.min(...['Shoulder', 'Elbow', 'Wrist'].map(p => j[s + p][2]))
+  const y = (j, p) => {
+    const l = conf(j, 'left'), r = conf(j, 'right')
+    if (l >= BOTH_CONF && r >= BOTH_CONF) return (j['left' + p][1] + j['right' + p][1]) / 2
+    return j[(l >= r ? 'left' : 'right') + p][1]
+  }
+  const yMid = (j, p) => (j['left' + p][1] + j['right' + p][1]) / 2
   const cam = { yaw, height: ELBOW_TOP }
   const top = project(dipPose(175), cam)
-  const upper = y(top, 'Elbow') - y(top, 'Shoulder')
+  const upper = yMid(top, 'Elbow') - yMid(top, 'Shoulder')
   const at = e => { const j = project(dipPose(e), cam); return (y(j, 'Shoulder') - y(j, 'Elbow')) / upper + SHOULDER_MARK }
   let lo = 40, hi = 150
   for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (at(m) > d) lo = m; else hi = m }
@@ -117,10 +124,20 @@ describe.each(YAWS)('the dip filmed at yaw %i°', yaw => {
     expect(run(frames, ANY).res).toMatchObject({ count: 5, missed: 0 })
   })
 
-  it('takes the level band at its edge, as filmed from this angle', () => {
-    const edge = elbowForDepth(-LEVEL_BAND, yaw)
+  it('takes the level band at its short edge, ABOVE_BAND, as filmed from this angle', () => {
+    const edge = elbowForDepth(-ABOVE_BAND, yaw)
     expect(run(set([{ min: edge - 2, down: 1.5, up: 1 }])).res.reps[0]).toMatchObject({ counted: true, measures: { depth: 'level' } })
     expect(run(set([{ min: edge + 2, down: 1.5, up: 1 }])).res.reps[0]).toMatchObject({ counted: false, reason: 'shallow', measures: { depth: 'above' } })
+  })
+
+  it('gives a dip the camera cannot tell from level the benefit of the doubt, and names it level', () => {
+    // Between the push-up's LEVEL_BAND and ABOVE_BAND: where real bench dips a little short of
+    // level and level ones both read, depending on the lifter.
+    for (const d of [-LEVEL_BAND - 0.03, -(LEVEL_BAND + ABOVE_BAND) / 2, -ABOVE_BAND + 0.03]) {
+      const { res } = run(set([{ min: elbowForDepth(d, yaw), down: 1.5, up: 1 }]))
+      expect(res).toMatchObject({ count: 1, missed: 0 })
+      expect(res.reps[0].measures.depth).toBe('level')
+    }
   })
 
   it('times the way down and up', () => {

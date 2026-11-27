@@ -61,6 +61,8 @@ describe('a body lying down: its yaw and its view', () => {
 describe('depth and lockout', () => {
   it('names the shoulder depth against the elbow, and what each standard takes', () => {
     expect([dropDepthOf(LEVEL_BAND + 0.01), dropDepthOf(0), dropDepthOf(-LEVEL_BAND - 0.01), dropDepthOf(null)]).toEqual(['below', 'level', 'above', null])
+    // A wider band on the short side (the dip's): level down to it, above past it; below unchanged.
+    expect([dropDepthOf(-LEVEL_BAND - 0.01, 0.3), dropDepthOf(-0.29, 0.3), dropDepthOf(-0.31, 0.3), dropDepthOf(LEVEL_BAND + 0.01, 0.3)]).toEqual(['level', 'level', 'above', 'below'])
     expect(dropMeets('level', 'level')).toBe(true)
     expect(dropMeets('above', 'level')).toBe(false)
     expect(dropMeets('level', 'below')).toBe(false)
