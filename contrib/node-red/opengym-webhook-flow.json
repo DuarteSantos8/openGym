@@ -1,0 +1,163 @@
+[
+  {
+    "id": "og_tab",
+    "type": "tab",
+    "label": "openGym webhooks",
+    "disabled": false,
+    "info": "Receives openGym webhooks, checks the signature, timestamp and delivery id, and hands authentic events to a demo handler.\n\nSet OPENGYM_WEBHOOK_SECRET in the Node-RED environment to the signing secret openGym showed when you added the webhook. See contrib/node-red/README.md."
+  },
+  {
+    "id": "og_in",
+    "type": "http in",
+    "z": "og_tab",
+    "name": "openGym webhook",
+    "url": "/opengym/webhook",
+    "method": "post",
+    "upload": false,
+    "skipBodyParsing": true,
+    "swaggerDoc": "",
+    "x": 150,
+    "y": 120,
+    "wires": [
+      [
+        "og_verify"
+      ]
+    ]
+  },
+  {
+    "id": "og_verify",
+    "type": "function",
+    "z": "og_tab",
+    "name": "Check openGym signature",
+    "func": "/* Checks one openGym webhook delivery. Plain JavaScript with no imports, so the same text runs in\n * the tests (as a CommonJS module) and inside the Node-RED Function node, where build-flow.mjs\n * pastes it (everything above the export block) with `crypto` loaded through the node's Setup\n * tab (\"libs\").\n *\n * openGym's contract (api/integrations/crypto.js, providers/webhook.js, events.js):\n *   X-OpenGym-Signature: t=<unix seconds>,v1=<hex>\n *   hex = HMAC-SHA256(secret, \"<t>.\" + raw request body)\n *   body = { version: 1, id, type, createdAt, test?, data }; `id` is the delivery's own and stays\n *   the same on every retry, while each retry is signed again with a fresh `t`.\n *   X-OpenGym-Delivery repeats the id but is NOT signed, so it is never used here.\n *\n * What a receiver answers decides what openGym does next (providers/webhook.js judge): 2xx is\n * delivered, 408/425/429/5xx is retried later, any other 4xx is a final failure, 410 pauses the\n * webhook. So a duplicate is a 200 (delivered, do nothing), not an error. */\n\nvar OPENGYM_EVENTS = ['workout.finished', 'workout.pr', 'weighin.logged'];\nvar SIGNATURE_RE = /^t=(\\d{1,12}),v1=([0-9a-f]{64})$/;\n\n/** The id store for replay protection: a plain object (so a persistent Node-RED context store can\n *  save it), keys \"k:<id>\" (no integer-looking keys, so insertion order is kept), values the time\n *  in ms after which the id may be forgotten. Bounded: past `max` the oldest go first. */\nfunction seenHas(store, id, nowMs) {\n  var exp = store['k:' + id];\n  return typeof exp === 'number' && exp > nowMs;\n}\nfunction seenAdd(store, id, expiresMs, nowMs, max) {\n  var keys = Object.keys(store);\n  for (var i = 0; i < keys.length; i++) if (!(store[keys[i]] > nowMs)) delete store[keys[i]];\n  store['k:' + id] = expiresMs;\n  keys = Object.keys(store);\n  for (var j = 0; keys.length - j > max; j++) delete store[keys[j]];\n  return store;\n}\n\n/**\n * opts: { rawBody: Buffer, headers: { lower-case names }, secret, crypto, seen: object,\n *         now: ms, toleranceSec: 300, maxBytes: 65536, maxSeen: 10000, defer: false }\n * Answers { ok: true, status: 200, envelope } for a new, authentic delivery (with `defer`, also\n *         `remember`, for rememberDelivery once it is handled),\n *         { ok: true, status: 200, duplicate: true, id } for one already seen,\n *         { ok: true, status: 200, ignored: true, id, type } for an authentic one of a type this\n *         flow does not handle, or\n *         { ok: false, status, reason } where `reason` is for your own log only.\n * Every refusal has one public body per status (publicBody), so nothing about the secret, the\n * expected signature or which check failed is sent back.\n */\nfunction verifyOpenGymWebhook(opts) {\n  var crypto = opts.crypto;\n  var secret = opts.secret;\n  var nowMs = typeof opts.now === 'number' ? opts.now : Date.now();\n  var tolerance = opts.toleranceSec > 0 ? opts.toleranceSec : 300;\n  var maxBytes = opts.maxBytes > 0 ? opts.maxBytes : 65536;\n  var maxSeen = opts.maxSeen > 0 ? opts.maxSeen : 10000;\n  var headers = opts.headers || {};\n  var raw = opts.rawBody;\n\n  if (!crypto || typeof crypto.createHmac !== 'function') return { ok: false, status: 500, reason: 'crypto module not available (Setup tab, Modules: crypto)' };\n  if (typeof secret !== 'string' || secret.length < 16) return { ok: false, status: 500, reason: 'OPENGYM_WEBHOOK_SECRET is not set' };\n  // The http in node must hand over the bytes as they arrived (\"Do not parse the body\").\n  if (!Buffer.isBuffer(raw)) return { ok: false, status: 500, reason: 'raw body not available: tick \"Do not parse request body\" on the http in node' };\n  if (raw.length > maxBytes) return { ok: false, status: 413, reason: 'body larger than ' + maxBytes + ' bytes' };\n\n  var header = headers['x-opengym-signature'];\n  if (Array.isArray(header)) return { ok: false, status: 401, reason: 'more than one signature header' };\n  var m = SIGNATURE_RE.exec(typeof header === 'string' ? header : '');\n  if (!m) return { ok: false, status: 401, reason: header ? 'malformed signature header' : 'missing signature header' };\n  var ts = Number(m[1]);\n  if (Math.abs(nowMs / 1000 - ts) > tolerance) return { ok: false, status: 401, reason: 'timestamp outside the ' + tolerance + ' s window' };\n\n  // Over the exact bytes received: \"<t>.\" then the raw body, never a re-serialised object.\n  var want = crypto.createHmac('sha256', secret).update(ts + '.').update(raw).digest();\n  var got = Buffer.from(m[2], 'hex');\n  if (got.length !== want.length || !crypto.timingSafeEqual(got, want)) return { ok: false, status: 401, reason: 'signature does not match' };\n\n  // Only now is the body read: nothing unauthenticated is parsed.\n  var envelope;\n  try { envelope = JSON.parse(raw.toString('utf8')); } catch (e) { return { ok: false, status: 400, reason: 'signed body is not JSON' }; }\n  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) return { ok: false, status: 400, reason: 'signed body is not an object' };\n  if (envelope.version !== 1) return { ok: false, status: 400, reason: 'unsupported payload version' };\n  if (typeof envelope.id !== 'string' || !envelope.id || envelope.id.length > 100) return { ok: false, status: 400, reason: 'missing or invalid delivery id' };\n  if (typeof envelope.type !== 'string' || !envelope.type || envelope.type.length > 64) return { ok: false, status: 400, reason: 'missing or invalid event type' };\n\n  // Replay: the signed id, remembered for twice the window (a copy older than the window already\n  // fails the timestamp check above). openGym's own retries carry the same id and get the 200.\n  var seen = opts.seen || {};\n  if (seenHas(seen, envelope.id, nowMs)) return { ok: true, status: 200, duplicate: true, id: envelope.id };\n  var until = nowMs + 2 * tolerance * 1000;\n  // Authentic, but a type this flow does not handle (one openGym added later): acknowledge it with\n  // a 200. A 4xx would be a final failure in openGym and mark the webhook for attention.\n  if (OPENGYM_EVENTS.indexOf(envelope.type) === -1) {\n    seenAdd(seen, envelope.id, until, nowMs, maxSeen);\n    return { ok: true, status: 200, ignored: true, id: envelope.id, type: envelope.type };\n  }\n  // With `defer`, the id is recorded only once the handler is done (rememberDelivery): recorded\n  // now, a handler that then failed would turn openGym's retry into a \"duplicate\" and lose it.\n  if (opts.defer) return { ok: true, status: 200, envelope: envelope, remember: { id: envelope.id, until: until } };\n  seenAdd(seen, envelope.id, until, nowMs, maxSeen);\n  return { ok: true, status: 200, envelope: envelope };\n}\n\n/** Records a deferred delivery (the `remember` of a defer result) as handled. */\nfunction rememberDelivery(store, remember, nowMs, max) {\n  if (!remember || typeof remember.id !== 'string') return store;\n  return seenAdd(store, remember.id, remember.until, typeof nowMs === 'number' ? nowMs : Date.now(), max > 0 ? max : 10000);\n}\n\n/** What the sender sees: one fixed body per status, nothing derived from the request. */\nfunction publicBody(result) {\n  if (result.duplicate) return { ok: true, duplicate: true };\n  if (result.ignored) return { ok: true, ignored: true };\n  if (result.ok) return { ok: true };\n  if (result.status === 413) return { error: 'payload too large' };\n  if (result.status === 401) return { error: 'unauthorized' };\n  if (result.status === 400) return { error: 'bad request' };\n  return { error: 'receiver not configured' };\n}\n\n/* ---- Node-RED glue (build-flow.mjs) ----\n * Output 1: an authentic, new delivery, on to the handler. Output 2: the answer for everything\n * else (refused, too large, or already handled), straight to the http response node.\n * Seen ids are in flow context, shared with \"Record as delivered\", which adds a delivery only\n * after the handler finished: a handler that throws leaves it out, so openGym's retry runs again. */\nconst seen = flow.get('opengymSeen') || {};\nconst result = verifyOpenGymWebhook({\n    rawBody: msg.payload,\n    headers: msg.req && msg.req.headers,\n    secret: env.get('OPENGYM_WEBHOOK_SECRET'),\n    crypto: crypto,\n    seen: seen,\n    now: Date.now(),\n    toleranceSec: Number(env.get('OPENGYM_WEBHOOK_TOLERANCE_SEC')) || 300,\n    maxBytes: Number(env.get('OPENGYM_WEBHOOK_MAX_BYTES')) || 65536,\n    defer: true\n});\nmsg.headers = { 'Content-Type': 'application/json' };\nif (result.ok && !result.duplicate && !result.ignored) {\n    msg._opengymRemember = result.remember;\n    msg.opengym = result.envelope;\n    msg.payload = result.envelope;\n    node.status({ fill: 'green', shape: 'dot', text: result.envelope.type });\n    return [msg, null];\n}\nif (result.ignored) { flow.set('opengymSeen', seen); node.status({ fill: 'grey', shape: 'ring', text: 'not handled: ' + result.type.slice(0, 30) }); }\nelse if (result.duplicate) node.status({ fill: 'blue', shape: 'ring', text: 'duplicate ignored' });\nelse if (result.status >= 500) { node.error('openGym webhook: ' + result.reason); node.status({ fill: 'red', shape: 'ring', text: 'not configured' }); }\nelse { node.warn('openGym webhook refused (' + result.status + '): ' + result.reason); node.status({ fill: 'yellow', shape: 'ring', text: 'refused ' + result.status }); }\nmsg.statusCode = result.status;\nmsg.payload = publicBody(result);\nreturn [null, msg];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [
+      {
+        "var": "crypto",
+        "module": "crypto"
+      }
+    ],
+    "x": 380,
+    "y": 120,
+    "wires": [
+      [
+        "og_handle"
+      ],
+      [
+        "og_reply"
+      ]
+    ]
+  },
+  {
+    "id": "og_handle",
+    "type": "function",
+    "z": "og_tab",
+    "name": "Handle event (demo)",
+    "func": "// A harmless demo: it only describes the event. Replace it with what you want to happen\n// (a notification, a light, a log line). The envelope is in msg.opengym (docs/INTEGRATIONS.md).\nconst ev = msg.opengym;\nconst d = ev.data || {};\nlet summary = ev.type;\nif (ev.type === 'workout.finished' && d.workout) summary = 'Workout finished: ' + (d.workout.name || 'workout') + ', ' + (d.workout.totals ? d.workout.totals.sets : 0) + ' sets';\nelse if (ev.type === 'workout.pr' && Array.isArray(d.records)) summary = 'New records: ' + d.records.map(r => r.name).join(', ');\nelse if (ev.type === 'weighin.logged' && d.weighin) summary = 'Weigh-in: ' + d.weighin.weight + ' ' + d.weighin.unit;\nif (ev.test) summary = '(test) ' + summary;\nmsg.summary = summary;\nmsg.statusCode = 200;\nmsg.headers = { 'Content-Type': 'application/json' };\nmsg.payload = { ok: true, handled: ev.type };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 80,
+    "wires": [
+      [
+        "og_done",
+        "og_debug"
+      ]
+    ]
+  },
+  {
+    "id": "og_done",
+    "type": "function",
+    "z": "og_tab",
+    "name": "Record as delivered",
+    "func": "/* Checks one openGym webhook delivery. Plain JavaScript with no imports, so the same text runs in\n * the tests (as a CommonJS module) and inside the Node-RED Function node, where build-flow.mjs\n * pastes it (everything above the export block) with `crypto` loaded through the node's Setup\n * tab (\"libs\").\n *\n * openGym's contract (api/integrations/crypto.js, providers/webhook.js, events.js):\n *   X-OpenGym-Signature: t=<unix seconds>,v1=<hex>\n *   hex = HMAC-SHA256(secret, \"<t>.\" + raw request body)\n *   body = { version: 1, id, type, createdAt, test?, data }; `id` is the delivery's own and stays\n *   the same on every retry, while each retry is signed again with a fresh `t`.\n *   X-OpenGym-Delivery repeats the id but is NOT signed, so it is never used here.\n *\n * What a receiver answers decides what openGym does next (providers/webhook.js judge): 2xx is\n * delivered, 408/425/429/5xx is retried later, any other 4xx is a final failure, 410 pauses the\n * webhook. So a duplicate is a 200 (delivered, do nothing), not an error. */\n\nvar OPENGYM_EVENTS = ['workout.finished', 'workout.pr', 'weighin.logged'];\nvar SIGNATURE_RE = /^t=(\\d{1,12}),v1=([0-9a-f]{64})$/;\n\n/** The id store for replay protection: a plain object (so a persistent Node-RED context store can\n *  save it), keys \"k:<id>\" (no integer-looking keys, so insertion order is kept), values the time\n *  in ms after which the id may be forgotten. Bounded: past `max` the oldest go first. */\nfunction seenHas(store, id, nowMs) {\n  var exp = store['k:' + id];\n  return typeof exp === 'number' && exp > nowMs;\n}\nfunction seenAdd(store, id, expiresMs, nowMs, max) {\n  var keys = Object.keys(store);\n  for (var i = 0; i < keys.length; i++) if (!(store[keys[i]] > nowMs)) delete store[keys[i]];\n  store['k:' + id] = expiresMs;\n  keys = Object.keys(store);\n  for (var j = 0; keys.length - j > max; j++) delete store[keys[j]];\n  return store;\n}\n\n/**\n * opts: { rawBody: Buffer, headers: { lower-case names }, secret, crypto, seen: object,\n *         now: ms, toleranceSec: 300, maxBytes: 65536, maxSeen: 10000, defer: false }\n * Answers { ok: true, status: 200, envelope } for a new, authentic delivery (with `defer`, also\n *         `remember`, for rememberDelivery once it is handled),\n *         { ok: true, status: 200, duplicate: true, id } for one already seen,\n *         { ok: true, status: 200, ignored: true, id, type } for an authentic one of a type this\n *         flow does not handle, or\n *         { ok: false, status, reason } where `reason` is for your own log only.\n * Every refusal has one public body per status (publicBody), so nothing about the secret, the\n * expected signature or which check failed is sent back.\n */\nfunction verifyOpenGymWebhook(opts) {\n  var crypto = opts.crypto;\n  var secret = opts.secret;\n  var nowMs = typeof opts.now === 'number' ? opts.now : Date.now();\n  var tolerance = opts.toleranceSec > 0 ? opts.toleranceSec : 300;\n  var maxBytes = opts.maxBytes > 0 ? opts.maxBytes : 65536;\n  var maxSeen = opts.maxSeen > 0 ? opts.maxSeen : 10000;\n  var headers = opts.headers || {};\n  var raw = opts.rawBody;\n\n  if (!crypto || typeof crypto.createHmac !== 'function') return { ok: false, status: 500, reason: 'crypto module not available (Setup tab, Modules: crypto)' };\n  if (typeof secret !== 'string' || secret.length < 16) return { ok: false, status: 500, reason: 'OPENGYM_WEBHOOK_SECRET is not set' };\n  // The http in node must hand over the bytes as they arrived (\"Do not parse the body\").\n  if (!Buffer.isBuffer(raw)) return { ok: false, status: 500, reason: 'raw body not available: tick \"Do not parse request body\" on the http in node' };\n  if (raw.length > maxBytes) return { ok: false, status: 413, reason: 'body larger than ' + maxBytes + ' bytes' };\n\n  var header = headers['x-opengym-signature'];\n  if (Array.isArray(header)) return { ok: false, status: 401, reason: 'more than one signature header' };\n  var m = SIGNATURE_RE.exec(typeof header === 'string' ? header : '');\n  if (!m) return { ok: false, status: 401, reason: header ? 'malformed signature header' : 'missing signature header' };\n  var ts = Number(m[1]);\n  if (Math.abs(nowMs / 1000 - ts) > tolerance) return { ok: false, status: 401, reason: 'timestamp outside the ' + tolerance + ' s window' };\n\n  // Over the exact bytes received: \"<t>.\" then the raw body, never a re-serialised object.\n  var want = crypto.createHmac('sha256', secret).update(ts + '.').update(raw).digest();\n  var got = Buffer.from(m[2], 'hex');\n  if (got.length !== want.length || !crypto.timingSafeEqual(got, want)) return { ok: false, status: 401, reason: 'signature does not match' };\n\n  // Only now is the body read: nothing unauthenticated is parsed.\n  var envelope;\n  try { envelope = JSON.parse(raw.toString('utf8')); } catch (e) { return { ok: false, status: 400, reason: 'signed body is not JSON' }; }\n  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) return { ok: false, status: 400, reason: 'signed body is not an object' };\n  if (envelope.version !== 1) return { ok: false, status: 400, reason: 'unsupported payload version' };\n  if (typeof envelope.id !== 'string' || !envelope.id || envelope.id.length > 100) return { ok: false, status: 400, reason: 'missing or invalid delivery id' };\n  if (typeof envelope.type !== 'string' || !envelope.type || envelope.type.length > 64) return { ok: false, status: 400, reason: 'missing or invalid event type' };\n\n  // Replay: the signed id, remembered for twice the window (a copy older than the window already\n  // fails the timestamp check above). openGym's own retries carry the same id and get the 200.\n  var seen = opts.seen || {};\n  if (seenHas(seen, envelope.id, nowMs)) return { ok: true, status: 200, duplicate: true, id: envelope.id };\n  var until = nowMs + 2 * tolerance * 1000;\n  // Authentic, but a type this flow does not handle (one openGym added later): acknowledge it with\n  // a 200. A 4xx would be a final failure in openGym and mark the webhook for attention.\n  if (OPENGYM_EVENTS.indexOf(envelope.type) === -1) {\n    seenAdd(seen, envelope.id, until, nowMs, maxSeen);\n    return { ok: true, status: 200, ignored: true, id: envelope.id, type: envelope.type };\n  }\n  // With `defer`, the id is recorded only once the handler is done (rememberDelivery): recorded\n  // now, a handler that then failed would turn openGym's retry into a \"duplicate\" and lose it.\n  if (opts.defer) return { ok: true, status: 200, envelope: envelope, remember: { id: envelope.id, until: until } };\n  seenAdd(seen, envelope.id, until, nowMs, maxSeen);\n  return { ok: true, status: 200, envelope: envelope };\n}\n\n/** Records a deferred delivery (the `remember` of a defer result) as handled. */\nfunction rememberDelivery(store, remember, nowMs, max) {\n  if (!remember || typeof remember.id !== 'string') return store;\n  return seenAdd(store, remember.id, remember.until, typeof nowMs === 'number' ? nowMs : Date.now(), max > 0 ? max : 10000);\n}\n\n/** What the sender sees: one fixed body per status, nothing derived from the request. */\nfunction publicBody(result) {\n  if (result.duplicate) return { ok: true, duplicate: true };\n  if (result.ignored) return { ok: true, ignored: true };\n  if (result.ok) return { ok: true };\n  if (result.status === 413) return { error: 'payload too large' };\n  if (result.status === 401) return { error: 'unauthorized' };\n  if (result.status === 400) return { error: 'bad request' };\n  return { error: 'receiver not configured' };\n}\n\n/* ---- Node-RED glue (build-flow.mjs) ----\n * The handler finished: record the delivery so openGym's next copy of it is a duplicate, then\n * pass the handler's answer on. */\nif (msg._opengymRemember) {\n    const seen = flow.get('opengymSeen') || {};\n    rememberDelivery(seen, msg._opengymRemember, Date.now(), 10000);\n    flow.set('opengymSeen', seen);\n}\ndelete msg._opengymRemember;\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 860,
+    "y": 80,
+    "wires": [
+      [
+        "og_reply"
+      ]
+    ]
+  },
+  {
+    "id": "og_debug",
+    "type": "debug",
+    "z": "og_tab",
+    "name": "Event summary",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": true,
+    "complete": "summary",
+    "targetType": "msg",
+    "statusVal": "summary",
+    "statusType": "auto",
+    "x": 860,
+    "y": 30,
+    "wires": []
+  },
+  {
+    "id": "og_reply",
+    "type": "http response",
+    "z": "og_tab",
+    "name": "Answer openGym",
+    "statusCode": "",
+    "headers": {},
+    "x": 1080,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "og_catch",
+    "type": "catch",
+    "z": "og_tab",
+    "name": "Errors after receipt",
+    "scope": [
+      "og_verify",
+      "og_handle",
+      "og_done"
+    ],
+    "uncaught": false,
+    "x": 380,
+    "y": 200,
+    "wires": [
+      [
+        "og_failed"
+      ]
+    ]
+  },
+  {
+    "id": "og_failed",
+    "type": "function",
+    "z": "og_tab",
+    "name": "500, no details",
+    "func": "// Something threw after the request arrived. openGym retries a 5xx later; no details are sent back.\nmsg.statusCode = 500;\nmsg.headers = { 'Content-Type': 'application/json' };\nmsg.payload = { error: 'receiver error' };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 200,
+    "wires": [
+      [
+        "og_reply"
+      ]
+    ]
+  }
+]

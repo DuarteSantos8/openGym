@@ -45,14 +45,14 @@ describe('Stats follows the modules', () => {
     expect(host.querySelector('.kpis.two')).toBeFalsy()
   })
 
-  it('Just training: no Body, no Effort, no streak; Structural balance moves to the end of Lifts', () => {
+  it('Just training: no Body, no streak; Structural balance stays under More', () => {
     mount(presetModules('training'))
     // Effort stays in "Just training": the part is there
     expect(parts()).toEqual(['Overview', 'Lifts', 'Effort'])
     expect(host.querySelector('#stats-body')).toBeFalsy()
     expect(kpis()).not.toContain('Weight 30d')
     expect(host.querySelector('.kpis.two')).toBeTruthy()
-    expect(host.querySelector('#stats-lifts [data-stats-links]')).toBeTruthy()
+    expect(host.querySelector('.iv-stats-more [data-stats-links]')).toBeTruthy()
     expect(links()).toEqual(['Structural balance', 'Journal', 'Tools'])
   })
 

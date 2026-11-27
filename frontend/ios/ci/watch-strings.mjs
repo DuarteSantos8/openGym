@@ -100,26 +100,26 @@ const OWN = {
     'zh-Hans': '尚未同步', 'zh-Hant': '尚未同步',
     cs: 'Zatím nesynchronizováno', fa: 'هنوز همگام نشده', id: 'Belum disinkronkan', lt: 'Dar nesinchronizuota', sv: 'Inte synkat än', vi: 'Chưa đồng bộ',
   },
-  'Open openGym on your iPhone once and your routines show up here.': {
-    de: 'Öffne openGym einmal auf dem iPhone, dann tauchen deine Routinen hier auf.',
-    fr: 'Ouvre openGym une fois sur ton iPhone et tes routines apparaissent ici.',
-    es: 'Abre openGym una vez en tu iPhone y tus rutinas aparecerán aquí.',
-    it: 'Apri openGym una volta sull’iPhone e le tue routine compariranno qui.',
-    'pt-PT': 'Abre o openGym uma vez no iPhone e as tuas rotinas aparecem aqui.',
-    'pt-BR': 'Abra o openGym uma vez no iPhone e suas rotinas aparecem aqui.',
-    pl: 'Otwórz raz openGym na iPhonie, a twoje plany pojawią się tutaj.',
-    hu: 'Nyisd meg egyszer az openGymet az iPhone-on, és itt lesznek a rutinjaid.',
-    tr: 'openGym’i iPhone’unda bir kez aç, rutinlerin burada görünür.',
-    ru: 'Откройте openGym на iPhone один раз, и ваши программы появятся здесь.',
-    uk: 'Відкрий openGym на iPhone один раз, і твої програми з’являться тут.',
-    ar: 'افتح openGym على iPhone مرة واحدة وستظهر تمارينك الروتينية هنا.',
-    hi: 'iPhone पर openGym एक बार खोलें, आपके रूटीन यहाँ दिखेंगे।',
-    bn: 'iPhone-এ openGym একবার খুলুন, আপনার রুটিন এখানে দেখা যাবে।',
-    th: 'เปิด openGym บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่',
-    ko: 'iPhone에서 openGym을 한 번 열면 루틴이 여기에 나타나요.',
-    'zh-Hans': '在 iPhone 上打开一次 openGym，你的训练计划就会出现在这里。',
-    'zh-Hant': '在 iPhone 上打開一次 openGym，你的訓練計畫就會出現在這裡。',
-    cs: 'Otevři openGym jednou na iPhonu a tvoje rutiny se objeví tady.', fa: 'یک بار openGym را در iPhone باز کنید تا روال‌هایتان اینجا نمایش داده شوند.', id: 'Buka openGym sekali di iPhone kamu, rutinitasmu akan muncul di sini.', lt: 'Vieną kartą atidarykite „openGym“ iPhone ir jūsų rutinos atsiras čia.', sv: 'Öppna openGym på din iPhone en gång så dyker dina rutiner upp här.', vi: 'Mở openGym trên iPhone một lần, các lịch tập sẽ hiện ở đây.',
+  'Open Ironvane on your iPhone once and your routines show up here.': {
+    de: 'Öffne Ironvane einmal auf dem iPhone, dann tauchen deine Routinen hier auf.',
+    fr: 'Ouvre Ironvane une fois sur ton iPhone et tes routines apparaissent ici.',
+    es: 'Abre Ironvane una vez en tu iPhone y tus rutinas aparecerán aquí.',
+    it: 'Apri Ironvane una volta sull’iPhone e le tue routine compariranno qui.',
+    'pt-PT': 'Abre o Ironvane uma vez no iPhone e as tuas rotinas aparecem aqui.',
+    'pt-BR': 'Abra o Ironvane uma vez no iPhone e suas rotinas aparecem aqui.',
+    pl: 'Otwórz raz Ironvane na iPhonie, a twoje plany pojawią się tutaj.',
+    hu: 'Nyisd meg egyszer az Ironvane-t az iPhone-on, és itt lesznek a rutinjaid.',
+    tr: 'Ironvane’i iPhone’unda bir kez aç, rutinlerin burada görünür.',
+    ru: 'Откройте Ironvane на iPhone один раз, и ваши программы появятся здесь.',
+    uk: 'Відкрий Ironvane на iPhone один раз, і твої програми з’являться тут.',
+    ar: 'افتح Ironvane على iPhone مرة واحدة وستظهر تمارينك الروتينية هنا.',
+    hi: 'iPhone पर Ironvane एक बार खोलें, आपके रूटीन यहाँ दिखेंगे।',
+    bn: 'iPhone-এ Ironvane একবার খুলুন, আপনার রুটিন এখানে দেখা যাবে।',
+    th: 'เปิด Ironvane บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่',
+    ko: 'iPhone에서 Ironvane을 한 번 열면 루틴이 여기에 나타나요.',
+    'zh-Hans': '在 iPhone 上打开一次 Ironvane，你的训练计划就会出现在这里。',
+    'zh-Hant': '在 iPhone 上打開一次 Ironvane，你的訓練計畫就會出現在這裡。',
+    cs: 'Otevři Ironvane jednou na iPhonu a tvoje rutiny se objeví tady.', fa: 'یک بار Ironvane را در iPhone باز کنید تا روال‌هایتان اینجا نمایش داده شوند.', id: 'Buka Ironvane sekali di iPhone kamu, rutinitasmu akan muncul di sini.', lt: 'Vieną kartą atidarykite „Ironvane“ iPhone ir jūsų rutinos atsiras čia.', sv: 'Öppna Ironvane på din iPhone en gång så dyker dina rutiner upp här.', vi: 'Mở Ironvane trên iPhone một lần, các lịch tập sẽ hiện ở đây.',
   },
   'Start one on your iPhone and it shows up here.': {
     de: 'Starte eins auf dem iPhone, dann taucht es hier auf.', fr: 'Lance-en une sur ton iPhone et elle apparaît ici.',
@@ -321,7 +321,7 @@ const PLIST = {
 
 // Danish (#1039): the watch's own lines.
 OWN['Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.'].da = 'Slå Apple Sundhed til på din iPhone, så bliver openGym på skærmen under pauser og hold.'
-for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min.", "No sets yet": "Ingen sæt endnu", "+%lld more": "+%lld mere", "%@ sets": "%@ sæt"})) OWN[k].da = v
+for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open Ironvane on your iPhone once and your routines show up here.": "Åbn Ironvane på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min.", "No sets yet": "Ingen sæt endnu", "+%lld more": "+%lld mere", "%@ sets": "%@ sæt"})) OWN[k].da = v
 for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved hvert sæt og bruger din fødselsdato til pulszonerne.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
 
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')

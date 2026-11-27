@@ -1,6 +1,6 @@
 import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
 import { tempoOf, guideReps } from '../lib/tempo.js'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
@@ -35,6 +35,9 @@ import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
+
+// Keep the optional form-guide text out of the first load. The service worker caches this chunk.
+const GuidedCard = lazy(() => import('../components/GuidedCard.jsx'))
 
 const firstIncomplete = entry => {
   const index = entry.sets.findIndex(set => !set.done)
@@ -123,7 +126,7 @@ function PlateBadge({ S, entry, set }) {
 }
 
 export default function FocusView({
-  entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
+  entryIdx, unit, guided, onSwapBackup, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
   onAddSet, onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
   onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
 }) {
@@ -305,7 +308,7 @@ export default function FocusView({
 
   return <div className="focus-view" data-testid="focus-view">
     <div className="focus-card">
-      {unit.length > 1 && <div className="focus-superset-inline">
+      {!guided && unit.length > 1 && <div className="focus-superset-inline">
         <Icon name="reset" />
         <strong>{t('Superset:')} {unit.map(index => exerciseNameFor(exOr(S.active.entries[index].id))).join(' + ')}</strong>
         <span>{t('Round {0}', setIdx + 1)} · {t('Exercise {0} of {1}', unit.indexOf(entryIdx) + 1, unit.length)}</span>
@@ -322,6 +325,9 @@ export default function FocusView({
         {isFailureSet(set) && <span className="focus-failure" role="img" aria-label={t('Taken to failure')}>{t('F')}</span>}
         <button className="iconbtn" aria-label={t('More')} onClick={openExerciseMenu}><Icon name="more" /></button>
       </header>
+
+      {guided && <Suspense fallback={null}><GuidedCard exerciseId={entry.id} index={entryIdx} total={S.active.entries.length}
+        onNext={() => onSelectEntry(entryIdx + 1)} onSwap={onSwapBackup} busy={busy} /></Suspense>}
 
       <div className="focus-context">
         <div className="focus-tags">

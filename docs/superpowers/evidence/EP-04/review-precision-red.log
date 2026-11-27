@@ -1,0 +1,50 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/views/Nutrition.test.jsx
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/views/Nutrition.test.jsx (9 tests | 2 failed) 267ms
+   × nutrition keeps three-place precision independently of weight decimals=1 19ms
+   × nutrition keeps three-place precision independently of weight decimals=2 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/views/Nutrition.test.jsx > nutrition keeps three-place precision independently of weight decimals=1
+AssertionError: expected 'Fractional serving2.4 g · 0 × portion…' to contain '0.024 × portion (100 g)'
+
+Expected: "0.024 × portion (100 g)"
+Received: "Fractional serving2.4 g · 0 × portion (100 g)"
+
+ ❯ src/views/Nutrition.test.jsx:100:64
+     98|     useStore.setState({ S: { ...useStore.getState().S, nutritionEntrie…
+     99|     await render(<Nutrition />)
+    100|     expect(host.querySelector('.nutrition-entry').textContent).toConta…
+       |                                                                ^
+    101|     expect([...host.querySelectorAll('.nutrition-summary .metric-v')].…
+    102|   } finally { setWeightDecimals(1) }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/views/Nutrition.test.jsx > nutrition keeps three-place precision independently of weight decimals=2
+AssertionError: expected 'Fractional serving2.4 g · 0.02 × port…' to contain '0.024 × portion (100 g)'
+
+Expected: "0.024 × portion (100 g)"
+Received: "Fractional serving2.4 g · 0.02 × portion (100 g)"
+
+ ❯ src/views/Nutrition.test.jsx:100:64
+     98|     useStore.setState({ S: { ...useStore.getState().S, nutritionEntrie…
+     99|     await render(<Nutrition />)
+    100|     expect(host.querySelector('.nutrition-entry').textContent).toConta…
+       |                                                                ^
+    101|     expect([...host.querySelectorAll('.nutrition-summary .metric-v')].…
+    102|   } finally { setWeightDecimals(1) }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  10:10:27
+   Duration  3.35s (transform 2.07s, setup 45ms, import 2.50s, tests 267ms, environment 373ms)

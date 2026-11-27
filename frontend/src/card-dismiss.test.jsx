@@ -92,12 +92,12 @@ describe('Home: the streak card and check-in', () => {
     useStore.setState(s => ({ S: { ...s.S, routines: [], workouts: [bench(todayISO())], homeMuscleSets: true, ...patch } }))
     return render(<Home />)
   }
-  it('the weekly-sets line opens Stats → Lifts and not the calendar; the card opens the calendar', () => {
+  it('the weekly-sets line opens logged Stats muscles and not the calendar; the card opens the calendar', () => {
     const host = mount()
     const card = host.querySelector('.streak-card')
     expect(card.getAttribute('role')).toBeNull()
     act(() => card.querySelector('.wsets-home').click())
-    expect(navSpy).toHaveBeenCalledWith('/stats?section=lifts')
+    expect(navSpy).toHaveBeenCalledWith('/stats?focus=weekly-muscle')
     expect(calendarSheet).not.toHaveBeenCalled()
     act(() => card.querySelector('.tap-main').click())
     expect(calendarSheet).toHaveBeenCalledTimes(1)
@@ -115,22 +115,25 @@ describe('Home: the streak card and check-in', () => {
 })
 
 describe('exercise rows with a trailing button', () => {
-  it('Library: Add to my plan does not open the exercise, the name does', () => {
+  it('Library: Select and Add to my plan do not open the exercise, the name does', () => {
     const host = render(<Library />)
     const row = [...host.querySelectorAll('.list .item.tap-host')][0]
     expect(row.getAttribute('role')).toBeNull()
-    // Forty rows, forty plus buttons: each says which exercise it adds (P4), the tooltip stays short.
-    const adds = [...host.querySelectorAll('.lib-add')]
-    expect(adds.length).toBeGreaterThan(5)
-    expect(new Set(adds.map(b => b.getAttribute('aria-label'))).size).toBe(adds.length)
-    expect(adds[0].getAttribute('aria-label')).toBe(`Add “${row.querySelector('.tt').textContent.replace(/\b\w/g, c => c.toUpperCase())}” to my plan`)
-    expect(adds[0].title).toBe('Add to my plan')
-    act(() => row.querySelector('.lib-add').click())
+    // Every visible Select says which exercise it chooses; the one primary Add names that choice.
+    const selects = [...host.querySelectorAll('.iv-lib-select')]
+    expect(selects.length).toBeGreaterThan(5)
+    expect(new Set(selects.map(b => b.getAttribute('aria-label'))).size).toBe(selects.length)
+    expect(host.querySelectorAll('.lib-add')).toHaveLength(0)
+    act(() => row.querySelector('.iv-lib-select').click())
+    expect(sheets()).toBe(0)
+    const primary = host.querySelector('.iv-lib-primary .btn.primary')
+    expect(primary.getAttribute('aria-label')).toBe(`Add “${row.querySelector('.tt').textContent.replace(/\b\w/g, c => c.toUpperCase())}” to my plan`)
+    act(() => primary.click())
     const afterAdd = useUI.getState().sheets.slice()
     expect(afterAdd.length).toBeLessThanOrEqual(1)
     if (afterAdd.length) expect(renderTop().querySelector('.exdetail-name')).toBeNull()
     useUI.setState({ sheets: [] })
-    act(() => row.querySelector('.tap-main').click())
+    act(() => row.querySelector('.item-open').click())
     expect(sheets()).toBe(1)
     expect(renderTop().querySelector('.exdetail-name')).not.toBeNull()
     expect(nestedInteractive(host)).toEqual([])

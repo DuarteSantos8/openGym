@@ -388,11 +388,10 @@ export function parsePlan(raw, destinationUnit = 'kg') {
 /**
  * Merge a parsed bundle into a draft state `s` (call inside store.update).
  *  - customs: reuse one you already have with the same name + body part, else add it fresh
- *  - routines: always added as NEW routines (fresh ids) — never overwrites yours
- *  - schedule: optional; when on, the shared week REPLACES yours (days the shared plan
- *    leaves empty become rest days — a half-overwritten week would silently mix two plans)
+ *  - ordinary imports: add fresh routines and optionally replace the weekly schedule
+ *  - additive Coach imports: reuse matching prescriptions and append on the specified days
  */
-export function mergePlan(s, bundle, { schedule } = {}) {
+export function mergePlan(s, bundle, { schedule, additive = false } = {}) {
   const destination = planUnit(s.unit == null ? 'kg' : s.unit)
   if (!destination) unitError()
   const source = convertedBundle(bundle, destination)
@@ -410,25 +409,33 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   })
   const ridMap = {}
   source.routines.forEach(r => {
-    const nid = uid()
-    ridMap[r.id] = nid
-    s.routines.push({
-      id: nid,
+    const routine = {
       name: r.name || t('Shared routine'),
       emoji: r.emoji,
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))
-    })
+    }
+    // Ask proposals use fresh source IDs on each visit. Compare the actual prescription
+    // in this profile's units and exercise IDs, independent of sync stamps or object key order.
+    const same = additive && s.routines.find(existing => existing?.name === routine.name && Array.isArray(existing.ex) &&
+      existing.prog === routine.prog && !!existing.excludeFromProgression === !!routine.excludeFromProgression &&
+      JSON.stringify(existing.ex.map(cleanEx)) === JSON.stringify(routine.ex.map(cleanEx)))
+    ridMap[r.id] = same ? same.id : uid()
+    if (!same) s.routines.push({ id: ridMap[r.id], ...routine })
   })
   if (schedule) {
-    WEEK_DAYS.forEach(d => { delete s.week[d] })
+    if (!additive) WEEK_DAYS.forEach(d => { delete s.week[d] })
     Object.entries(source.week || {}).forEach(([d, val]) => {
       // `[].concat` tolerates a pre-upgrade scalar bundle value. An element whose routine id
       // didn't survive parsing is dropped, not written as undefined; a day that ends up empty
       // is left absent rather than stored as `[]`.
       const ids = [].concat(val).map(oldId => ridMap[oldId]).filter(Boolean)
-      if (ids.length) s.week[d] = ids
+      if (additive) {
+        const current = [].concat(s.week[d] ?? [])
+        const additions = ids.filter(id => !current.includes(id))
+        if (additions.length) s.week[d] = current.concat([...new Set(additions)])
+      } else if (ids.length) s.week[d] = ids
     })
   }
   // An exercise the plan shows in a unit of its own (#657) is pinned the same here, unless this
@@ -446,7 +453,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     s.programmes = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}), [got.id]: got }
     programmes++
   }
-  // `ids`: the new routines' ids in the plan's order, for a caller that puts them in a rotation.
+  // Return destination IDs in proposal order, including any routine an additive import reused.
   return { routines: source.routines.length, ids: source.routines.map(r => ridMap[r.id]), programmes }
 }
 

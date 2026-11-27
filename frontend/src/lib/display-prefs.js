@@ -87,6 +87,8 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
     if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = Math.round(k * 100) + '%'
     // For the few things that size themselves in px from JS (canvas charts): the same factor.
     root.style.setProperty('--text-k', String(k))
+    // Big text: titles that clamp to two lines get more room instead of an ellipsis (index.css).
+    root.classList.toggle('text-big', k > 1.1)
   }
   listenForSystem(win)
   if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text })) } catch { /* private mode */ } }

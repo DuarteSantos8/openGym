@@ -78,11 +78,11 @@ function candidateUrls(spec, base, path) {
 
 /** `send(url)` with the fallback above. When the other form fails as well, the first answer is
  *  the one returned, so Ollama's "model not found" 404 still reaches the person unchanged. */
-async function reach(spec, base, path, send) {
+async function reach(spec, base, path, send, singleInference = false) {
   const urls = candidateUrls(spec, base, path);
   const first = await send(urls[0]);
   // Open WebUI's frontend answers an unknown path with 405 rather than 404 (#1035).
-  if (!WRONG_PATH.has(first.status) || urls.length < 2) return first;
+  if (singleInference || !WRONG_PATH.has(first.status) || urls.length < 2) return first;
   const second = await send(urls[1]);
   // Only a second 404 says the other spelling is wrong too. A 429 or a 5xx from it is that
   // endpoint answering, and the caller's retries have to see it (#520): handing back the first
@@ -345,9 +345,11 @@ export function httpAdapter(spec) {
       let chosen = substitutes.get(substituteKey(id, base, asked)) || asked;
 
       const streamKey = () => `${id} ${base} ${chosen}`;
-      let useStream = !!spec.stream && opts.stream !== false && !noStream.has(streamKey());
+      let useStream = !!spec.stream && !opts.singleInference && opts.stream !== false && !noStream.has(streamKey());
       const build = () => {
         const b = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base, ...(opts.web ? { web: true } : {}) });
+        // A one-shot lookup cannot probe the gateway for JSON support. Start in plain text.
+        if (opts.singleInference && spec.compat?.plain) return spec.compat.plain(b);
         return useStream ? spec.stream.body(b) : b;
       };
       // Drops the stream for this endpoint and model, remembered; true when that changed anything.
@@ -390,7 +392,7 @@ export function httpAdapter(spec) {
             method: 'POST',
             headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...(streaming ? { accept: 'text/event-stream' } : {}), ...spec.headers(key) },
             body: JSON.stringify(body)
-          }, timeoutMs, signal));
+          }, timeoutMs, signal), opts.singleInference);
         } catch (e) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           const waited = Math.round((Date.now() - sentAt) / 1000);
@@ -409,6 +411,7 @@ export function httpAdapter(spec) {
         const { data, text } = read;
         const status = embeddedErrorStatus(res, data);
         if (status) {
+          if (opts.singleInference) return { code: 1, text: '', stderr: `${status} ${shownError(spec, data, 200)}` };
           const msg = spec.errorMessage(data) || trim(text, 200);
           // An endpoint that will not stream after all: back to one answer, and remembered. A
           // strict gateway that refuses with a 400 naming nothing (#804) loses the stream first,
@@ -468,7 +471,7 @@ export function httpAdapter(spec) {
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };
         if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit; try a smaller plan or a bigger model' };
-        if (spec.compat) rememberCompatProfile(id, cfg, chosen, steps);
+        if (spec.compat && !opts.singleInference) rememberCompatProfile(id, cfg, chosen, steps);
         return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}), ...(Array.isArray(out.sources) && out.sources.length ? { sources: out.sources } : {}) };
       }
     }

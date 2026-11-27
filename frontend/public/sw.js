@@ -186,7 +186,11 @@ function media(e) {
       return range ? slice(hit, range) : hit
     }
     // The whole file for a range request: the one answer that can be kept.
-    return fetch(range ? e.request.url : e.request).then(res => {
+    return fetch(range ? e.request.url : e.request).catch(() => {
+      // An uncached image or clip is unavailable offline. Return an HTTP failure
+      // so WebKit can show the media fallback without an uncaught worker error.
+      return new Response(null, { status: 503 })
+    }).then(res => {
       const whole = range ? res.status === 200 : true
       if (whole && realMedia(res)) {
         touched.add(e.request.url)
@@ -257,7 +261,17 @@ const NET_WAIT_MS = 3000
 // the content does, so a copy in this build's cache is the file, and a start serves them from
 // here instead of asking the network about each of them again (40-odd round trips before Home).
 const isHashedAsset = p => /\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/.test(p)
-const cacheFirst = e => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
+// The install request has no Origin, while a module import can send one. Retry this
+// same-origin content-hashed asset without that header, preserving every other Vary key.
+async function cachedAsset(request) {
+  const match = item => caches.match(item, { ignoreSearch: true })
+  const hit = await match(request)
+  if (hit || !request.headers?.has('origin')) return hit
+  const headers = new Headers(request.headers)
+  headers.delete('origin')
+  return match(new Request(request.url, { headers }))
+}
+const cacheFirst = e => cachedAsset(e.request).then(hit => hit || fetch(e.request).then(res => {
   // Only a real answer is kept: an auth proxy's login page would otherwise stand in for the chunk
   // for the rest of this build.
   if (res.ok && !res.redirected) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}) }
@@ -300,7 +314,7 @@ self.addEventListener('fetch', e => {
       resolve(res)
     }, () => {
       clearTimeout(slow)
-      resolve(fromCache())
+      resolve(fromCache().then(hit => hit || new Response(null, { status: 503 })))
     })
   }))
 })

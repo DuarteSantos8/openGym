@@ -1,0 +1,27 @@
+{
+  "author": {
+    "name": "openGym"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-25",
+  "language": "en",
+  "title": "Hip mobility",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 10,
+  "description": "Draft. Move gently and switch sides when comfortable. Source: NHS, Flexibility exercises; Canadian Centre for Occupational Health and Safety, Office Ergonomics: Stretching at the Workstation.",
+  "sessions": [
+    {
+      "name": "Hip mobility",
+      "exercises": [
+        { "id": "4420", "sets": 5, "sec": 30 },
+        { "id": "4286", "sets": 5, "sec": 30 },
+        { "id": "5057", "sets": 5, "sec": 30 },
+        { "id": "1364", "sets": 5, "sec": 30 }
+      ],
+      "note": "Move gently and switch sides when comfortable."
+    }
+  ],
+  "about": "NHS, Flexibility exercises; Canadian Centre for Occupational Health and Safety, Office Ergonomics: Stretching at the Workstation"
+}

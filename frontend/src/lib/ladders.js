@@ -85,6 +85,17 @@ export function reachedRung (S, ladder) {
   return top
 }
 
+/** Keep visible steps and translate the highest reached original index to their order. */
+export function visibleLadderProgress (steps, reached, isVisible) {
+  let top = -1
+  const visibleSteps = steps.filter((id, index) => {
+    if (!isVisible(id)) return false
+    if (index <= reached) top++
+    return true
+  })
+  return { steps: visibleSteps, top }
+}
+
 /** Save (add or replace by id) one of your chains in a state draft. Returns the saved chain or null. */
 export function saveLadder (s, { id, name, steps }) {
   const lid = typeof id === 'string' && /^[a-z0-9_-]{1,40}$/i.test(id) ? id : 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)

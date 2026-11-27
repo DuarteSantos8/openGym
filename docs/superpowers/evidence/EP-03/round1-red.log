@@ -1,0 +1,235 @@
+
+ RUN  v4.1.12 /code/openGym-fork/frontend
+
+ ❯ src/lib/exercise-volume.test.js (28 tests | 5 failed) 36ms
+     × excludes saved target assistance on an ordinary catalogue exercise 11ms
+     × excludes saved entry assistance on an ordinary catalogue exercise 2ms
+     × retains historical non-assisted work when later sessions declare assistance 2ms
+     × never adds assisted duplicate occurrences to non-assisted work in the same session 1ms
+     × honors saved non-assisted overrides instead of rewriting historical meaning from identity 1ms
+ ❯ src/views/Stats.ex-volume.test.jsx (17 tests | 6 failed) 855ms
+     × hides Volume for target-assisted exercise history 60ms
+     × hides Volume for entry-assisted exercise history 42ms
+     × hides Volume when the latest occurrence declares target assistance despite earlier lifted volume 36ms
+     × hides Volume when the latest occurrence declares entry assistance despite earlier lifted volume 29ms
+     × offers retained non-assisted history after returning to ordinary load, excluding assisted occurrences 59ms
+     × respects a latest explicit non-assisted override of catalogue identity 32ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > excludes saved target assistance on an ordinary catalogue exercise
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > excludes saved entry assistance on an ordinary catalogue exercise
+AssertionError: expected { unit: 'kg', …(4) } to match object { points: [], included: +0, …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "excluded": 1,
+-   "included": 0,
+-   "points": [],
++   "excluded": 0,
++   "included": 1,
++   "points": [
++     {
++       "d": "2026-11-14",
++       "sets": 1,
++       "t": 1794657600000,
++       "y": 150,
++     },
++   ],
+    "reasons": {
+-     "noVolume": 1,
++     "noVolume": 0,
+    },
+  }
+
+ ❯ src/lib/exercise-volume.test.js:153:8
+    151|   ])('excludes saved %s assistance on an ordinary catalogue exercise',…
+    152|     expect(series([workout(undefined, [entry([done(30)], extra)])]))
+    153|       .toMatchObject({ points: [], included: 0, excluded: 1, reasons: …
+       |        ^
+    154|   })
+    155|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > retains historical non-assisted work when later sessions declare assistance
+AssertionError: expected { unit: 'kg', …(4) } to match object { included: 1, excluded: 2, …(2) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "excluded": 2,
+-   "included": 1,
++   "excluded": 0,
++   "included": 3,
+    "points": [
+      {
+        "d": "2026-11-10",
+        "sets": 1,
++       "t": 1794312000000,
+        "y": 250,
+      },
++     {
++       "d": "2026-11-13",
++       "sets": 1,
++       "t": 1794571200000,
++       "y": 150,
++     },
++     {
++       "d": "2026-11-14",
++       "sets": 1,
++       "t": 1794657600000,
++       "y": 100,
++     },
+    ],
+    "reasons": {
+-     "noVolume": 2,
++     "noVolume": 0,
+    },
+  }
+
+ ❯ src/lib/exercise-volume.test.js:162:20
+    160|       workout('2026-11-14', [entry([done(20)], { assisted: true })]),
+    161|     ])
+    162|     expect(result).toMatchObject({ included: 1, excluded: 2, reasons: …
+       |                    ^
+    163|       points: [{ d: '2026-11-10', y: 250, sets: 1 }] })
+    164|     expect(series([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > never adds assisted duplicate occurrences to non-assisted work in the same session
+AssertionError: expected { unit: 'kg', …(4) } to match object { included: 1, excluded: +0, …(1) }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "excluded": 0,
+    "included": 1,
+    "points": [
+      {
+-       "sets": 1,
+-       "y": 200,
++       "sets": 3,
++       "y": 450,
+      },
+    ],
+  }
+
+ ❯ src/lib/exercise-volume.test.js:173:11
+    171|       entry([done(30)], { target: { assisted: true } }),
+    172|       entry([done(20)], { assisted: true }), entry([done(40)]),
+    173|     ])])).toMatchObject({ included: 1, excluded: 0, points: [{ y: 200,…
+       |           ^
+    174|   })
+    175|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > honors saved non-assisted overrides instead of rewriting historical meaning from identity
+AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { included: 1, excluded: +0, …(1) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "excluded": 0,
+-   "included": 1,
+-   "points": [
+-     {
+-       "sets": 1,
+-       "y": 200,
+-     },
+-   ],
++   "included": 0,
++   "points": [],
+  }
+
+ ❯ src/lib/exercise-volume.test.js:180:29
+    178|       entry([done(30)], { id: ASSISTED }),
+    179|       entry([done(40)], { id: ASSISTED, target: { assisted: false } }),
+    180|     ])], {}, {}, ASSISTED)).toMatchObject({ included: 1, excluded: 0, …
+       |                             ^
+    181|   })
+    182|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > hides Volume for target-assisted exercise history
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > hides Volume for entry-assisted exercise history
+AssertionError: expected [ 'Top set', 'Volume' ] to not include 'Volume'
+ ❯ src/views/Stats.ex-volume.test.jsx:57:48
+     55|   ])('hides Volume for %s exercise history', (_, e) => {
+     56|     mount([session(undefined, [e])])
+     57|     expect(pickerOptions(card(), 'Chart')).not.toContain('Volume')
+       |                                                ^
+     58|   })
+     59|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > hides Volume when the latest occurrence declares target assistance despite earlier lifted volume
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > hides Volume when the latest occurrence declares entry assistance despite earlier lifted volume
+AssertionError: expected [ 'Top set', 'Est. 1RM', 'Volume' ] to not include 'Volume'
+ ❯ src/views/Stats.ex-volume.test.jsx:65:48
+     63|   ])('hides Volume when the latest occurrence declares %s assistance d…
+     64|     mount([session('2026-11-10'), session(undefined, [entry([done(30)]…
+     65|     expect(pickerOptions(card(), 'Chart')).not.toContain('Volume')
+       |                                                ^
+     66|   })
+     67|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > offers retained non-assisted history after returning to ordinary load, excluding assisted occurrences
+AssertionError: expected [ 250, 150, 300 ] to deeply equal [ 250, 200 ]
+
+- Expected
++ Received
+
+  [
+    250,
+-   200,
++   150,
++   300,
+  ]
+
+ ❯ src/views/Stats.ex-volume.test.jsx:75:42
+     73|     ])
+     74|     volume()
+     75|     expect(chart().points.map(p => p.y)).toEqual([250, 200])
+       |                                          ^
+     76|     expect(rows().map(r => r.slice(1))).toEqual([['1', '250'], ['1', '…
+     77|     expect(card().textContent).toContain('Included 2 sessions; exclude…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > respects a latest explicit non-assisted override of catalogue identity
+Error: no picker named Chart
+ ❯ src/views/stats-pick.test-util.js:34:20
+     32| /** Opens the picker named `title` and picks the first option that sta…
+     33| export const pickFrom = (scope, title, label) => withSheet(scope, titl…
+     34|   if (!host) throw new Error('no picker named ' + title)
+       |                    ^
+     35|   const opt = [...host.querySelectorAll('.sect-b button')].find(b => b…
+     36|   if (!opt) throw new Error('no option ' + label + ' in ' + title)
+ ❯ withSheet src/views/stats-pick.test-util.js:15:20
+ ❯ Module.pickFrom src/views/stats-pick.test-util.js:33:50
+ ❯ volume src/views/Stats.ex-volume.test.jsx:35:22
+ ❯ src/views/Stats.ex-volume.test.jsx:82:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  11 failed | 34 passed (45)
+   Start at  09:58:21
+   Duration  4.25s (transform 3.38s, setup 408ms, import 4.42s, tests 891ms, environment 368ms)

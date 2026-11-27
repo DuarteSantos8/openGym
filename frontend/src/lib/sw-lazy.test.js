@@ -82,3 +82,26 @@ describe('the worker keeps the on-demand code too', () => {
     expect(sw).not.toContain('__LAZY__')
   })
 })
+
+// The Extension Lab's heavy optional libraries (ECharts, sports-lib: about 1.2 MB between them) are
+// not fetched at every install: most people never open the chart or the activity preview. They
+// load on first use and the worker's cache-first fetch keeps them from then on. A chunk that mixes
+// in any app code stays in the list, so the Lab page and the food diary still work offline.
+describe('the optional Extension Lab libraries stay out of the install', () => {
+  const chunk = moduleIds => ({ type: 'chunk', moduleIds })
+  const nm = p => '/repo/frontend/node_modules/' + p
+  it('drops a chunk of only ECharts (and the chart that wraps it) or only sports-lib', () => {
+    const list = lazyAssets({
+      'assets/AddonTrendChart-a1b2c3d4.js': chunk([nm('echarts/core.js'), nm('zrender/lib/zrender.js'), '/repo/frontend/src/components/AddonTrendChart.jsx']),
+      'assets/esm-e5f6a7b8.js': chunk([nm('@sports-alliance/sports-lib/lib/esm/index.js'), nm('fit-file-parser/dist/fit.js')]),
+      'assets/Addons-c9d0e1f2.js': chunk([nm('motion/dist/es/index.mjs'), '/repo/frontend/src/views/Addons.jsx', '/repo/frontend/src/components/FoodDiary.jsx']),
+      'assets/media-ingest-12345678.js': chunk(['/repo/frontend/src/lib/media-ingest.js']),
+      'assets/Addons-c9d0e1f2.css': { type: 'asset' },
+    })
+    expect(list).toEqual(['./assets/Addons-c9d0e1f2.css', './assets/Addons-c9d0e1f2.js', './assets/media-ingest-12345678.js'])
+  })
+  it('keeps any chunk where app code shares the bundle with them', () => {
+    const list = lazyAssets({ 'assets/mixed-11111111.js': chunk([nm('echarts/core.js'), '/repo/frontend/src/views/Stats.jsx']) })
+    expect(list).toEqual(['./assets/mixed-11111111.js'])
+  })
+})

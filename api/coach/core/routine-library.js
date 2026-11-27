@@ -124,8 +124,26 @@ export function builtinIndex() {
 
 const WORDS = s => (String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
 // Words that ask for a no-equipment plan, in the languages people asked in.
-const BODYWEIGHT = /\b(body ?weight|calisthenics?|no equipment|without equipment|at home|home workout|eigengewicht|ohne gerate|sans materiel|poids du corps|peso corporal|peso corporeo|senza attrezzi|sin equipo|sem equipamento|pull[- ]?up bar|klimmzugstange)\b/i;
-export const asksForBodyweight = text => BODYWEIGHT.test(String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, ''));
+const BODYWEIGHT = /\b(body ?weight|calisthenics?|at home|home workout|eigengewicht|ohne gerate|sans materiel|poids du corps|peso corporal|peso corporeo|senza attrezzi|sin equipo|sem equipamento|pull[- ]?up bar|klimmzugstange)\b/i;
+const OTHER_KIT = new Set([...LIB_BY_ID.values()].map(e => e.eq).filter(eq => eq && eq !== 'body weight'));
+const REQUESTED_KIT = new RegExp('\\b(?:with|using|only) (?:my |an? )?(?:' + [...OTHER_KIT].map(eq => WORDS(eq).join('[ -]')).join('|') + ')s?\\b', 'i');
+// Match the constraint in the submitted sentence so editing or manually typing a starter works.
+const LOCAL_NO_KIT = [
+  /(?:sans (?:poids|matériel|équipement)|sin (?:pesas|equipo)|sem (?:pesos|equipamento)|senza (?:pesi|attrezzi))(?![\p{L}\p{M}])/iu,
+  /(?:ohne (?:gewichte|geräte)|без (?:отягощений|весов|оборудования|обтяжень|ваги|обладнання))(?![\p{L}\p{M}])/iu,
+  /(?:bez (?:závaží|vybavení|ciężarów|sprzętu)|be svarmenų|utan vikter|uden vægte|súlyok nélkül(?:i)?|ağırlıksız)(?![\p{L}\p{M}])/iu,
+  /(?:tanpa beban|không cần tạ|(?:من دون|بدون) أوزان|بدون وزنه|ওজন ছাড়া|बिना वज़?न|중량 없이)(?![\p{L}\p{M}])/iu,
+  /不[用需](?:负重|負重)|ไม่ใช้เวท/iu,
+];
+const NO_EQUIPMENT = /\b(?:no|without)[ -]equipment\b/i;
+const NO_WEIGHTS = /\b(?:no|without)[ -]weights\b/i;
+export const asksForNoAddedWeight = text => NO_EQUIPMENT.test(text) || NO_WEIGHTS.test(text) || (typeof text === 'string' && LOCAL_NO_KIT.some(pattern => pattern.test(text.normalize())));
+// "With resistance bands but no weights" still permits a band exercise.
+export const asksForBodyweightOnly = text => NO_EQUIPMENT.test(text) ||
+  (asksForNoAddedWeight(text) && !REQUESTED_KIT.test(text));
+export const asksForBodyweight = text => asksForNoAddedWeight(text)
+  ? asksForBodyweightOnly(text)
+  : BODYWEIGHT.test(String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, ''));
 
 /**
  * The few entries worth showing the model for this question: word overlap with the title, split,

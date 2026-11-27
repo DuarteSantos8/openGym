@@ -42,6 +42,8 @@ import { atomicWrite as durableWrite } from './durable.js';
 import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT, outboundLookup } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
+import { createFoodLookup, FoodLookupError } from './food-lookup.js';
+import { createFoodLookup as createAddonFoodLookup } from './addons/food.js';
 import { buildIcs } from './integrations/calendar.js';
 import { deriveKey, seal as sealText, open as openSealed } from './integrations/crypto.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
@@ -100,6 +102,13 @@ const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
 // every account that opts in, so an instance has to ask for it. While it is off every password
 // route answers 404 and the app shows none of it; hashes already stored stay where they are.
 const PASSWORD_LOGIN = /^(1|true|yes|on)$/i.test(process.env.PASSWORD_LOGIN || '');
+// A network request to Open Food Facts is opt-in for the server operator. Nothing is
+// sent to that service unless a signed-in person explicitly searches a barcode.
+const NUTRITION_ON = /^(1|true|yes|on)$/i.test(process.env.ADDON_NUTRITION || '');
+const FOOD_RATE = createWindow({ max: 12, windowMs: 60000 });
+// The Extension Lab's lookup (main branch): its factory RETURNS the lookup function itself,
+// unlike the Nutrition module's factory below which returns an object with .lookup().
+const lookupFood = createAddonFoodLookup({ userAgent: process.env.OPEN_FOOD_FACTS_USER_AGENT || undefined });
 // Trainers, gym leads and studios (docs/TRAINERS.md). Off by default: with it off every
 // /api/sharing, /api/trainer and /api/admin/gyms route answers 404 and the app shows nothing.
 const TRAINERS = /^(1|true|yes|on)$/i.test(process.env.TRAINERS || '');
@@ -163,6 +172,10 @@ const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 // Integrations (integrations/, docs/INTEGRATIONS.md): off unless INTEGRATIONS names some. Their
 // connections live in DATA_DIR/integrations/, sealed with a key derived from SECRET.
 const integrations = createIntegrations({ dataDir: DATA, secret: SECRET, version: '1' });
+const foodLookup = createFoodLookup({
+  enabled: /^(1|true|yes|on)$/i.test(process.env.FOOD_LOOKUP || ''),
+  contact: process.env.FOOD_LOOKUP_CONTACT || ''
+});
 
 const dbFile = path.join(DATA, 'db.json');
 // Every account, passkey and invite. Only a missing file starts empty: an unreadable one (a write
@@ -726,8 +739,11 @@ const sessionVersion = user => user.sv || 0;
 // sign-in there a few minutes ago counts as proof for a change to a way in (proveOwner).
 function makeSession(user, kind = 'b', at = null) {
   const exp = Date.now() + SESSION_DAYS * 86400000;
-  return sign(user.id + ':' + exp + ':' + sessionVersion(user) + ':' + kind + (at ? ':' + Math.floor(at).toString(36) : ''));
+  const proof = at ? Math.floor(at).toString(36) : '';
+  const extra = kind === 'c' ? [proof, crypto.randomBytes(16).toString('hex')] : (at ? [proof] : []);
+  return sign([user.id, exp, sessionVersion(user), kind, ...extra].join(':'));
 }
+const sessionDigest = token => crypto.createHash('sha256').update(token).digest('hex');
 // With the __Host- prefix the *browser* guarantees the cookie is host-only (no Domain attribute
 // is even allowed) — which is what stops a sibling subdomain, e.g. anything-else.example.com
 // against gym.example.com, from planting a second session cookie for the shared parent domain
@@ -774,7 +790,7 @@ function sessionOf(req) {
 }
 // The session a token (a cookie value or a bearer) stands for — { user, exp } — or null. Split
 // out of sessionOf so the origin check can ask whether a bearer authenticates on its own.
-function sessionUser(tok) {
+function sessionUser(tok, { forLogout = false } = {}) {
   if (!tok) return null;
   const payload = verifySig(tok);
   if (!payload) return null;
@@ -782,11 +798,12 @@ function sessionUser(tok) {
   if (!uid || +exp < Date.now()) return null;
   const user = db.users.find(u => u.id === uid) || null;
   if (!user) return null;
-  if (user.disabled) return null;           // disabled accounts are locked out everywhere
+  if (user.disabled && !forLogout) return null;
   // Missing third field = pre-versioning cookie = version 0. Anything non-numeric is a malformed
   // payload (it still had to pass the HMAC, so this is belt-and-braces) and is refused outright.
   const claimed = ver === undefined ? 0 : Number(ver);
   if (!Number.isInteger(claimed) || claimed !== sessionVersion(user)) return null;
+  if (user.endedSessions?.[sessionDigest(tok)]) return null;
   return { user, exp: +exp, kind: kind || null, at: at ? parseInt(at, 36) || null : null };
 }
 function readSession(req) {
@@ -2374,7 +2391,7 @@ const trainerApi = trainerRoutes({
 });
 // OIDC (#130): its own burst budget per address, and wrong states, tokens or codes count
 // toward the same address pause the other sign-in routes use.
-const OIDC_BURST = createWindow({ max: 30, windowMs: 60000 });
+const OIDC_BURST = createWindow({ max: Math.max(1, +(process.env.OIDC_BURST_PER_MIN || 30) || 30), windowMs: 60000 });
 setInterval(() => OIDC_BURST.sweep(), 60000).unref();
 if (OIDC.enabled) {
   oidcApi = oidcRoutes({
@@ -2382,7 +2399,7 @@ if (OIDC.enabled) {
     json, readBody, readSession, sessionOf, audit, auditFail, saveDb, publicUser, requireAdmin,
     db: () => db, sessionCookie, makeSession, claimFirstAdmin, isAdmin, nameTaken, normalizeEmail,
     inviteOnly: INVITE_ONLY, proveOwner, otherWaysIn: u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0),
-    cookieValues,
+    cookieValues, clearCookie, removeAccount, lastAdminLeaving,
     syncRoles: TRAINERS ? (uid, roles) => org.syncClaimRoles(uid, roles) : null,
     throttle: req => { const a = limitAddress(req); return OIDC_BURST.take(a) || ADDR_FAILS.retryAfter('oidc|' + a); },
     strike: req => strikeAddress(req, 'oidc')
@@ -2548,6 +2565,18 @@ const routes = {
     json(res, 200, { ok: true, users: db.users.length, writable: true });
   },
 
+  // Read-only, session-gated and rate-limited; never proxy arbitrary URLs.
+  'GET /api/addons/food': async (req, res) => {
+    if (!NUTRITION_ON) return json(res, 404, { error: 'not enabled' });
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const wait = FOOD_RATE.take(user.id);
+    if (wait) return tooMany(res, wait);
+    const barcode = new URL(req.url, 'http://x').searchParams.get('barcode');
+    const result = await lookupFood(barcode);
+    json(res, result.status, result.body);
+  },
+
   // Public config the login screen needs before anyone is signed in. `coach` is absent unless
   // the instance has both switched the Coach on and successfully connected a provider — the
   // single flag every piece of Coach UI hangs off, so an unconfigured instance is byte-for-byte
@@ -2581,7 +2610,7 @@ const routes = {
       // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
       ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
-      ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
+      ...(oidcApi ? { oidc: { label: OIDC.label, webOrigin: OIDC.webOrigin, deleteProfile: true, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
@@ -2593,11 +2622,31 @@ const routes = {
       // Which integrations this server offers (only to a session, like the Coach block). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
       ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
+      // Setup discovery only: this does not probe OFF or assert that it is reachable.
+      ...(readSession(req) ? { foodLookup: foodLookup.publicConfig() } : {}),
+      // The Extension Lab's own addon surface (main branch). Distinct from the profile-gated
+      // Nutrition module above; both are opt-in and both are off by default.
+      ...(readSession(req) && NUTRITION_ON ? { addons: { nutrition: true } } : {}),
       // Trainers and studios (docs/TRAINERS.md): only to a session and only when on, so the app
       // shows no trace of the feature anywhere else.
       // `roles` decides whether the app shows the trainer dashboard; every route checks again anyway.
       ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode, roles: trainerRolesOf(readSession(req).id) } } : {})
     });
+  },
+
+  'GET /api/food-lookup': async (req, res) => {
+    const user = readSession(req);
+    const params = new URL(req.url, 'http://x').searchParams;
+    const barcode = params.size === 1 && params.has('barcode') ? params.get('barcode') : null;
+    try {
+      const product = await foodLookup.lookup({ uid: user?.id,
+        nutrition: user ? readState(user.id)?.modules?.nutrition : false, barcode });
+      json(res, 200, product);
+    } catch (e) {
+      if (!(e instanceof FoodLookupError)) throw e;
+      json(res, e.status, { error: e.message, code: e.code },
+        e.retryAfter ? { 'Retry-After': String(e.retryAfter) } : undefined);
+    }
   },
 
   // A paired phone's token was minted once, at pairing, and nothing ever renewed it: after
@@ -2756,14 +2805,24 @@ const routes = {
     json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
-  // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
-  // A logout with no valid cookie is a no-op and isn't worth an entry.
+  // An expired Set-Cookie could arrive after another tab signs in. Revoke only the browser
+  // credential this request carried, durably, without overwriting a newer cookie.
   'POST /api/logout': async (req, res) => {
-    const user = readSession(req);
+    const cookie = cookieToken(req);
+    const session = sessionUser(cookie, { forLogout: true });
+    const user = session?.user || readSession(req);
+    if (session) {
+      const now = Date.now();
+      const ended = Object.fromEntries(Object.entries(user.endedSessions || {}).filter(([, exp]) => exp >= now));
+      ended[sessionDigest(cookie)] = session.exp;
+      const previous = user.endedSessions;
+      user.endedSessions = ended;
+      try { saveDb(); } catch (error) { user.endedSessions = previous; throw error; }
+    }
     if (user) audit(req, 'auth.logout', { user });
     // OIDC_LOGOUT: where the browser goes next to end the provider's session too.
-    const out = user && oidcApi ? oidcApi.logoutUrl(user) : null;
-    json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) }, { 'Set-Cookie': clearCookie });
+    const out = user && !user.disabled && oidcApi ? oidcApi.logoutUrl(user) : null;
+    json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) });
   },
 
   // "Sign out everywhere" — bumps this user's session version, which invalidates every cookie
@@ -2810,6 +2869,8 @@ const routes = {
     if (typeof body.name !== 'string' || body.name.trim() !== user.name) {
       return json(res, 400, { error: 'type the account name to confirm', code: 'confirm-name' });
     }
+    const sameIdentity = () => body.subject === undefined || (oidcWayIn(user) && user.oidc.sub === body.subject);
+    if (!sameIdentity()) return json(res, 403, { error: 'identity not confirmed' });
     const lastAdmin = () => lastAdminLeaving(user);
     const refuseLastAdmin = () => json(res, 409, { error: 'the last admin cannot leave while other profiles remain', code: 'last-admin' });
     if (lastAdmin()) return refuseLastAdmin();
@@ -2822,6 +2883,7 @@ const routes = {
     if (!proof) return;
     // Everything above awaited: the session may have ended, and another admin may have left.
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
+    if (!sameIdentity()) return json(res, 403, { error: 'identity not confirmed' });
     if (lastAdmin()) return refuseLastAdmin();
     removeAccount(user);
     audit(req, 'auth.account.delete', { user, msg: proof });

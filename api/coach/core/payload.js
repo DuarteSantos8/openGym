@@ -11,10 +11,10 @@
  * and appearance settings, and every other profile's everything.
  */
 import { glyphStr } from './glyphs.js';
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
-import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, rotationOf } from './context.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, needsNoEquipment, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
+import { muscleLoad, gymOf, challengesOf, recordsOf, measurementsOf, healthOf, nutritionOf, rotationOf } from './context.js';
 import { shareOf } from './categories.js';
-import { asksForBodyweight, cleanHits } from './routine-library.js';
+import { asksForBodyweight, asksForBodyweightOnly, cleanHits } from './routine-library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -657,6 +657,7 @@ export function build(S, opts = {}) {
     if (share.records) { const r = recordsOf(S, now); if (r.length) p.records = r; }
     if (share.measurements) { const m = measurementsOf(S, now); if (m.length) p.measurements = m; }
     if (share.health) { const h = healthOf(S, now, opts.vitals); if (h) p.health = h; }
+    if (share.nutrition) { const n = nutritionOf(S, now); if (n) p.nutrition = n; }
     const rot = rotationOf(S);
     if (rot) p.rotation = rot;
   }
@@ -737,9 +738,11 @@ export function build(S, opts = {}) {
     // question gets a library slice, leaning to what the question names. "Only bodyweight" narrows
     // it to exercises that need nothing.
     const eq = asksForBodyweight(opts.note) ? ['body weight'] : p.coachProfile?.equipment;
-    p.library = librarySlice(S, eq, { keep: trainedIds(S, workouts), max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note) });
+    const keep = trainedIds(S, workouts);
+    const strict = asksForBodyweightOnly(p.question);
+    p.library = librarySlice(S, eq, { keep, max: ASK_LIBRARY, focus: focusTexts(p.coachProfile, opts.note), equipmentFree: strict });
     // Routines from the library (core/routine-library.js) the app found for this question.
-    const hits = cleanHits(opts.routines);
+    const hits = cleanHits(opts.routines).filter(h => !strict || (!h.equipment.length && h.sessions.every(s => s.ex.every(needsNoEquipment))));
     if (hits.length) p.routineLibrary = hits;
   } else if (opts.kind === 'adapt') {
     // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
@@ -779,7 +782,7 @@ export function build(S, opts = {}) {
     // profile names get the bigger share (#829: "more core" offered four ab exercises).
     p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, workouts), max: 60, fresh: REVIEW_FRESH, focus: focusTexts(p.coachProfile, opts.note) });
   } else {
-    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []), focus: focusTexts(p.coachProfile, opts.refine) });
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []), focus: focusTexts(p.coachProfile, opts.refine), equipmentFree: asksForBodyweightOnly(opts.refine) });
     // Creation for a returning user: what they have actually handled, so proposed baselines
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};

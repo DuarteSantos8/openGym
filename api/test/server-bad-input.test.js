@@ -78,13 +78,13 @@ test('malformed and non-object JSON bodies are a 400 with no stack trace, on eve
   r = await status(h, 'POST', '/api/register/options', anon, JSON.stringify({ name: { toString: 1 } }));
   assert.equal(r.status, 400);
   assert.equal(r.body.error, 'name required');
-  // An empty body is still "no fields", as the routes that send none rely on.
-  r = await status(h, 'POST', '/api/logout', { Cookie: authed.Cookie });
-  assert.equal(r.status, 200);
   // Well-formed controls keep their own answers.
   r = await status(h, 'POST', '/api/register/options', anon, '{}');
   assert.deepEqual(r, { status: 400, body: { error: 'name required' } });
   r = await status(h, 'PUT', '/api/data', authed, JSON.stringify({ state: { workouts: [], routines: [] }, baseRev: 0 }));
+  assert.equal(r.status, 200);
+  // An empty body is still "no fields". Sign out after the authenticated write.
+  r = await status(h, 'POST', '/api/logout', { Cookie: authed.Cookie });
   assert.equal(r.status, 200);
   assert.equal(h.stackFrames(), 0, `stack traces in the log:\n${h.log}`);
   assert.doesNotMatch(h.log, /bad json|TypeError/);

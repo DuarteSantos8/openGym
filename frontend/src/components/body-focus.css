@@ -1,0 +1,28 @@
+/* Today's body picker (components/BodyFocus.jsx). Opacity instead of color-mix() throughout, so the
+   tints also show on the iOS 15.5 WebView (color-mix-fallback.test.js). */
+.bf-card .bf-stage{position:relative;margin:10px auto 0;max-width:340px}
+.bf-card .bodymap{max-width:340px;margin:0 auto}
+.bf-photo{position:relative;width:100%;margin:0 auto;border-radius:16px;overflow:hidden;background:var(--surface-2)}
+.bf-photo img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-select:none;pointer-events:none}
+.bf-photo svg{position:absolute;inset:0;width:100%;height:100%;cursor:pointer;touch-action:manipulation}
+
+/* An area not picked: a soft dashed outline, so it reads as something to tap. */
+.bf-a{fill:#fff;fill-opacity:0;stroke:#fff;stroke-opacity:.75;stroke-width:2;stroke-dasharray:6 5;vector-effect:non-scaling-stroke;transition:fill-opacity .2s ease,stroke-opacity .2s ease}
+.bf-cap{stroke:#fff;stroke-opacity:.2;stroke-linecap:round;transition:stroke-opacity .2s ease}
+/* Picked: filled with the accent and glowing. */
+.bf-a.on{fill:var(--acc);fill-opacity:.45;stroke:var(--acc);stroke-opacity:1;stroke-dasharray:none;filter:drop-shadow(0 0 6px var(--acc));animation:bf-pop .35s ease-out}
+.bf-cap.on{stroke:var(--acc);stroke-opacity:.5;filter:drop-shadow(0 0 6px var(--acc));animation:bf-pop .35s ease-out}
+@keyframes bf-pop{0%{opacity:.4}60%{opacity:1}100%{opacity:1}}
+
+.bf-views{margin-top:10px}
+.bf-tools{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}
+.bf-tip{margin:6px auto 0;max-width:340px;text-align:center}
+.bf-note{margin-top:8px;text-align:center;color:var(--orange-ink)}
+.bf-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.bf-chips .chip{min-height:44px;padding-inline:14px}
+.bf-go{display:grid;gap:8px;margin-top:12px}
+
+@media (prefers-reduced-motion:reduce){
+  .bf-a,.bf-cap{transition:none}
+  .bf-a.on,.bf-cap.on{animation:none}
+}

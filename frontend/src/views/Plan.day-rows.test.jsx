@@ -2,8 +2,8 @@
 // Plan → Schedule → This week (v1.3.11): one row per weekday, whatever is on it. #276 had moved
 // "add a second routine" into a small ＋ in a planned day's header; the day's own picker now does
 // all of it (one routine, several for a combined day, or a rest day), so every day is one
-// tappable row that opens it, planned or not. The Coach, once a banner over the week, is the
-// last entry of the Plan menu.
+// tappable row that opens it, planned or not. The Coach, once a banner over the week, has its
+// own labelled button under More.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -58,12 +58,15 @@ afterEach(() => {
 })
 
 const mount = () => act(() => root.render(<Plan />))
-const day = name => host.querySelector(`.plan-day[aria-label="${name}"]`)
+const day = name => [...host.querySelectorAll('.plan-day')].find(row => row.querySelector('.vh').textContent === name)
 
 describe('Plan — the weekday rows', () => {
   it('a planned day is one row with no buttons of its own; a tap opens the day’s picker', () => {
     mount()
     const monday = day('Monday')
+    expect(monday.querySelector('.vh')?.textContent).toBe('Monday')
+    expect(monday.hasAttribute('aria-label')).toBe(false)
+    expect(monday.querySelector('.plan-day-n').hasAttribute('aria-hidden')).toBe(false)
     expect(monday.querySelector('.tt').textContent).toBe('Push')
     expect(monday.querySelectorAll('button').length).toBe(0)
     act(() => monday.click())
@@ -92,9 +95,9 @@ describe('Plan — the menu', () => {
     return menuSheet.mock.calls.at(-1)[0]
   }
 
-  const coachButton = () => [...host.querySelectorAll('.hdr button')].find(b => b.textContent === 'Coach')
+  const coachButton = () => [...host.querySelectorAll('.iv-plan-more-actions button')].find(b => b.textContent === 'Coach')
 
-  it('has its own Coach button in the header when the Coach is available, not a menu entry', () => {
+  it('has its own labelled Coach button under More when available, not a menu entry', () => {
     mocks.coach = true
     mount()
     expect(host.textContent).not.toContain('Plan design and reviews')

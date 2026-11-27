@@ -322,7 +322,7 @@ describe('localMediaGc', () => {
     expect(await media.has(hex('a'))).toBe(true)
   })
 
-  it('signed in, evicts synced main files over the cap — never a pending one or a poster the state shows', async () => {
+  it('signed in, evicts synced main files over the cap while preserving guest originals, pending files and posters', async () => {
     const S = { customEx: [
       { id: 'x', media: refOf(hex('a'), hex('b'), { size: 200 * MB }) },
       { id: 'y', media: refOf(hex('c'), hex('d'), { size: 150 * MB }) }
@@ -331,9 +331,10 @@ describe('localMediaGc', () => {
     await media.put(hex('b'), new Blob([new Uint8Array(1 * MB)]), { mime: 'image/webp', pending: false })
     await media.put(hex('c'), new Blob([new Uint8Array(150 * MB)]), { mime: 'image/webp', pending: true })
     await media.put(hex('d'), new Blob([new Uint8Array(1 * MB)]), { mime: 'image/webp', pending: false })
+    await media.put(hex('e'), new Blob(['guest photo']), { mime: 'image/webp', pending: false })
     clock += 2 * 3600000
-    await make(appStore({ S })).localMediaGc()
-    expect((await media.list()).map(r => r.hash).sort()).toEqual([hex('b'), hex('c'), hex('d')])
+    await make(appStore({ S, stashedMediaHashes: async () => new Set([hex('e')]) })).localMediaGc()
+    expect((await media.list()).map(r => r.hash).sort()).toEqual([hex('b'), hex('c'), hex('d'), hex('e')])
   })
 
   it('waits for boot: before `ready` nothing is removed, and the clean-up runs once it flips', async () => {

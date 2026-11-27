@@ -20,8 +20,11 @@ function render(sheet) {
   const root = createRoot(host)
   mounted.push([root, host])
   act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
-  return host
+  return openSetup(host)
 }
+// The exercise sheet folds what you set once under "Setup for this exercise" (redesign step 4).
+const openSetup = host => { const h = host.querySelector('.ex-setup-h[aria-expanded="false"]'); if (h) act(() => h.click()); return host }
+
 const S = () => useStore.getState().S
 const segButton = (host, text) => [...host.querySelectorAll('.seg button')].find(b => b.textContent.trim() === text)
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)

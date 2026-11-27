@@ -1,0 +1,143 @@
+TAP version 13
+# Subtest: HTTP optional profile compatibility: PUT, 409, old writers, tombstones, reset and malformed records
+    # Subtest: initial unstamped PUT and a later stamped merge preserve zero-stamp fields
+    ok 1 - initial unstamped PUT and a later stamped merge preserve zero-stamp fields
+      ---
+      duration_ms: 83.306501
+      type: 'test'
+      ...
+    # Subtest: stale revision receives 409 and the exact optional record
+    ok 2 - stale revision receives 409 and the exact optional record
+      ---
+      duration_ms: 6.337451
+      type: 'test'
+      ...
+    # Subtest: an older unstamped writer omitting the whole collection preserves it
+    ok 3 - an older unstamped writer omitting the whole collection preserves it
+      ---
+      duration_ms: 22.675496
+      type: 'test'
+      ...
+    # Subtest: an older stamped writer omitting the whole collection preserves it
+    ok 4 - an older stamped writer omitting the whole collection preserves it
+      ---
+      duration_ms: 16.449535
+      type: 'test'
+      ...
+    # Subtest: unstamped writer omitting unknown fields within optional records preserves them
+    ok 5 - unstamped writer omitting unknown fields within optional records preserves them
+      ---
+      duration_ms: 17.057748
+      type: 'test'
+      ...
+    # Subtest: explicit tombstone remains hidden through an older writer and replay
+    ok 6 - explicit tombstone remains hidden through an older writer and replay
+      ---
+      duration_ms: 32.851301
+      type: 'test'
+      ...
+    # Subtest: malformed optional records cannot erase valid records or crash the server
+    ok 7 - malformed optional records cannot erase valid records or crash the server
+      ---
+      duration_ms: 13.528835
+      type: 'test'
+      ...
+    # Subtest: reset ids survive GET and suppress stale replay without reviving legacy unknown settings
+    ok 8 - reset ids survive GET and suppress stale replay without reviving legacy unknown settings
+      ---
+      duration_ms: 24.459272
+      type: 'test'
+      ...
+    # Subtest: F2 HTTP nutritionEntries: unstamped follow-up expands resetIds without changing epoch
+    ok 9 - F2 HTTP nutritionEntries: unstamped follow-up expands resetIds without changing epoch
+      ---
+      duration_ms: 27.579592
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP nutritionEntries noBase=false: repeated partial-stamp payload does not advance unchanged distance
+    ok 10 - F4 HTTP nutritionEntries noBase=false: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 35.158909
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP nutritionEntries noBase=true: repeated partial-stamp payload does not advance unchanged distance
+    ok 11 - F4 HTTP nutritionEntries noBase=true: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 30.293693
+      type: 'test'
+      ...
+    # Subtest: F2 HTTP activities: unstamped follow-up expands resetIds without changing epoch
+    ok 12 - F2 HTTP activities: unstamped follow-up expands resetIds without changing epoch
+      ---
+      duration_ms: 27.572493
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP activities noBase=false: repeated partial-stamp payload does not advance unchanged distance
+    ok 13 - F4 HTTP activities noBase=false: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 35.1377
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP activities noBase=true: repeated partial-stamp payload does not advance unchanged distance
+    ok 14 - F4 HTTP activities noBase=true: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 30.772245
+      type: 'test'
+      ...
+    # Subtest: F2 HTTP providerLinks: unstamped follow-up expands resetIds without changing epoch
+    ok 15 - F2 HTTP providerLinks: unstamped follow-up expands resetIds without changing epoch
+      ---
+      duration_ms: 23.195278
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP providerLinks noBase=false: repeated partial-stamp payload does not advance unchanged distance
+    ok 16 - F4 HTTP providerLinks noBase=false: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 29.59343
+      type: 'test'
+      ...
+    # Subtest: F4 HTTP providerLinks noBase=true: repeated partial-stamp payload does not advance unchanged distance
+    ok 17 - F4 HTTP providerLinks noBase=true: repeated partial-stamp payload does not advance unchanged distance
+      ---
+      duration_ms: 44.055979
+      type: 'test'
+      ...
+    # Subtest: no-base HTTP nutritionEntries: edits both lexical directions while retaining omissions and deletions
+    ok 18 - no-base HTTP nutritionEntries: edits both lexical directions while retaining omissions and deletions
+      ---
+      duration_ms: 88.157939
+      type: 'test'
+      ...
+    # Subtest: no-base HTTP activities: edits both lexical directions while retaining omissions and deletions
+    ok 19 - no-base HTTP activities: edits both lexical directions while retaining omissions and deletions
+      ---
+      duration_ms: 74.172761
+      type: 'test'
+      ...
+    # Subtest: no-base HTTP providerLinks: edits both lexical directions while retaining omissions and deletions
+    ok 20 - no-base HTTP providerLinks: edits both lexical directions while retaining omissions and deletions
+      ---
+      duration_ms: 68.980944
+      type: 'test'
+      ...
+    # Subtest: a valid stamp map below MAX_BODY is accepted without argument-stack overflow
+    ok 21 - a valid stamp map below MAX_BODY is accepted without argument-stack overflow
+      ---
+      duration_ms: 969.305769
+      type: 'test'
+      ...
+    1..21
+ok 1 - HTTP optional profile compatibility: PUT, 409, old writers, tombstones, reset and malformed records
+  ---
+  duration_ms: 2726.163368
+  type: 'test'
+  ...
+1..1
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2841.091895

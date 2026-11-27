@@ -24,6 +24,7 @@ import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
 import { calendarSheet } from '../components/CalendarFeed.jsx'
 import { useNutritionLink, nutritionSheet } from '../components/SisterApps.jsx'
 import { getCalendar } from '../lib/api-tokens.js'
+import { APP_NAME } from '../lib/brand.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
@@ -198,6 +199,14 @@ export default function IntegrationsPage({ android = false, ios = false }) {
 
   return <>
     <p className="sect-f intg-intro">{t('Only what you switch on talks to anything. The rest stays out of your way.')}</p>
+    <div className="sect-b">
+      <button type="button" className="lrow tap" onClick={() => nav('/addons')}>
+        <span className="lrow-i"><Icon name="dumbbell" /></span>
+        <span className="lrow-m"><span className="lrow-t">{t('{0} Lab', APP_NAME)}</span>
+          <span className="lrow-s">{t('More ways to train.')} {t('Under your control.')}</span>
+        </span><Icon name="chevronRight" />
+      </button>
+    </div>
     {server.error && <Section><Row icon="warning" iconTint="var(--orange)" title={t('Could not reach your server')} subtitle={t('Tap to try again')} onClick={() => server.load()} /></Section>}
     {dir.map(cat => <div key={cat.id}>
       <Section title={t(cat.title)}>

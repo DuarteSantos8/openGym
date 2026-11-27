@@ -1,0 +1,229 @@
+{
+  "explicit_keyboard_lookup": {
+    "provider_calls_before_click": 0,
+    "provider_calls_after_click": 1,
+    "persisted_before_save": 0,
+    "keyboard_focus_outline": true,
+    "reduced_motion": true
+  },
+  "dark_320": {
+    "horizontal_overflow": false,
+    "source_text": "Synthetic oats\n\nQA fixture \u00b7 330 ml\n\nPer 100 g\n\nEnergy (kcal)\n200\nProtein (g)\n8\nCarbohydrate (g)\nUnknown\nFat (g)\n0\n\nFetched: 11/14/2026, 10:36:32 AM\n\nContains information from Open Food Facts, available under the Open Database License (ODbL). Open Food Facts \u00b7 ODbL-1.0",
+    "exercise_images": 0
+  },
+  "dark_1280": {
+    "horizontal_overflow": false,
+    "source_text": "Synthetic oats\n\nQA fixture \u00b7 330 ml\n\nPer 100 g\n\nEnergy (kcal)\n200\nProtein (g)\n8\nCarbohydrate (g)\nUnknown\nFat (g)\n0\n\nFetched: 11/14/2026, 10:36:32 AM\n\nContains information from Open Food Facts, available under the Open Database License (ODbL). Open Food Facts \u00b7 ODbL-1.0",
+    "exercise_images": 0
+  },
+  "light_320": {
+    "horizontal_overflow": false,
+    "source_text": "Synthetic oats\n\nQA fixture \u00b7 330 ml\n\nPer 100 g\n\nEnergy (kcal)\n200\nProtein (g)\n8\nCarbohydrate (g)\nUnknown\nFat (g)\n0\n\nFetched: 11/14/2026, 10:36:32 AM\n\nContains information from Open Food Facts, available under the Open Database License (ODbL). Open Food Facts \u00b7 ODbL-1.0",
+    "exercise_images": 0
+  },
+  "light_390": {
+    "horizontal_overflow": false,
+    "source_text": "Synthetic oats\n\nQA fixture \u00b7 330 ml\n\nPer 100 g\n\nEnergy (kcal)\n200\nProtein (g)\n8\nCarbohydrate (g)\nUnknown\nFat (g)\n0\n\nFetched: 11/14/2026, 10:36:32 AM\n\nContains information from Open Food Facts, available under the Open Database License (ODbL). Open Food Facts \u00b7 ODbL-1.0",
+    "exercise_images": 0
+  },
+  "light_1280": {
+    "horizontal_overflow": false,
+    "source_text": "Synthetic oats\n\nQA fixture \u00b7 330 ml\n\nPer 100 g\n\nEnergy (kcal)\n200\nProtein (g)\n8\nCarbohydrate (g)\nUnknown\nFat (g)\n0\n\nFetched: 11/14/2026, 10:36:32 AM\n\nContains information from Open Food Facts, available under the Open Database License (ODbL). Open Food Facts \u00b7 ODbL-1.0",
+    "exercise_images": 0
+  },
+  "explicit_save": {
+    "id": "e559593a-09a2-4561-9a83-9a02f3a2b47d",
+    "contentFingerprint": "sha256:955f8f30a999c7beb9f4de88c3f47edea43bbd58c97b9f6a6c163350f4187c49",
+    "sourceSnapshot": {
+      "source": "open-food-facts",
+      "externalId": "3017620422003",
+      "label": "Synthetic oats",
+      "brand": "QA fixture",
+      "quantityText": "330 ml",
+      "per100": {
+        "basis": "g",
+        "energyKcal": 200,
+        "proteinG": 8,
+        "fatG": 0
+      },
+      "serving": {
+        "label": "30 g",
+        "grams": 30
+      },
+      "fetchedAt": "2026-11-14T10:36:32.359Z",
+      "attribution": {
+        "text": "Contains information from Open Food Facts, available under the Open Database License (ODbL).",
+        "url": "https://world.openfoodfacts.org/product/3017620422003",
+        "license": "ODbL-1.0",
+        "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/"
+      }
+    },
+    "amountG": 25,
+    "energyKcal": 50,
+    "provider_calls": 1
+  },
+  "offline_reopen_edit": {
+    "sourceSnapshot_unchanged": true,
+    "fingerprint_unchanged": true,
+    "provider_calls": 1,
+    "entry_energyKcal": 123,
+    "source_energyKcal": 200
+  },
+  "reload_delete_undo": {
+    "snapshot_retained": true,
+    "provider_calls": 1
+  },
+  "not_found_manual_fallback": {
+    "manual_proteinG": 0.024,
+    "provider_calls": 2,
+    "lookup_persisted": false
+  },
+  "volume_serving_save": {
+    "amountMl": 250,
+    "energyKcal": 100,
+    "proteinG": 0,
+    "serving": {
+      "label": "125 ml",
+      "count": 2,
+      "size": 125,
+      "unit": "mL"
+    },
+    "provider_calls": 3
+  },
+  "upstream_failure": {
+    "stable_message": true,
+    "persisted_count": 3,
+    "provider_calls": 4
+  },
+  "final_requests": {
+    "uncaught_errors": [],
+    "resources_since_reload": [
+      {
+        "path": "/api/config",
+        "status": 200
+      },
+      {
+        "path": "/api/watch/events",
+        "status": 200
+      },
+      {
+        "path": "/api/me",
+        "status": 200
+      },
+      {
+        "path": "/api/watch/events",
+        "status": 200
+      },
+      {
+        "path": "/api/data",
+        "status": 200
+      },
+      {
+        "path": "/api/data",
+        "status": 200
+      },
+      {
+        "path": "/api/data/rev",
+        "status": 200
+      },
+      {
+        "path": "/api/food-lookup",
+        "status": 404
+      },
+      {
+        "path": "/api/food-lookup",
+        "status": 200
+      },
+      {
+        "path": "/api/food-lookup",
+        "status": 502
+      },
+      {
+        "path": "/api/data",
+        "status": 200
+      },
+      {
+        "path": "/api/data/rev",
+        "status": 200
+      },
+      {
+        "path": "/api/data/rev",
+        "status": 200
+      }
+    ],
+    "synthetic_provider_calls": [
+      {
+        "url": "https://world.openfoodfacts.org/api/v3.6/product/3017620422003?fields=code,product_name,brands,quantity,serving_size,nutrition",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "User-Agent": "openGym/1.4.4"
+        }
+      },
+      {
+        "url": "https://world.openfoodfacts.org/api/v3.6/product/96385074?fields=code,product_name,brands,quantity,serving_size,nutrition",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "User-Agent": "openGym/1.4.4"
+        }
+      },
+      {
+        "url": "https://world.openfoodfacts.org/api/v3.6/product/012345678905?fields=code,product_name,brands,quantity,serving_size,nutrition",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "User-Agent": "openGym/1.4.4"
+        }
+      },
+      {
+        "url": "https://world.openfoodfacts.org/api/v3.6/product/036000291452?fields=code,product_name,brands,quantity,serving_size,nutrition",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "User-Agent": "openGym/1.4.4"
+        }
+      }
+    ],
+    "live_provider_calls": 0
+  },
+  "rtl_large_text": {
+    "width": 320,
+    "font_size": "200%",
+    "lang": "ar",
+    "dir": "rtl",
+    "horizontal_overflow": false,
+    "provider_calls": 4
+  },
+  "review_round1_production_probe": {
+    "runtime": "762f48a59fa4d03fc4f4e177c0b7d89f8dc11727",
+    "same_javascript_task_transitions": {
+      "module": {
+        "before": 3,
+        "after": 3
+      },
+      "account": {
+        "before": 3,
+        "after": 3
+      },
+      "config": {
+        "before": 3,
+        "after": 3
+      }
+    },
+    "method": "Actual built FoodLookup, production store export, DOM Save.click after synchronous away/back; real API synthetic HTTPS boundary."
+  },
+  "review_round1_fresh_save": {
+    "saved_rows": 1,
+    "runtime": "762f48a5",
+    "uncaught_errors": [],
+    "provider_calls": 4
+  },
+  "final_browser_state": {
+    "uncaught_errors": [],
+    "reduced_motion": true,
+    "live_provider_requests": 0,
+    "synthetic_transport_calls": 4,
+    "final_runtime": "762f48a5"
+  }
+}

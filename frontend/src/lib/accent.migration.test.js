@@ -5,6 +5,8 @@
 // merge with another device, an older app on the other end. The rule is the one weighIn and
 // gifSize already follow: DEF (what every loaded copy is laid over) keeps the old green, only
 // freshState writes the new one into the copy it makes.
+// Ironvane: the same rule with the app's own orange ('ironvane', drawn as a hex, lib/accent.js
+// HEX_PRESETS). 'brand', the old logo green, stays a preset anyone can pick.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
@@ -22,16 +24,19 @@ const blank = () => ({ workouts: [], routines: [], bodyweight: [], customEx: [] 
 const KEY = 'gym_state_v1'
 
 describe('the two defaults', () => {
-  it('a new profile gets the brand green, everything that never picked keeps the old one', () => {
-    expect(NEW_ACCENT).toBe('brand')
+  it('a new profile gets Ironvane orange, everything that never picked keeps the old one', () => {
+    expect(NEW_ACCENT).toBe('ironvane')
+    expect(ACCENTS.ironvane).toBe('#ff6b2c')
     expect(DEFAULT_ACCENT).toBe('lime')
     expect(ACCENTS.brand).toBe('#a3e635')
     expect(ACCENTS.lime).toBe('#30d158')
     expect(DEF.accent).toBe('lime')
   })
-  it('the brand green comes first in the picker, the old one stays as Classic green', () => {
-    expect(Object.keys(ACCENTS)[0]).toBe('brand')
-    expect(Object.keys(ACCENTS)[1]).toBe('lime')
+  it('Ironvane orange comes first in the picker, then the old logo green, then Classic green', () => {
+    expect(Object.keys(ACCENTS)[0]).toBe('ironvane')
+    expect(Object.keys(ACCENTS)[1]).toBe('brand')
+    expect(Object.keys(ACCENTS)[2]).toBe('lime')
+    expect(ACCENT_NAMES.ironvane).toBe('Ironvane orange')
     expect(ACCENT_NAMES.brand).toBe('openGym green')
     expect(ACCENT_NAMES.lime).toBe('Classic green')
     expect(Object.keys(ACCENT_NAMES)).toEqual(Object.keys(ACCENTS))
@@ -40,10 +45,10 @@ describe('the two defaults', () => {
 })
 
 describe('a fresh install (no data at all)', () => {
-  it('freshState and a start over wear the brand green', () => {
-    expect(freshState().accent).toBe('brand')
-    expect(accentValue(freshState())).toBe('brand')
-    expect(restartedState({ lang: 'de', accent: 'sky' }).accent).toBe('brand')
+  it('freshState and a start over wear Ironvane orange', () => {
+    expect(freshState().accent).toBe('ironvane')
+    expect(accentValue(freshState())).toBe('#ff6b2c')
+    expect(restartedState({ lang: 'de', accent: 'sky' }).accent).toBe('ironvane')
   })
 })
 
@@ -52,8 +57,8 @@ describe('a copy saved on this device before 1.4.5', () => {
   afterEach(() => localStorage.clear())
   const boot = async () => (await import('../store/useStore.js')).useStore.getState().S
 
-  it('nothing saved: the brand green', async () => {
-    expect((await boot()).accent).toBe('brand')
+  it('nothing saved: Ironvane orange', async () => {
+    expect((await boot()).accent).toBe('ironvane')
   })
   it('saved without an accent (from before accents existed): the old green', async () => {
     localStorage.setItem(KEY, JSON.stringify({ unit: 'kg', workouts: [{ id: 'w1' }], routines: [] }))
@@ -124,22 +129,22 @@ describe('a copy that arrives from elsewhere', () => {
 
 describe('a backup imported on this device', () => {
   afterEach(() => { localStorage.clear(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
-  it('a backup from before 1.4.5 keeps its old green, a fresh one its brand green', () => {
+  it('a backup from before 1.4.5 keeps its old green, a fresh one the new default', () => {
     useStore.setState({ S: freshState(), user: null, ready: true })
     useStore.getState().importBackup({ unit: 'kg', workouts: [{ id: 'w1', d: '2026-09-01', entries: [] }], routines: [] })
     expect(useStore.getState().S.accent).toBe('lime')
     useStore.getState().importBackup({ ...freshState(), workouts: [{ id: 'w2', d: '2026-09-02', entries: [] }] })
-    expect(useStore.getState().S.accent).toBe('brand')
+    expect(useStore.getState().S.accent).toBe('ironvane')
   })
 })
 
 describe('another account on this device', () => {
   afterEach(() => { localStorage.clear(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
-  it('starts its new profile on the brand green, and the account’s own copy brings its accent', () => {
+  it('starts its new profile on Ironvane orange, and the account’s own copy brings its accent', () => {
     localStorage.setItem('gym_owner', 'user-1')
     useStore.setState({ S: { ...clone(DEF), accent: 'pink', workouts: [{ id: 'w1', d: '2026-09-01', entries: [] }] }, user: { id: 'user-1' } })
     useStore.getState().setUser({ id: 'user-2', name: 'Two' })
-    expect(useStore.getState().S.accent).toBe('brand')
+    expect(useStore.getState().S.accent).toBe('ironvane')
     expect(restoredStateFor(useStore.getState().S, { workouts: [{ id: 'w9' }] }).accent).toBe('lime')
   })
 })

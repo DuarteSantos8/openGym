@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { loadStarterPlan, starterPlanSheet } from './sheets.jsx'
+import { setNav } from './lib/nav.js'
 
 const mounted = []
 
@@ -25,7 +26,7 @@ function renderTop() {
   return host
 }
 
-const rowFor = (host, name) => [...host.querySelectorAll('.item')].find(el => el.querySelector('.tt')?.textContent === name)
+const rowFor = (host, name) => [...host.querySelectorAll('[data-plan]')].find(el => el.querySelector('.ss')?.textContent === name)
 const buttonFor = (host, label) => [...host.querySelectorAll('button')].find(b => b.textContent === label)
 
 // Opens the chooser and taps one of its rows.
@@ -52,12 +53,13 @@ describe('starter plan chooser', () => {
   it('lists every plan with its day count', () => {
     starterPlanSheet()
     const host = renderTop()
-    expect([...host.querySelectorAll('.item .tt')].map(el => el.textContent))
+    // the row above the plans is the way to the quiz (EP22), not a plan
+    expect([...host.querySelectorAll('[data-plan] .tt + .ss')].map(el => el.textContent))
       .toEqual(['Push / Pull / Legs', 'Upper / Lower', 'Full Body', '5×5', 'No equipment', 'Dumbbells only', 'Resistance bands', 'Hotel room'])
-    expect(rowFor(host, 'Upper / Lower').querySelector('.ss').textContent).toContain('4 days per week')
+    expect(rowFor(host, 'Upper / Lower').querySelector('.tt').textContent).toContain('4 days per week')
     // The four for training away from the gym sit under their own heading.
     expect(host.textContent).toContain('Away from the gym')
-    expect(rowFor(host, 'Hotel room').querySelector('.ss').textContent).toContain('2 days per week')
+    expect(rowFor(host, 'Hotel room').querySelector('.tt').textContent).toContain('2 days per week')
   })
 
   it('loads straight away when the plan’s weekdays are free, without asking', () => {
@@ -185,6 +187,23 @@ describe('loadStarterPlan', () => {
     const second = S().routines.slice(4).map(r => r.id)
     expect(S().routines).toHaveLength(7)
     expect(new Set([...first, ...second]).size).toBe(6)
+  })
+
+  // EP22: someone who does not know which plan to pick is one tap from the quiz that picks one.
+  it('offers Find my plan first, closes itself and goes to the quiz', () => {
+    const went = []
+    setNav((to, opts) => went.push([to, opts]))
+    starterPlanSheet()
+    const host = renderTop()
+    const first = host.querySelector('.item')
+    expect(first.dataset.start).toBe('quiz')
+    expect(first.querySelector('.tt').textContent).toBe('Find my plan')
+    const before = structuredClone(S())
+    act(() => { first.click() })
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(went.map(w => w[0])).toEqual(['/start'])
+    expect(S()).toEqual(before)
+    setNav(() => {})
   })
 
   it('refuses a plan it does not know and changes nothing', () => {

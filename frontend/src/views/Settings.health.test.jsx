@@ -234,7 +234,7 @@ describe('Settings — reading back', () => {
     expect(sw('Weigh-ins from other apps').getAttribute('aria-checked')).toBe('false')
     expect(writeSwitch().getAttribute('aria-checked')).toBe('false')
     expect(mocks.enableHealth).not.toHaveBeenCalled()
-    expect(host.textContent).toContain('openGym reads only while it is open')
+    expect(host.textContent).toContain('Ironvane reads only while it is open')
     expect(row('Open Health Connect')).toBeTruthy()
   })
 

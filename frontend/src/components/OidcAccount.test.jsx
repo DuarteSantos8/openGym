@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => {
 vi.mock('../store/useStore.js', () => {
   const useStore = sel => sel ? sel(mocks.snapshot()) : mocks.snapshot()
   useStore.getState = mocks.snapshot
+  useStore.setState = next => { const patch = typeof next === 'function' ? next(mocks.snapshot()) : next; if (patch && 'user' in patch) mocks.user = patch.user }
   return { useStore, hasData: () => false }
 })
 vi.mock('../store/useUI.js', () => {
@@ -31,7 +32,7 @@ vi.mock('../lib/api.js', () => ({
 vi.mock('../lib/oidc.js', async orig => ({ ...(await orig()), startWebSignIn: vi.fn() }))
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: vi.fn() }))
 
-import { OidcRow, OidcSheet } from './OidcAccount.jsx'
+import { OidcRow, OidcSheet, oidcError } from './OidcAccount.jsx'
 import { startWebSignIn } from '../lib/oidc.js'
 
 const mounted = []
@@ -90,5 +91,34 @@ describe('OidcAccount', () => {
     expect(mocks.api).toHaveBeenCalledWith('/api/oidc/unlink', expect.anything())
     expect(unlinked).toHaveBeenCalled()
     expect(mocks.toasts.at(-1)).toContain('Unlinked')
+    // Found in review of #88: the profile the rest of the app reads says so too, or Settings
+    // shows the provider as linked again the next time it opens.
+    expect(mocks.user.oidc).toBe(false)
+  })
+
+  // Found in review of #88. Where the server signs members in with the provider only, a passkey
+  // or password would not sign this profile in, so neither is a reason to offer Unlink.
+  it('provider-only server: a member is not offered Unlink, whatever else the profile has', () => {
+    mocks.user = { id: 'u', name: 'Bo', oidc: true }
+    mocks.config = { oidc: { label: 'Authentik', only: true } }
+    const sheet = mount(<OidcSheet close={vi.fn()} linked label="Authentik" state={{ passkeys: [{ id: 'k' }], password: true }} />)
+    expect(sheet.textContent).toContain('Authentik is the only way into this profile on this server, so it stays linked.')
+    expect(sheet.querySelectorAll('button').length).toBe(0)
+  })
+
+  // Found in review of #92. An admin whose role comes from the provider's groups is offered
+  // Unlink (the app cannot tell where the role came from) and the server refuses. On such a
+  // server a passkey would not help, so the refusal must not tell them to add one.
+  it('provider-only server: a refused unlink is not answered with "add a passkey"', () => {
+    const refused = { data: { code: 'last-way-in' } }
+    expect(oidcError(refused, 'Authentik', true)).toBe('Authentik is the only way into this profile on this server, so it stays linked.')
+    expect(oidcError(refused, 'Authentik')).toBe('Authentik is the only way into this profile, so it stays linked. Add a passkey first.')
+  })
+
+  it('provider-only server: an admin, whose passkey still signs them in, may unlink', () => {
+    mocks.user = { id: 'u', name: 'Bo', oidc: true, admin: true }
+    mocks.config = { oidc: { label: 'Authentik', only: true } }
+    const sheet = mount(<OidcSheet close={vi.fn()} linked label="Authentik" state={{ passkeys: [{ id: 'k' }] }} />)
+    expect(sheet.querySelectorAll('button').length).toBeGreaterThan(0)
   })
 })

@@ -53,11 +53,14 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
 # Every module server.js imports from the api root has to be named here: the image carries nothing
 # else, and one that is missing only shows at boot, as ERR_MODULE_NOT_FOUND.
-COPY server.js push-messages.js nudge.js nudge-copy.js wrapped.js wrapped-copy.js checkin-reminder.js checkin-copy.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js watch-relay.js media.js queue.js sync-stamps.js durable.js admin-socket.js recover.js net-guard.js permissions.js consent.js share-log.js tokens.js oauth.js budgets.js role-claims.js origin.js ./
+COPY server.js push-messages.js nudge.js nudge-copy.js wrapped.js wrapped-copy.js checkin-reminder.js checkin-copy.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js watch-relay.js media.js queue.js sync-stamps.js durable.js admin-socket.js recover.js net-guard.js permissions.js consent.js share-log.js tokens.js oauth.js budgets.js role-claims.js origin.js food-lookup.js ./
 COPY coach ./coach
 COPY library ./library
 COPY oidc ./oidc
 COPY integrations ./integrations
+# The fork's opt-in add-ons (ADDON_NUTRITION): server.js imports them, so the image needs them
+# (test/dockerfile-copies.test.js checks every module server.js reaches is copied).
+COPY addons ./addons
 COPY trainers ./trainers
 COPY sources ./sources
 ENV NODE_ENV=production
@@ -93,7 +96,7 @@ RUN apk add --no-cache bubblewrap \
 # refresh token has no business riding along in every archive that instruction produces. Owned
 # by `coach` because the job that writes it has already dropped to that user.
 RUN mkdir -p /coach-auth && chown coach:coach /coach-auth && chmod 700 /coach-auth
-VOLUME ["/coach-auth"]
+# Persist /coach-auth with an explicit runtime mount (Compose or Railway volume).
 
 # ---------------------------------------------------------------------------------------------
 # Last, so that a plain `docker build --pull ./api` keeps producing the runtime-free image.

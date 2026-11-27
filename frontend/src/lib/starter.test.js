@@ -34,7 +34,7 @@ const shape = r => r.ex.map(e => [e.id, e.sets, e.reps])
 
 describe('starter plan catalog', () => {
   it('offers exactly the eight plans, with the day count read off the schedule', () => {
-    expect(starterPlanOptions()).toEqual([
+    expect(starterPlanOptions().map(({ id, days }) => ({ id, days }))).toEqual([
       { id: 'ppl', days: 3 }, { id: 'upper-lower', days: 4 },
       { id: 'full-body', days: 3 }, { id: '5x5', days: 3 },
       { id: 'home-bw', days: 3 }, { id: 'dumbbells', days: 3 }, { id: 'bands', days: 3 }, { id: 'hotel', days: 2 },

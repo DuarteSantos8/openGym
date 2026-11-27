@@ -86,6 +86,8 @@ export const CATEGORY_TEXT = {
 export const OPTIONAL_TEXT = {
   records: () => [t('Strength trends'), t('Estimated one-rep maxes of your main lifts over the last twelve weeks.')],
   measurements: () => [t('Body measurements'), t('Your latest measurements and the ones from about eight weeks before.')],
+  // Fork (EP13-T02): totals only, never food names (api/coach/core/context.js nutritionOf).
+  nutrition: () => [t('Nutrition totals'), t('Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.')],
   health: () => [t('Health and how you feel'), t('Daily check-ins, sleep, resting heart rate, HRV and steps from your phone, and blood pressure. Off until you switch it on.')]
 }
 export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.version === CONSENT_VERSION
@@ -272,11 +274,11 @@ function sweepDayPlan(s, fromIso) {
 }
 
 /** Snapshot `{routines, week}` before touching either. The unit of revert (FR-30/31). */
-export function pushSnapshot(s, proposalId, label) {
+export function pushSnapshot(s, proposalId, label, before = s) {
   const c = coachOf(s)
   c.snapshots = [...(c.snapshots || []), {
     at: Date.now(), proposalId: proposalId || null, label: label || '',
-    routines: clone(s.routines || []), week: clone(s.week || {})
+    routines: clone(before.routines || []), week: clone(before.week || {})
   }].slice(-SNAPSHOT_MAX)
   trim(s)
 }
@@ -432,14 +434,15 @@ export function profileLines(p) {
 
 /* ============================ applying a created plan ============================ */
 
-/**
- * Accepting a created plan is exactly importing a plan file (FR-18): routines arrive as new
- * ones with fresh ids, existing routines and history are never touched, and the week schedule
- * only moves if you asked it to.
- */
+// A scheduled set of routines from an ask job is an addition to the person's week.
+export const addsWeekdays = p => p.from === 'ask' && Object.keys(p.bundle?.week || {}).length > 0
+
 export function applyCreatedPlan(s, proposal, { schedule } = {}) {
   validateProposal(proposal)
-  pushSnapshot(s, proposal.id, t('Before the Coach’s plan'))
+  const additive = addsWeekdays(proposal)
+  // An exact repeat must leave the last useful Undo in place.
+  const before = additive && { routines: [...s.routines], week: { ...s.week } }
+  if (!additive) pushSnapshot(s, proposal.id, t('Before the Coach’s plan'))
   const bundle = proposal.bundle
   // The Coach's `why` texts are for the review screen; they have no place in the routine data.
   // A link is never the Coach's to write: validatePlan already drops one from the model's plan,
@@ -450,15 +453,19 @@ export function applyCreatedPlan(s, proposal, { schedule } = {}) {
     routines: bundle.routines.map(r => ({ ...r, why: undefined, ex: r.ex.map(e => ({ ...e, why: undefined, name: undefined })) })),
     customEx: (bundle.customEx || []).map(c => { const { url, media, ...rest } = c || {}; return rest })
   }
-  const res = mergePlan(s, stripped, { schedule })
+  const res = mergePlan(s, stripped, { schedule, additive })
+  if (additive && (before.routines.length !== s.routines.length ||
+      Object.keys(bundle.week).some(d => s.week[d] !== before.week[d]))) {
+    pushSnapshot(s, proposal.id, t('Before the Coach’s plan'), before)
+  }
   // Only when the week actually moved — with the switch off the old schedule still stands, and
   // so do the reschedules made against it.
-  if (schedule) sweepDayPlan(s, todayISO())
-  const rotation = !!schedule && useInRotation(s, res.ids, bundle.name)
+  if (schedule && !additive) sweepDayPlan(s, todayISO())
+  const rotation = !!schedule && !additive && useInRotation(s, res.ids, bundle.name)
   res.logId = appendLog(s, {
     kind: 'create', at: Date.now(), proposalId: proposal.id,
     summary: proposal.summary || '', routines: res.routines, iteration: proposal.iteration || 1,
-    bundle: lightBundle(bundle), scheduled: !!schedule, ...(rotation ? { rotation: true } : {})
+    bundle: lightBundle(bundle), scheduled: !!schedule, ...(additive ? { additive: true } : {}), ...(rotation ? { rotation: true } : {})
   })
   res.rotation = rotation
   return res

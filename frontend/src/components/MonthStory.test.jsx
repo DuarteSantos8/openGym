@@ -38,7 +38,7 @@ describe('the month as stories', () => {
     act(() => openMonthStory('2026-10'))
     render(<Wrapped />)
     expect(host.querySelector('.wr-year').textContent).toBe('October 2026')
-    expect(host.textContent).toContain('Your month in openGym')
+    expect(host.textContent).toContain('Your month in Ironvane')
     act(() => button('Next card').click())
     expect(host.textContent).toContain('Workouts this month')
     expect(S().wrapped?.opened || []).toEqual([])

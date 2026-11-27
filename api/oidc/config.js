@@ -23,6 +23,12 @@ export function oidcConfig(env, { origin }) {
   if (!scopes.includes('openid')) scopes.unshift('openid');
   const redirectUri = String(env.OIDC_REDIRECT_URI || '').trim() || origin.replace(/\/+$/, '') + '/api/oidc/callback';
   if (!/\/api\/oidc\/callback$/.test(redirectUri)) problems.push('OIDC_REDIRECT_URI must end in /api/oidc/callback');
+  let webOrigin;
+  try {
+    const callback = new URL(redirectUri);
+    if (/^https?:$/.test(callback.protocol)) webOrigin = callback.origin;
+  } catch { /* Invalid redirect URI. */ }
+  if (!webOrigin) problems.push('OIDC_REDIRECT_URI must be an HTTP(S) URL');
   const tokenAuth = /^post$/i.test(env.OIDC_TOKEN_AUTH || '') ? 'post' : 'basic';
   const roleRules = parseRoleMap(env.OIDC_ROLE_MAP);
   return {
@@ -41,6 +47,7 @@ export function oidcConfig(env, { origin }) {
     linkByEmail: on(env.OIDC_EMAIL_LINKING),
     logout: on(env.OIDC_LOGOUT),
     redirectUri,
+    webOrigin,
     // Where a finished sign-in lands: the app's own address, also on a subpath install.
     appBase: redirectUri.replace(/\/api\/oidc\/callback$/, '') || origin
   };

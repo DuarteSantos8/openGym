@@ -1,0 +1,22 @@
+{
+  "id": "a96c5482-2e4f-4784-b46c-a8f419ae6d6d",
+  "schemaVersion": 1,
+  "createdAt": "2026-11-13T10:00:00.000Z",
+  "createdBy": "provider-link",
+  "source": "nutritrace",
+  "serverConnectionId": "c_synthetic",
+  "direction": "import",
+  "authority": "openGym",
+  "label": "Synthetic import source",
+  "_f": {
+    "schemaVersion": 1794564000000,
+    "createdAt": 1794564000000,
+    "createdBy": 1794564000000,
+    "source": 1794564000000,
+    "serverConnectionId": 1794564000000,
+    "direction": 1794564000000,
+    "authority": 1794564000000,
+    "label": 1794564000000
+  },
+  "_ts": 1794564000000
+}

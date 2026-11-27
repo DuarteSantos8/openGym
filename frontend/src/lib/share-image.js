@@ -20,7 +20,7 @@ export const toPng = canvas => new Promise(resolve => {
 
 /** The accent the app is showing right now, read off the root element. */
 export function currentAccent() {
-  try { return getComputedStyle(document.documentElement).getPropertyValue('--acc').trim() || '#a3e635' } catch (e) { return '#a3e635' }
+  try { return getComputedStyle(document.documentElement).getPropertyValue('--acc').trim() || '#ff6b2c' } catch (e) { return '#ff6b2c' }
 }
 export const isRtl = () => typeof document !== 'undefined' && document.documentElement.dir === 'rtl'
 

@@ -25,7 +25,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { armRestAlert, disarmRestAlert } from '../lib/rest-alert.js'
 import { accentValue } from '../lib/accent.js'
 import { t } from '../lib/i18n.js'
-import { bindCircuitSource, circuitChanged } from '../lib/watch-sync.js'
+import { bindCircuitSource, circuitChanged, markDiscarded } from '../lib/watch-sync.js'
 
 const KEY = 'gym_circuit_v1'
 const TICK_MS = 200
@@ -115,16 +115,26 @@ export const useCircuit = create((set, get) => ({
   result: null,       // the saved result of the run that just ended, for the player's last screen
 
   /** Opens the player on the circuit around entry `idx`: its running clock, or a new one ready to start. */
-  openAt(idx) {
+  openAt(idx, { preview = false } = {}) {
     const A = S()?.active
     const g = circuitUnitAt(A, idx)
     if (!g) return false
     const cur = get().run
     if (cur && !cur.ended && cur.wid === (A.id ?? null) && cur.sg === g.sg) { set({ open: true }); return true }
-    set({ run: null, open: true, ask: null, result: null, pending: { idx } })
+    // Keep the initial workout reference across the workout view's second openAt.
+    // Any edit replaces it in the store, so closing cannot discard someone's changes.
+    const previewWorkout = preview ? A : get().pending?.previewWorkout
+    set({ run: null, open: true, ask: null, result: null, pending: { idx, ...(previewWorkout === A ? { previewWorkout } : {}) } })
     return true
   },
-  close() { set({ open: false }) },
+  close() {
+    const preview = get().pending?.previewWorkout
+    if (preview && !get().run && preview === S()?.active) {
+      markDiscarded(preview.id)
+      useStore.getState().update(s => { s.active = null })
+    }
+    set(preview ? { open: false, pending: null } : { open: false })
+  },
 
   /** Get ready… The rest and hold timers stop: one clock at a time. */
   start() {
