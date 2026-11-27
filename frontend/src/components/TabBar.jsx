@@ -99,7 +99,8 @@ export default function TabBar({ onStart, onPick }) {
       <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
         onPointerDown={holdStart} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
         onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}
-        aria-current={S.active && cur === 'workout' ? 'page' : undefined}>
+        aria-current={S.active && cur === 'workout' ? 'page' : undefined}
+        aria-label={running ? t('Resume') : undefined}>
         <span className="cir"><Icon name="play" /></span>
         {running ? <span className="tab-resume">{t('Resume')} <span className="tab-time" aria-hidden="true"><Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></span></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
