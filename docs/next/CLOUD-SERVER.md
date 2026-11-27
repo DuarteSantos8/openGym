@@ -128,6 +128,58 @@ fix is for the server to be reached without a second proxy in between: its own s
 the web container in front of it as in `docker-compose.yml`. That is a decision for before
 launch, not for the beta.
 
+## Production address cutover (A4)
+
+Prepared only. The owner chooses the web and API names, approves their exposure and any
+cost, and attends the cutover. Reserve a window for the API restart. The preview and the new
+web address share one API with one configured sign-in origin; expect preview sign-in to stop
+working while the new origin is active. Device-only workouts and photos belong to the browser
+origin where they were saved. Before moving a guest to the new address, export a backup with
+photos and verify the import on a disposable profile.
+
+### Prepare before changing the target
+
+- [ ] **Owner and operator.** Record the old DNS records and TTLs, Vercel domain assignment,
+  Cloud build settings and deployment ID/SHA, Render service and live revision, effective
+  `ORIGIN`, `RP_ID`, any explicit `OIDC_REDIRECT_URI`, OAuth client's redirect URI list,
+  Supabase Site URL and authorization path. Record the old functions `APP_ORIGIN` from its
+  authorized configuration source. Keep actual names and values in private operator notes.
+  Confirm an existing owner provider sign-in reaches the expected server profile and Admin
+  dashboard. Keep that recovery method available. Identify a separate disposable member.
+- [ ] **Operator.** Build the approved SHA for Vercel Production with `VITE_EDITION=cloud`
+  and the intended project configuration. Confirm the Cloud Account screen exists on that
+  deployment before assigning the domain. Record the protected preview's current working
+  health and sign-in results as the rollback baseline. [Vercel promotion](https://vercel.com/docs/deployments/promoting-a-deployment)
+
+### Execute with the owner in one window
+
+| Action | Verify | Undo |
+|---|---|---|
+| [ ] Owner adds the approved API domain to the existing Render API service and the DNS administrator sets only the records Render specifies. | Render verifies the name and issues TLS. Direct HTTPS `/api/health` returns 200 JSON with `ok: true`. | DNS administrator restores the recorded RRsets and TTLs. Operator removes only the new domain association after traffic has moved back. [Render domains](https://render.com/docs/custom-domains) |
+| [ ] Owner assigns the web domain to the approved Vercel Production Cloud deployment. DNS administrator applies the records Vercel shows. | Vercel verifies DNS and HTTPS. Cloud Account loads at the web domain. Its `/api/health` returns API JSON. The existing rewrite can continue to use the current Render destination. If its destination must change, use a separate tested draft PR and owner merge. | Operator restores the previous domain/deployment assignment, DNS records and any changed rewrite. [Vercel domains](https://vercel.com/docs/domains/working-with-domains/add-a-domain) |
+| [ ] Owner updates the existing Supabase public OAuth client's callback to `<NEW_WEB_ORIGIN>/api/oidc/callback` and sets Authentication → URL Configuration → Site URL to `<NEW_WEB_ORIGIN>`. Preserve other approved callbacks and the working authorization path. | Read back the exact callback list and Site URL. Consent for this app must open on the new web origin. | Owner restores the recorded client redirect list and Site URL. [Supabase OAuth setup](https://supabase.com/docs/guides/auth/oauth-server/getting-started) |
+| [ ] Operator sets Render `ORIGIN=<NEW_WEB_ORIGIN>` (HTTPS, no trailing slash) and `RP_ID=<NEW_WEB_HOST>` (hostname only). If an explicit `OIDC_REDIRECT_URI` overrides the derived callback, update it in the same save. Save and deploy. | Wait for **Live**. Through the web domain, `/api/config` reports the new `oidc.webOrigin`. Verify the API revision and health after restart. | Operator restores recorded values, including whether the override was unset, deploys, and rechecks health and config. [Render environment](https://render.com/docs/configure-environment-variables) |
+| [ ] Owner sets the existing Supabase functions setting `APP_ORIGIN=<NEW_WEB_ORIGIN>`. | Send an OPTIONS preflight from the new web origin to a deployed account function. Its `Access-Control-Allow-Origin` must equal the new web origin. | Owner restores the previous `APP_ORIGIN` and repeats the preflight for the old origin. [Function settings](https://supabase.com/docs/guides/functions/secrets) |
+
+Passkeys registered under the preview RP ID stop working at the new RP ID. The owner uses the
+hosted provider to sign in to the **same** server account, checks the Account ID privately,
+then chooses **Settings → Account → Passkeys → Add a passkey**. Test the new passkey in a fresh
+session. Keep the preview passkey for rollback. [WebAuthn relying party IDs](https://www.w3.org/TR/webauthn-3/#relying-party-identifier)
+
+### Accept the new address or roll back
+
+- [ ] **Owner and QA, desktop and physical phone.** Repeat A1 on the new web origin: sign in
+  through the provider, approve consent if prompted, confirm `GET /api/me` returns 200 and
+  Settings → Account shows Admin. In a separate disposable member session, confirm no Admin
+  entry and `GET /api/admin/oidc` returns 403. Sign out and confirm `GET /api/me` returns 401.
+  In the two-tab case, begin signed out in tab A, sign in through tab B, return focus to A,
+  then confirm B still has its account and `/api/me` returns 200. Record both device results,
+  build and API revisions, timestamps and status codes without identities or credentials.
+- [ ] **Owner and operator.** If a check fails, pause exposure, use the undo steps above to
+  restore the application settings, domain routing and DNS, then repeat health, provider
+  sign-in, owner access and sign-out on the prior address. Keep the existing service and disk.
+  External MCP access is a separate acceptance check.
+
 ## Before real users
 
 Not needed for the owner's own bring-up, required before anyone else is let in.

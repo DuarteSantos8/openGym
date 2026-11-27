@@ -5,6 +5,10 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 ## 1. State
 
 - **Offline workout durability (06.01, prepared).** Device write failures report a full device only when storage raises a quota error. The change remains available in memory.
+- **OpenNutriTracker manual file import (09.01a, prepared).** Export a JSON or CSV ZIP in [OpenNutriTracker v2.7](https://github.com/simonoppowa/OpenNutriTracker/blob/5048a9b57f4ab08b17699af556c280f7f058e07c/docs/export-format.md), open Nutrition diary, select the file, review the destination and confirm. A second export refreshes matching intake IDs. The guest diary stays on this device. A signed-in diary uses its normal account sync. Only selected nutrition fields are saved. Photos, links, account settings, weight and raw exports are excluded. Blank IDs, unknown units and rows without enough information are counted as skipped. Native-language review of the import strings is pending.
+- **Coach recovery (07.02, prepared).** A local Chromium test runs the provider timeout, API restart, retry, approval and reload on one disposable profile. Hosted MiniMax acceptance remains open.
+- **Production domain (A4, prepared).** [Cutover and rollback checklist](CLOUD-SERVER.md#production-address-cutover-a4) awaits the owner’s choice of addresses and cutover window.
+- **Accessible workout controls (06.03, prepared).** Workout actions wrap on narrow phones. The progression control includes its displayed guidance and exercise settings in its accessible name. Resume has a stable visible label and a separate visual clock. Physical VoiceOver and TalkBack review remain pending.
 - **Connector permissions (10.02, isolated).** The loopback acceptance test checks that a plans-only reader cannot log workouts and that revocation ends access. Hosted client verification remains open.
 - Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
 
@@ -31,7 +35,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Backups (A3).** One hosted disk snapshot was visible on November 26. The restore test requires disposable data and the owner’s approval. See [Backups](CLOUD-SERVER.md#backups).
 
-- D2 is prepared for English. Workout, Plan and Progress offer keyboard-accessible definitions in context. Translation and native-language review of the complete 49-entry glossary remain open (task 7).
+- D2 includes keyboard-accessible definitions on Workout, Plan and Progress. All 49 glossary entries have translations in the 25 locale packs. Native-language review is pending (task 7).
 - **Hosted account checks (A1, partial).** The owner opened the Admin dashboard. The disposable profile showed no Admin dashboard and the preview API refused access. Signing out removed access to the profile. After one tab signed in, both kept the same authenticated profile when the other regained focus. Confirm HTTP 403 for the disposable account and HTTP 401 after sign-out through the preview. See [Before real users](CLOUD-SERVER.md#before-real-users).
 
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
@@ -157,7 +161,7 @@ With no routines or with a proposed plan open, a message uses the plan builder i
 | 4 | **EP10-T04 second movement** (hinge or lunge). Record 3 short clips on a phone first, then tune thresholds against them. | agent, after clips exist | Rep count within ±1 on the 3 clips |
 | 5 | Report the upstream a11y baseline (`a11y.md`: label-in-name on /home, /plan, /stats) to DuarteSantos8/openGym. Drop each baseline entry once fixed upstream. | owner | Upstream issue linked in `a11y.md` |
 | 6 | Manual a11y: VoiceOver/TalkBack, 200 % text, keyboard through the 3D map list | owner | Notes in `a11y.md` |
-| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, and the twelve EP24-T03 strings in all packs) | reviewer | Reviewer named in a PR |
+| 7 | Native-speaker review of the machine-translated strings (cs, da, fa, id, lt, vi + EP13 labels, the twelve EP24-T03 strings in all packs, and all 49 glossary entries in each pack including the derived Swiss German text) | reviewer | Reviewer named in a PR |
 | 8 | EP09-T03 (apply a progression rule to a routine). Only if users ask for it. | — | — |
 | 9 | EP15: start only after a licensed PT reviewer is named in writing | — | — |
 | 10 | **Read the 55 draft exercise guides** in `frontend/src/content/exercise-guides.js`; correct them or set `review: 'reviewed'` with a name and date (ADR 0012). Then the 36 remaining distinct routine exercises (EP23-T03) | owner, then agent | No guide is `draft` that the owner has read; `lib/exercise-guide.test.js` passes |
