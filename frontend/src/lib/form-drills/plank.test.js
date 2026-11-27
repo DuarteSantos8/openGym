@@ -184,6 +184,25 @@ describe('plank.matches', () => {
   })
 })
 
+describe('the plank when Vision cannot see the body', () => {
+  // Form lab: a lifter in dark clothes against a sofa's shadow, held 30 s; Vision found her hips
+  // in 3% of frames and put a knee on the sofa. Timing that would be timing a guess: the drill
+  // counts nothing and says why.
+  it('counts no time without the hips, and asks for the whole body', () => {
+    const frames = holdFrames([{ sec: 20 }]).map((f, i) => {
+      const { leftHip, rightHip, leftAnkle, ...rest } = f.joints
+      // One hip in one frame of thirty, and the knee put up on the sofa behind her.
+      if (i % 30 === 0 && rightHip) rest.rightHip = rightHip
+      if (rest.rightKnee) rest.rightKnee = [rest.rightKnee[0], rest.rightKnee[1] - 0.15, 0.5]
+      return { ...f, joints: rest }
+    })
+    const { res, outs } = run(frames)
+    expect(res.count).toBeLessThanOrEqual(1)
+    expect(outs.filter(o => !o.inFrame).length).toBeGreaterThan(frames.length * 0.6)
+    expect(outs.at(-1).hint).toBe('Get your whole body in the frame')
+  })
+})
+
 describe('plank, as index.test.js will check it once registered', () => {
   it('answers frames with nobody in them, and a result with nothing in it', () => {
     const tr = plank.create({ standard: plank.defaultStandard })
