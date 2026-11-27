@@ -2,7 +2,7 @@
 // height), filmed from side-on to facing the camera: counting, lockout and the standards, tempo,
 // elbow drift, the views refused, cues, matches.
 import { describe, expect, it } from 'vitest'
-import tricepsPushdown, { DRIFT_DEG, elbowDrift } from './triceps-pushdown.js'
+import tricepsPushdown, { DRIFT_DEG, LOCK_DEG_SIDE, elbowDrift } from './triceps-pushdown.js'
 import { checkDrill } from './index.js'
 import { CAMERA, ease, film, project, same, squatPose } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
@@ -120,6 +120,12 @@ describe.each([0, 30, 45, 60])('the pushdown filmed at yaw %i°', yaw => {
 })
 
 describe('the pushdown, whatever the angle', () => {
+  it('side-on: takes a lockout at its edge (Vision reads straight arms at 155 to 166)', () => {
+    expect(run(pushdownSet([{ ...FULL, lock: 156 }])).res.reps[0]).toMatchObject({ counted: true, measures: { locked: true } })
+    expect(run(pushdownSet([{ ...FULL, lock: LOCK_DEG_SIDE + 5 }])).res.reps[0].counted).toBe(true)
+    expect(run(pushdownSet([{ ...FULL, lock: LOCK_DEG_SIDE - 8 }])).res.reps[0]).toMatchObject({ counted: false, reason: 'soft' })
+  })
+
   it('refuses a view from the front or behind: asks to turn side-on and counts nothing', () => {
     for (const yaw of [90, -90]) {
       const { outs, res } = run(pushdownSet(same(3, FULL), { yaw }))

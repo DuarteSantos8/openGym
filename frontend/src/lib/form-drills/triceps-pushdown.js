@@ -13,6 +13,11 @@ import { ARM, createLockoutTracker, LOCK_STANDARDS, SOFT_MISS } from './press-ki
 
 export const DRIFT_DEG = 25           // the upper arm this far forward of the torso at most: the elbows drifted
 export const PHASES = { stand: 0.4, descent: 0.5, minRep: 0.7, bottomEps: 0.04, ascentRise: 0.15, topBand: 0.1 }
+// Side-on at the bottom Vision reads a straight arm bent: the wrist sits on the hand wrapped round
+// the handle or rope and the shoulder on top of the deltoid. Fourteen lockouts that look straight
+// (four lifters, form lab) read 155 to 166 smoothed, against press-kit's 160; 150 keeps a margin
+// under them and still refuses an arm stopped 30 degrees short.
+export const LOCK_DEG_SIDE = 150
 
 // Two-handed pushdowns with a bar, a rope or a band. One arm at a time (the idle arm would be
 // read), straight-arm and lat pushdowns (another movement), incline and floor versions are left out.
@@ -50,6 +55,7 @@ const SPEC = {
   phases: PHASES,
   topS: 0.45,
   lockViews: ['side'],
+  lockDeg: LOCK_DEG_SIDE,
   unjudgedCue: () => t('Lockout could not be judged from this angle. Film from the side.'),
   startHint: () => t('Forearms level to start'),
   readyHint: () => t('Ready. Push when you are.'),
