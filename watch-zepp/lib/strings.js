@@ -2414,7 +2414,7 @@ export const STRINGS = {
   "phone_out_of_reach": "Puhelin ei ulottuvilla",
   "previous_set": "Edellinen sarja",
   "prs": "Ennätykset",
-  "quick_checkin": "Nopea tilannekatsaus",
+  "quick_checkin": "Pikapunnitus",
   "quick_start": "Pika-aloitus",
   "reps": "Toistot",
   "rest": "Tauko",
