@@ -1,9 +1,9 @@
 // The chest-supported row against synthetic lifters chest-down on an incline bench (pull-kit.js
-// benchRowPose): judged side-on, counted from every other angle.
+// benchRowPose): judged side-on (to about 35 degrees), counted from every other angle.
 import { describe, expect, it } from 'vitest'
-import chestSupportedRow, { ROW_PAST } from './chest-supported-row.js'
+import chestSupportedRow, { ROW_PAST, VIEW_EDGES } from './chest-supported-row.js'
 import { checkDrill } from './index.js'
-import { armPoses, benchRowPose } from './pull-kit.js'
+import { ARM_VIEW_EDGES, armPoses, benchRowPose } from './pull-kit.js'
 import { film, project, YAWS } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
 
@@ -90,6 +90,21 @@ describe('the chest-supported row side-on', () => {
     expect(run(set([LOW])).outs.some(o => o.reached)).toBe(false)
   })
 
+  it('ends a rep at a still rest short of the first hang, the arms a little forward', () => {
+    // 40 degrees forward: the reach at rest is 0.77 of the first hang, as real bench rows read it.
+    const short = { ...FULL, bottom: 40 }
+    const { counted, res } = run(set([short, short, short, FULL]))
+    expect(counted).toBe(4)
+    expect(res.reps.every(r => r.counted)).toBe(true)
+    expect(run(set([short, short, FULL], { yaw: 20, noise: 0.002 })).res.count).toBe(3)
+  })
+
+  it('does not end a rep at a pause half way down', () => {
+    const { res } = run(set([{ ...FULL, bottom: 60 }, { top: 60, up: 0.2, down: 1.2 }]))
+    expect(res.count).toBe(1)
+    expect(res.reps).toHaveLength(1)
+  })
+
   it('marks a rep where the pose was lost, and still counts it', () => {
     const { res } = run(set(same(3, FULL), { gap: [5500, 5950] }))
     expect(res.reps.map(r => [r.lost, r.counted])).toEqual([[false, true], [true, true], [false, true]])
@@ -105,7 +120,30 @@ describe('the chest-supported row side-on', () => {
   })
 })
 
-describe.each(YAWS.filter(y => y > 0))('the chest-supported row filmed at yaw %i°', yaw => {
+describe('the chest-supported row a little off side-on', () => {
+  it('reads 20 and 30 degrees as side-on and judges the top there, as at 0', () => {
+    for (const yaw of [20, 30, 160]) {
+      const { counted, missed, reasons, res, outs } = run(set([FULL, LOW, FULL], { yaw }))
+      expect(res.view).toBe('side')
+      expect(outs.at(-1).hint).toBe('')
+      expect([counted, missed]).toEqual([2, 1])
+      expect(reasons).toEqual(['low'])
+    }
+  })
+
+  it('takes the standard at its edge at 30 degrees too', () => {
+    const edge = degForTop(35)
+    expect(run(set([{ ...FULL, top: edge + 3 }], { incline: 35, yaw: 30 })).res.reps[0].counted).toBe(true)
+    expect(run(set([{ ...FULL, top: edge - 3 }], { incline: 35, yaw: 30 })).res.reps[0]).toMatchObject({ counted: false, reason: 'low' })
+  })
+
+  it('keeps the side band at about 35 degrees, wider than the other arm drills', () => {
+    expect(VIEW_EDGES.side).toBeCloseTo(Math.sin(35 * Math.PI / 180), 2)
+    expect(VIEW_EDGES.side).toBeGreaterThan(ARM_VIEW_EDGES.side)
+  })
+})
+
+describe.each(YAWS.filter(y => y > 35))('the chest-supported row filmed at yaw %i°', yaw => {
   it('asks to turn side-on, counts every rep, and leaves the top unjudged', () => {
     const { res, outs } = run(set([FULL, LOW, FULL], { yaw }))
     expect(outs.at(-1).hint).toBe('Turn side-on to the camera')

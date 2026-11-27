@@ -16,7 +16,7 @@
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
-  createPhaseMachine, dist, ema, fades, framingHint, mean, mid, pickCue, round1, seen, tempo, viewHint,
+  createPhaseMachine, dist, ema, fades, framingHint, mean, mid, pickCue, round1, seen, spread, tempo, viewHint,
 } from './kit.js'
 
 export const HANG_S = 0.12            // signal at most this before a rep: started from a full hang / straight arms
@@ -26,6 +26,11 @@ export const FADE_S = 0.12            // last reps' peak this much under the fir
 export const ARM_VIEW_EDGES = { side: 0.345, front: 0.914 }  // sin(yaw): about 20° and 66°, as the squat's
 export const ARM_VIEW_HYST = 0.06
 const VIEW_SAMPLES = 4
+// spec.settle: on the way back from a rep, a signal held this still (SETTLE_SPREAD) for SETTLE_MS,
+// at most SETTLE_MAX, is the rest even though it is short of the first one.
+export const SETTLE_MS = 400
+export const SETTLE_SPREAD = 0.08
+export const SETTLE_MAX = 0.4
 
 /** The reach a frame shows: shoulders, the distal joint ('Wrist' | 'Elbow'), and r; null when unseen. */
 export function armReach(joints, distal, above) {
@@ -52,8 +57,8 @@ export function forearmsUp(joints, aspect = 1) {
   return n > 0
 }
 
-const classify = (r, prev) => {
-  const lo = ARM_VIEW_EDGES.side, hi = ARM_VIEW_EDGES.front, h = ARM_VIEW_HYST
+const classify = (r, prev, edges = ARM_VIEW_EDGES) => {
+  const lo = edges.side, hi = edges.front, h = ARM_VIEW_HYST
   if (prev === 'side') return r > lo + h ? (r > hi ? 'front' : 'diagonal') : 'side'
   if (prev === 'front') return r < hi - h ? (r < lo ? 'side' : 'diagonal') : 'front'
   if (prev === 'diagonal') return r < lo - h ? 'side' : r > hi + h ? 'front' : 'diagonal'
@@ -64,8 +69,10 @@ const classify = (r, prev) => {
  * The view over time from the shoulders' width over the reach at rest, divided by `k` (the build's
  * shoulder width over that reach) so it reads about sin(yaw). push(frame, ref) at rest only. A far
  * shoulder Vision does not see counts as a width of 0, hidden behind the near one: side-on.
+ * `edges` ({ side, front } in sin(yaw)): where side ends and front begins, ARM_VIEW_EDGES unless a
+ * drill reads its measure further round.
  */
-export function createArmViewDetector(k) {
+export function createArmViewDetector(k, edges = ARM_VIEW_EDGES) {
   let ratio = null, n = 0, view = null
   return {
     push(frame, ref) {
@@ -77,7 +84,7 @@ export function createArmViewDetector(k) {
       const width = l && r ? Math.abs(l[0] - r[0]) * aspect : 0
       ratio = ema(ratio, width / ref / k, 0.25)
       n++
-      if (n >= VIEW_SAMPLES) view = classify(ratio, view)
+      if (n >= VIEW_SAMPLES) view = classify(ratio, view, edges)
       return view
     },
     get view() { return view },
@@ -96,8 +103,10 @@ const fmt = n => (n == null ? '' : fmtNum(n))
 
 /**
  * A reps tracker for one arm-driven drill. `spec`:
- *   views, distal, above, k (createArmViewDetector), farRef (reach under this: too far), phases
+ *   views, distal, above, k and viewEdges (createArmViewDetector), farRef (reach under this: too far), phases
  *   hang: whether a rep must start from rest (straight arms) under some standard
+ *   settle: a still pause on the way back ends the rep and becomes the new rest (SETTLE_MS), for
+ *     drills whose rest between reps sits short of the first one
  *   needs: { [standard]: { top, hang } }  what each standard asks
  *   topOf(ctx) -> number | null, per frame, the bigger the higher; topNeed: what counts as the top
  *   topViews: the views the top is judged from (all when left out)
@@ -111,12 +120,13 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
   const std = spec.standards.some(s => s.id === standard) ? standard : spec.defaultStandard
   const needs = spec.needs[std] || {}
   const machine = createPhaseMachine(spec.phases)
-  const views = createArmViewDetector(spec.k)
+  const views = createArmViewDetector(spec.k, spec.viewEdges)
   const reps = []                 // { rec, acc, counted, reason, measures }
   const state = {}                // the drill's own memory (onRest)
   let ref = null, sm = null, lastS = null
   let low = Infinity              // the lowest signal while at rest since the last rep
   let acc = null
+  let back = []                   // spec.settle: { t, s, r } since the way back began
 
   const viewNow = () => fixedView || views.view
   const topJudged = v => !spec.topViews || spec.topViews.includes(v)
@@ -177,7 +187,21 @@ export function createArmTracker(spec, { standard, view: fixedView } = {}) {
       if (!fixedView) views.push(fr, ref)
       if (spec.onRest) spec.onRest(state, { joints, aspect, sh: a.sh, d: a.d, ref })
     }
-    const s = holding && ref ? (ref - a.r) / ref : null
+    let s = holding && ref ? (ref - a.r) / ref : null
+    if (spec.settle) {
+      if (phase0 !== 'ascending' || s == null) back = []
+      else {
+        back.push({ t: at, s, r: a.r })
+        while (back.length > 1 && at - back[1].t >= SETTLE_MS) back.shift()
+        const ss = back.map(x => x.s)
+        if (at - back[0].t >= SETTLE_MS && Math.max(...ss) <= SETTLE_MAX && spread(ss) <= SETTLE_SPREAD) {
+          ref = mean(back.map(x => x.r))
+          s = (ref - a.r) / ref
+          sm = s
+          back = []
+        }
+      }
+    }
     sm = s == null ? null : ema(sm, s)
     if (s != null) lastS = s
     const ev = machine.push(at, s, { canStart: holding })
