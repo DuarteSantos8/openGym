@@ -24013,8 +24013,8 @@
     ]
   },
   "3832": {
-    "name": "sospensione su handboard inclinata",
-    "description": "Una sospensione da una presa inclinata su una tavola da arrampicata. Sviluppa la forza di dita e avambracci per l'arrampicata.",
+    "name": "sospensione al trave inclinata",
+    "description": "Una sospensione da una presa inclinata sul trave. Sviluppa la forza di dita e avambracci per l'arrampicata.",
     "instructions": [
       "Afferra la presa inclinata con le mani aperte.",
       "Stacca i piedi da terra e resta sospeso con le braccia distese.",
@@ -24024,8 +24024,8 @@
     ]
   },
   "3833": {
-    "name": "sospensione su handboard a mano aperta",
-    "description": "Una sospensione da una tavola da arrampicata con presa a mano aperta. Sviluppa la forza delle dita sottoponendo le articolazioni a meno stress.",
+    "name": "sospensione al trave a mano aperta",
+    "description": "Una sospensione dal trave con presa a mano aperta. Sviluppa la forza delle dita sottoponendo le articolazioni a meno stress.",
     "instructions": [
       "Afferra il bordo con le dita distese e leggermente incurvate.",
       "Stacca i piedi da terra e resta sospeso con le braccia distese.",
@@ -24035,8 +24035,8 @@
     ]
   },
   "3834": {
-    "name": "sospensione su handboard a mezza chiusura",
-    "description": "Una sospensione da una tavola da arrampicata con presa a mezza chiusura. Sviluppa la forza delle dita per l'arrampicata.",
+    "name": "sospensione al trave a mezza chiusura",
+    "description": "Una sospensione dal trave con presa a mezza chiusura. Sviluppa la forza delle dita per l'arrampicata.",
     "instructions": [
       "Appoggia le dita sul bordo con le nocche piegate a circa 90 gradi.",
       "Stacca i piedi da terra e resta sospeso con le braccia distese.",
@@ -24046,8 +24046,8 @@
     ]
   },
   "3835": {
-    "name": "sospensione su handboard con gomito a 90 gradi",
-    "description": "Una tenuta su tavola da arrampicata con i gomiti piegati a 90 gradi. Sviluppa la forza di tirata e della presa.",
+    "name": "sospensione al trave con gomito a 90 gradi",
+    "description": "Una tenuta al trave con i gomiti piegati a 90 gradi. Sviluppa la forza di tirata e della presa.",
     "instructions": [
       "Afferra la presa e tirati verso l'alto finché i gomiti non formano un angolo di 90 gradi.",
       "Tieni le spalle indietro e l'addome contratto.",
@@ -24057,8 +24057,8 @@
     ]
   },
   "3836": {
-    "name": "sospensione su handboard con gomito a 135 gradi",
-    "description": "Una tenuta su tavola da arrampicata con i gomiti piegati a circa 135 gradi. Sviluppa forza della presa e di tirata in una posizione parzialmente raccolta.",
+    "name": "sospensione al trave con gomito a 135 gradi",
+    "description": "Una tenuta al trave con i gomiti piegati a circa 135 gradi. Sviluppa forza della presa e di tirata in una posizione parzialmente raccolta.",
     "instructions": [
       "Afferra la presa e tirati leggermente verso l'alto, piegando i gomiti a circa 135 gradi.",
       "Tieni le spalle indietro e l'addome contratto.",
@@ -64406,8 +64406,8 @@
     "description": "Un sollevamento del polpaccio su una gamba con fascia elastica attorno al piede. Allena i polpacci."
   },
   "90001": {
-    "name": "sospensione su handboard a chiusura completa",
-    "description": "Una sospensione sulla tavola in chiusura completa, con le nocche centrali delle dita molto piegate e il pollice premuto sopra l'indice. Allena la presa più forte sulle tacche piccole, che è anche quella che carica di più le dita, quindi va costruita nell'arco di diverse settimane.",
+    "name": "sospensione al trave a chiusura completa",
+    "description": "Una sospensione al trave in chiusura completa, con le nocche centrali delle dita molto piegate e il pollice premuto sopra l'indice. Allena la presa più forte sulle tacche piccole, che è anche quella che carica di più le dita, quindi va costruita nell'arco di diverse settimane.",
     "instructions": [
       "Scegli un bordo solido, dritto o leggermente positivo, che riesci a tenere bene.",
       "Appoggia i polpastrelli sul bordo, piega le nocche centrali verso l'alto e premi il pollice sopra l'indice.",
@@ -64418,8 +64418,8 @@
     ]
   },
   "90002": {
-    "name": "sospensione su handboard a tre dita distese",
-    "description": "Una sospensione sulla tavola con tre dita in posizione aperta e distesa, appoggiate sopra il bordo invece che chiuse in tacca. Sviluppa la presa passiva usata sugli svasi e sulle prese arrotondate.",
+    "name": "sospensione al trave a tre dita distese",
+    "description": "Una sospensione al trave con tre dita in posizione aperta e distesa, appoggiate sopra il bordo invece che chiuse in tacca. Sviluppa la presa passiva usata sugli svasi e sulle prese arrotondate.",
     "instructions": [
       "Appoggia indice, medio e anulare sul bordo e lascia libero il mignolo.",
       "Tieni basse le nocche centrali e lascia i polpastrelli adagiati sul bordo invece di chiuderli in tacca.",
@@ -64429,8 +64429,8 @@
     ]
   },
   "90003": {
-    "name": "sospensione su handboard in buco a due dita",
-    "description": "Una sospensione con due dita in un buco della tavola. Sviluppa la forza per i buchi e carica molto ogni singolo dito, quindi va aumentata molto gradualmente.",
+    "name": "sospensione al trave in buco a due dita",
+    "description": "Una sospensione con due dita in un buco del trave. Sviluppa la forza per i buchi e carica molto ogni singolo dito, quindi va aumentata molto gradualmente.",
     "instructions": [
       "Inizia con un buco profondo e un carico più leggero di quello che usi a quattro dita.",
       "Inserisci due dita nel buco, di solito indice e medio oppure medio e anulare.",
@@ -64441,8 +64441,8 @@
     ]
   },
   "90004": {
-    "name": "sospensione su handboard a un braccio",
-    "description": "Una sospensione da un bordo della tavola con una mano sola, che allena la forza delle dita un lato alla volta. È un'opzione avanzata, adatta a chi riesce già a tenere un blocco a un braccio su una presa grande per tutta la durata della sospensione.",
+    "name": "sospensione al trave a un braccio",
+    "description": "Una sospensione da un bordo del trave con una mano sola, che allena la forza delle dita un lato alla volta. È un'opzione avanzata, adatta a chi riesce già a tenere un blocco a un braccio su una presa grande per tutta la durata della sospensione.",
     "instructions": [
       "Afferra il bordo con una mano usando la presa che vuoi allenare.",
       "Se serve, scarica parte del peso con l'altra mano su un anello di fettuccia o con una carrucola.",
@@ -64453,10 +64453,10 @@
     ]
   },
   "90005": {
-    "name": "sospensione su handboard a pinza",
-    "description": "Una sospensione da una presa a pinza sulla tavola, stretta tra pollice e dita. Sviluppa la forza della pinza e del pollice per l'arrampicata.",
+    "name": "sospensione al trave a pinza",
+    "description": "Una sospensione da una presa a pinza sul trave, stretta tra pollice e dita. Sviluppa la forza della pinza e del pollice per l'arrampicata.",
     "instructions": [
-      "Scegli una presa a pinza sulla tavola con i lati verticali.",
+      "Scegli una presa a pinza sul trave con i lati verticali.",
       "Metti il pollice su un lato e le dita sull'altro, poi stringi.",
       "Stacca i piedi e resta sospeso con le braccia distese e le spalle attive.",
       "Mantieni per 5-10 secondi senza far scivolare il pollice.",
@@ -64524,13 +64524,13 @@
     ]
   },
   "90011": {
-    "name": "trazioni su handboard",
-    "description": "Una trazione eseguita dalle prese di un hangboard invece che da una sbarra. Allena le dita e i muscoli della trazione a lavorare insieme, come succede in parete.",
+    "name": "trazioni al trave",
+    "description": "Una trazione eseguita dalle prese di un trave invece che da una sbarra. Allena le dita e i muscoli della trazione a lavorare insieme, come succede in parete.",
     "instructions": [
       "Scegli prese da cui riesci ad appenderti comodamente, come tacche grandi o maniglie per iniziare.",
       "Afferra le prese con entrambe le mani nella presa che vuoi allenare, come mano aperta o mezza chiusura.",
       "Appenditi con le braccia distese e le spalle attive.",
-      "Tirati su finché il mento arriva al bordo inferiore della tavola, mantenendo la presa stabile.",
+      "Tirati su finché il mento arriva al bordo inferiore del trave, mantenendo la presa stabile.",
       "Scendi con controllo fino a braccia distese.",
       "Termina la serie se la presa scivola o cambia forma.",
       "Passa a prese più piccole o a una presa più difficile solo quando le ripetizioni diventano facili."

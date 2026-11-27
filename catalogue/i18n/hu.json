@@ -10836,19 +10836,19 @@
     "name": "fekvő féllábas fordított bicepszhajlítás törölközővel"
   },
   "3832": {
-    "name": "kéztartó deszkán lejtős függés"
+    "name": "fingerboardon lejtős függés"
   },
   "3833": {
-    "name": "kéztartó deszkán nyitott fogású függés"
+    "name": "fingerboardon nyitott fogású függés"
   },
   "3834": {
-    "name": "kéztartó deszkán félzárt fogású függés"
+    "name": "fingerboardon félzárt fogású függés"
   },
   "3835": {
-    "name": "kéztartó deszkán függés 90 fokos könyökkel"
+    "name": "fingerboardon függés 90 fokos könyökkel"
   },
   "3836": {
-    "name": "kéztartó deszkán függés 135 fokos könyökkel"
+    "name": "fingerboardon függés 135 fokos könyökkel"
   },
   "3838": {
     "name": "hasprés (padon)"
@@ -26643,19 +26643,19 @@
     ]
   },
   "90001": {
-    "name": "kéztartó deszkán zárt fogású függés"
+    "name": "fingerboardon zárt fogású függés"
   },
   "90002": {
-    "name": "kéztartó deszkán háromujjas nyitott függés"
+    "name": "fingerboardon háromujjas nyitott függés"
   },
   "90003": {
-    "name": "kéztartó deszkán kétujjas lyukban függés"
+    "name": "fingerboardon kétujjas lyukban függés"
   },
   "90004": {
-    "name": "kéztartó deszkán egykaros függés"
+    "name": "fingerboardon egykaros függés"
   },
   "90005": {
-    "name": "kéztartó deszkán csíptető fogású függés"
+    "name": "fingerboardon csíptető fogású függés"
   },
   "90006": {
     "name": "csíptető blokk emelés"
@@ -26673,7 +26673,7 @@
     "name": "függő egylábas front lever tartás"
   },
   "90011": {
-    "name": "húzódzkodás kéztartó deszkán"
+    "name": "húzódzkodás fingerboardon"
   },
   "90012": {
     "name": "létra campus boardon"

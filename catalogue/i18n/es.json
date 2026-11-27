@@ -10836,19 +10836,19 @@
     "name": "curl de bíceps inverso a una pierna acostado con toalla"
   },
   "3832": {
-    "name": "colgado en handboard con inclinación"
+    "name": "colgado en multipresa con inclinación"
   },
   "3833": {
-    "name": "colgado en handboard con agarre abierto"
+    "name": "colgado en multipresa con agarre abierto"
   },
   "3834": {
-    "name": "colgado en handboard con medio crimp"
+    "name": "colgado en multipresa con medio crimp"
   },
   "3835": {
-    "name": "colgado en handboard con codos a 90 grados"
+    "name": "colgado en multipresa con codos a 90 grados"
   },
   "3836": {
-    "name": "colgado en handboard con codos a 135 grados"
+    "name": "colgado en multipresa con codos a 135 grados"
   },
   "3838": {
     "name": "abdominal (en banco)"
@@ -26643,19 +26643,19 @@
     ]
   },
   "90001": {
-    "name": "colgado en handboard con crimp completo"
+    "name": "colgado en multipresa con crimp completo"
   },
   "90002": {
-    "name": "colgado en handboard con tres dedos en arrastre"
+    "name": "colgado en multipresa con tres dedos en arrastre"
   },
   "90003": {
-    "name": "colgado en handboard en agujero de dos dedos"
+    "name": "colgado en multipresa en agujero de dos dedos"
   },
   "90004": {
-    "name": "colgado a una mano en handboard"
+    "name": "colgado a una mano en multipresa"
   },
   "90005": {
-    "name": "colgado en handboard con pinza"
+    "name": "colgado en multipresa con pinza"
   },
   "90006": {
     "name": "levantamiento con bloque de pinza"
@@ -26673,7 +26673,7 @@
     "name": "isométrico de front lever a una pierna colgado"
   },
   "90011": {
-    "name": "dominada en handboard"
+    "name": "dominada en multipresa"
   },
   "90012": {
     "name": "escalera en campus board"
