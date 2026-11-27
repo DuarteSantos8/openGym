@@ -107,6 +107,7 @@ describe('boot with a server that does not answer', () => {
   })
 
   it('a sign-out still owed waits no longer than the rest', async () => {
+    document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0' // legacy storage-only marker
     localStorage.setItem('gym_logout_owed', '1')
     const { done, took } = await bootSilently()
     expect(done).toBe(true)

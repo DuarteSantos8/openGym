@@ -16,8 +16,9 @@ const writeDebtCookie = value => {
 
 export function logoutOwed(on) {
   if (on === true) {
+    const shared = writeDebtCookie('1')
     try { localStorage.setItem(LOGOUT_OWED_KEY, '1'); return true } catch { /* quota */ }
-    if (writeDebtCookie('1')) return true
+    if (shared) return true
     try { sessionStorage.setItem(LOGOUT_OWED_KEY, '1'); return true } catch { return false }
   }
   if (on === false) {
@@ -26,9 +27,15 @@ export function logoutOwed(on) {
     writeDebtCookie('0')
     return false
   }
-  try { if (localStorage.getItem(LOGOUT_OWED_KEY)) return true } catch { /* unavailable */ }
   const cookie = debtCookie()
-  if (cookie !== undefined) return cookie === '1'
+  if (cookie === '1') return true
+  if (cookie === '0') {
+    // The verified provider callback can clear the cookie but cannot remove old storage markers.
+    try { localStorage.removeItem(LOGOUT_OWED_KEY) } catch { /* unavailable */ }
+    try { sessionStorage.removeItem(LOGOUT_OWED_KEY) } catch { /* unavailable */ }
+    return false
+  }
+  try { if (localStorage.getItem(LOGOUT_OWED_KEY)) return true } catch { /* unavailable */ }
   try { return !!sessionStorage.getItem(LOGOUT_OWED_KEY) } catch { return false }
 }
 
