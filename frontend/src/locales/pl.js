@@ -2454,6 +2454,9 @@ export default {
   'Sent only to {0}, never to another server.': 'Wysyłany tylko do {0}, nigdy do innego serwera.',
   // --- search: similar exercises ---
   'Similar exercises': 'Podobne ćwiczenia',
+  'Mainly works {0}': 'Głównie pracuje: {0}',
+  'Also works {0}': 'Pracuje też: {0}',
+  'Other matches': 'Pozostałe wyniki',
   'No exact match. These come close:': 'Brak dokładnego dopasowania. Te są blisko:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'Nachylenie (%)',

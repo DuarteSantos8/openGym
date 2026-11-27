@@ -2447,6 +2447,9 @@ export default {
   'Sent only to {0}, never to another server.': '只會傳送到 {0}，絕不會傳給其他伺服器。',
   // --- search: similar exercises ---
   'Similar exercises': '相似動作',
+  'Mainly works {0}': '主要訓練：{0}',
+  'Also works {0}': '同時訓練：{0}',
+  'Other matches': '其他符合項目',
   'No exact match. These come close:': '沒有完全符合，這些比較接近：',
   // --- cardio: treadmill incline ---
   'Incline (%)': '坡度 (%)',

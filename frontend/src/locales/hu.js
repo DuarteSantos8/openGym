@@ -2457,6 +2457,9 @@ export default {
   'Sent only to {0}, never to another server.': 'Csak ide megy: {0}, más szerverre soha.',
   // --- search: similar exercises ---
   'Similar exercises': 'Hasonló gyakorlatok',
+  'Mainly works {0}': 'Főként ezt dolgoztatja: {0}',
+  'Also works {0}': 'Ezt is dolgoztatja: {0}',
+  'Other matches': 'Egyéb találatok',
   'No exact match. These come close:': 'Nincs pontos találat. Ezek közel állnak:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'Emelkedő (%)',

@@ -2454,6 +2454,9 @@ export default {
   'Sent only to {0}, never to another server.': '{0}에만 보내고 다른 서버에는 절대 보내지 않아요.',
   // --- search: similar exercises ---
   'Similar exercises': '비슷한 운동',
+  'Mainly works {0}': '주로 {0} 운동',
+  'Also works {0}': '{0}도 함께 운동',
+  'Other matches': '기타 결과',
   'No exact match. These come close:': '정확히 일치하는 항목이 없어요. 이건 비슷해요:',
   // --- cardio: treadmill incline ---
   'Incline (%)': '경사 (%)',

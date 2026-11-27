@@ -2454,6 +2454,9 @@ export default {
   'Sent only to {0}, never to another server.': '只发送到 {0}，绝不会发给其他服务器。',
   // --- search: similar exercises ---
   'Similar exercises': '相似动作',
+  'Mainly works {0}': '主要训练：{0}',
+  'Also works {0}': '同时训练：{0}',
+  'Other matches': '其他匹配项',
   'No exact match. These come close:': '没有完全匹配，这些比较接近：',
   // --- cardio: treadmill incline ---
   'Incline (%)': '坡度 (%)',

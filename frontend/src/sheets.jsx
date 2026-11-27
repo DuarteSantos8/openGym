@@ -6,7 +6,7 @@ import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, muscleGroups, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
@@ -46,6 +46,7 @@ import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM, applyProgramAdvanc
 import { modeName, MODE_HINT } from './lib/circuit-copy.js'
 import { REST_MAX, fmtRest, restWheelValue, fmtDuration } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
+import MuscleHead from './components/MuscleHead.jsx'
 import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
@@ -2060,7 +2061,9 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
   // While searching, what you have logged or planned follows right after them.
   const narrowedList = eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered
   const ranked = q.trim() ? sortYoursFirst(narrowedList, st, usage) : sortFavouritesFirst(narrowedList, st)
-  const f = bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked
+  // A muscle search lists what mainly trains it, what works it on the side, then the rest, each
+  // under its own header (favourites and your own exercises still lead within each).
+  const { list: f, heads, name: headName } = bp === SAME ? { list: sameMuscleFirst(ranked, likeEx), heads: new Map(), name: '' } : muscleGroups(ranked, q)
   const showSuggestions = !!like && !q.trim() && bp !== '★' && bp !== '☆'
   // A planned backup is already listed first, so it is not suggested a second time.
   const pool = backupList.length && !q.trim() ? f.filter(e => !backupList.includes(e)) : f
@@ -2174,7 +2177,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
         <div className="thumb thumb-x"><Icon name="plusCircle" /></div>
         <div className="grow"><div className="tt">{t('Create your own exercise')}</div><div className="ss">{t('name + body part, and a photo or video if you like')}</div></div><Icon name="plus" className="chev" />
       </div>}
-      {remaining.slice(0, shown).map(pickRow)}
+      {remaining.slice(0, shown).flatMap(e => [heads.has(e.id) && <MuscleHead key={'h' + e.id} kind={heads.get(e.id)} name={headName} />, pickRow(e)])}
       {f.length === 0 && !special && <div className="empty">{t('No matches. Try another search or equipment profile.')}</div>}
       {f.length === 0 && bp === '★' && <div className="empty">{t('Nothing picked yet. Add some exercises and they’ll show up here.')}</div>}
       {f.length === 0 && bp === '☆' && <div className="empty">{t('No favourites yet. Tap the star on an exercise to add one.')}</div>}

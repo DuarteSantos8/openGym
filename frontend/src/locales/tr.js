@@ -2454,6 +2454,9 @@ export default {
   'Sent only to {0}, never to another server.': 'Yalnızca {0} adresine gider, asla başka bir sunucuya gitmez.',
   // --- search: similar exercises ---
   'Similar exercises': 'Benzer egzersizler',
+  'Mainly works {0}': 'Esas olarak çalıştırır: {0}',
+  'Also works {0}': 'Ayrıca çalıştırır: {0}',
+  'Other matches': 'Diğer eşleşmeler',
   'No exact match. These come close:': 'Tam eşleşme yok. Bunlar yakın:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'Eğim (%)',

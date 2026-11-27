@@ -3678,7 +3678,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Tight tracking is tuned for Latin; Arabic is a connected script and gets none. */
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
-.list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
+.list .similar-label,.list .muscle-label{margin:16px 2px 6px;grid-column:1/-1}
+.list .muscle-label{display:flex;align-items:center;gap:6px}
+.list .muscle-label .icn{font-size:1.05em;flex:none}
+.list .muscle-label-main .icn{color:var(--acc-ink)}
 
 /* The edge swipe back (lib/edge-swipe-back.js): the page follows the finger, the one it goes
    back to slides in underneath with a shade over it. The sliding page's own ground reaches the

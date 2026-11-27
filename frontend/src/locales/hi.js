@@ -2454,6 +2454,9 @@ export default {
   'Sent only to {0}, never to another server.': 'सिर्फ़ {0} को भेजा जाता है, किसी दूसरे सर्वर को कभी नहीं।',
   // --- search: similar exercises ---
   'Similar exercises': 'मिलते-जुलते व्यायाम',
+  'Mainly works {0}': 'मुख्य रूप से {0} पर काम',
+  'Also works {0}': '{0} पर भी काम',
+  'Other matches': 'अन्य परिणाम',
   'No exact match. These come close:': 'सटीक मेल नहीं मिला। ये करीब हैं:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'ढलान (%)',

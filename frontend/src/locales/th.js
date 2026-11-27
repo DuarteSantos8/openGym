@@ -2465,6 +2465,9 @@ export default {
   'Sent only to {0}, never to another server.': 'ส่งไปที่ {0} เท่านั้น ไม่ส่งไปเซิร์ฟเวอร์อื่นเลย',
   // --- search: similar exercises ---
   'Similar exercises': 'ท่าที่คล้ายกัน',
+  'Mainly works {0}': 'เน้นที่ {0}',
+  'Also works {0}': 'ใช้ {0} ด้วย',
+  'Other matches': 'ผลลัพธ์อื่น ๆ',
   'No exact match. These come close:': 'ไม่พบที่ตรงทั้งหมด ท่าเหล่านี้ใกล้เคียง:',
   // --- cardio: treadmill incline ---
   'Incline (%)': 'ความชัน (%)',
