@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
@@ -30,14 +30,38 @@ export const START_HOLD_MS = 450
 export default function TabBar({ onStart, onPick }) {
   const nav = useNavigate()
   const hold = useRef(null)
+  const bar = useRef(null)
   const loc = useLocation()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const isGuest = useStore(s => s.isGuest())
+  const shown = !!user || isGuest
+  useEffect(() => {
+    const el = bar.current
+    if (!shown || !el) return undefined
+    const root = document.documentElement
+    const measure = () => {
+      const box = el.getBoundingClientRect()
+      const start = el.querySelector('.start').getBoundingClientRect()
+      const height = box.bottom - Math.min(box.top, start.top)
+      // The rendered height already includes the safe-area padding. Only replace the fallback
+      // once there is a real box, so a hidden first render cannot collapse the page offset.
+      if (height > 0) root.style.setProperty('--tabbar-height', height + 'px')
+    }
+    measure()
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
+    ro?.observe(el, { box: 'border-box' })
+    window.addEventListener('resize', measure)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', measure)
+      root.style.removeProperty('--tabbar-height')
+    }
+  }, [shown])
   // With the connection banner switched off, a sync problem shows as a dot on Today (the /home
   // route), the tab Settings lives under (#369, #330).
   const trouble = useConnectionTrouble()
-  if (!user && !isGuest) return null
+  if (!shown) return null
   const cur = loc.pathname.split('/')[1] || 'home'
   // A screen without a tab of its own lights the tab it is opened from (Muscles from both).
   const PARENT = { history: 'stats', 'structural-balance': 'stats', tools: 'stats', 'progress-photos': 'stats', measurements: 'stats', settings: 'home', checkin: 'home', muscles: 'library', trainer: 'home' }
@@ -82,7 +106,7 @@ export default function TabBar({ onStart, onPick }) {
   const holdEnd = () => { if (hold.current !== 'fired') { clearTimeout(hold.current); hold.current = null } }
 
   return (
-    <nav id="tabbar">
+    <nav id="tabbar" ref={bar}>
       <BrandLogo size={28} className="tabbar-brand" />
       {/* Ironvane: Today · Plan · Start · Library · Progress. The routes keep their names (/home,
           /stats, /library), so links, shortcuts, the tour and back buttons still land; Library sits

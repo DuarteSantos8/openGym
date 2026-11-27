@@ -80,6 +80,24 @@ for (const width of [390, 1440]) {
   })
 }
 
+test('Learn scopes the English fallback notice to the open guide', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('gym_tour_v1', JSON.stringify({ done: 1 })))
+  await enterAsGuest(page)
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('gym_state_v1') || '{}')
+    Object.assign(state, { lang: 'fr', langAuto: false })
+    localStorage.setItem('gym_state_v1', JSON.stringify(state))
+  })
+  await page.reload()
+  await openRoute(page, '/learn?g=first-week')
+  const guide = page.locator('[data-guide="first-week"]')
+  await expect(guide.locator('.iv-learn-body > .iv-learn-note')).toHaveText('Ces textes sont en anglais pour le moment.')
+  await expect(page.locator('.iv-learn > .iv-learn-note')).toHaveCount(0)
+  await expect(page.locator('.iv-learn-note')).toHaveCount(1)
+  await expect(page.locator('[data-term="rep"] .iv-learn-term-d'))
+    .not.toHaveText('One complete movement of an exercise: down and up once in a squat is one rep.')
+})
+
 test('Learn marks a rung reached after saving a workout through the UI', async ({ page, context }) => {
   await context.route(/\/(?:catalogue|exercise-media|exercise-photos|exercise-demos|exercise-stills|img|gif)\//, route => route.abort())
   await page.addInitScript(() => localStorage.setItem('gym_tour_v1', JSON.stringify({ done: 1 })))
