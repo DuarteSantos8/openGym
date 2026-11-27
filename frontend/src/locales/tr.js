@@ -6532,6 +6532,8 @@ export default {
   "Import into the diary on this device?": "Bu cihazdaki günlüğe aktarılsın mı?",
   "Import into your synced account diary?": "Hesabınızın eşitlenen günlüğüne aktarılsın mı?",
   "{0} entries ready. {1} skipped.": "Hazır kayıt: {0}. Atlanan: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Bu içe aktarma, hesabın eşitleme sınırını aşar. Daha küçük bir dışa aktarma dosyası deneyin.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "Verileriniz hesap eşitleme sınırını aşıyor, bu yüzden değişiklikler küçülene kadar bu cihazda kalır.",
   "Could not read this OpenNutriTracker export.": "Bu OpenNutriTracker dışa aktarım dosyası okunamadı.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Eklenen: {0}. Güncellenen: {1}. Değişmeyen: {2}.",
 }

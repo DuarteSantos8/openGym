@@ -6532,6 +6532,8 @@ export default {
   "Import into the diary on this device?": "导入到此设备上的日记？",
   "Import into your synced account diary?": "导入到你账户的同步日记？",
   "{0} entries ready. {1} skipped.": "已准备好 {0} 条记录，已跳过 {1} 条。",
+  "This import would exceed the account sync limit. Try a smaller export.": "此次导入会超出账户同步上限。请尝试较小的导出文件。",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "你的数据超出了账户同步上限，在变小之前，更改只保存在此设备上。",
   "Could not read this OpenNutriTracker export.": "无法读取此 OpenNutriTracker 导出文件。",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "已添加：{0}。已更新：{1}。未更改：{2}。",
 }

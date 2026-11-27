@@ -9,6 +9,7 @@ G1 covers a linked member opening Account before and after reload. The local tra
 D3 status: the short Beginner Settings root and reversible full-list preference are prepared.
 ## Status on November 26, 2026
 
+Nutrition sync checks now cover three offline copies editing portions of the same diary entry and a repeated import of a legacy entry.
 A5 has local Cloud browser coverage for a tenth guest workout and photo saved from a second tab before sign-in, then opened after sign-out and an offline reload.
 
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
