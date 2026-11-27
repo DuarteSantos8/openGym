@@ -139,6 +139,41 @@ describe('nutrition stays private across account transitions', () => {
     }
   })
 
+  it.each([200, 401])('ignores a late boot identity response (%i) after a profile switch', async status => {
+    useStore.getState().setUser(first)
+    await pair()
+    const started = Promise.withResolvers(), reply = Promise.withResolvers()
+    api.mockImplementation(async path => {
+      if (path === '/api/me') { started.resolve(); return reply.promise }
+      return {}
+    })
+    const boot = useStore.getState().boot()
+    await started.promise
+    useStore.getState().setUser(second)
+    const next = await pair(1800)
+    if (status === 200) reply.resolve({ user: first })
+    else reply.reject(Object.assign(new Error('expired'), { status }))
+    await boot
+    expect(useStore.getState().user?.id).toBe(second.id)
+    expect(loadLink()?.pairId).toBe(next.pairId)
+  })
+
+  it('manually refreshes an offline boot only after reconfirming the same account', async () => {
+    useStore.getState().setUser(first)
+    await pair()
+    const fetchFn = vi.fn(async () => responseFor(2310))
+    api.mockImplementation(async path => {
+      if (path === '/api/me') throw new TypeError('offline')
+      return {}
+    })
+    await useStore.getState().boot()
+    expect((await refresh({ force: true, fetchFn })).error).toBe('unreachable')
+    expect(fetchFn).not.toHaveBeenCalled()
+    api.mockImplementation(async () => ({ user: first }))
+    expect((await refresh({ force: true, fetchFn })).days[day].kcal).toBe(2310)
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+  })
+
   it('a delayed account logout leaves the newly signed-in profile and pairing alone', async () => {
     const started = Promise.withResolvers()
     const response = Promise.withResolvers()

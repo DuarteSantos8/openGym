@@ -33,3 +33,41 @@ describe('a kept running workout and a unit switch elsewhere', () => {
     expect(after.active.entries[0].sets[0].w).toBeCloseTo(220.5, 0)
   })
 })
+it.each([false, true])('never stashes the second profile into the first during sign-out (owed=%s)', async owed => {
+  const store = useStore.getState()
+  const a = { id: 'first', name: 'A' }
+  const b = { id: 'second', name: 'B' }
+  store.setUser(a)
+  useStore.setState({ S: { ...clone(DEF), _ts: 100, active: clone(active) } })
+  if (owed) localStorage.setItem('gym_dirty', '1')
+  api.mockImplementation(async path => {
+    if (owed && path === '/api/data') throw new TypeError('offline')
+    return { ok: true }
+  })
+  const original = localStorage
+  let switched = false
+  vi.stubGlobal('localStorage', new Proxy(original, {
+    get(target, prop) {
+      if (prop === 'getItem') return key => {
+        if (key === 'gym_stash' && !switched) {
+          switched = true
+          queueMicrotask(() => {
+            store.setUser(b)
+            useStore.setState({ S: { ...clone(DEF), active: { ...clone(active), id: 'only-b' } } })
+          })
+        }
+        return target.getItem(key)
+      }
+      const value = target[prop]
+      return typeof value === 'function' ? value.bind(target) : value
+    },
+  }))
+  try {
+    await store.signOut({ force: true })
+    expect(switched).toBe(true)
+    expect(useStore.getState().user?.id).toBe(b.id)
+    const stashes = JSON.parse(localStorage.getItem('gym_stash') || '{}')
+    const first = Object.values(stashes).find(entry => entry.uid === a.id)
+    expect(first?.state?.active?.id).not.toBe('only-b')
+  } finally { vi.unstubAllGlobals() }
+})

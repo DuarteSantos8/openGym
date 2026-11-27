@@ -598,6 +598,11 @@ export const useStore = create((set, get) => {
     return syncSession
   }
   const isCurrent = tok => tok === currentSession()
+  // The shared owner may already have changed before this tab handles the storage event.
+  const sessionCheck = () => {
+    const session = currentSession(), owner = readOwner()
+    return () => isCurrent(session) && readOwner() === owner
+  }
   // Another account, or another server: what was armed for the previous one goes too.
   const newSession = () => {
     openSession()
@@ -1230,10 +1235,11 @@ export const useStore = create((set, get) => {
   // What a sign-out or disconnect answers when something is owed: how many changes, and how many
   // photos or videos, when there are any.
   const owedResult = (left, extra = {}) => ({ owed: true, count: left.count, ...(left.media ? { media: left.media } : {}), ...extra })
-  const stashOwed = async () => {
+  const stashOwed = async stillHere => {
     const user = get().user
     if (!user) return true
     const all = await readStashes()
+    if (!stillHere()) return true
     const server = serverBase()
     const key = stashKey(server, user.id)
     const prev = all[key]?.state
@@ -1250,11 +1256,12 @@ export const useStore = create((set, get) => {
   // with nothing owed used to wipe it. It is kept aside the way owed changes are, on its own:
   // the rest of the copy is the server's already, and a shared device keeps no more of the
   // account than it has to. It comes back on the next sign-in here as this account (applyStash).
-  const stashActive = async () => {
+  const stashActive = async stillHere => {
     const user = get().user
     const a = get().S.active
     if (!user || !a) return true
     const all = await readStashes()
+    if (!stillHere()) return true
     const server = serverBase()
     const key = stashKey(server, user.id)
     const prev = all[key]?.state
@@ -1266,9 +1273,10 @@ export const useStore = create((set, get) => {
   // A sign-out ends the rest and the hold running on this device: the countdown must not go on
   // over the sign-in screen, or ring for an account that has left. Before the logout request,
   // while the session can still call the server push off. A hold hands back what it held first.
-  const stopTimers = async () => {
+  const stopTimers = async (stillHere = sessionCheck()) => {
     try {
       const ui = (await import('./useUI.js')).useUI.getState()
+      if (!stillHere()) return
       ui.abandonWork?.()
       ui.stopRest?.()
     } catch { /* no timers to stop */ }
@@ -2089,21 +2097,23 @@ export const useStore = create((set, get) => {
        Otherwise { owed: false } or { owed: true, count, stashed: true }, signed out. A workout
        running here is kept aside either way (stashActive), and the rest and hold timers stop. */
     async signOut({ force = false } = {}) {
-      const session = currentSession()
+      const stillHere = sessionCheck()
       await settle()
+      if (!stillHere()) return { owed: false }
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
-      await stopTimers()
-      if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
-      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
+      await stopTimers(stillHere)
+      if (!stillHere()) return { owed: false }
+      if (left.owed && !(await stashOwed(stillHere))) return owedResult(left, { stashed: false })
+      if (!left.owed && !(await stashActive(stillHere))) return { owed: true, count: 0, stashed: false }
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
-      if (!isCurrent(session)) return { owed: false }
+      if (!stillHere()) return { owed: false }
       let out = null
       const endSession = () => api('/api/logout', { method: 'POST', body: '{}' })
       if (!MOBILE) logoutOwed(true)
       try { out = await (MOBILE ? endSession() : trackCookieCleanup(endSession)) } catch { /* boot retries the recorded web logout */ }
-      if (!isCurrent(session)) return { owed: false }
+      if (!stillHere()) return { owed: false }
       await clearLocalSession()
       // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
       if (!MOBILE && typeof out?.provider_logout === 'string' && /^https?:\/\//.test(out.provider_logout)) window.location.assign(out.provider_logout)
@@ -2170,16 +2180,18 @@ export const useStore = create((set, get) => {
     // valid, and wiping this device's copy of the data would sign the user out of the one place
     // the bump didn't reach. Caller reports the error.
     async signOutAll({ force = false } = {}) {
-      const session = currentSession()
+      const stillHere = sessionCheck()
       await settle()
+      if (!stillHere()) return { owed: false }
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
-      await stopTimers()
-      if (!isCurrent(session)) return { owed: false }
+      await stopTimers(stillHere)
+      if (!stillHere()) return { owed: false }
       await api('/api/logout/all', { method: 'POST', body: '{}' })
-      if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
-      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
-      if (!isCurrent(session)) return { owed: false }
+      if (!stillHere()) return { owed: false }
+      if (left.owed && !(await stashOwed(stillHere))) return owedResult(left, { stashed: false })
+      if (!left.owed && !(await stashActive(stillHere))) return { owed: true, count: 0, stashed: false }
+      if (!stillHere()) return { owed: false }
       await clearLocalSession()
       return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
     },
@@ -2240,14 +2252,20 @@ export const useStore = create((set, get) => {
           setRemoteAuth(remote.base, remote.token)
           setPairedBase(remote.base || null)
           setSync({ server: pairedBase })
+          const restoring = currentSession()
           await restoreFromMirror(remote)
+          if (!isCurrent(restoring)) { finishBoot(); return }
+          let stillHere = sessionCheck()
           try {
             const me = await api('/api/me')   // also catches a token revoked elsewhere (sign out everywhere)
+            if (!stillHere()) { finishBoot(); return }
             if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
             // A token past half its life comes back renewed: kept, it never runs out on a phone
             // that is used at all.
             if (typeof me.token === 'string' && me.token) await renewToken(remote, me.token)
+            if (!stillHere()) { finishBoot(); return }
             get().setUser(me.user)
+            stillHere = sessionCheck()
             // The paired server's /api/config, the same one the web boot reads: without it the
             // phone never learned whether the server offers the Coach and told everyone "your
             // server has no Coach enabled" — with the admin looking at a green test.
@@ -2271,6 +2289,7 @@ export const useStore = create((set, get) => {
             // the account: every change after that "synced" into the app's own files (see
             // lib/api.js) and was gone on the next Disconnect. Now the screens say the server
             // refuses this phone, and pairing it again merges what it kept.
+            if (!stillHere()) { finishBoot(); return }
             get().setUser(remote.user || get().user, { nutritionAccess: isNetworkError(e) ? 'cached' : 'denied' })
             failed(e, { pending: owes() })
           }
@@ -2325,7 +2344,9 @@ export const useStore = create((set, get) => {
       const hurry = !get().user && !get().isGuest() && !/[?&]oidc(-error)?=/.test(window.location.search || '')
       const bootBy = Date.now() + BOOT_WAIT_MS
       const bootOpts = o => (hurry ? { ...o, timeout: Math.max(BOOT_WAIT_MIN_MS, bootBy - Date.now()) } : o)
+      let stillHere = sessionCheck()
       const cfg = await get().loadConfig(hurry ? { timeout: BOOT_WAIT_MS } : undefined)
+      if (!stillHere()) { finishBoot(); return }
       // Past the budget the sign-in screen still wants the answer (SSO, password, guest): asked
       // again with the usual timeout, and the screen follows the store when it lands. A guest who
       // went in meanwhile meets the same rule boot applies just below.
@@ -2335,7 +2356,7 @@ export const useStore = create((set, get) => {
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
         try { await trackCookieCleanup(() => api('/api/logout', bootOpts({ method: 'POST', body: '{}' }))) } catch { /* owed until it is answered */ }
-        if (logoutOwed()) { finishBoot(); return }
+        if (logoutOwed() || !stillHere()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
       // passkey's, so this copy's question is asked (adoptProfile) before anything syncs.
@@ -2347,8 +2368,10 @@ export const useStore = create((set, get) => {
         // alone: a server from before the flag, or one that did not answer, is asked as before.
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await (hurry ? api('/api/me', bootOpts({})) : api('/api/me'))
+        if (!stillHere()) { finishBoot(); return }
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
         get().setUser(me.user, arrived ? { adopt: true } : { restored: true })
+        stillHere = sessionCheck()
         if (arrived) {
           finishBoot()
           const { askAddDeviceData } = await import('../sheets.jsx')
@@ -2376,6 +2399,7 @@ export const useStore = create((set, get) => {
         if (!get().sync.lastError) await applyStash()   // only once the server really answered
         restampTz()
       } catch (e) {
+        if (!stillHere()) { finishBoot(); return }
         // The session ended (expired, revoked, signed out everywhere): back to the sign-in
         // screen, which says so. The copy stays here with its owner, and signing in again as the
         // same account merges it (adoptProfile). A later reload still says so while that copy

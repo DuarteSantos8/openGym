@@ -21,6 +21,7 @@
 //
 // Network only: openGym Offline (lib/build-caps.js) leaves the card out (OFFLINE_OFF_CARDS), and
 // link() / refresh() / loadLink() do nothing there, so no screen ever shows or asks for it.
+import { api } from './api.js'
 import { nativeFetch } from './capacitor-fetch.js'
 import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
 import { offlineBuild } from './build-caps.js'
@@ -299,7 +300,22 @@ export function withSummary(l, sum, now = Date.now()) {
  */
 export function refresh({ from, to, force = false, now = Date.now(), fetchFn = doFetch } = {}) {
   const l = loadLink()
-  if (!l || cachedOnly) return Promise.resolve(l)
+  if (!l) return Promise.resolve(null)
+  if (cachedOnly) {
+    if (!force) return Promise.resolve(l)
+    const key = nutritionProfileKey(), epoch = generation
+    const current = () => key === nutritionProfileKey() && epoch === generation
+    return api('/api/me').then(me => {
+      if (!current()) return null
+      if (me?.user?.id !== userId) { nutritionUserChanged(null); return null }
+      cachedOnly = false
+      return refresh({ from, to, force, now, fetchFn })
+    }).catch(e => {
+      if (!current()) return null
+      if (e?.status === 401 || e?.status === 403) { nutritionUserChanged(null); return null }
+      return { ...l, error: 'unreachable' }
+    })
+  }
   const f = from || isoAt(now - 13 * DAY), t2 = to || isoAt(now)
   const covered = l.at > now - FRESH_MS && l.from <= f && l.to >= t2
   if (covered && !force) return Promise.resolve(l)
