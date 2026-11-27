@@ -790,7 +790,7 @@ function sessionOf(req) {
 }
 // The session a token (a cookie value or a bearer) stands for — { user, exp } — or null. Split
 // out of sessionOf so the origin check can ask whether a bearer authenticates on its own.
-function sessionUser(tok) {
+function sessionUser(tok, { forLogout = false } = {}) {
   if (!tok) return null;
   const payload = verifySig(tok);
   if (!payload) return null;
@@ -798,7 +798,7 @@ function sessionUser(tok) {
   if (!uid || +exp < Date.now()) return null;
   const user = db.users.find(u => u.id === uid) || null;
   if (!user) return null;
-  if (user.disabled) return null;           // disabled accounts are locked out everywhere
+  if (user.disabled && !forLogout) return null;
   // Missing third field = pre-versioning cookie = version 0. Anything non-numeric is a malformed
   // payload (it still had to pass the HMAC, so this is belt-and-braces) and is refused outright.
   const claimed = ver === undefined ? 0 : Number(ver);
@@ -2808,19 +2808,20 @@ const routes = {
   // An expired Set-Cookie could arrive after another tab signs in. Revoke only the browser
   // credential this request carried, durably, without overwriting a newer cookie.
   'POST /api/logout': async (req, res) => {
-    const session = sessionOf(req);
-    const user = session?.user;
-    if (session && !session.bearer) {
+    const cookie = cookieToken(req);
+    const session = sessionUser(cookie, { forLogout: true });
+    const user = session?.user || readSession(req);
+    if (session) {
       const now = Date.now();
       const ended = Object.fromEntries(Object.entries(user.endedSessions || {}).filter(([, exp]) => exp >= now));
-      ended[sessionDigest(cookieToken(req))] = session.exp;
+      ended[sessionDigest(cookie)] = session.exp;
       const previous = user.endedSessions;
       user.endedSessions = ended;
       try { saveDb(); } catch (error) { user.endedSessions = previous; throw error; }
     }
     if (user) audit(req, 'auth.logout', { user });
     // OIDC_LOGOUT: where the browser goes next to end the provider's session too.
-    const out = user && oidcApi ? oidcApi.logoutUrl(user) : null;
+    const out = user && !user.disabled && oidcApi ? oidcApi.logoutUrl(user) : null;
     json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) });
   },
 

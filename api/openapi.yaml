@@ -787,6 +787,9 @@ paths:
                       discovery document has an end_session_endpoint: where the browser goes
                       next to end the provider's session too (RP-initiated logout).
 
+        '500':
+          description: The session could not be revoked on disk. Retry sign-out.
+
   /api/oidc/start:
     get:
       tags: [oidc]

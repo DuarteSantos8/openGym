@@ -135,6 +135,24 @@ test('hosted deletion consumes a proof, removes the profile, and never opens a s
   assert.deepEqual(absent, { status: 200, body: { deleted: false }, cookie: null });
 });
 
+test('a disabled member can end their own browser session without regaining access on re-enable', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  h.mock.next = { sub: 'admin', name: 'Admin' };
+  const admin = await roundTrip(h);
+  h.mock.next = { sub: 'member', name: 'Member' };
+  const member = await roundTrip(h);
+  const other = await roundTrip(h);
+  const id = h.db().users.find(u => u.oidc?.sub === 'member').id;
+  const disable = disabled => h.post('/api/admin/user/disable', { id, disabled }, { cookie: admin.session });
+  assert.equal((await disable(true)).status, 200);
+  assert.equal((await h.get('/api/me', { cookie: member.session })).status, 401);
+  assert.equal((await h.post('/api/logout', {}, { cookie: member.session })).status, 200);
+  assert.equal((await h.get('/api/me', { cookie: other.session })).status, 401);
+  assert.equal((await disable(false)).status, 200);
+  assert.equal((await h.get('/api/me', { cookie: member.session })).status, 401);
+  assert.equal((await h.get('/api/me', { cookie: other.session })).status, 200);
+});
+
 test('hosted deletion refuses a disabled profile and never creates a session for it', async t => {
   const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
   h.mock.next = { sub: 'admin', name: 'Admin' };
