@@ -390,8 +390,7 @@ object WearStore {
         val w = _state.value.workout ?: return null
         val ref = shownRef()
         if (ref != null) {
-            val e = w.entries.getOrNull(ref.entry) ?: return null
-            return SetNav.step(e, ref.set, d)?.let { SetRef(ref.entry, it) }
+            return SetNav.cross(w.entries, ref, d)
         }
         val e = entry() ?: return null
         return if (d < 0 && e.sets.isNotEmpty()) SetRef(entryIndex, e.sets.lastIndex) else null

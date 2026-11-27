@@ -414,8 +414,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// ‹ is its last set.
     private func target(_ d: Int) -> SetRef? {
         if let ref = shownRef {
-            guard let e = shownEntry, let to = SetNav.step(e, from: ref.set, by: d) else { return nil }
-            return SetRef(entry: ref.entry, set: to)
+            guard let w = workout else { return nil }
+            return SetNav.cross(w.entries, from: ref, by: d)
         }
         guard let e = entry, !e.sets.isEmpty else { return nil }
         return d < 0 ? SetRef(entry: entryIndex, set: e.sets.count - 1) : nil

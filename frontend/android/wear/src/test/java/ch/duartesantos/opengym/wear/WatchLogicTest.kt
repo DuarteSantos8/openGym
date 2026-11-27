@@ -94,6 +94,17 @@ class WatchLogicTest {
 
     /* ---------- SetNav, SetFix, Keypad ---------- */
 
+    @Test fun inASupersetTheArrowsCrossToThePartner() {
+        fun ex(id: String, done: Boolean, group: String?) = entry(id, List(3) { row(done = done, at = 1.0) }, group = group)
+        val a = ex("a", true, "g"); val b = ex("b", false, "g"); val solo = ex("s", false, null)
+        assertEquals(SetRef(0, 2), SetNav.cross(listOf(a, b), SetRef(1, 0), -1))
+        assertEquals(SetRef(1, 0), SetNav.cross(listOf(a, b), SetRef(0, 2), 1))
+        assertNull(SetNav.cross(listOf(a, b), SetRef(0, 0), -1))
+        assertNull(SetNav.cross(listOf(a, b), SetRef(1, 2), 1))
+        assertNull(SetNav.cross(listOf(a, solo), SetRef(1, 0), -1))
+        assertEquals(SetRef(0, 1), SetNav.cross(listOf(a, b), SetRef(0, 0), 1))
+    }
+
     @Test fun placeCountsWorkSetsAndWarmupsApart() {
         val e = entry("b", listOf(row(40.0, 10.0, warmup = true), row(60.0, 8.0), row(62.5, 8.0), row(62.5, 8.0)))
         assertEquals(1 to 1, SetNav.place(e, 0))

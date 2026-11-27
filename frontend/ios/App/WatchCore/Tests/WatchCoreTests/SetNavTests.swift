@@ -25,6 +25,21 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(SetNav.step(e, from: 3, by: 1), nil)
     }
 
+    func testInASupersetTheArrowsCrossToThePartner() {
+        func ex(_ id: String, _ done: Bool, group: String?) -> Entry {
+            var e = Entry(id: id, name: id, mode: "reps", restSec: nil, last: nil, sets: (0..<3).map { _ in row(20, 10, done: done, at: 1) })
+            e.group = group
+            return e
+        }
+        let a = ex("a", true, group: "g"), b = ex("b", false, group: "g"), solo = ex("s", false, group: nil)
+        XCTAssertEqual(SetNav.cross([a, b], from: SetRef(entry: 1, set: 0), by: -1), SetRef(entry: 0, set: 2))
+        XCTAssertEqual(SetNav.cross([a, b], from: SetRef(entry: 0, set: 2), by: 1), SetRef(entry: 1, set: 0))
+        XCTAssertEqual(SetNav.cross([a, b], from: SetRef(entry: 0, set: 0), by: -1), nil, "the group's first set")
+        XCTAssertEqual(SetNav.cross([a, b], from: SetRef(entry: 1, set: 2), by: 1), nil, "the group's last set")
+        XCTAssertEqual(SetNav.cross([a, solo], from: SetRef(entry: 1, set: 0), by: -1), nil, "no superset, no crossing")
+        XCTAssertEqual(SetNav.cross([a, b], from: SetRef(entry: 0, set: 0), by: 1), SetRef(entry: 0, set: 1), "inside the exercise nothing changes")
+    }
+
     func testAFixIsTheSameSetDoneAgainLaterWithoutHeartRate() throws {
         let e = Entry(id: "b", name: "Bench", mode: "reps", restSec: nil, last: nil, sets: [row(60, 8, done: true, at: 5000), row(60, 8)])
         let (s, ev) = SetFix.correct(state(e), entry: 0, set: 0, side: nil, to: .init(w: 62.5, r: 7, sec: nil), now: 1000, id: "fix1")

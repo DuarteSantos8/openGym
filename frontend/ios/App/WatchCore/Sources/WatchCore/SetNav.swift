@@ -31,6 +31,17 @@ enum SetNav {
         let to = si + d
         return e.sets.indices.contains(to) ? to : nil
     }
+
+    /// ‹ or › from `ref`: inside the exercise, else in a superset the partner's last (‹) or first (›)
+    /// set, in superset order; nil at the ends of the group and outside a superset.
+    static func cross(_ entries: [Entry], from ref: SetRef, by d: Int) -> SetRef? {
+        guard entries.indices.contains(ref.entry) else { return nil }
+        if let to = step(entries[ref.entry], from: ref.set, by: d) { return SetRef(entry: ref.entry, set: to) }
+        let n = ref.entry + (d < 0 ? -1 : 1)
+        guard Overview.inSuperset(entries, ref.entry), entries.indices.contains(n),
+              entries[n].group == entries[ref.entry].group, !entries[n].sets.isEmpty else { return nil }
+        return SetRef(entry: n, set: d < 0 ? entries[n].sets.count - 1 : 0)
+    }
 }
 
 enum SetFix {
