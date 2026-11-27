@@ -4,6 +4,8 @@
 "Start workout" = "Mulai latihan";
 "Done" = "Selesai";
 "Warm-up" = "Pemanasan";
+"Remove" = "Hapus";
+"Undo" = "Urungkan";
 "Reps" = "Rep";
 "Rest" = "Istirahat";
 "Skip" = "Lewati";
@@ -46,6 +48,9 @@
 "Looks like you left the gym" = "Sepertinya kamu sudah keluar dari gym";
 "Keep going" = "Lanjut";
 "Finish now" = "Selesai sekarang";
+"Taken to failure" = "Hingga failure";
+"Drop set" = "Drop set";
+"More" = "Lebih banyak";
 "Back" = "Kembali";
 "Saved" = "Disimpan";
 "Hours" = "Jam";
@@ -64,6 +69,9 @@
 "Skip for today" = "Lewati hari ini";
 "Continue" = "Lanjutkan";
 "New record" = "Rekor baru";
+"Set %lld" = "Set %lld";
+"Add set" = "Tambah";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "Terakhir kali: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Sudah lama tidak ada catatan. Kalau sudah selesai, latihan berakhir sendiri pukul %@, disimpan di set terakhirmu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Selesaikan latihan sekarang? Kalau tidak, selesai sendiri pukul %@.";
@@ -113,4 +121,14 @@
 "+%lld more" = "+%lld lagi";
 "On iPhone" = "Di iPhone";
 "%@ sets" = "%@ set";
+"Failure" = "Gagal";
+"Drop" = "Drop";
+"Set %lld added" = "Set %lld ditambahkan";
+"Hold 1 s to remove" = "Tahan 1 dtk untuk menghapus";
+"Set %lld · %@ is lost" = "Set %lld · %@ hilang";
+"Set %lld removed" = "Set %lld dihapus";
+"at the end" = "di akhir";
+"Crown: half steps" = "Digital Crown: setengah langkah";
+"Highest" = "Tertinggi";
+"Lowest" = "Terendah";
 "Archived routines stay on your iPhone." = "Rutinitas yang diarsipkan tetap ada di iPhone-mu.";

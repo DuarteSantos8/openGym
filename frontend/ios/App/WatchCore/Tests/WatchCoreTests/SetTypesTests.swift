@@ -125,6 +125,50 @@ final class SetTypesTests: XCTestCase {
         XCTAssertEqual(SessionCore.summary(s.workout!, end: 1).sets, 0)
     }
 
+    func testASkipAndARatingBelongToTheEntryNotToTheExercise() {
+        // the same lift twice (back-off sets): set 0 skipped and set 1 rated on the first one only
+        var s = state([entry("bench", "Bench", sets: [row(60, 8), row(60, 8), row(60, 8)]),
+                       entry("bench", "Bench", sets: [row(50, 10), row(50, 10), row(50, 10)])])
+        s = SessionCore.skip(s, entry: 0, set: 0)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 1), 0, "the second Bench Press still starts at its first set")
+        XCTAssertTrue(SessionCore.isSkipped(s, entry: 0, 0)); XCTAssertFalse(SessionCore.isSkipped(s, entry: 1, 0))
+        s = SessionCore.tick(s, entry: 0, set: 1, w: 60, r: 8, at: 1, id: "1", effort: Effort.Rating(kind: "rpe", value: 8)).0
+        XCTAssertEqual(Metrics.effort(s).map(\.value), [8], "only the first Bench Press has a rating")
+    }
+
+    func testAnExerciseThePhoneTakesOutLeavesTheOthersSkipsAndRatings() {
+        var s = state([entry("squat", "Squat", sets: [row(100, 5)]), entry("bench", "Bench", sets: [row(60, 8), row(60, 8), row(60, 8)])])
+        s = SessionCore.skip(s, entry: 1, set: 0)
+        s = SessionCore.tick(s, entry: 1, set: 1, w: 60, r: 8, at: 1, id: "1", effort: Effort.Rating(kind: "rpe", value: 8)).0
+        // the lifter takes Squat out on the phone, which has the tick by then
+        let w = ActiveWorkout(id: "w1", name: "Mixed", unit: "kg", cur: 0, restSec: 90, rest: nil,
+                              entries: [entry("bench", "Bench", sets: [row(60, 8), row(60, 8, done: true), row(60, 8)])], start: 0)
+        var snap = Snapshot(v: 1, unit: "kg", restSec: 90, active: w, ready: nil, settings: nil)
+        snap.acked = ["1"]
+        let back = SessionCore.applySnapshot(s, snap)
+        XCTAssertEqual(SessionCore.setIndex(back, entry: 0), 2, "set 0 is still skipped")
+        XCTAssertEqual(Metrics.effort(back).map(\.value), [8])
+    }
+
+    func testASkipAndARatingSavedByTheLastReleaseStayOnTheFirstCopy() {
+        var s = state([entry("bench", "Bench", sets: [row(60, 8), row(60, 8)]), entry("bench", "Bench", sets: [row(50, 10), row(50, 10)])])
+        s.skipped = ["bench#0"]; s.efforts = ["bench#1": 8]   // 1.4.5's keys: the watch updated mid-workout
+        s = SessionCore.upgraded(s)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)
+        XCTAssertEqual(SessionCore.setIndex(s, entry: 1), 0)
+        XCTAssertEqual(Metrics.effort(s).map(\.value), [8])
+        XCTAssertEqual(SessionCore.upgraded(s), s, "safe to run more than once")
+    }
+
+    func testTakingASetOutOfOneEntryLeavesTheOtherEntrysSkipsAlone() throws {
+        func sets(_ p: String) -> [SetRow] { (0..<3).map { SetRow(w: 60, r: 8, sec: nil, done: false, warmup: false, at: nil, sid: "\(p)\($0)") } }
+        var s = state([entry("bench", "Bench", sets: sets("a")), entry("bench", "Bench", sets: sets("b"))])
+        s = SessionCore.skip(SessionCore.skip(s, entry: 0, set: 2), entry: 1, set: 2)
+        let s1 = try XCTUnwrap(SetMenu.removeSet(s, entry: 1, set: 0, at: 5, id: "r1"))
+        XCTAssertEqual(s1.skipped, ["n0:bench#2", "n1:bench#1"])
+    }
+
     func testCardioIsTickedWithoutNumbers() {
         let s0 = state([entry("run", "Treadmill", mode: "cardio", sets: [row(nil, nil)])])
         let (s, ev) = SessionCore.tick(s0, entry: 0, set: 0, w: nil, r: nil, at: 1, id: "c")
@@ -237,48 +281,5 @@ final class HealthDeleteTests: XCTestCase {
     func testASnapshotWithTheListReads() throws {
         let snap = try JSONDecoder().decode(Snapshot.self, from: Data(#"{"v":1,"healthGone":["opengym-w-x"]}"#.utf8))
         XCTAssertEqual(snap.healthGone, ["opengym-w-x"])
-    }
-}
-
-
-/// #1455: the same exercise twice in a workout (from cubetes' #1139).
-extension SetTypesTests {
-
-    func testASkipAndARatingBelongToTheEntryNotToTheExercise() {
-        // the same lift twice (back-off sets): set 0 skipped and set 1 rated on the first one only
-        var s = state([entry("bench", "Bench", sets: [row(60, 8), row(60, 8), row(60, 8)]),
-                       entry("bench", "Bench", sets: [row(50, 10), row(50, 10), row(50, 10)])])
-        s = SessionCore.skip(s, entry: 0, set: 0)
-        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)
-        XCTAssertEqual(SessionCore.setIndex(s, entry: 1), 0, "the second Bench Press still starts at its first set")
-        XCTAssertTrue(SessionCore.isSkipped(s, entry: 0, 0)); XCTAssertFalse(SessionCore.isSkipped(s, entry: 1, 0))
-        s = SessionCore.tick(s, entry: 0, set: 1, w: 60, r: 8, at: 1, id: "1", effort: Effort.Rating(kind: "rpe", value: 8)).0
-        XCTAssertEqual(Metrics.effort(s).map(\.value), [8], "only the first Bench Press has a rating")
-    }
-
-    func testAnExerciseThePhoneTakesOutLeavesTheOthersSkipsAndRatings() {
-        var s = state([entry("squat", "Squat", sets: [row(100, 5)]), entry("bench", "Bench", sets: [row(60, 8), row(60, 8), row(60, 8)])])
-        s = SessionCore.skip(s, entry: 1, set: 0)
-        s = SessionCore.tick(s, entry: 1, set: 1, w: 60, r: 8, at: 1, id: "1", effort: Effort.Rating(kind: "rpe", value: 8)).0
-        // the lifter takes Squat out on the phone, which has the tick by then
-        let w = ActiveWorkout(id: "w1", name: "Mixed", unit: "kg", cur: 0, restSec: 90, rest: nil,
-                              entries: [entry("bench", "Bench", sets: [row(60, 8), row(60, 8, done: true), row(60, 8)])], start: 0)
-        var snap = Snapshot(v: 1, unit: "kg", restSec: 90, active: w, ready: nil, settings: nil)
-        snap.acked = ["1"]
-        let back = SessionCore.applySnapshot(s, snap)
-        XCTAssertEqual(SessionCore.setIndex(back, entry: 0), 2, "set 0 is still skipped")
-        XCTAssertEqual(Metrics.effort(back).map(\.value), [8])
-    }
-
-    func testASkipAndARatingSavedByTheLastReleaseStayOnTheFirstCopy() {
-        let heavy: Entry = entry("bench", "Bench", sets: [row(60, 8), row(60, 8)])
-        let light: Entry = entry("bench", "Bench", sets: [row(50, 10), row(50, 10)])
-        var s = state([heavy, light])
-        s.skipped = ["bench#0"]; s.efforts = ["bench#1": 8]   // 1.4.5's keys: the watch updated mid-workout
-        s = SessionCore.upgraded(s)
-        XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)
-        XCTAssertEqual(SessionCore.setIndex(s, entry: 1), 0)
-        XCTAssertEqual(Metrics.effort(s).map(\.value), [8])
-        XCTAssertEqual(SessionCore.upgraded(s), s, "safe to run more than once")
     }
 }

@@ -25,11 +25,27 @@ struct SetPanel: View {
     @State private var selected: NumberField?
     @State private var keypad: NumberField?
     @State private var confirmSkip = false
+    @Namespace private var grow // the effort pill grows into the armed capsule
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }   // demoAOD: CI's Always On (the pager gives no environment value)
 
     var body: some View {
+        page
+            // A removed set: its own plain screen until Undo has passed. A set added: a toast.
+            .overlay { if let r = store.removed { RemovedView(removed: r).transition(.opacity) } }
+            .overlay(alignment: .top) {
+                if let t = store.toast, store.removed == nil {
+                    ZStack(alignment: .top) { Color.black.opacity(0.6); SetToast(text: t).padding(.top, 46) }
+                        .ignoresSafeArea().transition(.opacity)
+                }
+            }
+            .animation(Motion.fade(reduceMotion, dimmed), value: store.toast)
+    }
+
+    @ViewBuilder
+    private var page: some View {
         if let w = store.workout, let ref = store.shownRef,
            w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set) {
             let entry = w.entries[ref.entry]
@@ -41,9 +57,20 @@ struct SetPanel: View {
                     .frame(width: g.size.width, height: g.size.height)
             }
             .padding(.horizontal, 2)
+            // Down to the page dots on every case size: the system's inset (bigger on larger cases) left an
+            // empty band under Done. The dots sit in the bottom 10 pt; 12 pt is kept clear above them.
+            .padding(.bottom, 20)
+            // The clock's row, drawn by the page so the set pill slides with it (SessionStore.ownTopRow).
+            .overlay(alignment: .topLeading) {
+                SessionBadges(pill: true).alignmentGuide(.top) { $0[.bottom] + 4 }.padding(.leading, 2)
+            }
+            .ignoresSafeArea(edges: .bottom)
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)
-            .onAppear { pickCrown(entry) }
+            .onAppear {
+                pickCrown(entry)
+                if SessionStore.demoScreen?.hasPrefix("menu") == true, store.menuFor == nil { store.lockTouches(); store.menuFor = ref }
+            }
             .onChange(of: ref) { _ in pickCrown(entry) }
             .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
@@ -96,35 +123,35 @@ struct SetPanel: View {
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
                     Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
-                        .font(.system(.caption2, design: .rounded))
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.purple)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
-                        .padding(.leading, 8)
+                        .padding(.leading, 5)
                 }
                 if fixing, row.sides != nil { sideSwitch }
                 if entry.isCardio {
                     Spacer(minLength: 2)
                     Text("Log this one on your iPhone.")
-                        .font(.footnote)
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.7)
                 } else {
                     numbers(entry, row: row, unit: unit).frame(maxHeight: .infinity)
                 }
-                if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
-                    Text("Last time: \(last)")
-                        .font(.system(size: 12, design: .rounded))
+                    Text("Last time: \(LastTime.compact(last))")
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.8) // never under 12 pt
                         .dynamicTypeSize(...DynamicTypeSize.large)
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
+            .zIndex(1)
             .id(ref)
             .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
             bottomRow(entry, fixing: fixing)
@@ -136,7 +163,11 @@ struct SetPanel: View {
     /// second line for a long name. The set's place line, the boxes and the button always do.
     private func room(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, height: CGFloat) -> (partner: Bool, last: Bool, twoLines: Bool) {
         guard !typeSize.isAccessibilitySize else { return (false, false, false) }
-        var spare = height - 146
+        var spare = height - 132   // the fixed lines and the boxes at their Apple-sized height
+        // The tag line (band, side, Done) takes a line of its own when it shows.
+        // (Warm-up, Failure and Drop are discs in the top row's set pill.)
+        let tags = !(row.band ?? "").isEmpty || (!fixing && row.sideUp != nil) || fixing
+        if tags { spare -= 24 }
         let partner = partnerNames(ref.entry) != nil && spare >= 15
         if partner { spare -= 15 }
         let hasLast = !fixing && !row.warmup && store.show.showLast && !(entry.last ?? "").isEmpty
@@ -155,17 +186,25 @@ struct SetPanel: View {
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
     private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
         let side = fixing ? store.fixSide : row.sideUp
-        return HStack(spacing: 4) {
+        return tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner)
+        .padding(.leading, 5)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+    }
+
+    private func tagLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, side: String?, partner: String?) -> some View {
+        HStack(spacing: 4) {
             // "Set 2 of 4" is the top row's pill now (SetPill).
-            if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
             // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
             if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
-            if fixing { Tag(text: Text("Done"), color: store.accent) }
+            if fixing, !store.fixDial.armed {
+                Tag(text: Text("Done"), color: store.accent)
+                    .transition(.asymmetric(insertion: .opacity, removal: AnyTransition.opacity.animation(dimmed ? nil : .easeOut(duration: 0.12)))) // out fast, back with the settle
+            }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
-                    .font(.system(.caption2, design: .rounded))
+                    .font(TypeScale.second)
                     .foregroundStyle(Theme.purple)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -178,9 +217,16 @@ struct SetPanel: View {
                     .foregroundStyle(store.accent)
                     .frame(maxWidth: 40)
             }
+            // The effort of a set being fixed shares this line (owner 2026-11-11: no line of its own).
+            if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
         }
-        .padding(.leading, 8)
-        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+        .animation(fixMotion, value: store.fixDial.armed)
+    }
+
+    /// The pill springs open into the armed capsule; the settle only fades. Always On: nothing moves.
+    private var fixMotion: Animation? {
+        guard !dimmed else { return nil }
+        return store.fixDial.armed && !reduceMotion ? .spring(response: 0.3, dampingFraction: 0.86) : Motion.fade(reduceMotion, false)
     }
 
     /// The two sides of a per-side set being fixed: which one the numbers are.
@@ -189,7 +235,7 @@ struct SetPanel: View {
             ForEach(["L", "R"], id: \.self) { side in
                 Button { store.setFixSide(side) } label: {
                     Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
-                        .font(.system(.caption2, design: .rounded).weight(.bold))
+                        .font(TypeScale.label)
                         .textCase(.uppercase)
                         .foregroundStyle(store.fixSide == side ? Color.black : Theme.teal)
                         .padding(.horizontal, 8)
@@ -203,62 +249,89 @@ struct SetPanel: View {
         }
     }
 
-    /// The effort on a set being fixed: a tap goes through the quick ratings and back to as it was.
-    private func fixEffort(_ kind: String) -> some View {
+    /// The effort on a set being fixed: a pill that a tap arms (EffortArmed, over DONE, which hides meanwhile).
+    @ViewBuilder private func fixEffort(_ kind: String) -> some View {
         let v = store.fixEffort
         let color = v.map { Effort.color(kind, $0) } ?? Theme.label2
-        return Button {
-            let chips = Effort.chips(kind)
-            if let cur = v, let i = chips.firstIndex(of: cur) {
-                store.fixEffort = i + 1 < chips.count ? chips[i + 1] : nil
-            } else {
-                store.fixEffort = chips.first
+        if store.fixDial.armed && !dimmed {
+            EffortArmed(kind: kind, value: v, clear: true, height: 32, disc: 28, ticks: false, size: 15,
+                        nudge: { store.nudgeFixEffort($0, disc: false) }, discNudge: { store.nudgeFixEffort($0, disc: true) },
+                        grow: reduceMotion ? nil : (grow, AnyHashable("fix")))
+                .frame(maxWidth: 140, minHeight: 24, maxHeight: 24) // it grows past the row by 4 pt each way, so nothing under it moves
+        } else {
+            Button { store.armFixEffort() } label: {
+                Text(verbatim: "\(Effort.name(kind)) \(v.map(Effort.valueLabel) ?? "–")")
+                    .font(TypeScale.label.monospacedDigit())
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 10)
+                    .frame(minHeight: 24)
+                    .background(Capsule().fill(Color.clear).grows(reduceMotion ? nil : grow, id: "fix")) // the frame the capsule grows from
+                    .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
+                    .contentShape(Rectangle().inset(by: -6)) // 44 x 36 to hit
             }
-            WKInterfaceDevice.current().play(.click)
-        } label: {
-            Text(verbatim: "\(Effort.name(kind)) \(v.map { Effort.chipLabel(kind, $0) } ?? "–")")
-                .font(.system(.caption2, design: .rounded).weight(.semibold).monospacedDigit())
-                .foregroundStyle(color)
-                .padding(.horizontal, 10)
-                .frame(minHeight: 24)
-                .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
-                .contentShape(Capsule())
+            .buttonStyle(PressStyle())
+            .accessibilityLabel(Text("Effort"))
+            .accessibilityValue(v.map { Text(verbatim: "\(Effort.name(kind)) \(Effort.valueLabel($0))") } ?? Text("None"))
+            .accessibilityHint(Text("Tap to change it."))
         }
-        .buttonStyle(PressStyle())
-        .accessibilityLabel(Text("Effort"))
-        .accessibilityValue(v.map { Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, $0))") } ?? Text("None"))
-        .accessibilityHint(Text("Tap to change it."))
     }
 
     /// The boxes: weight and reps; reps and the added weight on a bodyweight set; a hold's seconds.
     @ViewBuilder private func numbers(_ entry: Entry, row: SetRow, unit: String) -> some View {
         let tint = row.warmup ? Theme.warmup : Color.white
-        HStack(spacing: 6) {
-            if entry.isTimed {
-                box(.seconds, value: value(.seconds), unit: "s", label: Text("Hold"), tint: tint)
-                if (row.w ?? 0) > 0 { box(.weight, value: value(.weight), unit: unit, label: Text("Weight"), tint: tint) }
-            } else if entry.isBodyweight {
-                box(.reps, value: value(.reps), unit: nil, label: Text("Reps"), tint: tint)
-                box(.weight, value: value(.weight), unit: unit, label: Text("Added weight"), tint: tint, plus: true)
-            } else {
-                box(.weight, value: value(.weight), unit: unit, label: Text("Weight"), tint: tint)
-                box(.reps, value: value(.reps), unit: nil, label: Text("Reps"), tint: tint)
+        let shown: [(NumberField, String?, Text, Bool)] =
+            entry.isTimed ? [(.seconds, "s", Text("Hold"), false)] + ((row.w ?? 0) > 0 ? [(.weight, unit, Text("Weight"), false)] : [])
+            : entry.isBodyweight ? [(.reps, nil, Text("Reps"), false), (.weight, unit, Text("Added weight"), true)]
+            : [(.weight, unit, Text("Weight"), false), (.reps, nil, Text("Reps"), false)]
+        // Whatever the case size, the boxes take the height left and the digits as much of it as fits.
+        GeometryReader { g in
+            // Sized for the widest value the box can take, not the one on show: nothing jumps as the crown turns.
+            let fit = digits(g.size, shown.map { (widest($0.0, plus: $0.3), $0.1) })
+            HStack(spacing: 6) {
+                ForEach(Array(shown.enumerated()), id: \.element.0) { i, f in
+                    box(f.0, value: value(f.0), unit: f.1, label: f.2, tint: tint, plus: f.3, size: fit.size, compact: fit.compact)
+                        .frame(width: fit.widths[i])
+                }
             }
         }
     }
 
-    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
+    /// "888.5" for a weight on a 2.5 step, "88" for reps, "888" for seconds: three digits, and the step's decimals.
+    private func widest(_ field: NumberField, plus: Bool) -> String {
+        let decimals = field == .weight ? formatNumber(step(.weight)).split(separator: ".").dropFirst().first.map { "." + $0 } ?? "" : ""
+        return (plus ? "+" : "") + (field == .reps ? "88" : "888") + decimals
+    }
+
+    /// Apple Workout's boxes (watchOS 27): equal halves, one digit size for both, as big as the widest value
+    /// each box can take lets it (and the room's height).
+    private func digits(_ room: CGSize, _ values: [(String, String?)]) -> (size: CGFloat, widths: [CGFloat], compact: Bool) {
+        let n = CGFloat(max(1, values.count))
+        let width = (room.width - 6 * (n - 1)) / n
+        // Rounded digits are 0.6 of the size wide, a point or comma 0.3; a unit is 14 pt text.
+        let wide = values.map { v, u -> CGFloat in
+            let ems = v.reduce(0) { $0 + (".,".contains($1) ? 0.3 : 0.6) } as CGFloat
+            return (width - 16 - (u.map { CGFloat($0.count) * 8.5 + 2 } ?? 0)) / max(0.6, ems)
+        }.min() ?? 40
+        // Too short for the name line over the digits (40 mm with tags): the digits alone; VoiceOver still says the name.
+        let compact = room.height < 48
+        let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93
+        let size = max(18, min(tall, wide, TypeScale.number))
+        return (size, Array(repeating: width, count: values.count), compact)
+    }
+
+    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false, size: CGFloat, compact: Bool) -> some View {
         // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
         // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
-        if selected == field && !dimmed {
+        // While the effort is armed it holds the Crown: no box shows the crown glyph; when it settles the box takes it back.
+        if selected == field && !dimmed && !store.fixDial.armed {
             CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
-                     value: value, unit: unit, label: label, tint: tint, plus: plus, focus: $focus,
+                     value: value, unit: unit, label: label, tint: tint, plus: plus, size: size, compact: compact, focus: $focus,
                      apply: { set(field, $0) }, tap: { keypad = field })
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
                                            nudge: nudge, edit: { keypad = field }))
         } else {
-            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false)
-                .onTapGesture { selected = field; focus = field }
+            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false, size: size, compact: compact)
+                .onTapGesture { store.letGoOfEffort(); selected = field; focus = field }
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
                                            nudge: nudge, edit: { keypad = field }))
         }
@@ -290,6 +363,10 @@ struct SetPanel: View {
                         .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                 }
                 .buttonStyle(PrimaryButtonStyle())
+                .background(GeometryReader { g in
+                    Color.clear.onAppear { store.doneFrame = g.frame(in: .global) }
+                        .onChange(of: g.frame(in: .global)) { _, f in store.doneFrame = f }
+                })
                 // A long press: skip this set instead (VoiceOver: an action of its own).
                 .simultaneousGesture(LongPressGesture(minimumDuration: 0.8).onEnded { _ in confirmSkip = true })
                 .accessibilityAction(named: Text("Skip set")) { store.skipSet() }
@@ -370,38 +447,54 @@ struct NumberBox: View {
     let label: Text
     var tint: Color = .white
     let selected: Bool
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
+    /// The digits' size, from the room the page has (SetPanel.digits).
+    var size: CGFloat = 40
+    /// No name line: the box is too short for it.
+    var compact = false
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         // Apple Workout's set boxes (watchOS 26): the name small and in capitals on top, the number big under
         // it, both in the box's colour (the accent; orange on a warm-up), on a tint of that colour.
         let color = tint == .white ? accent : tint
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 3) {
-                label.textCase(.uppercase)
-                if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
+            if !compact {
+                HStack(spacing: 3) {
+                    label.textCase(.uppercase)
+                    if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
+                }
+                .font(TypeScale.label)
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .dynamicTypeSize(...DynamicTypeSize.large)
             }
-            .font(.system(size: 13, weight: .semibold, design: .rounded))
-            .lineLimit(1).minimumScaleFactor(0.8)
-            .dynamicTypeSize(...DynamicTypeSize.large)
             Spacer(minLength: 0)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(verbatim: value)
                     .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
+                    // The digits roll to the new value instead of snapping, also on a fast Crown spin (owner 2026-11-11).
+                    .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.22), value: value)
+                    // Momentum (Direction B): each step stretches the digits up a touch and they spring back; a fast spin keeps them taut.
+                    .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion || dimmed ? "" : value) { digits, s in
+                        digits.scaleEffect(x: 1, y: s, anchor: .bottom)
+                    } keyframes: { _ in
+                        LinearKeyframe(1.07, duration: 0.06)
+                        SpringKeyframe(1.0, duration: 0.32, spring: Spring(response: 0.28, dampingRatio: 0.5))
+                    }
                 if let u = unit {
-                    Text(verbatim: u).font(.system(size: 14, weight: .semibold, design: .rounded))
+                    Text(verbatim: u).font(TypeScale.label).textCase(.uppercase)
                 }
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.3) // the largest text sizes: smaller digits, never "62…"
+            .padding(.vertical, -size * 0.13) // the digits' own line is taller than they are: the box need not pay for it
+            .minimumScaleFactor(0.5) // a safety net: smaller digits, never "62…"
         }
         .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
-        .padding(.horizontal, 8).padding(.vertical, 5)
-        // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
-        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96, alignment: .leading)
+        .padding(.horizontal, 8).padding(.vertical, 3)
+        // As tall as the page lets it: the numbers are what a glance is for.
+        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: (compact ? 6 : 22) + size * 0.93 + 4, alignment: .leading)
         // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(dimmed ? Color.clear : color.opacity(0.22)))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -448,13 +541,16 @@ struct CrownBox: View {
     let label: Text
     let tint: Color
     let plus: Bool
+    let size: CGFloat
+    let compact: Bool
     var focus: FocusState<NumberField?>.Binding
     let apply: (Double) -> Void
     let tap: () -> Void
+    @EnvironmentObject var store: SessionStore
     @State private var index = 0
 
     var body: some View {
-        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true)
+        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true, size: size, compact: compact)
             .focusable()
             .focusEffectDisabled()
             .focused(focus, equals: field)
@@ -462,7 +558,11 @@ struct CrownBox: View {
                                   sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
             .onTapGesture(perform: tap) // a second tap: the keypad, as before
             .onAppear { index = choices.firstIndex(of: value) ?? 0; focus.wrappedValue = field }
-            .onChange(of: index) { i in if choices.indices.contains(i), choices[i] != value { apply(choices[i]) } }
+            .onChange(of: index) { i in
+                // Just after a rest ended under an armed effort the leftover turn goes nowhere (0.6 s).
+                guard store.crownAllowed else { index = choices.firstIndex(of: value) ?? index; return }
+                if choices.indices.contains(i), choices[i] != value { apply(choices[i]) }
+            }
             .onChange(of: value) { v in if let i = choices.firstIndex(of: v), i != index { index = i } } // the keypad typed over it
     }
 }
@@ -511,7 +611,7 @@ struct ExerciseDonePanel: View {
                 .foregroundStyle(left ? Theme.label2 : accent)
                 .accessibilityHidden(true)
             Text(left ? LocalizedStringKey("A skipped set is still waiting.") : LocalizedStringKey("All sets done"))
-                .font(.footnote)
+                .font(TypeScale.second)
                 .foregroundStyle(Theme.label2)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.7)
@@ -622,7 +722,7 @@ struct KeypadView: View {
                 .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(bad ? Theme.red : (typed ? Color.white : Theme.label3))
             if field != .reps {
-                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
+                Text(verbatim: field == .seconds ? "s" : unit).font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
             }
         }
         .lineLimit(1)
@@ -662,4 +762,21 @@ struct AnyLabelStyle: LabelStyle {
     }
 
     func makeBody(configuration: Configuration) -> some View { make(configuration) }
+}
+
+
+/// The Drop mark: a step down, as in the set-types mockup (SF Symbols has no stairs). Drawn in the
+/// text colour, `size` is the font size it stands beside.
+struct StepDownGlyph: View {
+    let size: CGFloat
+    var body: some View {
+        Path { p in
+            p.move(to: CGPoint(x: 0.1, y: 0.2)); p.addLine(to: CGPoint(x: 0.45, y: 0.2)); p.addLine(to: CGPoint(x: 0.45, y: 0.5))
+            p.addLine(to: CGPoint(x: 0.9, y: 0.5)); p.addLine(to: CGPoint(x: 0.9, y: 0.8))
+        }
+        .applying(CGAffineTransform(scaleX: size, y: size))
+        .stroke(style: StrokeStyle(lineWidth: size * 0.16, lineCap: .round, lineJoin: .round))
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
 }
