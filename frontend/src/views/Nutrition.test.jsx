@@ -101,3 +101,42 @@ for (const decimals of [1, 2]) test(`nutrition keeps three-place precision indep
     expect([...host.querySelectorAll('.nutrition-summary .metric-v')].map(e => e.textContent)).toContain('0.024')
   } finally { setWeightDecimals(1) }
 })
+
+async function selectNutritionFile(picker) {
+  const { zipStore } = await import('../lib/zip.js')
+  const intake = [{ id: '4afbb43e-457e-4b50-81cd-83265ee06da7', type: 'lunch', amount: 50, unit: 'g',
+    dateTime: '2026-04-03T12:00:00.000', meal: { name: 'QA oats', mealUnit: 'g', nutriments: { proteins100: 10 } } }]
+  const archive = await zipStore([{ name: 'user_intake.json', blob: new Blob([JSON.stringify(intake)]) }])
+  Object.defineProperty(picker, 'files', { configurable: true, value: [archive] })
+  await act(async () => picker.dispatchEvent(new Event('change', { bubbles: true })))
+}
+test('guest file import states its destination and waits for confirmation', async () => {
+  await render(<Nutrition />)
+  const picker = host.querySelector('input[type="file"]')
+  expect(picker).toBeTruthy()
+  await selectNutritionFile(picker)
+  await vi.waitFor(() => expect(host.textContent).toContain('Import into the diary on this device?'))
+  expect(visible()).toHaveLength(0)
+  await click('Import')
+  expect(visible()).toMatchObject([{ label: 'QA oats', proteinG: 5 }])
+  expect(useUI.getState().toastMsg).toBe('Added: 1. Updated: 0. Unchanged: 0.')
+})
+
+test('account import names the destination and discards the preview after an account change', async () => {
+  const switchTo = id => {
+    localStorage.setItem('gym_user', JSON.stringify({ id }))
+    localStorage.setItem('gym_owner', id)
+    useStore.setState({ user: { id } })
+  }
+  switchTo('A')
+  await render(<Nutrition />)
+  await selectNutritionFile(host.querySelector('input[type="file"]'))
+  await vi.waitFor(() => expect(host.textContent).toContain('Import into your synced account diary?'))
+  // The other tab has persisted its new identity before this tab's storage event runs.
+  localStorage.setItem('gym_user', JSON.stringify({ id: 'B' }))
+  localStorage.setItem('gym_owner', 'B')
+  await click('Import')
+  expect(visible()).toHaveLength(0)
+  await act(async () => switchTo('B'))
+  expect(host.textContent).not.toContain('entries ready.')
+})

@@ -127,10 +127,11 @@ export async function looksLikeZip(file) {
 
 /**
  * The entries of a store-only zip as [{ name, size, blob }], each blob a slice of `file` (a File
- * or Blob) — nothing is read beyond the headers. Throws ZipError with code 'not-zip',
+ * or Blob). By default only headers are read. Selected-entry importers can provide a decoder
+ * and a smaller byte budget; decoded lengths and checksums are verified before returning. Throws ZipError with code 'not-zip',
  * 'compressed' (repacked by an archiver), 'encrypted', 'too-many', 'bad-name' or 'too-large'.
  */
-export async function readZip(file) {
+export async function readZip(file, { select, decode, limit = MAX_TOTAL } = {}) {
   const size = file.size
   const tailStart = Math.max(0, size - EOCD_SEARCH)
   const tail = await readBytes(file, tailStart, size)
@@ -145,6 +146,7 @@ export async function readZip(file) {
   const cdOffset = e.getUint32(16, true)
   if (count === 0xffff || cdOffset === LIMIT_32) throw new ZipError('too-large')   // ZIP64
   if (count > MAX_ENTRIES) throw new ZipError('too-many')
+  if (select && cdSize > 4 * 1024 * 1024) throw new ZipError('too-large')
   if (cdOffset + cdSize > size) throw new ZipError('not-zip')
   const cd = await readBytes(file, cdOffset, cdOffset + cdSize)
   const dv = new DataView(cd.buffer, cd.byteOffset, cd.byteLength)
@@ -156,6 +158,7 @@ export async function readZip(file) {
     if (p + 46 > cd.length || dv.getUint32(p, true) !== 0x02014b50) throw new ZipError('not-zip')
     const flags = dv.getUint16(p + 8, true)
     const method = dv.getUint16(p + 10, true)
+    const checksum = dv.getUint32(p + 16, true)
     const csize = dv.getUint32(p + 20, true)
     const usize = dv.getUint32(p + 24, true)
     const nameLen = dv.getUint16(p + 28, true)
@@ -165,19 +168,27 @@ export async function readZip(file) {
     if (p + 46 + nameLen > cd.length) throw new ZipError('not-zip')
     const name = dec.decode(cd.subarray(p + 46, p + 46 + nameLen))
     p += 46 + nameLen + extraLen + commentLen
+    if (select && !select(name)) continue
     if (flags & 1) throw new ZipError('encrypted')
-    if (method !== 0) throw new ZipError('compressed')
-    if (csize !== usize) throw new ZipError('compressed')
+    if (method !== 0 && !(decode && method === 8)) throw new ZipError('compressed')
+    if (method === 0 && csize !== usize) throw new ZipError('compressed')
     if (name.startsWith('/') || name.includes('\\') || name.split('/').includes('..')) throw new ZipError('bad-name')
+    if (csize > limit) throw new ZipError('too-large')
     total += usize
-    if (total > MAX_TOTAL) throw new ZipError('too-large')
+    if (total > limit) throw new ZipError('too-large')
     if (name.endsWith('/')) continue   // a folder entry holds nothing
     const lh = await readBytes(file, localOffset, localOffset + 30)
     const lv = new DataView(lh.buffer, lh.byteOffset, lh.byteLength)
     if (lh.length < 30 || lv.getUint32(0, true) !== 0x04034b50) throw new ZipError('not-zip')
     const start = localOffset + 30 + lv.getUint16(26, true) + lv.getUint16(28, true)
-    if (start + usize > size) throw new ZipError('not-zip')
-    out.push({ name, size: usize, blob: file.slice(start, start + usize) })
+    if (start + csize > cdOffset) throw new ZipError('not-zip')
+    let blob = file.slice(start, start + csize)
+    if (decode) {
+      const bytes = await decode(blob, method, usize)
+      if (bytes.length !== usize || crc32(bytes) !== checksum) throw new ZipError('not-zip')
+      blob = new Blob([bytes])
+    }
+    out.push({ name, size: usize, blob })
   }
   return out
 }

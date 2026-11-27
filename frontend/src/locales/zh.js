@@ -6528,4 +6528,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "前臂向上弯起，上臂留在身体两侧。",
   "Hips back and down between the heels, chest up, knees over the toes.": "髋部向后向下坐至脚跟之间，胸部挺起，膝盖越过脚尖。",
   "Push through the floor: hips and chest rise together.": "蹬地：髋部和胸部同时上升。",
+  "Import OpenNutriTracker export": "导入 OpenNutriTracker 导出文件",
+  "Import into the diary on this device?": "导入到此设备上的日记？",
+  "Import into your synced account diary?": "导入到你账户的同步日记？",
+  "{0} entries ready. {1} skipped.": "已准备好 {0} 条记录，已跳过 {1} 条。",
+  "Could not read this OpenNutriTracker export.": "无法读取此 OpenNutriTracker 导出文件。",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "已添加：{0}。已更新：{1}。未更改：{2}。",
 }

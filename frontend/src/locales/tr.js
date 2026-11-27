@@ -6528,4 +6528,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Üst kollar iki yanda kalırken ön kollar yukarı kalkıyor.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Kalçalar topukların arasına geriye ve aşağı, göğüs yukarıda, dizler parmak uçlarının üzerinde.",
   "Push through the floor: hips and chest rise together.": "Yeri itin: kalça ve göğüs birlikte yükselir.",
+  "Import OpenNutriTracker export": "OpenNutriTracker dışa aktarım dosyasını içe aktar",
+  "Import into the diary on this device?": "Bu cihazdaki günlüğe aktarılsın mı?",
+  "Import into your synced account diary?": "Hesabınızın eşitlenen günlüğüne aktarılsın mı?",
+  "{0} entries ready. {1} skipped.": "Hazır kayıt: {0}. Atlanan: {1}.",
+  "Could not read this OpenNutriTracker export.": "Bu OpenNutriTracker dışa aktarım dosyası okunamadı.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Eklenen: {0}. Güncellenen: {1}. Değişmeyen: {2}.",
 }

@@ -6494,4 +6494,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Předloktí se zvedají, zatímco nadloktí zůstávají u těla.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Kyče dozadu a dolů mezi paty, hrudník vzhůru, kolena nad prsty.",
   "Push through the floor: hips and chest rise together.": "Tlačte do podlahy: kyče a hrudník stoupají společně.",
+  "Import OpenNutriTracker export": "Importovat export z OpenNutriTrackeru",
+  "Import into the diary on this device?": "Importovat do deníku v tomto zařízení?",
+  "Import into your synced account diary?": "Importovat do synchronizovaného deníku vašeho účtu?",
+  "{0} entries ready. {1} skipped.": "Připravené záznamy: {0}. Přeskočené: {1}.",
+  "Could not read this OpenNutriTracker export.": "Tento export z OpenNutriTrackeru se nepodařilo přečíst.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Přidáno: {0}. Aktualizováno: {1}. Beze změny: {2}.",
 }

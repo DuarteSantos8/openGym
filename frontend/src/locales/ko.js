@@ -6528,4 +6528,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "위팔은 몸 옆에 머물고 아래팔이 위로 올라옵니다.",
   "Hips back and down between the heels, chest up, knees over the toes.": "발뒤꿈치 사이로 골반을 뒤로 낮추고, 가슴을 세우고, 무릎은 발끝 위로.",
   "Push through the floor: hips and chest rise together.": "바닥을 밀어내세요: 골반과 가슴이 함께 올라갑니다.",
+  "Import OpenNutriTracker export": "OpenNutriTracker 내보내기 파일 가져오기",
+  "Import into the diary on this device?": "이 기기의 일지로 가져올까요?",
+  "Import into your synced account diary?": "계정의 동기화된 일지로 가져올까요?",
+  "{0} entries ready. {1} skipped.": "준비된 항목: {0}개. 건너뛴 항목: {1}개.",
+  "Could not read this OpenNutriTracker export.": "이 OpenNutriTracker 내보내기 파일을 읽을 수 없습니다.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "추가: {0}개. 업데이트: {1}개. 변경 없음: {2}개.",
 }

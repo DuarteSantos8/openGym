@@ -6493,4 +6493,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Lengan bawah terangkat sementara lengan atas tetap di samping tubuh.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Pinggul ke belakang dan turun di antara tumit, dada terangkat, lutut di atas jari kaki.",
   "Push through the floor: hips and chest rise together.": "Dorong lantai: pinggul dan dada naik bersama.",
+  "Import OpenNutriTracker export": "Impor hasil ekspor OpenNutriTracker",
+  "Import into the diary on this device?": "Impor ke jurnal di perangkat ini?",
+  "Import into your synced account diary?": "Impor ke jurnal akun Anda yang tersinkronisasi?",
+  "{0} entries ready. {1} skipped.": "Entri siap: {0}. Dilewati: {1}.",
+  "Could not read this OpenNutriTracker export.": "Hasil ekspor OpenNutriTracker ini tidak dapat dibaca.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Ditambahkan: {0}. Diperbarui: {1}. Tidak berubah: {2}.",
 };

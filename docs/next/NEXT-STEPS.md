@@ -4,6 +4,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **OpenNutriTracker manual file import (09.01a, prepared).** Export a JSON or CSV ZIP in [OpenNutriTracker v2.7](https://github.com/simonoppowa/OpenNutriTracker/blob/5048a9b57f4ab08b17699af556c280f7f058e07c/docs/export-format.md), open Nutrition diary, select the file, review the destination and confirm. A second export refreshes matching intake IDs. The guest diary stays on this device. A signed-in diary uses its normal account sync. Only selected nutrition fields are saved. Photos, links, account settings, weight and raw exports are excluded. Blank IDs, unknown units and rows without enough information are counted as skipped. Native-language review of the import strings is pending.
 - **Coach recovery (07.02, prepared).** A local Chromium test runs the provider timeout, API restart, retry, approval and reload on one disposable profile. Hosted MiniMax acceptance remains open.
 - **Production domain (A4, prepared).** [Cutover and rollback checklist](CLOUD-SERVER.md#production-address-cutover-a4) awaits the owner’s choice of addresses and cutover window.
 - **Accessible workout controls (06.03, prepared).** Workout actions wrap on narrow phones. The progression control includes its displayed guidance and exercise settings in its accessible name. Resume has a stable visible label and a separate visual clock. Physical VoiceOver and TalkBack review remain pending.

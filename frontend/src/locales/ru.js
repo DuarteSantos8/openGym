@@ -6532,4 +6532,10 @@ export default {
   "The forearms curl up while the upper arms stay by the sides.": "Предплечья поднимаются, а плечевые части рук остаются по бокам.",
   "Hips back and down between the heels, chest up, knees over the toes.": "Бёдра назад и вниз между пятками, грудь поднята, колени над пальцами ног.",
   "Push through the floor: hips and chest rise together.": "Оттолкнитесь от пола: бёдра и грудь поднимаются вместе.",
+  "Import OpenNutriTracker export": "Импортировать файл из OpenNutriTracker",
+  "Import into the diary on this device?": "Импортировать в дневник на этом устройстве?",
+  "Import into your synced account diary?": "Импортировать в синхронизируемый дневник вашей учётной записи?",
+  "{0} entries ready. {1} skipped.": "Записей готово: {0}. Пропущено: {1}.",
+  "Could not read this OpenNutriTracker export.": "Не удалось прочитать этот файл экспорта OpenNutriTracker.",
+  "Added: {0}. Updated: {1}. Unchanged: {2}.": "Добавлено: {0}. Обновлено: {1}. Без изменений: {2}.",
 }
