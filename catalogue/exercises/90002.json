@@ -1,0 +1,23 @@
+{
+  "id": "90002",
+  "name": "hangboard three finger drag",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "front delts"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "A hangboard hang on three fingers in an open, dragged position, with the fingers draped over the edge instead of crimped. It builds the passive grip used on slopers and rounded holds.",
+  "instructions": [
+    "Place your index, middle and ring fingers on the edge and let your little finger hang free.",
+    "Keep the middle knuckles low and let the fingertips drape over the edge rather than curling them into a crimp.",
+    "Step off and hang with straight arms and engaged shoulders.",
+    "Hold for 5-10 seconds without letting the fingers curl up.",
+    "Step down under control and rest fully before the next hang."
+  ],
+  "textSource": "opengym"
+}

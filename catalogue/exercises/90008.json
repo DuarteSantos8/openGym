@@ -1,0 +1,28 @@
+{
+  "id": "90008",
+  "name": "one arm lock off",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "forearms",
+    "core"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "needs": [
+    "pull-up bar"
+  ],
+  "description": "A one-arm hold on a bar with the elbow fixed at a chosen angle, such as fully bent, 90 degrees or 120 degrees. It builds the single-arm pulling strength you need to stay in position while the other hand reaches.",
+  "instructions": [
+    "Grab the bar with both hands, adding a band or pulley to take off weight if needed.",
+    "Pull up until the elbow of your working arm reaches the angle you want.",
+    "Let go with the other hand and keep the working shoulder pulled down.",
+    "Hold still for the set time without letting your body twist.",
+    "Put the free hand back on the bar and lower down under control.",
+    "Rest, then switch arms."
+  ],
+  "textSource": "opengym"
+}

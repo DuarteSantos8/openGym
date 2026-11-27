@@ -1,0 +1,24 @@
+{
+  "id": "90018",
+  "name": "continuous climbing",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "core",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Easy climbing or traversing without stopping for 10 to 20 minutes or more. It builds aerobic endurance in the forearms and gives you plenty of relaxed movement practice.",
+  "instructions": [
+    "Choose terrain well below your limit, such as a long traverse or easy routes.",
+    "Start climbing and keep moving without stepping off the wall.",
+    "Keep the effort low enough that you could talk while you climb, with only a light pump.",
+    "Shake out on good holds and breathe steadily.",
+    "Continue for 10 to 20 minutes or longer.",
+    "Ease off or move to bigger holds if the pump starts to build."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "90007",
+  "name": "weighted edge block lift",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "wrist flexors"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "You lift a weight off the floor with one hand on a small edge block, instead of hanging from a board. It builds finger strength with a load you can adjust in small steps.",
+  "instructions": [
+    "Hang a weight from an edge block with a 15-20 mm edge.",
+    "Bend your knees and hips, keep your back flat and place your fingers on the edge, usually in a half crimp.",
+    "Keep your arm straight and your shoulder pulled down.",
+    "Stand up to lift the weight just off the floor.",
+    "Hold for the set time, then lower it under control.",
+    "Rest, then repeat with the other hand."
+  ],
+  "textSource": "opengym"
+}

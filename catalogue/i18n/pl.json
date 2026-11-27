@@ -26641,5 +26641,71 @@
       "Zatrzymaj się na chwilę w górnej pozycji, a następnie powoli opuść lewą piętę z powrotem do pozycji wyjściowej.",
       "Powtórz zalecaną liczbę razy, a następnie zmień nogę na prawą."
     ]
+  },
+  "90001": {
+    "name": "zwis na listwie chwytem full crimp"
+  },
+  "90002": {
+    "name": "zwis na listwie trzema palcami chwytem otwartym"
+  },
+  "90003": {
+    "name": "zwis na listwie w dziurce na dwa palce"
+  },
+  "90004": {
+    "name": "zwis jednorącz na listwie"
+  },
+  "90005": {
+    "name": "zwis na listwie chwytem szczypcowym"
+  },
+  "90006": {
+    "name": "podnoszenie bloczka chwytem szczypcowym"
+  },
+  "90007": {
+    "name": "podnoszenie ciężaru na listwie"
+  },
+  "90008": {
+    "name": "blokowanie jednorącz"
+  },
+  "90009": {
+    "name": "podciąganie frenchie"
+  },
+  "90010": {
+    "name": "utrzymanie front lever na jednej nodze w zwisie"
+  },
+  "90011": {
+    "name": "podciąganie na listwie"
+  },
+  "90012": {
+    "name": "drabinka na campusie"
+  },
+  "90013": {
+    "name": "podwójny dyno na campus boardzie"
+  },
+  "90014": {
+    "name": "start z wyskoku"
+  },
+  "90015": {
+    "name": "bouldering"
+  },
+  "90016": {
+    "name": "wspinanie na boardzie"
+  },
+  "90017": {
+    "name": "bouldering 4x4"
+  },
+  "90018": {
+    "name": "wspinaczka ciągła"
+  },
+  "90019": {
+    "name": "wspinaczka na drogach"
+  },
+  "90020": {
+    "name": "wspinaczka bez nóg"
+  },
+  "90021": {
+    "name": "ślizgi ścięgien palców"
+  },
+  "90022": {
+    "name": "nożycowe ściskanie piłeczki palcami"
   }
 }

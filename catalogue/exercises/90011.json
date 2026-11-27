@@ -1,0 +1,24 @@
+{
+  "id": "90011",
+  "name": "hangboard pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up done from the holds of a hangboard instead of a bar. It trains the fingers and the pulling muscles to work together, as they do on the wall.",
+  "instructions": [
+    "Pick holds you can hang from comfortably, such as large edges or jugs to start.",
+    "Grip the holds with both hands in the grip you want to train, such as open hand or half crimp.",
+    "Hang with straight arms and your shoulders engaged.",
+    "Pull up until your chin reaches the bottom of the board, keeping the grip steady.",
+    "Lower yourself with control to straight arms.",
+    "End the set if your grip slips or changes shape.",
+    "Move to smaller holds or a harder grip only once the reps feel easy."
+  ],
+  "textSource": "opengym"
+}

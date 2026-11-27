@@ -1,0 +1,23 @@
+{
+  "id": "90009",
+  "name": "frenchie pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up series with a pause at three elbow angles, one angle per rep. It builds the strength to hold a bent arm at any point of the pull, which climbers need to lock off and reach.",
+  "instructions": [
+    "Hang from a pull-up bar with your hands about shoulder-width apart and your arms straight.",
+    "Pull up until your chin is over the bar and hold that top position for 3-5 seconds, then lower to a straight-arm hang.",
+    "Pull up again, lower until your elbows are bent at 90 degrees and hold for 3-5 seconds, then lower to a straight-arm hang.",
+    "Pull up again, lower until your elbows are only partly bent, at about 120 degrees, and hold for 3-5 seconds.",
+    "Lower to a straight-arm hang with control. These three pull-ups make one cycle.",
+    "Keep your shoulders pulled down and avoid swinging between holds."
+  ],
+  "textSource": "opengym"
+}

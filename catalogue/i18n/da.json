@@ -16894,5 +16894,71 @@
   },
   "0999": {
     "name": "et-bens lægløft med elastik"
+  },
+  "90001": {
+    "name": "fingerbræt, fuld crimp"
+  },
+  "90002": {
+    "name": "fingerbræt, tre-finger drag"
+  },
+  "90003": {
+    "name": "fingerbræt, tofinger-lomme"
+  },
+  "90004": {
+    "name": "enarmshæng i fingerbræt"
+  },
+  "90005": {
+    "name": "fingerbræt, knibegreb"
+  },
+  "90006": {
+    "name": "løft med knibeblok"
+  },
+  "90007": {
+    "name": "løft med fingerblok"
+  },
+  "90008": {
+    "name": "enarms lock-off"
+  },
+  "90009": {
+    "name": "frenchie pull-up"
+  },
+  "90010": {
+    "name": "hængende etbens front lever-hold"
+  },
+  "90011": {
+    "name": "pull-up i fingerbræt"
+  },
+  "90012": {
+    "name": "campus board-stige"
+  },
+  "90013": {
+    "name": "campusboard, dobbelt dyno"
+  },
+  "90014": {
+    "name": "hopstart"
+  },
+  "90015": {
+    "name": "bouldering"
+  },
+  "90016": {
+    "name": "boardklatring"
+  },
+  "90017": {
+    "name": "4x4 bouldering"
+  },
+  "90018": {
+    "name": "kontinuerlig klatring"
+  },
+  "90019": {
+    "name": "ruteklatring"
+  },
+  "90020": {
+    "name": "klatring uden fødder"
+  },
+  "90021": {
+    "name": "seneglidning for fingrene"
+  },
+  "90022": {
+    "name": "saksegreb med bold mellem fingrene"
   }
 }

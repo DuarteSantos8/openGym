@@ -1,0 +1,26 @@
+{
+  "id": "90015",
+  "name": "bouldering",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "biceps",
+    "shoulders",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Climbing short problems close to the ground above crash pads, without a rope. It trains finger strength, power and movement skill, from hard limit attempts to high-volume sessions.",
+  "instructions": [
+    "Warm up on easy problems and build up the difficulty gradually.",
+    "Choose problems that fit the session goal, such as hard attempts, volume or a technique theme.",
+    "Place your feet precisely and keep your arms as straight as you can.",
+    "Climb down or drop onto the pads, landing on your feet with bent knees.",
+    "Rest long enough between hard attempts to try each one fresh.",
+    "Stop before tiredness makes your movement sloppy."
+  ],
+  "textSource": "opengym"
+}

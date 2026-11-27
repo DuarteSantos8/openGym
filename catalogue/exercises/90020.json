@@ -1,0 +1,25 @@
+{
+  "id": "90020",
+  "name": "footless climbing",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "biceps",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Climbing short problems on a steep wall using only your hands. It builds upper body pulling power, lock off strength and core tension for steep climbing.",
+  "instructions": [
+    "Warm up fully, and save this exercise for when you can do about 10 pull-ups.",
+    "Use a wall that leans at least 20 degrees past vertical and pick large holds.",
+    "Start hanging with bent arms and keep your core tight to control any swing.",
+    "Begin with problems of 3 or 4 hand moves and lengthen them gradually over several weeks, up to around 8.",
+    "Reach each new hold with your elbow already bent, so you never drop and swing on locked arms.",
+    "Rest fully between problems and stop while your moves are still crisp."
+  ],
+  "textSource": "opengym"
+}

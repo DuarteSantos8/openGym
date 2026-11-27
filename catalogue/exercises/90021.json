@@ -1,0 +1,21 @@
+{
+  "id": "90021",
+  "name": "finger tendon glides",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands"
+  ],
+  "category": "mobility",
+  "description": "A slow hand drill that walks the fingers through a straight hand, a hook, a full fist and a flat tabletop shape. It keeps the finger tendons sliding freely and suits climbers as a gentle daily or rest-day routine.",
+  "instructions": [
+    "Hold one hand up in front of you with the fingers straight and together.",
+    "Curl only the middle and tip joints into a hook, keeping the big knuckles at the base of the fingers straight.",
+    "Keep curling into a full fist with the thumb resting on the outside.",
+    "Open back to straight, then bend only at the base knuckles so the fingers stay flat like a tabletop.",
+    "Return to straight fingers and repeat the sequence 5-10 times.",
+    "Move slowly, stay in a comfortable range, then switch hands."
+  ],
+  "textSource": "opengym"
+}

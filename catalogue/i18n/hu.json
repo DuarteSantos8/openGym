@@ -10836,19 +10836,19 @@
     "name": "fekvő féllábas fordított bicepszhajlítás törölközővel"
   },
   "3832": {
-    "name": "kéztartó deszkán lejtős függés"
+    "name": "fingerboardon lejtős függés"
   },
   "3833": {
-    "name": "kéztartó deszkán nyitott fogású függés"
+    "name": "fingerboardon nyitott fogású függés"
   },
   "3834": {
-    "name": "kéztartó deszkán félzárt fogású függés"
+    "name": "fingerboardon félzárt fogású függés"
   },
   "3835": {
-    "name": "kéztartó deszkán függés 90 fokos könyökkel"
+    "name": "fingerboardon függés 90 fokos könyökkel"
   },
   "3836": {
-    "name": "kéztartó deszkán függés 135 fokos könyökkel"
+    "name": "fingerboardon függés 135 fokos könyökkel"
   },
   "3838": {
     "name": "hasprés (padon)"
@@ -26641,5 +26641,71 @@
       "Tarts egy rövid szünetet a mozdulat tetején, majd lassan engedd vissza a bal sarkadat a kiindulási helyzetbe.",
       "Ismételd a kívánt ismétlésszámban, majd válts a jobb lábra."
     ]
+  },
+  "90001": {
+    "name": "fingerboardon zárt fogású függés"
+  },
+  "90002": {
+    "name": "fingerboardon háromujjas nyitott függés"
+  },
+  "90003": {
+    "name": "fingerboardon kétujjas lyukban függés"
+  },
+  "90004": {
+    "name": "fingerboardon egykaros függés"
+  },
+  "90005": {
+    "name": "fingerboardon csíptető fogású függés"
+  },
+  "90006": {
+    "name": "csíptető blokk emelés"
+  },
+  "90007": {
+    "name": "peremes blokk emelés"
+  },
+  "90008": {
+    "name": "egykaros lock-off tartás"
+  },
+  "90009": {
+    "name": "frenchie húzódzkodás"
+  },
+  "90010": {
+    "name": "függő egylábas front lever tartás"
+  },
+  "90011": {
+    "name": "húzódzkodás fingerboardon"
+  },
+  "90012": {
+    "name": "létra campus boardon"
+  },
+  "90013": {
+    "name": "dupla dyno campus boardon"
+  },
+  "90014": {
+    "name": "felugrásos indítás"
+  },
+  "90015": {
+    "name": "boulderezés"
+  },
+  "90016": {
+    "name": "boardmászás"
+  },
+  "90017": {
+    "name": "4x4 boulderezés"
+  },
+  "90018": {
+    "name": "folyamatos mászás"
+  },
+  "90019": {
+    "name": "útmászás"
+  },
+  "90020": {
+    "name": "mászás láb nélkül"
+  },
+  "90021": {
+    "name": "ujjak ínainak csúsztatása"
+  },
+  "90022": {
+    "name": "ollózó labdaszorítás az ujjak között"
   }
 }

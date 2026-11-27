@@ -1,0 +1,24 @@
+{
+  "id": "90001",
+  "name": "hangboard full crimp",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "front delts"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "A hangboard hang in a full crimp, with the middle knuckles of the fingers bent sharply and the thumb pressed over the index finger. It trains the strongest grip for small edges, which also loads the fingers the most, so build it up over several weeks.",
+  "instructions": [
+    "Choose a solid edge with a square or slightly positive lip that you can hold securely.",
+    "Place your fingertips on the edge, bend the middle knuckles so they point up, and press your thumb over your index finger.",
+    "If the grip is new to you, keep your feet on the floor or use a pulley to take some weight off.",
+    "Lift your feet and hang with straight arms and active shoulders for 5-10 seconds.",
+    "End the hang as soon as your fingers start to open out of the crimp.",
+    "Rest fully between hangs."
+  ],
+  "textSource": "opengym"
+}

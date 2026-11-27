@@ -10836,19 +10836,19 @@
     "name": "curl de bíceps inverso a una pierna acostado con toalla"
   },
   "3832": {
-    "name": "colgado en handboard con inclinación"
+    "name": "colgado en multipresa con inclinación"
   },
   "3833": {
-    "name": "colgado en handboard con agarre abierto"
+    "name": "colgado en multipresa con agarre abierto"
   },
   "3834": {
-    "name": "colgado en handboard con medio crimp"
+    "name": "colgado en multipresa con medio crimp"
   },
   "3835": {
-    "name": "colgado en handboard con codos a 90 grados"
+    "name": "colgado en multipresa con codos a 90 grados"
   },
   "3836": {
-    "name": "colgado en handboard con codos a 135 grados"
+    "name": "colgado en multipresa con codos a 135 grados"
   },
   "3838": {
     "name": "abdominal (en banco)"
@@ -26641,5 +26641,71 @@
       "Haz una pausa por un momento en la parte superior, luego baja lentamente el talón izquierdo de vuelta a la posición inicial.",
       "Repite el número de repeticiones deseado, luego cambia a la pierna derecha."
     ]
+  },
+  "90001": {
+    "name": "colgado en multipresa con crimp completo"
+  },
+  "90002": {
+    "name": "colgado en multipresa con tres dedos en arrastre"
+  },
+  "90003": {
+    "name": "colgado en multipresa en agujero de dos dedos"
+  },
+  "90004": {
+    "name": "colgado a una mano en multipresa"
+  },
+  "90005": {
+    "name": "colgado en multipresa con pinza"
+  },
+  "90006": {
+    "name": "levantamiento con bloque de pinza"
+  },
+  "90007": {
+    "name": "levantamiento con bloque de regleta"
+  },
+  "90008": {
+    "name": "bloqueo a una mano"
+  },
+  "90009": {
+    "name": "dominada frenchie"
+  },
+  "90010": {
+    "name": "isométrico de front lever a una pierna colgado"
+  },
+  "90011": {
+    "name": "dominada en multipresa"
+  },
+  "90012": {
+    "name": "escalera en campus board"
+  },
+  "90013": {
+    "name": "doble dyno en campus board"
+  },
+  "90014": {
+    "name": "salida con salto"
+  },
+  "90015": {
+    "name": "búlder"
+  },
+  "90016": {
+    "name": "escalada en board"
+  },
+  "90017": {
+    "name": "boulder 4x4"
+  },
+  "90018": {
+    "name": "escalada continua"
+  },
+  "90019": {
+    "name": "escalada de vías"
+  },
+  "90020": {
+    "name": "escalada sin pies"
+  },
+  "90021": {
+    "name": "deslizamiento de tendones de los dedos"
+  },
+  "90022": {
+    "name": "apretón de pelota entre los dedos en tijera"
   }
 }

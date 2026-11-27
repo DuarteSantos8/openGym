@@ -10836,19 +10836,19 @@
     "name": "havluyla yatarak tek bacak ters biceps curl"
   },
   "3832": {
-    "name": "handboard eğimli asılma"
+    "name": "hangboard eğimli asılma"
   },
   "3833": {
-    "name": "handboard açık el kavrama"
+    "name": "hangboard açık el kavrama"
   },
   "3834": {
-    "name": "handboard half crimp"
+    "name": "hangboard half crimp"
   },
   "3835": {
-    "name": "handboard 90 derece dirsekle asılma"
+    "name": "hangboard 90 derece dirsekle asılma"
   },
   "3836": {
-    "name": "handboard 135 derece dirsekle asılma"
+    "name": "hangboard 135 derece dirsekle asılma"
   },
   "3838": {
     "name": "crunch (bench üzerinde)"
@@ -26641,5 +26641,71 @@
       "Tepe noktasında bir an duraklayın, ardından sol topuğunuzu yavaşça başlangıç ​​pozisyonuna indirin.",
       "İstenilen tekrar sayısı kadar tekrarlayın, ardından sağ bacağa geçin."
     ]
+  },
+  "90001": {
+    "name": "hangboard full crimp"
+  },
+  "90002": {
+    "name": "hangboard üç parmak drag"
+  },
+  "90003": {
+    "name": "hangboard iki parmak cep"
+  },
+  "90004": {
+    "name": "hangboard tek kolla asılma"
+  },
+  "90005": {
+    "name": "hangboard pinch"
+  },
+  "90006": {
+    "name": "pinch blok kaldırma"
+  },
+  "90007": {
+    "name": "kenar blok kaldırma"
+  },
+  "90008": {
+    "name": "tek kol kilitleme"
+  },
+  "90009": {
+    "name": "frenchie barfiks"
+  },
+  "90010": {
+    "name": "asılı tek bacak front lever tutuş"
+  },
+  "90011": {
+    "name": "hangboard barfiks"
+  },
+  "90012": {
+    "name": "campus board merdiven"
+  },
+  "90013": {
+    "name": "campus board çift dyno"
+  },
+  "90014": {
+    "name": "sıçramalı başlangıç"
+  },
+  "90015": {
+    "name": "bouldering"
+  },
+  "90016": {
+    "name": "board tırmanışı"
+  },
+  "90017": {
+    "name": "4x4 bouldering"
+  },
+  "90018": {
+    "name": "kesintisiz tırmanış"
+  },
+  "90019": {
+    "name": "rota tırmanışı"
+  },
+  "90020": {
+    "name": "ayaksız tırmanış"
+  },
+  "90021": {
+    "name": "parmak tendon kaydırma"
+  },
+  "90022": {
+    "name": "parmaklarla makas top sıkma"
   }
 }
