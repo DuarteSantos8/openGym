@@ -1,4 +1,6 @@
 // @vitest-environment happy-dom
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -145,5 +147,19 @@ describe('LineChart x axis', () => {
     expect(edge[0]).toBe("Apr '25")
     expect(edge.at(-1)).toBe("Apr '26")
     expect(new Set(edge).size).toBe(edge.length)
+  })
+})
+
+describe('LineChart text selection', () => {
+  const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const ruleFor = sel => css.match(new RegExp(`\\.${sel}\\s*\\{([^}]*)\\}`))?.[1] ?? ''
+
+  it('prevents text selection and touch callouts on the scrub surface and tooltip', () => {
+    for (const sel of ['chart-i', 'ctip']) {
+      const decls = ruleFor(sel)
+      expect(decls, `.${sel} user-select`).toMatch(/(?:^|;)\s*user-select\s*:\s*none\b/)
+      expect(decls, `.${sel} -webkit-user-select`).toMatch(/(?:^|;)\s*-webkit-user-select\s*:\s*none\b/)
+      expect(decls, `.${sel} -webkit-touch-callout`).toMatch(/(?:^|;)\s*-webkit-touch-callout\s*:\s*none\b/)
+    }
   })
 })

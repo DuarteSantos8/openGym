@@ -2445,14 +2445,17 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* --------------------------------------------------------------- charts -- */
 .chart{width:100%;overflow:hidden}
 .chart svg{display:block;width:100%;height:auto}
-.chart-i{position:relative;touch-action:pan-y}
+/* Scrubbing a chart on touch must not trigger text selection or the iOS callout on the
+   tooltip or axis labels. */
+.chart-i{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* left/top are written by LineChart after measuring the label, so it can never be
    pushed under the `.chart` clip at either edge — hence no offset here. */
 .ctip{
   position:absolute;left:0;top:0;background:var(--surface-raised);
   border-radius:8px;padding:4px 10px;font-size:var(--fs-caption);font-weight:500;white-space:nowrap;
   max-width:calc(100% - 8px);overflow:hidden;text-overflow:ellipsis;
-  pointer-events:none;box-shadow:inset 0 0 0 var(--hair) var(--raised-line),0 6px 18px -4px rgba(0,0,0,.4);
+  pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  box-shadow:inset 0 0 0 var(--hair) var(--raised-line),0 6px 18px -4px rgba(0,0,0,.4);
 }
 
 /* --- activity heatmap --- */
