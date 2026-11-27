@@ -18,7 +18,11 @@ import {
 
 export const PULL_FULL = 0.45         // the wrist this share of the reach closer to the shoulder: the signal's 1
 export const PAST = 0                 // the elbow at least this many torso lengths behind the shoulder-hip line: at the torso
-export const REACH_DEG = 150          // the elbow at least this straight before the rep: reaching with straight arms
+// The elbow at least this straight before the rep: reaching with straight arms. Real straight-arm
+// reaches read 148 to 178 on the straighter arm (form lab, three lifters; 148 with the lifter small
+// in the frame, where Vision puts the elbows loosely), so 140 keeps a margin and still refuses a
+// start 40 degrees short.
+export const REACH_DEG = 140
 export const ROCK_DEG = 10            // the torso's angle moving this much over the rep: rocked
 export const FAST_BACK_SEC = 1        // an average return under this: let the arms go forward slower
 export const FADE_S = 0.1

@@ -2,7 +2,7 @@
 // counting, the reach and the finish under each standard, tempo, a rocking torso, views refused, a
 // missing wrist, and the exercises it takes.
 import { describe, expect, it } from 'vitest'
-import seatedRow, { elbowPast } from './seated-cable-row.js'
+import seatedRow, { REACH_DEG, elbowPast, straighterElbow } from './seated-cable-row.js'
 import { checkDrill } from './index.js'
 import { CAMERA, ease, film, project, same } from './test-kit.js'
 import { EXIDX } from '../exercises.js'
@@ -127,6 +127,15 @@ describe.each([0, 10, 180])('the seated cable row filmed side-on, yaw %i°', yaw
       for (const f of frames) if (f.joints[side + 'Elbow']) f.joints[side + 'Elbow'] = [f.joints[side + 'Elbow'][0], f.joints[side + 'Elbow'][1] + 0.04, f.joints[side + 'Elbow'][2]]
       expect(run(frames).res).toMatchObject({ count: 3, missed: 0 })
     }
+  })
+
+  it('takes a reach just over the line, refuses one well under it', () => {
+    // The reach a bend reads, filmed from this yaw, found by bisection on the pose helper.
+    const angleAt = reach => { const f = film([seatedRowPose(0, { reach })], { yaw, height: 0.7 })[0]; return straighterElbow(f.joints, f.aspect) }
+    const reachFor = deg => { let lo = 0, hi = 1; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (angleAt(m) > deg) lo = m; else hi = m } return (lo + hi) / 2 }
+    // Real straight-arm reaches read as low as 148 with the lifter small in the frame.
+    expect(run(set([FULL, { ...FULL, reach: reachFor(146) }, FULL])).res).toMatchObject({ count: 3, missed: 0 })
+    expect(run(set([FULL, { ...FULL, reach: reachFor(REACH_DEG - 25) }, FULL])).reasons).toEqual(['reach'])
   })
 
   it('any range: every real row counts', () => {
