@@ -7,7 +7,7 @@
 // not matter; from the front or at an angle the elbows sit behind the shoulders at the bottom, so
 // depth is judged only with the phone at elbow height (with arms straight) and level.
 import { t } from '../i18n-core.js'
-import { createViewDetector, framing, matchExercise } from './kit.js'
+import { createViewDetector, framing, matchExercise, VIEW_EDGES as KIT_VIEW_EDGES } from './kit.js'
 import { ARM, createArmDropTracker, DROP_STANDARDS, SHALLOW_MISS } from './press-kit.js'
 
 // Body-weight and weighted dips on bars, rings, a straight bar or a bench. Machines (the kneeling
@@ -27,10 +27,20 @@ const DIP = /^\s*(weighted |ring |chest |triceps? |bench |parallel bar |straight
 // HIP_MARK, for the hip); the push-up, with no shallow clip to place it, keeps 0.
 export const SHOULDER_MARK = 0.15
 
+// Side-on runs to about 25 degrees here (VIEW_EDGES), not the kit's 20: a bench dip filmed from
+// the side with the torso leaning back read 0.20 to 0.25 (the shoulders retracted on the bench
+// read wider than the hips), so its depth went unjudged and the camera was asked to move. Side-on
+// the depth is the shoulder against the elbow in the image; turning the lifter puts part of the
+// elbow's distance behind the shoulder into depth, which a camera off elbow height misreads. With
+// the phone at knee height a dip to exactly level reads 0.08 upper arms shallow at 20 degrees and
+// 0.11 at 26 (test-kit), so at the edge a dip just to level can be refused; one 10 degrees deeper
+// is not.
+export const VIEW_EDGES = { side: 0.245, front: KIT_VIEW_EDGES.front }  // widthRatio: side to about 25 degrees
+
 const SPEC = {
   shoulderMark: SHOULDER_MARK,
   framing: frame => framing(frame, ARM),
-  viewDetector: createViewDetector,
+  viewDetector: () => createViewDetector(VIEW_EDGES),
   startHint: () => t('Arms straight to start'),
   readyHint: () => t('Ready. Go when you are.'),
   notes: {

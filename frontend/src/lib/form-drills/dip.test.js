@@ -201,6 +201,15 @@ describe('the dip, whatever the angle', () => {
     expect(side.res.missed).toBe(1)
   })
 
+  it('reads a lifter turned up to about 25 degrees off side-on as side-on, depth judged with the camera low', () => {
+    for (const yaw of [18, 26]) {
+      const { res } = run(dipSet([DEEP, SHALLOW], { yaw, height: 0.5 }))
+      expect(res.view).toBe('side')
+      expect(res).toMatchObject({ count: 1, missed: 1 })
+    }
+    expect(run(dipSet([LEVEL], { yaw: 32, height: 0.5 })).res.view).toBe('diagonal')
+  })
+
   it('marks a rep where the pose was lost and still counts it; drops one lost for good', () => {
     const lost = run(dipSet(same(3, DEEP), { gap: [5300, 5700] })).res
     expect(lost.count).toBe(3)
