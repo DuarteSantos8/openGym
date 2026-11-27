@@ -5,6 +5,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 ## 1. State
 
 - **Offline workout durability (06.01, prepared).** Device write failures report a full device only when storage raises a quota error. The change remains available in memory.
+- **Connector permissions (10.02, isolated).** The loopback acceptance test checks that a plans-only reader cannot log workouts and that revocation ends access. Hosted client verification remains open.
 - Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
 
 - **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
@@ -199,3 +200,5 @@ D2 follow-up bundles the 13 training-screen definitions for offline use and leav
 Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
 
 D3 prepares a short Beginner Settings root; full search, App help and Account stay available. The two new navigation labels in all locale packs await native review.
+
+- **11.02h, Learn ladders.** Cloud browser coverage follows progress across account linking, reload, a clean second browser and sign-out. Hosted and physical-device verification remain open.
