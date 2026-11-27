@@ -10,6 +10,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 |---|---|---|---|
 | `web/Dockerfile` | `next/EP19-nginx-optional-railway-env` | Startup | Preserve ordinary Docker startup when the optional Railway marker is unset. |
 | `frontend/src/components/TabBar.jsx`, `frontend/src/components/RestTimer.jsx`, `frontend/src/index.css` | `next/EP27-accessible-layout-review` | Layout | Keep the raised Start control, timer and return-to-top button clear as their sizes change. |
+| `frontend/src/store/useStore.js`, `frontend/src/store/useStore.restore.test.jsx` | next/EP27-offline-beginner | Local save warning | Give a truthful warning when the browser denies writes. |
 | `mcp/test/http.e2e.test.js` | next/EP27-mcp-plans-readonly | Scoped HTTP tools | Check a plans-only grant against both workout histories, then revoke it. |
 | `api/server.js`, `api/openapi.yaml`, `api/test/server-token-refresh.test.js` | #133 | Browser logout | End the presented session while leaving a later browser sign-in and other devices signed in. |
 | `api/oidc/routes.js`, `api/test/server-oidc.test.js` | #133 | Verified provider callback | Clear the pending logout fallback when issuing the replacement browser session. |
