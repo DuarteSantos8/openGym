@@ -5,6 +5,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 ## 1. State
 
 - **Coach recovery (07.02, prepared).** A local Chromium test runs the provider timeout, API restart, retry, approval and reload on one disposable profile. Hosted MiniMax acceptance remains open.
+- Nutrition pairing now belongs to one profile on one device. Re-pair an old device-wide link. Hosted pairing, revocation and shared-device verification remain open.
 
 - **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload. Chromium and WebKit both kept a newer sign-in after the older tab received its logout response. Deliberately signing out the newer session then returned 401.
 - **Skill ladders from Learn (11.02c / EP26-T04, prepared for review).** Learn → Skill ladders shows the existing exercise sequences from easier to harder. A completed set marks its step and all earlier steps as reached; the marks describe workout history, not technique or readiness. [Local browser evidence](evidence/EP26-T04/README.md). Independent and native-language review remain open.
@@ -14,7 +15,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
 
-- **Movement patterns (11.02e / E5b, prepared locally).** The exercise sheet shows eight additional symbolic movement-family examples. Each has its own still and matching caption. The [pattern matrix](evidence/EP26-T01/patterns.md) records fixtures, sources and draft status. Named movement review and native-language review are pending.
+- **Movement patterns (11.02e / E5b, merged in #136).** The exercise sheet shows eight additional symbolic movement-family examples. Each has its own still and matching caption. The [pattern matrix](evidence/EP26-T01/patterns.md) records fixtures, sources and draft status. Named movement review and native-language review are pending.
 
 - **Movement demo (E5a, merged in #130).** An exercise with a form guide now shows the movement it asks for: the mannequin rig on the exercise sheet, in a chunk of its own, with the words that go with the pose. With reduced motion, or on a device that cannot show 3D, the key pose is shown as a picture with the same words and nothing moves. [English phone view](evidence/EP26-T01/mannequin-rig-390-dark.png), [the still without WebGL](evidence/EP26-T01/mannequin-still-390-dark.png).
 
@@ -198,3 +199,5 @@ D2 follow-up bundles the 13 training-screen definitions for offline use and leav
 Coach App Help now shows when to retry after a daily limit. Check this on the hosted preview after merge.
 
 D3 prepares a short Beginner Settings root; full search, App help and Account stay available. The two new navigation labels in all locale packs await native review.
+
+- **11.02h, Learn ladders.** Cloud browser coverage follows progress across account linking, reload, a clean second browser and sign-out. Hosted and physical-device verification remain open.
