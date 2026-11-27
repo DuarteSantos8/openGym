@@ -180,7 +180,7 @@ struct SetMenuView: View {
                 .frame(maxWidth: .infinity)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressStyle())
             .disabled(locked)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(kind == .warmup ? Text("Warm-up") : (kind == .failure ? Text("Taken to failure") : Text("Drop set")))
@@ -234,7 +234,7 @@ struct SetMenuView: View {
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.35)
     }
