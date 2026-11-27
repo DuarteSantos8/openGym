@@ -38,9 +38,14 @@ export async function nativeFetch(url, init = {}) {
   })
   const res = init.signal ? await Promise.race([request, abortOf(init.signal)]) : await request
   const text = typeof res.data === 'string' ? res.data : res.data == null ? '' : JSON.stringify(res.data)
+  // Headers and the final URL as well: lib/api.js tells a Cloudflare Access refusal by them (#1529).
+  const hdrs = {}
+  for (const [k, v] of Object.entries(res.headers || {})) hdrs[k.toLowerCase()] = String(v)
   return {
     ok: res.status >= 200 && res.status < 300,
     status: res.status,
+    url: res.url || url,
+    headers: { get: k => (hdrs[String(k).toLowerCase()] ?? null) },
     text: async () => text,
     json: async () => JSON.parse(text)
   }

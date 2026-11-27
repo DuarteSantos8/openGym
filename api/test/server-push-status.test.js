@@ -241,3 +241,17 @@ test('GET /api/me renews a phone token past half its life, never a cookie replay
   assert.equal(cookie.token, undefined, 'but is not renewed');
   assert.equal((await me(mint('b', 80))).token, undefined, 'nothing is renewed early');
 });
+
+// "Sign out everywhere" is what someone uses for a lost phone or a shared computer. The sessions
+// ended, but every browser the account had turned push on in kept getting its reminders and rest
+// alerts. The account's push rows go with the sessions; another account's stay.
+test('sign out everywhere drops the account\'s push subscriptions, and only its own', async t => {
+  const created = new Date().toISOString();
+  const h = await startServer(t, [
+    { userId: 'u_test_1', endpoint: 'https://push.example/shared-pc', keys, created },
+    { userId: 'u_test_1', endpoint: 'https://push.example/phone', keys, created },
+    { userId: 'u_test_2', endpoint: 'https://push.example/theirs', keys, created }
+  ]);
+  assert.equal((await post(h, '/api/logout/all', {})).status, 200);
+  assert.deepEqual(readDb(h).subs.map(s => s.endpoint), ['https://push.example/theirs']);
+});

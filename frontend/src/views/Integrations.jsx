@@ -359,8 +359,8 @@ export function addWebhookSheet(ctx) {
 }
 
 function EventSwitches({ events, onToggle, disabled }) {
-  return WEBHOOK_EVENTS.map(ev => <Row key={ev.id} icon={ev.id === 'workout.pr' ? 'trophy' : ev.id === 'weighin.logged' ? 'scale' : 'flag'}
-    iconTint={ev.id === 'workout.pr' ? 'var(--orange)' : ev.id === 'weighin.logged' ? 'var(--teal)' : 'var(--green)'} title={t(ev.label)}>
+  return WEBHOOK_EVENTS.map(ev => <Row key={ev.id} icon={ev.id === 'workout.pr' ? 'trophy' : ev.id === 'weighin.logged' ? 'scale' : ev.id === 'workout.started' ? 'play' : 'flag'}
+    iconTint={ev.id === 'workout.pr' ? 'var(--orange)' : ev.id === 'weighin.logged' ? 'var(--teal)' : ev.id === 'workout.started' ? 'var(--blue)' : 'var(--green)'} title={t(ev.label)}>
     <Switch aria-label={t(ev.label)} checked={events.includes(ev.id)} disabled={disabled} onChange={v => onToggle(ev.id, v)} />
   </Row>)
 }

@@ -3,6 +3,7 @@ import { routineFromSession, routineSources, saveSessionAsRoutine } from './sess
 import { buildCompletedWorkout } from './finish-workout.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, isWarmupRow } from './workout-model.js'
+import { parseWorkoutCSV } from './import-csv.js'
 
 const row = (patch = {}) => ({ w: 40, r: 8, done: true, ...patch })
 const entry = (id, target, sets, extra = {}) => ({ id, target, sets, ...extra })
@@ -127,6 +128,85 @@ describe('routineFromSession', () => {
 
   it('rejects a saved session with no exercise setup', () => {
     expect(() => routineFromSession({ name: 'Empty', entries: [] })).toThrow('no exercises')
+  })
+})
+
+describe('a routine saved from a session nobody planned', () => {
+  // An imported history, read the way the importer reads it: rows with no target, drops under
+  // their set, per-side rows as L and R halves.
+  const imported = lines => {
+    const head = 'date,start_time,workout,exercise,exercise_id,set,set_type,side,weight,unit,reps'
+    const parsed = parseWorkoutCSV([head, ...lines.map(l => '2026-11-11,2026-11-11 11:49,Shoulders,' + l)].join('\n'))
+    return parsed.workouts[0]
+  }
+  const curl = 'Hammer Curl (Dumbbell),0312'
+  const fly = 'Lever Side Seated Single Arm Rear Delt Fly,8990'
+
+  it('plans a drop-set on the last set when only the last set dropped', () => {
+    const w = imported([
+      `${curl},1,normal,,32,kg,8`, `${curl},2,normal,,32,kg,8`,
+      `${curl},3,normal,,32,kg,8`, `${curl},3,drop,,24,kg,6`,
+    ])
+    expect(w.entries[0].target).toBeUndefined()
+    const cfg = routineFromSession(w).ex[0]
+    expect(cfg).toMatchObject({ sets: 3, reps: 8, weight: 32, intensifier: { type: 'dropset', count: 1, pct: 25, on: 'last' } })
+    // The routine drops the last set only, onto the gym's grid (25 here, 24 was logged).
+    const drops = rebuild(cfg).sets.map(s => s.drops || [])
+    expect(drops.map(d => d.length)).toEqual([0, 0, 1])
+    expect(drops[2][0].w).toBeLessThan(32)
+  })
+
+  it('plans a drop-set on every set when every set dropped, with the average step on the 5 % grid', () => {
+    const w = imported([
+      `${curl},1,normal,,40,kg,8`, `${curl},1,drop,,36,kg,6`,
+      `${curl},2,normal,,40,kg,8`, `${curl},2,drop,,30,kg,6`, `${curl},2,drop,,27,kg,6`,
+    ])
+    // 40 → 30 is 25 %, 30 → 27 is 10 %: 17.5 on average, 20 on the editor's grid.
+    expect(routineFromSession(w).ex[0].intensifier).toEqual({ type: 'dropset', count: 2, pct: 20 })
+  })
+
+  it('rounds a step halfway between two grid points up, float noise or not', () => {
+    const dropped = row({ w: 100, r: 8, type: 'dropset', drops: [{ w: 92.5, r: 6 }] })
+    const cfg = routineFromSession({ entries: [entry('bench', { reps: 8 }, [dropped])] }).ex[0]
+    expect(cfg.intensifier.pct).toBe(10)
+  })
+
+  it('plans nothing for drops that skipped the last set', () => {
+    const w = imported([`${curl},1,normal,,32,kg,8`, `${curl},1,drop,,24,kg,6`, `${curl},2,normal,,32,kg,8`])
+    expect(routineFromSession(w).ex[0].intensifier).toBeUndefined()
+  })
+
+  it('keeps an imported per-side lift per side, its drops dropping per limb', () => {
+    const w = imported([
+      `${fly},1,normal,R,107,kg,8`, `${fly},1,normal,L,107,kg,8`,
+      `${fly},2,normal,R,107,kg,8`, `${fly},2,normal,L,107,kg,8`,
+      `${fly},2,drop,R,93,kg,6`, `${fly},2,drop,L,93,kg,6`,
+    ])
+    const cfg = routineFromSession(w).ex[0]
+    expect(cfg).toMatchObject({ side: true, sets: 2, reps: 16, weight: 107, intensifier: { type: 'dropset', count: 1, pct: 15, on: 'last' } })
+    const last = rebuild(cfg).sets.at(-1)
+    expect(last.sides.L.r).toBe(8)
+    expect(last.sides.L.drops).toHaveLength(1)
+    expect(last.sides.R.drops).toHaveLength(1)
+  })
+
+  it('leaves a lift switched off per side off, whatever its rows were (#736)', () => {
+    const logged = completeSides(makeSideSet({ w: 20, r: 16 }))
+    const cfg = routineFromSession({ entries: [entry('0025', { mode: 'reps', reps: 16, weight: 20 }, [logged])] }).ex[0]
+    expect(cfg.side).toBeUndefined()
+  })
+
+  it('keeps a drop-set a freestyle session logged, and lets a planned one keep its plan', () => {
+    const dropped = row({ w: 40, r: 8, type: 'dropset', drops: [{ w: 30, r: 6 }] })
+    const freestyle = routineFromSession({ entries: [entry('bench', { reps: 8 }, [row(), dropped])] }).ex[0]
+    expect(freestyle.intensifier).toEqual({ type: 'dropset', count: 1, pct: 25, on: 'last' })
+
+    const planned = routineFromSession({ entries: [entry('bench', { reps: 8 }, [row(), dropped], { planned: { sets: 2, reps: 8 } })] }).ex[0]
+    expect(planned.intensifier).toBeUndefined()
+
+    const own = { type: 'dropset', count: 2, pct: 10 }
+    const kept = routineFromSession({ entries: [entry('bench', { reps: 8, intensifier: own }, [row(), dropped])] }).ex[0]
+    expect(kept.intensifier).toEqual(own)
   })
 })
 

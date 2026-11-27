@@ -48,6 +48,22 @@ describe('the split body map', () => {
     expect(Object.keys(BODY_SPLIT)).toEqual(['male', 'female'])
   })
 
+  it('draws the slips under the arm as the serratus, the lowest paths of each side as the obliques (#1263)', () => {
+    const start = d => d.match(/[-\d.]+/g).slice(0, 2).map(Number)
+    for (const body of ['male', 'female']) {
+      const v = GEO[body].front
+      const mid = Number(v.vb.split(' ')[2]) / 2
+      expect(v.p.obliques.length).toBe(body === 'male' ? 4 : 2)
+      expect(v.p.serratus.length).toBe(body === 'male' ? 18 : 16)
+      for (const left of [true, false]) {
+        const side = list => list.map(start).filter(([x]) => (x < mid) === left).map(([, y]) => y)
+        // The generated serratus slips (the six small shapes the map drew before) are left out.
+        const slips = side(v.p.serratus.filter(d => RAW[body].front.p.obliques.includes(d)))
+        expect(Math.min(...side(v.p.obliques))).toBeGreaterThan(Math.max(...slips))
+      }
+    }
+  })
+
   it('draws every shoulder head somewhere, and only muscles the model knows', () => {
     const drawn = new Set()
     for (const body of ['male', 'female']) for (const side of ['front', 'back']) Object.keys(GEO[body][side].p).forEach(k => drawn.add(k))

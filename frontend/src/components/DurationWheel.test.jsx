@@ -12,7 +12,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = snap
   return { useUI }
 })
-vi.mock('../lib/sound.js', () => ({ vibrate: (...a) => mocks.vibrate(...a) }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), vibrate: (...a) => mocks.vibrate(...a) }))
 
 import DurationWheel, { durationSheet, WHEEL_ITEM, SETTLE_MS } from './DurationWheel.jsx'
 

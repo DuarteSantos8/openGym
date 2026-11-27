@@ -128,7 +128,8 @@ describe('"Last set to failure" in a plan', () => {
 
   it('marks the rest-pause work set of a rest-pause plan', () => {
     const rows = applyIntensifierPlan([{ w: 60, r: 8 }], { id: '0025', reps: 8, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 }, lastToFailure: true })
-    expect(rows.map(s => !!s.failure)).toEqual([false, true])
+    // one work row since #1252: the activation set and its bursts
+    expect(rows.map(s => !!s.failure)).toEqual([true])
   })
 
   it('travels with a shared plan and reads on its printout', () => {
@@ -154,7 +155,7 @@ describe('where set types show', () => {
 
   it('the text export lists it', () => {
     const w = { d: '2026-10-01', start: 0, end: 0, name: 'Push', entries: [{ id: 'bench', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 11, done: true, failure: true }] }] }
-    expect(workoutText(w, { unit: 'kg', nameOf: () => 'bench' })).toContain('60×8, 60×11 F')
+    expect(workoutText(w, { unit: 'kg', nameOf: () => 'bench' })).toContain('60 kg × 8, 60 kg × 11 F')
   })
 
   it('the finish summary keeps the mark on today’s sets', () => {

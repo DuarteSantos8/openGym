@@ -10,6 +10,7 @@
     "lats"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "A stretch for the back of the upper arm, taken with the elbow bent overhead.",
   "instructions": [
     "Stand or sit tall and raise one arm overhead.",

@@ -1,11 +1,11 @@
 // Strength level per lift (lib/strength-level.js): the block in an exercise's details, the Stats
 // card, and the small "About you" sheet (sex and year of birth) the levels read.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { nameIn } from '../lib/a11y-name.js'
-import { fmtNum, exerciseNameText } from '../lib/format.js'
+import { fmtNum, fmtDate, exerciseNameText } from '../lib/format.js'
 import { dateLocale } from '../lib/i18n-core.js'
 
 // A bodyweight ratio to two decimals whatever the weight decimals are set to: 1.25 is not 1.3.
@@ -15,6 +15,7 @@ import { strengthLevel, strengthLevels, liftOf, LEVELS, LEVEL_NAME, sexOf } from
 import Icon from './Icon.jsx'
 import { Button, Segmented, Stepper } from './ui.jsx'
 import { isOn } from '../lib/modules.js'
+import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
 
 const weightOf = (lv, w, unit) => (lv.perBell ? t('{0} each', fmtNum(w)) : fmtNum(w)) + ' ' + unit
 
@@ -47,6 +48,11 @@ export function StrengthLevelBlock({ exId }) {
       <div className="small muted">{t('{0} × body weight', fmtRatio(lv.ratio))}</div>
     </div>
     <LevelBar level={lv.level} />
+    {/* What the level is read from: that lift, that day, the body weight then (owner 2026-11-24). */}
+    {lv.d && <div className="small dim slevel-from" data-strength-from>
+      {t('Graded from {0} on {1}, at {2} body weight.', weightOf(lv, lv.w, S.unit) + ' × ' + lv.r, fmtDate(lv.d, true), fmtNum(lv.bw) + ' ' + S.unit)}
+      {lv.approx && <> {t('No weigh-in within a month of it, so the nearest one stands in.')}</>}
+    </div>}
     <div className="small muted">{lv.next
       ? t('{0} from an estimated 1RM of {1}', t(LEVEL_NAME[lv.next.name]), weightOf(lv, lv.next.weight, S.unit))
       : t('Top of the table. Take a bow.')}</div>
@@ -80,6 +86,8 @@ export function StrengthLevelsCard({ S }) {
 }
 
 function AboutYou() {
+  const fieldsRef = useRef(null)
+  const syncKeyboard = useSheetKeyboard(fieldsRef, true, { reveal: true })
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const year = new Date().getFullYear()
@@ -92,7 +100,7 @@ function AboutYou() {
       value={sexOf(S) || ''} onChange={v => update(s => { if (v) s.sex = v; else delete s.sex })} />
     <div style={{ height: 16 }} />
     <div className="about-lbl">{t('Year of birth')}</div>
-    <div className="row" style={{ gap: 8 }}>
+    <div ref={fieldsRef} className="row kb-lift" style={{ gap: 8 }} onFocus={syncKeyboard}>
       {/* Unset, the stepper offers a starting year in the placeholder grey, so it does not read
           as a saved 1996 above the words "Not set". */}
       <Stepper ariaLabel={t('Year of birth')} className={born ? '' : 'unset'} value={born ?? year - 30} step={1} min={1920} max={year - 10} decimal={false}

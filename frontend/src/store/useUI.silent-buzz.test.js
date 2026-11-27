@@ -13,7 +13,7 @@ vi.mock('../lib/rest-alert.js', () => ({
   bindNativeRest: vi.fn(),
   toneNative: vi.fn(() => Promise.resolve(true)),
 }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
 import { useUI } from './useUI.js'
@@ -51,6 +51,15 @@ describe('vibrate on silent', () => {
     withSettings({ vibrate: true })
     useUI.getState().startRest(60)
     expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ alarmBuzz: false }))
+  })
+
+  it('passes Light up the screen at rest end, on unless switched off (#1475)', () => {
+    withSettings({})
+    useUI.getState().startRest(60)
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ lightScreen: true }))
+    withSettings({ restLightScreen: false })
+    useUI.getState().startRest(60)
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ lightScreen: false }))
   })
 
   // Discord "Rest Timer Sound Notification too Quiet": the locked phone's tone follows Settings → Sound.

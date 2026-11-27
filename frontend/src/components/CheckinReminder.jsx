@@ -58,6 +58,10 @@ function CheckinReminder({ close }) {
       {r.on && <Row icon="clock" iconTint="var(--purple)" title={t('Time')} subtitle={t('Mornings work best: same time, before breakfast.')}>
         <input type="time" className="timef" value={r.time} aria-label={t('Time')} onChange={e => e.target.value && save({ time: e.target.value })} />
       </Row>}
+      {/* The row on Photos and Measurements is a shortcut here; off, it is only in Settings (owner 2026-11-24). */}
+      <Row icon="link" iconTint="var(--blue)" title={t('Shortcut on Photos and Measurements')} subtitle={t('A row on those two pages that opens this sheet.')}>
+        <Switch checked={S.checkinShortcut !== false} onChange={v => update(s => { s.checkinShortcut = v })} aria-label={t('Shortcut on Photos and Measurements')} />
+      </Row>
     </div>
     {r.on && <Section title={t('What and how often')}>
       {keys.map(k => {
@@ -80,9 +84,10 @@ function CheckinReminder({ close }) {
 
 export const checkinReminderSheet = () => useUI.getState().openSheet(close => <CheckinReminder close={close} />)
 
-/** The row in Settings → Notifications. */
-export function CheckinReminderRow() {
+/** The row in Settings → Notifications, and with `page`, the shortcut on Photos and Measurements (off with S.checkinShortcut === false). */
+export function CheckinReminderRow({ page = false } = {}) {
   const S = useStore(s => s.S)
+  if (page && S.checkinShortcut === false) return null
   const r = reminderOf(S)
   const on = r.on && Object.keys(r.items).length > 0
   return <Row icon={on ? 'bell' : 'bellSlash'} iconTint="var(--orange)" title={t('Check-in reminders')} accessory="chevron"

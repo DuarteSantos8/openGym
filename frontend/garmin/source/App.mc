@@ -32,6 +32,9 @@ module G {
     //! A hold running: [System.getTimer() at its start, seconds to hold]; its 3-2-1 began at hcd.
     var hold = null;
     var hcd = null;
+    //! The set the hold (or its 3-2-1) is for, Core.holdFor's [key, side]: its end logs that set,
+    //! and the phone logging it first ends the hold here unlogged (#1403).
+    var hfor = null;
     //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
     var cd = null;
     //! "Still training?": up, because the phone left the gym (askLeft), and when the lifter last
@@ -105,6 +108,8 @@ module G {
 
 class OpenGymApp extends Application.AppBase {
     private var _timer = null;
+    private var _min = -1;
+    private var _bpm = null;
 
     function initialize() {
         AppBase.initialize();
@@ -150,7 +155,11 @@ class OpenGymApp extends Application.AppBase {
 
     //! A message from the phone: the snapshot (lib/garmin-snapshot.js), as a dictionary.
     function onPhone(msg as Communications.PhoneAppMessage) as Void {
-        var data = msg.data;
+        took(msg.data);
+    }
+
+    //! The snapshot itself (the simulator build's phone, sim/source/Sim.mc, hands its own here).
+    function took(data) as Void {
         if (!(data instanceof Lang.Dictionary)) {
             return;
         }
@@ -163,6 +172,12 @@ class OpenGymApp extends Application.AppBase {
             ended["hr"] = Workout.hrTotals();
             Actions.ended(ended);
         } else if (G.state["w"] == null) {
+            // Discarded on the phone while the watch had it running: the recording is thrown away
+            // and the heart-rate sensor goes off (Workout.end), as Discard here does.
+            if (had != null) {
+                Workout.end(false);
+                Workout.hrTotals();
+            }
             Actions.reset();
         } else {
             if (had == null) {
@@ -179,14 +194,22 @@ class OpenGymApp extends Application.AppBase {
         Link.heard();
     }
 
-    //! Once a second: the rest, the heart rate, a retry of what the phone has not had yet.
+    //! Once a second: the rest, the heart rate, a retry of what the phone has not had yet. The
+    //! screen is drawn each second in a workout (the time, the rest, a hold) and, without one, only
+    //! when what it shows moved: the clock's minute, the heart rate.
     function onTick() as Void {
         Workout.sample();
         Rest.tick();
         Actions.holdTick();
         Actions.askTick();
         Link.retry();
-        WatchUi.requestUpdate();
+        var min = System.getClockTime().min;
+        var draw = G.state["w"] != null || min != _min || G.bpm != _bpm;
+        _min = min;
+        _bpm = G.bpm;
+        if (draw) {
+            WatchUi.requestUpdate();
+        }
     }
 }
 
@@ -211,6 +234,8 @@ module Link {
     //! none sent, HARD is the end (Core.room).
     const MAX = 60;
     const HARD = 90;
+    //! How soon the phone is asked again while the lifter waits for it (ms, Core.needsPhone).
+    const NEED = 10000;
 
     //! Whether there is a phone link at all. The simulator build has none: without an Android
     //! phone on ADB, the Linux simulator's first transmit puts up a dialog and then crashes, so
@@ -276,6 +301,10 @@ module Link {
     //! 45 s, or nothing would ever be sent again; and the phone is asked for its latest once a
     //! minute until it has answered once (the first hello can get lost like any message). Both
     //! that and the resend of what is unconfirmed wait longer each time the phone stays silent.
+    //! While the lifter stands waiting for the next part of the workout (Core.needsPhone), all of
+    //! that runs on 10 s instead (still doubling while the phone is silent), and the phone is
+    //! asked for its latest even after it answered once: a set or a snapshot lost on the way
+    //! used to keep "Next exercise is on its way from your phone" up for minutes (#1295).
     function retry() {
         var now = System.getTimer();
         if (busy && now - began > 45000) {
@@ -285,8 +314,9 @@ module Link {
         if (busy) {
             return;
         }
-        var wait = 60000 << (quiet > 4 ? 4 : quiet);
-        if (ask && now - began > wait && hello()) {
+        var need = Core.needsPhone(G.state);
+        var wait = (need ? NEED : 60000) << (quiet > 4 ? 4 : quiet);
+        if ((ask || (need && G.state["ob"].size() == 0)) && now - began > wait && hello()) {
             quiet += 1;
             return;
         }
@@ -294,7 +324,10 @@ module Link {
             return;
         }
         var since = now - lastTry;
-        if (Core.unsent(G.state) > 0 && since > 30000) {
+        if (Core.unsent(G.state) > 0 && since > (need ? wait : 30000)) {
+            if (need) {
+                quiet += 1;
+            }
             flush();
         } else if (Core.unsent(G.state) == 0 && since > wait) {
             G.state["obn"] = 0;
@@ -325,6 +358,8 @@ module Link {
             G.saveOb();
         }
         flush();
+        // The "waiting to sync" line counts what is still unsent: no longer left to the 1 s redraw.
+        WatchUi.requestUpdate();
     }
 
     function failed(g) {
@@ -391,10 +426,15 @@ module Workout {
             return;
         }
         try {
+            // Activity.SPORT_* came with Connect IQ 3.2; before (fēnix 5, Forerunner 935, D2 Delta)
+            // the same values were ActivityRecording's. A missing symbol is a crash, not an exception.
+            var sport = (Activity has :SPORT_TRAINING) ? Activity.SPORT_TRAINING : ActivityRecording.SPORT_TRAINING;
+            var sub = (Activity has :SUB_SPORT_STRENGTH_TRAINING)
+                ? Activity.SUB_SPORT_STRENGTH_TRAINING : ActivityRecording.SUB_SPORT_STRENGTH_TRAINING;
             session = ActivityRecording.createSession({
                 :name => Core.strOf(w["name"]).length() > 0 ? Core.strOf(w["name"]) : "openGym",
-                :sport => Activity.SPORT_TRAINING,
-                :subSport => Activity.SUB_SPORT_STRENGTH_TRAINING
+                :sport => sport,
+                :subSport => sub
             });
             session.start();
             G.state["rec"] = w["id"];

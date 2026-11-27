@@ -4,7 +4,7 @@
 // arrive at all; everything below renders from what is there and says plainly what is not.
 import { useEffect, useMemo, useState } from 'react'
 import { t } from '../lib/i18n.js'
-import { fmtDate, fmtDaysAgo, fmtNum, todayISO, weekOrder } from '../lib/format.js'
+import { fmtDate, fmtDaysAgo, fmtNum, todayISO, weekOrder, weekStartOf } from '../lib/format.js'
 import { CATEGORY_IDS } from '../lib/sharing-scopes.js'
 import { categoryLabel } from '../lib/sharing-api.js'
 import { exName, flagText, changeLines, weekdayName, initials, tintOf } from '../lib/trainer-api.js'
@@ -139,7 +139,7 @@ function Workouts({ d, onComment, onEdit, onLog, onMore, more, levels }) {
 function Plan({ d, onAssign, onRemove, levels }) {
   const p = d.plans
   const name = id => p.routines.find(r => r.id === id)?.name
-  const order = weekOrder(p.weekStart === 0 ? 0 : 1)
+  const order = weekOrder(weekStartOf(p))
   return <>
     <div className="tr-card">
       <div className="tr-card-t">{t('Week plan')}</div>

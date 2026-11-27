@@ -1,5 +1,6 @@
 import TrainerNotice from '../components/TrainerNotice.jsx'
-import { useMemo, useState } from 'react'
+import { lookOnStart } from '../components/WhatsNew.jsx'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive } from '../lib/history.js'
@@ -8,7 +9,7 @@ import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { StreakRuleWelcome } from '../components/StreakRule.jsx'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, starterPlanSheet, bwDeltaColor, weighInsSheet, workoutDetailSheet } from '../sheets.jsx'
 import { startOrPreview, startPickerSheet } from '../components/StartSheets.jsx'
 import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
@@ -47,6 +48,10 @@ export default function Home() {
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
+  // Once per app start: What's new after an update, or that a newer APK is out (components/WhatsNew.jsx).
+  // Only once the profile is in: before that an upgrade looks like a fresh install and its notes are lost.
+  const ready = useStore(s => s.ready)
+  useEffect(() => { if (ready) lookOnStart(useStore.getState().S, () => nav('/settings/about')) }, [ready])
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
@@ -55,7 +60,7 @@ export default function Home() {
   const routine = todayRoutines[0] || null
   const todayName = todayRoutines.map(r => r.name).join(' + ')
   // A fulfilled pin (a coach session pinned to today and since done) reads as no override.
-  const todayOvr = S.dayPlan[todayISO()] !== undefined && pinState(S, S.dayPlan[todayISO()]) !== 'done'
+  const todayOvr = S.dayPlan[todayISO()] !== undefined && pinState(S, S.dayPlan[todayISO()], todayISO(), todayISO()) !== 'done'
   // An open editor on a saved workout (lib/session-edit.js) holds S.active too, but it is not a
   // session in progress: the row takes you back to it as an edit, the way the tab bar does.
   const editingSaved = !!S.active?.editingWorkoutId
@@ -125,7 +130,15 @@ export default function Home() {
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
-  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
+  // Once today is done, a tap opens what you did (Discord), and a second session is one more
+  // tap from there (Start another session) instead of starting the routine over by accident.
+  const againOpts = () => todayRoutines.length ? { again: () => startOrPreview(effectiveRoutineIds(useStore.getState().S, todayISO())) } : {}
+  const onToday = () => {
+    if (S.active) nav('/workout')
+    else if (doneToday) workoutDetailSheet(doneToday, againOpts())
+    else if (todayRoutines.length) startOrPreview(effectiveRoutineIds(S, todayISO()))
+    else dayOverrideSheet(todayISO())
+  }
   // A chip on the coach week's progress row starts that one routine, in any order. A session
   // already in progress wins, as on the today row — starting another would overwrite it.
   const progChip = programmeChip(S)
@@ -134,6 +147,10 @@ export default function Home() {
   // its own Start and its own Done. Only while nothing runs; a running one is the row above.
   const apartSessions = S.active ? [] : daySessionsStatus(S, todayISO()).filter(x => x.routines.length)
   const splitDay = apartSessions.length > 1
+  // Two or more sessions done today (#1538): each gets its row, in the order you did them, and
+  // opens its own workout. The row used to name only the last one, so the first looked lost.
+  const doneRows = !S.active && !splitDay && doneToday && loggedToday.length > 1
+    ? [...loggedToday].sort((a, b) => (a.start || 0) - (b.start || 0)) : null
 
   return <div className="narrow">
     <div className="hdr">
@@ -167,8 +184,8 @@ export default function Home() {
       {/* Once today's session is logged the row stops asking for it. The week strip already
           knew (its dot goes 'done'); this row did not, so a finished day kept showing the
           routine name behind a green Start tag and read as still outstanding (issue #4).
-          An in-progress session still wins — that one is happening right now. Tapping the
-          row keeps working, so a second session in one day is a tap away, just not urged. */}
+          An in-progress session still wins — that one is happening right now. Tapping a done
+          row opens that workout, with Start another session there for a second one. */}
       {splitDay ? apartSessions.map((x, i) => {
         const name = deriveSessionName(x.routines.map(r => r.name))
         return <div key={x.ids.join('+')} className="today-row today-split" data-tour={i ? undefined : 'today'} {...tappable(() => startOrPreview(x.ids))}>
@@ -184,7 +201,16 @@ export default function Home() {
           {x.done ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
             : <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={x.routines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>}
         </div>
-      }) : <div className="today-row" data-tour="today" {...tappable(onToday)}>
+      }) : doneRows ? doneRows.map((w, i) => <div key={w.id} className="today-row today-split" data-tour={i ? undefined : 'today'} {...tappable(() => workoutDetailSheet(w, againOpts()))}>
+          <div className="row" style={{ gap: 9, minWidth: 0 }}>
+            <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="checkCircle" style={{ color: 'var(--green)' }} /></span>
+            <div style={{ minWidth: 0 }}>
+              <div className="lbl2">{t('Today')} · {t('{0} of {1}', String(i + 1), String(doneRows.length))}</div>
+              <div className="ttl">{w.name ? t('{0} (done)', w.name) : t('Workout done')}</div>
+            </div>
+          </div>
+          <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
+        </div>) : <div className="today-row" data-tour="today" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
           <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)',
             // the rest day's moon on the grey square: white on #e3e3e8 vanished in the light theme

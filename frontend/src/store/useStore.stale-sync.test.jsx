@@ -72,6 +72,7 @@ beforeEach(() => {
   }))
 })
 afterEach(async () => {
+  vi.restoreAllMocks()
   await drain()
   useStore.getState().setUser(null)
   await drain()
@@ -198,6 +199,10 @@ describe('a pull answered after another account signed in', () => {
   })
 
   it('a revision check for A answered under B starts no pull and confirms nothing', async () => {
+    // A clock that moves on every read: a confirmation always stamps a new time, even inside one
+    // real millisecond, so "confirmed" and "confirmed nothing" can be told apart.
+    let now = Date.now()
+    vi.spyOn(Date, 'now').mockImplementation(() => ++now)
     asA()
     const synced = useStore.getState().sync.lastSynced
     window.dispatchEvent(new Event('online'))   // checkRev(true)

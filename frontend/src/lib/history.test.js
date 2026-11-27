@@ -135,18 +135,21 @@ describe('setLabel', () => {
 
   // A planned rest-pause set has no activation set: its bursts are the whole total. Raising the
   // total by hand put the difference in front, "60×2+6+3+2+1", a two-rep set nobody did.
-  it('reads a planned rest-pause set whose total was raised by hand as its plain total', () => {
+  it('reads a planned rest-pause set as its activation set and bursts, however the total was edited (#1252)', () => {
     const cfg = { id: LIFT, reps: 8, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } }
-    const [, work] = applyIntensifierPlan([{ w: 60, r: 8, done: false }], cfg)
-    expect(setLabel(LIFT, work, cfg)).toBe('60×6+3+2+1')
-    expect(setLabel(LIFT, { ...work, r: 14 }, cfg)).toBe('60×14')
+    const [work] = applyIntensifierPlan([{ w: 60, r: 8, done: false }], cfg)
+    expect(setLabel(LIFT, work, cfg)).toBe('60×8+6+3+2+1')
+    // two more reps in the activation set read there, since the row says it carries one
+    expect(setLabel(LIFT, { ...work, r: 22 }, cfg)).toBe('60×10+6+3+2+1')
     // a burst added live on top keeps the breakdown, since the total follows it
-    const added = { ...work, r: 13, clusters: [...work.clusters, { r: 1, restSec: 15 }] }
-    expect(setLabel(LIFT, added, cfg)).toBe('60×6+3+2+1+1')
+    const added = { ...work, r: 21, clusters: [...work.clusters, { r: 1, restSec: 15 }] }
+    expect(setLabel(LIFT, added, cfg)).toBe('60×8+6+3+2+1+1')
+    // a set planned before 1.4.6 (bursts alone, no activation set) still reads its plain total
+    const old = { w: 60, r: 12, type: 'restpause', clusters: [{ r: 6 }, { r: 3 }, { r: 2 }, { r: 1 }] }
+    expect(setLabel(LIFT, { ...old, r: 14 }, cfg)).toBe('60×14')
     // per side, each side is read the same way
-    const sided = applyIntensifierPlan([makeSideSet({ w: 20, r: 8, done: false })], { ...cfg, side: true })[1]
-    sided.sides.L = { ...sided.sides.L, r: sided.sides.L.r + 2 }
-    expect(setLabel(LIFT, sided, { ...cfg, side: true })).toBe('L 20×8 · R 20×3+2+1')
+    const sided = applyIntensifierPlan([makeSideSet({ w: 20, r: 8, done: false })], { ...cfg, side: true })[0]
+    expect(setLabel(LIFT, sided, { ...cfg, side: true })).toBe('L 20×4+3+2+1 · R 20×4+3+2+1')
     // an unplanned set with live bursts still shows its activation set first
     expect(setLabel(LIFT, { w: 60, r: 16, type: 'restpause', clusters: [{ r: 4 }, { r: 2 }] }, { id: LIFT, reps: 10 })).toBe('60×10+4+2')
   })
@@ -823,28 +826,29 @@ describe('applyIntensifierPlan', () => {
     ])
   })
 
-  it('collapses rest-pause to exactly two rows regardless of how many sets were configured: a warm-up at the exercise\'s own reps, then one work set whose own reps ARE the total', () => {
+  // #1252: the activation set used to be a row of its own marked warm-up, out of volume,
+  // records and progression. It is the start of the one work row now.
+  it('collapses rest-pause to one work row regardless of how many sets were configured: the activation set at the exercise\'s own reps, then the bursts, all in its own r', () => {
     const sets = [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { reps: 8, intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } })
     expect(out).toEqual([
-      { w: 60, r: 8, done: false, phase: 'warmup' },
-      { w: 60, r: 12, done: false, type: 'restpause', clusters: [{ r: 6, restSec: 15 }, { r: 3, restSec: 15 }, { r: 2, restSec: 15 }, { r: 1, restSec: 15 }] },
+      { w: 60, r: 20, done: false, type: 'restpause', act: true, clusters: [{ r: 6, restSec: 15 }, { r: 3, restSec: 15 }, { r: 2, restSec: 15 }, { r: 1, restSec: 15 }] },
     ])
-    // the full breakdown always sums back to the row's own r — no reps missing, none double-counted
-    expect(out[1].clusters.reduce((sum, c) => sum + c.r, 0)).toBe(out[1].r)
+    // the bursts are the rest-pause reps; what they leave over in r is the activation set
+    expect(out[0].r - out[0].clusters.reduce((sum, c) => sum + c.r, 0)).toBe(8)
   })
 
-  it('the warm-up reps come from the exercise\'s own configured reps, not the rest-pause total', () => {
+  it('the activation set\'s reps come from the exercise\'s own configured reps, not the rest-pause total', () => {
     const sets = [{ w: 60, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { reps: 5, intensifier: { type: 'restpause', totalReps: 20, restSec: 15 } })
-    expect(out[0]).toEqual({ w: 60, r: 5, done: false, phase: 'warmup' })
+    expect(out[0].r).toBe(25)
   })
 
-  it('carries the prescribed weight from the built sets onto both new rows', () => {
+  it('carries the prescribed weight from the built sets onto the row', () => {
     const sets = [{ w: 82.5, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { reps: 8, intensifier: { type: 'restpause', totalReps: 4, restSec: 15 } })
+    expect(out).toHaveLength(1)
     expect(out[0].w).toBe(82.5)
-    expect(out[1].w).toBe(82.5)
   })
 
   it('never touches a warm-up row', () => {
@@ -1060,6 +1064,33 @@ describe('session row helpers', () => {
     expect(next[1].sides.L.w).toBe(15)
     expect(next[1].sides.R.w).toBe(15)
     expect(next[2].sides.L.w).toBe(25)
+  })
+
+  // #1166: 70/85/100/110 with set 2 changed to 95 became 70/95/95/95. A later set that still
+  // held the old weight follows; one with a load of its own keeps it.
+  it('cascadeWeight with the old weight leaves a pyramid\'s own loads alone', () => {
+    const rows = [70, 95, 100, 110].map(w => ({ w, r: 8, done: false }))
+    expect(cascadeWeight(rows, 1, 95, undefined, 0, { prev: 85 }).map(r => r.w)).toEqual([70, 95, 100, 110])
+    const flat = [62.5, 60, 60].map(w => ({ w, r: 5, done: false }))
+    expect(cascadeWeight(flat, 0, 62.5, undefined, 0, { prev: 60 }).map(r => r.w)).toEqual([62.5, 62.5, 62.5])
+    const mixed = [65, 60, 70, 60].map(w => ({ w, r: 5, done: false }))
+    expect(cascadeWeight(mixed, 0, 65, undefined, 0, { prev: 60 }).map(r => r.w)).toEqual([65, 65, 70, 65])
+    // typed one key at a time: cleared, then a new number, still carries through
+    const cleared = cascadeWeight([{ r: 5 }, { w: 60, r: 5 }], 0, null, undefined, 0, { prev: 60 })
+    expect('w' in cleared[1]).toBe(false)
+    expect(cascadeWeight([{ w: 7, r: 5 }, { r: 5 }], 0, 7, undefined, 0, { prev: undefined }).map(r => r.w)).toEqual([7, 7])
+  })
+
+  it('cascadeWeight with the old weight, per side: only the limb that held it follows', () => {
+    const a = makeSideSet({ w: 20, r: 8 }), b = makeSideSet({ w: 20, r: 8 })
+    b.sides.L = { ...b.sides.L, w: 22.5 }
+    const rows = [a, b]
+    rows[0] = { ...a, sides: { ...a.sides, L: { ...a.sides.L, w: 25 } } }
+    const next = cascadeWeight(rows, 0, 25, 'L', 0, { prev: 20 })
+    expect(next[1].sides.L.w).toBe(22.5)
+    const both = cascadeWeight([rows[0], makeSideSet({ w: 20, r: 8 })], 0, 25, 'L', 0, { prev: 20 })
+    expect(both[1].sides.L.w).toBe(25)
+    expect(both[1].sides.R.w).toBe(20)
   })
 
   it('cascadeWeight deleting the weight removes the key from following undone rows only', () => {
@@ -1452,6 +1483,16 @@ describe('effectiveRoutineIds — coach queue', () => {
     expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'd1' }, workouts: [done('d1')] }), TODAY, TODAY)).toEqual(['d2'])
   })
 
+  it('a session the pass already did, planned again for a later week, is that day\'s session', () => {
+    // d1 done Tuesday 09-08; planned for Tuesday 09-15 and for today. Today shares Tuesday's week, so
+    // its pin is fulfilled; next week's is not, and that day trains d1 with its own routine beside it.
+    const s = S({ dayPlan: { '2026-09-15': 'd1' }, workouts: [done('d1')], week: { 2: ['own'] } })
+    expect(effectiveRoutineIds(s, '2026-09-15', TODAY)).toEqual(['d1', 'own'])
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['d2'])
+    const last = S({ dayPlan: { [TODAY]: 'd1' }, workouts: [{ ...done('d1'), d: '2026-09-04', start: SINCE - 86400000 * 3 }], queue: { ids: ['d1', 'd2'], since: SINCE - 86400000 * 4, startsOn: '2026-09-03', label: 'US W1' } })
+    expect(effectiveRoutineIds(last, TODAY, TODAY)).toEqual(['d1'])
+  })
+
   it('with every remaining session pinned to other days, today shows only your own routines — a coach pointer on the weekday stays hidden', () => {
     const s = S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: ['d2', 'own'] } })
     expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['own'])
@@ -1674,5 +1715,58 @@ describe('timed per-side pairs come off as a pair', () => {
     expect(removeRowAt(pairs(3), 2).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(removeRowAt(pairs(3), 3).map(r => r.side + r.k)).toEqual(['L0', 'R0', 'L2', 'R2'])
     expect(setSpanAt([{ sec: 30, side: 'L' }, { sec: 30 }], 0)).toEqual([0, 1])
+  })
+})
+
+/* ---------- the weight unit written next to each weight (text export, workout PDF, report) ---------- */
+
+// "87.5×8 (kg)" left it open which number was the weight. With a unit, every weight reads on its
+// own: "87.5 kg × 8". Without one, a label reads exactly as it always did (the history screen).
+describe('setLabel — with a weight unit', () => {
+  const lifted = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
+  const reps = { id: LIFT, mode: 'reps' }
+
+  it('writes the unit right after the weight, spaced from the reps', () => {
+    expect(setLabel(LIFT, lifted(87.5, 8), reps, undefined, 'kg')).toBe('87.5 kg × 8')
+    expect(setLabel(LIFT, lifted(60, 8), reps, undefined, 'lb')).toBe('60 lb × 8')
+    expect(setLabel(LIFT, lifted(0, 10), reps, undefined, 'kg')).toBe('0 kg × 10')
+  })
+
+  it('reads as before when no unit is given', () => {
+    expect(setLabel(LIFT, lifted(87.5, 8), reps)).toBe('87.5×8')
+    expect(setLabel(LIFT, lifted(87.5, 8), reps, undefined, '')).toBe('87.5×8')
+  })
+
+  it('keeps the effort and the failure mark behind the numbers', () => {
+    expect(setLabel(LIFT, lifted(60, 8, { rir: 2 }), reps, undefined, 'kg')).toBe('60 kg × 8 (RIR 2)')
+  })
+
+  it('gives every drop of a drop-set its own unit', () => {
+    const drop = lifted(100, 8, { type: 'dropset', drops: [{ w: 80, r: 6 }, { w: 60, r: 5 }] })
+    expect(setLabel(LIFT, drop, reps, undefined, 'kg')).toBe('100 kg × 8 ↘ 80 kg × 6 ↘ 60 kg × 5')
+  })
+
+  it('writes each side of a one-arm set with its unit', () => {
+    const s = setSideField(setSideField(makeSideSet({ w: 15, r: 16 }), 'R', 'r', 7), 'L', 'r', 8)
+    expect(setLabel(LIFT, s, { id: LIFT, side: true }, undefined, 'kg')).toBe('L 15 kg × 8 · R 15 kg × 7')
+  })
+
+  it('reads added bodyweight as "+10 kg × 12" and a bare bodyweight set as just the reps', () => {
+    expect(setLabel(BW, lifted(10, 12), { id: BW, mode: 'reps', bodyweight: true }, undefined, 'kg')).toBe('+10 kg × 12')
+    expect(setLabel(BW, lifted(0, 12), { id: BW, mode: 'reps', bodyweight: true }, undefined, 'kg')).toBe('12')
+  })
+
+  it('puts the unit after the weight of a timed set, and nothing on a bare hold', () => {
+    expect(setLabel(LIFT, { sec: 30, w: 20, done: true }, { id: LIFT, mode: 'time' }, undefined, 'kg')).toBe(`${fmtSec(30)} · 20 kg`)
+    expect(setLabel(LIFT, { sec: 45, done: true }, { id: LIFT, mode: 'time' }, undefined, 'kg')).toBe(fmtSec(45))
+  })
+
+  it('says what a dumbbell weight means, with the unit inside it', () => {
+    expect(setLabel('0289', lifted(20, 8), { id: '0289', mode: 'reps', dbLoad: 'each' }, undefined, 'kg')).toBe('20 kg each × 8')
+    expect(setLabel('0289', lifted(40, 8), { id: '0289', mode: 'reps', dbLoad: 'total' }, undefined, 'kg')).toBe('40 kg total × 8')
+  })
+
+  it('leaves cardio alone: minutes and a speed have their own units', () => {
+    expect(setLabel(CARDIO, { min: 20, speed: 10, done: true }, { id: CARDIO, mode: 'cardio' }, undefined, 'kg')).toBe('20 min @ 10 km/h')
   })
 })

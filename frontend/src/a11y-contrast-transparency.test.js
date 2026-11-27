@@ -77,6 +77,41 @@ describe('Reduce Transparency (#708)', () => {
     expect(blurred.length).toBeGreaterThan(0)
     for (const sel of blurred) expect(off, sel).toContain(sel)
   })
+
+  // The opaque fallbacks reuse the base rules' own selectors with no extra weight, so they win
+  // only by coming later. A base rule for the same selector written after the block puts its
+  // blur or see-through fill back, and the fallback silently does nothing.
+  const fallbacks = [
+    ['the Reduce Transparency block', /@media\s*\(prefers-reduced-transparency:\s*reduce\)/],
+    ['the no-backdrop-filter fallback', /@supports\s+not\s*\(\s*\(\s*backdrop-filter/],
+  ]
+  const props = (body) => new Set([...body.matchAll(/(?:^|[;{\s])(?:-webkit-)?(backdrop-filter|background)(?:-color)?\s*:/g)].map((m) => m[1]))
+  const rules = (css, from = 0) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .map((m) => ({ at: from + m.index, sels: m[1].split(',').map((s) => s.trim()), props: props(m[2]) }))
+  it.each(['index.css', 'coach.css'])('%s: nothing after a fallback block undoes it', (file) => {
+    const css = read(file)
+    // [start, end] of each fallback block; one fallback following another is not a base rule
+    const spans = fallbacks.map(([name, head]) => {
+      const at = css.search(head)
+      if (at < 0) return null
+      const inner = block(css, head)
+      return { name, at, end: css.indexOf(inner, at) + inner.length + 1, inner }
+    }).filter(Boolean)
+    expect(spans.length).toBeGreaterThan(0)
+    const inFallback = (i) => spans.some((s) => i >= s.at && i < s.end)
+    for (const { name, end, inner } of spans) {
+      const set = rules(inner)
+      expect(set.length, name).toBeGreaterThan(0)
+      for (const later of rules(css.slice(end), end).filter((r) => !inFallback(r.at))) {
+        for (const sel of later.sels) {
+          for (const r of set.filter((r) => r.sels.includes(sel))) {
+            const both = [...r.props].filter((p) => later.props.has(p))
+            expect(both, `${sel} sets ${both.join(', ')} again after ${name}`).toEqual([])
+          }
+        }
+      }
+    }
+  })
 })
 
 describe('Text that was under 4.5:1 (Liquid Glass pass)', () => {

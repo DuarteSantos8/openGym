@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { applyExerciseMerges } from '../../frontend/src/lib/exercise-merge.js'
+import { t } from './i18n.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
 // Whether a data directory was asked for, as opposed to the ./data guess.
@@ -56,7 +57,12 @@ function stateFile(uid) {
 function resolveUid() {
   const envUid = (process.env.OPENGYM_UID || '').trim()
   if (envUid) {
-    if (!/^[a-zA-Z0-9_-]+$/.test(envUid)) throw new Error(`OPENGYM_UID contains characters that aren't safe in a filename: ${JSON.stringify(envUid)}`)
+    if (!/^[a-zA-Z0-9_-]+$/.test(envUid)) {
+      console.error(`[opengym-mcp] OPENGYM_UID contains characters that aren't safe in a filename: ${JSON.stringify(envUid)}`)
+      const err = new Error(t('invalid_uid'))
+      err.code = 'EINVAL'
+      throw err
+    }
     return envUid
   }
   const files = fs.readdirSync(DATA_DIR)
@@ -103,7 +109,12 @@ export const currentProfile = () => profileCtx.getStore() || null
 export function init() {
   if (profileCtx.getStore()) return
   if (_uid !== null) return
-  if (!fs.existsSync(DATA_DIR)) throw new Error(`OPENGYM_DATA dir does not exist: ${DATA_DIR}`)
+  if (!fs.existsSync(DATA_DIR)) {
+    console.error(`[opengym-mcp] OPENGYM_DATA dir does not exist: ${DATA_DIR}`)
+    const err = new Error(t('missing_data_dir'))
+    err.code = 'ENOENT'
+    throw err
+  }
   _uid = resolveUid()
   reloadDb()
   const file = stateFile(_uid)

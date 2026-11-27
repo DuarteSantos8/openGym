@@ -21,7 +21,7 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   from watchExtras), green until the phone has said. Always On draws outlines, no lit fills, and
   nothing moves.
 - **Start**: "Today" beside the clock, the routine's name, its exercises and sets, one wide Start,
-  the other routines as rows, the build number at the bottom. Quick start on a day without a plan.
+  the other routines as rows under their phone folders (archived ones stay on the phone, and a note says so), the build number at the bottom. Quick start on a day without a plan.
   Before anything came from the phone it says so. Start waits a second after the summary's Done.
 - **Weigh-in** before a start on the watch (unless the phone's check-in is off), then a 3-2-1 ring
   that ends on Go! while the heart-rate sensor warms up.
@@ -44,6 +44,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   - Hold: the seconds left big, a teal bar whose last 5 s turn orange, a tick for each of the last
     three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
     phone: a 3-2-1 after the rest, then the hold.
+    If the phone logged that hold's set first (its own hold ended first), the hold here ends with it,
+    unlogged (`HoldSet`), so one hold is one set.
   - Metrics: the workout's time (it stands still while the phone has the workout paused), heart
     rate, volume, sets. Under it, by the crown or a swipe up, as on the Apple Watch: Pulse (the
     average heart rate and the line of every reading, when there is one), Effort (the mean
@@ -56,8 +58,14 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
 - **Calories**: Health Services' total for the workout (it includes the resting burn), on Metrics
   under the heart rate and on the summary, once it measures them: the physical-activity permission
   (asked with the heart rate) and the phone's Calories switch on.
-- **Summary**: the time big, sets, volume, PRs, heart rate, calories, the sync line; Done ignores its first
-  second.
+- **Summary**: the workout struck as a medal, as on the Apple Watch (`ui/SummaryMedal.kt`, rules in
+  `Medal.kt`, the twin of WatchCore's `Medal.swift`, tested in `MedalTest.kt`). A blank disc falls, the
+  strike stamps in the name and the time with one notch on the rim per set. A records day is gold with a
+  diamond per record, a day without is steel with the volume. The crown (or a swipe, or a tap) turns it
+  to its back (sets, volume, heart rate, calories, date), then to the record bars ("Bench Press 100 → 105
+  kg"), the sync line and Done, which ignores its first second. "Saved" sits beside the clock, only when it
+  fits (else the check alone). Haptics: a thud at the strike, then a success, or a rising tap per record
+  (3 at most). Always On: a line engraving, nothing moves. Remove animations: a cross-fade.
 - **Sync status**: sets the phone's side has not stored yet (`setDone` events in the outbox not
   delivered), as an orange pill beside the clock, in words on Start, the Overview and the summary,
   and on the Tile and the complication.
@@ -89,13 +97,17 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
+- **Calories in Health Connect**: the watch's measured calories go with its Finish (`kcal` on the
+  finish event; none when the watch ends a forgotten workout), and the phone writes them to Health
+  Connect with the workout instead of its own estimate, less the resting burn (1 kcal per kg of
+  body weight per hour) since Health Connect takes active calories (lib/health-connect.js), when
+  Health Connect lets openGym write calories (#724).
 - **The set menu** (1.4.6, #1185): tap the set pill (or long-press a number box) to mark the
   set as warm-up, failure or drop, add a set at the end, or remove one that is not done yet
   (with 4 s to Undo). The same events as the Apple Watch, by the set's id (docs/WATCH_SYNC.md).
   It shows only when the phone handles it.
 
-Still not on Wear OS: calories saved to Health Connect (#724, #1173; the watch shows them),
-and a Settings page on the watch (the phone's settings apply). #1173 is planned for 1.4.6.
+Still not on Wear OS: a Settings page on the watch (the phone's settings apply).
 
 ### Screenshots
 
@@ -104,7 +116,7 @@ and numbers only):
 
 ```bash
 adb shell am start -n ch.duartesantos.opengym.test/ch.duartesantos.opengym.wear.MainActivity --es demo rest
-# start, rest, overview, metrics, media, fix, hold, summary, weighin, countdown, go, idle; --es ambient 1 for Always On
+# start, rest, overview, metrics, media, fix, hold, summary (also summary-steel, -back, -records, -end), weighin, checkin, countdown, go, idle; --es ambient 1 for Always On
 ```
 
 ## Installing
@@ -115,7 +127,7 @@ with the same package name **and the same signing key**, so:
 | Phone app | Watch app |
 | --- | --- |
 | Google Play | Play Store on the watch → "Apps on your phone" → openGym |
-| The APK from opengym.ch / GitHub | `openGym-Wear-<version>.apk` of the same release (same key) |
+| The APK from opengym.ch / GitHub | `openGym-WearOS-watch-only-<version>.apk` of the same release (same key; up to 1.4.5 it was `openGym-Wear-<version>.apk`) |
 | F-Droid, openGym Offline | none: no Google Play services, no Wear OS link |
 
 A watch with the other one looks to the phone exactly like a watch without the app. Settings →
@@ -126,7 +138,7 @@ Sideloading the APK (Galaxy Watch 4 and newer, Pixel Watch):
 1. On the watch: Settings → About watch → Software → tap "Software version" seven times, then
    Settings → Developer options → ADB debugging on, Wireless debugging on. Note the IP and port.
 2. On a computer in the same Wi-Fi: `adb pair <ip>:<pair-port>` (the code is on the watch), then
-   `adb connect <ip>:<port>` and `adb install openGym-Wear-<version>.apk`. No computer? A
+   `adb connect <ip>:<port>` and `adb install openGym-WearOS-watch-only-<version>.apk`. No computer? A
    sideloading app on the phone such as Wear Installer does the same over wireless debugging.
 3. Open openGym on the phone once, then on the watch. Settings → Wear OS watch on the phone should
    say "openGym is on your watch and in reach" and, a moment later, when it last heard from the watch.
@@ -160,7 +172,7 @@ Events are data items, so the Data Layer keeps them while the phone is asleep or
 was stored (`WearListener` listens on `/opengym/event/` for exactly that); until then the watch puts
 it again, each time waiting twice as long (20 s up to 10 min, `OutboxCore.wait`), and looks after
 the link every 30 s while a workout runs. The watch also checks in (`watchStatus`, at most every six
-hours and after an update), which is what "Last heard from the watch" in the phone's Settings shows. `WatchListenerService` on the phone writes each to a
+hours and after an update), which is what "Last heard" in the status pill of the phone's Settings shows. `WatchListenerService` on the phone writes each to a
 queue file (even with the app closed), then deletes the item; the page drains the queue, applies
 each event once by its id and acknowledges it (`WatchEventQueue.java`). Capabilities:
 `opengym_phone` (phone app) and `opengym_wear` (watch app) let each side find the other.

@@ -189,7 +189,7 @@ describe('the timing log of the Live Activity buttons (iOS)', () => {
   const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
   const log = between(activity, 'enum LiveLog', '/**\n * The Live Activity\'s Done.')
   it('every button times itself, and says so when it finds no activity', () => {
-    const fns = ['tick', 'nextExercise', 'skipRest', 'stopAuto', 'adjust', 'addRest', 'queueOnly']
+    const fns = ['tick', 'nextExercise', 'skipRest', 'stopAuto', 'adjust', 'addRest', 'followWatchRest', 'queueOnly']
     for (const fn of fns) {
       const body = between(tick, 'static func ' + fn + '(', '\n    }\n')
       expect(body, fn).toMatch(/let tap = LiveTap\(/)
@@ -272,10 +272,10 @@ describe('what Settings says about a locked phone', () => {
     expect(page).toContain(`ios: () => t('${note}')`)
     expect(page).toContain("t('− and + on the weight and the reps, and a tap to rate the effort.')")
   })
-  it('in all 25 languages', () => {
+  it('in all 26 languages', () => {
     const dir = fileURLToPath(new URL('../locales/', import.meta.url))
     const files = readdirSync(dir).filter(f => f.endsWith('.js'))
-    expect(files).toHaveLength(25)
+    expect(files).toHaveLength(26)
     for (const f of files) {
       const text = readFileSync(dir + f, 'utf8')
       const line = text.split('\n').find(l => l.startsWith(`  ${JSON.stringify(note)}: `))

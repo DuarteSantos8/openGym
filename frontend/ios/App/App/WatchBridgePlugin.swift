@@ -4,6 +4,7 @@ import Foundation
 import HealthKit
 import ImageIO
 import UniformTypeIdentifiers
+import UserNotifications
 import WatchConnectivity
 
 /**
@@ -62,7 +63,9 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "drain", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "ack", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "sendClips", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "sendRoutines", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openOnWatch", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "ping", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dropClips", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "garminStatus", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "garminPick", returnType: CAPPluginReturnPromise),
@@ -132,6 +135,31 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         WatchBridgePlugin.health.startWatchApp(with: config) { ok, _ in
             call.resolve(["ok": ok || garmin])
         }
+    }
+
+    /// The link check (Settings → Devices): a message the watch app answers, timed here. Only with a
+    /// reachable watch; no answer in 5 s is { ok: false }. The page never waits on it.
+    @objc func ping(_ call: CAPPluginCall) {
+        guard WCSession.isSupported() else { call.resolve(["ok": false]); return }
+        let s = WCSession.default
+        guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled, s.isReachable else {
+            call.resolve(["ok": false])
+            return
+        }
+        let start = DispatchTime.now()
+        var done = false // main queue only: the reply, the error and the timeout race to resolve once
+        func finish(_ result: [String: Any]) {
+            DispatchQueue.main.async {
+                if done { return }
+                done = true
+                call.resolve(result)
+            }
+        }
+        s.sendMessage(["ping": 1], replyHandler: { _ in
+            let ms = Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
+            finish(["ok": true, "ms": ms])
+        }, errorHandler: { _ in finish(["ok": false]) })
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { finish(["ok": false]) }
     }
 
     private static let health = HKHealthStore()
@@ -209,11 +237,26 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    /// Every routine the watch can start, as a file (lib/watch-routines-file.js): the snapshot is
+    /// size-limited, a file is not. It queues until the watch is there; a newer one replaces any
+    /// still waiting, and the watch keeps only the newest.
+    @objc func sendRoutines(_ call: CAPPluginCall) {
+        guard let json = call.getString("json"), WCSession.isSupported() else { call.resolve(["sent": false]); return }
+        let s = WCSession.default
+        guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled else { call.resolve(["sent": false]); return }
+        // Named by its hash: a file still on its way is never written over.
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("routines-\(call.getString("hash") ?? "x").json")
+        guard (try? json.write(to: url, atomically: true, encoding: .utf8)) != nil else { call.resolve(["sent": false]); return }
+        for t in s.outstandingFileTransfers where t.file.metadata?["kind"] as? String == "routines" { t.cancel() }
+        s.transferFile(url, metadata: ["kind": "routines"])
+        call.resolve(["sent": true])
+    }
+
     /// The workout is over: its clips still waiting to go to the watch are cancelled (they would
     /// pile up in the queue while the watch is away, and the watch drops them on arrival anyway).
     @objc func dropClips(_ call: CAPPluginCall) {
         if WCSession.isSupported(), WCSession.default.activationState == .activated {
-            WCSession.default.outstandingFileTransfers.forEach { $0.cancel() }
+            WCSession.default.outstandingFileTransfers.filter { $0.file.metadata?["kind"] == nil }.forEach { $0.cancel() }
         }
         clipQueue.async { self.clipsSent = [:] }
         call.resolve()
@@ -239,7 +282,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         let clips = (call.getArray("clips") ?? []).compactMap { $0 as? [String: Any] }
         call.resolve(["queued": clips.count])
         // Another workout's clips still queued (the watch was away): cancelled, this one's go first.
-        for t in s.outstandingFileTransfers where (t.file.metadata?["wid"] as? String) != wid { t.cancel() }
+        for t in s.outstandingFileTransfers where t.file.metadata?["kind"] == nil && (t.file.metadata?["wid"] as? String) != wid { t.cancel() }
         clipQueue.async {
             var sent = self.clipsSent[wid] ?? []
             if self.clipsSent.count > 4 { self.clipsSent = self.clipsSent.filter { $0.key == wid } }
@@ -346,6 +389,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
  */
 final class WatchLink: NSObject, WCSessionDelegate {
     static let shared = WatchLink()
+    /// A new event from the watch is on disk (userInfo "event": it as sent).
+    static let eventStored = Notification.Name("OpenGymWatchEventStored")
     /// The page's plugin, once it loaded: told of new events and of the link changing.
     weak var plugin: WatchBridgePlugin?
     let queue = DispatchQueue(label: "ch.opengym.watch-events")
@@ -399,15 +444,29 @@ final class WatchLink: NSObject, WCSessionDelegate {
               let id = event["id"] as? String else { return nil }
         // Stored (or there already) is what the answer to the watch means: an event that could not
         // be written is not named, so the watch keeps sending it instead of counting it delivered.
-        var stored = true
+        var stored = true, added = false
         queue.sync {
             var events = self.readEvents()
             if !events.contains(where: { ($0["id"] as? String) == id }) {
                 events.append(event)
                 stored = self.writeEvents(events)
+                added = stored
+                if stored { self.endsPhoneWorkout(event) }
             }
         }
+        // The rest alarm follows a +15, −15 or Skip at the wrist while the page sleeps (RestAlertPlugin).
+        if added { NotificationCenter.default.post(name: WatchLink.eventStored, object: nil, userInfo: ["event": event]) }
         return stored ? id : nil
+    }
+
+    /// The watch ended the workout this phone runs: its "Still training?" (lib/forgotten-phone.js,
+    /// id 3100) is taken back now, with the page asleep, not 45 minutes later when it has gone out.
+    /// A finish the page then refuses (it kept the workout going) gets it back with its next set.
+    private func endsPhoneWorkout(_ event: [String: Any]) {
+        guard let type = event["type"] as? String, type == "finish" || type == "discard",
+              let wid = event["wid"] as? String,
+              wid == UserDefaults.standard.string(forKey: WatchBridgePlugin.idleWidKey) else { return }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["3100"])
     }
 
     /// The page asked for the status before the session was up (right after launch): it is told now.
@@ -418,6 +477,17 @@ final class WatchLink: NSObject, WCSessionDelegate {
     /// A watch paired or unpaired, the app installed on it or removed.
     public func sessionWatchStateDidChange(_ session: WCSession) {
         tell("watchState", ["paired": session.isPaired, "installed": session.isWatchAppInstalled])
+    }
+    /// The watch app came into reach (launched mid-workout, back in range): it gets the running
+    /// workout now. iOS hands the application context over when it chooses, which lagged far behind
+    /// a watch switched on mid-workout, and the page that would send again sleeps while the app is in
+    /// the background. The last snapshot goes as a message (its stamp unchanged, which the watch
+    /// accepts), and an awake page is told so it sends a fresh one.
+    public func sessionReachabilityDidChange(_ session: WCSession) {
+        guard session.isReachable else { return }
+        tell("watchState", ["reachable": true])
+        let last = session.applicationContext
+        if last["snapshot"] != nil { session.sendMessage(last, replyHandler: nil, errorHandler: nil) }
     }
     public func sessionDidBecomeInactive(_ session: WCSession) {}
     public func sessionDidDeactivate(_ session: WCSession) {

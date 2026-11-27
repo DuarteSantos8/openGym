@@ -23,7 +23,7 @@ vi.mock('../store/useStore.js', async () => {
   return { useStore }
 })
 const buzz = vi.hoisted(() => ({ vibrate: null }))
-vi.mock('../lib/sound.js', () => ({ vibrate: p => buzz.vibrate(p) }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), vibrate: p => buzz.vibrate(p) }))
 
 let host, root, reduce = false
 const load = async () => { vi.resetModules(); return import('./christmas.jsx') }
@@ -285,12 +285,6 @@ describe('the advent card on Home', () => {
     expect(host.querySelector('[data-advent-home]')).toBeNull()
   })
 
-  it('the festive icon question never shows in a browser', async () => {
-    const { Deco } = await load()
-    render(<Deco spot="home-advent" />)
-    await act(async () => { await Promise.resolve() })
-    expect(host.querySelector('[data-xmas-icon]')).toBeNull()
-  })
 })
 
 describe('the calendar', () => {
@@ -434,19 +428,45 @@ describe('the calendar', () => {
     expect(host.querySelector('[data-lit="1"]').textContent).toContain('Bauble lit')
   })
 
-  it('door 24: the year so far, and the festive flame to keep', async () => {
-    const set = (w, r) => ({ w, r, done: true })
-    store.S.workouts = [{ id: 'a', d: '2026-03-02', start: 1, end: 3600001, entries: [{ id: '0025', sets: [set(70, 5)] }] }]
+  it('door 24: a thank-you from Duarte, and the star lights up', async () => {
     vi.setSystemTime(new Date(2026, 11, 24, 9))
     await openDay(24)
-    expect(host.querySelector('[data-review]').textContent).toContain('Workouts')
-    act(() => button('Put it on').click())
-    expect(store.S.flameIcon).toEqual({ k: 'icon', v: 'flameHat', c: '#ff5a5f' })
-    expect(store.S.advent.done).toEqual([24])
-    expect(host.textContent).toContain('Wearing it. Very merry.')
+    const thanks = host.querySelector('[data-thanks]')
+    expect(thanks.textContent).toContain('openGym would not exist without you')
+    expect(thanks.textContent).toContain('Duarte Santos')
+    expect(host.querySelector('[data-review]')).toBeNull()
     act(() => host.querySelector('.xm-back').click())
     expect(host.querySelector('.xm-star.xm-lit')).not.toBeNull()
   })
+
+  it('the 19th: the festive flame, given as the door opens and kept for good', async () => {
+    vi.setSystemTime(new Date(2026, 11, 19, 9))
+    await openDay(19)
+    expect(store.S.prizes).toEqual(['festive-flame'])
+    act(() => button('Put it on').click())
+    expect(store.S.flameIcon).toEqual({ k: 'icon', v: 'flameHat', c: '#ff5a5f' })
+    expect(store.S.advent.done).toEqual([19])
+    expect(host.textContent).toContain('Wearing it. Very merry.')
+  })
+
+  it('the 12th: the Christmas 2026 icon is given to whoever opens it', async () => {
+    vi.setSystemTime(new Date(2026, 11, 12, 9))
+    await openDay(12)
+    expect(store.S.prizes).toEqual(['xmas-icon-2026'])
+    expect(host.querySelector('[data-present="icon"]').textContent).toContain('Christmas 2026')
+  })
+
+  it('the 5th: openNutrition, with a way to have a look', async () => {
+    vi.setSystemTime(new Date(2026, 11, 5, 9))
+    await openDay(5)
+    expect(host.querySelector('[data-present="nutrition"]').textContent).toContain('openNutrition')
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    act(() => button('Have a look').click())
+    expect(open).toHaveBeenCalledWith('https://opennutrition.ch', '_blank', 'noopener,noreferrer')
+    expect(store.S.advent.done).toEqual([5])
+    open.mockRestore()
+  })
+
 
   it('not before 1 December 2026: open() refuses and nothing is drawn on Home', async () => {
     vi.setSystemTime(new Date(2026, 10, 30, 23, 59))
@@ -482,5 +502,60 @@ describe('the stat of the day', () => {
     expect(v.sub).toContain('8 reindeer')
     expect(statOf(S, 'muscle', 2026).big).toBeTruthy()
     expect(statOf(S, 'streak', 2026).big).toBe('1 week')
+  })
+})
+
+describe('the snow globe: shake the phone', () => {
+  const shake = () => act(() => {
+    for (let i = 0; i < 3; i++) {
+      vi.setSystemTime(new Date(2026, 11, 5, 9, 0, 0, 200 * (i + 1)))
+      const e = new Event('devicemotion'); e.acceleration = { x: i % 2 ? -22 : 22, y: 3, z: 0 }; window.dispatchEvent(e)
+    }
+  })
+  beforeEach(() => { window.DeviceMotionEvent = function () {} })
+  afterEach(() => { delete window.DeviceMotionEvent })
+
+  it('a hard shake opens the globe: one canvas that takes no tap, and a little buzz', async () => {
+    const { Layer } = await load()
+    render(<Layer hidden={false} fresh={false} />)
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+    shake()
+    const cv = host.querySelector('[data-snow-globe]')
+    expect(cv).not.toBeNull()
+    expect(cv.getAttribute('aria-hidden')).toBe('true')
+    expect(buzz.vibrate).toHaveBeenCalled()
+    // Shaking on stirs the same globe, never a second one.
+    shake()
+    expect(host.querySelectorAll('[data-snow-globe]').length).toBe(1)
+  })
+
+  it('nothing with its switch off, with reduced motion, or on the workout screen without "Also during workouts"', async () => {
+    store.S = { ...store.S, seasonal: { christmasShake: false } }
+    let { Layer } = await load()
+    render(<Layer hidden={false} fresh={false} />)
+    shake()
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+    act(() => root.unmount()); root = createRoot(host)
+
+    store.S = { ...store.S, seasonal: {} }
+    reduce = true
+    ;({ Layer } = await load())
+    render(<Layer hidden={false} fresh={false} />)
+    shake()
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+    act(() => root.unmount()); root = createRoot(host)
+
+    reduce = false
+    ;({ Layer } = await load())
+    render(<Layer hidden fresh={false} workout={false} />)
+    shake()
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
+  })
+
+  it('a gentle wobble does nothing', async () => {
+    const { Layer } = await load()
+    render(<Layer hidden={false} fresh={false} />)
+    act(() => { for (let i = 0; i < 10; i++) { const e = new Event('devicemotion'); e.acceleration = { x: 5, y: 2, z: 1 }; window.dispatchEvent(e) } })
+    expect(host.querySelector('[data-snow-globe]')).toBeNull()
   })
 })

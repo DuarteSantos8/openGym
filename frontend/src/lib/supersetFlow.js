@@ -224,7 +224,7 @@ export function supersetFlowStep(entries, unit, fromIdx) {
  * (`isTimed(idx)`) and finished, and that unit is still the one on screen; then the next unit with
  * work left (nextUnfinishedUnit), its first exercise. null for anything else: weighted work still
  * waits for Next, as before, unless the profile asked for it to move on too (#1017, Settings →
- * Workout → "Next exercise when the rest ends"): the caller then passes an `isTimed` that says yes
+ * Workout → "Next exercise when the rest ends", on by default): the caller then passes an `isTimed` that says yes
  * to every exercise. A superset still only moves on once its whole round is done.
  */
 export function advanceAfterTimedRest(entries, units, forIdx, cur, isTimed) {

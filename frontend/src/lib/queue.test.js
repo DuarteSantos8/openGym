@@ -198,6 +198,26 @@ describe('pins — a session given a day (S.dayPlan[iso] = queue routine id)', (
     expect(pinState(S({ routines: routines.filter(r => r.id !== 'd1') }), 'd1')).toBeNull()
   })
 
+  it('pinState with the pin\'s date: a done session planned again from today on is open until trained in that day\'s week', () => {
+    const tue = S({ workouts: [w({ routineIds: ['d1'] })] })   // d1 done Tuesday 09-08
+    expect(pinState(tue, 'd1', TODAY, FRI)).toBe('done')           // the same week: fulfilled
+    expect(pinState(tue, 'd1', TODAY, TODAY)).toBe('done')
+    expect(pinState(tue, 'd1', TODAY, '2026-09-15')).toBe('open')  // next week: the day trains it
+    expect(pinState(tue, 'd1', TODAY, '2026-09-08')).toBe('done')  // before today: the old rule
+    // The week starts by the profile: Sunday 09-13 is in Tuesday's week from a Monday start only.
+    expect(pinState(tue, 'd1', TODAY, '2026-09-13')).toBe('done')
+    expect(pinState({ ...tue, weekStart: 0 }, 'd1', TODAY, '2026-09-13')).toBe('open')
+    // Trained after the planned day in its week does not fulfil it.
+    const thu = S({ workouts: [w({ routineIds: ['d1'], d: '2026-09-10' })] })
+    expect(pinState(thu, 'd1', TODAY, TODAY)).toBe('open')
+    // A session still to do, and a routine that is not a session, read as before.
+    expect(pinState(tue, 'd2', TODAY, '2026-09-15')).toBe('open')
+    expect(pinState(tue, 'own', TODAY, '2026-09-15')).toBeNull()
+    // Such a pin does not hold the floating order: the pass has nothing of d1 left to skip.
+    const again = S({ workouts: [w({ routineIds: ['d1'] })], dayPlan: { '2026-09-15': 'd1' } })
+    expect(queueNext(again, TODAY, TODAY)).toBe('d2')
+  })
+
   it('a pin dated between today and a future startsOn is honoured on its day, and skipped on the start day', () => {
     const s = S({ queue: { ...S().queue, startsOn: '2026-09-14' }, dayPlan: { '2026-09-12': 'd1' } })
     expect(queueNext(s, '2026-09-14', TODAY)).toBe('d2')

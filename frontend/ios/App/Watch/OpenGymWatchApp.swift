@@ -51,7 +51,7 @@ final class WatchAppDelegate: NSObject, WKApplicationDelegate {
     /// Relaunched after being killed mid-workout: the Apple Health session watchOS kept running.
     func handleActiveWorkoutRecovery() {
         let store = self.store
-        store.health.recover(workoutId: store.state.workout?.id) { store.state.workout != nil }
+        store.health.recover(workoutId: store.state.workout?.id, stillRuns: { store.state.workout != nil }, pausedNow: { store.workoutPausedAt != nil })
     }
 }
 
@@ -68,6 +68,9 @@ struct DemoEnvironment: ViewModifier {
     }
 }
 
+/// One reload of the complications for the changes of a set ticked (tick, "waiting to sync", the reply).
+private let widgetReload = Debounce(after: 1)
+
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.scenePhase) private var scenePhase
@@ -75,9 +78,10 @@ struct RootView: View {
     @Environment(\.isLuminanceReduced) private var dimmed
 
     /// Which whole screen is up: a change fades (Motion), never cuts.
-    private enum Screen: Hashable { case weighIn, summary, countdown, home, prompt, session }
+    private enum Screen: Hashable { case checkin, weighIn, summary, countdown, home, prompt, session }
 
     private var screen: Screen {
+        if store.checkinFor != nil { return .checkin }
         if store.weighInFor != nil { return .weighIn }
         if store.summary != nil { return .summary }
         if store.workout == nil { return store.countdownFrom != nil ? .countdown : .home }
@@ -88,6 +92,7 @@ struct RootView: View {
     var body: some View {
         ZStack {
             switch screen {
+            case .checkin: CheckinView().transition(.opacity)
             case .weighIn: WeighInView().transition(.opacity)
             case .summary:
                 if let summary = store.summary { SummaryView(summary: summary).transition(.opacity) }
@@ -123,8 +128,15 @@ struct RootView: View {
         }
         .onChange(of: store.widgetState) { state in
             guard !store.isDemo else { return }
-            state.write()
-            WidgetCenter.shared.reloadAllTimelines()
+            state.write()   // at once: a reload a moment later already reads it
+            let reload = { WidgetCenter.shared.reloadAllTimelines() }
+            // The wait only while the workout session keeps the app awake to run it: without one, and
+            // for a workout's end, at once (a suspended app would leave the complications stale).
+            if store.health.running && (state.mode == "set" || state.mode == "rest") { widgetReload.call(reload) } else { reload() }
+        }
+        // The session ended inside that wait (lost, or ended by watchOS): reload now, the app may be suspended next.
+        .onReceive(store.health.$running.dropFirst()) { running in
+            if !running, !store.isDemo { WidgetCenter.shared.reloadAllTimelines() }
         }
     }
 }

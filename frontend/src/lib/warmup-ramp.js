@@ -8,6 +8,9 @@
 //                     set). A slot that has one keeps it exactly as before.
 //   S.warmupAuto      Settings → Workout: 'off' (the default, nothing changes), 'compounds' or
 //                     'all'. What every slot without a choice of its own follows.
+//   S.warmupRamp      Settings → Workout → Your warm-up ramp (#1423): rows like a slot's own,
+//                     used wherever Auto would build the block, and the start of "My own".
+//                     Absent means the built-in ramp below.
 //
 // The generator ramps by load, the way a coach would write it on a whiteboard: a heavy squat gets
 // the bar for ten and three climbing sets, a medium press two, a light curl one, a 6 kg raise
@@ -80,6 +83,16 @@ export function cleanOwnRow(row) {
 export const ownRowsOf = cfg => (Array.isArray(cfg?.warmupRows) ? cfg.warmupRows : [])
   .map(cleanOwnRow).filter(Boolean).slice(0, MAX_OWN_WARMUPS)
 
+/** Your own ramp from Settings (#1423), cleaned; [] for the built-in one. */
+export const rampOf = S => ownRowsOf({ warmupRows: S?.warmupRamp })
+
+// Auto, with your ramp in place of the built-in one when you set one. An assistance machine keeps
+// the built-in answer (none): a share of the help is not a lighter set.
+const autoSource = (S, cfg) => {
+  const rows = rampOf(S)
+  return rows.length && !isAssisted(cfg) ? { kind: 'own', rows, ramp: true } : { kind: 'auto' }
+}
+
 /**
  * Where an exercise's warm-ups come from: `{ kind: 'auto' | 'own' | 'count' | 'none', rows? }`.
  * 'count' is the older ramp-set number (history.js buildSets builds it as it always has).
@@ -94,11 +107,11 @@ export function warmupSource(S, cfg) {
     const rows = ownRowsOf(cfg)
     return rows.length ? { kind: 'own', rows } : { kind: 'none' }
   }
-  if (own === 'auto') return mode === 'reps' ? { kind: 'auto' } : { kind: 'none' }
+  if (own === 'auto') return mode === 'reps' ? autoSource(S, cfg) : { kind: 'none' }
   if ((Math.round(cfg?.warmupSets) || 0) > 0) return { kind: 'count' }
   if (mode !== 'reps') return { kind: 'none' }
   const setting = warmupAutoOf(S)
-  if (setting === 'all' || (setting === 'compounds' && isCompoundEx(cfg))) return { kind: 'auto' }
+  if (setting === 'all' || (setting === 'compounds' && isCompoundEx(cfg))) return autoSource(S, cfg)
   return { kind: 'none' }
 }
 

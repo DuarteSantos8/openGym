@@ -596,6 +596,10 @@ module Ui {
     //! biggest of fonts that takes it, else on two (up to maxLines), else the smallest font, cut
     //! with "..." at the end. Returns [font, lines].
     function title(dc, s, fonts, y, maxLines) {
+        // nothing to set (a routine or workout without a name): lines() has no line for it
+        if (s.length() == 0) {
+            return [fonts[0], [s]];
+        }
         // one line at any of the fonts before two lines at the biggest
         for (var n = 1; n <= maxLines; n += 1) {
             for (var i = 0; i < fonts.size(); i += 1) {

@@ -78,3 +78,28 @@ describe('WorkoutDetail — repeat today', () => {
     expect(button(host, 'Repeat today').disabled).toBe(true)
   })
 })
+
+// Opened from Home's today row once today is done (Discord): a second session from the sheet.
+describe('WorkoutDetail: Start another session', () => {
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    useUI.setState({ sheets: [], toastMsg: '' })
+    useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [], active: null, weighIn: false } }))
+    document.body.innerHTML = ''
+  })
+  afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
+
+  it('closes the sheet, then runs what Home handed it', () => {
+    const saved = workout()
+    const calls = []
+    workoutDetailSheet(saved, { again: () => calls.push(useUI.getState().sheets.length) })
+    const host = renderTop()
+    act(() => { button(host, 'Start another session').click() })
+    expect(calls).toEqual([0])
+  })
+
+  it('is not there when the sheet opens from History', () => {
+    const host = (workoutDetailSheet(workout()), renderTop())
+    expect(button(host, 'Start another session')).toBeUndefined()
+  })
+})

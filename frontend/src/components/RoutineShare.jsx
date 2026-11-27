@@ -12,9 +12,10 @@ import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { nav } from '../lib/nav.js'
 import { MOBILE, shareExport } from '../lib/mobile.js'
+import { DEMO } from '../lib/demo.js'
 import { copyText } from '../lib/clipboard.js'
 import { buildPlanBundle } from '../lib/plan-share.js'
-import { routineLink, routinePayloadFromUrl, decodePayload, readRoutineBundle, importRoutineLink, FROM_MAX } from '../lib/routine-link.js'
+import { routineLink, routinePayloadFromUrl, ownPayloadFromLocation, ownServer, decodePayload, readRoutineBundle, importRoutineLink, FROM_MAX } from '../lib/routine-link.js'
 import { libraryLinkFromUrl } from '../lib/library-link.js'
 import { openLibraryLink } from './LibraryLink.jsx'
 import { Button, Switch } from './ui.jsx'
@@ -62,7 +63,7 @@ function ShareRoutine({ routine, close }) {
   const go = async () => {
     setBusy(true)
     try {
-      const link = await routineLink(st, routine, { weights, from: named ? from : '' })
+      const link = await routineLink(st, routine, { weights, from: named ? from : '', server: ownServer(globalThis.location, { mobile: MOBILE, demo: DEMO }) })
       close()
       if (link.tooLong) {
         toast(t('That one’s too big for a link, so it goes as a plan file.'))
@@ -168,12 +169,13 @@ export async function openRoutinePayload(payload, now = Date.now()) {
   }
 }
 
-// A web app opened at <server>/#/r/<payload> (the website's "Open in the web app"): read before
+// A web app opened at <server>/#/r/<payload> (the website's "Open in the web app", a self-hosted
+// server's own link) or <server>/#<payload> (a hand-made <server>/r#<payload>, #1337): read before
 // the router turns the unknown route into /home, and the address put back on the plan.
 const BOOT = (() => {
   try {
-    const p = routinePayloadFromUrl(globalThis.location?.href || '')
-    if (p && /^#\/r\//.test(globalThis.location.hash)) history.replaceState(history.state, '', location.pathname + location.search + '#/plan')
+    const p = ownPayloadFromLocation(globalThis.location?.href || '')
+    if (p && /^#(\/r\/)?\d/.test(globalThis.location.hash)) history.replaceState(history.state, '', location.pathname + location.search + '#/plan')
     return p ? { payload: p } : null
   } catch { return null }
 })()
@@ -213,7 +215,8 @@ export function useRoutineLinks(ready) {
       return false
     }
     const onHash = () => {
-      if (got(location.href)) { try { history.replaceState(history.state, '', location.pathname + location.search + '#/plan') } catch { /* fine */ } }
+      const own = ownPayloadFromLocation(location.href)
+      if (own ? (take({ payload: own }), true) : got(location.href)) { try { history.replaceState(history.state, '', location.pathname + location.search + '#/plan') } catch { /* fine */ } }
     }
     window.addEventListener('hashchange', onHash)
     const handles = []

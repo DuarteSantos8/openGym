@@ -10,8 +10,8 @@ android {
         applicationId "ch.duartesantos.opengym"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 46
-        versionName "1.4.5"
+        versionCode 56
+        versionName "1.4.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -22,6 +22,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            // The plugin's own META-INF/version-control-info.textproto. The release machine builds
+            // outside a git checkout, so it only ever said NO_SUPPORTED_VCS_FOUND.
+            vcsInfo {
+                include = false
+            }
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // The barcode scanner's ML Kit library ships a native build for four CPU families.
             // Phones are ARM; the two x86 builds only serve emulators and a few Chromebooks, which
@@ -36,6 +41,18 @@ android {
             // can live on one device. The name/icon label is overridden by the debug resource
             // overlay in src/debug/res. The release build (the "real" app) is untouched.
             applicationIdSuffix ".test"
+        }
+    }
+    // Library files the app never reads at runtime. DebugProbesKt.bin is the coroutines debug
+    // agent's JVM class (Android runs dex, never a loose .class); the *.version stamps are build
+    // metadata for tooling. META-INF/services stays: the coroutines library finds its Android
+    // main dispatcher through it.
+    packaging {
+        resources {
+            excludes += [
+                "DebugProbesKt.bin",
+                "META-INF/*.version",
+            ]
         }
     }
     // Where the app is installed from. "sideload" is the APK on GitHub and opengym.ch: it checks

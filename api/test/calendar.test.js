@@ -24,6 +24,14 @@ test('a day holds a combined weekday, an override, or nothing on a rest override
   assert.deepEqual(dayRoutines(S, '2026-11-05', '2026-11-04'), []);
 });
 
+test('a past day pinned to a session done in an earlier week is not that session any more, as on the phone', () => {
+  // a trained 10-28; pinned for Tuesday 11-03 (the next week); the feed is built on 11-04.
+  const Q = { ...S, week: {}, dayPlan: { '2026-11-03': 'a' }, queue: { ids: ['a', 'b'], startsOn: '2026-10-26', since: 1 },
+    workouts: [{ id: 'wa', d: '2026-10-28', start: 2, routineIds: ['a'], name: 'Push, heavy' }] };
+  assert.ok(!dayRoutines(Q, '2026-11-03', '2026-11-04').includes('a'));
+  assert.deepEqual(dayRoutines(Q, '2026-11-03', '2026-11-03'), ['a']);
+});
+
 test('the feed: all-day plan events with stable ids, escaped, folded', () => {
   const ics = buildIcs(S, { uid: 'u1', now: NOW, tz: 'UTC', name: 'Duarte' });
   assert.match(ics, /^BEGIN:VCALENDAR\r\nVERSION:2.0\r\n/);

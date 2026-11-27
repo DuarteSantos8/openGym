@@ -30,14 +30,14 @@ describe('workoutText', () => {
       '58 min · 1,790 kg · Body weight 80 kg',
       '',
       'Barbell Bench Press',
-      '60×8, 60×6 ↘ 45×6',
+      '60 kg × 8, 60 kg × 6 ↘ 45 kg × 6',
       'narrower grip',
       '',
       'Superset',
       'Dumbbell Curl',
-      '12×10',
+      '12 kg × 10',
       'Cable Pushdown',
-      '20×12',
+      '20 kg × 12',
       '',
       'Run',
       '20 min @ 10 km/h',
@@ -54,7 +54,45 @@ describe('workoutText', () => {
     ] }
     // no clock, no weigh-in, no note; an exercise with only a warm-up drops out, and a superset
     // with one member left trained is just that exercise
-    expect(workoutText(bare, { unit: 'lb', nameOf })).toBe(`Legs · ${fmtDate('2026-09-03', true, true)}\n120 lb\n\nDumbbell Curl\n12×10`)
+    expect(workoutText(bare, { unit: 'lb', nameOf })).toBe(`Legs · ${fmtDate('2026-09-03', true, true)}\n120 lb\n\nDumbbell Curl\n12 lb × 10`)
+  })
+})
+
+// The weight unit next to each weight, so a pasted line reads "60 kg × 8" and not a bare "60×8".
+// Cardio and bodyweight sets with no added load have none.
+describe('workoutText weight unit', () => {
+  const nameOf = e => e.id
+  const day = entries => ({ d: '2026-09-03', start: 0, end: 0, name: 'Day', entries })
+
+  it('writes the profile unit next to every weight', () => {
+    const w = day([{ id: 'bench', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true }, { w: 62.5, r: 6, done: true }] }])
+    expect(workoutText(w, { unit: 'kg', nameOf })).toContain('\n60 kg × 8, 62.5 kg × 6')
+    expect(workoutText(w, { unit: 'lb', nameOf })).toContain('\n60 lb × 8, 62.5 lb × 6')
+  })
+
+  it('writes the unit with a profile that is given too', () => {
+    const w = day([{ id: 'bench', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true }] }])
+    expect(workoutText(w, { unit: 'kg', nameOf, state: { unit: 'kg' } })).toContain('\n60 kg × 8')
+  })
+
+  it('writes a time-based set\'s weight with its unit, and leaves a bare timed set alone', () => {
+    const w = day([
+      { id: 'carry', target: { mode: 'time' }, sets: [{ sec: 30, w: 20, done: true }] },
+      { id: 'plank', target: { mode: 'time' }, sets: [{ sec: 45, done: true }] },
+    ])
+    const lines = workoutText(w, { unit: 'kg', nameOf }).split('\n')
+    expect(lines).toContain('0:30 · 20 kg')
+    expect(lines.at(-1)).toBe('0:45')
+  })
+
+  it('leaves it off cardio and off bodyweight sets with no added weight', () => {
+    const w = day([
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 10, done: true }] },
+      { id: 'pullup', target: { mode: 'reps', bodyweight: true }, sets: [{ w: 0, r: 10, done: true }] },
+    ])
+    const text = workoutText(w, { unit: 'kg', nameOf })
+    expect(text).toContain('\n10')
+    expect(text).not.toMatch(/ kg × /)
   })
 })
 
@@ -69,13 +107,13 @@ describe('workoutText in a combined session', () => {
   it('pairs a superset only inside one routine\'s section, as the detail sheet does', () => {
     const text = workoutText(at([row('press', 'A'), row('fly', 'A', 'x'), row('row', 'B', 'x'), row('curl', 'B')]), { unit: 'kg', nameOf })
     expect(text).not.toContain('Superset')
-    expect(text.split('\n\n').slice(1)).toEqual(['Press\n20×10', 'Fly\n20×10', 'Row\n20×10', 'Curl\n20×10'])
+    expect(text.split('\n\n').slice(1)).toEqual(['Press\n20 kg × 10', 'Fly\n20 kg × 10', 'Row\n20 kg × 10', 'Curl\n20 kg × 10'])
   })
 
   it('keeps a superset inside one routine together, and lists each routine\'s exercises in its section', () => {
     // the curl was added to routine A late in the session, after routine B's exercises
     const text = workoutText(at([row('press', 'A', 'y'), row('fly', 'A', 'y'), row('row', 'B'), row('curl', 'A')]), { unit: 'kg', nameOf })
-    expect(text.split('\n\n').slice(1)).toEqual(['Superset\nPress\n20×10\nFly\n20×10', 'Curl\n20×10', 'Row\n20×10'])
+    expect(text.split('\n\n').slice(1)).toEqual(['Superset\nPress\n20 kg × 10\nFly\n20 kg × 10', 'Curl\n20 kg × 10', 'Row\n20 kg × 10'])
   })
 })
 
@@ -100,10 +138,10 @@ describe('workoutText exercise names per language', () => {
   const nameLine = () => workoutText(w, { unit: 'kg', nameOf: e => exerciseNameFor(EXIDX[e.id]) }).split('\n\n')[1].split('\n')[0]
   afterEach(() => _setLangState('en', {}, null, null))
 
-  it('keeps German as the pack writes it and title-cases the lower-case packs', () => {
+  it('keeps German as the pack writes it, sentence-cases Russian and title-cases the other lower-case packs', () => {
     const expected = {
       de: 'Bankdrücken mit Langhantel', es: 'Press De Banca Con Barra', fr: 'Développé Couché À La Barre',
-      it: 'Panca Piana Con Bilanciere', 'pt-BR': 'Supino Com Barra', ru: 'Жим Штанги Лёжа', hu: 'Fekvenyomás Rúddal',
+      it: 'Panca Piana Con Bilanciere', 'pt-BR': 'Supino Com Barra', ru: 'Жим штанги лёжа', // sentence case (#1247) hu: 'Fekvenyomás Rúddal',
       pl: 'Wyciskanie Sztangi Na Ławce Płaskiej',
     }
     for (const lang of EXERCISE_NAME_LANGS) {

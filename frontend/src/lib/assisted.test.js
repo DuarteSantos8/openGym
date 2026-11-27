@@ -21,6 +21,16 @@ describe('which exercises count as assisted', () => {
     for (const id of ['0011', '1708', '0014', '0970', '0697']) expect(isAssisted(id), id).toBe(false)
   })
 
+  // #1220: a cable that lifts you through an inverse (Nordic) curl is help, not load. The
+  // catalogue says so with "assisted": true, since its equipment is no leverage machine.
+  it('takes a catalogue exercise marked assisted, and progresses it down', () => {
+    expect(isAssisted('3235')).toBe(true)
+    expect(EXIDX['3235'].eq).toBe('cable')
+    const S = { unit: 'kg', workouts: [workout('2026-11-01', '3235', [set(30, 8)])] }
+    const p = nextPrescription(S, { id: '3235', mode: 'reps', sets: 1, reps: 8, weight: 30, prog: 'linear' })
+    expect(p.weight).toBeLessThan(30)
+  })
+
   it('lets an exercise or a routine config say so outright', () => {
     expect(isAssisted({ id: PLAIN, assisted: true })).toBe(true)
     expect(isAssisted({ id: ASSISTED, assisted: false })).toBe(false)

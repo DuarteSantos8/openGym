@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, ar. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">أضف سنة ميلادك في تطبيق الهاتف</string>
+    <string name="add_session_note">إضافة ملاحظة جلسة</string>
     <string name="add_set">إضافة مجموعة</string>
     <string name="add_short">إضافة</string>
     <string name="added_weight">وزن إضافي</string>
@@ -9,14 +10,28 @@
     <string name="all_sets_done">اكتملت كل المجموعات</string>
     <string name="all_synced">تمت مزامنة كل شيء</string>
     <string name="allow">السماح</string>
+    <string name="archived_stay_on_phone">تبقى الروتينات المؤرشفة على هاتفك.</string>
     <string name="avg">المتوسط</string>
     <string name="band_over">%1$d فأكثر</string>
     <string name="band_to">من %1$d إلى %2$d</string>
     <string name="band_under">أقل من %1$d</string>
     <string name="body_weight">وزن الجسم</string>
     <string name="bodyweight">وزن الجسم</string>
+    <string name="bpm">%1$s ن/د</string>
     <string name="calories">السعرات</string>
     <string name="cancel">إلغاء</string>
+    <string name="checkin_continue">متابعة</string>
+    <string name="checkin_energy">الطاقة</string>
+    <string name="checkin_energy_hi">مفعم بالنشاط</string>
+    <string name="checkin_energy_lo">على الاحتياطي</string>
+    <string name="checkin_skip">تخطٍّ لليوم</string>
+    <string name="checkin_sleep">النوم</string>
+    <string name="checkin_sleep_hi">نمت كالحجر</string>
+    <string name="checkin_sleep_lo">بالكاد نمت</string>
+    <string name="checkin_sore">ألم العضلات</string>
+    <string name="checkin_sore_hi">كل شيء يؤلمني</string>
+    <string name="checkin_sore_lo">لا شيء يؤلمني</string>
+    <string name="checkin_title">كيف حالك اليوم؟</string>
     <string name="complication_desc">مجموعاتك حتى الآن، أو سلسلتك.</string>
     <string name="continue_workout">متابعة التمرين</string>
     <string name="crown_hint">أدر التاج للتغيير.</string>
@@ -26,6 +41,7 @@
     <string name="drop_set">دروب سِت</string>
     <string name="drop_tag">دروب</string>
     <string name="edit">تعديل</string>
+    <string name="edit_session_note">تعديل ملاحظة الجلسة</string>
     <string name="effort">الجهد</string>
     <string name="ended_on_phone">انتهى على الهاتف</string>
     <string name="exercises">التمارين</string>
@@ -38,6 +54,7 @@
     <string name="heart_rate">النبض</string>
     <string name="hold">ثبات</string>
     <string name="hold_to_finish">اضغط مطولًا للإنهاء</string>
+    <string name="hours">الساعات</string>
     <string name="how_hard">ما مدى صعوبة تلك المجموعة؟</string>
     <string name="hr_avg_max">متوسط %1$d · أقصى %2$d</string>
     <string name="hr_why">اسمح بقراءة النبض لتراه في كل مجموعة.</string>
@@ -61,10 +78,12 @@
     <string name="media_quieter">أخفض</string>
     <string name="media_title">الموسيقى</string>
     <string name="min">الأدنى</string>
+    <string name="min_minutes">دقيقة</string>
     <string name="more">أكثر</string>
     <string name="muscles">العضلات</string>
     <string name="n_more">+%1$d أخرى</string>
     <string name="n_sets">%1$s مجموعات</string>
+    <string name="new_record">رقم قياسي جديد</string>
     <string name="next_set_btn">المجموعة التالية</string>
     <string name="no_age_set">لم يُحدَّد العمر</string>
     <string name="no_effort_yet">لم يُقيَّم أي جهد بعد</string>
@@ -72,6 +91,8 @@
     <string name="no_sets_yet">لا مجموعات بعد</string>
     <string name="no_workout">لا يوجد تمرين جارٍ</string>
     <string name="none">بدون</string>
+    <string name="not_a_watch_body">يعمل فقط على ساعة Wear OS. أبقِه مثبتًا الآن: إلغاء تثبيته يحذف التمارين على هذا الهاتف. طريقة استعادة تطبيق الهاتف: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">هذا تطبيق الساعة</string>
     <string name="not_now">ليس الآن</string>
     <string name="not_synced">لم تتم المزامنة بعد</string>
     <string name="notif_running">التمرين جارٍ. اضغط للعودة.</string>
@@ -79,11 +100,14 @@
     <string name="overview">نظرة عامة</string>
     <string name="personal_records">الأرقام القياسية</string>
     <string name="phone_away">الهاتف خارج النطاق. مجموعاتك تنتظر هنا.</string>
+    <string name="phone_connected">الهاتف متصل</string>
+    <string name="phone_gone">الهاتف بعيد</string>
     <string name="phone_out_of_reach">الهاتف خارج النطاق</string>
     <string name="previous_set">المجموعة السابقة</string>
     <string name="prs">الأرقام القياسية</string>
     <string name="quick_checkin">تحديث سريع</string>
     <string name="quick_start">بدء سريع</string>
+    <string name="records">الأرقام القياسية</string>
     <string name="remove_set">إزالة المجموعة</string>
     <string name="remove_short">إزالة</string>
     <string name="removed">تمت الإزالة</string>
@@ -95,6 +119,7 @@
     <string name="routines">الروتينات</string>
     <string name="save">حفظ</string>
     <string name="save_and_start">حفظ وبدء التمرين</string>
+    <string name="saved">تم الحفظ</string>
     <string name="set_menu">قائمة المجموعة</string>
     <string name="set_of">المجموعة %1$d من %2$d</string>
     <string name="set_of_tags">المجموعة %1$d من %2$d, %3$s</string>
@@ -118,7 +143,7 @@
     <string name="today">اليوم</string>
     <string name="undo">تراجع</string>
     <string name="up_next">التالي</string>
-    <string name="up_next_set">%1$s، المجموعة %2$d</string>
+    <string name="up_next_set">%1$s، المجموعة %2$d/%3$d</string>
     <string name="volume">حجم التدريب</string>
     <string name="waiting_sync">بانتظار المزامنة</string>
     <string name="warmup">إحماء</string>

@@ -165,7 +165,10 @@ struct SetPill: View {
                 .animation(still ? nil : .snappy(duration: 0.3), value: shown)
                 .font(TypeScale.body.monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
+                .lineLimit(1)
                 .padding(.horizontal, 10).frame(height: TypeScale.pill)
+                // Its own size: squeezed beside the heart rate in one toolbar item, watchOS 26 cut it to "..." (#1414).
+                .fixedSize()
                 .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
                 .background(GeometryReader { g in
                     Color.clear.onAppear { store.pillFrame = g.frame(in: .global) }
@@ -397,6 +400,7 @@ struct OverviewPage: View {
     @State private var confirmDiscard = false
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             if let w = store.workout {
                 VStack(alignment: .leading, spacing: 4) {
@@ -434,6 +438,7 @@ struct OverviewPage: View {
                         .padding(.leading, 4)
                     HoldToFinish { store.finish() }
                         .padding(.top, 6)
+                    if store.canNote { NoteField().padding(.top, 8) }
                     Button(role: .destructive) { confirmDiscard = true } label: {
                         Text("Discard workout").frame(maxWidth: .infinity)
                     }
@@ -445,9 +450,13 @@ struct OverviewPage: View {
                         Spacer()
                     }
                     .padding(.top, 4)
+                    .id("overview-end")
                 }
                 .padding(.horizontal, 2)
             }
+        }
+        // CI screenshots: "-OpenGymWatchScroll end" shows the bottom of the Overview (Finish, note, Discard).
+        .onAppear { if SessionStore.argument("-OpenGymWatchScroll") == "end" { proxy.scrollTo("overview-end", anchor: .bottom) } }
         }
         .confirmationDialog(Text("Discard workout?"), isPresented: $confirmDiscard, titleVisibility: .visible) {
             Button("Discard workout", role: .destructive) { store.discard() }
@@ -457,6 +466,46 @@ struct OverviewPage: View {
 
     private func isLastOfGroup(_ w: ActiveWorkout, _ i: Int) -> Bool {
         i + 1 >= w.entries.count || w.entries[i + 1].group != w.entries[i].group
+    }
+}
+
+/// The workout's own note, under Finish: "Add session note" to dictate one, or the note itself (two
+/// lines) to say it again. The tap opens the system input (dictation, Scribble, keyboard); Cancel
+/// changes nothing, and what is said replaces the note. Apart from Discard, a hold away from Finish.
+struct NoteField: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accent) private var accent
+
+    var body: some View {
+        let shown = store.noteShown
+        let label = shown.isEmpty ? "Add session note" : "Edit session note"
+        // TextFieldLink is the system's own button for text input: an invisible TextField laid over the row took no tap on a real watch.
+        TextFieldLink(prompt: Text(LocalizedStringKey(label))) {
+            HStack(alignment: .center, spacing: 8) {
+                Image(systemName: shown.isEmpty ? "mic.fill" : "note.text")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 20)
+                Group {
+                    if shown.isEmpty { Text(LocalizedStringKey(label)) } else { Text(verbatim: shown) }
+                }
+                .font(.system(.footnote, design: .rounded).weight(.semibold))
+                .foregroundStyle(.white)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(Theme.surface))
+            .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
+        } onSubmit: { store.saveNote($0) }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(LocalizedStringKey(label)))
+        .accessibilityValue(Text(verbatim: shown))
+        .opacity(dimmed ? 0 : 1)
     }
 }
 
@@ -509,7 +558,7 @@ struct OverviewRowView: View {
                 .stroke(row.current ? accent : Theme.surface2, lineWidth: row.current ? 1.5 : (dimmed ? 1 : 0)))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressStyle())
         // Not while a hold runs: its seconds belong to the exercise on the set page.
         .disabled(store.holdEndsAt != nil)
         .accessibilityElement(children: .ignore)

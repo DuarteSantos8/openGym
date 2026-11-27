@@ -41,12 +41,24 @@ describe('progress-photo gallery', () => {
     act(() => btn('Compare').click())
     const tiles = [...host.querySelectorAll('.pp-tile')]
     act(() => tiles[0].click())
-    expect(host.querySelector('.pp-cta')).toBeNull()
+    expect(btn('Compare').disabled).toBe(true)   // one is not a comparison
     for (let i = 1; i < 10; i++) act(() => tiles[i].click())
     expect(host.querySelectorAll('.pp-selected')).toHaveLength(9)
     expect(tiles[0].querySelector('.pp-check').textContent).toBe('1')
     expect(useUI.getState().toastMsg).toBe('Up to 9 photos at once.')
     act(() => btn('Compare 9 photos').click())
     expect(useUI.getState().sheets.at(-1).kind).toBe('viewer')
+  })
+
+  it('Compare sits under Take photo and Add photos, and picking keeps its row pinned (#1315)', () => {
+    expect(host.querySelector('.hdr').textContent).not.toContain('Compare')
+    expect(host.querySelector('.pp-actions').contains(btn('Compare'))).toBe(true)
+    act(() => btn('Compare').click())
+    const bar = host.querySelector('.pp-stick')
+    expect(bar).toBeTruthy()
+    expect(bar.contains(btn('Cancel'))).toBe(true)
+    act(() => btn('Cancel').click())
+    expect(host.querySelector('.pp-stick')).toBeNull()
+    expect(btn('Take photo')).toBeTruthy()
   })
 })

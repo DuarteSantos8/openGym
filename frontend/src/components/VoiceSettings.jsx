@@ -12,6 +12,7 @@
 // made it (never in the community library). Nothing imitates a real person.
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
+import { savePrefs } from '../lib/device-prefs-sync.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { speak, hush, listVoices, voiceLabel, voiceOpts, pickedVoice, setPickedVoice, speechRateNum, speechPitchNum, setSpeechRate, setSpeechPitch, speechSupported, SPEECH_MIN, SPEECH_MAX } from '../lib/speech.js'
@@ -58,6 +59,7 @@ function VoiceSheet({ close, voices }) {
   const [cur, setCur] = useState(pickedVoice())
   const pick = id => {
     setPickedVoice(id)
+    savePrefs(useStore.getState().update)
     setCur(id)
     sayIt(sampleLine(S_()) || sampleCue(S_().unit), { voice: id })
   }

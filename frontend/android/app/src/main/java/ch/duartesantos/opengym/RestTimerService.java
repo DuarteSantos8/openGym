@@ -16,7 +16,8 @@ import android.os.PowerManager;
 /**
  * Foreground while a rest is running. Shows one clock and one bar, and applies the same controls
  * as the in-app timer: pause, −15s, +15s, skip. The clock is a Chronometer the system runs; the
- * card is reposted every second only while the screen is on (for the bar), see RestCountdownPlan.
+ * card is reposted every second only while the screen is on and the app is not in front (for the
+ * bar), see RestCountdownPlan.
  */
 public class RestTimerService extends Service {
     // Up between onCreate and onDestroy: the workout card (WorkoutNotification) shares this
@@ -51,7 +52,7 @@ public class RestTimerService extends Service {
             // Turning the screen on runs this loop at once (screenOn), so the bar catches up.
             boolean interactive = interactive();
             if (interactive) show();
-            handler.postDelayed(this, RestCountdownPlan.nextTickMs(left, interactive));
+            handler.postDelayed(this, RestCountdownPlan.nextTickMs(left, interactive, RestAlertPlugin.appInFront()));
         }
     };
 
@@ -137,6 +138,8 @@ public class RestTimerService extends Service {
         }
         long nextEnd = intent == null ? 0 : intent.getLongExtra("endsAt", 0);
         if (nextEnd <= System.currentTimeMillis()) {
+            // startForegroundService promised a foreground service: stopping without one crashes the app.
+            show();
             stopForegroundCompat();
             stopSelf();
             return START_NOT_STICKY;
@@ -155,9 +158,10 @@ public class RestTimerService extends Service {
         if (intent != null && intent.hasExtra("accent")) accent = intent.getIntExtra("accent", accent);
         if (intent != null && intent.hasExtra("ink")) ink = intent.getIntExtra("ink", ink);
         handler.removeCallbacks(tick);
+        // A foreground service must post its card now, whether or not the screen is on, and before
+        // the first tick: one that finds the end already past stops without showing it.
+        show();
         tick.run();
-        // A foreground service must post its card now, whether or not the screen is on.
-        if (running && !interactive()) show();
         return START_NOT_STICKY;
     }
 

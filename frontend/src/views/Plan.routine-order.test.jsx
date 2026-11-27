@@ -97,6 +97,24 @@ describe('routine order', () => {
     expect(rows()[0].style.transform).toBe('')
   })
 
+  // The live workout's list (1.4.6) has rows of every height: a passed row makes room for the
+  // held one, its height plus the gap, not for the first row's.
+  it('a row the held one passes slides by the held row\'s height', () => {
+    mount()
+    edit()
+    const tops = [0, 128, 196]
+    rows().forEach((row, i) => {
+      const h = i === 0 ? 120 : 60
+      row.getBoundingClientRect = () => ({ top: tops[i], bottom: tops[i] + h, height: h, left: 0, right: 300, width: 300 })
+    })
+    const h = handles()[1]
+    pointer(h, 'pointerdown', 150)
+    pointer(h, 'pointermove', 40)
+    expect(rows()[0].style.transform).toBe('translateY(68px)')
+    pointer(h, 'pointerup', 40)
+    expect(stored()).toEqual(['Pull A', 'Push A', 'Legs A'])
+  })
+
   it('a drag that ends where it started changes nothing, and a cancelled one neither', () => {
     mount()
     edit()
@@ -143,5 +161,52 @@ describe('routine order', () => {
     const created = useStore.getState().S.routines.at(-1)
     expect(created.name).toBe('New routine')
     expect(nav).toHaveBeenCalledWith('/plan/r/' + created.id)
+  })
+})
+
+// 1.4.6 (owner, 2026-11-23: "why not just hold to move? and keep the Edit button too"): outside
+// Edit a hold on a routine moves it like every list in the app; a tap still opens it, and the
+// release of a hold opens nothing.
+describe('hold to move, outside Edit', () => {
+  const wrappers = () => [...host.querySelectorAll('.plan-routines [data-reorder-row]')]
+  const layOutRows = () => wrappers().forEach((row, i) => {
+    row.getBoundingClientRect = () => ({ top: i * 68, bottom: i * 68 + 60, height: 60, left: 0, right: 300, width: 300 })
+  })
+  const at = (el, type, y) => act(() => { el.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 4, button: 0, clientX: 40, clientY: y })) })
+
+  it('a hold lifts the routine, dragging it down two places moves it there, and the release is no tap', () => {
+    vi.useFakeTimers()
+    try {
+      mount()
+      layOutRows()
+      const row = rows()[0]
+      at(row, 'pointerdown', 30)
+      act(() => vi.advanceTimersByTime(400))
+      expect(wrappers()[0].hasAttribute('data-held')).toBe(true)
+      at(row, 'pointermove', 30 + 150)
+      at(row, 'pointerup', 30 + 150)
+      click(row)
+      expect(stored()).toEqual(['Pull A', 'Legs A', 'Push A'])
+      expect(nav).not.toHaveBeenCalled()
+      expect(host.querySelector('[data-held]')).toBe(null)
+    } finally { vi.useRealTimers() }
+  })
+
+  it('a short tap still opens the routine, and a finger that moves first scrolls instead', () => {
+    vi.useFakeTimers()
+    try {
+      mount()
+      layOutRows()
+      const row = rows()[1]
+      at(row, 'pointerdown', 100)
+      at(row, 'pointermove', 125)
+      act(() => vi.advanceTimersByTime(400))
+      expect(host.querySelector('[data-held]')).toBe(null)
+      at(row, 'pointerup', 125)
+      vi.advanceTimersByTime(500)
+      click(row)
+      expect(nav).toHaveBeenCalledWith('/plan/r/b')
+      expect(stored()).toEqual(['Push A', 'Pull A', 'Legs A'])
+    } finally { vi.useRealTimers() }
   })
 })

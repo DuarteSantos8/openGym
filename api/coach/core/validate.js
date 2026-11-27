@@ -14,7 +14,7 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, machineAllows } from './library.js';
+import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, machineAllows, LIBRARY } from './library.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
@@ -97,6 +97,10 @@ const resolveExId = (id, has) => (typeof id === 'string' && has(id) ? id : asLib
 const BAD_EX_ID = (where, id) =>
   `${where} ${JSON.stringify(id) ?? 'was missing'} is not an exercise id from the library — `
   + `copy an id exactly as it appears in the library array, leading zeros included ("0024", not 24)`;
+// A custom exercise exists only in this profile's state, so the catalogue cannot resolve it.
+// The plan resolves it through the profile's customEx; a proposal names it through the names
+// the library slice already carried (ctx.customNames, set by the pipeline).
+const nameOf = (id, ctx) => libraryName(id) || (ctx?.customNames instanceof Map ? ctx.customNames.get(id) : null) || null;
 // The minutes and pace of a cardio exercise a review adds, in the bounds the 'cardio' change
 // holds them to. Without them the app fell back to 20 min at 8 km/h whatever was shown (#640).
 const cardioTarget = e => (e.mode !== 'cardio' ? {} : {
@@ -143,6 +147,41 @@ const INVERTED_RANGE = where =>
 
 /* =============================== created plans =============================== */
 
+/* What else a custom exercise of the Coach's carries (#1250): its equipment, its main and
+ * supporting muscles and other names for it. It used to arrive with a name only, though the
+ * person's own table said what it needs and what it trains. The same gate as a plan file's
+ * custom exercise (frontend lib/plan-share.js cleanCustom), hand-copied because the core cannot
+ * import the frontend (the parity test is frontend/src/lib/coach-custom-meta.test.js): only muscles
+ * the map can draw, a supporting muscle never repeating a main one, equipment the app knows.
+ * An empty field stays absent, and mergePlan runs cleanCustom over it once more. */
+export const CUSTOM_MUSCLES = new Set([
+  'trapezius', 'front-delts', 'side-delts', 'rear-delts', 'chest', 'lats', 'upper-back', 'serratus',
+  'biceps', 'triceps', 'forearm',
+  'abs', 'obliques', 'lower-back',
+  'gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors',
+  'calves', 'tibialis',
+  'deltoids', 'cardiovascular system'
+]);
+let equipment = null;
+export const customEquipment = () => equipment || (equipment = new Set([
+  ...LIBRARY.map(e => e.eq).filter(Boolean), 'clubbell', 'macebell', 'bench', 'adjustable bench', 'pull-up bar'
+]));
+const muscles = v => [...new Set((Array.isArray(v) ? v : []).map(m => String(m).toLowerCase().trim()).filter(m => CUSTOM_MUSCLES.has(m)))].slice(0, 6);
+function customMeta(c) {
+  const o = {};
+  const eq = isStr(c.eq) ? c.eq.toLowerCase().trim() : '';
+  if (customEquipment().has(eq)) o.eq = eq;
+  const prim = muscles(c.primaries);
+  const sec = muscles(c.secondaries).filter(m => !prim.includes(m));
+  if (prim.length) o.primaries = prim;
+  if (sec.length) o.secondaries = sec;
+  // Named in the current muscle model, so the 1.4.5 split is not applied to it a second time.
+  if (prim.length || sec.length) o.mv = 2;
+  const aliases = (Array.isArray(c.aliases) ? c.aliases : []).filter(isStr).map(a => clampStr(a.trim(), 60)).slice(0, 5);
+  if (aliases.length) o.aliases = aliases;
+  return o;
+}
+
 /**
  * Validate a creation bundle into something `mergePlan` can consume unchanged.
  * Returns { ok, bundle } or { ok:false, errors }.
@@ -168,7 +207,7 @@ export function validatePlan(data, ctx = {}) {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : [])
     .filter(c => c && safeId(c.id) && !libraryHas(c.id) && isStr(c.n))
     .slice(0, 20)
-    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampText(c.desc, 1000) } : {}) }));
+    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampText(c.desc, 1000) } : {}), ...customMeta(c) }));
   // Ids the plan may name: invented in this same answer, or already the user's own.
   const proposedIds = new Set([...customEx.map(c => c.id), ...(ctx.customIds || [])]);
 
@@ -430,7 +469,7 @@ export function validateReview(data, plan, ctx = {}) {
         if (perSide && isInt(a.reps, 1, 100) && a.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.after.reps`)); return; }
         if (isInt(a.repsMax, 1, 100) && isInt(a.repsMin, 1, 100) && a.repsMax < a.repsMin) { errors.push(INVERTED_RANGE(`${where}.after`)); return; }
         out.after = {
-          id: aid, name: libraryName(aid),
+          id: aid, name: nameOf(aid, ctx),
           sets: isInt(a.sets, 1, 10) ? a.sets : 3,
           ...(MODES.includes(a.mode) ? { mode: a.mode } : { mode: 'reps' }),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
@@ -459,7 +498,7 @@ export function validateReview(data, plan, ctx = {}) {
         if (offEquipment(ctx, aid)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, aid)); return; }
         if (aid === planned.id) { errors.push(`${where} swaps an exercise for itself`); return; }
         out.after = {
-          id: aid, name: libraryName(aid),
+          id: aid, name: nameOf(aid, ctx),
           ...(isInt(a.sets, 1, 10) ? { sets: a.sets } : {}),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
           ...(isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? { weight: a.weight } : {})
@@ -556,7 +595,7 @@ export function validateReview(data, plan, ctx = {}) {
           name: clampStr(a.name, 40), emoji: glyphStr(a.emoji),
           ...(POLICIES.includes(a.prog) ? { prog: a.prog } : {}),
           ex: ex.map(e => ({
-            id: e.id, name: libraryName(e.id),
+            id: e.id, name: nameOf(e.id, ctx),
             sets: isInt(e.sets, 1, 10) ? e.sets : 3,
             mode: MODES.includes(e.mode) ? e.mode : 'reps',
             ...(isInt(e.reps, 1, 100) ? { reps: e.reps } : {}),
@@ -901,7 +940,11 @@ export function validateAdapt(data, today, ctx = {}) {
       if (!openWork(en).length) { errors.push(`${where} changes today.entries[${c.entry}], whose sets are all logged — logged sets are never changed`); return; }
       if (touched.has(c.entry)) { errors.push(`${where} is a second change to today.entries[${c.entry}] — one change per exercise`); return; }
       touched.add(c.entry);
-      out.entry = c.entry; out.exId = en.id; out.name = libraryName(en.id);
+      out.entry = c.entry; out.exId = en.id;
+      // `swapSlice` carries at most ten custom exercises, so the eleventh is absent from
+      // `ctx.customNames` even though `cleanToday` named the entry when the payload was built.
+      // The entry's own name is the same bounded value the person is looking at on the phone.
+      out.name = nameOf(en.id, ctx) || (typeof en.name === 'string' && en.name ? en.name : null);
     }
     // Flat fields rather than one `after` of many shapes: a provider that enforces a strict
     // schema (every object closed) can still write each of them (#804).
@@ -912,7 +955,7 @@ export function validateAdapt(data, today, ctx = {}) {
         if (c.to === en.id) { errors.push(`${where} swaps an exercise for itself`); return; }
         if (inSession.has(c.to)) { errors.push(`${where}.to "${c.to}" is already in today's session — pick another`); return; }
         if (offEquipment(ctx, c.to)) { errors.push(OFF_EQUIPMENT(`${where}.to`, c.to)); return; }
-        out.to = c.to; out.toName = libraryName(c.to);
+        out.to = c.to; out.toName = nameOf(c.to, ctx);
         if (isInt(c.reps, 1, 100)) out.reps = c.reps;
         if (isNum(c.weight) && c.weight >= 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;
         inSession.add(c.to);
@@ -942,11 +985,12 @@ export function validateAdapt(data, today, ctx = {}) {
         if (inSession.has(c.to)) { errors.push(`${where}.to "${c.to}" is already in today's session`); return; }
         if (offEquipment(ctx, c.to)) { errors.push(OFF_EQUIPMENT(`${where}.to`, c.to)); return; }
         if (c.entry != null && !isInt(c.entry, 0, entries.length - 1)) { errors.push(`${where}.entry, when given, is the index of the exercise the new one follows`); return; }
-        out.to = c.to; out.toName = libraryName(c.to);
+        out.to = c.to; out.toName = nameOf(c.to, ctx);
         out.sets = isInt(c.sets, 1, 6) ? c.sets : 3;
         if (isInt(c.sec, 5, 600)) out.sec = c.sec; else out.reps = isInt(c.reps, 1, 50) ? c.reps : 10;
         if (isNum(c.weight) && c.weight > 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;
-        if (isInt(c.entry, 0, entries.length - 1)) out.entry = c.entry;
+        // The anchor's id travels with its index, so the app can find it again if the session changes.
+        if (isInt(c.entry, 0, entries.length - 1)) { out.entry = c.entry; out.exId = entries[c.entry].id; }
         inSession.add(c.to);
         break;
       }

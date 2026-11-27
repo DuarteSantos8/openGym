@@ -174,11 +174,14 @@ describe('webhooks', () => {
     expect(sheetHost.querySelector('label[for="intg-url"]').textContent).toBe('Webhook URL')
     await type(url, 'https://ha.example.com/api/webhook/opengym-7f3a')
     await type(name, 'Home Assistant')
-    // Records too, on top of the default.
-    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('New personal record')).querySelector('[role="switch"]').click())
+    // Records too, on top of the default, and the start of a workout (#1152), first in the list.
+    const rows = [...sheetHost.querySelectorAll('.lrow')]
+    expect(rows.map(r => r.textContent).filter(x => /Workout (started|finished)/.test(x))).toEqual(['Workout started', 'Workout finished'])
+    act(() => rows.find(r => r.textContent.includes('New personal record')).querySelector('[role="switch"]').click())
+    act(() => rows.find(r => r.textContent.includes('Workout started')).querySelector('[role="switch"]').click())
     await act(async () => { sheetBtn('Add webhook').click() })
     const sent = mocks.calls.find(c => c[0] === '/api/integrations/connect')[1]
-    expect(sent).toEqual({ provider: 'webhook', url: 'https://ha.example.com/api/webhook/opengym-7f3a', label: 'Home Assistant', events: ['workout.finished', 'workout.pr'] })
+    expect(sent).toEqual({ provider: 'webhook', url: 'https://ha.example.com/api/webhook/opengym-7f3a', label: 'Home Assistant', events: ['workout.finished', 'workout.pr', 'workout.started'] })
     expect(sheetHost.querySelector('.intg-secret').textContent).toBe('ogwh_abc123')
     expect(sheetHost.textContent).toContain('You will see it only now')
   })

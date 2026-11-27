@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import {
   routineLinkBundle, encodePayload, decodePayload, routineLink, routinePayloadFromUrl, readRoutineBundle,
-  importRoutineLink, importedRoutineName, linkFor, toBase64Url, fromBase64Url, cleanFrom, LINK_FMT, MAX_LINK,
+  importRoutineLink, importedRoutineName, linkFor, ownServer, ownPayloadFromLocation, toBase64Url, fromBase64Url, cleanFrom, LINK_FMT, MAX_LINK,
 } from './routine-link.js'
 import { EXIDX, registerCustom } from './exercises.js'
 import { youtubeSearchUrl } from './youtube.js'
@@ -149,6 +149,37 @@ describe('routine links: reading a link', () => {
       'https://opengym.ch/r#hello', 'https://opengym.ch/r#1.d.<script>', 'javascript:alert(1)', '', null, 42,
       'https://opengym.ch/r#1.d.' + 'A'.repeat(17000),
     ]) expect(routinePayloadFromUrl(url), String(url).slice(0, 60)).toBeNull()
+  })
+})
+
+describe('routine links: a self-hosted server links to itself (#1337)', () => {
+  const P = '1.d.q1YqzkxRslIqS8wpTVWqBQA'
+  const at = href => ({ href })
+  it('the web app on its own server names that server, subpath included', () => {
+    expect(ownServer(at('https://gym.example.com/#/plan'))).toBe('https://gym.example.com/')
+    expect(ownServer(at('https://example.com/myGym/index.html#/plan'))).toBe('https://example.com/myGym/')
+    expect(ownServer(at('http://192.168.1.10:8080/'))).toBe('http://192.168.1.10:8080/')
+  })
+  it('the phone apps, the demo and opengym.ch itself keep opengym.ch/r', () => {
+    expect(ownServer(at('https://gym.example.com/'), { mobile: true })).toBe('')
+    expect(ownServer(at('https://someone.github.io/openGym/'), { demo: true })).toBe('')
+    expect(ownServer(at('https://opengym.ch/demo/#/plan'))).toBe('')
+    expect(ownServer(at('https://www.opengym.ch/'))).toBe('')
+    expect(ownServer(at('capacitor://localhost/'))).toBe('')
+    expect(ownServer(null)).toBe('')
+  })
+  it('builds the link on the server and reads it back', async () => {
+    const link = await routineLink(state(), push, { server: 'https://gym.example.com/sub/' })
+    expect(link.url.startsWith('https://gym.example.com/sub/#/r/1.')).toBe(true)
+    expect(routinePayloadFromUrl(link.url)).toBe(link.payload)
+    expect(linkFor(P)).toBe('https://opengym.ch/r#' + P)
+  })
+  it('a hand-made <server>/r#P, sent to the root by the server, still opens', () => {
+    expect(ownPayloadFromLocation('https://gym.example.com/#' + P)).toBe(P)
+    expect(ownPayloadFromLocation('https://gym.example.com/r#' + P)).toBe(P)
+    expect(ownPayloadFromLocation('https://gym.example.com/#/r/' + P)).toBe(P)
+    for (const h of ['https://gym.example.com/#/plan', 'https://gym.example.com/#hello', 'https://gym.example.com/', 'nope', null])
+      expect(ownPayloadFromLocation(h), String(h)).toBeNull()
   })
 })
 

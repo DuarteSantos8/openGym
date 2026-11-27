@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PAGES, arrange, cardState, groupHidden, isCustom, layoutOf, moveCard, orderedCards, resetLayout, setCardState } from './page-layout.js'
+import { PAGES, arrange, cardState, groupHidden, isCustom, layoutOf, moveCard, orderedCards, placeCard, resetLayout, setCardState, dismissedNote } from './page-layout.js'
 
 const ids = page => PAGES[page].map(c => c.id)
 
@@ -41,7 +41,8 @@ describe('page layout (Home and Stats, #1119)', () => {
     expect(moveCard(s, 'stats', 'muscles', -1)).toBe(true)
     const lifts = orderedCards(s, 'stats').filter(c => c.group === 'lifts').map(c => c.id)
     expect(lifts).toEqual(['muscles', 'progress', 'strength'])
-    const groups = orderedCards(s, 'stats').map(c => c.group)
+    // The More list sits last on purpose: it is the end of Body, or of Lifts with Body off.
+    const groups = orderedCards(s, 'stats').filter(c => c.id !== 'links').map(c => c.group)
     expect(groups).toEqual([...groups].sort((a, b) => ['overview', 'body', 'lifts', 'effort'].indexOf(a) - ['overview', 'body', 'lifts', 'effort'].indexOf(b)))
   })
 
@@ -79,5 +80,48 @@ describe('page layout (Home and Stats, #1119)', () => {
     expect(isCustom(s, 'stats')).toBe(false)
     expect(s.showWeightCard).toBe(true)
     expect(arrange(s, 'stats', ids('stats'))).toEqual(ids('stats'))
+  })
+})
+
+describe('placeCard (a drag in the Customize sheet)', () => {
+  it('puts a card after the one it was dropped on going down, before it going up', () => {
+    const s = {}
+    expect(placeCard(s, 'home', 'recap', 'challenges')).toBe(true)
+    expect(orderedCards(s, 'home').map(c => c.id).slice(0, 4)).toEqual(['recovery', 'deload', 'challenges', 'recap'])
+    expect(placeCard(s, 'home', 'streak', 'recovery')).toBe(true)
+    expect(orderedCards(s, 'home').map(c => c.id)[0]).toBe('streak')
+    expect(placeCard(s, 'home', 'streak', 'streak')).toBe(false)
+    expect(placeCard(s, 'home', 'nope', 'streak')).toBe(false)
+  })
+})
+
+describe('cards put away with their own × (Discord 2026-11-20)', () => {
+  const now = new Date(2026, 10, 24, 12)
+  it('says until when, and Show brings the challenges and the recovery tip back', () => {
+    const s = { challengesHidden: '2026-11', recoveryHintDay: '2026-11-24' }
+    expect(dismissedNote(s, 'home', 'challenges', now)).toBe('Hidden until next month.')
+    expect(dismissedNote(s, 'home', 'recovery', now)).toBe('Hidden for today. Back tomorrow.')
+    setCardState(s, 'home', 'challenges', 'shown')
+    expect(dismissedNote(s, 'home', 'challenges', now)).toBe(null)
+    expect(s.recoveryHintDay).toBe('2026-11-24')
+    setCardState(s, 'home', 'recovery', 'folded')
+    expect(dismissedNote(s, 'home', 'recovery', now)).toBe(null)
+  })
+  it('an old dismissal is no note, Hide keeps it, and Reset clears it', () => {
+    expect(dismissedNote({ challengesHidden: '2026-10' }, 'home', 'challenges', now)).toBe(null)
+    const s = { challengesHidden: '2026-11' }
+    setCardState(s, 'home', 'challenges', 'hidden')
+    expect(s.challengesHidden).toBe('2026-11')
+    resetLayout(s, 'home')
+    expect(s.challengesHidden).toBe(null)
+    expect(dismissedNote({ challengesHidden: '2026-11' }, 'stats', 'challenges', now)).toBe(null)
+  })
+  it('the week recap put away on its day is listed, and Show brings it back (Discord 2026-11-24)', () => {
+    const monday = new Date(2026, 10, 23, 12)
+    const s = { weekStart: 1, recapSeen: 'w:2026-11-16' }
+    expect(dismissedNote(s, 'home', 'recap', monday)).toBe('Hidden until the next recap.')
+    expect(dismissedNote(s, 'home', 'recap', new Date(2026, 10, 30, 12))).toBe(null)
+    setCardState(s, 'home', 'recap', 'shown')
+    expect(s.recapSeen).toBe(null)
   })
 })

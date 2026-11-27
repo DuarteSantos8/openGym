@@ -13,7 +13,7 @@
 // heads, the front most (GENERIC). And "Lats & upper back" was one muscle before: a custom
 // exercise or snapshot saved before the split (no `mv: 2`) that names it gets both (LEGACY).
 
-import { isWarmupRow } from './workout-model.js'
+import { isWarmupRow, isSideSet } from './workout-model.js'
 import { EXIDX, smOf, isBuiltinEx } from './exercises.js'
 import { todayISO, weekKey, MONDAY } from './format.js'
 import { queueOf } from './queue.js'
@@ -337,9 +337,12 @@ export function loadOf(items) {
  * question from where the sets went: a muscle can lead on volume and still never be trained
  * near failure.
  */
+// A one-arm or one-leg set is one set for the muscle, both sides done; with only one side ticked
+// it is half of one (a per-side row is `done` only once both are).
+const setShare = s => (isSideSet(s) ? ((s.sides.L?.done ? 1 : 0) + (s.sides.R?.done ? 1 : 0)) / 2 : (s.done ? 1 : 0))
 export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
+    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).reduce((n, s) => (s && !isWarmupRow(s) && (!pick || pick(s)) ? n + setShare(s) : n), 0) }))))
 
 /**
  * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
@@ -366,9 +369,10 @@ export const loadOfRoutine = (routine, exercises = {}) =>
  */
 export function sessionLoad(entries) {
   const of = pick => loadOf((entries || []).map(e => ({
-    id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => !isWarmupRow(s) && pick(s)).length,
+    id: e.id, ex: e.exercise || e, sets: (e.sets || []).reduce((n, s) => (s && !isWarmupRow(s) ? n + pick(s) : n), 0),
   })))
-  return { done: of(s => s.done), planned: of(() => true) }
+  // Counted as the finished workout counts them (setShare), so a session all ticked shades the same.
+  return { done: of(setShare), planned: of(() => 1) }
 }
 
 /**

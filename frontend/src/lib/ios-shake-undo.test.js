@@ -11,7 +11,9 @@ describe('shake to undo on the iPhone (#921)', () => {
     const launch = swift.slice(swift.indexOf('didFinishLaunchingWithOptions'), swift.indexOf('return true'))
     expect(launch).toMatch(/application\.applicationSupportsShakeToEdit = false/)
   })
-  it('and the page itself never listens for a shake', async () => {
+  // One exception: lib/shake.js, the Christmas snow globe (only while that theme shows, with its
+  // switch on). It draws snow and nothing else; it never undoes anything.
+  it('and the page never listens for a shake, but for the snow globe, which undoes nothing', async () => {
     const { readdirSync, statSync } = await import('node:fs')
     const { join } = await import('node:path')
     const root = fileURLToPath(new URL('..', import.meta.url))
@@ -21,10 +23,11 @@ describe('shake to undo on the iPhone (#921)', () => {
         const p = join(dir, name)
         if (statSync(p).isDirectory()) { if (!/locales|exercise-names|exercise-desc|instr/.test(name)) walk(p); continue }
         if (!/\.(js|jsx)$/.test(name) || /\.test\./.test(name)) continue
-        if (/devicemotion|DeviceMotionEvent/.test(readFileSync(p, 'utf8'))) hits.push(p)
+        if (/devicemotion|DeviceMotionEvent/.test(readFileSync(p, 'utf8')) && !p.endsWith(join('lib', 'shake.js'))) hits.push(p)
       }
     }
     walk(root)
     expect(hits).toEqual([])
+    expect(readFileSync(join(root, 'lib', 'shake.js'), 'utf8')).not.toMatch(/undo/i)
   })
 })

@@ -50,6 +50,9 @@ Open `exercises/<id>.json` (the browse pages link straight to it) and press the 
 - **hold** (optional): `true` for an exercise that is only ever held, never repeated: a plank, a
   wall sit, a lever, a hang. Added to a workout or a routine, it starts as a timed hold. Leave it
   out when the exercise moves (a plank with taps, a Pallof press).
+- **assisted** (optional): `true` when the weight logged is help, not load (a cable or counterweight
+  that lifts part of you), so less is harder and progression goes down. A leverage machine with
+  "assisted" in its name is read that way already; anything else needs this.
 - **track** (optional): `"distance"` for a carry, a sled push or drag, or a sprint: done over a
   distance, so it starts as metres per set with a load (the lifter can still switch it to reps or
   time). Never together with `hold`.
@@ -84,7 +87,7 @@ partial work is welcome. Translate the name and as much of the steps as you like
 }
 ```
 
-Languages: `ar bn cs da de es fa fr hi hu it ko pl pt pt-BR ru sv th tr uk zh zh-TW` (the app's languages).
+Languages: `ar bn cs da de es fa fr hi hu it ja ko pl pt pt-BR ru sv th tr uk zh zh-TW` (the app's languages).
 Names follow the language's own conventions. German capitalises nouns; the others are stored
 lowercase like English.
 

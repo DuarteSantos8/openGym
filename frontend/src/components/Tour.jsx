@@ -21,7 +21,7 @@ import { scheduleModeOf } from '../lib/rotation.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import {
   useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
-  openTour, closeTour, placeCard, visiblePart, routeOf, reached, passOver, TUTORIALS, TUTORIAL_COPY, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID,
+  openTour, closeTour, placeCard, visiblePart, aboveBar, routeOf, reached, passOver, TUTORIALS, TUTORIAL_COPY, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID,
 } from '../lib/tour.js'
 import { beginWorkout } from '../sheets.jsx'
 import { Button } from './ui.jsx'
@@ -46,7 +46,7 @@ const COPY = {
   tick: () => [t('Tick it off'), t('Done with a set? Tick it. Go on, try it.')],
   rest: () => [t('Catch your breath'), t('The rest timer starts by itself. Add time, or skip it if you feel heroic.')],
   swipe: () => [t('Swipe a set'), t('Swipe a set sideways to copy or remove it. Its number opens even more.')],
-  more: () => [t('The ⋯ menu'), t('Workout settings, layouts, notes and extra exercises hide in here.')],
+  more: () => [t('The ⋯ menu'), t('Layouts live in here: one exercise per page, or the whole workout as a list. Notes, extra exercises and workout settings too.')],
   finish: () => [t('Finish line'), t('Finish saves the session and moves your weights along. This practice one just quietly disappears.')],
   'go-stats': () => [t('Your progress'), t('Back home, practice over. Stats is where the gains pile up. Tap it.')],
   stats: () => [t('Your numbers'), t('Workouts, streaks and everything you’ve lifted. It fills up as you train.')],
@@ -259,6 +259,13 @@ function viewBand(insets) {
 
 // The band as visiblePart reads it: its top and bottom edges.
 const bandBox = b => ({ top: b.top, bottom: b.vh - b.bottom, vw: b.vw })
+// For a page element, the band ends where the tab bar starts (a row behind it is hidden).
+function bandFor(el, b) {
+  const bar = document.getElementById('tabbar')
+  if (!el || !bar || bar.contains(el) || el.closest('#modal-root')) return bandBox(b)   // sheets sit above the bar
+  const r = bar.getBoundingClientRect()
+  return aboveBar(bandBox(b), r.height > 0 ? r.top : null)
+}
 
 // Tab stays inside the card unless the stop hands the screen over; Escape closes.
 function useCardKeys(cardRef, onEscape, trap = true) {
@@ -405,7 +412,7 @@ function Run({ at, flow = 'tour' }) {
       // Not there after all: an optional stop is passed over, any other one speaks from the middle.
       if (!el && step.anchor && step.optional) { go(dirRef.current); return }
       anchorRef.current = el
-      if (el && !visiblePart(el.getBoundingClientRect(), bandBox(viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+      if (el && !visiblePart(el.getBoundingClientRect(), bandFor(el, viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
       shownAt.current = Date.now()
       setReadyAt(i)
     }
@@ -426,7 +433,7 @@ function Run({ at, flow = 'tour' }) {
       else if (!el && step.anchor) el = anchorRef.current = findAnchor(step.anchor)
       const view = viewBand(insets)
       const r = el ? el.getBoundingClientRect() : null
-      const vis = r ? visiblePart(r, bandBox(view)) : null
+      const vis = r ? visiblePart(r, bandFor(el, view)) : null
       const now = Date.now()
       if (el && !vis && now - lastScroll > 350 && now - lastFix > 700) {
         lastFix = now

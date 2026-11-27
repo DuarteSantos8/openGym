@@ -3,7 +3,8 @@
 // test/snapshot.json). From there the watch is driven with its own buttons: START starts today's
 // routine, START logs a set and the rest begins, MENU (UP held) opens the workout menu with Finish.
 // Events the watch sends stay in its outbox (Link.wired() is false here). Every 2 s the memory in
-// use goes to the console (monkeydo's output: "mem <used> <peak> <total>").
+// use goes to the console (monkeydo's output: "mem <used> <peak> <total>"). With SIM_PHONE it also
+// plays the phone's side of a workout (sim/phone.mc.in, SimPhone).
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
@@ -18,8 +19,9 @@ module Sim {
         G.state = Core.normalize(null);
         G.ended = null;
         if (!SimData.none()) {
-            Core.applySnapshot(G.state, SimData.snapshot());
+            Core.applySnapshot(G.state, SimPhone.first(SimData.snapshot()));
         }
+        SimPhone.begin();
         G.save();
         timer = new Timer.Timer();
         timer.start(new Lang.Method(Sim, :mem), 2000, true);
@@ -38,6 +40,7 @@ module Sim {
             Core.followRest(G.state, { "restAt" => Core.nowMs(), "restPaused" => true, "restLeft" => 42 });
             WatchUi.requestUpdate();
         }
+        SimPhone.turn();
     }
     var paused = false;
 }

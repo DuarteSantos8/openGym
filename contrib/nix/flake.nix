@@ -84,7 +84,7 @@
               "missing"
           }"
 
-          # Verify nginx is disabled by default (system uses Caddy)
+          # nginx stays off by default: the module leaves services.nginx to the system
           echo "services.nginx.enable (default) = ${if nginxEnabled then "true" else "false"}"
 
           # Verify the optional managed nginx vhost gets configured

@@ -2,6 +2,7 @@
 <!-- openGym on Wear OS, bn. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">ফোন অ্যাপে জন্মসাল যোগ করুন</string>
+    <string name="add_session_note">সেশন নোট যোগ করুন</string>
     <string name="add_set">সেট যোগ করুন</string>
     <string name="add_short">যোগ করুন</string>
     <string name="added_weight">অতিরিক্ত ওজন</string>
@@ -9,14 +10,28 @@
     <string name="all_sets_done">সব সেট শেষ</string>
     <string name="all_synced">সব সিঙ্ক হয়েছে</string>
     <string name="allow">অনুমতি দিন</string>
+    <string name="archived_stay_on_phone">আর্কাইভ করা রুটিন আপনার ফোনেই থাকে।</string>
     <string name="avg">গড়</string>
     <string name="band_over">%1$d ও বেশি</string>
     <string name="band_to">%1$d থেকে %2$d</string>
     <string name="band_under">%1$d এর কম</string>
     <string name="body_weight">শরীরের ওজন</string>
     <string name="bodyweight">শরীরের ওজন</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">ক্যালোরি</string>
     <string name="cancel">বাতিল</string>
+    <string name="checkin_continue">চালিয়ে যান</string>
+    <string name="checkin_energy">শক্তি</string>
+    <string name="checkin_energy_hi">উদ্যমে ভরপুর</string>
+    <string name="checkin_energy_lo">শেষ জ্বালানিতে</string>
+    <string name="checkin_skip">আজকের জন্য বাদ দাও</string>
+    <string name="checkin_sleep">ঘুম</string>
+    <string name="checkin_sleep_hi">মরার মতো ঘুমিয়েছি</string>
+    <string name="checkin_sleep_lo">প্রায় ঘুমাইনি</string>
+    <string name="checkin_sore">পেশির ব্যথা</string>
+    <string name="checkin_sore_hi">সব জায়গায় ব্যথা</string>
+    <string name="checkin_sore_lo">কোথাও ব্যথা নেই</string>
+    <string name="checkin_title">আজ কেমন আছ?</string>
     <string name="complication_desc">এখন পর্যন্ত আপনার সেট, বা আপনার স্ট্রিক।</string>
     <string name="continue_workout">ওয়ার্কআউট চালিয়ে যান</string>
     <string name="crown_hint">বদলাতে ক্রাউন ঘোরান।</string>
@@ -26,6 +41,7 @@
     <string name="drop_set">ড্রপ সেট</string>
     <string name="drop_tag">ড্রপ</string>
     <string name="edit">এডিট</string>
+    <string name="edit_session_note">সেশন নোট এডিট করুন</string>
     <string name="effort">পরিশ্রম</string>
     <string name="ended_on_phone">ফোনে শেষ হয়েছে</string>
     <string name="exercises">ব্যায়াম</string>
@@ -38,6 +54,7 @@
     <string name="heart_rate">হার্ট রেট</string>
     <string name="hold">ধরে রাখুন</string>
     <string name="hold_to_finish">শেষ করতে চেপে ধরুন</string>
+    <string name="hours">ঘণ্টা</string>
     <string name="how_hard">সেটটি কতটা কঠিন ছিল?</string>
     <string name="hr_avg_max">গড় %1$d · সর্বোচ্চ %2$d</string>
     <string name="hr_why">প্রতিটি সেটে পালস দেখতে হার্ট রেটের অনুমতি দিন।</string>
@@ -61,10 +78,12 @@
     <string name="media_quieter">আস্তে</string>
     <string name="media_title">গান</string>
     <string name="min">সর্বনিম্ন</string>
+    <string name="min_minutes">মিনিট</string>
     <string name="more">বেশি</string>
     <string name="muscles">পেশি</string>
     <string name="n_more">+%1$d আরও</string>
     <string name="n_sets">%1$s সেট</string>
+    <string name="new_record">নতুন রেকর্ড</string>
     <string name="next_set_btn">পরের সেট</string>
     <string name="no_age_set">বয়স দেওয়া নেই</string>
     <string name="no_effort_yet">এখনো কোনো পরিশ্রম রেট করা হয়নি</string>
@@ -72,6 +91,8 @@
     <string name="no_sets_yet">এখনো কোনো সেট নেই</string>
     <string name="no_workout">কোনো ওয়ার্কআউট চলছে না</string>
     <string name="none">কিছু না</string>
+    <string name="not_a_watch_body">এটি শুধু Wear OS ঘড়িতে চলে। এখনই আনইনস্টল করবেন না: করলে এই ফোনের ওয়ার্কআউট মুছে যাবে। ফোনের অ্যাপ ফিরে পাওয়ার উপায়: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">এটি ঘড়ির অ্যাপ</string>
     <string name="not_now">এখন না</string>
     <string name="not_synced">এখনো সিঙ্ক হয়নি</string>
     <string name="notif_running">ওয়ার্কআউট চলছে। ফিরে যেতে ট্যাপ করুন।</string>
@@ -79,11 +100,14 @@
     <string name="overview">ওভারভিউ</string>
     <string name="personal_records">রেকর্ড</string>
     <string name="phone_away">ফোন নাগালের বাইরে। আপনার সেট এখানে অপেক্ষা করছে।</string>
+    <string name="phone_connected">ফোন সংযুক্ত</string>
+    <string name="phone_gone">ফোন দূরে</string>
     <string name="phone_out_of_reach">ফোন নাগালের বাইরে</string>
     <string name="previous_set">আগের সেট</string>
     <string name="prs">রেকর্ড</string>
     <string name="quick_checkin">দ্রুত চেক-ইন</string>
     <string name="quick_start">দ্রুত শুরু</string>
+    <string name="records">রেকর্ড</string>
     <string name="remove_set">সেট সরান</string>
     <string name="remove_short">সরান</string>
     <string name="removed">সরানো হয়েছে</string>
@@ -95,6 +119,7 @@
     <string name="routines">রুটিন</string>
     <string name="save">সেভ করুন</string>
     <string name="save_and_start">সেভ করে ওয়ার্কআউট শুরু করুন</string>
+    <string name="saved">সেভ হয়েছে</string>
     <string name="set_menu">সেট মেনু</string>
     <string name="set_of">সেট %1$d / %2$d</string>
     <string name="set_of_tags">সেট %1$d / %2$d, %3$s</string>
@@ -118,7 +143,7 @@
     <string name="today">আজ</string>
     <string name="undo">ফিরিয়ে নিন</string>
     <string name="up_next">এরপর</string>
-    <string name="up_next_set">%1$s, সেট %2$d</string>
+    <string name="up_next_set">%1$s, সেট %2$d/%3$d</string>
     <string name="volume">ভলিউম</string>
     <string name="waiting_sync">সিঙ্কের অপেক্ষায়</string>
     <string name="warmup">ওয়ার্ম-আপ</string>
