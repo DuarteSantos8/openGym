@@ -93,16 +93,15 @@ export default function TabBar({ onStart, onPick }) {
           tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
           were on — the marker is kept in S.active.cur and never moves on its own (#21). The
           glyph is always play: start and resume are one concept, and an exercise is a dumbbell.
-          A live session you stepped away from shows its running time instead of a word, the
-          button still named Resume; a past workout being edited or logged after the fact has no
+          A live session you stepped away from shows its running time alongside its stable
+          Resume label; a past workout being edited or logged after the fact has no
           clock to run. */}
       <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
         onPointerDown={holdStart} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
         onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}
-        aria-current={S.active && cur === 'workout' ? 'page' : undefined}
-        aria-label={running ? t('Resume') : undefined}>
+        aria-current={S.active && cur === 'workout' ? 'page' : undefined}>
         <span className="cir"><Icon name="play" /></span>
-        {running ? <span className="tab-time"><Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></span>
+        {running ? <span className="tab-resume">{t('Resume')} <span className="tab-time" aria-hidden="true"><Elapsed start={S.active.start} pausedAt={S.active.pausedAt} /></span></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
       <Tab active={on('library')} icon="dumbbell" label={t('Library')} onClick={() => switchTab('/library')} tour="tab-library" />
