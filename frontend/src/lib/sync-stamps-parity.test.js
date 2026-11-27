@@ -308,6 +308,32 @@ describe('nutrition amount groups merge atomically on client and API', () => {
     }
   })
 
+  it('preserves the opaque future portion across mixed-schema merge orders and replay', () => {
+    const legacyG = { id: 'r', amountG: 100, _ts: 10, note: 'retain me' }
+    const legacyMl = { id: 'r', schemaVersion: 0, amountMl: 200, _ts: 20 }
+    const future = { id: 'r', schemaVersion: 2, _ts: 3, nextAmount: 'opaque' }
+    const futureEdit = { ...future, amountMl: 'future representation', _ts: 7 }
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      for (const copies of [[legacyG, legacyMl, future], [legacyMl, future, futureEdit]]) {
+        const [a, b, c] = copies.map(row => [row])
+        const latest = copies.includes(futureEdit) ? futureEdit : future
+        const reference = merge(merge(a, b), c)
+        for (const [x, y, z] of [[a,b,c],[a,c,b],[b,a,c],[b,c,a],[c,a,b],[c,b,a]]) {
+          expect(merge(x, merge(y, z))).toEqual(reference)
+          expect(merge(merge(x, y), z)).toEqual(reference)
+          expect(merge(reference, x)).toEqual(reference)
+        }
+        expect(reference[0]).toMatchObject({ schemaVersion: 2, nextAmount: 'opaque' })
+        expect(reference[0]).not.toHaveProperty('amountG')
+        if (latest === futureEdit) expect(reference[0].amountMl).toBe(latest.amountMl)
+        else {
+          expect(reference[0]).not.toHaveProperty('amountMl')
+          expect(reference[0].note).toBe('retain me')
+        }
+      }
+    }
+  })
+
   it('converges after independent edits to a common amount, serving and dimension', () => {
     const base = { nutritionEntries: [food({ amountG: 50, customField: 'kept' })] }
     stampOptionalCollections({}, base, 1)

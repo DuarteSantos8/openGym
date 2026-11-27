@@ -199,3 +199,4 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `api/sync-stamps.js`, `frontend/src/lib/sync-merge.js`, `frontend/src/lib/sync-stamps-parity.test.js` | `next/EP06-nutrition-sync-review` | Sync | Resolve nutrition serving and amount fields together on browser and API. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP06-nutrition-sync-review` | Nutrition | Explain when a smaller export is needed to fit the account sync limit. |
 | `frontend/e2e/cloud/account.e2e.mjs` | `next/EP19-two-tab-guest-adoption` | E2E | Save the tenth guest workout and its photo in another tab, then reopen the photo from signed-out History offline. |
+| `api/sync-stamps.js`, `frontend/src/lib/sync-merge.js`, `frontend/src/lib/sync-stamps-parity.test.js` | `next/EP06-portion-settle-all` | Sync | Preserve future portion fields and their clocks when a legacy copy arrives. |

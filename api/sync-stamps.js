@@ -98,10 +98,22 @@ function settleAmountGroup(a, b, out) {
   // Any exception lets the field merge mix members of different copies, and then the result
   // depends on which device synced first. The newest portion wins whole; a malformed portion is
   // kept as it is only while it is the newest, and is never repaired field by field.
-  // Legacy rows (schemaVersion omitted or 0, DATA_CONTRACTS.md) are the same portion shape. Only a
-  // later, unknown schema keeps the field merge, since its amount fields may mean something else.
+  // Omitted/zero versions share this shape. Two unknown versions retain ordinary field merge.
   const known = x => x.schemaVersion === 1 || x.schemaVersion === 0 || x.schemaVersion === undefined
-  if (!known(a) || !known(b)) return
+  const knownA = known(a), knownB = known(b)
+  if (!knownA || !knownB) {
+    if (knownA === knownB) return
+    // An older writer cannot migrate a future portion. Carry its schema, fields and
+    // clocks intact so replaying an old quantity cannot hide a later future edit.
+    const future = knownA ? b : a
+    for (const key of ['schemaVersion', ...amountFields]) {
+      if (Object.hasOwn(future, key)) out[key] = clone(future[key])
+      else delete out[key]
+      if (Object.hasOwn(future._f, key)) out._f[key] = future._f[key]
+      else delete out._f[key]
+    }
+    return
+  }
   // A change or removal of any member dates the whole portion, including after
   // earlier merges. Keeping the maximum makes this choice independent of grouping.
   const clock = row => Math.max(...amountFields.map(key => optionalTime(row._f?.[key])))
