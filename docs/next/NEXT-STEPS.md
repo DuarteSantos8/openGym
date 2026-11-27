@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Web image startup (prepared).** The nginx entrypoint can run outside Railway when its environment marker is unset. The ordinary Docker image smoke test covers this case.
+
 - **Nutrition sync and import (09.01a).** Serving and amount fields move together when offline edits merge. Browser and API tests check every ordering of three copies, repeated sync and a legacy import with no creation timestamp. Merging restarts the API.
 - **Guest workout adoption (A5, prepared).** The local Cloud journey covers saving the tenth workout and attaching its photo from another tab, carrying both into the account, and decoding the photo from signed-out History after an offline reload. Hosted desktop and physical phone evidence is recorded separately.
 
