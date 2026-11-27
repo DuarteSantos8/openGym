@@ -15,8 +15,9 @@ struct HomeView: View {
             content
                 .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "")) // the logo says openGym, centred with the rest
         }
-        // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
-        .onLongPressGesture(minimumDuration: 2) { debug = true }
+        // Hidden: a long press on the build line shows what arrived from the phone. It sits on that
+        // line and not on the whole screen, where the press held back every single-finger tap and
+        // Start never fired.
         .sheet(isPresented: $debug) { DebugView() }
     }
 
@@ -42,7 +43,7 @@ struct HomeView: View {
                     }
                     // A workout finished here with the phone away: its sets are still on their way.
                     SyncLine(showSynced: false).padding(.top, 4)
-                    VersionLine()
+                    VersionLine(onLongPress: { debug = true })
                 }
                 .padding(.horizontal, 2)
             }
@@ -61,7 +62,7 @@ struct HomeView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
-                    VersionLine()
+                    VersionLine(onLongPress: { debug = true })
                 }
                 .padding(.horizontal, 6)
             }
@@ -123,6 +124,10 @@ struct LogoMark: View {
 
 /// "openGym 1.4.5 (49)", small at the end of the start screen: which build is on the watch.
 struct VersionLine: View {
+    /// A long press shows what arrived from the phone (animations, sync, heart rate). On the build
+    /// line, not on the whole screen: there it held back every single-finger tap, Start included.
+    var onLongPress: () -> Void = {}
+
     var body: some View {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? ""
@@ -132,6 +137,8 @@ struct VersionLine: View {
             .foregroundStyle(Theme.label3)
             .frame(maxWidth: .infinity)
             .padding(.top, 8)
+            .contentShape(Rectangle())
+            .onLongPressGesture(minimumDuration: 2) { onLongPress() }
             .accessibilityHidden(true)
     }
 }
