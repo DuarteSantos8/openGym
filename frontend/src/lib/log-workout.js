@@ -13,6 +13,7 @@
 // problem to put to the user instead of a workout filed under the wrong lift.
 import { EXIDX, canonicalExId, betterWeight, beatsWeight, isCardio, allExercises } from './exercises.js'
 import { ALL_EQUIPMENT } from './equipment.js'
+import { mergedInto } from './exercise-merge.js'
 import { exerciseCandidates, importId, bpFromName } from './import-csv.js'
 import { bestWeightFor, bestWeightForEntry, workoutVolume, EFFORT } from './history.js'
 import { buildCompletedWorkout } from './finish-workout.js'
@@ -99,6 +100,10 @@ export function createCustomExercise(S, { name, body_part, equipment, descriptio
   const { custom, problem } = newCustomExercise(n, body_part)
   if (problem) return { problems: [{ field: 'body_part', problem }] }
   if (equipment != null && !ALL_EQUIPMENT.includes(equipment)) return { problems: [{ field: 'equipment', problem: `one of ${ALL_EQUIPMENT.join(', ')}` }] }
+  // The id comes from the name it was first made under: one renamed or merged away since still holds it.
+  const into = mergedInto(S, custom.id)
+  const held = (S.customEx || []).some(c => c?.id === custom.id) ? custom.id : into !== custom.id ? into : null
+  if (held) return { problems: [{ field: 'name', problem: 'an exercise first made under this name is still yours, renamed or merged; use its id', candidates: [{ id: held, name: allExercises(S).find(e => e.id === held)?.n ?? null }] }] }
   if (equipment != null) custom.eq = equipment
   const desc = String(description ?? '').trim().slice(0, 1000)
   if (desc) custom.desc = desc

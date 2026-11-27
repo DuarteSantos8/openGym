@@ -443,4 +443,14 @@ describe('create_exercise', () => {
     expect(createCustomExercise(S, { name: '   ' }).problems[0].field).toBe('name')
     expect(JSON.stringify(S)).toBe(before)
   })
+  it('refuses a name whose exercise was renamed or merged since, which still holds its id', () => {
+    const S = { customEx: [] }
+    const first = createCustomExercise(S, { name: 'Tindeq', body_part: 'lower arms' }).exercise
+    S.customEx[0].n = 'Tindeq max'
+    expect(createCustomExercise(S, { name: 'Tindeq', body_part: 'back' }).problems[0].candidates).toEqual([{ id: first.id, name: 'Tindeq max' }])
+    S.customEx = []
+    S.exMerged = { [first.id]: { into: '0652' } }
+    expect(createCustomExercise(S, { name: 'Tindeq', body_part: 'lower arms' }).problems[0].candidates[0].id).toBe('0652')
+    expect(S.customEx).toEqual([])
+  })
 })

@@ -68,7 +68,7 @@ the server's stderr.
 
 ## Tools
 
-Eleven read-only tools, and four that write:
+Eleven read-only tools, and five that write:
 
 | Tool | What it answers |
 |---|---|
