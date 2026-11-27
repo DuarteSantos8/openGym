@@ -14,7 +14,7 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, machineAllows } from './library.js';
+import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, machineAllows, LIBRARY } from './library.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
@@ -147,6 +147,41 @@ const INVERTED_RANGE = where =>
 
 /* =============================== created plans =============================== */
 
+/* What else a custom exercise of the Coach's carries (#1250): its equipment, its main and
+ * supporting muscles and other names for it. It used to arrive with a name only, though the
+ * person's own table said what it needs and what it trains. The same gate as a plan file's
+ * custom exercise (frontend lib/plan-share.js cleanCustom), hand-copied because the core cannot
+ * import the frontend (the parity test is frontend/src/lib/coach-custom-meta.test.js): only muscles
+ * the map can draw, a supporting muscle never repeating a main one, equipment the app knows.
+ * An empty field stays absent, and mergePlan runs cleanCustom over it once more. */
+export const CUSTOM_MUSCLES = new Set([
+  'trapezius', 'front-delts', 'side-delts', 'rear-delts', 'chest', 'lats', 'upper-back', 'serratus',
+  'biceps', 'triceps', 'forearm',
+  'abs', 'obliques', 'lower-back',
+  'gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors',
+  'calves', 'tibialis',
+  'deltoids', 'cardiovascular system'
+]);
+let equipment = null;
+export const customEquipment = () => equipment || (equipment = new Set([
+  ...LIBRARY.map(e => e.eq).filter(Boolean), 'clubbell', 'macebell', 'bench', 'adjustable bench', 'pull-up bar'
+]));
+const muscles = v => [...new Set((Array.isArray(v) ? v : []).map(m => String(m).toLowerCase().trim()).filter(m => CUSTOM_MUSCLES.has(m)))].slice(0, 6);
+function customMeta(c) {
+  const o = {};
+  const eq = isStr(c.eq) ? c.eq.toLowerCase().trim() : '';
+  if (customEquipment().has(eq)) o.eq = eq;
+  const prim = muscles(c.primaries);
+  const sec = muscles(c.secondaries).filter(m => !prim.includes(m));
+  if (prim.length) o.primaries = prim;
+  if (sec.length) o.secondaries = sec;
+  // Named in the current muscle model, so the 1.4.5 split is not applied to it a second time.
+  if (prim.length || sec.length) o.mv = 2;
+  const aliases = (Array.isArray(c.aliases) ? c.aliases : []).filter(isStr).map(a => clampStr(a.trim(), 60)).slice(0, 5);
+  if (aliases.length) o.aliases = aliases;
+  return o;
+}
+
 /**
  * Validate a creation bundle into something `mergePlan` can consume unchanged.
  * Returns { ok, bundle } or { ok:false, errors }.
@@ -172,7 +207,7 @@ export function validatePlan(data, ctx = {}) {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : [])
     .filter(c => c && safeId(c.id) && !libraryHas(c.id) && isStr(c.n))
     .slice(0, 20)
-    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampText(c.desc, 1000) } : {}) }));
+    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampText(c.desc, 1000) } : {}), ...customMeta(c) }));
   // Ids the plan may name: invented in this same answer, or already the user's own.
   const proposedIds = new Set([...customEx.map(c => c.id), ...(ctx.customIds || [])]);
 

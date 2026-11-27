@@ -5,7 +5,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { nameIn } from '../lib/a11y-name.js'
-import { fmtNum, exerciseNameText } from '../lib/format.js'
+import { fmtNum, fmtDate, exerciseNameText } from '../lib/format.js'
 import { dateLocale } from '../lib/i18n-core.js'
 
 // A bodyweight ratio to two decimals whatever the weight decimals are set to: 1.25 is not 1.3.
@@ -48,6 +48,11 @@ export function StrengthLevelBlock({ exId }) {
       <div className="small muted">{t('{0} × body weight', fmtRatio(lv.ratio))}</div>
     </div>
     <LevelBar level={lv.level} />
+    {/* What the level is read from: that lift, that day, the body weight then (owner 2026-11-24). */}
+    {lv.d && <div className="small dim slevel-from" data-strength-from>
+      {t('Graded from {0} on {1}, at {2} body weight.', weightOf(lv, lv.w, S.unit) + ' × ' + lv.r, fmtDate(lv.d, true), fmtNum(lv.bw) + ' ' + S.unit)}
+      {lv.approx && <> {t('No weigh-in within a month of it, so the nearest one stands in.')}</>}
+    </div>}
     <div className="small muted">{lv.next
       ? t('{0} from an estimated 1RM of {1}', t(LEVEL_NAME[lv.next.name]), weightOf(lv, lv.next.weight, S.unit))
       : t('Top of the table. Take a bow.')}</div>

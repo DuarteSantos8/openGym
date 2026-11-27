@@ -12,6 +12,9 @@
 // The labels are existing strings, translated where they are shown (t(label)). `needs` is the
 // module (Settings → Modules) a card belongs to: with it off the card is not offered at all.
 
+import { recapPeriod } from './recap-period.ts'
+import { isOn } from './modules.js'
+
 export const PAGES = {
   home: [
     { id: 'recap', label: 'Your week' },
@@ -37,7 +40,33 @@ export const PAGES = {
     { id: 'strength', label: 'Strength levels', group: 'lifts', needs: 'strength' },
     { id: 'effort', label: 'Effort', group: 'effort', needs: 'effort' },
     { id: 'time', label: 'Time per exercise', group: 'effort' },
+    // The list of pages behind Stats (Journal, Tools, …): under Body, or at the end of Lifts when
+    // the Body module is off. Its rows can be switched off one by one too (STATS_LINKS).
+    { id: 'links', label: 'More', group: S => (isOn(S, 'body') ? 'body' : 'lifts') },
   ],
+}
+
+/** The part of the page a card sits in; a few follow the profile (the More list follows Body). */
+export const groupOf = (c, S) => (typeof c?.group === 'function' ? c.group(S) : c?.group)
+
+// The rows of Stats' More list, each one yours to keep or drop (owner 2026-11-24). Stored as the
+// ids switched off, S.statsLinksOff, so a row new in a later version shows up on its own.
+export const STATS_LINKS = [
+  { id: 'measurements', label: 'Body measurements', needs: 'body' },
+  { id: 'photos', label: 'Progress photos', needs: 'body' },
+  { id: 'balance', label: 'Structural balance' },
+  { id: 'journal', label: 'Journal' },
+  { id: 'tools', label: 'Tools' },
+  { id: 'month', label: 'Your month', needs: 'motivation' },
+  { id: 'year', label: 'Your year', needs: 'motivation' },
+]
+const linksOff = S => list(S?.statsLinksOff)
+/** Whether a row of the More list is kept. */
+export const linkShown = (S, id) => !linksOff(S).includes(id)
+/** Keeps or drops a row of the More list. Mutates the draft `s`. */
+export function setLinkShown(s, id, on) {
+  const off = linksOff(s).filter(x => x !== id)
+  s.statsLinksOff = on ? off : [...off, id]
 }
 
 export const GROUP_LABELS = { overview: 'Overview', body: 'Body', lifts: 'Lifts', effort: 'Effort' }
@@ -93,14 +122,14 @@ export function arrange(S, page, ids) {
 /** True when every card of this part of the page is hidden: the part and its index entry go too. */
 export function groupHidden(S, page, group) {
   const { hidden } = layoutOf(S, page)
-  const mine = (PAGES[page] || []).filter(c => c.group === group)
+  const mine = (PAGES[page] || []).filter(c => groupOf(c, S) === group)
   return mine.length > 0 && mine.every(c => hidden.includes(c.id))
 }
 
 /** True when the person changed anything on this page. */
 export function isCustom(S, page) {
   const l = layoutOf(S, page)
-  return l.order.length > 0 || l.hidden.length > 0 || l.folded.length > 0
+  return l.order.length > 0 || l.hidden.length > 0 || l.folded.length > 0 || (page === 'stats' && linksOff(S).length > 0)
 }
 
 // The writers below change the draft `s` in place (useStore's update(s => …)).
@@ -110,7 +139,35 @@ function slot(s, page) {
   return l
 }
 
+// Some Home cards also have their own × that puts them away for a while: the challenges until next
+// month (S.challengesHidden = 'YYYY-MM'), the recovery tip for today (S.recoveryHintDay), the week
+// or month recap until the next one (S.recapSeen, the recap's key; Discord 2026-11-24). Such a
+// card drew nothing, so the sheet left it out and nothing brought it back (Discord 2026-11-20).
+// The sheet now lists it as hidden, says until when, and Show clears the ×.
+const pad2 = n => String(n).padStart(2, '0')
+const monthOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`
+const dayOf = d => `${monthOf(d)}-${pad2(d.getDate())}`
+const DISMISS = {
+  home: {
+    recap: { on: (S, now) => !!S.recapSeen && S.recapSeen === recapPeriod(S, dayOf(now))?.key, clear: s => { s.recapSeen = null }, note: 'Hidden until the next recap.' },
+    challenges: { on: (S, now) => S.challengesHidden === monthOf(now), clear: s => { s.challengesHidden = null }, note: 'Hidden until next month.' },
+    recovery: { on: (S, now) => S.recoveryHintDay === dayOf(now), clear: s => { s.recoveryHintDay = null }, note: 'Hidden for today. Back tomorrow.' },
+  },
+}
+
+/** The note (an English string, t() it) for a card put away with its own ×, or null. */
+export function dismissedNote(S, page, id, now = new Date()) {
+  const d = DISMISS[page]?.[id]
+  return d && S && d.on(S, now) ? d.note : null
+}
+
+/** Brings back every card of the page that its own × put away. Mutates the draft `s`. */
+export function clearDismissed(s, page, id) {
+  for (const [k, d] of Object.entries(DISMISS[page] || {})) if (id == null || id === k) d.clear(s)
+}
+
 export function setCardState(s, page, id, state) {
+  if (state !== 'hidden') clearDismissed(s, page, id)
   const l = slot(s, page)
   l.hidden = l.hidden.filter(x => x !== id)
   l.folded = l.folded.filter(x => x !== id)
@@ -128,7 +185,7 @@ export function moveCard(s, page, id, dir) {
   const all = orderedCards(s, page)
   const me = all.find(c => c.id === id)
   if (!me) return false
-  const peers = all.filter(c => c.group === me.group)
+  const peers = all.filter(c => groupOf(c, s) === groupOf(me, s))
   const i = peers.indexOf(me), other = peers[i + dir]
   if (!other) return false
   const ids = all.map(c => c.id)
@@ -154,8 +211,10 @@ export function placeCard(s, page, id, targetId) {
 }
 
 export function resetLayout(s, page) {
+  if (page === 'stats') delete s.statsLinksOff
   if (!s.layout || typeof s.layout !== 'object') return
   const { [page]: _gone, ...rest } = s.layout
   s.layout = rest
   for (const c of PAGES[page] || []) if (c.legacy) s[c.legacy] = true
+  clearDismissed(s, page)
 }

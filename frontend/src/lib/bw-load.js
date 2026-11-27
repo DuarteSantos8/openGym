@@ -4,7 +4,7 @@
 // progression keep reading the logged load, so a weigh-in never turns into a fake record and
 // an old pull-up stays comparable with today's.
 import { exerciseOf, isAssisted } from './exercises.js'
-import { weighInAt } from './bodyweight.js'
+import { bodyweightAt } from './bodyweight.js'
 
 export const countsBodyweight = S => S?.volumeBodyweight === true
 
@@ -50,32 +50,22 @@ export function bodyLoadOf(idOrEx) {
   return hit ? { share: hit[1], assisted } : null
 }
 
-// The weigh-ins sorted on their time axis, cached per list so a lifetime total over years of
-// sessions does one sort, not one per session.
-const sortedCache = new WeakMap()
-function sortedWeighIns(list) {
-  const hit = sortedCache.get(list)
-  if (hit && hit.n === list.length) return hit.pts
-  const pts = list.filter(b => Number(b?.w) > 0 && b?.d).map(b => ({ t: weighInAt(b), w: Number(b.w) })).sort((a, b) => a.t - b.t)
-  sortedCache.set(list, { n: list.length, pts })
-  return pts
-}
-
 /**
- * The body weight a session was done at: the one checked in for it (`w.bw`), else the weigh-in
- * nearest its start, before or after (a weigh-in synced late still lands on it). 0 with none.
+ * The body weight a session was done at: the one checked in for it (`w.bw`), else read off the
+ * weigh-in log at its start (between two weigh-ins, the line between them; else the nearest one,
+ * before or after, so a weigh-in synced late still lands on it). 0 with none.
  */
 export function bodyweightFor(w, S) {
   const own = Number(w?.bw)
   if (own > 0) return own
-  const pts = Array.isArray(S?.bodyweight) ? sortedWeighIns(S.bodyweight) : []
-  if (!pts.length) return 0
+  const log = Array.isArray(S?.bodyweight) ? S.bodyweight : []
   // When it started; a session with no start time sits at noon of its day, as workoutAt has it
-  // (lib/history.js, which imports this file).
+  // (lib/history.js, which imports this file). Between two weigh-ins, the line between them; else
+  // the nearest, however far (lib/bodyweight.js bodyweightAt): a pull-up always moves something.
   const at = Number.isFinite(w?.start) ? w.start : new Date(w?.d + 'T12:00:00').getTime()
-  if (!Number.isFinite(at)) return pts[pts.length - 1].w
-  let lo = 0, hi = pts.length - 1
-  while (lo < hi) { const mid = (lo + hi) >> 1; if (pts[mid].t < at) lo = mid + 1; else hi = mid }
-  const prev = pts[lo - 1]
-  return prev && at - prev.t <= pts[lo].t - at ? prev.w : pts[lo].w
+  if (!Number.isFinite(at)) {
+    const pts = log.filter(b => b?.d && Number(b.w) > 0)
+    return pts.length ? Number(pts.reduce((a, b) => (String(b.d) >= String(a.d) ? b : a)).w) : 0
+  }
+  return bodyweightAt(log, at, Infinity) || 0
 }

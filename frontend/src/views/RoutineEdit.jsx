@@ -164,20 +164,30 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
         if (gestureRef.current === gesture) finish(gesture, false)
         return
       }
-      const geometry = unitGeometry(list, exercisesRef.current)
-      if (!geometry) { finish(gesture, false); return }
+      // Every unit's place as it was when the row lifted, in the list's own coordinates: the units
+      // it passes slide out of its way, and measuring them again would read their slide as a move
+      // (a tall superset that slid past could then not be passed back, owner 2026-11-24).
       const listRect = list.getBoundingClientRect()
-      const remaining = geometry.filter(unit => unit.position !== gesture.sourcePosition)
-      const probeY = clamp(y, listRect.top, listRect.bottom)
+      const base = listRect.top
+      const remaining = gesture.geometry.filter(unit => unit.position !== gesture.sourcePosition)
       const moved = Math.hypot(x - gesture.startX, y - gesture.startY) > ROUTINE_DRAG_SLOP
-      const slot = moved ? remaining.reduce((count, unit) => count + (probeY > unit.center ? 1 : 0), 0) : gesture.sourcePosition
-      const rawDelta = y - gesture.grabOffset - gesture.sourceTop
-      const deltaY = clamp(rawDelta, listRect.top - gesture.sourceTop, listRect.bottom - gesture.sourceBottom)
+      const first = gesture.geometry[0], last = gesture.geometry[gesture.geometry.length - 1]
+      const height = gesture.sourceBottom - gesture.sourceTop
+      // It follows the finger, with a soft edge past the first and the last unit (as on every list).
+      const raw = y - base - gesture.grabOffset - gesture.sourceTop
+      const low = first.top - gesture.sourceTop, high = last.bottom - height - gesture.sourceTop
+      const band = v => (v * 60) / (60 + Math.abs(v))
+      const deltaY = raw < low ? low + band(raw - low) : raw > high ? high + band(raw - high) : raw
+      // The held unit's middle decides, as on every other list: it lands past each unit whose
+      // middle it has crossed (where the finger has it, so the soft edge never keeps it short).
+      const held = gesture.sourceTop + height / 2 + raw
+      const slot = moved ? remaining.reduce((count, unit) => count + (held > unit.center ? 1 : 0), 0) : gesture.sourcePosition
       if (slot !== gesture.targetSlot) vibrate(6)
       gesture.lastX = x; gesture.lastY = y; gesture.targetSlot = slot
       // The units it passes make room: they slide by its height plus the gap between rows.
+      const geometry = gesture.geometry
       const gap = geometry.length > 1 ? Math.max(0, geometry[1].top - geometry[0].bottom) : 0
-      const room = gesture.sourceBottom - gesture.sourceTop + gap
+      const room = height + gap
       setDrag({ first: gesture.sourceUnit[0], last: gesture.sourceUnit.at(-1), deltaY, source: gesture.sourcePosition, slot, room })
       if (schedule && frame == null) frame = window.requestAnimationFrame(runAutoScroll)
     }
@@ -200,7 +210,10 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       if (!source) { finish(gesture, false); return }
       gesture.active = true; gesture.timer = null
       gesture.sourcePosition = source.position; gesture.sourceUnit = source.unit
-      gesture.sourceTop = source.top; gesture.sourceBottom = source.bottom
+      // In the list's coordinates from here on: a scroll under the finger moves the list, not the plan.
+      const base = list.getBoundingClientRect()?.top || 0
+      gesture.geometry = geometry.map(unit => ({ ...unit, top: unit.top - base, bottom: unit.bottom - base, center: unit.center - base }))
+      gesture.sourceTop = source.top - base; gesture.sourceBottom = source.bottom - base
       gesture.grabOffset = gesture.lastY - source.top; gesture.targetSlot = source.position
       gesture.scrollHost = scrollHostFor(list)
       gesture.captureTarget = gesture.downTarget

@@ -102,7 +102,7 @@ if you want to try it before installing anything.
   sign-in can be switched on per instance; new devices pair with a one-time code or QR.
 - Two devices editing at once merge field by field instead of overwriting each other (see
   [sync](#how-sync-works)).
-- Import from FitNotes, Strong, Hevy (CSV or API key) and Apple Health weight exports. Export
+- Import from FitNotes, Strong, Hevy (CSV or API key), Anneal and Apple Health weight exports. Export
   everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.

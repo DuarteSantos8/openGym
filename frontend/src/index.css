@@ -554,6 +554,10 @@ h4.sec{
 .lay-row.off .lay-name{color:var(--label-2)}
 .lay-row .seg{margin-inline-start:0}
 @media (hover:hover) and (pointer:fine){.lay-row{padding-inline-start:6px}.lay-row .seg{margin-inline-start:38px}}
+.lay-subs{margin-top:10px;display:flex;flex-direction:column;border-top:var(--hair,.5px) solid var(--separator)}
+.lay-sub{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;font-size:15px;color:var(--label)}
+.lay-sub+.lay-sub{box-shadow:inset 0 .5px 0 var(--separator)}
+@media (hover:hover) and (pointer:fine){.lay-subs{margin-inline-start:38px}}
 .lay-move{display:contents}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
@@ -651,12 +655,21 @@ h4.sec{
    title column was left its longest word and stacked "Rest / between / warm-ups" one word a line
    (design review 1.4.5). */
 .lrow:has(.lrow-s)>.lrow-v{max-width:44%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
+/* Larger text and up (lib/display-prefs.js): a value wraps onto two lines rather than end in "…". */
+.text-big .lrow-v{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
+/* …and a picker row's value goes under its title, the way iOS lays out rows at large text sizes,
+   instead of leaving "New exercises start with" a column a word wide. */
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v){display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-i{grid-column:1;grid-row:1 / span 2}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-m{grid-column:2;grid-row:1}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-v{grid-column:2;grid-row:2;max-width:none;text-align:start}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-c{grid-column:3;grid-row:1 / span 2}
 /* Still too tight on a phone when the value is words, not a number: in German "Wie die
    Arbeitssätze" beside "Pause vor der nächsten Übung" left the title a narrow column (QA 1.4.5).
    There the value moves under the subtitle, the way Settings' root rows show their preview
    (.sp-root-row below); Row adds .lrow-vlong only to rows with an icon, a subtitle and a long
    worded value. Wider screens keep it beside the title. */
-@media (max-width:430px){
+@media (max-width:440px){
   .lrow.lrow-vlong{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px}
   .lrow.lrow-vlong>.lrow-i{grid-column:1;grid-row:1 / span 2}
   .lrow.lrow-vlong>.lrow-m{grid-column:2;grid-row:1}
@@ -794,34 +807,8 @@ h4.sec{
    standard property last, which is the order a prefixed/standard pair wants — whichever is
    written last wins in the cascade, and that should be the standard name.
 
-   Where backdrop-filter is genuinely unsupported there is no glass either — only the alpha,
-   and the page shows through unblurred, which is the worst of both. Older Android WebViews
-   never had it, and "reduce transparency" accessibility settings drop it. Those surfaces go
-   fully opaque instead. Keep this in sync with the rules above. */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  #tabbar{background:var(--bg-el)}
-  :root[data-theme="light"] #tabbar{background:#f9f9fb}
-  #timer{background:var(--surface-raised)}
-  #toast{background:var(--surface-2)}
-}
-/* The setting itself, read directly. The @supports fallback above only fires where backdrop-filter
-   is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
-   Same opaque fills, on every translucent surface. */
-@media (prefers-reduced-transparency: reduce){
-  .lay-row.held{box-shadow:0 0 0 1px var(--separator)}
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,body::before{-webkit-backdrop-filter:none;backdrop-filter:none}
-  .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
-  .tr-bulk{background:var(--bg-el)}
-  #tabbar{background:var(--bg-el)}
-  :root[data-theme="light"] #tabbar{background:#f9f9fb}
-  #timer{background:var(--surface-raised)}
-  #toast{background:var(--surface-2)}
-  .conn-bar,.whdr.stick,.stats-index,.gl-sticky,body::before{background:var(--bg)}
-  /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
-     darker pill so its white text no longer depends on what the picture shows behind it. */
-  .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
-  .exmedia .gifhint,.exmedia .giftoggle{background:rgba(0,0,0,.8)}
-}
+   The opaque fallbacks for these frosted surfaces (no backdrop-filter support, and Reduce
+   Transparency) sit at the very end of this file: see "translucency fallbacks" there. */
 
 /* ------------------------------------------------------------ week strip -- */
 .week{display:flex;justify-content:space-between;gap:4px}
@@ -1393,7 +1380,69 @@ body.chips-dragging *{cursor:inherit}
    never shrinks. */
 .hdr.whdr-bar{align-items:center;gap:8px;margin:4px 0 12px}
 .whdr-mid{flex:1;min-width:0;text-align:center}
-.whdr-name{font-weight:600;font-size:var(--fs-callout);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.whdr-name{display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--fs-callout)}
+.whdr-title{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The device button (LinkSign.jsx): the ⋯ button's twin. The glow is the status green, never the
+   accent the user picks. One authored moment, the screen waking: the green rises through the watch's
+   screen when it first answers. Everything else is a quiet transition; Live never breathes. All of it
+   keys on data-state, so a re-render or a remount lands in place without replaying. */
+.dev-sign{--lit:var(--green);--warn:var(--orange);--out:cubic-bezier(.16,1,.3,1);transition:background-color var(--med),color var(--med),transform var(--fast)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-sign{--lit:#1f9d48;--warn:#c55300}}
+.dev-sign svg{position:absolute;pointer-events:none;overflow:visible}
+.ds-glyph{inset:0;margin:auto;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ds-body{transition:stroke var(--med),opacity var(--med)}
+.ds-fill{fill:var(--lit);stroke:none;transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform 180ms ease-in,opacity 180ms ease-in}
+.ds-bloom{fill:var(--lit);stroke:none;opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(1.2);transition:opacity 180ms ease-in}
+.ds-clock,.ds-alert{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.6);transition:opacity 100ms ease-in,transform 100ms ease-in}
+.ds-clock{stroke-width:1.2;stroke:var(--label-2)}
+.ds-alert{stroke-width:1.9}
+/* Live: the screen is lit. Back from sleep it brightens in place; waking from nothing (data-wake,
+   set only on a real change) the light opens from the middle of the screen until it fills it, and
+   the glow reaches past it a beat later. */
+.dev-sign[data-state="live"] .ds-fill{transform:none;transition:opacity 420ms var(--out)}
+.dev-sign[data-state="live"] .ds-bloom{opacity:1;transition:opacity 700ms var(--out) 180ms}
+.dev-sign[data-wake] .ds-fill{animation:ds-wake 640ms var(--out)}
+@keyframes ds-wake{from{transform:scale(0)}}
+.dev-sign[data-device="cloud"][data-state="live"] .ds-fill{opacity:.32}
+/* Bluetooth: the rune itself lights up, with a soft glow behind it. */
+.ds-bt-bloom{stroke:var(--lit);stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
+.dev-sign[data-device="bluetooth"][data-state="live"] .ds-rune{stroke:var(--lit);transition:stroke 420ms var(--out)}
+.dev-sign[data-device="bluetooth"][data-state="live"] .ds-bt-bloom{opacity:.75;transition:opacity 700ms var(--out) 120ms}
+/* Earbuds: the heartbeat trace lights up; on the wake it draws itself left to right, then the glow. */
+.ds-trace{opacity:.35}
+.ds-pulse,.ds-pulse-bloom{stroke:var(--lit);stroke-dasharray:1 2;stroke-dashoffset:1.01}
+.ds-pulse-bloom{stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
+.dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse{stroke-dashoffset:0}
+.dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse-bloom{stroke-dashoffset:0;opacity:.75;transition:opacity 700ms var(--out) 120ms}
+.dev-sign[data-device="earbuds"][data-wake] .ds-pulse,.dev-sign[data-device="earbuds"][data-wake] .ds-pulse-bloom{animation:ds-draw 800ms cubic-bezier(.45,0,.25,1)}
+@keyframes ds-draw{from{stroke-dashoffset:1.01}}
+/* Checking: the light swells from the middle and settles back while the first look runs (a still half
+   fill under Reduce Motion). */
+.dev-sign[data-state="checking"] .ds-fill{opacity:.55;animation:ds-look 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.dev-sign[data-state="checking"] .ds-fill{transform:scale(.5)}}
+@keyframes ds-look{0%,100%{transform:scale(.15)}50%{transform:scale(.9)}}
+/* Delayed: the display goes to sleep and shows the time, the way a resting watch does. */
+.dev-sign[data-state="delayed"] .ds-fill{transform:none;opacity:0;transition:opacity 900ms var(--out)}
+.dev-sign[data-state="delayed"] .ds-clock{opacity:1;transform:none;transition:opacity 400ms var(--out) 350ms,transform 400ms var(--out) 350ms}
+/* Nothing linked: the phone, dim. */
+.dev-sign[data-state="none"] .ds-glyph{opacity:.5}
+/* Trouble: the ring draws round the button and the mark settles in; no shake. It leaves faster. */
+.ds-ring{inset:0;width:100%;height:100%;fill:none;stroke:var(--warn);stroke-width:1.5;transform:rotate(-90deg);stroke-dasharray:107.5;stroke-dashoffset:107.5;opacity:0;transition:stroke-dashoffset 220ms ease-in,opacity 220ms ease-in}
+.dev-sign[data-state="trouble"]{background:rgba(255,159,10,.18);background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.dev-sign[data-state="trouble"] .ds-ring{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset 480ms var(--out),opacity 120ms linear}
+.dev-sign[data-state="trouble"] .ds-alert{opacity:1;transform:none;transition:opacity 260ms var(--out) 160ms,transform 360ms var(--out) 160ms}
+/* Devices sheet: a row per link; the state is a glyph and a word, speed a bars glyph and a word. */
+.dev-item+.dev-item{border-top:var(--hair) solid var(--sep)}
+.dev-state,.dev-speed{display:inline-flex;align-items:center;gap:4px;flex:none;font-size:var(--fs-footnote);font-weight:600;color:var(--label-2)}
+.dev-state .icn,.dev-speed .icn{width:16px;height:16px}
+.dev-state.warn{color:var(--orange-ink)}
+/* a link that syncs: its glyph in the button's status green, with the same soft glow; the word keeps the label colour to stay readable */
+.dev-item{--lit:var(--green)}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-item{--lit:#1f9d48}}
+.dev-state.ok .icn,.dev-speed.fast .icn{color:var(--lit);filter:drop-shadow(0 0 3px var(--lit))}
+.dev-bpm{flex:none;font-size:var(--fs-footnote);color:var(--label-2)}
+.dev-note{padding:0 14px 10px 55px}
+.dev-fix{width:auto;min-height:44px;margin:0 14px 12px 55px}
 /* The clock and set count may take a second line: in ru/uk the count is the long half and a
    one-line ellipsis cut exactly the 0/19 the line is there for. */
 .whdr-mid .sub{font-size:var(--fs-footnote);margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
@@ -1542,6 +1591,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wmedia-add:disabled{opacity:.5;cursor:default}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
 .wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-caption);color:var(--label-2);flex:none}
+.wrow-gym{display:flex;align-items:center;gap:4px;min-width:0}
+.wrow-gym .icn{flex:none;font-size:var(--fs-caption)}
 /* A set's own form video (SetVideo.jsx): the film sheet, the badge under a set row, the player
    (inline under the row, or in a sheet), an exercise's strip of videos and two dates side by side. */
 .fv-film{display:flex;flex-direction:column;gap:8px}
@@ -1591,7 +1642,6 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
   display:flex;align-items:center;justify-content:center;background:var(--acc);color:var(--on-acc);font-size:var(--fs-caption2);
 }
-.pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
 .pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
 .pp-img{
   position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;
@@ -1614,6 +1664,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    grid cut into months, each photo with its date on it. */
 .pp-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .pp-actions .btn{min-width:0}
+.pp-actions .pp-wide{grid-column:1 / -1}
+/* Picking photos to compare: the row stays under the top edge (and the status bar) while the grid scrolls (#1315). */
+.pp-stick{position:sticky;top:var(--sat);z-index:20;margin-inline:calc(-1 * var(--pad));padding:8px var(--pad);background:var(--bg)}
 .pp-nudge{display:flex;align-items:center;gap:8px;margin:0 2px 14px;font-size:var(--fs-footnote);color:var(--label-2);line-height:var(--lh-small)}
 .pp-nudge .icn{flex:none;color:var(--acc-ink)}
 .pp-nudge.done{color:var(--label)}
@@ -1700,6 +1753,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia.viewer{flex:1;min-width:0;margin:0;border-radius:0;background:#000;display:flex;align-items:center;justify-content:center}
 .exmedia.viewer img,.exmedia.viewer video{width:100%;height:100%;max-height:100%;object-fit:contain;background:#000}
 .exmedia.viewer .exmedia-x{height:100%;color:rgba(255,255,255,.5)}
+.mviewer-stage.pzoom{overflow:hidden;align-items:center;justify-content:center;touch-action:none;user-select:none}
+.mviewer-stage.pzoom img{max-width:100%;max-height:100%;object-fit:contain;will-change:transform}
+.exmedia.zoomable{cursor:zoom-in}
 .mviewer-nav{display:flex;justify-content:space-between;padding:8px 12px;flex:none}
 [dir="rtl"] .mviewer-nav .icn{transform:scaleX(-1)}
 .mviewer-ask{flex:none;padding:12px 16px;background:rgba(255,255,255,.08)}
@@ -1792,6 +1848,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   transition:background var(--fast),transform var(--fast),border-color var(--fast);
 }
 .effcell:active{transform:scale(var(--press-scale-sm))}
+.effcell.effgap{visibility:hidden}  /* a warm-up left unrated (#1374): the slot stays, the row lines up */
 .effcell.is-empty{color:var(--label-2);font-weight:500;font-size:var(--fs-caption);letter-spacing:.02em}
 /* a logged rating becomes a −/value/+ stepper, tinted by its effort band: the band colour
    fills the cell at low opacity (set inline via color-mix), borders it, and colours the value.
@@ -1841,9 +1898,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .effpick .menu-item.on{background:var(--surface);background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
 .effpick .menu-on.is-on{color:var(--bc)}
 .effpick .effpick-free{padding-inline-end:8px}
-.effpick .effpick-free .stp{flex:none;width:148px}
-.effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600}
-.effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
+/* room for "Not set" in words (German "Nicht angegeben" is the longest), shrinking to the old
+   148 px on a narrow phone, where a long one ends in an ellipsis instead of being cut mid-letter */
+.effpick .effpick-free .stp{flex:0 1 188px;min-width:148px}
+.effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600;text-overflow:ellipsis}
+.effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500;font-size:var(--fs-subhead)}
 /* A ticked set fades back. Its parts fade, not the row: the number keeps full opacity and is drawn
    in the faded colours instead, so the set-vs-last arrow and the failure mark on it stay readable
    (at .45 the light theme's arrow was 2:1). The look is the same as the old row opacity. */
@@ -3187,17 +3246,20 @@ button.cal-wk:active{background:var(--press-fill)}
 .swatches{display:flex;gap:12px;flex-wrap:wrap}
 .swatch{width:32px;height:32px;border-radius:50%;flex:none;position:relative;transition:transform var(--fast)}
 .swatch:active{transform:scale(var(--press-scale-sm))}
+/* A 44 px tap around the 32 px dot; the 12 px gap means neighbours meet but never overlap. */
+.swatch::before{content:'';position:absolute;inset:-6px;border-radius:50%}
 /* The ring takes no taps: over the own colour it lay on the colour input, so the picker never opened. */
 .swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label);pointer-events:none}
 /* The user's own colour (Settings → Accent color): a rainbow ring until there is one, then filled
-   with it. The native colour input lies over it, invisible, so the tap lands on the input itself. */
+   with it. The native colour input lies over it, invisible, so the tap lands on the input itself.
+   A colour input keeps its own size under inset alone, so its width and height are set too. */
 .swatch-own{display:inline-flex;align-items:center;justify-content:center;font-size:var(--fs-subhead);--icon-stroke:2.4}
 .swatch-own.unset{
   background:radial-gradient(circle,var(--surface) 0 52%,transparent 54%),
     conic-gradient(#ff453a,#ff9f0a,#ffd60a,#30d158,#40c8e0,#0a84ff,#bf5af2,#ff375f,#ff453a);
   color:var(--label-2);
 }
-.swatch-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
+.swatch-input{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
 .swatch-note{margin-top:-4px}
 /* Settings → App icon: the previews in the shape of a home-screen icon, the chosen one ringed like a swatch. */
 .app-icons{flex-basis:100%;padding-inline-start:41px;display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:12px}
@@ -3206,6 +3268,32 @@ button.cal-wk:active{background:var(--press-fill)}
 .app-icon:active{transform:scale(var(--press-scale-sm))}
 .app-icon:disabled{opacity:1}
 .app-icon.on::after{content:'';position:absolute;inset:-4px;border-radius:27%;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
+/* Settings → Apple Watch and → Wear OS watch: the status pill (components/WatchPill.jsx). Green tint when all is
+   well, orange on trouble (with the next step under it), plain while it waits. Text stays --label/--label-2 on the
+   tints; green and orange as glyphs use the -ink shades. The marks wrap under the words at large text sizes. */
+.wpill-w{margin-bottom:22px}
+.wpill{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-height:60px;padding:10px 14px 10px 10px;border-radius:32px;background:var(--surface)}
+.wpill.ok{background:rgba(48,209,88,.14);background:color-mix(in srgb,var(--green) 14%,var(--surface))}
+.wpill.warn{background:rgba(255,159,10,.16);background:color-mix(in srgb,var(--orange) 16%,var(--surface))}
+.wpill-sign{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2);box-shadow:0 0 0 1.5px var(--label-3)}
+.wpill-sign svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.wpill-sign .lit{fill:currentColor;stroke:none;opacity:.9}
+.wpill.ok .wpill-sign{background:rgba(48,209,88,.16);background:color-mix(in srgb,var(--green) 16%,var(--surface-2));color:var(--green-ink);box-shadow:0 0 0 1.5px var(--green),0 0 14px rgba(48,209,88,.35)}
+.wpill.busy .wpill-sign{color:var(--blue-ink);box-shadow:0 0 0 1.5px var(--blue)}
+.wpill.warn .wpill-sign{background:rgba(255,159,10,.16);background:color-mix(in srgb,var(--orange) 16%,var(--surface-2));color:var(--orange-ink);box-shadow:0 0 0 2px var(--orange)}
+.wpill-tx{flex:1 1 9em;min-width:0}
+.wpill-tx b{display:block;font-size:var(--fs-body);font-weight:600;line-height:1.2}
+.wpill-tx span{display:block;font-size:var(--fs-footnote);color:var(--label-2);margin-top:1px;line-height:1.25}
+.wpill-tx i{font-style:normal;display:inline-block}   /* breaks between the parts; inside "Last heard 5 minutes ago" only when it is wider than the pill */
+.wpill.warn .wpill-tx span{color:var(--label)}
+.wpill-marks{display:flex;gap:8px;flex:none;margin-inline-start:auto}
+.wpill-m{position:relative;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2)}
+.wpill-m.ok{color:var(--green-ink)}.wpill-m.sync{color:var(--blue-ink)}
+.wpill-m.warn{color:var(--orange-ink);outline:1.5px dashed var(--orange-ink);outline-offset:1px}   /* the one that broke, as a broken link */
+.wpill-m i{position:absolute;inset-inline-end:-3px;bottom:-3px;width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--surface);background:var(--label-3);color:var(--surface)}
+.wpill-m.ok i{background:var(--green);color:#000}.wpill-m.warn i{background:var(--orange);color:#000}.wpill-m.sync i{background:var(--blue);color:#fff}
+.wpill-m i svg{fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.wpill-todo{font-size:var(--fs-footnote);color:var(--label);padding:8px 4px 0;line-height:1.38}
 /* Settings → Apple Watch → Rest timer: two watch screens side by side, the chosen one ticked (like Display & Brightness). */
 .looks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr));gap:12px;padding:16px}
 .look{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:44px;padding:0;text-align:center}
@@ -3303,6 +3391,9 @@ button.cal-wk:active{background:var(--press-fill)}
 .workout-list .ss-ex,.workout-list .setrow,.workout-list .setrow-side{scroll-margin-top:calc(var(--whdr-h, var(--sat) + var(--conn) + 80px) + 16px)}
 .wl-unit.cur{box-shadow:inset 0 0 0 1.5px var(--acc-line)}
 .wl-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+/* The header line is what a finger holds to move the exercise (lib/use-list-reorder.js). */
+.wl-hd{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.wl-hd .reorder-grip{width:28px;height:28px;margin-inline-start:-6px}
 .wl-summary{display:grid;gap:8px;padding-bottom:10px}
 /* the folded unit is a button (a tap opens it again): full width, text where it always sat */
 button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var(--r-sm)}
@@ -4238,6 +4329,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-folder .n{font-weight:400;font-variant-numeric:tabular-nums}
 .plan-folder .chev{transition:transform var(--fast) var(--ease)}
 .plan-folder[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.plan-folder.is-static{padding-inline:4px;cursor:default}
 [dir="rtl"] .plan-folder[aria-expanded="false"] .chev{transform:rotate(180deg)}
 @media (prefers-reduced-motion:reduce){.plan-folder .chev{transition:none}}
 
@@ -4740,3 +4832,64 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* ---------------------------------------------------- translucency fallbacks -- */
+/* These two blocks must stay the LAST rules in this file. They reuse the plain selectors of the
+   frosted surfaces (#timer, #toast, .pp-pill, ...) with no extra weight, so they only win by coming
+   after them in the cascade; written any earlier, the later base rule puts the blur back
+   (a11y-contrast-transparency.test.js checks this).
+
+   Where backdrop-filter is genuinely unsupported there is no glass either — only the alpha,
+   and the page shows through unblurred, which is the worst of both. Older Android WebViews
+   never had it, and "reduce transparency" accessibility settings drop it. Those surfaces go
+   fully opaque instead. Keep this in sync with the rules above. */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  #tabbar{background:var(--bg-el)}
+  :root[data-theme="light"] #tabbar{background:#f9f9fb}
+  #timer{background:var(--surface-raised)}
+  #toast{background:var(--surface-2)}
+}
+/* The setting itself, read directly. The @supports fallback above only fires where backdrop-filter
+   is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
+   Same opaque fills, on every translucent surface. */
+@media (prefers-reduced-transparency: reduce){
+  .lay-row.held{box-shadow:0 0 0 1px var(--separator)}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,body::before{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
+  .tr-bulk{background:var(--bg-el)}
+  #tabbar{background:var(--bg-el)}
+  :root[data-theme="light"] #tabbar{background:#f9f9fb}
+  #timer{background:var(--surface-raised)}
+  #toast{background:var(--surface-2)}
+  .conn-bar,.whdr.stick,.stats-index,.gl-sticky,body::before{background:var(--bg)}
+  /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
+     darker pill so its white text no longer depends on what the picture shows behind it. */
+  .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .exmedia .gifhint,.exmedia .giftoggle{background:rgba(0,0,0,.8)}
+}
+
+/* #1037: the language on the first screen (components/LanguageChip.jsx), top corner, clear of the
+   notch. The button's own ::before already widens the hit area; min-height keeps it at 44 px. */
+.lang-chip{position:fixed;top:calc(var(--sat) + 10px);inset-inline-end:16px;z-index:5;min-height:44px;max-width:calc(100vw - 32px)}
+.lang-chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* The first workout's layout question (components/LayoutPick.jsx): two pictures of the screen. */
+.lp-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+.lp-opt{display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:start;padding:10px 10px 12px;border:1px solid var(--sep);border-radius:var(--r);background:var(--surface-2);color:var(--label);font:inherit;cursor:pointer;transition:transform 160ms cubic-bezier(.23,1,.32,1),border-color 160ms ease;touch-action:manipulation}
+.lp-opt:active{transform:scale(.97);border-color:var(--acc)}
+.lp-opt:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.lp-t{font-weight:600;font-size:var(--fs-subhead);margin-top:6px}
+.lp-s{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.35}
+.lp-prev{position:relative;height:92px;border-radius:8px;background:var(--bg);overflow:hidden;padding:8px;display:flex;flex-direction:column;gap:5px}
+.lp-card{display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:6px;background:var(--surface);border:1px solid var(--sep)}
+.lp-card s{display:block;height:5px;width:55%;border-radius:3px;background:var(--label-3);text-decoration:none}
+.lp-card i{display:block;height:7px;border-radius:3px;background:var(--surface-3);position:relative}
+.lp-card i.on{background:rgba(48,209,88,.28);background:color-mix(in srgb,var(--green) 28%,var(--surface-3))}
+.lp-card i.on::after{content:'';position:absolute;inset-inline-end:3px;top:1.5px;width:4px;height:2px;border:solid var(--green);border-width:0 0 1.5px 1.5px;transform:rotate(-45deg)}
+.lp-cards .lp-card:first-child{flex:1;margin-inline-end:18px}
+.lp-cards .lp-card{gap:7px}
+.lp-cards .lp-card i{height:9px}
+.lp-peek{position:absolute;top:8px;bottom:8px;inset-inline-end:-22px;width:34px;opacity:.6}
+.lp-list .lp-card{padding:4px 6px;gap:3px}
+.lp-list .lp-card i{height:5px}
+@media (prefers-reduced-motion:reduce){.lp-opt:active{transform:none}}

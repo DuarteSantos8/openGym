@@ -19,6 +19,8 @@
 // No link fetches a thumbnail or favicon in advance.
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
+import { clampView, pinchTo, dragTo } from '../lib/photo-zoom.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { nameIn } from '../lib/a11y-name.js'
 import { exerciseNameText } from '../lib/format.js'
@@ -179,24 +181,82 @@ export function MediaView({ m, cls = 'exmedia', name = '', still = false }) {
     ? <CustomVideo key={m.hash} m={m} cls={cls} name={name} still={motionless} />
     : m.kind === 'gif'
       ? <CustomGif key={m.hash} m={m} cls={cls} name={name} />
-      : <CustomImage key={m.hash} m={m} cls={cls} name={name} />
+      : <CustomImage key={m.hash} m={m} cls={cls} name={name} zoom={false} />
 }
 
 // The tile that stands in for a file that is not here: a spinner-less dumbbell (nothing new to
 // translate), and a tap that asks again.
 const Tile = () => <div className="exmedia-x"><Icon name="dumbbell" /></div>
 
-function CustomImage({ m, id, cls, name, toggle }) {
+// A tap on a photo that is here opens it full screen to pinch and drag (Discord); one that is not
+// asks for it again. `zoom` is off where the photo is already full screen (the viewers).
+function CustomImage({ m, id, cls, name, toggle, zoom = true }) {
   const main = useMediaUrl(m)
   const [broken, setBroken] = useState(false)
   const ok = main.url && !broken
+  const onTap = () => {
+    if (!ok) { setBroken(false); main.load(); return }
+    if (zoom) openPhotoZoom(m, name)
+  }
   return (
-    <div className={cls + (ok ? '' : ' broken')} id={id} onClick={() => { if (!ok) { setBroken(false); main.load() } }}>
+    <div className={cls + (ok ? '' : ' broken') + (ok && zoom ? ' zoomable' : '')} id={id} onClick={onTap}>
       {ok ? <img decoding="async" draggable={false} src={main.url} alt={name} onError={() => setBroken(true)} /> : <Tile />}
       {toggle}
     </div>
   )
 }
+
+// The photo on black, as big as it fits: two fingers pinch it up to four times, one drags it
+// around once it is bigger than the screen, the wheel zooms with a mouse. A tap that does not move
+// closes it while it is not zoomed in, and so do the × and Back (the viewer sheet, Modals.jsx).
+// It follows the fingers 1:1 with no animation, so Reduce Motion has nothing to take away.
+function PhotoZoom({ m, name, close }) {
+  const { url } = useMediaUrl(m)
+  const img = useRef(null)
+  const [view, setView] = useState({ z: 1, x: 0, y: 0 })
+  const pts = useRef(new Map())
+  const start = useRef(null)
+  const moved = useRef(false)
+  const size = () => ({ w: img.current?.offsetWidth || 0, h: img.current?.offsetHeight || 0 })
+  const apart = () => { const [a, b] = [...pts.current.values()]; return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0 }
+  const anchor = v => {
+    const [a] = [...pts.current.values()]
+    start.current = !a ? null : pts.current.size >= 2 ? { d: apart(), view: v } : { x: a.x, y: a.y, view: v }
+  }
+  const down = e => {
+    if (pts.current.size === 0) moved.current = false
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    anchor(view)
+  }
+  const move = e => {
+    if (!pts.current.has(e.pointerId)) return
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const s0 = start.current
+    if (!s0) return
+    const { w, h } = size()
+    if (s0.d) { moved.current = true; setView(pinchTo(s0.view, s0.d, apart(), w, h)); return }
+    const dx = e.clientX - s0.x, dy = e.clientY - s0.y
+    if (Math.hypot(dx, dy) > 8) moved.current = true
+    setView(dragTo(s0.view, dx, dy, w, h))
+  }
+  const up = e => {
+    if (!pts.current.delete(e.pointerId)) return
+    if (!pts.current.size && !moved.current && view.z <= 1.01 && e.type === 'pointerup') { close(); return }
+    setView(v => { anchor(v); return v })
+  }
+  const wheel = e => { if (e.deltaY) { const { w, h } = size(); setView(v => clampView({ ...v, z: v.z * Math.exp(-e.deltaY / 300) }, w, h)) } }
+  return <div className="mviewer" role="dialog" aria-modal="true" aria-label={name || t('Photo')}>
+    <div className="mviewer-bar">
+      <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
+    </div>
+    <div className="mviewer-stage pzoom" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
+      {url && <img ref={img} src={url} alt={name} draggable={false}
+        style={view.z > 1 ? { transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})` } : undefined} />}
+    </div>
+  </div>
+}
+export const openPhotoZoom = (m, name = '') => useUI.getState().openSheet(close => <PhotoZoom m={m} name={name} close={close} />, { kind: 'viewer' })
 
 // Like the catalogue's GIFs: the animation plays, a tap switches to the still (the poster) and
 // back, and a file that will not load falls back to the still, then to the tile.

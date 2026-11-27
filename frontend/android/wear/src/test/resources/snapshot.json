@@ -41,7 +41,7 @@
           "w": 57.5,
           "r": 6
         },
-        "step": 2.5,
+        "step": 1.25,
         "muscles": {
           "chest": 1,
           "front-delts": 0.4,
@@ -71,7 +71,7 @@
           }
         ],
         "bodyweight": true,
-        "step": 2.5,
+        "step": 1.25,
         "muscles": {
           "abs": 1,
           "hip-flexors": 0.4,

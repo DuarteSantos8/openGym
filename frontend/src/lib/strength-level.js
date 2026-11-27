@@ -15,11 +15,22 @@
 // 60, 1.59 at 70, 2.03 at 80, interpolated in between), so a 60-year-old's 1.3 × is graded like a
 // 40-year-old's 1.69 ×. Under 40, no adjustment.
 //
-// THE NUMBERS. The best estimated 1RM ever logged for the lift (onerm.js best1RM, the profile's
-// formula; dumbbells read per bell) against the latest weigh-in. No weigh-in, no level: the
-// screens hide it.
-import { best1RM, formulaOf } from './onerm.js'
-import { lastBW } from './history.js'
+// THE NUMBERS. Every session's best estimated 1RM for the lift (onerm.js, the profile's formula;
+// dumbbells read per bell) against the body weight of that day, and the session with the best
+// ratio sets the level: what was lifted for the size you were then. The latest weigh-in against
+// the best lift ever read too kind after a cut and too harsh after a bulk.
+// The body weight of a session: the one checked in for it, else read off the weigh-in log
+// (lib/bodyweight.js bodyweightAt: the line between the weigh-ins either side, else the nearest one,
+// within BW_REACH_DAYS). A session with no weigh-in that near is left out. When none is near enough,
+// the best lift is read against the weigh-in nearest it, however far, and `approx` says so.
+// The next level's weight is for today: its ratio times the latest weigh-in.
+// No weigh-in at all, no level: the screens hide it.
+import { e1rmSeries, formulaOf } from './onerm.js'
+import { bodyweightAt } from './bodyweight.js'
+import { currentDbLoad } from './dumbbells.js'
+
+/** How far a weigh-in may be from a session and still say what it weighed then. */
+export const BW_REACH_DAYS = 30
 
 export const LEVELS = ['beginner', 'novice', 'intermediate', 'advanced', 'elite']
 // English keys for t(); "lifter" keeps "Advanced" apart from the settings word of the same name.
@@ -94,21 +105,40 @@ export function levelAt(ratio, thresholds) {
  * or no weigh-in. `{ lift, level, name, ratio, e1rm, bw, next, sex, age, perBell }`: `next` is the
  * level above and the 1RM that reaches it (null at Elite).
  */
-export function strengthLevel(S, exId, { formula = formulaOf(S) } = {}) {
+export function strengthLevel(S, exId, { formula = formulaOf(S), now = Date.now() } = {}) {
   const lift = liftOf(exId)
   if (!lift) return null
-  const bwEntry = lastBW(S || { bodyweight: [] })
-  const bw = Number(bwEntry?.w)
-  if (!(bw > 0)) return null
+  const log = Array.isArray(S?.bodyweight) ? S.bodyweight : []
   const st = STANDARDS[lift]
-  const best = best1RM(S, exId, formula, st.perBell ? 'each' : undefined)
-  if (!best || !(best.est > 0)) return null
+  const pts = e1rmSeries(S || {}, exId, formula, st.perBell ? 'each' : currentDbLoad(S || {}, exId)).filter(p => p.y > 0)
+  if (!pts.length) return null
+  let best = null
+  for (const p of pts) {
+    const bw = p.bw > 0 ? p.bw : bodyweightAt(log, p.t, BW_REACH_DAYS)
+    if (!(bw > 0)) continue
+    const ratio = p.y / bw
+    if (!best || ratio > best.ratio || (ratio === best.ratio && p.t > best.p.t)) best = { p, bw, ratio }
+  }
+  let approx = false
+  if (!best) {
+    // No session has a weigh-in within reach: the best lift against the nearest weigh-in at all.
+    const top = pts.reduce((a, b) => (b.y > a.y || (b.y === a.y && b.t > a.t) ? b : a))
+    const bw = bodyweightAt(log, top.t, Infinity)
+    if (!(bw > 0)) return null
+    best = { p: top, bw, ratio: top.y / bw }
+    approx = true
+  }
+  // Today's body weight for the next step: the latest weigh-in, else the one the level used.
+  const current = bodyweightAt(log, now, Infinity) || best.bw
   const sex = sexOf(S), age = ageOf(S)
   const th = thresholdsFor(lift, { sex, age })
-  const ratio = best.est / bw
-  const level = levelAt(ratio, th)
-  const next = level < LEVELS.length - 1 ? { level: level + 1, name: LEVELS[level + 1], ratio: th[level + 1], weight: Math.ceil(th[level + 1] * bw * 2) / 2 } : null
-  return { lift, level, name: LEVELS[level], ratio: Math.round(ratio * 100) / 100, e1rm: best.est, bw, next, sex, age, perBell: !!st.perBell, thresholds: th }
+  const level = levelAt(best.ratio, th)
+  const next = level < LEVELS.length - 1 ? { level: level + 1, name: LEVELS[level + 1], ratio: th[level + 1], weight: Math.ceil(th[level + 1] * current * 2) / 2 } : null
+  return {
+    lift, level, name: LEVELS[level], ratio: Math.round(best.ratio * 100) / 100,
+    e1rm: best.p.y, w: best.p.w, r: best.p.r, d: best.p.d, bw: Math.round(best.bw * 10) / 10, approx, currentBw: current,
+    next, sex, age, perBell: !!st.perBell, thresholds: th,
+  }
 }
 
 /** Every graded lift the profile has a level for, strongest level first. */

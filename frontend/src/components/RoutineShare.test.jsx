@@ -58,7 +58,7 @@ afterEach(() => {
 })
 
 describe('Share with a friend', () => {
-  it('shares an opengym.ch/r link with a short text, without weights or name by default', async () => {
+  it('shares a link with a short text, without weights or name by default', async () => {
     const share = vi.fn(() => Promise.resolve())
     navigator.share = share
     shareRoutineSheet(push)
@@ -69,7 +69,8 @@ describe('Share with a friend', () => {
     await vi.waitFor(() => expect(share).toHaveBeenCalledTimes(1), { timeout: 5000 })
     const { url, text } = share.mock.calls[0][0]
     expect(text).toBe('Here’s my Push Day on openGym 💪')
-    expect(url.startsWith('https://opengym.ch/r#1.')).toBe(true)
+    // The web app on a server links to that server's own hash route (#1337), not opengym.ch/r.
+    expect(url.startsWith(location.origin + '/#/r/1.'), url).toBe(true)
     const data = await decodePayload(routinePayloadFromUrl(url))
     expect(data.routines[0].ex[0].weight).toBeUndefined()
     expect(data.from).toBeUndefined()

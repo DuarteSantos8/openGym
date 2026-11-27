@@ -98,7 +98,7 @@ describe('log_workout writes through the server', () => {
   })
 
   test('a name with several matches comes back as problems with candidates, and nothing is written', async () => {
-    const r = await call({ exercises: [{ exercise: 'lever chest press', sets: [{ reps: 10, weight: 40 }] }] })
+    const r = await call({ exercises: [{ exercise: 'ez barbell spider curl', sets: [{ reps: 10, weight: 40 }] }] })
     expect(r.logged).toBe(false)
     expect(r.problems[0].candidates.length).toBeGreaterThan(1)
     expect(api.puts).toHaveLength(0)

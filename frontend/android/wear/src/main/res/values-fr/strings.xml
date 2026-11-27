@@ -2,19 +2,34 @@
 <!-- openGym on Wear OS, fr. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">À régler sur le téléphone</string>
+    <string name="add_session_note">Ajouter une note de séance</string>
     <string name="added_weight">Poids ajouté</string>
     <string name="all_done_q">Terminé ?</string>
     <string name="all_sets_done">Toutes les séries faites</string>
     <string name="all_synced">Tout est synchronisé</string>
     <string name="allow">Autoriser</string>
+    <string name="archived_stay_on_phone">Les routines archivées restent sur ton téléphone.</string>
     <string name="avg">moy.</string>
     <string name="band_over">%1$d et plus</string>
     <string name="band_to">%1$d à %2$d</string>
     <string name="band_under">moins de %1$d</string>
     <string name="body_weight">Poids corporel</string>
     <string name="bodyweight">Poids du corps</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Calories</string>
     <string name="cancel">Annuler</string>
+    <string name="checkin_continue">Continuer</string>
+    <string name="checkin_energy">Énergie</string>
+    <string name="checkin_energy_hi">En pleine forme</string>
+    <string name="checkin_energy_lo">Sur la réserve</string>
+    <string name="checkin_skip">Passer pour aujourd’hui</string>
+    <string name="checkin_sleep">Sommeil</string>
+    <string name="checkin_sleep_hi">Dormi comme une souche</string>
+    <string name="checkin_sleep_lo">À peine dormi</string>
+    <string name="checkin_sore">Courbatures</string>
+    <string name="checkin_sore_hi">Tout fait mal</string>
+    <string name="checkin_sore_lo">Rien ne fait mal</string>
+    <string name="checkin_title">Comment ça va aujourd’hui ?</string>
     <string name="complication_desc">Tes séries faites, ou ta régularité.</string>
     <string name="continue_workout">Continuer la séance</string>
     <string name="crown_hint">Tourne la couronne pour le changer.</string>
@@ -22,6 +37,7 @@
     <string name="discard_workout_q">Abandonner la séance ?</string>
     <string name="done">Terminé</string>
     <string name="edit">Modifier</string>
+    <string name="edit_session_note">Modifier la note de séance</string>
     <string name="effort">Effort</string>
     <string name="ended_on_phone">Terminée sur ton téléphone</string>
     <string name="exercises">Exercices</string>
@@ -33,6 +49,7 @@
     <string name="heart_rate">Pouls</string>
     <string name="hold">Tenue</string>
     <string name="hold_to_finish">Maintiens pour terminer</string>
+    <string name="hours">Heures</string>
     <string name="how_hard">Cette série, c’était dur comment ?</string>
     <string name="hr_avg_max">moy. %1$d · max %2$d</string>
     <string name="hr_why">Autorise la fréquence cardiaque pour voir ton pouls à chaque série.</string>
@@ -56,10 +73,12 @@
     <string name="media_quieter">Moins fort</string>
     <string name="media_title">Musique</string>
     <string name="min">min</string>
+    <string name="min_minutes">min</string>
     <string name="more">Plus</string>
     <string name="muscles">Muscles</string>
     <string name="n_more">+%1$d autres</string>
     <string name="n_sets">%1$s séries</string>
+    <string name="new_record">Nouveau record</string>
     <string name="next_set_btn">Série suivante</string>
     <string name="no_age_set">Âge non défini</string>
     <string name="no_effort_yet">Aucun effort noté</string>
@@ -67,6 +86,8 @@
     <string name="no_sets_yet">Aucune série</string>
     <string name="no_workout">Aucune séance en cours</string>
     <string name="none">Aucun</string>
+    <string name="not_a_watch_body">Elle ne fonctionne que sur une montre Wear OS. Garde-la installée pour l’instant : la désinstaller efface les séances de ce téléphone. Pour retrouver l’app du téléphone : github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">C’est l’app pour montre</string>
     <string name="not_now">Pas maintenant</string>
     <string name="not_synced">Pas encore synchronisé</string>
     <string name="notif_running">Séance en cours. Touche pour y revenir.</string>
@@ -74,11 +95,14 @@
     <string name="overview">Aperçu</string>
     <string name="personal_records">Records</string>
     <string name="phone_away">Téléphone hors de portée. Tes séries attendent ici.</string>
+    <string name="phone_connected">Téléphone connecté</string>
+    <string name="phone_gone">Téléphone absent</string>
     <string name="phone_out_of_reach">Téléphone hors de portée</string>
     <string name="previous_set">Série précédente</string>
     <string name="prs">Records</string>
     <string name="quick_checkin">Pesée rapide</string>
     <string name="quick_start">Démarrage rapide</string>
+    <string name="records">Records</string>
     <string name="reps">Reps</string>
     <string name="rest">Repos</string>
     <string name="rest_day">Rien de prévu. À toi de voir.</string>
@@ -87,6 +111,7 @@
     <string name="routines">Routines</string>
     <string name="save">Enregistrer</string>
     <string name="save_and_start">Enregistrer et démarrer</string>
+    <string name="saved">Enregistré</string>
     <string name="set_of">Série %1$d sur %2$d</string>
     <string name="sets">Séries</string>
     <string name="sets_of">%1$d séries sur %2$d</string>
@@ -106,7 +131,7 @@
     <string name="time">Temps</string>
     <string name="today">Aujourd\'hui</string>
     <string name="up_next">À suivre</string>
-    <string name="up_next_set">%1$s, série %2$d</string>
+    <string name="up_next_set">%1$s, série %2$d/%3$d</string>
     <string name="volume">Volume</string>
     <string name="waiting_sync">En attente de synchronisation</string>
     <string name="warmup">Échauffement</string>

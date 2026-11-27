@@ -46,6 +46,7 @@ card says *Needs your server* there.
 
 1. Settings → Integrations → Webhooks → **Connect**.
 2. Paste the URL, give it a name if you like, and pick what to send:
+   - **Workout started** (`workout.started`)
    - **Workout finished** (`workout.finished`)
    - **New personal record** (`workout.pr`)
    - **Weigh-in logged** (`weighin.logged`)
@@ -96,6 +97,28 @@ Every delivery has the same envelope:
 
 Headers: `Content-Type: application/json`, `User-Agent: openGym-Webhook/1`,
 `X-OpenGym-Event` (the type), `X-OpenGym-Delivery` (the id) and `X-OpenGym-Signature`.
+
+**`workout.started`**
+
+```json
+{
+  "workout": {
+    "id": "w_1729967000000",
+    "name": "Push",
+    "date": "2026-10-26",
+    "startedAt": "2026-10-26T17:30:00.000Z",
+    "routine": { "id": "r_push", "name": "Push" },
+    "unit": "kg",
+    "exercises": [{ "id": "0025", "name": "barbell bench press" }]
+  }
+}
+```
+
+Sent once per workout, when the device running it syncs after you start (that is the same push
+that saves your sets, so it needs the server; the phone on its own sends nothing). `exercises` is
+what the workout has planned, by name, no sets yet; `routine` is null for a freestyle workout. A
+workout started more than six hours before it first reached the server, an old workout opened to
+edit and one typed in after the fact are not sent. The same `id` comes back in `workout.finished`.
 
 **`workout.finished`**
 

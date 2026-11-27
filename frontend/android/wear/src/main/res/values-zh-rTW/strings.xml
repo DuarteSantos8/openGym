@@ -2,19 +2,34 @@
 <!-- openGym on Wear OS, zh-TW. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">在手機 App 中新增出生年份</string>
+    <string name="add_session_note">新增總結筆記</string>
     <string name="added_weight">附加重量</string>
     <string name="all_done_q">練完了嗎？</string>
     <string name="all_sets_done">所有組已完成</string>
     <string name="all_synced">已全數同步</string>
     <string name="allow">允許</string>
+    <string name="archived_stay_on_phone">已封存的訓練計畫會保留在你的手機上。</string>
     <string name="avg">平均</string>
     <string name="band_over">%1$d 及以上</string>
     <string name="band_to">%1$d 到 %2$d</string>
     <string name="band_under">低於 %1$d</string>
     <string name="body_weight">體重</string>
     <string name="bodyweight">徒手動作</string>
+    <string name="bpm">%1$s 次/分</string>
     <string name="calories">卡路里</string>
     <string name="cancel">取消</string>
+    <string name="checkin_continue">繼續</string>
+    <string name="checkin_energy">精力</string>
+    <string name="checkin_energy_hi">活力滿滿</string>
+    <string name="checkin_energy_lo">快沒電了</string>
+    <string name="checkin_skip">今天略過</string>
+    <string name="checkin_sleep">睡眠</string>
+    <string name="checkin_sleep_hi">睡得像塊石頭</string>
+    <string name="checkin_sleep_lo">幾乎沒睡</string>
+    <string name="checkin_sore">肌肉痠痛</string>
+    <string name="checkin_sore_hi">全身都痠</string>
+    <string name="checkin_sore_lo">哪裡都不痠</string>
+    <string name="checkin_title">今天感覺如何？</string>
     <string name="complication_desc">目前完成的組數，或你的連續週數。</string>
     <string name="continue_workout">繼續訓練</string>
     <string name="crown_hint">轉動錶冠來更改。</string>
@@ -22,6 +37,7 @@
     <string name="discard_workout_q">捨棄本次訓練？</string>
     <string name="done">完成</string>
     <string name="edit">編輯</string>
+    <string name="edit_session_note">編輯總結筆記</string>
     <string name="effort">強度表現</string>
     <string name="ended_on_phone">已在手機上結束</string>
     <string name="exercises">動作庫</string>
@@ -33,6 +49,7 @@
     <string name="heart_rate">心率</string>
     <string name="hold">保持</string>
     <string name="hold_to_finish">按住以結束</string>
+    <string name="hours">小時</string>
     <string name="how_hard">這組感覺有多吃力？</string>
     <string name="hr_avg_max">平均 %1$d · 最高 %2$d</string>
     <string name="hr_why">允許讀取心率，每組都能看到脈搏。</string>
@@ -56,10 +73,12 @@
     <string name="media_quieter">調低音量</string>
     <string name="media_title">音樂</string>
     <string name="min">最低</string>
+    <string name="min_minutes">分鐘</string>
     <string name="more">較多</string>
     <string name="muscles">肌肉</string>
     <string name="n_more">還有 %1$d 個</string>
     <string name="n_sets">%1$s 組</string>
+    <string name="new_record">新紀錄</string>
     <string name="next_set_btn">下一組</string>
     <string name="no_age_set">未設定年齡</string>
     <string name="no_effort_yet">尚未評定強度</string>
@@ -67,6 +86,8 @@
     <string name="no_sets_yet">還沒有組</string>
     <string name="no_workout">沒有進行中的訓練</string>
     <string name="none">無</string>
+    <string name="not_a_watch_body">它只能在 Wear OS 手錶上執行。先別解除安裝：解除安裝會刪除這支手機上的訓練紀錄。找回手機 App 的方法：github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">這是手錶 App</string>
     <string name="not_now">暫不啟用</string>
     <string name="not_synced">尚未同步</string>
     <string name="notif_running">訓練進行中。點一下返回。</string>
@@ -74,11 +95,14 @@
     <string name="overview">總覽</string>
     <string name="personal_records">個人紀錄</string>
     <string name="phone_away">手機不在範圍內。你的組數先存在這裡。</string>
+    <string name="phone_connected">手機已連線</string>
+    <string name="phone_gone">手機不在</string>
     <string name="phone_out_of_reach">手機不在範圍內</string>
     <string name="previous_set">上一組</string>
     <string name="prs">個人紀錄</string>
     <string name="quick_checkin">快速記錄體重</string>
     <string name="quick_start">快速開始</string>
+    <string name="records">紀錄</string>
     <string name="reps">次數</string>
     <string name="rest">休息</string>
     <string name="rest_day">今天沒計畫。你說了算。</string>
@@ -87,6 +111,7 @@
     <string name="routines">訓練課表</string>
     <string name="save">儲存</string>
     <string name="save_and_start">儲存並開始訓練</string>
+    <string name="saved">已儲存</string>
     <string name="set_of">第 %1$d 組，共 %2$d 組</string>
     <string name="sets">組數</string>
     <string name="sets_of">%1$d / %2$d 組</string>
@@ -106,7 +131,7 @@
     <string name="time">時間</string>
     <string name="today">今天</string>
     <string name="up_next">接下來</string>
-    <string name="up_next_set">%1$s，第 %2$d 組</string>
+    <string name="up_next_set">%1$s，第 %2$d/%3$d 組</string>
     <string name="volume">總訓練量</string>
     <string name="waiting_sync">等待同步中</string>
     <string name="warmup">熱身組</string>

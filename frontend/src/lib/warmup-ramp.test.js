@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { autoRungs, rungRows, warmupSource, warmupBlock, isCompoundEx, ownRowsFromSession, cleanOwnRow, ownRowsOf, withWarmupBlock, warmupAutoOf } from './warmup-ramp.js'
+import { autoRungs, rungRows, warmupSource, warmupBlock, isCompoundEx, ownRowsFromSession, cleanOwnRow, ownRowsOf, withWarmupBlock, warmupAutoOf, rampOf } from './warmup-ramp.js'
 import { snapDown, rungWeight } from './warmup-snap.js'
 import { liveReramp, rerampWarmups } from './history.js'
 import { buildPlannedEntry, buildSessionEntries, buildSessionEntry } from './session-start.js'
@@ -142,6 +142,33 @@ describe('where the warm-ups come from', () => {
     const S = state({ startFrom: 'last', routines: [r], workouts: [{ id: 'w', d: '2026-09-01', routineIds: ['R'], entries: [{ id: BENCH, rid: 'R', target: { sets: 3, reps: 5, weight: 60 }, sets: [{ w: 25, r: 15, done: true, phase: 'warmup', warmup: true, edited: true }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }] }] }] })
     const rows = warm(buildSessionEntries(S, r)[0].sets)
     expect(rows.map(x => x.r)).toEqual([8])
+  })
+})
+
+describe('your own warm-up ramp (#1423)', () => {
+  const RAMP = [{ wb: true, r: 10 }, { wp: 50, r: 6 }, { wp: 75, r: 3 }]
+  it('replaces the built-in ramp wherever Auto applies, the setting or the slot', () => {
+    const S = state({ warmupAuto: 'compounds', warmupRamp: RAMP })
+    expect(pairs(planned(S, cfg(SQUAT)).sets)).toEqual([[20, 10], [50, 6], [75, 3]])
+    expect(pairs(planned(state({ warmupRamp: RAMP }), cfg(BENCH, { weight: 60, warmup: 'auto' })).sets)).toEqual([[20, 10], [30, 6], [45, 3]])
+    // The setting still decides who gets a ramp at all: compounds only leaves the curl cold.
+    expect(warm(planned(S, cfg(LEGEXT, { weight: 60 })).sets)).toEqual([])
+  })
+  it('skips the bar where there is none, and leaves an assistance machine alone', () => {
+    const S = state({ warmupAuto: 'all', warmupRamp: RAMP })
+    expect(pairs(planned(S, cfg(LEGEXT, { weight: 60 })).sets)).toEqual([[30, 6], [45, 3]])
+    expect(warm(planned(S, cfg(ASSISTED, { weight: 40, reps: 8 })).sets)).toEqual([])
+  })
+  it('a slot with its own rows, none or a count keeps them', () => {
+    const S = state({ warmupAuto: 'all', warmupRamp: RAMP })
+    expect(pairs(planned(S, cfg(BENCH, { weight: 60, warmup: 'own', warmupRows: [{ wp: 50, r: 8 }] })).sets)).toEqual([[30, 8]])
+    expect(warm(planned(S, cfg(SQUAT, { warmup: 'none' })).sets)).toEqual([])
+    expect(warmupSource(S, cfg(SQUAT, { warmupSets: 2 })).kind).toBe('count')
+  })
+  it('junk or nothing saved is the built-in ramp', () => {
+    expect(rampOf(state({ warmupRamp: [{ wp: 'x' }, null] }))).toEqual([])
+    expect(rampOf(state())).toEqual([])
+    expect(warm(planned(state({ warmupAuto: 'all', warmupRamp: 'nope' }), cfg(SQUAT)).sets).length).toBe(4)
   })
 })
 

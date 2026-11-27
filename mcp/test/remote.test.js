@@ -69,6 +69,10 @@ describe('which tools a scoped token sees', () => {
     expect(toolAllowed('log_workout', { workouts: 'apply' })).toBe(true)
     expect(toolAllowed('create_routine', { plans: 'view', workouts: 'apply' })).toBe(false)
     expect(toolAllowed('get_bodyweight', { bodyweight: 'view' })).toBe(true)
+    // Measurements are their own category (#1205): body weight does not open them, nor the reverse.
+    expect(toolAllowed('get_measurements', { measurements: 'view' })).toBe(true)
+    expect(toolAllowed('get_measurements', { bodyweight: 'apply', workouts: 'apply' })).toBe(false)
+    expect(toolAllowed('get_bodyweight', { measurements: 'apply' })).toBe(false)
     expect(toolAllowed('some_new_tool', { workouts: 'apply', plans: 'apply' })).toBe(false)
     expect(toolAllowed('list_routines', {})).toBe(false)
   })

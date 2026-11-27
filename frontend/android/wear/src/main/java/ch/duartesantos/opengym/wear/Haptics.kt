@@ -7,6 +7,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.annotation.RequiresApi
+import kotlin.math.min
 
 /** The wrist's taps: short for a logged set, a clear double-double when a rest is over. */
 object Haptics {
@@ -49,8 +50,19 @@ object Haptics {
     /** The workout starts (Go!): one firm click. */
     fun start(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_HEAVY_CLICK)
 
-    /** Finished and saved: a long one, then two short ones (the Apple Watch's stop, success, success). */
-    fun finished(ctx: Context) = waveform(ctx, longArrayOf(0, 220, 280, 70, 330, 70), intArrayOf(0, 200, 0, 255, 0, 255))
+    /** The medal's entrance (Medal.beats): the strike's thud, then a success on a no-records day or a rising tap per diamond (`records`, 3 at most). */
+    private var recordTap = 0
+
+    fun medal(ctx: Context, beat: Medal.Beat, records: Int) {
+        when (beat) {
+            Medal.Beat.STRIKE -> { recordTap = 0; start(ctx) }
+            Medal.Beat.SETTLED -> waveform(ctx, longArrayOf(0, 70, 110, 70), intArrayOf(0, 200, 0, 255))
+            Medal.Beat.RECORD -> {
+                val amp = intArrayOf(130, 190, 255)[min(recordTap++, 2)]
+                waveform(ctx, longArrayOf(0, 60), intArrayOf(0, amp))
+            }
+        }
+    }
 
     /** A set passed over: one soft drop. */
     fun skip(ctx: Context) = waveform(ctx, longArrayOf(0, 45), intArrayOf(0, 90))
@@ -76,6 +88,9 @@ object Haptics {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)) } catch (_: Exception) {}
     }
+
+    /** One beat of the rest's last 3 seconds: a heavy click, a tick is lost with the wrist down. */
+    fun restCount(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_HEAVY_CLICK)
 }
 
 /**

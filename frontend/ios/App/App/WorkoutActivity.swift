@@ -205,6 +205,9 @@ enum LiveActivityQueue {
     /// Stop auto was tapped, or a set logged that changes the chain's timing: RestAlertPlugin drops
     /// the alerts of the chain of holds after the one booked now (the page books again when it wakes).
     static let autoStopped = Notification.Name("OpenGymLiveActivityAutoStopped")
+    /// The Lock Screen booked a rest's alert itself (+15, a set logged): `userInfo["end"]` is its
+    /// time (ms). RestAlertPlugin takes it as the rest's end and the newest change, so an older one from the watch does not move it back.
+    static let restBooked = Notification.Name("OpenGymLiveActivityRestBooked")
     private static let lock = NSLock()
 
     static func all() -> [[String: Any]] {
@@ -783,6 +786,30 @@ enum LiveActivityTick {
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
+    /// The watch moved or ended the rest while the page sleeps (RestAlertPlugin.watchRest): the
+    /// countdown follows it. Nothing is queued: the page applies the watch's own event when it wakes.
+    static func followWatchRest(wid: String, end: Double?, now: Date = Date()) async {
+        let tap = LiveTap("watchRest")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
+        let state = activity.content.state
+        // A running rest only: a paused one has no alert to move, a hold is not a rest.
+        guard activity.attributes.pv != true, state.restEndsAt != nil else { return }
+        var next = state
+        if let end = end {
+            next.restEndsAt = end
+            let left = ((end - now.timeIntervalSince1970 * 1000) / 1000).rounded(.up)
+            next.restTotal = max(state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0, left)
+        } else {
+            next.restEndsAt = nil
+            next.restLeft = nil
+            next.restTotal = nil
+        }
+        tap.willUpdate()
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
+    }
+
     /// A tap the page does all of: queued, and Pause shows as paused right away.
     static func queueOnly(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
         guard ["prev", "warm", "addSet", "pause"].contains(kind) else { return }
@@ -851,6 +878,7 @@ enum LiveActivityTick {
         content.interruptionLevel = .active
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: LiveNumbers.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
+        NotificationCenter.default.post(name: LiveActivityQueue.restBooked, object: nil, userInfo: ["end": at.timeIntervalSince1970 * 1000, "at": Date().timeIntervalSince1970 * 1000])
     }
 }
 

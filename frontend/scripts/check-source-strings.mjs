@@ -26,7 +26,7 @@ function walk(dir, out = []) {
     if (statSync(p).isDirectory()) {
       if (p === localesDir || name === 'instr' || name === 'node_modules') continue
       walk(p, out)
-    } else if (/\.(js|jsx)$/.test(name) && !/\.test\.(js|jsx)$/.test(name)) {
+    } else if (/\.(js|jsx|ts|tsx)$/.test(name) && !/\.test\.(js|jsx|ts|tsx)$/.test(name) && !/\.d\.ts$/.test(name)) {
       out.push(p)
     }
   }

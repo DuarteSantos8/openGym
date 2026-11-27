@@ -89,6 +89,14 @@ describe('Settings — week starts on', () => {
     expect(segButton('Monday').getAttribute('aria-pressed')).toBe('true')
     expect(segButton('Sunday').getAttribute('aria-pressed')).toBe('false')
   })
+
+  it('offers Saturday too (#1216)', () => {
+    mount()
+    act(() => { segButton('Saturday').click() })
+    expect(mocks.S.weekStart).toBe(6)
+    mount()
+    expect(segButton('Saturday').getAttribute('aria-pressed')).toBe('true')
+  })
 })
 
 describe('Plan — the week schedule follows the setting', () => {
@@ -104,6 +112,12 @@ describe('Plan — the week schedule follows the setting', () => {
     mocks.S.weekStart = 0
     mount()
     expect(planDays()).toEqual(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+  })
+
+  it('runs Saturday to Friday for a Saturday profile (#1216)', () => {
+    mocks.S.weekStart = 6
+    mount()
+    expect(planDays()).toEqual(['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
   })
 
   it('keeps a routine attached to its day, not to its position in the list', () => {

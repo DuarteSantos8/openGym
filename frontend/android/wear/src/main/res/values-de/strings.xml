@@ -2,19 +2,34 @@
 <!-- openGym on Wear OS, de. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
     <string name="add_birth_year">Geburtsjahr am Handy eintragen</string>
+    <string name="add_session_note">Notiz zum Training</string>
     <string name="added_weight">Zusatzgewicht</string>
     <string name="all_done_q">Alles erledigt?</string>
     <string name="all_sets_done">Alle Sätze erledigt</string>
     <string name="all_synced">Alles synchronisiert</string>
     <string name="allow">Erlauben</string>
+    <string name="archived_stay_on_phone">Archivierte Routinen bleiben auf deinem Handy.</string>
     <string name="avg">Ø</string>
     <string name="band_over">ab %1$d</string>
     <string name="band_to">%1$d bis %2$d</string>
     <string name="band_under">unter %1$d</string>
     <string name="body_weight">Körpergewicht</string>
     <string name="bodyweight">Körpergewicht</string>
+    <string name="bpm">%1$s bpm</string>
     <string name="calories">Kalorien</string>
     <string name="cancel">Abbrechen</string>
+    <string name="checkin_continue">Weiter</string>
+    <string name="checkin_energy">Energie</string>
+    <string name="checkin_energy_hi">Voller Tatendrang</string>
+    <string name="checkin_energy_lo">Auf Reserve</string>
+    <string name="checkin_skip">Heute überspringen</string>
+    <string name="checkin_sleep">Schlaf</string>
+    <string name="checkin_sleep_hi">Geschlafen wie ein Stein</string>
+    <string name="checkin_sleep_lo">Kaum geschlafen</string>
+    <string name="checkin_sore">Muskelkater</string>
+    <string name="checkin_sore_hi">Alles tut weh</string>
+    <string name="checkin_sore_lo">Nichts tut weh</string>
+    <string name="checkin_title">Wie geht\'s dir heute?</string>
     <string name="complication_desc">Deine Sätze bisher oder deine Serie.</string>
     <string name="continue_workout">Weitertrainieren</string>
     <string name="crown_hint">Dreh an der Krone, um es zu ändern.</string>
@@ -22,6 +37,7 @@
     <string name="discard_workout_q">Training verwerfen?</string>
     <string name="done">Fertig</string>
     <string name="edit">Bearbeiten</string>
+    <string name="edit_session_note">Notiz bearbeiten</string>
     <string name="effort">Anstrengung</string>
     <string name="ended_on_phone">Am Handy beendet</string>
     <string name="exercises">Übungen</string>
@@ -33,6 +49,7 @@
     <string name="heart_rate">Puls</string>
     <string name="hold">Halten</string>
     <string name="hold_to_finish">Halten zum Beenden</string>
+    <string name="hours">Stunden</string>
     <string name="how_hard">Wie schwer war der Satz?</string>
     <string name="hr_avg_max">Ø %1$d · max. %2$d</string>
     <string name="hr_why">Erlaube den Puls, dann siehst du ihn bei jedem Satz.</string>
@@ -56,10 +73,12 @@
     <string name="media_quieter">Leiser</string>
     <string name="media_title">Musik</string>
     <string name="min">min</string>
+    <string name="min_minutes">Min.</string>
     <string name="more">Mehr</string>
     <string name="muscles">Muskeln</string>
     <string name="n_more">+%1$d weitere</string>
     <string name="n_sets">%1$s Sätze</string>
+    <string name="new_record">Neuer Rekord</string>
     <string name="next_set_btn">Nächster Satz</string>
     <string name="no_age_set">Alter fehlt</string>
     <string name="no_effort_yet">Noch keine Anstrengung bewertet</string>
@@ -67,6 +86,8 @@
     <string name="no_sets_yet">Noch keine Sätze</string>
     <string name="no_workout">Kein Training läuft</string>
     <string name="none">Keine</string>
+    <string name="not_a_watch_body">Sie läuft nur auf einer Wear-OS-Uhr. Lass sie vorerst installiert: Deinstallieren löscht die Trainings auf diesem Handy. So bekommst du die Handy-App zurück: github.com/DuarteSantos8/openGym/issues/1359</string>
+    <string name="not_a_watch_title">Das ist die Uhren-App</string>
     <string name="not_now">Jetzt nicht</string>
     <string name="not_synced">Noch nicht synchronisiert</string>
     <string name="notif_running">Training läuft. Tippen und weiter geht’s.</string>
@@ -74,11 +95,14 @@
     <string name="overview">Überblick</string>
     <string name="personal_records">Rekorde</string>
     <string name="phone_away">Handy außer Reichweite. Deine Sätze warten hier.</string>
+    <string name="phone_connected">Handy verbunden</string>
+    <string name="phone_gone">Handy weg</string>
     <string name="phone_out_of_reach">Handy außer Reichweite</string>
     <string name="previous_set">Vorheriger Satz</string>
     <string name="prs">Rekorde</string>
     <string name="quick_checkin">Kurzer Check-in</string>
     <string name="quick_start">Schnellstart</string>
+    <string name="records">Rekorde</string>
     <string name="reps">Wdh.</string>
     <string name="rest">Pause</string>
     <string name="rest_day">Nichts geplant. Deine Entscheidung.</string>
@@ -87,6 +111,7 @@
     <string name="routines">Routinen</string>
     <string name="save">Speichern</string>
     <string name="save_and_start">Speichern &amp; Training starten</string>
+    <string name="saved">Gespeichert</string>
     <string name="set_of">Satz %1$d von %2$d</string>
     <string name="sets">Sätze</string>
     <string name="sets_of">%1$d von %2$d Sätzen</string>
@@ -106,7 +131,7 @@
     <string name="time">Zeit</string>
     <string name="today">Heute</string>
     <string name="up_next">Als Nächstes</string>
-    <string name="up_next_set">%1$s, Satz %2$d</string>
+    <string name="up_next_set">%1$s, Satz %2$d/%3$d</string>
     <string name="volume">Volumen</string>
     <string name="waiting_sync">Wartet auf Synchronisierung</string>
     <string name="warmup">Aufwärmen</string>

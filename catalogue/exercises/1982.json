@@ -9,6 +9,7 @@
     "chest"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "A gentle rotation stretch for the shoulder joint.",
   "instructions": [
     "Stand tall and bend one elbow to 90 degrees at your side.",

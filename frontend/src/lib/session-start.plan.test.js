@@ -196,6 +196,17 @@ describe('an edited routine starts again from its new plan', () => {
     expect(reps(e)).toEqual([10, 10])
   })
 
+  // Adding a set under double progression is not a new plan (#1530): the rows grow to the new count
+  // and the reps carry on from what was managed, with no banner.
+  it('adds a set under double progression without a restart', () => {
+    const st = state([{ id: 'A', name: 'A', ex: [{ id: BENCH, sets: 2, reps: 15, repsMin: 10, weight: 50, prog: 'double' }] }])
+    train(st, ['A'], { r: 11 })
+    cfgOf(st, 'A').sets = 3
+    const [e] = start(st, ['A'])
+    expect(e.plan.why[0]).not.toMatch(/^Plan changed/)
+    expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 12], [50, 12], [50, 12]])
+  })
+
   it('restarts a bodyweight rep goal from the new count, not from the old one plus a rep', () => {
     const ARCHER = '3294'   // archer push-up — body-weight equipment
     const st = state([{ id: 'A', name: 'A', ex: [{ id: ARCHER, sets: 2, reps: 15, weight: 0, mode: 'reps' }] }])

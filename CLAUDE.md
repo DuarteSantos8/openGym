@@ -48,6 +48,7 @@ cd frontend && npm install && npm run dev
 # Tests (Node 22, the version CI and the Dockerfiles use)
 cd frontend && npm test                          # vitest run, the whole suite
 cd frontend && npx vitest run src/lib/progression.test.js   # one file
+cd frontend && npm run typecheck                  # tsc over the .ts/.tsx files
 cd frontend && npx vitest run -t "some test name"           # one test by name
 cd api && npm test                               # node --test
 cd mcp && npm test
@@ -75,6 +76,9 @@ machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
 
 ### Frontend (`frontend/src`)
 
+- **TypeScript, step by step** (since 1.4.6, `docs/dev/TYPESCRIPT.md`): new files are `.ts`/`.tsx`,
+  checked strictly; JavaScript runs unchecked beside them until it moves. Data types live in
+  `types/model.ts`. Imports carry the real extension (`./x.ts`), shared files use erasable syntax only.
 - **`store/useStore.js`**: a single Zustand store holding the client-side app state (`S`),
   persisted to `localStorage` (`gym_state_v1`) and debounce-pushed to the server when signed in
   (`pushState`, see `lib/api.js`). On the phones it is also mirrored to a file via `lib/mobile.js`

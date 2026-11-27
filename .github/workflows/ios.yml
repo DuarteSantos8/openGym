@@ -79,7 +79,10 @@ jobs:
     needs: gate
     if: needs.gate.outputs.run == 'true'
     runs-on: macos-26
-    timeout-minutes: 60
+    # Room for the two picture steps' own limits (45 + 30 min) after setup and build (~15 min, up
+    # to ~40 with every retry): they may end their step, never the job (a slow runner needs ~15 min
+    # per watch size for the shots).
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -199,6 +202,7 @@ jobs:
       # session in a 42 mm simulator, not only photographed (a control can look right and take no tap).
       # A failing test gets two more tries, as in the iPhone's ui-tests job.
       - name: Tap the watch app
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         timeout-minutes: 30
         run: |
           ruby ios/ci/add-watch-ui-tests.rb
@@ -207,7 +211,9 @@ jobs:
           UDID=$(xcrun simctl list devices available -j | node -e '
             const d = JSON.parse(require("fs").readFileSync(0)).devices
             const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v).filter(x => /\(42mm\)/.test(x.name) && !/SE/.test(x.name))
-            process.stdout.write(all.pop().udid)')
+            const pick = all.pop()
+            if (!pick) { console.error("no available watchOS 42 mm simulator"); process.exit(1) }
+            process.stdout.write(pick.udid)')
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           set -o pipefail
@@ -224,7 +230,7 @@ jobs:
       # screen; 46 and 49 mm the busiest ones. -OpenGymWatchLong: a long workout and exercise name.
       - name: Show the watch app
         continue-on-error: true
-        # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
+        # Pictures only: a hung simulator here must not hold the job to its limit.
         timeout-minutes: 45
         working-directory: frontend/ios/App
         run: |
@@ -268,10 +274,10 @@ jobs:
                 || xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
             if [ "$size" = s40 ] || [ "$size" = s42 ]; then
-              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-end ended"
+              SCREENS="idle idle-away empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones metrics-muscles music prompt left countdown go summary summary-back summary-end summary-steel ended"
               AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort metrics-muscles prompt summary summary-end"
             else
-              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary"
+              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse metrics-muscles summary summary-steel"
               AX="set rest overview metrics-muscles"
             fi
             for screen in $SCREENS; do shot "$screen" "$screen"; done
@@ -311,7 +317,7 @@ jobs:
             if [ "$size" = s42 ]; then
               cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
               # set-noclip: the same screen without the animation, to tell what the animation costs.
-              for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+              for spec in idle:idle idle-away:idle-away set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
                 IFS=: read -r file screen flag noclip <<< "$spec"
                 if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
                 KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
@@ -331,7 +337,7 @@ jobs:
       - name: Watch promo pictures
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         continue-on-error: true
-        # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
+        # Pictures only: a hung simulator here must not hold the job to its limit.
         timeout-minutes: 30
         working-directory: frontend/ios/App
         run: |

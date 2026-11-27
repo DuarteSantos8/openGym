@@ -205,6 +205,8 @@ test('pins: a done session planned again for a later week is that day\'s session
   assert.equal(pinState(S, 'r1', TODAY, '2026-09-08'), 'done');        // before today: the old rule
   assert.equal(pinState(S, 'r1', TODAY, '2026-09-13'), 'done');        // Sunday, in a Monday-start week
   assert.equal(pinState({ ...S, weekStart: 0 }, 'r1', TODAY, '2026-09-13'), 'open');
+  assert.equal(pinState(S, 'r1', TODAY, '2026-09-12'), 'done');        // Saturday, in a Monday-start week
+  assert.equal(pinState({ ...S, weekStart: 6 }, 'r1', TODAY, '2026-09-12'), 'open'); // a Saturday start (#1216)
   assert.equal(pinState(P({ workouts: [done('r1', '2026-09-10')] }), 'r1', TODAY, TODAY), 'open'); // trained after the day
   assert.equal(pinState(S, 'r2', TODAY, '2026-09-15'), 'open');
   assert.equal(pinState(S, 'own', TODAY, '2026-09-15'), null);

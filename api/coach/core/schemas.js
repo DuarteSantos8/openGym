@@ -122,7 +122,7 @@ export const CREATE_SCHEMA = {
     },
     customEx: {
       type: 'array',
-      items: { type: 'object', properties: { id: STR, n: STR, bp: STR, desc: STR }, required: ['id', 'n'] }
+      items: { type: 'object', properties: { id: STR, n: STR, bp: STR, desc: STR, eq: STR, primaries: STRINGS, secondaries: STRINGS, aliases: STRINGS }, required: ['id', 'n'] }
     }
   },
   required: ['coach_contract', 'week', 'routines']

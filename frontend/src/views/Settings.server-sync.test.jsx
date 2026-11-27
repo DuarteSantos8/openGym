@@ -3,6 +3,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Settings from './Settings.jsx'
+import { menuSheet } from '../sheets.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -20,12 +21,13 @@ const mocks = vi.hoisted(() => {
   state.signOut = vi.fn()
   state.signOutAll = vi.fn()
   state.shareExport = vi.fn(async () => {})
+  state.dropKept = vi.fn(async () => true)
   state.snapshot = () => ({
     S: state.S, user: state.user, sync: state.sync, coachLocal: null,
     update: vi.fn(), replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), resetDemo: vi.fn(),
     syncNow: state.syncNow, unsyncedChanges: () => state.unsynced, keptChanges: async () => state.kept,
     disconnectServer: state.disconnectServer, signOut: state.signOut, signOutAll: state.signOutAll,
-    adoptProfile: vi.fn(),
+    adoptProfile: vi.fn(), dropKept: state.dropKept,
   })
   return state
 })
@@ -162,6 +164,26 @@ describe('Server & sync', () => {
     const kept = rowByTitle(page, 'Changes kept for andi')
     expect(kept.textContent).toContain('gym.example.com')
     expect(kept.textContent).toContain('Added back when this device connects as that account again.')
+  })
+
+  // #1269: kept for a server that is never coming back, they can be removed, after a warning.
+  it('the kept changes can be removed, after a warning, and only on confirm', async () => {
+    mocks.user = null
+    mocks.sync = sync('local', { server: null })
+    mocks.kept = [{ server: BASE, uid: 'u1', name: 'andi', at: 1 }]
+    const page = mount(<Settings page="account" />)
+    await settle()
+    act(() => { rowByTitle(page, 'Changes kept for andi').click() })
+    const menu = menuSheet.mock.calls.at(-1)[0]
+    expect(menu.items.map(i => i.label)).toEqual(['Save as a backup file', 'Remove'])
+    act(() => { menu.items[1].onClick() })
+    const ask = mocks.confirmSheet.mock.calls.at(-1)[0]
+    expect(ask).toMatchObject({ title: 'Remove the changes kept for andi?', danger: true })
+    expect(ask.message).toContain('gone for good')
+    expect(mocks.dropKept).not.toHaveBeenCalled()
+    await act(async () => { await ask.onConfirm() })
+    expect(mocks.dropKept).toHaveBeenCalledWith(BASE, 'u1')
+    expect(mocks.toast).toHaveBeenCalledWith('Kept changes removed')
   })
 
   it('signed in as another account, the changes kept for the first are listed in the block', async () => {

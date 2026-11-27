@@ -51,6 +51,8 @@
 
 /* ---------------------------------------------------------------- snow -- */
 .xm-snowfall{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+/* The snow globe (shake the phone): over the page like Santa's flight, under bars and sheets. */
+.xm-globe{position:fixed;inset:0;width:100%;height:100%;z-index:40;pointer-events:none}
 .xm-flake{
   position:absolute;top:-16px;width:var(--s);height:var(--s);margin-left:calc(var(--s) / -2);
   border-radius:50%;background:var(--xm-flake);opacity:0;
@@ -485,7 +487,7 @@
 .xm-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:6px}
 
 @media (prefers-reduced-motion: reduce){
-  .xm-snowfall,.xm-flight,.xm-burst{display:none}
+  .xm-snowfall,.xm-flight,.xm-burst,.xm-globe{display:none}
   .xm-nose i,.xm-rudhead,.xm-teamsvg .xm-pair,.xm-teamsvg .xm-spark,.xm-arm-wave,.xm-setspark,.xm-wlights .xm-bulb,.xm-peek-house .xm-pk,.xm-plandeco .xm-pk,
   .xm-flap,.xm-door.xm-today .xm-flap,.xm-door.xm-shake,.xm-reveal-icon,.xm-hang,.xm-ginger-hang,.xm-bulb,.xm-ball,.xm-stage .xm-bigflap.xm-nudge{animation:none;transition:none}
   .xm-reveal{animation:xm-fade .2s ease both}
@@ -554,6 +556,13 @@
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 5' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M2 5C4 2.6 9 1.4 18 1.2s22 .6 30 1.6 14 1.4 18 2.2ZM128 5c2-1.6 6-2.4 12-2.4s9 .8 12 2.4ZM176 5c1.4-1.2 4-1.8 7-1.6s5 .8 6 1.6Z'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
   opacity:.92;
 }
+/* Not one drift on every card: five shapes, each its own width and depth, and every other card
+   the mirror image, so the pattern only comes round again after ten cards. */
+:root[data-season="christmas"][data-xm-caps] .card:nth-child(5n+2)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 6' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M10 6C14 3 26 1.6 50 1.4S96 2 120 2.6S156 3.8 160 6ZM170 6c1.5-1.3 4-1.9 7-1.8s5 .8 6.5 1.8Z'/%3E%3C/svg%3E");left:14px;right:30px;top:-5px;height:6px}
+:root[data-season="christmas"][data-xm-caps] .card:nth-child(5n+3)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 6' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M30 6c2-1.4 6-2 11-2s8 .8 10 2ZM90 6C96 3 112 1 140 .9S180 2.5 192 6Z'/%3E%3C/svg%3E");left:30px;right:12px;top:-5px;height:6px;opacity:.88}
+:root[data-season="christmas"][data-xm-caps] .card:nth-child(5n+4)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 6' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M14 6c2-1.8 6-2.6 11-2.6s9 .9 11 2.6ZM84 6c2.4-2 7-3 13-3s10.6 1 13 3ZM158 6c1.6-1.4 4.4-2 8-2s6.4.7 8 2Z'/%3E%3C/svg%3E");left:18px;right:18px}
+:root[data-season="christmas"][data-xm-caps] .card:nth-child(5n)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 6' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M0 6C6 4.2 20 3.6 40 2S70 .8 82 2.2S110 4 140 4.4S186 4.8 200 6Z'/%3E%3C/svg%3E");left:16px;right:16px;top:-3px;height:4px;opacity:.85}
+:root[data-season="christmas"][data-xm-caps] .card:nth-child(2n)::before{transform:scaleX(-1)}
 :root[data-season="christmas"][data-xm-caps] .card.xm-advent::before{display:none}
 
 /* The Christmas colours: a soft festive vignette in the corners of the screen, berry red at the
@@ -583,3 +592,9 @@
   .xm-setspark{display:none}
   #timer > .xm-reststar{transition:none}
 }
+
+/* The Saturday presents and the thank-you behind door 24. */
+.xm-gift-img{flex:none;width:46px;height:46px;border-radius:11px}
+[data-present="nutrition"] .xm-gift-i{color:var(--green)}
+.xm-thanks .xm-reveal-text{text-align:start}
+.xm-thanks-sig{margin:6px 0 4px;text-align:end;font-weight:600;font-style:italic;color:var(--label-2)}

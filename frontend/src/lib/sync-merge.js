@@ -41,6 +41,7 @@
  *     copy's on a tie. For plates and dumbbells the key is the unit, so the inventory of one unit
  *     is kept whole, as last edited; for dayNotes the key is the date, so each day's note is its own
  *   - advent: of the same year, the union of the doors opened and the challenges done (mergeAdvent)
+ *   - prizes: the union of the presents given (mergePrizes)
  *   - challenges: per month, the picks made first and the union of the ones done (mergeChallenges)
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
@@ -81,6 +82,7 @@ import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
 import { mergeAdvent } from './advent.js'
+import { mergePrizes } from './prizes.js'
 import { mergeChallenges } from './challenges.js'
 import { mergeDay, dailyModeOf, settleAll } from './weigh-ins.js'
 import { applyExerciseMerges } from './exercise-merge.js'
@@ -988,6 +990,9 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   // ticked challenge, whichever copy changed the field last. A calendar of a later year wins.
   const advent = mergeAdvent(n.advent, o.advent)
   if (advent) out.advent = advent
+  // Presents kept for good (lib/prizes.js): one given on either device stays given.
+  const prizes = mergePrizes(n.prizes, o.prizes)
+  if (prizes) out.prizes = prizes
   // The monthly challenges (lib/challenges.js): a badge earned on either device stays earned.
   const challenges = mergeChallenges(n.challenges, o.challenges)
   if (challenges) out.challenges = challenges

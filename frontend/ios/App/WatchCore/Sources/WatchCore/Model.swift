@@ -25,6 +25,15 @@ struct Snapshot: Codable, Equatable {
     /// The phone's clock when it made this snapshot (ms, protocol 2): from a snapshot that came as
     /// a message, the watch works out how far its own clock is off the phone's (ClockOffset).
     var now: Double? = nil
+    /// The routines file this snapshot goes with (lib/watch-routines-file.js): `ready.others` is only
+    /// what fitted the size limit, the file has all of them. None from an older phone.
+    var routinesHash: String? = nil
+}
+
+/// The file the phone sends with every routine the watch can start (not archived, by folder).
+struct RoutinesFile: Codable, Equatable {
+    var h: String
+    var others: [ReadySession]
 }
 
 /// What the watch can start by itself: today's planned session and a few other routines.
@@ -41,6 +50,8 @@ struct ReadySession: Codable, Equatable {
     var healthType: String?
     /// Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it.
     var muscleNames: [String: String]? = nil
+    /// The phone's folder for it (Plan, lib/routine-folders.js); none from an older phone or for a routine in no folder.
+    var folder: String? = nil
 }
 
 struct ActiveWorkout: Codable, Equatable {
@@ -74,6 +85,8 @@ struct ActiveWorkout: Codable, Equatable {
     var restLeft: Double? = nil
     /// Each muscle's name in the app's language, for the Muscles page. Older phones never send it.
     var muscleNames: [String: String]? = nil
+    /// The workout's own note (the phone's session note, cut at 280), for the Overview's "Add note".
+    var note: String? = nil
 }
 
 struct RestInfo: Codable, Equatable {
@@ -212,6 +225,13 @@ struct WatchSettings: Codable, Equatable {
     var forgotten: ForgottenSettings?
     /// The phone handles setMark / addSet / removeSet; without it the watch hides the set menu.
     var setMenu: Bool?
+    /// The Overview may offer "Add note" (the phone applies workoutNote); nil from an older phone.
+    var workoutNote: Bool?
+    /// A workout started here asks the daily check-in first (#1535, the phone's "Ask on the watch
+    /// too"); nil from an older phone, which never asks.
+    var checkin: Bool? = nil
+    /// The newest day answered on the phone (YYYY-MM-DD): today's answered, nothing to ask.
+    var checkinDay: String? = nil
 }
 
 /// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).

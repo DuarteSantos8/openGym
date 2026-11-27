@@ -797,6 +797,72 @@ describe('an edited plan restarts progression (#275)', () => {
     expect(p).toMatchObject({ kind: 'hold', sec: 30 })
   })
 
+  // #1530 (from @Brandon168's #1533): double and steady progression judge the reps reached at a
+  // weight, so a set more or less leaves where the range stands. Every other policy reads its rows,
+  // so there it is an edit.
+  describe('a change of sets alone', () => {
+    const range = { sets: 2, reps: 20, repsMin: 12, weight: 45 }
+    const abduction = logged(LIFT, range, { ...range }, 45, [13, 12, 12])
+    const S = { unit: 'kg', workouts: [abduction] }
+    const wider = { id: LIFT, sets: 3, reps: 20, repsMin: 12, weight: 45, prog: 'double' }
+
+    it('is not a plan change under double or steady progression', () => {
+      expect(planChanged(range, wider)).toBe(true)
+      expect(planChanged(range, wider, 'double')).toBe(false)
+      expect(planChanged(range, wider, 'steady')).toBe(false)
+      expect(planChanged(range, wider, 'linear')).toBe(true)
+      expect(planChanged(range, wider, 'triple')).toBe(true)
+      // The reps still are one.
+      expect(planChanged(range, { ...wider, repsMin: 10 }, 'double')).toBe(true)
+    })
+
+    it('leaves double progression where it was, with its own line', () => {
+      const p = nextPrescription(S, wider, R)
+      expect(p).toMatchObject({ kind: 'hold', weight: 45, reps: 13 })
+      expect(p.why[0]).toBe('Same weight, aim for {0} reps this time.')
+      // One set fewer is no restart either, and a raise earned at the top still comes (the Hip
+      // Thrust in #1530: adding a set cost the increase).
+      expect(nextPrescription(S, { ...wider, sets: 1 }, R).why[0]).toBe('Same weight, aim for {0} reps this time.')
+      const top = { unit: 'kg', workouts: [logged(LIFT, range, { ...range }, 45, [20, 20])] }
+      expect(nextPrescription(top, wider, R)).toMatchObject({ kind: 'up', weight: 47.5, reps: 12 })
+    })
+
+    it('leaves steady double progression where it was', () => {
+      const steadyRange = { sets: 2, reps: 12, repsMin: 8, weight: 40 }
+      const st = { unit: 'kg', workouts: [logged(LIFT, steadyRange, { ...steadyRange, reps: 10 }, 40, [10, 10])] }
+      const cfg = { id: LIFT, sets: 3, reps: 12, repsMin: 8, weight: 40, prog: 'steady' }
+      const p = nextPrescription(st, cfg, R)
+      expect(p).toMatchObject({ kind: 'hold', weight: 40, reps: 11 })
+      expect(p.why[0]).toBe('Every set hit {0}. Same weight, {1} reps this time.')
+    })
+
+    it('still restarts the other policies', () => {
+      const two = { sets: 2, reps: 10, weight: 40 }
+      const st = { unit: 'kg', workouts: [logged(LIFT, two, { ...two }, 40, [10, 10])] }
+      const p = nextPrescription(st, { id: LIFT, sets: 3, reps: 10, weight: 40, prog: 'linear' }, R)
+      expect(p).toMatchObject({ kind: 'hold', weight: 40, reps: 10 })
+      expect(p.why[0]).toBe('Plan changed, so starting from your new target.')
+      // The same history with the plan left alone earns its raise.
+      expect(nextPrescription(st, { id: LIFT, sets: 2, reps: 10, weight: 40, prog: 'linear' }, R)).toMatchObject({ kind: 'up', weight: 42.5 })
+    })
+
+    it('keeps a stall streak under double progression, and ends it for the others', () => {
+      const at = (planned, reps) => ({ d: '2026-04-01', routineIds: ['r'], entries: [{ id: LIFT, planned, target: { ...planned }, sets: reps.map(r => ({ w: 50, r, done: true })) }] })
+      const old = { sets: 2, reps: 12, repsMin: 8, weight: 50 }
+      const more = { ...old, sets: 3 }
+      const miss = { unit: 'kg', workouts: [at(old, [9, 9]), at(more, [9, 9, 9])] }
+      const rows = sessionsFor(miss, LIFT, null, 'r')
+      expect(stallCount(rows, 'double')).toBe(2)
+      expect(stallCount(rows, 'linear')).toBe(1)
+    })
+
+    it('still restarts a bodyweight climb, where the sets are what progression adds', () => {
+      const S2 = { unit: 'kg', workouts: [logged(PUSH, { sets: 2, reps: 15, weight: 0 }, { sets: 2, reps: 15, weight: 0 }, 0, [15, 15])] }
+      const p = nextPrescription(S2, { id: PUSH, sets: 3, reps: 15, weight: 0, bodyweight: true, prog: 'double' }, R)
+      expect(p.why[0]).toBe('Plan changed, so starting from your new target.')
+    })
+  })
+
   it('starts a routine from its own target when the only history is another routine\'s', () => {
     const B = { d: '2026-04-01', routineIds: ['b'], entries: [{ id: PUSH, rid: 'b', planned: { sets: 2, reps: 15, weight: 0 }, target: { sets: 2, reps: 15, weight: 0 }, sets: [{ w: 0, r: 15, done: true }, { w: 0, r: 15, done: true }] }] }
     const p = nextPrescription({ unit: 'kg', workouts: [B] }, { id: PUSH, sets: 2, reps: 10, weight: 0, bodyweight: true }, { id: 'a', ex: [] })

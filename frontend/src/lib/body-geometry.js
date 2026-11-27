@@ -9,6 +9,9 @@
 //   - where a view has no path of the side head of its own, its front or rear head is shaded with
 //     the side head too (`blend`): a lateral raise lights up the shoulder from both sides, a rear
 //     delt fly only from the back
+//   - on the front, the slips on the side of the ribs under the arm are the serratus, as
+//     MuscleMap's own serratus lists them; the generated file had them under the obliques, so an
+//     oblique exercise lit up the serratus too (#1263). The obliques keep the long lower paths
 //
 // Imported dynamically, like body-paths.js, so its ~90 KB land only where a map is drawn.
 import PATHS from './body-paths.js'
@@ -16,11 +19,17 @@ import PATHS from './body-paths.js'
 // Indices into body-paths.js, checked by body-geometry.test.js against the paths' own heights.
 const SPLIT = {
   male: {
-    front: { deltoids: { 'front-delts': [0, 1] } },
+    front: {
+      deltoids: { 'front-delts': [0, 1] },
+      obliques: { obliques: [6, 7, 14, 15], serratus: [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13] },
+    },
     back: { deltoids: { 'rear-delts': [0, 1] }, 'upper-back': { lats: [1, 5], 'upper-back': [0, 2, 3, 4] } },
   },
   female: {
-    front: { deltoids: { 'side-delts': [0, 2], 'front-delts': [1, 3] } },
+    front: {
+      deltoids: { 'side-delts': [0, 2], 'front-delts': [1, 3] },
+      obliques: { obliques: [4, 8], serratus: [0, 1, 2, 3, 5, 6, 7, 9, 10, 11] },
+    },
     back: { deltoids: { 'rear-delts': [0, 1] }, 'upper-back': { lats: [1, 3], 'upper-back': [0, 2] } },
   },
 }

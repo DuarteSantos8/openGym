@@ -124,4 +124,69 @@ final class GymReminderRules {
     static boolean mayScan(String scanDay, int scansThatDay, String today) {
         return !today.equals(scanDay) || scansThatDay < SCANS_PER_DAY;
     }
+
+    // ---------------------------------------------------------------- keeping the check cheap (#1477)
+    //
+    // A check used to ask for GPS-grade fixes every 15 s for its whole 15 minutes, three times a
+    // day: up to 45 minutes of GPS for a phone that sits at home or at work inside a gym's approach
+    // zone. Far from every gym a cheap fix (Wi-Fi and cell, every 30 s) says enough; GPS only
+    // matters for the last few hundred metres. And a phone that has not got any closer for a few
+    // minutes is not on its way in: the check ends. The idea, and the far/near split, come from
+    // cubetes' PR #1478; rebuilt smaller here.
+
+    /** Closer than this to a gym the check asks for GPS-grade fixes; further away, cheap ones. */
+    static final double NEAR_M = 400;
+    /** Back to cheap fixes only beyond this, so hovering around NEAR_M does not flip every fix. */
+    static final double NEAR_BACK_M = 500;
+    /** A fix this often while far is plenty at walking pace (about 40 m between two). */
+    static final long FAR_INTERVAL_MS = 30_000L;
+    /** No step this much closer to a gym for STALL_MS: the phone is not on its way in. */
+    static final double PROGRESS_M = 75;
+    static final long STALL_MS = 5 * 60_000L;
+    /** Unless it waits this close to a gym's edge (the car park, a red light by the door). */
+    static final double PARK_M = 200;
+
+    /** The distance to the nearest gym's edge (distance minus radius, never below 0). */
+    static double nearestEdge(double[] dist, double[] radius) {
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i < dist.length; i++) best = Math.min(best, Math.max(0, dist[i] - radius[i]));
+        return best;
+    }
+
+    /** Whether the check asks for cheap fixes: every gym beyond NEAR_M (NEAR_BACK_M once it came closer). */
+    static boolean far(double[] dist, boolean wasFar) {
+        double limit = wasFar ? NEAR_M : NEAR_BACK_M;
+        for (double d : dist) if (d <= limit) return false;
+        return true;
+    }
+
+    static long intervalFor(boolean far) {
+        return far ? FAR_INTERVAL_MS : SCAN_INTERVAL_MS;
+    }
+
+    /**
+     * Location providers to try, best first (LocationManager's names). Fused from Android 12, asked
+     * for balanced power while far. Below 12 far means the network provider, never the GPS chip,
+     * with GPS only as the fallback for a phone that has no network location at all.
+     */
+    static String[] providersFor(boolean far, int sdk) {
+        if (sdk >= 31) return new String[] { "fused", "gps", "network" };
+        return far ? new String[] { "network", "gps" } : new String[] { "gps", "network" };
+    }
+
+    /** How close the check has come: the best edge distance so far and when it was reached. */
+    static final class Progress {
+        double best = Double.MAX_VALUE;
+        long at;
+
+        /** Counts a fix; true when the phone has not come PROGRESS_M closer for STALL_MS, away from every gym's edge. */
+        boolean stalled(double edge, long now) {
+            if (best == Double.MAX_VALUE || edge < best - PROGRESS_M) {
+                best = edge;
+                at = now;
+                return false;
+            }
+            return edge > PARK_M && now - at >= STALL_MS;
+        }
+    }
 }

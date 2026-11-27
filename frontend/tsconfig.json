@@ -1,0 +1,26 @@
+{
+  // TypeScript, step by step (docs/dev/TYPESCRIPT.md). JavaScript keeps working; .ts/.tsx files are
+  // checked strictly. tsc only checks (noEmit): Vite and vitest compile, and the MCP server and the
+  // API load shared .ts files straight in Node (type stripping), hence erasableSyntaxOnly.
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

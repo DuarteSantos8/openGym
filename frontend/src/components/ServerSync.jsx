@@ -12,7 +12,7 @@ import { MOBILE, shareExport } from '../lib/mobile.js'
 import { offlineBuild } from '../lib/build-caps.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { DEMO } from '../lib/demo.js'
-import { askAddDeviceData, menuSheet } from '../sheets.jsx'
+import { askAddDeviceData, menuSheet, confirmSheet } from '../sheets.jsx'
 import { ConnectSheet, CfAccessSheet } from '../views/MobileOnboarding.jsx'
 import { passwordOn, openPasswordSignIn } from './PasswordAuth.jsx'
 import { Section, Row, Button } from './ui.jsx'
@@ -83,6 +83,8 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline(), off
         banner: sync.pending ? t('Offline. Your changes are saved on this device and sync when you’re back online.') : t('Offline. Showing the last copy synced with the server.'),
       }
     case 'error':
+      // Cloudflare Access in front of the server said no (#1529): its token, not the server.
+      if (err.code === 'cf-access') return { tone: 'bad', icon: 'lock', action: 'retry', line: t('Cloudflare Access refused the request'), banner: mobile ? t('Cloudflare Access in front of your server refused this phone. Check the service token under Cloudflare Access. Your changes are kept here.') : t('Cloudflare Access in front of your server refused this browser. Reload the page to sign in again. Your changes are kept here.') }
       return err.code === 'bad-response'
         ? { tone: 'bad', icon: 'warning', action: 'retry', line: t('Not an openGym answer (HTTP {0})', err.status), banner: t('Your server’s address answered with something other than openGym (HTTP {0}). Your changes are kept here.', err.status) }
         : { tone: 'bad', icon: 'warning', action: 'retry', line: t('Server error (HTTP {0})', err.status), banner: t('Your server answered with an error (HTTP {0}). Your changes are kept here.', err.status) }
@@ -312,9 +314,23 @@ export function KeptChangesRows() {
     setTimeout(() => URL.revokeObjectURL(a.href), 60000)
     useUI.getState().toast(t('Backup exported'))
   }
+  // A server that will never come back (#1269) leaves these waiting forever: they can go, after
+  // a warning that says what is lost, with the backup file one tap away in the same menu.
+  const remove = k => confirmSheet({
+    title: t('Remove the changes kept for {0}?', k.name || k.uid),
+    message: t('They are gone for good. This device will not add them back, even if that account connects again. Save them as a backup file first if you might want them.'),
+    confirmText: t('Remove'), danger: true,
+    onConfirm: async () => {
+      const ok = await useStore.getState().dropKept(k.server, k.uid)
+      useUI.getState().toast(ok ? t('Kept changes removed') : t('Something went wrong. Try again.'))
+    },
+  })
   return rows.map(k => <Row key={(k.server || '') + '|' + k.uid} icon="history" iconTint="var(--orange)"
     title={t('Changes kept for {0}', k.name || k.uid)}
     subtitle={(k.server ? hostOf(k.server) + ' · ' : '') + t('Added back when this device connects as that account again.')}
     accessory="chevron"
-    onClick={() => menuSheet({ title: t('Changes kept for {0}', k.name || k.uid), items: [{ icon: 'download', label: t('Save as a backup file'), onClick: () => save(k) }] })} />)
+    onClick={() => menuSheet({ title: t('Changes kept for {0}', k.name || k.uid), items: [
+      { icon: 'download', label: t('Save as a backup file'), onClick: () => save(k) },
+      { icon: 'trash', label: t('Remove'), danger: true, onClick: () => remove(k) },
+    ] })} />)
 }

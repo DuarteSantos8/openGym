@@ -222,6 +222,47 @@ describe('routine long-press reorder', () => {
     expect(exercises().map(e => e.id)).toEqual(['a', 'tail', 'b', 'c'])
   })
 
+  it('a row that passed a tall superset can be taken back past it (rows report their slide, as a browser does)', () => {
+    const layout = mount([configured('a'), configured('b', { sg: 'g' }), configured('c', { sg: 'g' }), configured('tail')])
+    // As in a real browser, a row's rect includes the slide it is making room with.
+    rows().forEach((row, i) => {
+      row.getBoundingClientRect.mockImplementation(() => {
+        const m = /translate3d\(0, (-?[\d.]+)px/.exec(row.style.transform || '')
+        return rect(layout.tops[i] + (m ? Number(m[1]) : 0), 70)
+      })
+    })
+    const tail = rows()[3], item = tail.querySelector('.item')
+    lift(tail, layout.centers[3])
+    const supersetMiddle = (layout.tops[1] + layout.bottoms[2]) / 2
+    // up past the superset's middle: both its rows make room
+    pointer(item, 'pointermove', { y: supersetMiddle - 20 })
+    expect(rows()[1].style.transform).toMatch(/translate3d\(0, \d/)
+    expect(rows()[2].style.transform).toMatch(/translate3d\(0, \d/)
+    // and back below it: the superset returns at once instead of staying out of the way
+    pointer(item, 'pointermove', { y: supersetMiddle + 20 })
+    expect(rows()[1].style.transform).toBe('translate3d(0, 0px, 0)')
+    expect(rows()[2].style.transform).toBe('translate3d(0, 0px, 0)')
+    pointer(item, 'pointerup', { y: supersetMiddle + 20 })
+    expect(exercises().map(e => e.id)).toEqual(['a', 'b', 'c', 'tail'])
+  })
+
+  it('an exercise reaches the end below a superset, and a superset the end below an exercise', () => {
+    let layout = mount([configured('a'), configured('b', { sg: 'g' }), configured('c', { sg: 'g' })])
+    let row = rows()[0], item = row.querySelector('.item')
+    lift(row, layout.centers[0])
+    pointer(item, 'pointermove', { y: layout.bottoms[2] + 30 })
+    pointer(item, 'pointerup', { y: layout.listRect.bottom - 1 })
+    expect(exercises().map(e => e.id)).toEqual(['b', 'c', 'a'])
+
+    act(() => root.unmount()); host.remove(); root = null; host = null
+    layout = mount([configured('b', { sg: 'g' }), configured('c', { sg: 'g' }), configured('a')])
+    row = rows()[0]; item = row.querySelector('.item')
+    lift(row, layout.centers[0])
+    pointer(item, 'pointermove', { y: layout.listRect.bottom - 1 })
+    pointer(item, 'pointerup', { y: layout.listRect.bottom - 1 })
+    expect(exercises().map(e => e.id)).toEqual(['a', 'b', 'c'])
+  })
+
   it('moves the selected duplicate occurrence rather than finding by catalogue id', () => {
     const first = configured('dup', { weight: 10, reps: 3, note: 'first' })
     const second = configured('dup', { weight: 20, reps: 9, note: 'second' })

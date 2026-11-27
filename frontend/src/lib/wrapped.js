@@ -20,6 +20,8 @@ import { MUSCLES, loadOfWorkouts } from './muscles.js'
 import { isoOf, weekKey, weekStartOf, weekOrder } from './format.js'
 import { LB_KG } from './units.js'
 import { isOn } from './modules.js'
+// The seasonal QA clock (dev server and screenshot builds only; in a release it is plain new Date()).
+import { seasonNow } from './season-clock.js'
 
 export const SEASON_FROM = [12, 1]   // Dec 1, local
 export const SEASON_TO = [1, 31]     // to the end of Jan 31: the year just gone stays up a while
@@ -52,7 +54,7 @@ export function wrappedYears(S) {
    day for the season, the Home card and the notification, so December can be previewed in
    October. Nothing else in the app reads it. */
 export const NOW_KEY = 'og_wrapped_now'
-export function wrappedNow(real = new Date()) {
+export function wrappedNow(real = seasonNow()) {
   try {
     const v = localStorage.getItem(NOW_KEY)
     if (v && ISO.test(v)) {

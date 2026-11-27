@@ -70,6 +70,11 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 - "Timed holds start by themselves" on the phone: after a rest (run out or skipped, here or on the
   phone) the hold's 3-2-1 comes up by itself. Not on the watches without a hold timer ((:small)):
   there Done logs the seconds, and an automatic one would have logged a set nobody did.
+  With it on, the phone and the watch each run the hold; a hold keeps the set it is for
+  (`Core.holdFor`: the set's id, else its place, and the side), so its end logs that set, and
+  when the phone's hold ends first and ticks it, the watch's hold (or its 3-2-1) ends unlogged
+  and the watch follows the phone's tick and rest (`Core.holdAt`, `Actions.followTick`, #1403):
+  one hold, one rest, one set, the rule the Apple Watch (#1409) and Wear OS (#1427) follow.
 - Cardio is logged on the phone (the watch says so and moves on).
 - No exercise media goes to the watch, text and numbers only (and the licence would not allow it).
 - Heart rate: the watch's optical sensor (`Toybox.Sensor` / `Activity.Info.currentHeartRate`)
@@ -156,8 +161,10 @@ screen's own actions. Only the wire differs: Connect IQ messages through Garmin 
 `lib/garmin-snapshot.js` `garminSnapshot(snap)` cuts the snapshot `startWatchSync` builds (with
 settings, streak and discarded) down to what a Connect IQ message carries:
 
-- the running workout's **window**: the exercise up now, its whole superset, and the one after it,
-  each with `i` (its place in the whole workout, the events' `entryIdx`); plus `count`,
+- the running workout's **window**: the exercise up now, its whole superset, and the whole block
+  after it (the next superset, or the next exercise; since 1.4.6, so the watch goes on into a
+  superset without waiting for the phone, #1295), each with `i` (its place in the whole workout,
+  the events' `entryIdx`); plus `count`,
   `progress: [done, total]` and `volume` over the whole workout, for the end page and the summary;
 - **today's routine** with its exercises (so the watch can start it with the phone away), the
   **other routines by name** only (up to 8; the watch asks the phone to start those);
@@ -166,9 +173,14 @@ settings, streak and discarded) down to what a Connect IQ message carries:
   discarded ids;
 - at most **3 KB as JSON** (`GARMIN_MAX_BYTES`; 4 KB until the 1.4.5 watch round: in the
   simulator an Instinct 2 runs out of memory parsing 3.5 KB), cutting the least useful parts first.
-  Today's rows go without their nulls and noes (a missing key reads as null or no on the watch),
-  and while a workout runs today goes by name only, so the snapshot that goes with every set stays
-  small.
+  Today's rows and, since 1.4.6, the workout's go without their nulls and noes (a missing key reads
+  as null or no on the watch), an exercise without `mode` when it is reps and without `step` when
+  it is the watch's default; while a workout runs today goes by name only, so the snapshot that
+  goes with every set stays small. When it is still too big, the block after the one up now goes
+  whole (half a superset would be done in the wrong order), then long names are cut, then (only
+  with more than one exercise in the superset up now) half of `acked`, and last the superset's
+  exercises that come furthest after the one up now, never that one: a six-exercise circuit fits
+  whole even with the catalogue's longest names (#1471).
 
 Same field names as the other watches' snapshot. The fixture `frontend/garmin/test/snapshot.json`
 is what the watch is written against; `garmin-snapshot.test.js` builds it from the Wear OS fixture
@@ -223,6 +235,11 @@ ticked on the phone or the phone's next exercise, the hold counted in after a re
 pairs packing; and once less than 30 KB is free a new set past 6 waiting is held back as a pending
 tick and goes out when there is room (`Core.full` / `refill`, the Instinct 2 family's rule since
 1.4.5, now on all of them; such a set goes without its heart rate).
+
+While the lifter stands at "Next exercise is on its way from your phone" (or a workout started by
+name waits for its exercises, `Core.needsPhone`), all of that runs on 10 s instead of a minute,
+still doubling while the phone stays silent, and the phone is asked for its latest even after it
+answered once (#1295): a snapshot lost on the way used to keep that page up for minutes.
 
 Three more things keep the link from stopping (`Link.retry`, once a second): a `transmit` that
 never calls back at all is given up on after 45 s (`busy` used to stay true until the app was
@@ -449,7 +466,14 @@ You need the Connect IQ SDK and the device files:
    routine ready, two more by name, a streak), fresh on every load. It also prints the memory in
    use every 2 s (`mem <used> <peak> <total>` in `bin/sim/logs/monkeydo-<dev>.log`). The real
    builds leave `(:sim)` out (`monkey.jungle`). `SIM_NONE=1 sim/run.sh build <dev>` builds a watch
-   that has never heard from the phone (the "Not synced yet" screen).
+   that has never heard from the phone (the "Not synced yet" screen). `SIM_PHONE=1` builds one
+   whose phone started a workout (a superset, a per-side set, a hold, warm-ups, numbers as the
+   Android bridge hands them over) and then plays that phone (`sim/phone.mc.in`, left out of the
+   build without it so `long` measures the app alone): every 2 s the watch's new events go
+   to its copy of the workout and the window comes back through the app's own path
+   (`OpenGymApp.took`), as lib/garmin-snapshot.js makes it; `SIM_PHONE=start` waits for a start
+   from the watch instead (`SIM_AUTOHOLD=1`: "Timed holds start by themselves"; `SIM_PHONEHOLD=1`:
+   the phone's own hold ends 4 s into the watch's and ticks the set there, #1403).
 
    What `setup` works around (paths in the script's variables): the simulator is built for Ubuntu
    22.04; on Debian 13 it lacks GTK 3 (taken from Debian's packages into a private folder),

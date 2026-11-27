@@ -535,7 +535,8 @@ test('a debrief score outside 1-10 is clamped, not refused', () => {
   assert.equal(validateDebrief({ summary: 'ok', score: -2, nextTime: ['x'] }).proposal.score, 1);
 });
 
-/* A created plan's own exercises carry a name, a body part and a description, and nothing else:
+/* A created plan's own exercises carry a name, a body part, a description and (#1250) equipment,
+   muscles and other names, and nothing else:
    a `url` the model made up is a link the app would offer the person to open, and a `media` ref
    would point at a file the model never saw. Both are dropped, whatever the model wrote. */
 test('a plan\'s custom exercises lose any media or link the model put on them', () => {
@@ -549,6 +550,25 @@ test('a plan\'s custom exercises lose any media or link the model put on them', 
   });
   assert.equal(r.ok, true);
   assert.deepEqual(r.bundle.customEx, [{ id: 'cx1', n: 'Sandbag carry', bp: 'back', desc: 'Hug it, walk.' }]);
+});
+
+/* #1250: a custom exercise the Coach creates keeps its equipment, muscles and aliases, through the
+   same gate a plan file's goes through: muscles the map can draw, a supporting muscle never repeating
+   a main one, equipment the app knows. */
+test('a plan\'s custom exercises keep their equipment, muscles and aliases, gated (#1250)', () => {
+  const r = validatePlan({
+    routines: [{ name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 10 }, { id: 'cx2', sets: 3, reps: 10 }] }],
+    customEx: [
+      { id: 'cx1', n: 'Landmine press', bp: 'shoulders', eq: 'Barbell', primaries: ['front-delts', 'made-up', 'chest'], secondaries: ['chest', 'triceps'], aliases: ['Angled press', 42, ''] },
+      { id: 'cx2', n: 'Rock lift', bp: 'back', eq: 'a pet rock', primaries: 'lats', secondaries: [] }
+    ]
+  });
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.bundle.customEx[0], {
+    id: 'cx1', n: 'Landmine press', bp: 'shoulders', eq: 'barbell',
+    primaries: ['front-delts', 'chest'], secondaries: ['triceps'], mv: 2, aliases: ['Angled press']
+  });
+  assert.deepEqual(r.bundle.customEx[1], { id: 'cx2', n: 'Rock lift', bp: 'back' });
 });
 
 /* ---------------- #313: an exercise already in the routine ---------------- */
