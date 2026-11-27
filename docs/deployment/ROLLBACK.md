@@ -1,0 +1,35 @@
+# Rollback — Render → Railway / Vercel migration
+
+Render stays the authoritative API and MCP until the owner accepts the migration. Nothing in this
+plan deletes Render, its disk, the Supabase project, auth users or the OAuth client.
+
+## Platform changes made so far (newest last)
+
+| When (UTC) | Change | Revert |
+|---|---|---|
+| 2026-11-27 14:52 | Railway `ironvane-web`: `NGINX_PORT` 8080 → 3000 | `railway variables -s ironvane-web --set NGINX_PORT=8080` |
+| 2026-11-27 14:54 | Railway `ironvane-web` service domain `c5a1b502…` target port 8080 → 3000 | `railway domain update c5a1b502-597a-4450-982c-bd028caf1dcc -s ironvane-web --port 8080` |
+
+Both affect only the Railway candidate stack, which serves no real users.
+
+## Frontend
+
+- Repository change: revert the PR that touched `frontend/vercel.json`. The `/api` rewrite still
+  targets `ironvane-api.onrender.com`, so the frontend keeps using Render.
+- Vercel: promote the previous production deployment (`vercel promote <deployment-url>` or
+  Dashboard → Deployments → Promote). Every deployment stays addressable by its own URL.
+
+## API data (when a cutover has happened)
+
+1. Freeze writes on the side being abandoned (scale Railway API to 0 or set `INVITE_ONLY=1` and
+   stop the frontend rewrite).
+2. Archive Railway `/data` the same way as the Render backup and diff it against the cutover
+   manifest. Anything newer than the cutover is user data created on Railway: reconcile it into
+   Render before Render takes writes again. Never overwrite the newer file with the older one.
+3. Point `frontend/vercel.json` back at Render, redeploy, verify `/api/health` and a sign-in.
+
+## Auth
+
+- Supabase redirect URIs are only ever added during migration; old ones are removed after the
+  replacement is verified. Rolling back is re-adding the previous URI to the OAuth client and the
+  Auth → URL configuration allow-list.
