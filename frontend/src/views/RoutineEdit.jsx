@@ -27,6 +27,7 @@ import { markEntryUndone } from '../lib/sync-merge.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
+import RoutineWeeklySets from '../components/RoutineWeeklySets.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
 import { viewTarget, exUnitOf } from '../lib/ex-unit.js'
 
@@ -622,6 +623,7 @@ export default function RoutineEdit() {
     })}{reorder.drag && <div className="routine-drop-indicator" data-testid="routine-drop-indicator"
       aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
 
+    <RoutineWeeklySets S={S} />
     {/* Coverage of the routine as planned, so a gap shows up while you're building it
         rather than after a month of training around it. */}
     {r.ex.length > 0 && (() => {

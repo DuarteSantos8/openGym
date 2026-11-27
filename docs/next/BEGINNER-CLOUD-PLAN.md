@@ -161,7 +161,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 | EP26-T04 | Ladder skill tree | open |
 | EP26-T05 | Haptics and sound kit that respects mute and reduced motion | open |
 | EP26-T06 | Second form-check movement (closes EP10-T04) | open; needs the owner's three clips first |
-| EP26-T07 | Routine builder shows weekly sets per muscle against the goal | open |
+| EP26-T07 | Routine builder shows weekly sets per muscle against the goal | Prepared locally; personal targets take precedence, draft defaults only for muscle growth; independent and named content review pending |
 
 ### Phase 5: proof
 

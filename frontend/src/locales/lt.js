@@ -1,5 +1,10 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Pasikartojančio plano įvertis. Apšilimo serijos ir konkrečių dienų pakeitimai neįtraukti.",
+  "No working sets in the recurring plan.": "Pasikartojančiame plane nėra darbinių serijų.",
+  "below range": "žemiau intervalo",
+  "Personal target": "Asmeninis tikslas",
+  "Default ranges adapted from RP Strength volume landmarks.": "Numatytieji intervalai pritaikyti pagal RP Strength treniruočių apimties orientyrus.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Suimkite skersinį truputį plačiau nei pečių plotyje, delnais nuo savęs.",
   "Hang with straight arms, then pull yourself up.": "Pakibkite tiesiomis rankomis ir prisitraukite.",
   "Pull your elbows down toward your ribs.": "Traukite alkūnes žemyn link šonkaulių.",

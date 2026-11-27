@@ -1,5 +1,10 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "برآورد برنامهٔ تکرارشونده. ست‌های گرم‌کردن و تغییرات تاریخ‌های خاص حساب نمی‌شوند.",
+  "No working sets in the recurring plan.": "در برنامهٔ تکرارشونده ست کاری وجود ندارد.",
+  "below range": "کمتر از بازه",
+  "Personal target": "هدف شخصی",
+  "Default ranges adapted from RP Strength volume landmarks.": "بازه‌های پیش‌فرض از شاخص‌های حجم تمرین RP Strength اقتباس شده‌اند.",
   "Grip the bar just wider than your shoulders, palms facing away.": "میله را کمی بازتر از عرض شانه بگیرید، طوری که کف دست‌ها رو به جلو باشد.",
   "Hang with straight arms, then pull yourself up.": "با دست‌های صاف آویزان شوید و خود را بالا بکشید.",
   "Pull your elbows down toward your ribs.": "آرنج‌ها را به سمت پایین و دنده‌ها بکشید.",

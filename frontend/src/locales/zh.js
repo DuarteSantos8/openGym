@@ -1,5 +1,10 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "按重复计划估算，不计入热身组和个别日期的调整。",
+  "No working sets in the recurring plan.": "重复计划中没有正式训练组。",
+  "below range": "低于范围",
+  "Personal target": "个人目标",
+  "Default ranges adapted from RP Strength volume landmarks.": "默认范围改编自 RP Strength 的训练量指标。",
   "Grip the bar just wider than your shoulders, palms facing away.": "双手比肩稍宽握杠，掌心朝前。",
   "Hang with straight arms, then pull yourself up.": "双臂伸直悬垂，然后向上拉起身体。",
   "Pull your elbows down toward your ribs.": "将肘部向下拉向肋骨。",

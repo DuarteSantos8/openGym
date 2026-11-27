@@ -152,6 +152,9 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/views/Plan.day-rows.test.jsx` | `next/EP24-glossary-workout-plan-progress` | Test | Check that the weekday button names its visible routine. |
 | `frontend/src/views/Plan.routine-count.test.jsx` | `next/EP24-glossary-workout-plan-progress` | Test | Find weekday buttons with their routine details. |
 | `frontend/src/views/Plan.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain terms for the weekly schedule. |
+| `frontend/src/views/RoutineEdit.jsx`, `frontend/src/index.css` | `next/EP26-weekly-muscle-sets` | UI | Show recurring planned sets in the routine editor; reuse Plan's weighted volume and keep textual statuses. |
+| `frontend/src/lib/muscle-targets.js` | `next/EP26-weekly-muscle-sets` | Logic | Resolve valid saved ranges for planning without changing the logged-volume fallback. |
+| `frontend/src/locales/*.js` | `next/EP26-weekly-muscle-sets` | Copy | Preserve localized estimate, empty state, range status and source labels. |
 | `frontend/src/views/Stats.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Explain record and volume metrics in Progress. |
 | `frontend/src/components/Term.jsx` | `next/EP24-glossary-workout-plan-progress` | UI | Reuse the definition sheet for small, screen-specific glossaries. |
 | `frontend/src/views/onboarding.css` | `next/EP24-glossary-workout-plan-progress` | UI | Move shared term styles to the component stylesheet. |

@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Routine builder weekly sets (11.02b, prepared for review).** Plan → routine → Weekly sets per muscle estimates the whole recurring plan using the existing muscle weights. A saved personal range takes precedence for any goal; existing draft defaults appear only for the saved muscle-growth goal. Other or missing goals show counts wherever there is no personal range. Default values are app adaptations of [RP Strength’s volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth), not numbers validated for each muscle or personalized recommendations. Named source review and native-language review are pending.
+
 - **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).
 
 - **Movement demo (E5a, prepared).** An exercise with a form guide now shows the movement it asks for: the mannequin rig on the exercise sheet, in a chunk of its own, with the words that go with the pose. With reduced motion, or on a device that cannot show 3D, the key pose is shown as a picture with the same words and nothing moves. [English phone view](evidence/EP26-T01/mannequin-rig-390-dark.png), [the still without WebGL](evidence/EP26-T01/mannequin-still-390-dark.png).

@@ -1,5 +1,10 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "ค่าประมาณสำหรับแผนที่ทำซ้ำ ไม่นับเซ็ตวอร์มอัปและการเปลี่ยนแปลงเฉพาะวันที่",
+  "No working sets in the recurring plan.": "ไม่มีเซ็ตฝึกจริงในแผนที่ทำซ้ำ",
+  "below range": "ต่ำกว่าช่วง",
+  "Personal target": "เป้าหมายส่วนตัว",
+  "Default ranges adapted from RP Strength volume landmarks.": "ช่วงเริ่มต้นดัดแปลงจากเกณฑ์ปริมาณการฝึกของ RP Strength",
   "Grip the bar just wider than your shoulders, palms facing away.": "จับบาร์กว้างกว่าไหล่เล็กน้อยโดยหันฝ่ามือออกจากตัว",
   "Hang with straight arms, then pull yourself up.": "ห้อยตัวด้วยแขนเหยียดตรง แล้วดึงตัวขึ้น",
   "Pull your elbows down toward your ribs.": "ดึงข้อศอกลงเข้าหาซี่โครง",
