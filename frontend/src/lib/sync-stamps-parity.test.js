@@ -308,15 +308,16 @@ describe('nutrition amount groups merge atomically on client and API', () => {
     }
   })
 
-  it('preserves the opaque future portion across mixed-schema merge orders and replay', () => {
+  it('preserves the newest opaque future portion across mixed-schema merge orders and replay', () => {
     const legacyG = { id: 'r', amountG: 100, _ts: 10, note: 'retain me' }
     const legacyMl = { id: 'r', schemaVersion: 0, amountMl: 200, _ts: 20 }
-    const future = { id: 'r', schemaVersion: 2, _ts: 3, nextAmount: 'opaque' }
-    const futureEdit = { ...future, amountMl: 'future representation', _ts: 7 }
+    const future = { id: 'r', schemaVersion: 2, _ts: 30, nextAmount: 'opaque' }
+    const futureEdit = { ...future, amountMl: 'future representation', _ts: 40 }
+    // A later future edit clears the amount with an explicit stamp; replaying futureEdit must not bring it back.
+    const futureClear = { id: 'r', schemaVersion: 2, nextAmount: 'opaque', _ts: 50, _f: { schemaVersion: 30, nextAmount: 30, amountMl: 50 } }
     for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
-      for (const copies of [[legacyG, legacyMl, future], [legacyMl, future, futureEdit]]) {
+      for (const copies of [[legacyG, legacyMl, future], [legacyMl, future, futureEdit], [legacyMl, futureEdit, futureClear]]) {
         const [a, b, c] = copies.map(row => [row])
-        const latest = copies.includes(futureEdit) ? futureEdit : future
         const reference = merge(merge(a, b), c)
         for (const [x, y, z] of [[a,b,c],[a,c,b],[b,a,c],[b,c,a],[c,a,b],[c,b,a]]) {
           expect(merge(x, merge(y, z))).toEqual(reference)
@@ -325,12 +326,28 @@ describe('nutrition amount groups merge atomically on client and API', () => {
         }
         expect(reference[0]).toMatchObject({ schemaVersion: 2, nextAmount: 'opaque' })
         expect(reference[0]).not.toHaveProperty('amountG')
-        if (latest === futureEdit) expect(reference[0].amountMl).toBe(latest.amountMl)
+        if (copies.includes(futureClear)) expect(reference[0]).not.toHaveProperty('amountMl')
+        else if (copies.includes(futureEdit)) expect(reference[0].amountMl).toBe(futureEdit.amountMl)
         else {
           expect(reference[0]).not.toHaveProperty('amountMl')
           expect(reference[0].note).toBe('retain me')
         }
       }
+    }
+  })
+
+  it('lets a newer supported portion, such as a restored backup, replace a future portion whole', () => {
+    const server = { nutritionEntries: [food({ schemaVersion: 2, amountMl: 'future representation', _ts: 30, _f: { schemaVersion: 30, amountMl: 30 } })] }
+    const backup = { nutritionEntries: [food({ amountG: 50, serving: { label: 'bowl', count: 1, size: 50, unit: 'g' } })] }
+    stampRestore(backup, [server], 60)
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      const restored = merge(server.nutritionEntries, backup.nutritionEntries)
+      expect(merge(backup.nutritionEntries, server.nutritionEntries)).toEqual(restored)
+      expect(restored[0]).toMatchObject({ schemaVersion: 1, amountG: 50 })
+      expect(restored[0]).not.toHaveProperty('amountMl')
+      expect(normalizeEntry(restored[0]).supported).toBe(true)
+      // Replaying the older future copy afterwards keeps the restore.
+      expect(merge(restored, server.nutritionEntries)).toEqual(restored)
     }
   })
 

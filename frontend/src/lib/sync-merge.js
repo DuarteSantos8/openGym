@@ -758,13 +758,17 @@ function settleAmountGroup(a, b, out) {
   const knownA = known(a), knownB = known(b)
   if (!knownA || !knownB) {
     if (knownA === knownB) return
-    // An older writer cannot migrate a future portion. Carry its schema, fields and
-    // clocks intact so replaying an old quantity cannot hide a later future edit.
-    const future = knownA ? b : a
+    // An older writer cannot migrate a future portion, and a newer one must not be mixed with
+    // it. The newest copy wins whole, with its schema, fields and clocks, so replaying an old
+    // quantity cannot hide a later future edit and a restored backup (stamped now) still lands.
+    // A tie keeps the future copy.
+    const portionClock = row => Math.max(...['schemaVersion', ...amountFields].map(key => optionalTime(row._f?.[key])))
+    const future = knownA ? b : a, current = knownA ? a : b
+    const take = portionClock(current) > portionClock(future) ? current : future
     for (const key of ['schemaVersion', ...amountFields]) {
-      if (Object.hasOwn(future, key)) out[key] = clone(future[key])
+      if (Object.hasOwn(take, key)) out[key] = clone(take[key])
       else delete out[key]
-      if (Object.hasOwn(future._f, key)) out._f[key] = future._f[key]
+      if (Object.hasOwn(take._f || {}, key)) out._f[key] = take._f[key]
       else delete out._f[key]
     }
     return
