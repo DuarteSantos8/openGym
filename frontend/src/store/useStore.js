@@ -58,6 +58,7 @@ const SYNCED_FP_KEY = 'gym_synced_fp'  // a fingerprint of that copy (lib/sync-c
 // reaches that server as that account again. On a phone also a file beside the state mirror.
 const STASH_KEY = 'gym_stash'
 const STASH_FILE = 'opengym-stash.json'
+const GUEST_KEY = 'gym_guest_state'
 // A browser sign-out whose request never reached the server. The session cookie is HttpOnly, so
 // only the server's answer to /api/logout takes it out of the browser; until that answer comes,
 // boot sends the logout again instead of asking /api/me, which would sign the browser straight
@@ -385,6 +386,24 @@ function loadState() {
     }
   } catch (e) { /* ignore */ }
   return freshState()
+}
+
+// The device's own guest profile, kept across a sign-in (owner decision 2026-11-27): "Add them"
+// copies a guest's workouts into the account, it never consumes them, so signing out puts this
+// profile back where it was (clearLocalSession). Written when a sign-in adopts a guest copy
+// (setUser), read once at sign-out; a copy with nothing worth keeping clears it, so workouts the
+// guest deleted do not come back with the next sign-out. The account's own copy (a rejoining
+// session) and another account's hand-over are never this profile and never touch it.
+// shortcut: localStorage only, unlike the stash's file mirror — a phone whose storage was wiped
+// mid-session starts the guest profile empty; upgrade beside STASH_FILE if that path must not.
+const readGuestProfile = () => {
+  try { const raw = localStorage.getItem(GUEST_KEY); return raw ? sanitizeAccent(Object.assign(clone(DEF), JSON.parse(raw))) : null } catch { return null }
+}
+const saveGuestProfile = S => {
+  try { localStorage.setItem(GUEST_KEY, stateJson(S)) } catch { /* full: the next sign-out starts empty */ }
+}
+const clearGuestProfile = () => {
+  try { localStorage.removeItem(GUEST_KEY) } catch { /* nothing kept */ }
 }
 
 // Whether a copy holds anything of its own worth keeping over another: workouts, routines,
@@ -1121,8 +1140,11 @@ export const useStore = create((set, get) => {
     localStorage.removeItem('gym_owner')
     seenOwner = null   // a guest's tab now: it joins what other signed-out tabs save (as setUser)
     handedOver = false
-    // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
-    persist(freshState(), false)
+    // Signed out, this device is nobody's: its own guest profile comes back where it was — the
+    // import copied the guest's workouts into the account, it did not consume them (owner decision
+    // 2026-11-27). Nothing of the account's is kept here: what it still owed or was running went to
+    // the stash before this runs (signOut). A device with no kept guest profile starts empty.
+    persist(readGuestProfile() || freshState(), false)
     // Today's body picker keeps a photo and the picks outside the state (lib/body-photo.js): a
     // shared device keeps nothing of them either.
     forgetBodyFocus()
@@ -1656,6 +1678,9 @@ export const useStore = create((set, get) => {
       const S = restartedState(cur)
       S.resetAt = Math.max(Date.now(), highestStamp(cur) + 1)
       S.resetIds = mergeResetIds(cur.resetIds, resetIdsOf(cur))
+      // "Everything" is everything on this device: the guest profile kept across a sign-in goes
+      // too, or the next sign-out would bring it back (owner decision 2026-11-27).
+      clearGuestProfile()
       get().replaceState(S, !!get().user)
       if (!get().user) return Promise.resolve()
       const tok = currentSession()
@@ -1814,6 +1839,12 @@ export const useStore = create((set, get) => {
         const owner = localStorage.getItem('gym_owner')
         rejoined = owner === u.id
         const other = !!owner && owner !== u.id
+        // A sign-in adopting a device guest's copy: the guest profile is kept before the adoption
+        // can replace it, and is what the next sign-out restores (owner decision 2026-11-27).
+        if (adopt && !rejoined && !other) {
+          if (hasData(get().S)) saveGuestProfile(get().S)
+          else clearGuestProfile()
+        }
         // The hold goes on before anything else can run: a poll, a resume, a debounced push.
         if (adopt) {
           adoptHold = true
@@ -2058,7 +2089,8 @@ export const useStore = create((set, get) => {
       } catch { return null }
     },
 
-    /* Signing out wipes this device's copy — never while it holds changes the server has not
+    /* Signing out wipes this device's copy of the account's data — the device's own guest profile
+       comes back instead (clearLocalSession) — never while it holds changes the server has not
        seen. After one more push, if anything is still owed, nothing is wiped and the result
        says so: { owed: true, count } (see unsyncedChanges), for the screen to offer a retry, an
        export, or going ahead anyway. `force` goes ahead: the owed copy is kept aside on this

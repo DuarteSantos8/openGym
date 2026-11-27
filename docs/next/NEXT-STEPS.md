@@ -24,7 +24,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 - **Cloud browser coverage (G1, partial).** A linked member opens Settings > Account on the first visit and after reload. Chrome and WebKit verify the Admin dashboard is absent and the local training server returns HTTP 403 for the admin OIDC endpoint. The hosted status checks remain open under A1.
 
-- **Guest sign-in (A5, verified live November 26, 2026).** Ten guest workouts reached the hosted server and appeared once each on their original dates in both browsers. See [Before real users](CLOUD-SERVER.md#before-real-users).
+- **Guest sign-in (A5, verified live November 26, 2026; ownership contract November 27).** Ten guest workouts reached the hosted server and appeared once each on their original dates in both browsers. **Add them** copies them into the account and leaves the device's guest profile intact: after sign-out guest History shows the originals again, and workouts logged inside an account stay private to it (regression `useStore.guest-import-ownership.test.jsx`, branch `next/EP19-guest-import-ownership`). See [Before real users](CLOUD-SERVER.md#before-real-users).
 - **Starter plan cards (D5, prepared).** All eight lead with the goal and show weekly frequency, estimated minutes per session, level and equipment before loading. A device guest can fit a plan to local equipment offline. The translated hotel equipment label awaits native-language review. [English phone view](evidence/EP22-T03/starter-cards-390-dark.png).
 
 - **Five-person usability study (G2, prepared).** The owner can run the [six-task script](usability/script.md), obtain consent and collect anonymous metrics on a disposable profile. Grades await participant results.
