@@ -15,10 +15,37 @@ describe('the mannequin poses', () => {
     for (const p of patterns()) expect(PATTERNS).toContain(p)
   })
 
-  it('has a squat to start with', () => {
-    expect(POSES.squat.length).toBeGreaterThanOrEqual(POSE_LIMITS.minFrames)
+  it.each([
+    ['lunge', 'Both knees are bent, with one foot ahead of the other.', (a, b) =>
+      b.heelL[2] > b.toeR[2] && b.pelvis[1] < a.pelvis[1] && b.kneeR[1] < b.kneeL[1]],
+    ['hinge', 'The hips are back and the torso tilts forward.', (a, b) =>
+      b.pelvis[2] < a.pelvis[2] && b.chest[2] > b.pelvis[2] && b.pelvis[1] > a.pelvis[1] - 0.1],
+    ['push-h', 'The arms reach straight forward at chest height.', (a, b) =>
+      b.wristL[2] > a.wristL[2] && Math.abs(b.wristL[1] - b.shoulderL[1]) < 0.08],
+    ['push-v', 'The arms extend overhead.', (a, b) => b.wristL[1] > a.wristL[1] && b.elbowL[1] > b.shoulderL[1]],
+    ['pull-h', 'The elbows draw back and the hands come toward the ribs.', (a, b) =>
+      b.elbowL[2] < b.shoulderL[2] && b.wristL[2] < a.wristL[2]],
+    ['pull-v', 'The elbows move down as the hands come toward the chest.', (a, b) =>
+      b.elbowL[1] < b.shoulderL[1] && b.wristL[1] < a.wristL[1]],
+    ['core', 'Lying on the back, one arm reaches back as the opposite leg extends.', (a, b) =>
+      b.wristL[2] < a.wristL[2] && b.ankleR[1] < a.ankleR[1] && b.wristR[1] === a.wristR[1]],
+    ['isolation', 'The forearms curl up while the upper arms stay by the sides.', (a, b) =>
+      b.wristL[1] > a.wristL[1] && b.elbowL.every((value, i) => value === a.elbowL[i])],
+  ])('%s has its own readable still and a distinct movement', (pattern, note, matches) => {
+    const frames = poseFor(pattern)
+    expect(frames).not.toBeNull()
+    expect(frames[0].at).toBe(0)
+    expect(loopFor(pattern)).toBeGreaterThanOrEqual(POSE_LIMITS.minLoopMs)
+    expect(loopFor(pattern)).toBeLessThanOrEqual(POSE_LIMITS.maxLoopMs)
+    expect(stillTextFor(pattern)).toBe(note)
+    expect(matches(skeletonAt(pattern, 0), skeletonAt(pattern, keyFrameFor(pattern).at))).toBe(true)
+    for (let at = 0; at < loopFor(pattern); at += 37) {
+      const skeleton = skeletonAt(pattern, at)
+      expect(Object.values(skeleton).flat().every(Number.isFinite)).toBe(true)
+      expect(Math.hypot(...skeleton.hipL.map((value, i) => value - skeleton.hipR[i]))).toBeCloseTo(2 * RIG.hipHalf, 2)
+      expect(Math.min(skeleton.toeL[1], skeleton.toeR[1], skeleton.heelL[1], skeleton.heelR[1])).toBeGreaterThanOrEqual(-1e-6)
+    }
   })
-
   it('gives every pattern a loop that matches its frames', () => {
     for (const p of patterns()) {
       expect(loopFor(p)).toBeGreaterThanOrEqual(POSE_LIMITS.minLoopMs)
@@ -103,8 +130,8 @@ describe('the mannequin poses', () => {
     }
   })
 
-  it('keeps both feet on the floor through the whole sequence', () => {
-    for (const p of patterns()) {
+  it('keeps both feet on the floor through the standing sequences', () => {
+    for (const p of patterns().filter(p => p !== 'lunge' && p !== 'core')) {
       for (const f of poseFor(p)) {
         const s = skeletonAt(p, f.at)
         expect(s.heelL[1]).toBeCloseTo(0, 6)
@@ -159,6 +186,10 @@ describe('the mannequin poses', () => {
 
   it('says every frame in every language, so no one reads it in English by mistake', () => {
     expect(Object.keys(localePacks)).toHaveLength(25)
+    for (const [locale, pack] of Object.entries(localePacks)) {
+      expect(pack['Movement pattern example'], locale).toBeTruthy()
+      expect(pack['Movement pattern example']).not.toBe('Movement pattern example')
+    }
     for (const p of patterns()) {
       for (const f of poseFor(p)) {
         for (const [locale, pack] of Object.entries(localePacks)) {

@@ -82,11 +82,11 @@ export default function MannequinDemo({ pattern, createScene }) {
 
   const key = keyFrameFor(pattern)
   if (!key) return null
-  const note = (frame || key).note
   const still = why !== null
+  const note = (still ? key : frame || key).note
 
   return <section className="mm-demo" aria-label={t('Movement demo')}>
-    <h4 className="sec">{t('Movement demo')}</h4>
+    <h4 className="sec">{pattern === 'squat' ? t('Movement demo') : t('Movement pattern example')}</h4>
     {still
       ? <MannequinStill pattern={pattern} />
       : <Suspense fallback={null}>

@@ -57,8 +57,12 @@ export async function createMannequinScene(container, { pattern, onFrame, onErro
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 30)
   const dir = new THREE.Vector3(Math.cos(VIEW_BETA), 0, Math.sin(VIEW_BETA))
-  const target = new THREE.Vector3(0, 0.80, 0.08)
-  camera.position.copy(target).addScaledVector(dir, -3.4).add(new THREE.Vector3(0, 0.35, 0))
+  // Leave room for the overhead reach and frame the supine figure across the canvas.
+  const overhead = pattern === 'push-v' || pattern === 'pull-v'
+  const supine = pattern === 'core'
+  const target = new THREE.Vector3(0, supine ? 0.35 : overhead ? 1.03 : 0.80, 0.08)
+  const distance = overhead || supine ? 3.95 : 3.4
+  camera.position.copy(target).addScaledVector(dir, -distance).add(new THREE.Vector3(0, 0.35, 0))
   camera.lookAt(target)
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x303038, 1.7))

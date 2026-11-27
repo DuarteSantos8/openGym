@@ -19,6 +19,11 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/store/useStore.mobile-remote.test.jsx` | `next/EP19-guest-privacy-followup` | Pairing | Cover refused guest storage and the next successful pairing. |
 | `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js` | `next/EP19-guest-privacy-followup` | Sign-in | Wait for a failed adoption's cookie cleanup before the next sign-in. |
 | `frontend/src/views/Login.jsx` | `next/EP19-guest-privacy-followup` | Sign-in | Restore the provider sign-in button when cookie cleanup cannot reach the server. |
+| `frontend/public/sw.js`, `frontend/src/lib/sw-media.test.js` | `next/EP26-mannequin-patterns` | Offline exercise sheets | Return a non-cacheable HTTP failure when uncached media cannot be fetched offline. |
+| `frontend/src/components/ExerciseGuide.test.jsx` | `next/EP26-mannequin-patterns` | Guide integration | Cover switching from the squat to a newly supported pull demo. |
+| `frontend/src/components/mannequin/` | `next/EP26-mannequin-patterns` | Demo | Complete the nine-family pose table; keep the existing lazy loader and match the still caption after WebGL loss. |
+| `frontend/e2e/mannequin-demo.e2e.mjs` | `next/EP26-mannequin-patterns` | Tests | Verify each family from its normal Library sheet with exercise media blocked. |
+| `frontend/src/locales/*.js` | `next/EP26-mannequin-patterns` | Copy | Translate one heading and sixteen pose captions across 25 packs. |
 | `frontend/src/components/ExerciseGuide.jsx` | `next/EP26-mannequin-squat` | Demo | Show the movement demo for the guide's pattern, loaded on demand, so the 3D code stays out of the app's first download. |
 | `frontend/public/sw.js` | `next/EP26-T03-guided-workout` | Hashed assets | Reuse the installed immutable module when an offline module request sends an Origin header. |
 | `frontend/src/views/Workout.jsx` | `next/EP26-T03-guided-workout` | Layout | Offer the session layout and pass its active exercise to the existing swap flow. |

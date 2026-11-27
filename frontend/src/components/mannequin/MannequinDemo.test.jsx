@@ -5,7 +5,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import MannequinDemo from './MannequinDemo.jsx'
-import { stillTextFor } from './poses.js'
+import { poseFor, stillTextFor } from './poses.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -125,8 +125,21 @@ describe('MannequinDemo', () => {
     expect(scene.dispose).toHaveBeenCalled()
   })
 
+  it('restores the key caption when WebGL is lost after the pose changes', async () => {
+    withWebGL(true)
+    const createScene = vi.fn(() => Promise.resolve(fakeScene()))
+    const c = mount(<MannequinDemo pattern="squat" createScene={createScene} />)
+    await settleUntil(() => createScene.mock.calls.length > 0)
+    const { onFrame, onError } = createScene.mock.calls[0][1]
+    act(() => onFrame(poseFor('squat')[0]))
+    expect(c.textContent).toContain(poseFor('squat')[0].note)
+    act(onError)
+    expect(c.querySelector('[data-mm-still="squat"]')).toBeTruthy()
+    expect(c.textContent).toContain(stillTextFor('squat'))
+  })
+
   it('shows nothing for a pattern it has no pose for', () => {
-    const c = mount(<MannequinDemo pattern="lunge" />)
+    const c = mount(<MannequinDemo pattern="unsupported" />)
     expect(c.innerHTML).toBe('')
   })
 })
