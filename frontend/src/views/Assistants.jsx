@@ -34,7 +34,7 @@ export default function Assistants() {
   const [checking, setChecking] = useState(false)
 
   const mcp = !!(user && config?.mcp)
-  const address = mcpAddress()
+  const address = config?.mcpAddress || mcpAddress()
   const reach = reachability(address)
 
   useEffect(() => { if (user) refreshConfig?.() }, [user])

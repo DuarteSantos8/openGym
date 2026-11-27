@@ -78,7 +78,7 @@ async function signIn(api, { scope = 'workouts:view plans:view offline_access', 
   const back = new URL(ok.redirect);
   // Basic client authentication instead of client_id in the form: what some OAuth libraries send.
   const tok = await (await fetch(api + '/api/oauth/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', Authorization: 'Basic ' + Buffer.from(reg.client_id + ':').toString('base64') }, body: new URLSearchParams({ grant_type: 'authorization_code', code: back.searchParams.get('code'), code_verifier: verifier, redirect_uri: redirect }) })).json();
-  return { reg, back, tok, cookie };
+  return { consent: az.headers.get('location'), reg, back, tok, cookie };
 }
 
 test('refresh, revoke and the connector in the token list (assistant, last used)', async t => {
@@ -113,6 +113,33 @@ test('a resource naming another server is sent back as invalid_target', async t 
   assert.match(az.headers.get('location'), /error=invalid_target/);
   const ok = await fetch(api + '/api/oauth/authorize?' + new URLSearchParams({ client_id: reg.client_id, redirect_uri: 'https://chatgpt.com/connector_platform_oauth_redirect', response_type: 'code', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256', resource: 'https://gym.example/mcp' }), { redirect: 'manual' });
   assert.match(ok.headers.get('location'), /\/#\/connect\//);
+});
+
+test('an invalid public connector origin stops the API before it listens', async t => {
+  await assert.rejects(start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example/path' }), /MCP_PUBLIC_ORIGIN must be an HTTPS origin/);
+});
+
+test('separate connector origin advertises its own issuer and resource but opens consent on the web app', async t => {
+  const api = await start(t, { MCP: 'on', MCP_PUBLIC_ORIGIN: 'https://connector.example/', BASE_PATH: '/gym' });
+  const issuer = 'https://connector.example/gym';
+  const audience = issuer + '/mcp';
+  const meta = await (await fetch(api + '/.well-known/oauth-authorization-server/gym')).json();
+  assert.equal(meta.issuer, issuer);
+  assert.equal(meta.authorization_endpoint, issuer + '/api/oauth/authorize');
+  const doc = await (await fetch(api + '/.well-known/oauth-protected-resource/gym/mcp')).json();
+  assert.equal(doc.resource, audience);
+  assert.deepEqual(doc.authorization_servers, [issuer]);
+  const cookie = { Cookie: `gymsid=${session('u1')}` };
+  const config = await (await fetch(api + '/api/config', { headers: cookie })).json();
+  assert.equal(config.mcpAddress, audience);
+  const redirect = 'http://localhost:3001/callback';
+  const { reg, back, tok, consent } = await signIn(api, { resource: audience, redirect });
+  assert.ok(consent.startsWith('https://gym.example/gym/#/connect/'));
+  assert.equal(back.searchParams.get('iss'), issuer);
+  assert.ok(tok.access_token);
+  const params = new URLSearchParams({ client_id: reg.client_id, redirect_uri: redirect, response_type: 'code', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256', resource: 'https://gym.example/gym/mcp' });
+  const wrong = await fetch(api + '/api/oauth/authorize?' + params, { redirect: 'manual' });
+  assert.equal(new URL(wrong.headers.get('location')).searchParams.get('error'), 'invalid_target');
 });
 
 test('under BASE_PATH: issuer, resource and every discovery address carry the prefix', async t => {

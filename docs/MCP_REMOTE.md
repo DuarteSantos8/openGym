@@ -153,13 +153,20 @@ It has its own Starter instance and no disk. Keep the Blueprint change in draft 
 the owner approves that additional service. Merging into the synced branch can provision it.
 
 After approval and provisioning, set OPENGYM_API_URL to the API service's internal HTTP
-address, including its port. Set the MCP service's ORIGIN to the client-facing HTTPS
-origin. Check GET /mcp/health on the MCP service for HTTP 200.
+address, including its port. Keep ORIGIN set to the web app on both services. If the connector
+has its own address, set MCP_PUBLIC_ORIGIN on both to the same public HTTPS origin, without
+credentials, a path, query or fragment. Both services append BASE_PATH when configured.
+Check GET /mcp/health on the connector origin for HTTP 200.
 
 Connector OAuth requires one reachable HTTPS origin serving MCP transport, /.well-known
 discovery and /api/oauth. Vercel reserves /.well-known and cannot rewrite it, and preview
 deployment protection can block connectors. Choose and verify a suitable HTTPS origin and
-confirm the API advertises that origin before enabling MCP=on on the API. Then verify a
+route /mcp and /mcp/health to MCP, and the discovery and /api/oauth/* paths to the same API
+that serves the web app. For a base path, strip the prefix when forwarding /api/oauth and /mcp;
+forward the root /.well-known discovery paths to the API intact. The web app still proxies /api/* to that API, so the consent screen
+uses the existing signed-in session. With MCP enabled, verify that discovery advertises the
+connector as issuer and its /mcp as resource. The authorize redirect must open the web app at
+/#/connect/<id>, with any configured base path before the hash. Then verify a
 bearer challenge, a scoped read and write, and refusal of a write with a read-only token.
 To roll back, turn off MCP on the API and suspend the MCP service.
 
@@ -169,6 +176,7 @@ To roll back, turn off MCP on the API and suspend the MCP service.
 |---|---|---|
 | `MCP_PORT` | 3100 | port inside the container |
 | `OPENGYM_API_URL` | `http://api:3000` | the api inside the compose network |
+| `MCP_PUBLIC_ORIGIN` | `ORIGIN` | optional public connector origin for discovery and the address shown in Settings; configure on both API and MCP |
 | `MCP_PATH` | `/mcp` | path it answers on |
 | `MCP_ALLOWED_ORIGINS` | `ORIGIN` | browser origins allowed, comma separated |
 | `BASE_PATH` | empty | the subpath prefix, for the sign-in pointer of the 401 |

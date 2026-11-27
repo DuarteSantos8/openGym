@@ -39,8 +39,9 @@ export function readBlueprint(text) {
 }
 
 const file = path.join(ROOT, 'render.yaml');
-const service = (text, name) => readBlueprint(text.split(/(?=^  - type: )/m)
-  .find(part => part.split('\n').includes(`    name: ${name}`)) || '');
+const serviceText = (text, name) => text.split(/(?=^  - type: )/m)
+  .find(part => part.split('\n').includes(`    name: ${name}`)) || '';
+const service = (text, name) => readBlueprint(serviceText(text, name));
 const apiService = (text = read(file)) => service(text, 'ironvane-api');
 
 test('the hosted MCP service uses a private upstream and does not mount a disk', () => {
@@ -55,6 +56,12 @@ test('the hosted MCP service uses a private upstream and does not mount a disk',
   assert.equal(env.MCP_PORT.value, '3100');
   assert.equal(env.OPENGYM_API_URL.sync, 'false');
   assert.equal(env.ORIGIN.sync, 'false');
+});
+
+test('the MCP build filter includes its shared connector origin validator', () => {
+  const mcp = serviceText(read(file), 'ironvane-mcp');
+  const paths = mcp.split('buildFilter:')[1].split('envVars:')[0];
+  assert.ok(paths.split('\n').some(line => line.trim() === '- api/connector-origin.js'));
 });
 
 test('the blueprint builds the api image from the api directory', () => {

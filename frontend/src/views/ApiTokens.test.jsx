@@ -70,6 +70,12 @@ describe('API tokens page', () => {
     expect(host.textContent).toContain('Claude')
   })
 
+  it('shows the configured connector address on the tokens screen', async () => {
+    mocks.answers['/api/tokens'] = { tokens: [], mcp: true, mcpAddress: 'https://connector.example/mcp' }
+    await render(<ApiTokensPage />)
+    expect(host.textContent).toContain('https://connector.example/mcp')
+  })
+
   it('lists a token with what it may do, and revokes it', async () => {
     mocks.answers['/api/tokens'] = { tokens: [TOK], mcp: false }
     mocks.answers['/api/tokens/revoke'] = { tokens: [], revoked: 1 }

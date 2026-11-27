@@ -33,7 +33,7 @@ RUN npm ci --omit=dev && npm cache clean --force \
 # beside its package.json so node reads them as the ES modules they are.
 COPY frontend/package.json /app/frontend/package.json
 COPY frontend/src/lib/ /app/frontend/src/lib/
-COPY api/package.json /app/api/package.json
+COPY api/package.json api/connector-origin.js /app/api/
 COPY api/coach/core/ /app/api/coach/core/
 COPY mcp/src/ ./src/
 

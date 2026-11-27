@@ -27,7 +27,7 @@ export default function ApiTokensPage() {
   const load = useCallback(() => listTokens().then(d => { setData(d); setError(false) }).catch(() => setError(true)), [])
   useEffect(() => { load() }, [load])
   const mcp = data?.mcp || !!config?.mcp
-  const address = mcpAddress()
+  const address = data?.mcpAddress || config?.mcpAddress || mcpAddress()
   const tokens = data?.tokens || []
 
   const open = tok => sheet(close => <TokenDetail tok={tok} close={close} onRevoked={d => { setData(cur => ({ ...cur, tokens: d.tokens })); toast(t('Token revoked')) }} />)

@@ -5,6 +5,14 @@ the AI Coach have been verified on that preview. A production-domain cutover and
 connector verification are still pending. The observations below identify the build and account
 used for each check. For self-hosting, see `docker-compose.yml` and `docs/SELF_HOSTING.md`.
 
+## Separate connector origin
+
+When the connector has its own public address, keep the API ORIGIN and RP_ID on the web app.
+Set MCP_PUBLIC_ORIGIN on both the API and MCP transport. Route the connector paths as described
+in [MCP over HTTPS](../MCP_REMOTE.md#hosted-preview-on-render-and-vercel). The owner still
+needs to approve the domain and verify both a read and a write with an external connector.
+Merging a change to the shared origin validator can rebuild and restart both existing Render services.
+
 ## Why a server at all
 
 Supabase holds the hosted account (ADR 0010). The app's API serves three features:
