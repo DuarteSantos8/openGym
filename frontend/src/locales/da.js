@@ -4160,6 +4160,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Kun du kan se det, her og på dine andre enheder. Ikke engang en admin kan.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Beskæring af foto. Piletasterne flytter det, plus og minus zoomer.",
   "Picture removed. Back to the letter.": "Billedet er fjernet. Tilbage til bogstavet.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Billedet er fjernet. Tilbage til bogstavet, indtil du næste gang logger ind med {0}.",
   "Picture set. Looking sharp.": "Billedet er sat. Du ser skarp ud.",
   "Profile picture": "Profilbillede",
   "Remove picture": "Fjern billede",

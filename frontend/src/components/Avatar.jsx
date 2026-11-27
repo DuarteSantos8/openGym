@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
+import { oidcLabel } from '../lib/oidc.js'
 import { mediaStore } from '../lib/media-store.js'
 import { avatarOf, initialOf, setAvatarPhoto, setAvatarPreset, clearAvatar, AVATAR_PRESETS, clampCrop, coverScale, zoomAround, ZOOM_MAX, openAvatarImage, renderAvatar } from '../lib/avatar.js'
 import { useMediaUrl } from './CustomMedia.jsx'
@@ -57,6 +58,8 @@ export function AvatarSection({ name, signedIn }) {
   const a = avatarOf(S)
   // It goes to the other devices only through a server that says it keeps it (media.avatar).
   const synced = useStore(s => !!(signedIn && s.config?.media?.avatar))
+  const providerSeen = useStore(s => s.user?.oidcPicture || null)
+  const provider = useStore(s => oidcLabel(s.config))
   const file = useRef(null)
   const pick = () => file.current?.click()
   const onFile = ev => {
@@ -65,8 +68,8 @@ export function AvatarSection({ name, signedIn }) {
     if (f) openCrop(f)
   }
   const remove = () => {
-    update(s => { clearAvatar(s) })
-    toast(t('Picture removed. Back to the letter.'))
+    update(s => { clearAvatar(s, providerSeen) })
+    toast(providerSeen ? t('Picture removed. Back to the letter until your next sign-in with {0}.', provider) : t('Picture removed. Back to the letter.'))
   }
   return <Section title={t('Profile picture')}
     footer={synced ? t('Only you see it, here and on your other devices. Not even an admin can.') : t('Only you see it, and it stays on this device.')}>

@@ -158,7 +158,7 @@ const timedOut = () => failure(t('The server did not answer in time.'), 'timeout
  * idle one: no bytes for `idleMs` and the download counts as offline (code 'timeout').
  * Errors carry { status, code } like api()'s: the server's code on a refusal (media-missing).
  */
-export async function apiBlob(path, { expectSize, idleMs = 30000, fetchImpl = globalThis.fetch } = {}) {
+export async function apiBlob(path, { expectSize, idleMs = 30000, fetchImpl = globalThis.fetch, headers = null } = {}) {
   if (MOBILE && !remoteBase) throw notPaired()
   const max = typeof expectSize === 'number' && expectSize >= 0 ? expectSize + 1024 : Infinity
   const ctl = typeof AbortController === 'function' ? new AbortController() : null
@@ -175,7 +175,7 @@ export async function apiBlob(path, { expectSize, idleMs = 30000, fetchImpl = gl
   const orStall = p => { p.catch(() => {}); return Promise.race([p, stall]) }
   arm()
   try {
-    const r = await orStall(fetchImpl(mediaUrl(path), { headers: mediaHeaders(), cache: 'no-store', ...(ctl ? { signal: ctl.signal } : {}) }))
+    const r = await orStall(fetchImpl(mediaUrl(path), { headers: { ...mediaHeaders(), ...headers }, cache: 'no-store', ...(ctl ? { signal: ctl.signal } : {}) }))
     if (!r.ok) {
       let body = null
       try { body = await r.json() } catch { /* not JSON: a proxy's page */ }

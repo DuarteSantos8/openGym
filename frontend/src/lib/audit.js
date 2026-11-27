@@ -38,6 +38,8 @@ const LABELS = {
   'auth.oidc.reauth': 'Confirmed it is them at the identity provider',
   'auth.oidc.fail': 'Identity provider sign-in failed',
   'auth.oidc.denied': 'Identity provider sign-in refused',
+  // `msg` is why, never the address: too large, not https, a private address, HTTP 404, timeout, ...
+  'auth.oidc.picture': 'The identity provider\'s picture could not be fetched',
   'admin.oidc.check': 'Checked the identity provider',
   'auth.watch.pair': 'Created a watch pairing code',
   'auth.watch.ok': 'Paired a Zepp OS watch',

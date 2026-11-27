@@ -4215,6 +4215,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "มีแค่คุณที่เห็น ทั้งที่นี่และบนอุปกรณ์อื่นของคุณ แม้แต่แอดมินก็ไม่เห็น",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "ครอปรูป ปุ่มลูกศรเลื่อนรูป บวกและลบเพื่อซูม",
   "Picture removed. Back to the letter.": "ลบรูปแล้ว กลับไปเป็นตัวอักษร",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "ลบรูปแล้ว จะเป็นตัวอักษรจนกว่าคุณจะเข้าสู่ระบบด้วย {0} ครั้งถัดไป",
   "Picture set. Looking sharp.": "ตั้งรูปแล้ว ดูดีมาก",
   "Profile picture": "รูปโปรไฟล์",
   "Remove picture": "ลบรูป",

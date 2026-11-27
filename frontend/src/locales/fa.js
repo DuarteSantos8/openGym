@@ -4170,6 +4170,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "فقط خودت می‌بینی‌اش، اینجا و روی دستگاه‌های دیگرت. حتی مدیر هم نه.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "برش عکس. کلیدهای جهت جابه‌جا می‌کنند، به‌علاوه و منها بزرگ‌نمایی.",
   "Picture removed. Back to the letter.": "عکس برداشته شد. حرف اول برگشت.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "عکس برداشته شد. تا ورود بعدی با {0}، حرف اول می‌ماند.",
   "Picture set. Looking sharp.": "عکس گذاشته شد. عالی شدی.",
   "Profile picture": "عکس پروفایل",
   "Remove picture": "برداشتن عکس",

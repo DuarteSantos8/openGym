@@ -1,7 +1,8 @@
 /* A small OpenID provider for the OIDC tests: discovery, a local key set, an authorize endpoint
    that signs whoever `next` says straight in, a token endpoint that checks PKCE and the client,
    and userinfo. `tamper` bends the next ID token (a wrong nonce, aud, iss, an old exp, another
-   key) so each check in api/oidc/jwt.js can be watched refusing it. */
+   key) so each check in api/oidc/jwt.js can be watched refusing it. `files` are served as they
+   are, for the `picture` claim to point at. */
 import http from 'node:http';
 import crypto from 'node:crypto';
 
@@ -27,7 +28,8 @@ export async function startMockOidc({ clientId = 'opengym', clientSecret = 's3cr
     issuer: '', clientId, clientSecret, key: privateKey, rogue,
     next: { sub: 'user-1', name: 'Ana', email: 'ana@example.com', email_verified: true, groups: ['opengym'] },
     tamper: {},
-    seen: { authorize: [], token: [] },
+    seen: { authorize: [], token: [], files: [] },
+    files: {},
     jwk: { ...publicKey.export({ format: 'jwk' }), kid: 'k1', use: 'sig', alg: 'RS256' }
   };
   const server = http.createServer((req, res) => {
@@ -78,6 +80,13 @@ export async function startMockOidc({ clientId = 'opengym', clientSecret = 's3cr
         send(200, { access_token: at, token_type: 'Bearer', id_token, expires_in: 300 });
       });
       return;
+    }
+    const file = m.files[u.pathname];
+    if (file) {
+      m.seen.files.push(u.pathname);
+      const { status = 200, type = 'image/png', body = Buffer.alloc(0), chunked = false, headers = {} } = file;
+      res.writeHead(status, { 'Content-Type': type, ...(chunked ? {} : { 'Content-Length': String(body.length) }), ...headers });
+      return res.end(body);
     }
     if (u.pathname === '/userinfo') {
       const at = (req.headers.authorization || '').slice(7);

@@ -4202,6 +4202,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Matote tik jūs, čia ir kituose savo įrenginiuose. Net administratorius nemato.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Nuotraukos apkirpimas. Rodyklės perkelia, plius ir minus priartina.",
   "Picture removed. Back to the letter.": "Nuotrauka pašalinta. Vėl raidė.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Nuotrauka pašalinta. Raidė liks iki kito prisijungimo per {0}.",
   "Picture set. Looking sharp.": "Nuotrauka nustatyta. Atrodote puikiai.",
   "Profile picture": "Profilio nuotrauka",
   "Remove picture": "Pašalinti nuotrauką",

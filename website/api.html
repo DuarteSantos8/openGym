@@ -328,7 +328,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.5</span>
-    <span>177 endpoints</span>
+    <span>178 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -356,7 +356,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3 id="csrf">CSRF</h3>
-<p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;,&quot;code&quot;:&quot;origin-mismatch&quot;,&quot;expected&quot;:ORIGIN}</code> on any non-GET route, the passkey routes included. Exempt: <code>pair/redeem</code>, which the mobile app calls from its own origin (the code in the body is the credential, and the token comes back in the body, never as a cookie), and any request a Bearer token authenticates by itself: a valid session token, with no session cookie beside it, on any route but the sign-in ones — the four passkey routes, the password and reset-code routes and the two device-link routes, which act on the credential in the body, never on a Bearer. A cross-origin request whose Bearer does not buy the exemption is refused before any handler runs: <code>401 {&quot;error&quot;:&quot;not signed in&quot;}</code> when that Bearer does not verify and is the only credential (a paired app whose token was revoked or expired), the 403 otherwise. The passkey routes were exempt before, on the grounds that the challenge id is a credential; but it is bound to nothing else, so a hostile page could complete the attacker's own passkey sign-in in the victim's browser (login CSRF) and the answer set the victim's session to the attacker's account. The password routes are <b>not</b> exempt for the same reason: a hostile page knows a valid name and password of its own.</p>
+<p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;,&quot;code&quot;:&quot;origin-mismatch&quot;,&quot;expected&quot;:ORIGIN}</code> on any non-GET route, the passkey routes included, and on GET /api/oidc/picture, which without <code>Sec-Fetch-Site</code> and <code>Origin</code> also needs its <code>X-OpenGym-Account</code> header. Exempt: <code>pair/redeem</code>, which the mobile app calls from its own origin (the code in the body is the credential, and the token comes back in the body, never as a cookie), and any request a Bearer token authenticates by itself: a valid session token, with no session cookie beside it, on any route but the sign-in ones — the four passkey routes, the password and reset-code routes and the two device-link routes, which act on the credential in the body, never on a Bearer. A cross-origin request whose Bearer does not buy the exemption is refused before any handler runs: <code>401 {&quot;error&quot;:&quot;not signed in&quot;}</code> when that Bearer does not verify and is the only credential (a paired app whose token was revoked or expired), the 403 otherwise. The passkey routes were exempt before, on the grounds that the challenge id is a credential; but it is bound to nothing else, so a hostile page could complete the attacker's own passkey sign-in in the victim's browser (login CSRF) and the answer set the victim's session to the attacker's account. The password routes are <b>not</b> exempt for the same reason: a hostile page knows a valid name and password of its own.</p>
   </div>
   <div class="ov">
     <h3 id="environment-dependent-behavior">Environment-dependent behavior</h3>
@@ -1005,6 +1005,65 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">409</span>
     <span class="p-desc">The provider is the only way in (<code>last-way-in</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcPicture">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/picture</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The picture the provider named at your last sign-in</span>
+  </summary>
+  <div class="ep-body">
+<p>Fetched from the <code>picture</code> claim's address (ID token or userinfo) of the caller's last provider sign-in, for the caller only, and not kept: the app crops and re-encodes it like a picked photo and stores that as the profile picture (<code>avatar</code> in the state). Only on a server that keeps avatars (<code>media.avatar</code> in GET /api/config); without uploads this is 404.</p>
+<p>The address is fetched without redirects, for at most 10 seconds and <code>MEDIA_IMAGE_MAX_MB</code>. Off the issuer's own origin it is fetched over https only and never from <code>localhost</code> or a private, loopback or link-local address (<code>ALLOWED_PRIVATE_IPS</code> opens an address). A failed fetch is audited as <code>auth.oidc.picture</code> with the reason, never the address. What comes back has to be a JPEG, PNG, WebP or GIF by its first bytes. Same headers as GET /api/media/{hash}. Header <code>X-OpenGym-Account</code> as on PUT /api/media/{hash}, required when the request has neither <code>Sec-Fetch-Site</code>, <code>Origin</code> nor a Bearer token. At most 10 an hour per profile. Checked for CSRF like a write, so another site cannot spend that budget.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The image.<span class="r-sig">sets <code>Content-Length</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Sent from another site (<code>origin-mismatch</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No picture from the last provider sign-in (<code>no-picture</code>), or uploads are off.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Signed in as another account than <code>X-OpenGym-Account</code> names (<code>account-mismatch</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">413</span>
+    <span class="p-desc">Larger than <code>MEDIA_IMAGE_MAX_MB</code> (<code>media-too-large</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">415</span>
+    <span class="p-desc">Not a JPEG, PNG, WebP or GIF (<code>media-type</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">422</span>
+    <span class="p-desc">The address is refused and will stay so until the next sign-in: not https or a private address off the issuer's origin, a redirect, or a 4xx from its host (<code>picture-refused</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the hourly budget (<code>locked</code>, with <code>Retry-After</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">The address could not be fetched this time: a timeout, no connection, or a 5xx, 408 or 429 from its host (<code>picture-unavailable</code>).</span>
   </div>
     </div>
   </div>
@@ -8108,6 +8167,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">oidc</span>
     <span class="p-type">boolean</span>
     <span class="p-desc">Present (true) when the profile is linked to the configured identity provider.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">oidcPicture</span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span></span>
+    <span class="p-desc">Present when the last provider sign-in named a picture (the <code>picture</code> claim) on a server that keeps avatars: the time of that sign-in, always later than the one before. GET /api/oidc/picture has the image.</span>
   </div>
 </div>
   </div>

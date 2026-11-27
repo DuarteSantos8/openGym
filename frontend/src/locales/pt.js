@@ -4204,6 +4204,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Só tu a vês, aqui e nos teus outros dispositivos. Nem um admin.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Recorte da foto. As setas movem-na, mais e menos fazem zoom.",
   "Picture removed. Back to the letter.": "Foto removida. Volta a inicial.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Foto removida. Fica a inicial até voltares a entrar com {0}.",
   "Picture set. Looking sharp.": "Foto definida. Estás em grande.",
   "Profile picture": "Foto de perfil",
   "Remove picture": "Remover foto",

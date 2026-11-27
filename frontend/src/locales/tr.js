@@ -4204,6 +4204,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Yalnızca sen görürsün, burada ve diğer cihazlarında. Bir yönetici bile göremez.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Fotoğraf kırpma. Ok tuşları taşır, artı ve eksi yakınlaştırır.",
   "Picture removed. Back to the letter.": "Resim kaldırıldı. Baş harfe dönüldü.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Resim kaldırıldı. {0} ile bir sonraki girişe kadar baş harf görünür.",
   "Picture set. Looking sharp.": "Resim ayarlandı. Harika görünüyorsun.",
   "Profile picture": "Profil resmi",
   "Remove picture": "Resmi kaldır",

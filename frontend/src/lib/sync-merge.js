@@ -1029,6 +1029,29 @@ export function keepReset(cur, next) {
   return next
 }
 
+/**
+ * The same for the provider-picture mark (lib/avatar.js S.avatarOidc): the later sign-in stays, and
+ * of two marks of one sign-in the one naming the picture shown, so a picture removed since does not
+ * come back. A picture that comes with the older mark it was taken from (a restored backup) stays the
+ * provider's, for the next sign-in to replace. Only `at` and a picture hash stay, and a mark without
+ * a valid time is none. api/server.js keepAvatarMark does the same on every write, and also drops a
+ * time far ahead of its own clock. Mutates and returns `next`.
+ */
+export function keepAvatarMark(cur, next) {
+  if (!next || typeof next !== 'object') return next
+  const at = x => (x && typeof x === 'object' && typeof x.at === 'string' && x.at.length === 24 && !Number.isNaN(Date.parse(x.at)) && new Date(x.at).toISOString() === x.at ? x.at : '')
+  const mark = (t, h) => (typeof h === 'string' && /^[0-9a-f]{64}$/.test(h) ? { at: t, hash: h } : { at: t })
+  const a = cur?.avatarOidc, b = next.avatarOidc
+  let keep = at(b) ? mark(b.at, b.hash) : null
+  if (at(a) && (at(a) > at(b) || (at(a) === at(b) && a.hash !== b?.hash && a.hash === next.avatar?.m?.hash))) {
+    const own = at(a) > at(b) && at(b) && typeof b.hash === 'string' && b.hash === next.avatar?.m?.hash
+    keep = mark(a.at, own ? b.hash : a.hash)
+  }
+  if (keep) next.avatarOidc = keep
+  else delete next.avatarOidc
+  return next
+}
+
 // ---- A restored backup ------------------------------------------------------------------------
 //
 // A backup brought back over the profile (Settings, Import) is a deliberate add-back: the main way

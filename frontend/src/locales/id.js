@@ -4169,6 +4169,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Hanya kamu yang melihatnya, di sini dan di perangkatmu yang lain. Admin pun tidak.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Potong foto. Tombol panah menggeser, plus dan minus untuk zoom.",
   "Picture removed. Back to the letter.": "Foto dihapus. Kembali ke huruf awal.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Foto dihapus. Kembali ke huruf awal sampai kamu masuk lagi dengan {0}.",
   "Picture set. Looking sharp.": "Foto terpasang. Kece.",
   "Profile picture": "Foto profil",
   "Remove picture": "Hapus foto",

@@ -11,9 +11,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import http from 'node:http';
 import { boundPort, softPasskey } from './helpers.mjs';
 import { startMockOidc } from './mock-oidc.mjs';
+import * as M from './media-samples.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -21,21 +23,25 @@ const ORIGIN = 'http://localhost:8080';
 const b64u = b => Buffer.from(b).toString('base64url');
 const s256 = v => crypto.createHash('sha256').update(v).digest('base64url');
 
-async function setup(t, { env = {}, users = [], creds = [], mock: mockOpts = {} } = {}) {
+async function setup(t, { env = {}, users = [], creds = [], mock: mockOpts = {}, clock = false } = {}) {
   const mock = await startMockOidc(mockOpts);
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-oidc-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
-  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users, creds, subs: [], invites: [] }));
+  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: typeof users === 'function' ? users(mock) : users, creds, subs: [], invites: [] }));
+  const clockFile = path.join(dataDir, 'clock');
+  if (clock) fs.writeFileSync(clockFile, '0');
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN, RP_ID: 'localhost', AUDIT_LOG: '1', TRUST_PROXY: '1',
       INVITE_ONLY: '', ADMIN_UIDS: '', FIRST_USER_ADMIN: '', PASSWORD_LOGIN: '',
       OIDC_ISSUER: mock.issuer, OIDC_CLIENT_ID: mock.clientId, OIDC_CLIENT_SECRET: mock.clientSecret,
-      OIDC_LABEL: 'VoidAuth', ...env
+      OIDC_LABEL: 'VoidAuth',
+      ...(clock ? { NODE_OPTIONS: '--import=' + pathToFileURL(path.join(API, 'test', 'clock-offset.mjs')), TEST_CLOCK_FILE: clockFile } : {}),
+      ...env
     }
   });
-  const h = { log: '', dataDir, mock };
+  const h = { log: '', dataDir, mock, setClock: ms => fs.writeFileSync(clockFile, String(ms)) };
   child.stdout.on('data', d => h.log += d);
   child.stderr.on('data', d => h.log += d);
   t.after(async () => { child.kill('SIGKILL'); await mock.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
@@ -207,10 +213,11 @@ test('e-mail: never linked unverified, linked verified only with OIDC_EMAIL_LINK
   assert.equal(h.db().users[0].oidc, undefined);
   h.mock.next = { sub: 'evil', name: 'Ana', email: 'ana@example.com', email_verified: 'true' };
   assert.equal(landed(await roundTrip(h)).get('oidc-error'), 'link-needed', 'a string is not a verification');
-  h.mock.next = { sub: 'good', name: 'Ana', email: 'Ana@Example.com', email_verified: true };
+  h.mock.next = { sub: 'good', name: 'Ana', email: 'Ana@Example.com', email_verified: true, picture: 'https://pics.example/ana.webp' };
   const ok = await roundTrip(h);
   assert.equal((await (await h.get('/api/me', { cookie: ok.session })).json()).user.id, 'u_ana');
   assert.equal(h.db().users[0].oidc.sub, 'good');
+  assert.equal(h.db().users[0].oidc.picture, 'https://pics.example/ana.webp');
 });
 
 test('e-mail linking is off by default, even verified', async t => {
@@ -294,9 +301,10 @@ test('linking from Settings: needs the proof, a ticket for this session', async 
 
   const step2 = await h.post('/api/login/options', {});
   const link2 = await h.post('/api/oidc/link', { cid: step2.body.cid, credential: key.assertion(step2.body.options.challenge) }, { cookie: bo });
-  h.mock.next = { sub: 'bo-at-idp', name: 'Bo' };
+  h.mock.next = { sub: 'bo-at-idp', name: 'Bo', picture: 'https://pics.example/bo.png' };
   const r = await roundTrip(h, { query: link2.body.url.slice('/api/oidc/start'.length), cookie: bo });
   assert.equal(landed(r).get('oidc'), 'linked');
+  assert.equal(h.db().users.find(u => u.id === 'u_bo').oidc.picture, 'https://pics.example/bo.png');
   assert.match(r.location, /#\/settings\/account$/);
   assert.equal(h.db().users.find(u => u.id === 'u_bo').oidc.sub, 'bo-at-idp');
   // Signing in with the provider now finds Bo.
@@ -409,4 +417,372 @@ test('without OIDC_* nothing changes: every route is a 404 and /api/config has n
   assert.equal((await h.get('/api/oidc/start')).status, 404);
   assert.equal((await h.get('/api/oidc/callback')).status, 404);
   assert.equal('oidc' in await (await h.get('/api/config')).json(), false);
+});
+
+const meOf = async (h, session) => (await (await h.get('/api/me', { cookie: session })).json()).user;
+const picture = (h, session, headers = {}) => fetch(h.api + '/api/oidc/picture', {
+  headers: Object.fromEntries(Object.entries({ 'Sec-Fetch-Site': 'same-origin', ...(session ? { Cookie: session } : {}), ...headers }).filter(([, v]) => v != null))
+});
+
+test('the picture claim: kept at every provider sign-in, read from userinfo too, forgotten by a sign-in without one', async t => {
+  const h = await setup(t);
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/ana.png' };
+  const first = await roundTrip(h);
+  const one = await meOf(h, first.session);
+  assert.match(one.oidcPicture, /^\d{4}-\d\d-\d\dT[\d:.]+Z$/);
+  assert.equal(h.db().users[0].oidc.picture, h.mock.issuer + '/ana.png');
+  assert.equal(h.db().users[0].oidc.pictureAt, one.oidcPicture);
+
+  await new Promise(r => setTimeout(r, 5));
+  const two = await meOf(h, (await roundTrip(h)).session);
+  assert.ok(two.oidcPicture > one.oidcPicture, 'the next sign-in names the picture again with its own time');
+
+  // Only in userinfo, as Authelia sends it.
+  const { picture: _, ...plain } = h.mock.next;
+  h.mock.next = plain;
+  h.mock.tamper = { userinfo: { picture: h.mock.issuer + '/from-userinfo.png' } };
+  await roundTrip(h);
+  assert.equal(h.db().users[0].oidc.picture, h.mock.issuer + '/from-userinfo.png');
+
+  h.mock.tamper = {};
+  const last = h.db().users[0].oidc.pictureAt;
+  const none = await meOf(h, (await roundTrip(h)).session);
+  assert.equal('oidcPicture' in none, false);
+  assert.equal('picture' in h.db().users[0].oidc, false);
+  assert.equal(h.db().users[0].oidc.pictureAt, last, 'the time stays, so the next sign-in with one comes after it');
+
+  for (const bad of ['javascript:alert(1)', 'ftp://pics.example/a.png', 'https://u:p@pics.example/a.png', 'https://pics.example/' + 'a'.repeat(2100), 42, '']) {
+    h.mock.next = { ...plain, picture: bad };
+    await roundTrip(h);
+    assert.equal('picture' in h.db().users[0].oidc, false, String(bad).slice(0, 30));
+  }
+});
+
+test('the picture claim is not kept, and not fetched, where uploads are off', async t => {
+  const h = await setup(t, { env: { MEDIA_UPLOADS: '0' } });
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/ana.png' };
+  const r = await roundTrip(h);
+  assert.equal('oidcPicture' in await meOf(h, r.session), false);
+  assert.equal('picture' in h.db().users[0].oidc, false);
+  assert.equal((await picture(h, r.session)).status, 404);
+});
+
+test('GET /api/oidc/picture: the signed-in profile\'s own picture, relayed as an image and never cached', async t => {
+  const h = await setup(t);
+  const pic = M.png(3000);
+  h.mock.files['/ana.png'] = { body: pic, type: 'image/png' };
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/ana.png' };
+  const ana = (await roundTrip(h)).session;
+  const anaId = h.db().users[0].id;
+
+  assert.equal((await picture(h, null)).status, 401);
+  const r = await picture(h, ana);
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('content-type'), 'image/png');
+  assert.equal(r.headers.get('cache-control'), 'private, no-store');
+  assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(r.headers.get('cross-origin-resource-policy'), 'same-origin');
+  assert.ok(Buffer.from(await r.arrayBuffer()).equals(pic));
+  assert.equal((await picture(h, ana, { 'X-OpenGym-Account': anaId })).status, 200);
+
+  h.mock.next = { sub: 'user-2', name: 'Bea', groups: ['opengym'] };
+  const bea = (await roundTrip(h, { ip: '198.51.100.2' })).session;
+  const none = await picture(h, bea);
+  assert.equal(none.status, 404, 'a provider that names no picture gives none, not another profile\'s');
+  assert.equal((await none.json()).code, 'no-picture');
+  const other = await picture(h, ana, { 'X-OpenGym-Account': 'someone-else' });
+  assert.equal(other.status, 409, 'a session used for an account the device no longer means');
+  assert.equal((await other.json()).code, 'account-mismatch');
+  assert.deepEqual(h.mock.seen.files, ['/ana.png', '/ana.png'], 'the provider was asked for Ana\'s picture only');
+});
+
+test('GET /api/oidc/picture refuses what is too large, not an image, or not to be had', async t => {
+  const h = await setup(t, { env: { MEDIA_IMAGE_MAX_MB: '0.002' } });
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/p' };
+  const s = (await roundTrip(h)).session;
+  const answer = async file => {
+    h.mock.files['/p'] = file;
+    const r = await picture(h, s);
+    return [r.status, (await r.json()).code];
+  };
+  assert.deepEqual(await answer({ body: M.png(5000) }), [413, 'media-too-large']);
+  assert.deepEqual(await answer({ body: M.png(5000), chunked: true }), [413, 'media-too-large']);
+  assert.deepEqual(await answer({ body: M.svg(), type: 'image/svg+xml' }), [415, 'media-type']);
+  assert.deepEqual(await answer({ body: M.html(), type: 'image/png' }), [415, 'media-type']);
+  assert.deepEqual(await answer({ body: M.mp4({ mdatBytes: 200 }), type: 'image/png' }), [415, 'media-type']);
+  assert.deepEqual(await answer({ body: Buffer.alloc(0) }), [415, 'media-type']);
+  assert.deepEqual(await answer({ status: 500, body: M.png(100) }), [502, 'picture-unavailable']);
+  assert.deepEqual(await answer({ status: 302, body: Buffer.alloc(0), headers: { Location: h.mock.issuer + '/elsewhere.png' } }), [422, 'picture-refused']);
+  assert.deepEqual(await answer({ status: 404, body: Buffer.alloc(0) }), [422, 'picture-refused']);
+  const why = h.audit().filter(e => e.ev === 'auth.oidc.picture').map(e => e.msg);
+  assert.deepEqual(why, ['the picture is too large', 'the picture is too large', 'not a JPEG, PNG, WebP or GIF', 'not a JPEG, PNG, WebP or GIF',
+    'not a JPEG, PNG, WebP or GIF', 'not a JPEG, PNG, WebP or GIF', 'HTTP 500', 'HTTP 302', 'HTTP 404']);
+  assert.equal(JSON.stringify(h.audit()).includes(h.mock.issuer + '/p'), false, 'the audit log says why, never where');
+});
+
+test('PUT /api/data keeps the provider-picture mark when a write lacks it, carries an older one, or names another picture of the same sign-in', async t => {
+  const h = await setup(t);
+  const s = (await roundTrip(h)).session;
+  let told = 0;
+  const put = async state => { const r = await fetch(h.api + '/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', Cookie: s }, body: JSON.stringify({ state: { workouts: [], routines: [], ...state } }) }); told = (await r.clone().json()).rev; return r.status; };
+  const stored = async () => (await (await h.get('/api/data', { cookie: s })).json()).rev;
+  const mark = async () => (await (await h.get('/api/data', { cookie: s })).json()).state.avatarOidc;
+  const T = d => `2026-10-${d}T09:00:00.000Z`;
+  const pic = c => ({ m: { kind: 'image', hash: c.repeat(64), mime: 'image/webp', size: 9000, width: 256, height: 256, at: 1 } });
+  const junk = { at: '2' + 'z'.repeat(100) };
+  assert.equal(await put({ _ts: 50, avatarOidc: junk }), 200);
+  assert.equal(await mark(), undefined, 'a mark that is no time is not stored');
+  assert.equal(await put({ _ts: 100, avatarOidc: { at: T(27) } }), 200);
+  assert.deepEqual(await mark(), { at: T(27) }, 'a mark that is no time holds no sign-in back');
+  assert.equal(await stored(), told, 'stored as sent');
+  assert.equal(await put({ _ts: 200 }), 200);
+  assert.deepEqual(await mark(), { at: T(27) }, 'a backup from before it');
+  assert.equal(await stored(), told + 1, 'one further than the writer was told, so it reads it again');
+  assert.equal(await put({ _ts: 300, avatarOidc: { at: T(20), hash: 'a'.repeat(64) } }), 200);
+  assert.deepEqual(await mark(), { at: T(27) }, 'an older sign-in');
+  assert.equal(await put({ _ts: 400, avatar: pic('b'), avatarOidc: { at: T(28), hash: 'b'.repeat(64) } }), 200);
+  assert.equal(await put({ _ts: 500, avatar: pic('b'), avatarOidc: { at: T(28), hash: 'a'.repeat(64) } }), 200);
+  assert.deepEqual(await mark(), { at: T(28), hash: 'b'.repeat(64) }, 'the same sign-in, naming a picture not shown');
+  assert.equal(await put({ _ts: 550, avatar: pic('a'), avatarOidc: { at: T(28), hash: 'a'.repeat(64) } }), 200);
+  assert.deepEqual(await mark(), { at: T(28), hash: 'a'.repeat(64) }, 'the same sign-in, naming the picture shown');
+  assert.equal(await put({ _ts: 600, avatarOidc: { at: T(29) } }), 200);
+  assert.deepEqual(await mark(), { at: T(29) });
+  assert.equal(await put((await (await h.get('/api/data', { cookie: s })).json()).state), 200);
+  assert.equal(await stored(), told, 'what is stored, sent back, changes nothing');
+  let deep = {};
+  for (let i = 0, o = deep; i < 20000; i++) o = o.x = {};
+  const odd = [junk, { at: 'x' }, { at: '2026-10-30T09:00:00Z' }, { at: '2026-10-30 09:00:00.000Z' }, { at: '9999-99-99T99:99:99.999Z' }, { at: '9999-12-31T23:59:59.999Z' }, deep];
+  for (const [i, j] of odd.entries()) {
+    assert.equal(await put({ _ts: 700 + i, avatarOidc: j }), 200);
+    assert.deepEqual(await mark(), { at: T(29) }, 'no time is no later sign-in');
+  }
+  assert.equal(await put({ _ts: 800, avatar: pic('a'), avatarOidc: { at: T(20), hash: 'a'.repeat(64) } }), 200);
+  assert.deepEqual(await mark(), { at: T(29), hash: 'a'.repeat(64) }, 'a backup\'s provider picture stays the provider\'s');
+  assert.equal(await put({ _ts: 900, avatar: pic('c'), avatarOidc: { at: T(21), hash: 'd'.repeat(64) } }), 200);
+  assert.deepEqual(await mark(), { at: T(29), hash: 'a'.repeat(64) }, 'and its own photo its own');
+  assert.equal(await put({ _ts: 1000, avatarOidc: { at: T(30), hash: 'z'.repeat(900), note: 'x' } }), 200);
+  assert.deepEqual(await mark(), { at: T(30) }, 'only the time and a picture hash are kept');
+  for (const [i, hash] of ['A'.repeat(64), 'a'.repeat(63), 'a'.repeat(65), ' ' + 'a'.repeat(64)].entries()) {
+    const at = `2026-11-1${i}T09:00:00.000Z`;
+    assert.equal(await put({ _ts: 1100 + i, avatarOidc: { at, hash } }), 200);
+    assert.deepEqual(await mark(), { at }, 'no picture hash is no picture');
+  }
+  const echo = (await (await h.get('/api/data', { cookie: s })).json()).state;
+  echo.avatarOidc = { ...echo.avatarOidc, note: 'x' };
+  assert.equal(await put(echo), 200);
+  assert.deepEqual(await mark(), { at: '2026-11-13T09:00:00.000Z' });
+  assert.equal(await stored(), told + 1, 'a key dropped from the mark is a change the writer reads');
+  const ahead = days => new Date(Date.now() + days * 864e5).toISOString();
+  assert.equal(await put({ _ts: 1200, avatarOidc: { at: ahead(2) } }), 200);
+  assert.deepEqual(await mark(), { at: '2026-11-13T09:00:00.000Z' }, 'two days ahead of the clock and of the last sign-in');
+  const soon = ahead(1 / 24);
+  assert.equal(await put({ _ts: 1300, avatarOidc: { at: soon } }), 200);
+  assert.deepEqual(await mark(), { at: soon }, 'an hour ahead');
+});
+
+test('PUT /api/data: an older app\'s copy that loses the picture to a newer one leaves the mark with the picture kept', async t => {
+  const h = await setup(t);
+  const s = (await roundTrip(h)).session;
+  const T = d => `2026-10-${d}T09:00:00.000Z`;
+  const pic = c => ({ m: { kind: 'image', hash: c.repeat(64), mime: 'image/webp', size: 9000, width: 256, height: 256, at: 1 } });
+  const put = async body => (await fetch(h.api + '/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', Cookie: s }, body: JSON.stringify(body) })).status;
+  const data = async () => (await (await h.get('/api/data', { cookie: s })).json());
+  const write = async (state, from, stamped = false) => { await new Promise(r => setTimeout(r, 5)); return put({ state: { ...from.state, ...state }, baseRev: (await data()).rev, stamped }); };
+  assert.equal(await put({ state: { workouts: [], routines: [], _ts: 100, avatar: pic('c'), avatarOidc: { at: T(10), hash: 'c'.repeat(64) } } }), 200);
+  assert.equal(await write({ _ts: 200, avatar: pic('a'), avatarOidc: { at: T(11), hash: 'a'.repeat(64) } }, await data()), 200);
+  const read = await data();
+  const at = Date.now();
+  assert.equal(await write({ _ts: 300, avatar: pic('b'), avatarOidc: { at: T(12), hash: 'b'.repeat(64) }, edited: { ...read.state.edited, avatar: at, avatarOidc: at } }, read, true), 200);
+  assert.equal(await write({ _ts: 400 }, read), 200);
+  const { state } = await data();
+  assert.equal(state.avatar.m.hash, 'b'.repeat(64));
+  assert.deepEqual(state.avatarOidc, { at: T(12), hash: 'b'.repeat(64) });
+});
+
+test('PUT /api/data takes the mark of the account\'s last provider sign-in even ahead of the clock, and no later time', async t => {
+  const ana = softPasskey(ORIGIN);
+  const ahead = days => new Date(Date.now() + days * 864e5).toISOString();
+  const at = new Date().toISOString(), signedIn = ahead(3);
+  const users = [{ id: 'u_ana', name: 'Ana', created: at, oidc: { iss: 'https://idp.example', sub: 'ana', linked: at, picture: 'https://idp.example/ana.png', pictureAt: signedIn } }];
+  const h = await setup(t, { users, creds: [ana.row('u_ana')] });
+  const o = await h.post('/api/login/options', {});
+  const s = (await h.post('/api/login/verify', { cid: o.body.cid, credential: ana.assertion(o.body.options.challenge) })).cookie;
+  let told = 0;
+  const put = async (state, stamped = false) => { const r = await fetch(h.api + '/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', Cookie: s }, body: JSON.stringify({ state: { workouts: [], routines: [], ...state }, stamped }) }); told = (await r.clone().json()).rev; return r.status; };
+  const data = async () => (await (await h.get('/api/data', { cookie: s })).json());
+  assert.equal(await put({ _ts: 100, avatarOidc: { at: ahead(4) } }), 200);
+  assert.equal((await data()).state.avatarOidc, undefined, 'after the last sign-in and days ahead');
+  assert.equal(await put({ _ts: 300, avatarOidc: { at: signedIn } }), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at: signedIn });
+  assert.equal((await data()).rev, told, 'stored as sent, so the device does not fetch it again');
+  assert.equal(await put({ _ts: 400, avatarOidc: { at: ahead(4) } }), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at: signedIn }, 'a later time than the sign-in');
+  assert.equal(await put({ _ts: 500 }), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at: signedIn }, 'a write without it');
+  assert.equal(await put({ _ts: 600, avatarOidc: { at } }, true), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at: signedIn }, 'an older mark from an app that stamps');
+  assert.equal(await put({ _ts: 700 }, true), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at: signedIn }, 'a write without it from an app that stamps');
+  const proof = await h.post('/api/login/options', {});
+  assert.equal((await h.post('/api/oidc/unlink', { cid: proof.body.cid, credential: ana.assertion(proof.body.options.challenge) }, { cookie: s })).status, 200);
+  assert.equal(await put({ _ts: 800, avatarOidc: { at } }, true), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at }, 'unlinked, the time days ahead is no sign-in any more');
+});
+
+test('a sign-in after the server clock was set back still comes after the last one, and a device\'s mark of the last one stays', async t => {
+  const at = new Date().toISOString(), ahead = new Date(Date.now() + 3 * 864e5).toISOString();
+  const h = await setup(t, { users: mock => [{ id: 'u_ana', name: 'Ana', created: at, oidc: { iss: mock.issuer, sub: 'user-1', linked: at, picture: mock.issuer + '/a.png', pictureAt: ahead } }] });
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/b.png' };
+  const s = (await roundTrip(h)).session;
+  const first = (await meOf(h, s)).oidcPicture;
+  assert.ok(first > ahead, first);
+  let told = 0;
+  const put = async state => { const r = await fetch(h.api + '/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', Cookie: s }, body: JSON.stringify({ state: { workouts: [], routines: [], ...state } }) }); told = (await r.clone().json()).rev; return r.status; };
+  const data = async () => (await (await h.get('/api/data', { cookie: s })).json());
+  const pic = { m: { kind: 'image', hash: 'a'.repeat(64), mime: 'image/webp', size: 9000, width: 256, height: 256, at: 1 } };
+  assert.equal(await put({ _ts: 100, avatar: pic, avatarOidc: { at: ahead, hash: 'a'.repeat(64) } }), 200);
+  assert.deepEqual((await data()).state.avatarOidc, { at: ahead, hash: 'a'.repeat(64) }, 'the provider picture of the sign-in before stays the provider\'s');
+  assert.equal((await data()).rev, told);
+  const second = (await meOf(h, (await roundTrip(h)).session)).oidcPicture;
+  assert.ok(second > first, second);
+  const { picture: _, ...plain } = h.mock.next;
+  h.mock.next = plain;
+  await roundTrip(h);
+  h.mock.next = { ...plain, picture: h.mock.issuer + '/c.png' };
+  assert.ok((await meOf(h, (await roundTrip(h)).session)).oidcPicture > second, 'a sign-in without a picture in between');
+});
+
+test('a link from Settings that finds its profile linked meanwhile keeps the last sign-in\'s time, after the clock was set back too', async t => {
+  const key = softPasskey(ORIGIN);
+  const users = [{ id: 'u_bo', name: 'Bo', created: new Date().toISOString(), email: 'bo@example.com' }];
+  const h = await setup(t, { env: { OIDC_EMAIL_LINKING: '1' }, users, creds: [key.row('u_bo')], clock: true });
+  h.setClock(3 * 864e5);
+  const opts = await h.post('/api/login/options', {});
+  const bo = (await h.post('/api/login/verify', { cid: opts.body.cid, credential: key.assertion(opts.body.options.challenge) })).cookie;
+  const step = await h.post('/api/login/options', {});
+  const link = await h.post('/api/oidc/link', { cid: step.body.cid, credential: key.assertion(step.body.options.challenge) }, { cookie: bo });
+  assert.equal(link.status, 200);
+  h.mock.next = { sub: 'bo-at-idp', name: 'Bo', email: 'bo@example.com', email_verified: true, groups: ['opengym'], picture: h.mock.issuer + '/a.png' };
+  const ahead = Math.floor(Date.now() / 1000) + 3 * 86400;
+  h.mock.tamper = { claims: { iat: ahead, auth_time: ahead, exp: ahead + 300 } };
+  assert.ok((await roundTrip(h)).session, 'linked by e-mail in another tab');
+  const first = h.db().users[0].oidc.pictureAt;
+  h.mock.tamper = {};
+  h.setClock(0);
+  const r = await roundTrip(h, { query: link.body.url.slice('/api/oidc/start'.length), cookie: bo });
+  assert.equal(landed(r).get('oidc'), 'linked');
+  assert.ok(h.db().users[0].oidc.pictureAt > first, h.db().users[0].oidc.pictureAt);
+});
+
+test('confirming it is you at the provider leaves the picture as the last sign-in left it', async t => {
+  const h = await setup(t);
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/ana.png' };
+  const first = await roundTrip(h);
+  const before = { ...h.db().users[0].oidc };
+  await new Promise(r => setTimeout(r, 5));
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/new.png' };
+  const re = await roundTrip(h, { query: '?mode=reauth', cookie: first.session });
+  assert.equal(landed(re).get('oidc'), 'confirmed');
+  assert.equal(h.db().users[0].oidc.picture, before.picture);
+  assert.equal(h.db().users[0].oidc.pictureAt, before.pictureAt);
+  const { picture: _, ...plain } = h.mock.next;
+  h.mock.next = plain;
+  h.mock.files['/userinfo'] = { type: 'application/json', body: Buffer.from(JSON.stringify({ sub: 'user-1', picture: h.mock.issuer + '/ui.png' })) };
+  assert.equal(landed(await roundTrip(h, { query: '?mode=reauth', cookie: first.session })).get('oidc'), 'confirmed');
+  assert.deepEqual(h.mock.seen.files, [], 'nor is userinfo asked for one');
+  assert.equal(h.db().users[0].oidc.pictureAt, before.pictureAt);
+});
+
+test('GET /api/oidc/picture fetches off the issuer\'s own origin only from public addresses', async t => {
+  const h = await setup(t);
+  let asked = 0;
+  const inside = http.createServer((req, res) => { asked++; res.writeHead(200, { 'Content-Type': 'image/png' }); res.end(M.png(100)); });
+  await new Promise(r => inside.listen(0, '127.0.0.1', r));
+  t.after(() => new Promise(r => inside.close(r)));
+  const port = inside.address().port;
+  for (const url of [`http://127.0.0.1:${port}/p.png`, `http://localhost:${port}/p.png`, `http://[::1]:${port}/p.png`, `http://169.254.169.254/latest/meta-data/`, `http://10.0.0.1/p.png`]) {
+    h.mock.next = { sub: 'user-1', name: 'Ana', groups: ['opengym'], picture: url };
+    const s = (await roundTrip(h)).session;
+    const r = await picture(h, s);
+    assert.equal(r.status, 422, url);
+    assert.equal((await r.json()).code, 'picture-refused');
+  }
+  assert.equal(asked, 0, 'nothing on a private address was ever asked');
+});
+
+test('a picture named by a provider this server no longer uses is neither announced nor fetched', async t => {
+  const ana = softPasskey(ORIGIN);
+  const at = new Date().toISOString();
+  const users = [{ id: 'u_ana', name: 'Ana', created: at, oidc: { iss: 'https://old-idp.example', sub: 'ana', linked: at, picture: 'https://old-idp.example/ana.png', pictureAt: at } }];
+  const h = await setup(t, { users, creds: [ana.row('u_ana')] });
+  const o = await h.post('/api/login/options', {});
+  const s = (await h.post('/api/login/verify', { cid: o.body.cid, credential: ana.assertion(o.body.options.challenge) })).cookie;
+  assert.ok(s);
+  assert.equal('oidcPicture' in await meOf(h, s), false);
+  const r = await picture(h, s);
+  assert.equal(r.status, 404);
+  assert.equal((await r.json()).code, 'no-picture');
+});
+
+test('a userinfo asked only for the picture brings nothing else, so its email_verified links no one', async t => {
+  const existing = { id: 'u_ana', name: 'Ana', created: new Date().toISOString(), email: 'ana@example.com' };
+  const h = await setup(t, { env: { OIDC_EMAIL_LINKING: '1' }, users: [existing] });
+  h.mock.next = { sub: 'evil', name: 'Ana', email: 'ana@example.com', groups: ['opengym'] };
+  h.mock.tamper = { userinfo: { email_verified: true, picture: h.mock.issuer + '/ana.png' } };
+  const r = await roundTrip(h);
+  assert.equal(landed(r).get('oidc-error'), 'link-needed');
+  assert.equal(r.session, null);
+  assert.equal(h.db().users[0].oidc, undefined);
+});
+
+test('a userinfo asked only for the picture that fails is no provider error on the admin page', async t => {
+  const h = await setup(t, { env: { FIRST_USER_ADMIN: '1' } });
+  h.mock.files['/userinfo'] = { status: 500, type: 'application/json', body: Buffer.from('{"error":"boom"}') };
+  const r = await roundTrip(h);
+  assert.equal(landed(r).get('oidc'), 'signed-in');
+  assert.deepEqual(h.mock.seen.files, ['/userinfo']);
+  const st = await (await h.get('/api/admin/oidc', { cookie: r.session })).json();
+  assert.equal(st.lastError, null);
+});
+
+test('GET /api/oidc/picture: another site can neither fetch it nor spend the hourly budget, which all sessions share', async t => {
+  const h = await setup(t);
+  h.mock.files['/ana.png'] = { body: M.png(300), type: 'image/png' };
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/ana.png' };
+  const one = (await roundTrip(h)).session;
+  for (const site of ['cross-site', 'same-site']) {
+    const r = await picture(h, one, { 'Sec-Fetch-Site': site, 'Sec-Fetch-Mode': 'navigate' });
+    assert.equal(r.status, 403, site);
+    assert.equal((await r.json()).code, 'origin-mismatch');
+  }
+  // Safari before 16.4 sends neither Sec-Fetch-Site nor, on a GET, an Origin: the app's own header decides.
+  assert.equal((await picture(h, one, { 'Sec-Fetch-Site': null })).status, 403);
+  assert.deepEqual(h.mock.seen.files, []);
+  const uid = h.db().users[0].id;
+  const two = (await roundTrip(h)).session;
+  for (let i = 0; i < 10; i++) {
+    const r = await picture(h, i % 2 ? one : two, i % 2 ? {} : { 'Sec-Fetch-Site': null, 'X-OpenGym-Account': uid });
+    assert.equal(r.status, 200, `fetch ${i + 1}`);
+  }
+  const over = await picture(h, two);
+  assert.equal(over.status, 429);
+  assert.equal((await over.json()).code, 'locked');
+  assert.ok(Number(over.headers.get('retry-after')) > 0);
+  assert.equal(h.mock.seen.files.length, 10);
+});
+
+test('the phone app\'s sign-in brings the picture too, and its token fetches it', async t => {
+  const h = await setup(t);
+  h.mock.files['/ana.webp'] = { body: M.webp(2000), type: 'image/webp' };
+  h.mock.next = { ...h.mock.next, picture: h.mock.issuer + '/ana.webp' };
+  const verifier = b64u(crypto.randomBytes(40));
+  const q = `?mode=app&return=${encodeURIComponent('opengym://oidc')}&challenge=${s256(verifier)}&astate=${b64u(crypto.randomBytes(16))}`;
+  const r = await roundTrip(h, { query: q });
+  const code = new URL(r.location).searchParams.get('code');
+  const ok = await h.post('/api/oidc/app/redeem', { code, verifier }, { headers: { Origin: 'https://localhost', 'Sec-Fetch-Site': 'cross-site' } });
+  assert.equal(ok.status, 200);
+  assert.match(ok.body.user.oidcPicture, /T/);
+  const pic = await fetch(h.api + '/api/oidc/picture', { headers: { Authorization: 'Bearer ' + ok.body.token, Origin: 'https://localhost', 'Sec-Fetch-Site': 'cross-site' } });
+  assert.equal(pic.status, 200);
+  assert.equal(pic.headers.get('content-type'), 'image/webp');
 });

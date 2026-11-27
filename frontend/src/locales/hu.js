@@ -4207,6 +4207,7 @@ export default {
   "Only you see it, here and on your other devices. Not even an admin can.": "Csak te látod, itt és a többi eszközödön. Még egy admin sem.",
   "Photo crop. Arrow keys move it, plus and minus zoom.": "Fotó kivágása. A nyilak mozgatják, a plusz és mínusz nagyít.",
   "Picture removed. Back to the letter.": "Kép eltávolítva. Vissza a kezdőbetűhöz.",
+  "Picture removed. Back to the letter until your next sign-in with {0}.": "Kép eltávolítva. A kezdőbetű marad a következő bejelentkezésig ezzel: {0}.",
   "Picture set. Looking sharp.": "Kép beállítva. Jól nézel ki.",
   "Profile picture": "Profilkép",
   "Remove picture": "Kép eltávolítása",

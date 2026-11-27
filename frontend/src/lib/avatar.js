@@ -4,6 +4,11 @@
  *   S.avatar = { preset: id }   one of AVATAR_PRESETS, an openGym icon on the accent's tint
  *   (absent)                    the first letter of the name, as before
  *
+ *   S.avatarOidc = { at, hash } the identity provider's sign-in at `at` is dealt with
+ *                               (lib/oidc-picture.js); `hash` is the picture taken from it, which a
+ *                               later sign-in replaces for as long as S.avatar still shows it. Kept
+ *                               beside S.avatar so that an app from before it cannot undo it.
+ *
  * The bytes never go into the state: it is one document every device downloads whole, and the
  * server rewrites it on every save. The picture lives where every other photo of the profile does,
  * in the device's media store (lib/media-store.js), and signed in on the server under the profile's
@@ -70,16 +75,48 @@ export function initialOf (name) {
   return first.toLocaleUpperCase()
 }
 
+// A provider sign-in's time as the server writes it (toISOString), which sorts in time order.
+const isTime = s => typeof s === 'string' && s.length === 24 && !Number.isNaN(Date.parse(s)) && new Date(s).toISOString() === s
+/** The provider sign-in the profile has dealt with: { at, hash } (hash null when none was taken), or null. */
+export function providerMarkOf (S) {
+  const o = S && typeof S === 'object' ? S.avatarOidc : null
+  if (!o || typeof o !== 'object' || Array.isArray(o) || !isTime(o.at)) return null
+  return { at: o.at, hash: typeof o.hash === 'string' && /^[0-9a-f]{64}$/.test(o.hash) ? o.hash : null }
+}
+/** Whether the picture shown is the one taken from the provider. */
+export function fromProvider (S) {
+  const a = avatarOf(S)
+  const mark = providerMarkOf(S)
+  return !!(a?.type === 'photo' && mark?.hash && a.m.hash === mark.hash)
+}
+
 export function setAvatarPhoto (s, m) { s.avatar = { m } }
 export function setAvatarPreset (s, id) { if (PRESET[id]) s.avatar = { preset: id } }
-export function clearAvatar (s) { delete s.avatar }
+export function setAvatarFromProvider (s, m, at) { s.avatar = { m }; s.avatarOidc = { at, hash: m.hash } }
+/** Back to the letter. Past a provider sign-in (`seen`, `oidcPicture` in /api/me) it stays the
+ *  letter until a later one. */
+export function clearAvatar (s, seen = null) {
+  delete s.avatar
+  const mark = providerMarkOf(s)
+  if (typeof seen === 'string' && seen && !(mark && mark.at >= seen)) s.avatarOidc = { at: seen }
+}
 
 /** A backup's avatar through the same gate as everywhere else (lib/backup-media.js); mutates. */
 export function sanitizeAvatar (state) {
-  if (!state || typeof state !== 'object' || !('avatar' in state)) return state
-  const a = avatarOf(state)
-  if (!a) delete state.avatar
-  else state.avatar = a.type === 'photo' ? { m: a.m } : { preset: a.id }
+  if (!state || typeof state !== 'object') return state
+  if ('avatar' in state) {
+    const a = avatarOf(state)
+    if (!a) delete state.avatar
+    else state.avatar = a.type === 'photo' ? { m: a.m } : { preset: a.id }
+  }
+  if ('avatarOidc' in state) {
+    const mark = providerMarkOf(state)
+    // A time days ahead (an edited file, a server whose clock ran ahead) would hold off every later
+    // sign-in here, and the server drops it, so the device would keep it alone.
+    const at = mark && Date.parse(mark.at) > Date.now() + 864e5 ? new Date().toISOString() : mark?.at
+    if (!mark) delete state.avatarOidc
+    else state.avatarOidc = mark.hash ? { at, hash: mark.hash } : { at }
+  }
   return state
 }
 
@@ -230,4 +267,11 @@ export async function renderAvatar (pic, view, crop, deps = {}) {
     canvas.width = 0
     canvas.height = 0
   }
+}
+
+/** An image that was not picked here (the identity provider's, lib/oidc-picture.js) through the
+ *  same steps as a picked photo, framed on its centre: { blob, media } as renderAvatar gives. */
+export async function renderAvatarFrom (blob, deps = {}) {
+  const pic = await openAvatarImage(blob, deps)
+  try { return await renderAvatar(pic, AVATAR_EDGE, { x: 0, y: 0, zoom: 1 }, deps) } finally { pic.close() }
 }

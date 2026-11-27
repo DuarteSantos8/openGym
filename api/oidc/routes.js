@@ -11,8 +11,10 @@
  * idea as PKCE), so another app grabbing the custom scheme gets nothing it can redeem. */
 import crypto from 'node:crypto';
 import { verifyIdToken, allowedAlgs, OidcError } from './jwt.js';
-import { decide, accessOf, linkedTo, nameFor } from './accounts.js';
+import { decide, accessOf, linkedTo, nameFor, pictureOf } from './accounts.js';
 import { APP_RETURNS, gated } from './config.js';
+import { sniffMedia } from '../media.js';
+import { createWindow } from '../rate-limit.js';
 
 const FLOW_TTL_MS = 10 * 60000;
 const HANDOFF_TTL_MS = 2 * 60000;
@@ -57,6 +59,7 @@ export function oidcRoutes(d) {
   const flows = pending();
   const handoffs = pending();
   const tickets = pending();
+  const pictureFetches = createWindow({ max: 10, windowMs: 3600000, now });
   const FLOW_COOKIE = d.secure ? '__Host-gymoidc' : 'gymoidc';
   const flowCookie = v => `${FLOW_COOKIE}=${v}; Path=/; Max-Age=${FLOW_TTL_MS / 1000}; HttpOnly;${d.secure ? ' Secure;' : ''} SameSite=Lax`;
   const clearFlowCookie = `${FLOW_COOKIE}=; Path=/; Max-Age=0; HttpOnly;${d.secure ? ' Secure;' : ''} SameSite=Lax`;
@@ -95,6 +98,15 @@ export function oidcRoutes(d) {
     ...(typeof claims.email === 'string' && claims.email_verified === true ? { email: d.normalizeEmail(claims.email) || undefined } : {}),
     linked: new Date(now()).toISOString()
   });
+  // What the provider shows as this person's picture at this sign-in, and when, so the app can take
+  // it as the profile picture (GET /api/oidc/picture). A sign-in without one forgets the picture, and
+  // the app then leaves the one it has alone. Only kept where the server keeps avatars. The time stays
+  // later than the last one even after the clock was set back, as the app counts an earlier one as done.
+  function notePicture(user, claims) {
+    const url = d.picture ? pictureOf(claims) : null;
+    if (url) { user.oidc.picture = url; user.oidc.pictureAt = new Date(Math.max(now(), (Date.parse(user.oidc.pictureAt) || 0) + 1)).toISOString(); }
+    else delete user.oidc.picture;
+  }
 
   /** The proof proveOwner takes from a provider: a sign-in there in the last few minutes. */
   function providerProof(req, user) {
@@ -123,10 +135,13 @@ export function oidcRoutes(d) {
     // Groups and the e-mail often live only in userinfo (Authelia, Keycloak without a mapper).
     // Its answer is used only when it is about the same person (OIDC Core 5.3.2).
     const needs = claims[cfg.groupsClaim] === undefined || claims.email === undefined;
-    if (needs && tok.access_token) {
-      const ui = await provider.userinfo(tok.access_token);
+    const wantsPicture = !!d.picture && flow.mode !== 'reauth' && claims.picture === undefined;
+    if ((needs || wantsPicture) && tok.access_token) {
+      const ui = await provider.userinfo(tok.access_token, { quiet: !needs });
       if (ui && typeof ui === 'object' && ui.sub === claims.sub) {
         const { iss, aud, exp, iat, nonce, azp, ...rest } = ui;
+        // Asked for the picture alone, only the picture is taken from it.
+        if (!needs) return rest.picture === undefined ? claims : { ...claims, picture: rest.picture };
         return { ...rest, ...claims };
       }
     }
@@ -227,7 +242,8 @@ export function oidcRoutes(d) {
         }
         const { roles, allowed } = accessOf(claims, cfg);
         if (!allowed) { audit(req, 'auth.oidc.denied', { ok: false, user, msg: 'group' }); return finishError(res, flow, 'group'); }
-        if (flow.mode === 'link') { user.oidc = identity(claims); audit(req, 'auth.oidc.link', { user }); }
+        // Confirming it is you is no sign-in: the picture stays as the last sign-in left it.
+        if (flow.mode === 'link') { user.oidc = { ...identity(claims), ...(user.oidc?.pictureAt ? { pictureAt: user.oidc.pictureAt } : {}) }; notePicture(user, claims); audit(req, 'auth.oidc.link', { user }); }
         else audit(req, 'auth.oidc.reauth', { user });
         applyRoles(user, roles);
         saveDb();
@@ -253,6 +269,7 @@ export function oidcRoutes(d) {
         db.users.push(user);
         audit(req, 'auth.oidc.create', { user });
       }
+      notePicture(user, claims);
       applyRoles(user, accessOf(claims, cfg).roles);
       saveDb();
       audit(req, 'auth.oidc.ok', { user, msg: flow.mode });
@@ -314,6 +331,34 @@ export function oidcRoutes(d) {
       saveDb();
       audit(req, 'auth.oidc.unlink', { user });
       json(res, 200, { ok: true });
+    },
+
+    // The picture the provider named at the last sign-in, fetched for the signed-in profile only and
+    // never kept: the device that asks crops and re-encodes it like a photo picked there
+    // (frontend lib/oidc-picture.js), and only that copy is ever stored.
+    'GET /api/oidc/picture': async (req, res) => {
+      if (!d.picture) return json(res, 404, { error: 'not found' });
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      if (d.wrongAccount(req, user)) return json(res, 409, { error: 'signed in as another account now', code: 'account-mismatch' });
+      const url = String(user.oidc?.iss || '').replace(/\/+$/, '') === cfg.issuer ? user.oidc.picture : null;
+      if (!url) return json(res, 404, { error: 'the provider named no picture', code: 'no-picture' });
+      const wait = pictureFetches.take(user.id);
+      if (wait) return json(res, 429, { error: 'too many requests, try again later', code: 'locked', retryAfter: wait }, { 'Retry-After': String(wait) });
+      let bytes;
+      try { bytes = await provider.picture(url, d.picture.maxBytes); }
+      catch (e) {
+        audit(req, 'auth.oidc.picture', { ok: false, user, msg: e.message });
+        if (e.code === 'picture-size') return json(res, 413, { error: 'that file is too large', code: 'media-too-large' });
+        if (e.code === 'picture-refused') return json(res, 422, { error: 'the provider\'s picture address cannot be used', code: 'picture-refused' });
+        return json(res, 502, { error: 'the provider\'s picture could not be fetched', code: 'picture-unavailable' });
+      }
+      const type = sniffMedia(bytes.subarray(0, 64));
+      if (type?.category !== 'still') {
+        audit(req, 'auth.oidc.picture', { ok: false, user, msg: 'not a JPEG, PNG, WebP or GIF' });
+        return json(res, 415, { error: 'that file type is not accepted', code: 'media-type' });
+      }
+      d.picture.send(res, bytes, type);
     },
 
     'GET /api/admin/oidc': async (req, res) => {
