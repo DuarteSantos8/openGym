@@ -6424,4 +6424,11 @@ export default {
   "No matching help found.": "Подходящие разделы справки не найдены.",
   "Show all settings": "Показать все настройки",
   "Show fewer": "Показать меньше",
+  "Movement demo": "Демонстрация движения",
+  "Motion is off on this device, so the key position is shown instead.": "На этом устройстве движение отключено, поэтому показывается ключевая поза.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Это устройство не может показать 3D-движение, поэтому показывается ключевая поза.",
+  "Standing tall, feet about shoulder width apart.": "Стоите прямо, стопы примерно на ширину плеч.",
+  "Knees and hips bend together as you sit down.": "Колени и бёдра сгибаются одновременно, когда вы садитесь.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Бёдра назад и вниз между пятками, грудь поднята, колени над пальцами ног.",
+  "Push through the floor: hips and chest rise together.": "Оттолкнитесь от пола: бёдра и грудь поднимаются вместе.",
 }

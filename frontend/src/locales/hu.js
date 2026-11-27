@@ -6423,4 +6423,11 @@ export default {
   "No matching help found.": "Nincs megfelelő súgótalálat.",
   "Show all settings": "Összes beállítás megjelenítése",
   "Show fewer": "Kevesebb megjelenítése",
+  "Movement demo": "Mozgásbemutató",
+  "Motion is off on this device, so the key position is shown instead.": "Ezen az eszközön a mozgás ki van kapcsolva, ezért a kulcsállás látható helyette.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Ez az eszköz nem tud 3D mozgást megjeleníteni, ezért a kulcsállás látható helyette.",
+  "Standing tall, feet about shoulder width apart.": "Állj egyenesen, a lábaid vállszélességre egymástól.",
+  "Knees and hips bend together as you sit down.": "Térd és csípő együtt hajlik le, amikor leülsz.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "A csípőd hátra és le a sarkok közé, mellkas a magasban, térd a lábujjak fölött.",
+  "Push through the floor: hips and chest rise together.": "Nyomd a padlót: a csípőd és a mellkasod együtt emelkedik.",
 }

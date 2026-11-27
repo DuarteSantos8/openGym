@@ -8,6 +8,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
+| `frontend/src/components/ExerciseGuide.jsx` | `next/EP26-mannequin-squat` | Demo | Show the movement demo for the guide's pattern, loaded on demand, so the 3D code stays out of the app's first download. |
 | `frontend/public/sw.js` | `next/EP26-T03-guided-workout` | Hashed assets | Reuse the installed immutable module when an offline module request sends an Origin header. |
 | `frontend/src/views/Workout.jsx` | `next/EP26-T03-guided-workout` | Layout | Offer the session layout and pass its active exercise to the existing swap flow. |
 | `frontend/src/views/FocusView.jsx`, `FocusView.css` | `next/EP26-T03-guided-workout` | Guided card | Keep set logging and show the selected exercise’s cues and controls. |

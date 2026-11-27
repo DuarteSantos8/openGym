@@ -6420,4 +6420,11 @@ export default {
   "No matching help found.": "Nie znaleziono pasującej pomocy.",
   "Show all settings": "Pokaż wszystkie ustawienia",
   "Show fewer": "Pokaż mniej",
+  "Movement demo": "Demonstracja ruchu",
+  "Motion is off on this device, so the key position is shown instead.": "Na tym urządzeniu ruch jest wyłączony, więc zamiast niego pokazana jest pozycja kluczowa.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "To urządzenie nie może pokazać ruchu 3D, więc zamiast niego pokazana jest pozycja kluczowa.",
+  "Standing tall, feet about shoulder width apart.": "Stójcie wyprostowani, stopy na szerokość barków.",
+  "Knees and hips bend together as you sit down.": "Kolana i biodra zginają się razem, kiedy siadasz.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Biodra do tyłu i w dół między piętami, klatka piersiowa w górę, kolana nad palcami stóp.",
+  "Push through the floor: hips and chest rise together.": "Pchnij podłogę: biodra i klatka piersiowa unoszą się razem.",
 }

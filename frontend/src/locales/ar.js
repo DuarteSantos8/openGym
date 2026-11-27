@@ -6475,4 +6475,11 @@ export default {
   "No matching help found.": "لم يتم العثور على مساعدة مطابقة.",
   "Show all settings": "عرض جميع الإعدادات",
   "Show fewer": "عرض أقل",
+  "Movement demo": "عرض الحركة",
+  "Motion is off on this device, so the key position is shown instead.": "الحركة متوقفة على هذا الجهاز، لذا تُعرض الوضعية الأساسية بدلًا من ذلك.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "لا يمكن لهذا الجهاز عرض الحركة ثلاثية الأبعاد، لذا تُعرض الوضعية الأساسية بدلًا من ذلك.",
+  "Standing tall, feet about shoulder width apart.": "وقوف مستقيم، والقدمان بعرض الكتف تقريبًا.",
+  "Knees and hips bend together as you sit down.": "تثني الركبتان والوركان معًا أثناء الجلوس.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "الورككان إلى الخلف والأسفل بين الكعبين، والصدر مرفوع، والركبتان فوق أصابع القدم.",
+  "Push through the floor: hips and chest rise together.": "ادفع الأرض: يرتفع الوركان والصدر معًا.",
 }

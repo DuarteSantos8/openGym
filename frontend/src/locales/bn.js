@@ -6499,4 +6499,11 @@ export default {
   "No matching help found.": "কোনো মিল পাওয়া যায়নি।",
   "Show all settings": "সব সেটিংস দেখান",
   "Show fewer": "কম দেখান",
+  "Movement demo": "নড়াচ্ছের ডেমো",
+  "Motion is off on this device, so the key position is shown instead.": "এই ডিভাইসে নড়াচ্ছ বন্ধ আছে, তাই মূল অবস্থানটি দেখানো হচ্ছে।",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "এই ডিভাইসে 3D নড়াচ্ছ দেখানো যায় না, তাই মূল অবস্থানটি দেখানো হচ্ছে।",
+  "Standing tall, feet about shoulder width apart.": "সোজা হয়ে দাঁড়ান, পা প্রায় কাঁধের প্রস্থে।",
+  "Knees and hips bend together as you sit down.": "বসার সময় হাঁটু আর কোমর একসাথে বাঁকে।",
+  "Hips back and down between the heels, chest up, knees over the toes.": "কোমর পিছনে ও নিচে, গোড়ালির মাঝে, বুক উঁচু, হাঁটু আঙুলের উপরে।",
+  "Push through the floor: hips and chest rise together.": "মেঝেতে চাপ দিন: কোমর আর বুক একসাথে ওঠে।",
 }

@@ -6416,4 +6416,11 @@ export default {
   "No matching help found.": "Atitinkamos pagalbos nerasta.",
   "Show all settings": "Rodyti visus nustatymus",
   "Show fewer": "Rodyti mažiau",
+  "Movement demo": "Judėjimo demonstracija",
+  "Motion is off on this device, so the key position is shown instead.": "Šiame įrenginyje judėjimas išjungtas, todėl rodoma pagrindinė poza.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Šis įrenginys negali rodyti 3D judėjimo, todėl rodoma pagrindinė poza.",
+  "Standing tall, feet about shoulder width apart.": "Stovėkite tiesiai, pėdos pečių plotyje.",
+  "Knees and hips bend together as you sit down.": "Sėdant keliai ir klubai lenkiasi kartu.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Klubai atgal ir žemai tarp kulų, krūtinė aukštai, keliai virš pirštų.",
+  "Push through the floor: hips and chest rise together.": "Spauskite grindis: klubai ir krūtinė kyla kartu.",
 }

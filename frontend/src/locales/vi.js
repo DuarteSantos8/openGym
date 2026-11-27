@@ -6386,4 +6386,11 @@ export default {
   "No matching help found.": "Không tìm thấy trợ giúp phù hợp.",
   "Show all settings": "Hiện tất cả cài đặt",
   "Show fewer": "Hiện ít hơn",
+  "Movement demo": "Minh họa chuyển động",
+  "Motion is off on this device, so the key position is shown instead.": "Chuyển động đã tắt trên thiết bị này, nên thay vào đó vị trí chính được hiển thị.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Thiết bị này không hiển thị được chuyển động 3D, nên thay vào đó vị trí chính được hiển thị.",
+  "Standing tall, feet about shoulder width apart.": "Đứng thẳng, hai chân cách nhau khoảng bằng vai.",
+  "Knees and hips bend together as you sit down.": "Đầu gối và hông cùng gập lại khi bạn ngồi xuống.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Hông ra sau và xuống giữa hai gót chân, ngực thẳng lên, đầu gối vượt qua các ngón chân.",
+  "Push through the floor: hips and chest rise together.": "Đẩy sàn: hông và ngực cùng đi lên.",
 };

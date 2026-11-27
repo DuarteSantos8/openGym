@@ -6420,4 +6420,11 @@ export default {
   "No matching help found.": "कोई मिलती-जुलती सहायता नहीं मिली।",
   "Show all settings": "सभी सेटिंग दिखाएँ",
   "Show fewer": "कम दिखाएँ",
+  "Movement demo": "गति का डेमो",
+  "Motion is off on this device, so the key position is shown instead.": "इस डिवाइस पर गति बंद है, इसलिए उसके बजाय मुख्य स्थिति दिखाई जाती है।",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "यह डिवाइस 3D गति नहीं दिखा सकता, इसलिए उसके बजाय मुख्य स्थिति दिखाई जाती है।",
+  "Standing tall, feet about shoulder width apart.": "सीधे खड़े हों, पैर लगभग कंधे की चौड़ाई के।",
+  "Knees and hips bend together as you sit down.": "बैठते समय घुटने और कूल्हे साथ-साथ मुड़ते हैं।",
+  "Hips back and down between the heels, chest up, knees over the toes.": "कूल्हे पीछे और नीचे, एड़ों के बीच, छाती ऊपर, घुटने पंजों के ऊपर।",
+  "Push through the floor: hips and chest rise together.": "फर्श को दबाएँ: कूल्हे और छाती साथ-साथ ऊपर उठते हैं।",
 }

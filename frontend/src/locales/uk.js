@@ -6417,4 +6417,11 @@ export default {
   "No matching help found.": "Відповідної довідки не знайдено.",
   "Show all settings": "Показати всі налаштування",
   "Show fewer": "Показати менше",
+  "Movement demo": "Демонстрація руху",
+  "Motion is off on this device, so the key position is shown instead.": "На цьому пристрої рух вимкнено, тому показується ключова поза.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Цей пристрій не може показати 3D-рух, тому показується ключова поза.",
+  "Standing tall, feet about shoulder width apart.": "Стоїть рівно, ступні приблизно на ширину плечей.",
+  "Knees and hips bend together as you sit down.": "Коліна й стегна згинаються одночасно, коли ви сідаєте.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Стегна назад і вниз між п'ятами, груди підняті, коліна над пальцями ніг.",
+  "Push through the floor: hips and chest rise together.": "Відштовхніться від підлоги: стегна й груди піднімаються разом.",
 }

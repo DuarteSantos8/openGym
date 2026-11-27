@@ -4830,5 +4830,12 @@ export const PT_BR_OVERRIDES = {
   "No matching help found.": "Nenhum tópico de ajuda encontrado.",
   "Show all settings": "Mostrar todas as configurações",
   "Show fewer": "Mostrar menos",
+  "Movement demo": "Demonstração de movimento",
+  "Motion is off on this device, so the key position is shown instead.": "O movimento está desligado neste dispositivo, por isso a posição principal é mostrada.",
+  "This device cannot show the 3D movement, so the key position is shown instead.": "Este dispositivo não consegue mostrar o movimento em 3D, por isso a posição principal é mostrada.",
+  "Standing tall, feet about shoulder width apart.": "Em pé, com os pés na largura dos ombros.",
+  "Knees and hips bend together as you sit down.": "Joelhos e quadris dobram ao mesmo tempo enquanto você senta.",
+  "Hips back and down between the heels, chest up, knees over the toes.": "Quadris para trás e para baixo entre os calcanhares, peito erguido, joelhos sobre os dedos dos pés.",
+  "Push through the floor: hips and chest rise together.": "Empurre o chão: quadris e peito sobem juntos.",
 }
 export default { ...pt, ...PT_BR_OVERRIDES }
