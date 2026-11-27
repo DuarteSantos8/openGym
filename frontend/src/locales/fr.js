@@ -4650,7 +4650,7 @@ export default {
   "Sort": "Trier",
   "Sort: {0}": "Tri : {0}",
   "Stay connected": "Rester connecté",
-  "Streak": "Série",
+  "Streak": "Série hebdomadaire",
   "Suggest a routine": "Suggérer une routine",
   "Suggest a weigh-in": "Suggérer une pesée",
   "Take it": "Accepter",

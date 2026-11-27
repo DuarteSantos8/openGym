@@ -4660,7 +4660,7 @@ export default {
   "Sort": "Ordina",
   "Sort: {0}": "Ordine: {0}",
   "Stay connected": "Resta collegato",
-  "Streak": "Serie",
+  "Streak": "Serie settimanale",
   "Suggest a routine": "Suggerisci una routine",
   "Suggest a weigh-in": "Suggerisci una pesata",
   "Take it": "Accettalo",

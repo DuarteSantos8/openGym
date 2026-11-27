@@ -4546,7 +4546,7 @@ export default {
   "Sort": "Řadit",
   "Sort: {0}": "Řazení: {0}",
   "Stay connected": "Zůstat propojeni",
-  "Streak": "Série",
+  "Streak": "Týdenní série",
   "Suggest a routine": "Navrhnout sestavu",
   "Suggest a weigh-in": "Navrhnout vážení",
   "Take it": "Přijmout",

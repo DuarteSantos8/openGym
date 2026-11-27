@@ -4653,7 +4653,7 @@ export default {
   "Sort": "Rendezés",
   "Sort: {0}": "Rendezés: {0}",
   "Stay connected": "Maradjatok összekapcsolva",
-  "Streak": "Sorozat",
+  "Streak": "Heti sorozat",
   "Suggest a routine": "Rutin javaslása",
   "Suggest a weigh-in": "Mérés javaslása",
   "Take it": "Elfogadás",

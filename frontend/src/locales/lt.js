@@ -4577,7 +4577,7 @@ export default {
   "Sort": "Rikiuoti",
   "Sort: {0}": "Rikiavimas: {0}",
   "Stay connected": "Likti prisijungus",
-  "Streak": "Serija",
+  "Streak": "Savaitių serija",
   "Suggest a routine": "Pasiūlyti programą",
   "Suggest a weigh-in": "Pasiūlyti svėrimą",
   "Take it": "Priimti",
