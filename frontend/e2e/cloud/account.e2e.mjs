@@ -199,7 +199,7 @@ test('the first screen offers the account and this device; signed in, Continue g
 // way in is an identity provider (./linked-server.mjs). The provider is a stand-in that signs the
 // person straight in; the hosted one shows our consent page first, which the test above covers.
 test('ten guest workouts survive linked sign-in and reach a clean browser', async ({ page, browser, baseURL }) => {
-  const workouts = Array.from({ length: 10 }, (_, i) => ({ ...workout(i, '0662', 2), id: 'guest-workout-' + i }))
+  const workouts = Array.from({ length: 9 }, (_, i) => ({ ...workout(i, '0662', 2), id: 'guest-workout-' + i }))
   const ids = workouts.map(w => w.id).sort()
   const savedIds = p => p.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1') || '{}').workouts?.map(w => w.id).sort() || [])
   const seeHistory = async p => {
@@ -218,7 +218,6 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     await dialog.getByRole('button', { name: 'Close', exact: true }).click()
   }
   const link = async p => {
-    await open(p)
     await signIn(p)
     await expect(mode(p)).toHaveAttribute('data-mode', 'account')
     await p.click('[data-continue]')
@@ -232,12 +231,50 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   await enterAsGuest(page, workouts)
   await expect.poll(() => savedIds(page)).toEqual(ids)
   await seeLadder(page, 4)
+  await open(page)
+  const writer = await page.context().newPage()
+  const unexpected = []
+  writer.on('pageerror', error => unexpected.push(error.message))
+  await writer.route(/^https?:/, route => {
+    if (['localhost', '127.0.0.1'].includes(new URL(route.request().url()).hostname)) return route.continue()
+    unexpected.push('External request from the guest tab')
+    return route.abort()
+  })
+  await writer.goto('/')
+  await writer.evaluate(w => {
+    const s = JSON.parse(localStorage.getItem('gym_state_v1'))
+    s.active = { ...w, start: Date.now(), cur: 0, name: 'Guest photo workout', workoutView: 'list' }
+    localStorage.setItem('gym_state_v1', JSON.stringify(s))
+  }, workout(10, '0662', 2))
+  await writer.goto('/#/workout')
+  await writer.reload()
+  await writer.locator('[data-tour="finish"]').click()
+  await writer.getByRole('button', { name: /Finish and save/ }).click()
+  const photo = await writer.evaluate(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 32
+    canvas.height = 24
+    canvas.getContext('2d').fillRect(0, 0, 32, 24)
+    return canvas.toDataURL().split(',')[1]
+  })
+  await writer.locator('.wmedia input[type=file]').setInputFiles({
+    name: 'guest.png', mimeType: 'image/png', buffer: Buffer.from(photo, 'base64'),
+  })
+  await expect(writer.getByRole('button', { name: 'Photo or video 1 of 1' })).toBeVisible()
+  const tenth = await writer.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1'))
+    .workouts.find(w => w.name === 'Guest photo workout'))
+  expect(tenth.media).toHaveLength(1)
+  ids.push(tenth.id)
+  ids.sort()
+  await writer.close()
+  expect(unexpected).toEqual([])
   await link(page)
   await expect.poll(async () => {
     const response = await page.request.get('/api/data')
     expect(response.ok()).toBe(true)
-    return (await response.json()).state?.workouts?.map(w => w.id).sort() || []
-  }, { timeout: 15_000 }).toEqual(ids)
+    const saved = (await response.json()).state?.workouts || []
+    return { ids: saved.map(w => w.id).sort(), photo: saved.find(w => w.id === tenth.id)?.media?.[0]?.hash }
+  }, { timeout: 15_000 }).toEqual({ ids, photo: tenth.media[0].hash })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Hi Sam' })).toBeVisible()
   await expect.poll(() => savedIds(page)).toEqual(ids)
@@ -260,6 +297,7 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     await other.goto('/')
     expect(await savedIds(other)).toEqual([])
     expect((await other.request.get('/api/me')).status()).toBe(401)
+    await open(other)
     await link(other)
     await expect.poll(() => savedIds(other)).toEqual(ids)
     await seeHistory(other)
@@ -275,6 +313,26 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   } finally {
     await second.close()
   }
+  await open(page)
+  await page.locator('[data-signout]').click()
+  await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Continue without account' }).click()
+  await seeHistory(page)
+  await page.evaluate(() => navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready))
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller)
+  await page.context().setOffline(true)
+  const restored = await page.reload()
+  expect(restored.fromServiceWorker()).toBe(true)
+  await expect(page.getByText('10 workouts', { exact: true })).toBeVisible()
+  expect(await savedIds(page)).toEqual(ids)
+  const restoredHash = await page.evaluate(id => JSON.parse(localStorage.getItem('gym_state_v1'))
+    .workouts.find(w => w.id === id)?.media?.[0]?.hash, tenth.id)
+  expect(restoredHash).toBe(tenth.media[0].hash)
+  await page.getByText('Guest photo workout', { exact: true }).first().click()
+  await page.getByRole('button', { name: 'Photo or video 1 of 1' }).click()
+  const image = page.getByRole('dialog', { name: 'Photos & videos' }).locator('img')
+  await expect.poll(() => image.evaluate(el => [el.naturalWidth, el.naturalHeight])).toEqual([32, 24])
 })
 
 test('Continue links a member profile and keeps the Admin dashboard unavailable after reload', async ({ page }) => {
