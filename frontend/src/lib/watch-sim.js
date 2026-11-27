@@ -19,7 +19,8 @@
 //                watch-sync round: the rest by its stamp (`restAt`), its own +15 / −15 / Skip sent
 //                as `rest` events and the end of the rest it started on each tick (`restEnd`), its
 //                clock's offset worked out from the snapshots' `now` and sent as `off`, and every
-//                set named by its id (`sid`), sets it adds or takes out included (addSet, removeSet).
+//                set named by its id (`sid`), sets it adds or takes out and the marks it switches
+//                included (addSet, removeSet, setMark).
 //
 // The port is the point: the Swift, Kotlin and Monkey C cannot run on the machine the tests run on,
 // so the rules they follow are written down here a second time and run against the real page under
@@ -69,9 +70,28 @@ const findSid = (w, sid) => {
   return null
 }
 
-/** A set the watch added or took out, over a snapshot that does not have that yet (protocol 2). */
+/** A set the watch added, took out or marked, over a snapshot that does not have that yet (protocol 2). */
 function replayEdit (w, ed) {
   const hit = findSid(w, ed.sid)
+  if (ed.type === 'setMark') {
+    // By its id, else by its place (a watch-started workout before its first snapshot).
+    const at = hit || (!ed.sid && w.entries[ed.entryIdx]?.id === ed.exId && w.entries[ed.entryIdx].sets[ed.setIdx] ? [ed.entryIdx, ed.setIdx] : null)
+    if (!at) return
+    const sets = w.entries[at[0]].sets
+    const row = sets[at[1]]
+    if (ed.warmup != null && ed.warmup !== row.warmup) {
+      // The phone's makeWarmupAt / makeWorkAt: out of its place, in where the work sets begin.
+      sets.splice(at[1], 1)
+      row.warmup = ed.warmup
+      const k = sets.findIndex(x => !x.warmup)
+      sets.splice(k < 0 ? sets.length : k, 0, row)
+      return
+    }
+    if (row.warmup) return
+    if (ed.failure != null) { if (ed.failure) row.failure = true; else delete row.failure }
+    if (ed.drop != null) { if (ed.drop) row.drops = 1; else { delete row.drop; delete row.drops } }
+    return
+  }
   if (ed.type === 'removeSet') {
     if (!hit) return
     const row = w.entries[hit[0]].sets[hit[1]]
@@ -620,6 +640,14 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
         const row = watch.workout.entries[ei]?.sets?.[si]
         if (!row?.sid || row.done) return null
         return watch.edit({ id: uid('ev-'), type: 'removeSet', wid: watch.workout.id ?? '', exId: watch.workout.entries[ei].id, entryIdx: ei, setIdx: si, sid: row.sid, at: watch.now(), off: watch.off })
+      },
+      /** A warm-up, failure or drop mark switched on set `si` of exercise `ei` (setMark). */
+      mark (ei, si, kind) {
+        if (!v2 || !watch.workout) return null
+        const e = watch.workout.entries[ei]
+        const row = e?.sets?.[si]
+        if (!row) return null
+        return watch.edit({ id: uid('ev-'), type: 'setMark', wid: watch.workout.id ?? '', exId: e.id, entryIdx: ei, setIdx: si, ...(row.sid ? { sid: row.sid } : {}), ...kind, at: watch.now(), off: watch.off })
       },
       edit (ev) {
         const s = clone(watch.state)

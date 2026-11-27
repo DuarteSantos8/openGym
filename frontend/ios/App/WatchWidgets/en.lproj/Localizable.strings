@@ -4,6 +4,8 @@
 "Start workout" = "Start workout";
 "Done" = "Done";
 "Warm-up" = "Warm-up";
+"Remove" = "Remove";
+"Undo" = "Undo";
 "Reps" = "Reps";
 "Rest" = "Rest";
 "Skip" = "Skip";
@@ -46,6 +48,9 @@
 "Looks like you left the gym" = "Looks like you left the gym";
 "Keep going" = "Keep going";
 "Finish now" = "Finish now";
+"Taken to failure" = "Taken to failure";
+"Drop set" = "Drop set";
+"More" = "More";
 "Back" = "Back";
 "Saved" = "Saved";
 "Hours" = "Hours";
@@ -64,6 +69,9 @@
 "Skip for today" = "Skip for today";
 "Continue" = "Continue";
 "New record" = "New record";
+"Set %lld" = "Set %lld";
+"Add set" = "Add set";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "Last time: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Finish the workout now? Otherwise it ends by itself at %@.";
@@ -113,4 +121,11 @@
 "+%lld more" = "+%lld more";
 "On iPhone" = "On iPhone";
 "%@ sets" = "%@ sets";
+"Failure" = "Failure";
+"Drop" = "Drop";
+"Set %lld added" = "Set %lld added";
+"Hold 1 s to remove" = "Hold 1 s to remove";
+"Set %lld · %@ is lost" = "Set %lld · %@ is lost";
+"Set %lld removed" = "Set %lld removed";
+"at the end" = "at the end";
 "Archived routines stay on your iPhone." = "Archived routines stay on your iPhone.";
