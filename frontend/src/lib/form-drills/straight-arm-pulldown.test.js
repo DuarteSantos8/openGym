@@ -74,7 +74,7 @@ describe('the straight-arm pulldown drill', () => {
   })
 })
 
-describe.each([0, 10, 180])('the straight-arm pulldown filmed side-on, yaw %i°', yaw => {
+describe.each([0, 10, 20, 180, 160])('the straight-arm pulldown filmed side-on, yaw %i°', yaw => {
   const set = (reps, o = {}) => pulldownSet(reps, { yaw, ...o })
 
   it('counts five clean reps, live and in the result', () => {
@@ -163,7 +163,7 @@ describe('the straight-arm pulldown faults', () => {
 
 describe('the straight-arm pulldown, other angles', () => {
   it('refuses a view at an angle or from the front: asks to turn side-on and counts nothing', () => {
-    for (const yaw of [45, 90, -90]) {
+    for (const yaw of [30, 45, 90, -90]) {
       const { outs, res } = run(pulldownSet(same(3, FULL), { yaw }))
       expect(outs.at(-1).hint).toBe('Turn side-on to the camera')
       expect(res.count).toBe(0)

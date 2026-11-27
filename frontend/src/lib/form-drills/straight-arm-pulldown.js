@@ -8,11 +8,16 @@
 // swing is foreshortened and the angle cannot be read: those views are refused.
 // A rep counts under "full range" when it started with the arms raised (START_DEG or more since
 // the last rep) and the hands came down to the thighs (FINISH_DEG or less).
+// Side-on runs to about 24 degrees here (VIEW_EDGES), not the kit's 20: turning the lifter only
+// squeezes the swing along x by cos(yaw), which moves the angle a few degrees there (the edges
+// hold to 5 degrees at 20, not at 25), and a cable column is rarely filmed square on. A real set
+// filmed as side-on, the lifter a little turned to the camera, read 0.20 to 0.25 and every rep was
+// refused with "turn side-on".
 import { t } from '../i18n-core.js'
 import { fmtNum } from '../format.js'
 import {
   angleAt, createPhaseMachine, createSidePicker, createViewDetector, deg, fades, framing, framingHint,
-  matchExercise, mean, mid, pickCue, round1, seen, tempo, viewHint,
+  matchExercise, mean, mid, pickCue, round1, seen, tempo, viewHint, VIEW_EDGES as KIT_VIEW_EDGES,
 } from './kit.js'
 
 export const TOP_REF = 100             // the angle the signal reads as 0
@@ -22,6 +27,7 @@ export const BENT = 150                // the elbow under this at its most bent:
 export const ROCK_DEG = 10             // the torso's angle moving this much over the rep: rocked
 export const FAST_UP_SEC = 1           // an average way back up under this: let the arms rise slower
 export const FADE_S = 0.1
+export const VIEW_EDGES = { side: 0.235, front: KIT_VIEW_EDGES.front }  // widthRatio: side to about 24 degrees
 export const PHASES = { stand: 0.467, descent: 0.53, minRep: 0.7, bottomEps: 0.03, ascentRise: 0.12, topBand: 0.03 }
 const CHAIN = ['Hip', 'Shoulder', 'Wrist']
 
@@ -76,7 +82,7 @@ const CUE = {
 function create({ standard, view: fixedView } = {}) {
   const std = STANDARDS.some(s => s.id === standard) ? standard : 'full'
   const machine = createPhaseMachine(PHASES)
-  const views = createViewDetector()
+  const views = createViewDetector(VIEW_EDGES)
   const side = createSidePicker(CHAIN)
   const reps = []
   let startMax = null, acc = null
