@@ -199,13 +199,15 @@ test('the first screen offers the account and this device; signed in, Continue g
 // way in is an identity provider (./linked-server.mjs). The provider is a stand-in that signs the
 // person straight in; the hosted one shows our consent page first, which the test above covers.
 test('ten guest workouts survive linked sign-in and reach a clean browser', async ({ page, browser, baseURL }) => {
-  const workouts = Array.from({ length: 9 }, (_, i) => ({ ...workout(i, '0662', 2), id: 'guest-workout-' + i }))
+  const workouts = Array.from({ length: 9 }, (_, i) => ({
+    ...workout(i, '0662', 2), id: 'guest-workout-' + i, name: 'Guest workout ' + (i + 1),
+  }))
   const ids = workouts.map(w => w.id).sort()
   const savedIds = p => p.evaluate(() => JSON.parse(localStorage.getItem('gym_state_v1') || '{}').workouts?.map(w => w.id).sort() || [])
-  const seeHistory = async p => {
+  const seeHistory = async (p, count = 10) => {
     await p.goto('/#/history')
     await expect(p.getByRole('heading', { name: 'History' })).toBeVisible()
-    await expect(p.getByText('10 workouts', { exact: true })).toBeVisible()
+    await expect(p.getByText(count + ' workouts', { exact: true })).toBeVisible()
   }
   const seeLadder = async (p, reached) => {
     await p.goto('/#/learn')
@@ -241,15 +243,18 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
     return route.abort()
   })
   await writer.goto('/')
-  await writer.evaluate(w => {
-    const s = JSON.parse(localStorage.getItem('gym_state_v1'))
-    s.active = { ...w, start: Date.now(), cur: 0, name: 'Guest photo workout', workoutView: 'list' }
-    localStorage.setItem('gym_state_v1', JSON.stringify(s))
-  }, workout(10, '0662', 2))
-  await writer.goto('/#/workout')
-  await writer.reload()
-  await writer.locator('[data-tour="finish"]').click()
-  await writer.getByRole('button', { name: /Finish and save/ }).click()
+  const finishSession = async (p, index, name) => {
+    await p.evaluate(active => {
+      const s = JSON.parse(localStorage.getItem('gym_state_v1'))
+      s.active = { ...active, start: Date.now(), cur: 0, workoutView: 'list' }
+      localStorage.setItem('gym_state_v1', JSON.stringify(s))
+    }, { ...workout(index, '0662', 2), name })
+    await p.goto('/#/workout')
+    await p.reload()
+    await p.locator('[data-tour="finish"]').click()
+    await p.getByRole('button', { name: /Finish and save/ }).click()
+  }
+  await finishSession(writer, 10, 'Guest photo workout')
   const photo = await writer.evaluate(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 32
@@ -313,12 +318,23 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   } finally {
     await second.close()
   }
+  await finishSession(page, 11, 'Freestyle')
+  await page.getByRole('button', { name: 'Nice!', exact: true }).click()
+  await seeHistory(page, 11)
+  await expect(page.getByText('Freestyle', { exact: true })).toBeVisible()
+  await expect.poll(async () => {
+    const response = await page.request.get('/api/data')
+    expect(response.ok()).toBe(true)
+    const saved = (await response.json()).state.workouts
+    return { total: saved.length, privateCount: saved.filter(w => w.name === 'Freestyle' && !ids.includes(w.id)).length }
+  }, { timeout: 15_000 }).toEqual({ total: 11, privateCount: 1 })
   await open(page)
   await page.locator('[data-signout]').click()
   await expect(mode(page)).toHaveAttribute('data-mode', 'signin')
   await page.goto('/')
   await page.getByRole('button', { name: 'Continue without account' }).click()
   await seeHistory(page)
+  await expect(page.getByText('Freestyle', { exact: true })).toHaveCount(0)
   await page.evaluate(() => navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready))
   await page.waitForFunction(() => !!navigator.serviceWorker.controller)
   await page.context().setOffline(true)
@@ -326,6 +342,7 @@ test('ten guest workouts survive linked sign-in and reach a clean browser', asyn
   expect(restored.fromServiceWorker()).toBe(true)
   await expect(page.getByText('10 workouts', { exact: true })).toBeVisible()
   expect(await savedIds(page)).toEqual(ids)
+  await expect(page.getByText('Freestyle', { exact: true })).toHaveCount(0)
   const restoredHash = await page.evaluate(id => JSON.parse(localStorage.getItem('gym_state_v1'))
     .workouts.find(w => w.id === id)?.media?.[0]?.hash, tenth.id)
   expect(restoredHash).toBe(tenth.media[0].hash)
