@@ -193,6 +193,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/index.css` | `next/EP27-accessible-workout-labels` | UI | Wrap workout action labels and mobile navigation text within their controls. |
 | `frontend/src/components/TabBar.jsx`, `frontend/src/components/TabBar.test.jsx`, `frontend/src/App.workout-tabbar.test.jsx` | `next/EP27-accessible-workout-labels` | UI | Keep Resume visible with an independently ticking visual timer. |
 | `frontend/src/views/Workout.jsx`, `frontend/src/views/Workout.test.jsx` | `next/EP27-accessible-workout-labels` | UI | Include the visible progression guidance and the settings purpose in the accessible name. |
+| `api/openapi.yaml`, `api/test/openapi-routes.test.js`, `mcp/test/oauth.e2e.test.js` | `next/EP19-connector-origin` | Contract and SDK | Document and test split-origin discovery, consent and token exchange. |
 | `api/server.js`, `api/Dockerfile`, `api/test/server-oauth.test.js`, `render.yaml`, `api/test/render-blueprint.test.js` | `next/EP19-connector-origin` | API | Separate MCP issuer and resource from web consent. |
 | `mcp/src/http.js`, `mcp/Dockerfile`, `mcp/test/http.e2e.test.js`, `docker-compose.yml`, `.env.example`, `docs/MCP_REMOTE.md` | `next/EP19-connector-origin` | MCP | Configure, test and document the public discovery address. |
 | `frontend/src/views/ApiTokens{,.test}.jsx`, `frontend/src/views/Assistants{,.test}.jsx` | `next/EP19-connector-origin` | UI | Show the configured address on both connector setup screens. |

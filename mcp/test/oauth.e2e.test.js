@@ -52,27 +52,51 @@ function assistant() {
   }
 }
 
-let child, dataDir, front, origin, log = ''
-
-describe.skipIf(!HAVE_API)('the connector sign-in with the official MCP client', () => {
+describe.skipIf(!HAVE_API).each([false, true])('official MCP client, separate connector origin: %s', split => {
+  let child, dataDir, front, web, origin, webBase, log = ''
+  const prefix = split ? '/gym' : ''
+  // Only the two public origins are translated to local HTTP sockets; SDK-chosen paths stay intact.
+  const localFetch = (input, options) => {
+    const url = new URL(input)
+    const gateway = url.origin === new URL(origin).origin ? front : web
+    if (!gateway || (gateway === web && url.origin !== new URL(webBase).origin)) throw new Error('unexpected OAuth origin')
+    return fetch(`http://127.0.0.1:${gateway.address().port}${url.pathname}${url.search}`, options)
+  }
   beforeAll(async () => {
     // The front first: the api needs its address as ORIGIN.
     let apiPort = 0, handle = null
-    front = http.createServer((req, res) => {
-      if (req.url.split('?')[0] === '/mcp') return handle(req, res)
-      const up = http.request({ host: '127.0.0.1', port: apiPort, path: req.url, method: req.method, headers: req.headers }, r => { res.writeHead(r.statusCode, r.headers); r.pipe(res) })
+    const proxy = (req, res, path = req.url) => {
+      const up = http.request({ host: '127.0.0.1', port: apiPort, path, method: req.method, headers: req.headers }, r => { res.writeHead(r.statusCode, r.headers); r.pipe(res) })
       up.on('error', () => { res.writeHead(502); res.end() })
       req.pipe(up)
+    }
+    front = http.createServer((req, res) => {
+      if (req.url.split('?')[0] === prefix + '/mcp') {
+        req.url = '/mcp'
+        return handle(req, res)
+      }
+      if (split && (!req.url.startsWith('/.well-known/') && !req.url.startsWith(prefix + '/api/oauth/'))) {
+        res.writeHead(404); return res.end()
+      }
+      proxy(req, res)
     })
     await new Promise(r => front.listen(0, '127.0.0.1', r))
-    origin = `http://localhost:${front.address().port}`
+    origin = split ? 'https://connector.example' + prefix : `http://localhost:${front.address().port}`
+    webBase = split ? 'https://web.example' + prefix : origin
+    if (split) {
+      web = http.createServer((req, res) => {
+        if (!req.url.startsWith(prefix + '/api/')) { res.writeHead(404); return res.end() }
+        proxy(req, res, req.url.slice(prefix.length))
+      })
+      await new Promise(r => web.listen(0, '127.0.0.1', r))
+    }
     dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-mcp-oauth-'))
     fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 })
     fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: [{ id: UID, name: 'Ana', created: new Date().toISOString() }], creds: [], subs: [], invites: [] }))
     fs.writeFileSync(path.join(dataDir, `state-${UID}.json`), JSON.stringify(DOC))
     child = spawn(process.execPath, ['server.js'], {
       cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: origin, RP_ID: 'localhost', MCP: 'on' },
+      env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: new URL(webBase).origin, MCP_PUBLIC_ORIGIN: split ? new URL(origin).origin : '', BASE_PATH: prefix, RP_ID: 'localhost', MCP: 'on' },
     })
     child.stderr.on('data', d => { log += d })
     apiPort = await new Promise((resolve, reject) => {
@@ -82,14 +106,14 @@ describe.skipIf(!HAVE_API)('the connector sign-in with the official MCP client',
     })
     delete process.env.OPENGYM_DATA
     const { createMcpHandler } = await import('../src/http.js')
-    handle = createMcpHandler({ apiUrl: `http://127.0.0.1:${apiPort}`, allowedOrigins: [origin], publicOrigin: origin })
+    handle = createMcpHandler({ apiUrl: `http://127.0.0.1:${apiPort}`, allowedOrigins: [new URL(webBase).origin], configuredOrigin: split ? new URL(origin).origin : '', publicOrigin: new URL(origin).origin, basePath: prefix })
   }, 30000)
-  afterAll(() => { child?.kill('SIGKILL'); front?.close(); fs.rmSync(dataDir, { recursive: true, force: true }) })
+  afterAll(() => { child?.kill('SIGKILL'); front?.close(); web?.close(); fs.rmSync(dataDir, { recursive: true, force: true }) })
 
   test('401, discovery, registration, consent, code, tools, and a silent refresh', async () => {
     const me = assistant()
     const url = new URL(origin + '/mcp')
-    const first = new StreamableHTTPClientTransport(url, { authProvider: me })
+    const first = new StreamableHTTPClientTransport(url, { authProvider: me, fetch: localFetch })
     await expect(new Client({ name: 'Claude', version: '1' }).connect(first)).rejects.toThrow(UnauthorizedError)
     // It registered itself and wants the browser at openGym's authorize address, with PKCE,
     // the resource it is signing in to and offline_access for a refresh token.
@@ -101,14 +125,15 @@ describe.skipIf(!HAVE_API)('the connector sign-in with the official MCP client',
     expect(az.searchParams.get('scope')).toContain('offline_access')
 
     // The person: the authorize address sends them to the consent page, they say yes.
-    const hop = await fetch(az, { redirect: 'manual' })
+    const hop = await localFetch(az, { redirect: 'manual' })
     expect(hop.status).toBe(302)
+    expect(hop.headers.get('location').startsWith(webBase + '/#/connect/')).toBe(true)
     const id = hop.headers.get('location').split('/#/connect/')[1]
     const consent = { Cookie: cookie(), 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json' }
-    const asked = await (await fetch(origin + '/api/oauth/request?id=' + id, { headers: consent })).json()
+    const asked = await (await localFetch(webBase + '/api/oauth/request?id=' + id, { headers: consent })).json()
     expect(asked.assistant).toBe('claude')
     expect(asked.scopes).toMatchObject({ workouts: 'view', plans: 'apply', bodyweight: 'view' })
-    const ok = await (await fetch(origin + '/api/oauth/approve', { method: 'POST', headers: consent, body: JSON.stringify({ id, scopes: asked.scopes, days: 0 }) })).json()
+    const ok = await (await localFetch(webBase + '/api/oauth/approve', { method: 'POST', headers: consent, body: JSON.stringify({ id, scopes: asked.scopes, days: 0 }) })).json()
     const back = new URL(ok.redirect)
     expect(back.origin + back.pathname).toBe(REDIRECT)
     expect(back.searchParams.get('iss')).toBe(origin)
@@ -119,7 +144,7 @@ describe.skipIf(!HAVE_API)('the connector sign-in with the official MCP client',
     expect(me.s.tokens.refresh_token).toMatch(/^ogr_/)
 
     const client = new Client({ name: 'Claude', version: '1' })
-    await client.connect(new StreamableHTTPClientTransport(url, { authProvider: me }))
+    await client.connect(new StreamableHTTPClientTransport(url, { authProvider: me, fetch: localFetch }))
     const names = (await client.listTools()).tools.map(t => t.name)
     expect(names).toContain('list_routines')
     expect(names).toContain('create_routine')
@@ -133,14 +158,14 @@ describe.skipIf(!HAVE_API)('the connector sign-in with the official MCP client',
     const oldRefresh = me.s.tokens.refresh_token
     me.s.tokens = { ...me.s.tokens, access_token: 'ogt_' + 'z'.repeat(43) }
     const again = new Client({ name: 'Claude', version: '1' })
-    await again.connect(new StreamableHTTPClientTransport(url, { authProvider: me }))
+    await again.connect(new StreamableHTTPClientTransport(url, { authProvider: me, fetch: localFetch }))
     const r2 = await again.callTool({ name: 'list_routines', arguments: {} })
     expect(r2.content[0].text).toContain('Ana push')
     expect(me.s.tokens.refresh_token).not.toBe(oldRefresh)
     await again.close()
 
     // In Settings it is one connection, made by Claude, used.
-    const list = await (await fetch(origin + '/api/tokens', { headers: consent })).json()
+    const list = await (await localFetch(webBase + '/api/tokens', { headers: consent })).json()
     const rows = list.tokens.filter(t => t.connector)
     expect(rows).toHaveLength(1)
     expect(rows[0].connector.assistant).toBe('claude')

@@ -437,6 +437,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  mcp:
+                    type: boolean
+                    description: Present and true for signed-in callers when API tokens and MCP are enabled.
+                  mcpAddress:
+                    $ref: '#/components/schemas/McpAddress'
                   invite_only:
                     type: boolean
                     description: When true, registration requires a valid invite code.
@@ -1223,6 +1228,8 @@ paths:
                   days: { type: array, items: { type: integer } }
                   defaultDays: { type: integer }
                   mcp: { type: boolean }
+                  mcpAddress:
+                    $ref: '#/components/schemas/McpAddress'
         '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [tokens]
@@ -4840,7 +4847,8 @@ paths:
       operationId: getOauthServerMetadata
       summary: 'MCP connector: authorization server metadata (RFC 8414)'
       description: >-
-        Only with `MCP=on`. Under `BASE_PATH` also at `/.well-known/oauth-authorization-server<BASE_PATH>`
+        Only with `MCP=on`. The issuer and endpoints use `MCP_PUBLIC_ORIGIN` when set, otherwise
+        `ORIGIN`, with `BASE_PATH` appended. Under `BASE_PATH` also at `/.well-known/oauth-authorization-server<BASE_PATH>`
         (path insertion). Advertises DCR, Client ID Metadata Documents, refresh tokens
         (`offline_access`), revocation and the `iss` response parameter (RFC 9207).
       responses:
@@ -4860,7 +4868,10 @@ paths:
       tags: [mcp]
       operationId: getOauthResourceMetadata
       summary: 'MCP connector: protected resource metadata (RFC 9728)'
-      description: The document the mcp container's 401 points at. `resource` is `<ORIGIN>/mcp`.
+      description: >-
+        The MCP transport's 401 points to this document. The resource is the connector
+        issuer followed by /mcp. For a separate connector origin with BASE_PATH, the
+        challenge uses /.well-known/oauth-protected-resource<BASE_PATH>/mcp.
       responses:
         '200': { description: '`resource`, `authorization_servers`, `scopes_supported`.' }
   /.well-known/oauth-protected-resource/mcp:
@@ -4888,7 +4899,8 @@ paths:
       summary: 'MCP connector: start the sign-in'
       description: >-
         Checks the client, the redirect URI and the PKCE S256 challenge, then redirects to the app's
-        consent page. An error goes back to the client's redirect URI when it is a known one.
+        consent page on the web ORIGIN, including BASE_PATH, even when the issuer has its own
+        connector origin. An error goes back to the client's redirect URI when it is a known one.
       responses:
         '302': { description: 'To the consent page, or back to the client with an error.' }
         '400': { description: 'Unknown client or redirect URI.' }
@@ -6615,6 +6627,13 @@ components:
         done: { type: boolean, description: Finished workouts are in it too. }
         created: { type: integer }
         used: { type: integer, nullable: true }
+    McpAddress:
+      type: string
+      format: uri
+      description: >-
+        Optional public HTTPS connector endpoint, including BASE_PATH and /mcp.
+        Returned only when MCP is enabled and MCP_PUBLIC_ORIGIN is set. When omitted
+        with MCP enabled, clients derive the endpoint from their server address.
     ApiToken:
       type: object
       properties:
