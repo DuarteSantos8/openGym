@@ -391,6 +391,36 @@ describe('a save this device refuses', () => {
       useStore.getState().update(s => { s.restSec = 90 }, false)
     }
   })
+  it('reports a changed refusal reason, and starts a fresh streak after a save', async () => {
+    toast.mockClear()
+    useStore.setState({ S: clone(DEF), user: null, ready: true })
+    let undo = refusingStorage('SecurityError')
+    try {
+      useStore.getState().update(s => { s.restSec = 150 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(1))
+      expect(toast.mock.calls[0][0]).toBe('Could not save')
+
+      undo()
+      undo = refusingStorage('QuotaExceededError')
+      useStore.getState().update(s => { s.restSec = 120 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(2))
+      expect(toast.mock.calls[1][0]).toMatch(/out of storage/)
+
+      useStore.getState().update(s => { s.restSec = 110 }, false)
+      await new Promise(r => setTimeout(r, 0))
+      expect(toast).toHaveBeenCalledTimes(2)
+    } finally { undo() }
+
+    useStore.getState().update(s => { s.restSec = 90 }, false)
+    expect(JSON.parse(localStorage.getItem('gym_state_v1')).restSec).toBe(90)
+    const undo2 = refusingStorage('SecurityError')
+    try {
+      useStore.getState().update(s => { s.restSec = 80 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(3))
+      expect(toast.mock.calls[2][0]).toBe('Could not save')
+    } finally { undo2() }
+  })
+
   it('keeps the change, marks it owed to the server, and says so once', async () => {
     toast.mockClear()
     useStore.setState({ S: clone(DEF), user: { id: 'user-1' }, ready: true })

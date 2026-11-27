@@ -400,7 +400,7 @@ export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
   let toldTooLarge = false
-  let toldNoRoom = false   // the save itself was refused — said once per streak, like the above
+  let toldSaveFailure = null // each kind of refused save is said once per streak, like the above
   let pushing = null       // the PUT in flight, so a second push waits for it instead of racing it
   let pushAgain = false    // a push asked for while one was in flight — run once more after it
   let pulling = null       // the GET in flight, so two resume signals make one request
@@ -743,15 +743,16 @@ export const useStore = create((set, get) => {
       localStorage.setItem(WID_KEY, wid)
       seenWid = wid
       seenOwner = readOwner()
-      toldNoRoom = false
+      toldSaveFailure = null
       if (storeLag) { storeLag = false; saveMarker(base) }   // the saved copy is this one again
     } catch (e) {
       saved = false
       storeLag = true
       try { localStorage.removeItem(SYNC_KEY) } catch { /* nothing to take back */ }
-      if (!toldNoRoom) {
-        toldNoRoom = true
-        const message = e?.name === 'QuotaExceededError'
+      const failure = e?.name === 'QuotaExceededError' ? 'quota' : 'refused'
+      if (toldSaveFailure !== failure) {
+        toldSaveFailure = failure
+        const message = failure === 'quota'
           ? t('This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.')
           : t('Could not save')
         import('./useUI.js')
