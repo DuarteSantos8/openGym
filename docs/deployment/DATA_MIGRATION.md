@@ -65,6 +65,8 @@ running and untouched as the rollback target (`ROLLBACK.md`).
 | 7 Persistence | DONE 2026-11-27 15:52Z | `railway redeploy` (deployment `<railway-deploy-id>`, SUCCESS): manifest still equal, `/api/health` users 3. Render unchanged: users 3 |
 | Render origin switch | DONE 2026-11-27 16:00Z | Render `/data` manifest equal to the 15:42 backup before and after the redeploy; `/api/health` users 3 |
 
+| Railway test-data change | 2026-11-27 19:55Z | MCP acceptance probe: one dynamic client registration (`hermes-acceptance-probe`, redirect `https://claude.ai/api/mcp/auth_callback`) through `ironvane-web`. Railway `db.json`/`db.json.bak` now differ from the Render copy; nothing else does. Render still equal to the 15:42 backup. The cutover sync replaces Railway `/data` whole, so the probe client does not survive it |
+
 Railway is now a point-in-time copy. Render keeps taking writes, so the copy goes stale; the
 cutover sync above repeats steps 1–7 under a write freeze. Until then nobody can sign in to
 Railway (its OIDC settings are unset), so the copy cannot diverge by use.
