@@ -96,7 +96,7 @@ RUN apk add --no-cache bubblewrap \
 # refresh token has no business riding along in every archive that instruction produces. Owned
 # by `coach` because the job that writes it has already dropped to that user.
 RUN mkdir -p /coach-auth && chown coach:coach /coach-auth && chmod 700 /coach-auth
-VOLUME ["/coach-auth"]
+# Persist /coach-auth with an explicit runtime mount (Compose or Railway volume).
 
 # ---------------------------------------------------------------------------------------------
 # Last, so that a plain `docker build --pull ./api` keeps producing the runtime-free image.
