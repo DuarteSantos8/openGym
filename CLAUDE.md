@@ -20,6 +20,11 @@ frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, 
             android/wear is the Wear OS watch app (Kotlin, Compose; docs/WEAR_OS.md), on the same
             watch protocol as the Apple Watch (lib/watch-sync.js). garmin/ is the Garmin Connect IQ
             watch app (Monkey C; docs/GARMIN.md), on a cut-down snapshot (lib/garmin-snapshot.js).
+watch-zepp/ The Zepp OS (Amazfit) watch app (JavaScript; docs/ZEPP_OS.md), reaching the page through
+            the server (api/watch-relay.js). Tests: `cd watch-zepp && npm test`.
+watch-huawei/ The Huawei watch app (HML + CSS + JS for lite wearables, built in DevEco Studio;
+            docs/HUAWEI_WATCH.md), on the Garmin snapshot (lib/garmin-snapshot.js) over Wear Engine. Its phone half is
+            android/app/src/hms (closed SDK, app/huawei.gradle). Tests: `cd watch-huawei && npm test`.
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             coach/ is the optional AI coach; coach/core/ is shared with the phone apps.
             openapi.yaml documents every route.

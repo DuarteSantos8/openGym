@@ -1,0 +1,90 @@
+<!-- The rest page: the rest, Still training?, the menu, the Metrics page and the Finish and Discard question.
+     Accent colours are bound as single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
+<div class="root" onswipe="swipe">
+
+  <!-- Still training? -->
+  <div class="scr" if="{{s_ask}}">
+    <text class="mid">{{title}}</text>
+    <text class="wrap">{{body}}</text>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{keepLabel}}" onclick="keep" />
+    <input type="button" class="btn" value="{{finishLabel}}" onclick="askFinish" />
+  </div>
+
+  <!-- Finish and Discard ask first -->
+  <div class="scr" if="{{s_confirm}}">
+    <text class="mid">{{title}}</text>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{noLabel}}" onclick="no" />
+    <input type="button" class="btnO" style="border-color: {{yesColor}}; color: {{yesColor}};" value="{{yesLabel}}" onclick="yes" />
+  </div>
+
+  <!-- The workout menu: a list, it scrolls -->
+  <div class="scrL" if="{{s_menu}}">
+    <list class="menuList">
+      <list-item class="li" if="{{hasPrev}}"><div class="liIn"><input type="button" class="btn" value="{{lPrev}}" onclick="mPrev" /></div></list-item>
+      <list-item class="li" if="{{hasOver}}"><div class="liIn"><input type="button" class="btn" value="{{lOver}}" onclick="mOver" /></div></list-item>
+      <list-item class="li" if="{{hasSkip}}"><div class="liIn"><input type="button" class="btn" value="{{lSkip}}" onclick="mSkip" /></div></list-item>
+      <list-item class="li" if="{{hasNext}}"><div class="liIn"><input type="button" class="btn" value="{{lNext}}" onclick="mNext" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btn" value="{{lFinish}}" onclick="mFinish" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnR" value="{{lDiscard}}" onclick="mDiscard" /></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{lBack}}" onclick="mBack" /></div></list-item>
+    </list>
+  </div>
+
+  <!-- The rest, as the Apple Watch's: the heart rate on top, the time, a draining bar, -15 / Skip / +15, the rating (the
+       chips, or the one it got) with Up next under it, the sync state at the foot. -->
+  <div class="scr" if="{{s_rest}}">
+    <div class="bar">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="hrTop">{{top}}</text>
+    </div>
+    <text class="big" style="color: {{timeColor}};">{{restTime}}</text>
+    <div class="slot">
+      <progress if="{{barOn}}" type="horizontal" class="restBar" percent="{{pct}}" style="color: {{accent}};"></progress>
+      <text class="tiny quiet" else>{{restLabel}}</text>
+    </div>
+    <div class="row3">
+      <input if="{{locked}}" type="button" class="capOff" value="-15" />
+      <input else type="button" class="cap" value="-15" onclick="restMinus" />
+      <input if="{{locked}}" type="button" class="capMidOff" value="{{skipLabel}}" />
+      <input else type="button" class="capMid" value="{{skipLabel}}" onclick="restSkip" />
+      <input if="{{locked}}" type="button" class="capOff" value="+15" />
+      <input else type="button" class="cap" value="+15" onclick="restPlus" />
+    </div>
+    <div class="rate" if="{{rateOn}}">
+      <text class="tiny quiet">{{rateLn}}</text>
+      <div class="row4" if="{{effortOn}}">
+        <input type="button" class="chipR" style="border-color: {{cc0}}; color: {{cc0}};" value="{{c0}}" onclick="chip0" />
+        <input type="button" class="chipR" style="border-color: {{cc1}}; color: {{cc1}};" value="{{c1}}" onclick="chip1" />
+        <input type="button" class="chipR" style="border-color: {{cc2}}; color: {{cc2}};" value="{{c2}}" onclick="chip2" />
+        <input type="button" class="chipR" style="border-color: {{cc3}}; color: {{cc3}};" value="{{c3}}" onclick="chip3" />
+      </div>
+      <div class="rated" else style="border-color: {{ratedColor}};">
+        <text class="ratedTx" style="color: {{ratedColor}};">{{ratedText}}</text>
+      </div>
+    </div>
+    <div class="upOne" if="{{effortOn}}">
+      <text class="upL" style="color: {{accent}};">{{upNext}}</text>
+      <text class="upR">{{nextNums}}</text>
+    </div>
+    <div class="up" else>
+      <text class="tiny" style="color: {{accent}};">{{upNext}}</text>
+      <text class="tiny">{{nextName}}</text>
+      <text class="tiny quiet">{{nextNums}}</text>
+    </div>
+    <text class="syncLn">{{sync}}</text>
+  </div>
+
+  <!-- Metrics: time, sets, volume, heart rate -->
+  <div class="scr" if="{{s_mnum}}">
+    <div class="mbar"><input type="button" class="arrow" value="{{lt}}" onclick="mpBack" /></div>
+    <text class="bigY">{{mTime}}</text>
+    <text class="tinyL quiet">{{mSub}}</text>
+    <text class="midR">{{mHr}}</text>
+    <text class="tinyL quiet">{{hrLine}}</text>
+    <div class="row2s">
+      <div class="colL"><text class="tinyL quiet">{{setsLabel}}</text><text class="midL">{{setsNum}}</text></div>
+      <div class="colL"><text class="tinyL quiet">{{volLabel}}</text><text class="midL">{{volNum}}</text></div>
+    </div>
+  </div>
+
+</div>

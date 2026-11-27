@@ -40,7 +40,7 @@ export const GARMIN_ACKED_MAX = 16
 export const GARMIN_ACKED_CUT = 8
 
 const bytesOf = v => new TextEncoder().encode(JSON.stringify(v)).length
-const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+export const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const hex = v => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null)
 
 /** The watch-redesign settings a Garmin understands, each left out when the phone has none. */
@@ -62,7 +62,7 @@ const openEntry = e => e?.mode !== 'cardio' && (e?.sets || []).some(openRow)
 
 // The block an exercise belongs to: its whole superset (the exercises next to each other with the
 // same group), else just itself, as [first, last].
-function blockOf (entries, at) {
+export function blockOf (entries, at) {
   let lo = at, hi = at
   const g = entries[at].group
   if (g != null) {
@@ -121,16 +121,16 @@ export function garminTotals (active) {
   return { progress: [done, all], volume: Math.round(volume * 10) / 10 }
 }
 
-const slim = (e, ...keys) => { const o = { ...e }; for (const k of keys) delete o[k]; return o }
+export const slim = (e, ...keys) => { const o = { ...e }; for (const k of keys) delete o[k]; return o }
 // A routine's row as the watch reads it: a missing key is null or no, so nulls and noes stay home
 // (the bridges leave nulls out anyway; counted here they cost a long routine its exercises).
-const leanRow = row => Object.fromEntries(Object.entries(row || {}).filter(([, v]) => v != null && v !== false))
-const nameOnly = r => ({ routineIds: r.routineIds || [], name: r.name || '', entries: [] })
+export const leanRow = row => Object.fromEntries(Object.entries(row || {}).filter(([, v]) => v != null && v !== false))
+export const nameOnly = r => ({ routineIds: r.routineIds || [], name: r.name || '', entries: [] })
 // A running workout's exercise as the watch reads it: the same lean rows (a set not done and not a
 // warm-up goes without `done: false`, `warmup: false`, `sec: null`), and the exercise without its
 // nulls and noes, without `mode` when it is reps and without `step` when it is the watch's own
 // default (2.5 kg, 5 lb: Core.stepOf). Half the bytes: a six-exercise circuit fits (#1471).
-const leanEntry = (e, unit) => {
+export const leanEntry = (e, unit) => {
   const out = { ...leanRow(e), sets: (e.sets || []).map(r => (r && typeof r === 'object' && !Array.isArray(r) ? leanRow(r) : r)) }
   if (out.mode === 'reps') delete out.mode
   if (out.step === ((e.unit || unit) === 'lb' ? 5 : 2.5)) delete out.step
@@ -144,7 +144,7 @@ const cutName = n => {
   const at = n.lastIndexOf(' ', NAME_MAX)
   return n.slice(0, at > NAME_MAX / 2 ? at : NAME_MAX).trimEnd()
 }
-const shortName = e => ({ ...e, name: cutName(e.name) })
+export const shortName = e => ({ ...e, name: cutName(e.name) })
 
 /**
  * The snapshot (buildSnapshot's, with settings, streak and discarded as startWatchSync adds them)

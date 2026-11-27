@@ -16,8 +16,9 @@
 // `health` field in the stored prefs is left alone and not read.
 export const WATCH_PREFS_KEY = 'gym_watch_v1'
 export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
-// Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
-// `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
+// Whether the phone's watch link last found a Garmin or a Huawei watch with the openGym app
+// (WatchBridge status `garmin` or `huawei`, docs/GARMIN.md, docs/HUAWEI_WATCH.md; the key's name is
+// from when only Garmin had one). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
 // Set once a status has found the watch app installed: from then on the Devices sheet names a watch
 // that goes missing ("Not found"), where a phone that never had one shows no watch row.

@@ -1,0 +1,1 @@
+{ "name": "opengym-watch-huawei", "private": true, "type": "module", "scripts": { "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test test/*.test.js" } }

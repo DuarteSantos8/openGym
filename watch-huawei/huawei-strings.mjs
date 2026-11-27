@@ -1,0 +1,174 @@
+#!/usr/bin/env node
+// Writes the Huawei watch's words: one entry/src/main/js/MainAbility/i18n/<lang>-<REGION>.json for each
+// language and region below (the framework's $t reads the one for the WATCH's language), and
+// common/en.js, the English the page falls back on when $t gives nothing (no file for the language).
+// Nothing is translated twice: the watch says what the Wear OS watch says
+// (frontend/android/wear/src/main/res/values*/strings.xml, made from the app's packs and the Apple
+// Watch's strings), two words come from the app's own packs, two phrases from the Garmin watch's
+// generated strings (same wording as that watch), and the few only this watch says are below.
+// Run it after changing any of them, and commit what it writes:
+//
+//   node watch-huawei/huawei-strings.mjs
+//
+// Copy tone (CONTRIBUTING.md): plain, human, never an em dash.
+import { readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const here = dirname(fileURLToPath(import.meta.url))
+const frontend = join(here, '..', 'frontend')
+const wearRes = join(frontend, 'android', 'wear', 'src', 'main', 'res')
+const ability = join(here, 'entry', 'src', 'main', 'js', 'MainAbility')
+export const I18N = join(ability, 'i18n')
+export const EN_OUT = join(ability, 'common', 'en.js')
+
+// The files to write: the app's language -> its <language>-<REGION> names. The main region of each language, as the
+// Garmin does; Huawei's region codes are UNSURE, so English shows where none matches. ar, bn, fa, hi and th get no
+// file: the watch's one font (SourceHanSansSC) may not draw them, so they show English.
+export const REGIONS = {
+  en: ['en-US'], de: ['de-DE'], fr: ['fr-FR'], es: ['es-ES'], it: ['it-IT'], pt: ['pt-PT'], 'pt-BR': ['pt-BR'], pl: ['pl-PL'],
+  hu: ['hu-HU'], tr: ['tr-TR'], ru: ['ru-RU'], uk: ['uk-UA'], ko: ['ko-KR'], sv: ['sv-SE'], zh: ['zh-CN'], 'zh-TW': ['zh-TW', 'zh-HK'],
+  cs: ['cs-CZ'], id: ['id-ID'], lt: ['lt-LT'], da: ['da-DK'], vi: ['vi-VN'],
+}
+
+// the app's language -> [Wear OS values folder, Garmin resources folder (or null)]
+export const LANGS = {
+  en: ['values', 'resources'], de: ['values-de', 'resources-deu'], fr: ['values-fr', 'resources-fre'], es: ['values-es', 'resources-spa'],
+  it: ['values-it', 'resources-ita'], pt: ['values-pt', 'resources-por'], 'pt-BR': ['values-pt-rBR', null], pl: ['values-pl', 'resources-pol'],
+  hu: ['values-hu', 'resources-hun'], tr: ['values-tr', 'resources-tur'], ru: ['values-ru', 'resources-rus'], uk: ['values-uk', 'resources-ukr'],
+  ar: ['values-ar', 'resources-ara'], hi: ['values-hi', null], bn: ['values-bn', null], th: ['values-th', 'resources-tha'],
+  ko: ['values-ko', 'resources-kor'], sv: ['values-sv', 'resources-swe'], zh: ['values-zh', 'resources-zhs'], 'zh-TW': ['values-zh-rTW', 'resources-zht'],
+  cs: ['values-cs', 'resources-ces'], id: ['values-id', 'resources-ind'], lt: ['values-lt', 'resources-lit'], da: ['values-da', 'resources-dan'],
+  vi: ['values-vi', 'resources-vie'], fa: ['values-fa', null],
+}
+
+// What the screens say, in the order the table keeps them.
+const FROM_WEAR = [
+  'all_sets_done', 'all_synced', 'cancel', 'continue_workout', 'discard_workout', 'discard_workout_q', 'done', 'edit',
+  'ended_on_phone', 'exercises', 'finish_and_save', 'finish_workout', 'finish_workout_q', 'go', 'hold', 'hr_avg_max',
+  'keep_going', 'last_time', 'left', 'left_gym', 'log_on_phone', 'no_set_for', 'no_workout', 'not_synced', 'overview',
+  'phone_out_of_reach', 'previous_set', 'quick_start', 'reps', 'rest', 'rest_day', 'right', 'routines', 'save', 'set_of',
+  'sets', 'sets_of', 'skip', 'skip_set', 'start_hold', 'start_on_phone', 'start_workout', 'still_training', 'stop', 'time',
+  'today', 'up_next', 'up_next_set', 'volume', 'waiting_sync', 'warmup', 'workout_saved', 'added_weight', 'weight', 'superset',
+  'phone_gone'
+]
+// (the app's packs have these words in every language; the Wear OS strings of this branch do not yet)
+const FROM_APP = { next_exercise: 'Next exercise', paused: 'Paused' }
+const FROM_GARMIN = ['next_on_phone', 'waiting_phone']
+export const KEYS = FROM_WEAR.concat(Object.keys(FROM_APP), FROM_GARMIN, ['menu', 'open_phone_once', 'read_failed', 'try_again']).sort()
+
+// Only this watch says these (and the languages the Garmin strings do not have).
+const MENU = {
+  en: 'Menu', de: 'Menü', fr: 'Menu', es: 'Menú', it: 'Menu', pt: 'Menu', 'pt-BR': 'Menu', pl: 'Menu', hu: 'Menü', tr: 'Menü', ru: 'Меню',
+  uk: 'Меню', ar: 'القائمة', hi: 'मेन्यू', bn: 'মেনু', th: 'เมนู', ko: '메뉴', sv: 'Meny', zh: '菜单', 'zh-TW': '選單', cs: 'Nabídka',
+  id: 'Menu', lt: 'Meniu', da: 'Menu', vi: 'Menu', fa: 'منو',
+}
+// The page's one message when the stored workout cannot be read, and its button.
+const READ_FAILED = {
+  en: 'Could not read your workout. Nothing was changed.', de: 'Training konnte nicht gelesen werden. Nichts wurde geändert.',
+  fr: 'Impossible de lire ton entraînement. Rien n’a été modifié.', es: 'No se pudo leer tu entrenamiento. No se cambió nada.',
+  it: 'Impossibile leggere l’allenamento. Non è cambiato nulla.', pt: 'Não foi possível ler o treino. Nada foi alterado.',
+  'pt-BR': 'Não foi possível ler o treino. Nada foi alterado.', pl: 'Nie udało się odczytać treningu. Nic nie zmieniono.',
+  hu: 'Nem sikerült beolvasni az edzést. Semmi sem változott.', tr: 'Antrenman okunamadı. Hiçbir şey değişmedi.',
+  ru: 'Не удалось прочитать тренировку. Ничего не изменено.', uk: 'Не вдалося прочитати тренування. Нічого не змінено.',
+  ar: 'تعذّرت قراءة تمرينك. لم يتغير شيء.', hi: 'आपकी कसरत पढ़ी नहीं जा सकी। कुछ नहीं बदला।',
+  bn: 'আপনার ওয়ার্কআউট পড়া যায়নি। কিছু বদলায়নি।', th: 'อ่านการออกกำลังกายไม่ได้ ไม่มีอะไรเปลี่ยนแปลง',
+  ko: '운동 기록을 읽지 못했어요. 바뀐 것은 없어요.', sv: 'Det gick inte att läsa passet. Inget har ändrats.',
+  zh: '无法读取你的训练。没有任何改动。', 'zh-TW': '無法讀取你的訓練。沒有任何變更。', cs: 'Trénink se nepodařilo přečíst. Nic se nezměnilo.',
+  id: 'Latihan tidak bisa dibaca. Tidak ada yang diubah.', lt: 'Nepavyko perskaityti treniruotės. Niekas nepakeista.',
+  da: 'Kunne ikke læse træningen. Intet er ændret.', vi: 'Không đọc được buổi tập. Không có gì bị thay đổi.', fa: 'خواندن تمرین ممکن نشد. چیزی تغییر نکرد.',
+}
+const TRY_AGAIN = {
+  en: 'Try again', de: 'Nochmal versuchen', fr: 'Réessayer', es: 'Reintentar', it: 'Riprova', pt: 'Tentar de novo', 'pt-BR': 'Tentar de novo',
+  pl: 'Spróbuj ponownie', hu: 'Újra', tr: 'Tekrar dene', ru: 'Повторить', uk: 'Повторити', ar: 'حاول مجددًا', hi: 'फिर कोशिश करें',
+  bn: 'আবার চেষ্টা করুন', th: 'ลองอีกครั้ง', ko: '다시 시도', sv: 'Försök igen', zh: '重试', 'zh-TW': '重試', cs: 'Zkusit znovu',
+  id: 'Coba lagi', lt: 'Bandyti dar kartą', da: 'Prøv igen', vi: 'Thử lại', fa: 'تلاش دوباره',
+}
+// The Garmin's "open Settings, then Garmin" with Huawei in its place, where that reads right.
+const OPEN_OWN = {
+  hu: 'A telefonodon az openGymben nyisd meg a Beállításokat, majd a Huawei-t.',
+  tr: 'Telefonundaki openGym’de Ayarlar’ı, sonra Huawei’yi aç.',
+  'pt-BR': 'No openGym do celular, abra Configurações e depois Huawei.',
+  hi: 'फ़ोन पर openGym में सेटिंग खोलें, फिर Huawei।',
+  bn: 'ফোনে openGym-এ সেটিংস খুলুন, তারপর Huawei।',
+  fa: 'در openGym روی گوشی، تنظیمات را باز کنید و سپس Huawei را.',
+  zh: '手机 openGym 设置里点 Huawei',
+  'zh-TW': '手機 openGym 設定裡點 Huawei',
+}
+const PHRASE_OWN = {
+  'pt-BR': { next_on_phone: 'O próximo exercício está a caminho do celular.', waiting_phone: 'Esperando o celular. Abra o openGym nele se demorar.' },
+  hi: { next_on_phone: 'अगला व्यायाम फ़ोन से आ रहा है।', waiting_phone: 'फ़ोन का इंतज़ार है। देर हो तो वहाँ openGym खोलें।' },
+  bn: { next_on_phone: 'পরের ব্যায়াম ফোন থেকে আসছে।', waiting_phone: 'ফোনের জন্য অপেক্ষা করছি। দেরি হলে সেখানে openGym খুলুন।' },
+  fa: { next_on_phone: 'تمرین بعدی از گوشی در راه است.', waiting_phone: 'منتظر گوشی هستم. اگر طول کشید، openGym را آنجا باز کنید.' },
+}
+
+const entities = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&')
+// Android's escaping undone, its numbered placeholders as ours ("%2$d" -> "{1}").
+const unescapeAndroid = s => entities(s.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\@/g, '@').replace(/\\\?/g, '?').replace(/\\\\/g, '\\'))
+  .replace(/%(\d+)\$[sd]/g, (_, n) => '{' + (Number(n) - 1) + '}')
+
+function readWear (folder) {
+  const file = join(wearRes, folder, 'strings.xml')
+  if (!existsSync(file)) throw new Error('missing ' + file)
+  const out = {}
+  for (const m of readFileSync(file, 'utf8').matchAll(/<string name="([a-z0-9_]+)">([\s\S]*?)<\/string>/g)) out[m[1]] = unescapeAndroid(m[2])
+  return out
+}
+function readGarmin (folder) {
+  const out = {}
+  const xml = readFileSync(join(frontend, 'garmin', folder, 'strings', 'strings.xml'), 'utf8')
+  for (const m of xml.matchAll(/<string id="([a-z_]+)">([\s\S]*?)<\/string>/g)) out[m[1]] = entities(m[2])
+  return out
+}
+async function readPack (lang) {
+  return (await import(pathToFileURL(join(frontend, 'src', 'locales', lang + '.js')).href)).default
+}
+
+function check (lang, key, value) {
+  if (typeof value !== 'string' || !value) throw new Error(`${lang} ${key}: missing`)
+  if (/—/.test(value)) throw new Error(`${lang} ${key}: no em dashes in app copy`)
+  if (/\n/.test(value)) throw new Error(`${lang} ${key}: a line break would split the table`)
+  if (/%\d?\$?[sd@]|\$\d\$/.test(value)) throw new Error(`${lang} ${key}: a placeholder the watch cannot fill: ${value}`)
+  return value
+}
+
+export async function build () {
+  const base = readWear('values')
+  const out = {}
+  for (const [lang, [folder, garmin]] of Object.entries(LANGS)) {
+    const wear = readWear(folder)
+    const pack = lang === 'en' ? {} : await readPack(lang)
+    const gm = garmin ? readGarmin(garmin) : {}
+    const row = {}
+    for (const k of FROM_WEAR) row[k] = wear[k] ?? base[k]
+    for (const [k, key] of Object.entries(FROM_APP)) row[k] = pack[key] || key
+    for (const k of FROM_GARMIN) row[k] = (PHRASE_OWN[lang] || {})[k] ?? gm[k]
+    row.menu = MENU[lang]
+    row.read_failed = READ_FAILED[lang]
+    row.try_again = TRY_AGAIN[lang]
+    row.open_phone_once = OPEN_OWN[lang] ?? (gm.open_phone_once || '').replace(/Garmin/g, 'Huawei')
+    for (const k of KEYS) check(lang, k, row[k])
+    out[lang] = row
+  }
+  return out
+}
+
+// file name -> text, for everything render() owns
+export async function render () {
+  const rows = await build()
+  const out = {}
+  for (const [lang, names] of Object.entries(REGIONS)) {
+    const text = JSON.stringify({ strings: Object.fromEntries(KEYS.map(k => [k, rows[lang][k]])) }, null, 2) + '\n'
+    names.forEach(n => { out[join(I18N, n + '.json')] = text })
+  }
+  out[EN_OUT] = '// The English the page says when $t has no word. Written by watch-huawei/huawei-strings.mjs: change that, not this.\n' +
+    'export const EN = ' + JSON.stringify(Object.fromEntries(KEYS.map(k => [k, rows.en[k]])), null, 1) + '\n'
+  return out
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const files = await render()
+  readdirSync(I18N).forEach(f => { if (!files[join(I18N, f)]) unlinkSync(join(I18N, f)) })
+  Object.entries(files).forEach(([f, text]) => writeFileSync(f, text))
+  console.log('wrote', Object.keys(files).length, 'files')
+}

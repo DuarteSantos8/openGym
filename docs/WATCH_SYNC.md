@@ -1,6 +1,6 @@
 # The watch sync protocol
 
-How the Apple Watch, Wear OS and Garmin apps stay in step with the phone (since v1.4.5). The phone
+How the Apple Watch, Wear OS, Garmin and Huawei apps stay in step with the phone (since v1.4.5). The phone
 is the source of truth for the workout; the watch runs the session on its own while the phone sleeps
 and must never lose what was logged on it.
 
@@ -51,7 +51,8 @@ ignores it, and the phone treats an event without the new fields as before. The 
 | `healthDeleted` | `ids` | the phone's own Apple Health removal runs again |
 | `watchStatus` | `health`, `version`, `at` | Settings → Apple Watch; an older one never replaces a newer one |
 
-Every event has a unique `id` and a per-watch `seq` (its order on that watch). With protocol 2
+Every event has a unique `id`. Every event but a Huawei watch's also has a per-watch `seq` (its order
+on that watch; the Huawei core has none, see Two watches below). With protocol 2
 every event also carries `off`: the watch's clock minus the phone's, in ms, as the watch works it
 out (Clocks, below); the phone takes it off `at`, `restEnd` and `endsAt` before anything else.
 
@@ -243,9 +244,10 @@ order, before the ticks, until acked). #1162's four cases, settled:
 - **The server sync (`/api/data`, 409 merge):** the running workout is this phone's own and a merge
   leaves it alone; a watch set written into a saved workout stamps that workout, so the merge keeps
   it (`useStore.watch-drain-sync.test.jsx`).
-- **Two watches** (an Apple Watch and a Garmin share the native queue; a Zepp watch has its own
-  link): each numbers its events from 1; the page sorts them together, which keeps each watch's own
-  order. A second watch's own workout waits for the first to end. Both follow the one rest: a +15
+- **Two watches** (an Apple Watch, a Garmin and a Huawei watch share the native queue; a Zepp watch has its own
+  link): the Apple Watch numbers its events from 1 and the page sorts them together, which keeps
+  its own order. The Huawei watch does not number its events (no `seq` in its core), so they stay
+  where the queue put them; whether the queue orders them by their `at` was not checked. A second watch's own workout waits for the first to end. Both follow the one rest: a +15
   on one is a newer `restAt` for the other.
 - **Clocks:** times are milliseconds since 1970, so a time zone change does nothing. With protocol 2
   each watch works out how far its clock is off the phone's: for every snapshot that came **as a

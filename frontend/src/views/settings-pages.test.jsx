@@ -171,6 +171,11 @@ describe('the root', () => {
     expect(pageVisible('watches', android)).toBe(true)
     expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('wear')
     expect(pageTrail('wear')).toBe('Watches › Wear OS watch')
+    // The Huawei watch is Android only, the same way.
+    expect(pageVisible('huawei', android)).toBe(true)
+    expect(pageVisible('huawei', phone)).toBe(false)
+    expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('huawei')
+    expect(pageTrail('huawei')).toBe('Watches › Huawei watch')
     mocks.MOBILE = true
     mount()
     expect(titles()).toContain('Watches')

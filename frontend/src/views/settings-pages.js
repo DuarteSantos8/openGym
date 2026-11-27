@@ -25,7 +25,7 @@ export const PAGES = {
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)', mod: 'coach' },
   // The phones' watch pages under one row (#1105); the web has Zepp only, so its row stays on the root.
-  watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
+  watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin huawei zepp amazfit wrist pair' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
@@ -33,6 +33,8 @@ export const PAGES = {
   // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
   wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
   garmin: { title: 'Garmin', icon: 'watch', tint: 'var(--blue)', mod: 'watch', parent: 'watches', kw: 'garmin connect iq forerunner fenix epix venu vivoactive instinct enduro marq watch pair' },
+  // The Huawei link (docs/HUAWEI_WATCH.md, views/HuaweiSettings.jsx): the Android app only, through Huawei Health.
+  huawei: { title: 'Huawei watch', icon: 'watch', tint: 'var(--red)', mod: 'watch', parent: 'watches', kw: 'huawei watch gt fit band health wear engine pair' },
   zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)', mod: 'watch' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
@@ -71,7 +73,7 @@ export const ROOT_GROUPS = [
   { ids: ['data', 'about'] },
 ]
 
-export const WATCH_PAGES = ['watch', 'wear', 'garmin', 'zepp']
+export const WATCH_PAGES = ['watch', 'wear', 'garmin', 'huawei', 'zepp']
 
 /** Whether a page has its own row on the root: Zepp sits inside Watches wherever Watches is. */
 export const onRoot = (page, ctx) => pageVisible(page, ctx) && !(page === 'zepp' && pageVisible('watches', ctx))
@@ -100,6 +102,8 @@ export function pageVisible(page, ctx) {
   if (page === 'watch') return !!ctx.ios
   // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
   if (page === 'wear') return !!ctx.mobile && !!ctx.android && !ctx.demo
+  // Huawei's Wear Engine is on Android only; the page says when a build has none.
+  if (page === 'huawei') return !!ctx.mobile && !!ctx.android && !ctx.demo
   // The Garmin link lives in the phone apps (Connect IQ Mobile SDK); the page says when a build has none.
   if (page === 'garmin') return !!ctx.mobile && !ctx.demo
   // A Zepp OS watch reaches openGym through a server (lib/watch-relay.js). Signed in, the page pairs
@@ -132,7 +136,7 @@ const MODULE_KW = {
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
   videos: 'form video film record camera technique set',
-  watch: 'watch apple watch wear os zepp amazfit garmin wrist',
+  watch: 'watch apple watch wear os zepp amazfit garmin huawei wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
   health: 'health apple health healthkit health connect heart rate recovery sync',

@@ -57,10 +57,15 @@ import org.json.JSONObject;
  *
  * A Garmin rides along (GarminLink, src/ciq, docs/GARMIN.md): status says `garmin: true` when one
  * with the openGym app is there, the page then adds its cut-down snapshot (`garmin`) to each
- * sendSnapshot, and the Garmin's events land in the same queue file.
+ * sendSnapshot, and the Garmin's events land in the same queue file. A Huawei watch (HuaweiLink,
+ * src/hms, watch-huawei) rides along the same way: `huawei` says a Huawei watch with the app is
+ * there (`garmin` is the Garmins alone), the page then adds the same cut-down snapshot for it
+ * (`huawei`, lib/garmin-snapshot.js, up to 16 frames on the wire), and the `wear` object
+ * stays the Wear OS link by itself.
  *
- *   status()             { supported, activated, paired, installed, reachable, garmin }
- *   sendSnapshot({json, garmin?}) { sent }
+ *   status()             { supported, activated, paired, installed, reachable, garmin, huawei, wear }
+ *   sendSnapshot({json, garmin?, huawei?, again?}) { sent }: `garmin` goes to the Garmins, `huawei` to the Huawei
+ *                        watches (`again`: a deliberate resend, sent even when the same)
  *   drain()              { events }
  *   ack({ids})
  *   openOnWatch({type})  { ok }: a workout started here shows on the watch
@@ -75,6 +80,11 @@ import org.json.JSONObject;
  *   garminPick()         asks Garmin Connect for its watches again (Android has no picker: Garmin
  *                        Connect pairs them) { ok }
  *   garminStore()        the app's page in the Connect IQ Store { ok }
+ *   huaweiStatus()       { supported, state, installed, reachable, devices: [{ id, name, connected, installed? }] };
+ *                        state: off, starting, ready, no-health, no-permission, error, build. Asking
+ *                        starts the link (Settings → Huawei watch is open).
+ *   huaweiPick()         asks Huawei Health for the permission when it is missing (its own screen
+ *                        opens), then looks for the watches again { ok }
  *   listeners: watchEvent, watchState
  */
 @CapacitorPlugin(name = "WatchBridge")
@@ -101,6 +111,7 @@ public class WatchBridgePlugin extends Plugin {
     public void load() {
         live = this;
         GarminLink.get(getContext());
+        HuaweiLink.get(getContext());
         try {
             capListener = info -> { wearNodesAt = 0; notifyListeners("watchState", new JSObject().put("installed", !info.getNodes().isEmpty())); };
             Wearable.getCapabilityClient(getContext()).addListener(capListener, CAPABILITY_WEAR);
@@ -150,13 +161,17 @@ public class WatchBridgePlugin extends Plugin {
             out.put("wear", wear);
             // A Garmin with the openGym app counts as a watch for the page: it then sends snapshots.
             GarminLink g = GarminLink.get(getContext());
+            // So does a Huawei watch with the app; each flag says which snapshot the page builds.
+            HuaweiLink hw = HuaweiLink.get(getContext());
             boolean garmin = g.anyInstalled();
-            out.put("supported", supported || garmin);
+            boolean huawei = hw.anyInstalled();
+            out.put("supported", supported || garmin || huawei);
             out.put("activated", true);
-            out.put("paired", paired || garmin);
-            out.put("installed", installed || garmin);
-            out.put("reachable", reachable || g.anyReachable());
+            out.put("paired", paired || garmin || huawei);
+            out.put("installed", installed || garmin || huawei);
+            out.put("reachable", reachable || g.anyReachable() || hw.anyReachable());
             out.put("garmin", garmin);
+            out.put("huawei", huawei);
             call.resolve(out);
         });
     }
@@ -172,9 +187,14 @@ public class WatchBridgePlugin extends Plugin {
     public void sendSnapshot(PluginCall call) {
         String json = call.getString("json");
         if (json == null) { call.reject("json is required"); return; }
-        // The Garmin's cut-down snapshot (lib/garmin-snapshot.js), when the page made one.
+        // The cut-down snapshot (lib/garmin-snapshot.js) for the Garmins and the same one for the Huawei
+        // watches; the page makes each only when status says such a watch is there.
         String garmin = call.getString("garmin");
-        boolean garminSent = garmin != null && GarminLink.get(getContext()).send(garmin);
+        String huawei = call.getString("huawei");
+        // Both links get theirs: no short-circuit.
+        boolean toGarmin = garmin != null && GarminLink.get(getContext()).send(garmin);
+        boolean toHuawei = huawei != null && HuaweiLink.get(getContext()).send(huawei, Boolean.TRUE.equals(call.getBoolean("again", false)));
+        boolean garminSent = toGarmin || toHuawei;
         try {
             PutDataMapRequest req = PutDataMapRequest.create(SNAPSHOT);
             req.getDataMap().putString("snapshot", json);
@@ -184,14 +204,14 @@ public class WatchBridgePlugin extends Plugin {
             req.getDataMap().putLong("at", at);
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
-                .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
-                .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("error", String.valueOf(e.getMessage()))));
+                .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true).put("garmin", toGarmin).put("huawei", toHuawei)))
+                .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("garmin", toGarmin).put("huawei", toHuawei).put("error", String.valueOf(e.getMessage()))));
             // And as a message to the watches in reach (protocol 2): on time, for the watch's clock offset.
             byte[] msg = WatchEventQueue.snapshotMessage(at, json);
             // Not on `io`: the stills' uploads wait seconds there, and a late message misleads the watch's clock.
             if (msg != null) snapshotMessages.submit(() -> messageWatches(msg));
         } catch (Exception e) {
-            call.resolve(new JSObject().put("sent", garminSent));
+            call.resolve(new JSObject().put("sent", garminSent).put("garmin", toGarmin).put("huawei", toHuawei));
         }
     }
 
@@ -269,6 +289,8 @@ public class WatchBridgePlugin extends Plugin {
             } catch (Exception ignored) {}
             // A Garmin with the app shows its own "open openGym?" prompt.
             if (GarminLink.get(getContext()).open()) ok = true;
+            // A Huawei watch with the app is pinged, which opens the app on it.
+            if (HuaweiLink.get(getContext()).open()) ok = true;
             call.resolve(new JSObject().put("ok", ok));
         });
     }
@@ -307,6 +329,19 @@ public class WatchBridgePlugin extends Plugin {
 
     @PluginMethod
     public void garminStore(PluginCall call) { call.resolve(new JSObject().put("ok", GarminLink.get(getContext()).openStore())); }
+
+    /* ---------- the Huawei watch (Settings → Huawei watch, Android only) ---------- */
+
+    @PluginMethod
+    public void huaweiStatus(PluginCall call) { call.resolve(HuaweiLink.use(getContext()).status()); }
+
+    @PluginMethod
+    public void huaweiPick(PluginCall call) {
+        HuaweiLink h = HuaweiLink.use(getContext());
+        h.lookAgain();
+        // Not in a build without the Huawei ids: the same answer as the F-Droid stub.
+        call.resolve(new JSObject().put("ok", !"build".equals(h.state())));
+    }
 
     /** The stills already sent for each workout, by exercise (the Data Layer keeps the rest). */
     private final Map<String, Set<String>> stillsSent = new HashMap<>();

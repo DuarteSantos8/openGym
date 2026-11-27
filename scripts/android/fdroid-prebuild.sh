@@ -8,6 +8,7 @@
 #      registers its Android module, and that module's build file names ML Kit and Play services,
 #      which F-Droid's scanner rightly refuses. Its JavaScript stays: the page asks the native
 #      side whether the plugin is there and scans with jsQR when it is not (lib/scan.js).
+# The Huawei link's Gradle file (android/app/huawei.gradle) is deleted first thing, for the same reason.
 # The Wear OS module (android/wear) is deleted by the recipe itself (its "rm" list) before this
 # runs; settings.gradle only includes it when the folder is there.
 #
@@ -15,6 +16,9 @@
 # the generated Capacitor files changed (git checkout frontend/android to undo).
 set -euo pipefail
 cd "$(dirname "$0")/../../frontend"
+
+# Huawei's Maven repository (a Huawei-only Gradle file): the scanner refuses it, and this build has no Huawei code.
+rm -f android/app/huawei.gradle
 
 npm ci --ignore-scripts --no-audit --no-fund
 npm run build:mobile

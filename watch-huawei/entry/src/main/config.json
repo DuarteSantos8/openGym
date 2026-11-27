@@ -1,0 +1,26 @@
+{
+  "app": {
+    "bundleName": "ch.duartesantos.opengym.huawei",
+    "vendor": "openGym",
+    "version": { "code": 1004006, "name": "1.4.6" }
+  },
+  "deviceConfig": {},
+  "module": {
+    "deviceType": ["liteWearable"],
+    "distro": { "deliveryWithInstall": true, "moduleName": "entry", "moduleType": "entry" },
+    "abilities": [
+      {
+        "name": ".MainAbility",
+        "srcLanguage": "js",
+        "srcPath": "MainAbility",
+        "icon": "$media:icon",
+        "description": "$string:MainAbility_desc",
+        "label": "$string:MainAbility_label",
+        "type": "page"
+      }
+    ],
+    "js": [
+      { "pages": ["pages/index/index", "pages/lift/index", "pages/rest/index", "pages/over/index"], "name": ".MainAbility" }
+    ]
+  }
+}

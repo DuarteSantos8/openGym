@@ -1,0 +1,65 @@
+# openGym for Huawei watches
+
+The watch app for Huawei "lite wearable" watches (Watch GT 2 to 6, Watch Fit family): start a
+routine, log sets, rest with a ring, see the summary. It speaks the Garmin watch's messages over
+Huawei's Wear Engine, through the phone app. Pages are HML + CSS + JS in a tiny JavaScript engine,
+built with Huawei's DevEco Studio. Nobody has run it on a watch yet: see
+[docs/HUAWEI_WATCH.md](../docs/HUAWEI_WATCH.md) for building, installing and what is still unchecked.
+
+## Where things are
+
+```
+entry/src/main/config.json                    app id, version, permissions, the phone's package and fingerprint
+entry/src/main/js/MainAbility/
+  app.js                                      the app shell
+  pages/index, lift, rest, over/              the pages, each with its own screens: index.hml, index.css, index.js (glue only)
+  common/core.js                              the logic: the Garmin watch's Core/Actions/Link as plain JS
+  common/view-common.js, view-home/lift/rest/over.js  what each screen shows and what each tap does (the shared part, then one file per page)
+  common/frames.js, radio.js                  1 KB message framing and the Wear Engine send/receive
+  common/store.js                             the state in the watch's files, safe against being killed
+  common/en.js, i18n/<lang>-<REGION>.json     the words: English in code, one file per watch language (generated, do not edit)
+  common/wearengine.js                        Huawei's own SDK file, Apache-2.0, trimmed to the calls openGym makes (text send, register, unregister, set peer)
+huawei-strings.mjs                            writes common/en.js and i18n/*.json
+huawei-size.mjs                               release build, fails if a built file is over 45 KB (--report: the same table, fails only if app.js is over)
+huawei-sim.mjs                                simulator smoke: builds a temp copy with a fake phone (sim/debugphone.js), drives a workout, prints the heap peak (-hs 196608 by default, `--hs none` to skip); exit 1 on OOM
+test/                                         Node tests for everything above except wearengine.js
+```
+
+Everything that can be plain JavaScript is, and runs under Node. Huawei's APIs are touched only in
+`app.js` (the clock, the sensor, the buzz, the files), `common/page-glue.js` (the link, the router;
+every page uses it) and `wearengine.js`.
+
+## The phone's package
+
+`PHONE_PACKAGE` in `common/page-glue.js` is the release phone app (`ch.duartesantos.opengym`). A debug
+phone build is `ch.duartesantos.opengym.test`: set that, and the same pair in `config.json`'s
+`supportLists` (a test checks they agree), to try the watch against one.
+
+## Tests
+
+```bash
+cd watch-huawei && npm test      # node's own runner, no install needed
+```
+
+The built files must stay under 45 KB each and a workout must run in the simulator's 192 KB heap.
+Neither runs in `npm test`; both need DevEco Studio (the setup is in the guide):
+
+```bash
+node watch-huawei/huawei-size.mjs   # release build, fails over 45 KB (--report fails only if app.js is over)
+node watch-huawei/huawei-sim.mjs    # simulator smoke, prints the heap peak
+```
+
+Rule for new code: nothing `app.js` holds may be a function a page made (it keeps that page in the
+heap). The guide's "Size and memory" has the sizes and the reason.
+
+`test/syntax.test.js` holds every source file to the language subset the lite engine promises
+(no classes, spread, destructuring, template strings, `find`, `includes`, ...).
+
+## The words
+
+The watch says what the Wear OS watch says, plus a few phrases of its own. After changing any of
+those, regenerate and commit the result (a test fails when `en.js` or `i18n/` is out of date):
+
+```bash
+node watch-huawei/huawei-strings.mjs
+```

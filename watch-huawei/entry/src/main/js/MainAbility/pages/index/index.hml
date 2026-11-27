@@ -1,0 +1,60 @@
+<!-- The home page: Start, the routines list, waiting for the phone, the summary, and the stored workout that could not be read.
+     The lift page and the rest page (their own folders) hold the other screens; app.js keeps the core across the switch.
+     Accent colours are bound as single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
+<div class="root" onswipe="swipe">
+
+  <!-- The stored workout could not be read: nothing was changed, nothing is saved -->
+  <div class="scr" if="{{s_lost}}">
+    <text class="wrap">{{lostText}}</text>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{retryLabel}}" onclick="retry" />
+  </div>
+
+  <!-- Start -->
+  <div class="scr" if="{{s_idle}}">
+    <text class="small quiet">{{title}}</text>
+    <text class="nameBig">{{name}}</text>
+    <text class="tiny quiet">{{plan}}</text>
+    <text class="hint">{{hint}}</text>
+    <input if="{{canStart}}" type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{startLabel}}" onclick="start" />
+    <input elif="{{showStart}}" type="button" class="btn" value="{{startLabel}}" />
+    <input if="{{showRoutines}}" type="button" class="btn" value="{{routinesLabel}}" onclick="routines" />
+    <text class="tiny quiet">{{top}}</text>
+  </div>
+
+  <!-- Routines, three a page -->
+  <div class="scr" if="{{s_routines}}">
+    <div class="pick" if="{{rv0}}" onclick="pick0"><text class="rName">{{ro0}}</text><text class="rSub" style="color: {{accent}};">{{rs0}}</text></div>
+    <div class="pick" if="{{rv1}}" onclick="pick1"><text class="rName">{{ro1}}</text><text class="rSub" style="color: {{accent}};">{{rs1}}</text></div>
+    <div class="pick" if="{{rv2}}" onclick="pick2"><text class="rName">{{ro2}}</text><text class="rSub" style="color: {{accent}};">{{rs2}}</text></div>
+    <div class="row2">
+      <input type="button" class="arrow" value="X" onclick="rback" />
+      <input if="{{rPaged}}" type="button" class="arrow" value="{{gt}}" onclick="rnext" />
+    </div>
+  </div>
+
+  <!-- Waiting for the phone -->
+  <div class="scr" if="{{s_wait}}">
+    <div class="barS">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="topR">{{top}}</text>
+    </div>
+    <text class="nameBig">{{name}}</text>
+    <text class="waitTx">{{body}}</text>
+  </div>
+
+  <!-- Summary: a list -->
+  <div class="scrL" if="{{s_summary}}">
+    <list class="sumList" ref="sum">
+      <list-item class="liT"><div class="liTi"><div class="tRow"><div class="tick" style="background-color: {{accent}};"></div><text class="sTitle">{{title}}</text></div><text class="sName">{{name}}</text></div></list-item>
+      <list-item class="liD"><div class="liDi"><text class="tinyL quiet">{{durLabel}}</text><text class="bigY">{{dur}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><div class="row2s">
+        <div class="colL"><text class="tinyL quiet">{{setsLabel}}</text><text class="midL">{{setsNum}}</text></div>
+        <div class="colL"><text class="tinyL quiet">{{volLabel}}</text><text class="midL">{{volNum}}</text></div>
+      </div></div></list-item>
+      <list-item class="liS" if="{{hrOn}}"><div class="liSi"><text class="tinyC quiet">{{hrLine}}</text></div></list-item>
+      <list-item class="liS" if="{{syncOn}}"><div class="liSi"><text class="tinyC quiet">{{sync}}</text></div></list-item>
+      <list-item class="li"><div class="liIn"><input type="button" class="done" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="close" /></div></list-item>
+    </list>
+  </div>
+
+</div>

@@ -1,0 +1,81 @@
+/* True black, one accent (the phone's, else lime; index.hml binds the colours), quiet text #A1A1A6, two
+   sizes doing the work: big numbers and small labels. Every target is at least 56 px tall with 8 px
+   between targets. Every box has an explicit width and height: dl/oh/js-lite-components-container-div.md
+   and ...-basic-text.md say "If this attribute is not set, the default value 0 is used". Heights are px
+   from the contents; widths are percent of the screen block. No animation.
+   test/layout.test.js adds the heights up for a 466 px round and a 336 x 480 rectangle and checks that
+   nothing sits where the circle is cut off. */
+/* The rest page (see index.hml): the rules its screens use. */
+.root {
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+/* A screen that is a list: as wide as the screen, because the engine puts a list at the left edge instead of centring it. */
+.scrL {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.scr {
+  width: 90%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.big { width: 80%; height: 64px; font-size: 56px; text-align: center; color: #ffffff; }
+.mid { width: 80%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tiny { width: 76%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.wrap { width: 80%; height: 80px; font-size: 26px; text-align: center; color: #a1a1a6; }
+.btn {
+  width: 88%;
+  height: 56px;
+  margin-top: 8px;
+  border-radius: 28px;
+  font-size: 20px;
+  color: #ffffff;
+  background-color: #1c1c1e;
+}
+.btn:active { background-color: #2c2c2e; }
+.btnA { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; font-size: 20px; color: #0c0e12; background-color: #a3e635; }
+.btnA:active { background-color: #7aad28; }
+.arrow { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; font-size: 28px; color: #ffffff; background-color: #1c1c1e; }
+.menuS { width: 64px; height: 56px; margin-top: 0px; border-radius: 28px; font-size: 14px; color: #ffffff; background-color: #1c1c1e; }
+.hrTop { width: 40%; height: 26px; font-size: 22px; text-align: right; color: #ff453a; }
+.slot { width: 100%; height: 26px; flex-direction: column; align-items: center; justify-content: center; }
+.restBar { width: 92%; height: 12px; }
+.cap { width: 22%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 22px; color: #ffffff; background-color: #2c2c2e; }
+.capOff { width: 22%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 22px; color: #a1a1a6; background-color: #1c1c1e; }
+.capMid { width: 40%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 18px; color: #ffffff; background-color: #3a3a3c; }
+.capMidOff { width: 40%; height: 56px; margin-top: 0px; margin-left: 1.5%; margin-right: 1.5%; border-radius: 28px; font-size: 18px; color: #a1a1a6; background-color: #1c1c1e; }
+.chipR { width: 56px; height: 56px; margin-top: 0px; margin-left: 4px; margin-right: 4px; border-radius: 28px; border-width: 2px; border-color: #a1a1a6; font-size: 22px; color: #ffffff; background-color: #000000; }
+.rate { width: 100%; height: 86px; margin-top: 8px; flex-direction: column; align-items: center; justify-content: flex-start; }
+.rated { width: 120px; height: 40px; margin-top: 4px; border-radius: 20px; border-width: 2px; border-color: #a1a1a6; background-color: #000000; flex-direction: row; align-items: center; justify-content: center; }
+.ratedTx { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; }
+.up { width: 100%; height: 78px; flex-direction: column; align-items: center; justify-content: center; }
+.upOne { width: 86%; height: 26px; flex-direction: row; align-items: center; justify-content: center; }
+.upL { width: 38%; height: 26px; font-size: 22px; text-align: right; margin-right: 8px; color: #a3e635; }
+.upR { width: 58%; height: 26px; font-size: 22px; text-align: left; color: #a1a1a6; text-overflow: ellipsis; }
+.syncLn { width: 50%; height: 26px; font-size: 18px; text-align: center; color: #a1a1a6; text-overflow: ellipsis; }
+.bar { width: 78%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
+.row2s { width: 88%; height: 66px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.row3 { width: 100%; height: 56px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.row4 { width: 100%; height: 60px; margin-top: 0px; flex-direction: row; align-items: center; justify-content: center; }
+.mbar { width: 100%; height: 56px; flex-direction: row; align-items: center; justify-content: center; }
+.bigY { width: 100%; height: 64px; font-size: 56px; text-align: center; color: #ffd60a; }
+.midR { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ff453a; }
+.midL { width: 100%; height: 40px; font-size: 32px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.tinyL { width: 100%; height: 26px; font-size: 22px; text-align: center; color: #ffffff; text-overflow: ellipsis; }
+.colL { width: 46%; height: 66px; flex-direction: column; align-items: center; justify-content: center; }
+.btnR { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ff453a; font-size: 20px; color: #ff453a; background-color: #000000; }
+.btnO { width: 88%; height: 56px; margin-top: 8px; border-radius: 28px; border-width: 2px; border-color: #ffffff; font-size: 20px; color: #ffffff; background-color: #000000; }
+.menuList { width: 100%; height: 72%; }
+.li { width: 100%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.liIn { width: 78%; height: 72px; flex-direction: row; align-items: center; justify-content: center; }
+.quiet { color: #a1a1a6; }

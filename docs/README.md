@@ -14,6 +14,7 @@ Pick the part that matches what you're doing. If you just have a question, try t
 | [Watch sync protocol](WATCH_SYNC.md) | You work on how the Apple Watch and Wear OS apps keep in step with the phone (outbox, acks, the end of a workout) |
 | [Garmin watch](GARMIN.md) | You want openGym on a Forerunner, fēnix, Venu, Instinct or another Garmin, or you build and publish the Connect IQ app |
 | [Zepp OS watch](ZEPP_OS.md) | You want openGym on an Amazfit (Zepp OS) watch, or you work on that watch app or the watch relay |
+| [Huawei watch](HUAWEI_WATCH.md) | You want openGym on a Huawei Watch GT or Watch Fit (Android phone only), or you work on that watch app or build and test it |
 | [Importing data](DATA_IMPORTS.md) | You're coming from FitNotes, Strong, Hevy or Apple Health, or sharing a plan with someone |
 | [AI coach](AI_COACH.md) | Your instance has the coach switched on and you want to know what it sees and can change |
 | [Integrations](INTEGRATIONS.md) | You want Apple Health, Health Connect, your watch or scale, or a webhook to Home Assistant, n8n or ntfy |

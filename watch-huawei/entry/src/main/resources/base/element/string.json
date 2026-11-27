@@ -1,0 +1,8 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "openGym on your wrist" },
+    { "name": "MainAbility_desc", "value": "Your workout on your wrist, synced with your own openGym" },
+    { "name": "MainAbility_label", "value": "openGym" },
+    { "name": "hr_reason", "value": "Heart rate during your workout" }
+  ]
+}

@@ -1,0 +1,95 @@
+<!-- The lift page: the 3-2-1, a set (and fixing one), a hold, all sets done and the cardio card. The rest, the menu, the Overview
+     and the Metrics page are the rest page's.
+     Accent colours are bound as single values inside a declaration, the form the docs show (style="color: {{x}};"). -->
+<div class="root" onswipe="swipe">
+
+  <!-- 3-2-1 (also before a hold); a tap on the number starts at once -->
+  <div class="scr" if="{{s_count}}">
+    <text class="small quiet">{{label}}</text>
+    <stack class="cRing">
+      <progress type="arc" class="cArc" percent="{{pct}}" style="color: {{accent}};"></progress>
+      <div class="cIn" onclick="skipCount"><text if="{{goOn}}" class="cGo" style="color: {{accent}};">{{big}}</text><text else class="cNum" style="color: {{accent}};">{{big}}</text></div>
+    </stack>
+    <div class="rowX"><input type="button" class="arrow" value="X" onclick="cancelCount" /></div>
+  </div>
+
+  <!-- A hold -->
+  <div class="scr" if="{{s_hold}}">
+    <text class="hrC">{{top}}</text>
+    <text class="mid">{{name}}</text>
+    <text class="tiny quiet">{{tag}}</text>
+    <text class="hero" style="color: {{timeColor}};">{{time}}</text>
+    <progress type="horizontal" class="holdBar" percent="{{pct}}" style="color: {{accent}};"></progress>
+    <input type="button" class="btnA" style="background-color: {{accent}}; color: {{ink}};" value="{{stopLabel}}" onclick="stopHold" />
+    <text class="syncLn">{{sync}}</text>
+  </div>
+
+  <!-- The set, as the Apple Watch's: the pill (it opens the menu; Cancel while a set is fixed) and the heart rate on
+       top, the name, the weight and reps tiles, Last time, then ‹ Done › (Save while fixing). -->
+  <div class="scr" if="{{s_set}}">
+    <div class="barS">
+      <input if="{{fixing}}" type="button" class="pill" value="{{cancelLabel}}" onclick="cancelFix" />
+      <input else type="button" class="pill" value="{{pill}}" onclick="menu" />
+      <text class="hrSet">{{top}}</text>
+    </div>
+    <text class="name">{{name}}</text>
+    <text class="tiny quiet">{{tag}}</text>
+    <div class="subRow">
+      <text class="partnerT" if="{{partnerOn}}" style="color: {{accent}};">{{partner}}</text>
+    </div>
+    <div class="tiles">
+      <div class="tile" if="{{wOn}}">
+        <text class="tLabel" style="color: {{accent}};">{{wLabel}}</text>
+        <div class="numRow">
+          <text class="numT">{{wNum}}</text>
+          <text class="unitT" style="color: {{accent}};">{{wUnit}}</text>
+        </div>
+        <div class="steps">
+          <input type="button" class="step" value="-" onclick="wMinus" />
+          <input type="button" class="step" value="+" onclick="wPlus" />
+        </div>
+      </div>
+      <div class="tile">
+        <text class="tLabel" style="color: {{accent}};">{{rLabel}}</text>
+        <text class="numC">{{rNum}}</text>
+        <div class="steps">
+          <input type="button" class="step" value="-" onclick="rMinus" />
+          <input type="button" class="step" value="+" onclick="rPlus" />
+        </div>
+      </div>
+    </div>
+    <text class="tiny quiet">{{last}}</text>
+    <div class="doneRow">
+      <input if="{{prevOn}}" type="button" class="arrow" value="{{lt}}" onclick="prev" />
+      <input else type="button" class="arrowOff" value="{{lt}}" />
+      <input if="{{locked}}" type="button" class="doneOff" value="{{doneLabel}}" />
+      <input else type="button" class="done" style="background-color: {{accent}}; color: {{ink}};" value="{{doneLabel}}" onclick="done" />
+      <input if="{{nextOn}}" type="button" class="arrow" value="{{gt}}" onclick="nextFix" />
+      <input else type="button" class="arrowOff" value="{{gt}}" />
+    </div>
+  </div>
+
+  <!-- All sets done -->
+  <div class="scr" if="{{s_end}}">
+    <div class="barS">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="topR">{{top}}</text>
+    </div>
+    <text class="mid">{{title}}</text>
+    <text class="small quiet">{{count}}</text>
+    <text class="tiny quiet">{{sync}}</text>
+    <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{finishLabel}}" onclick="finish" />
+  </div>
+
+  <!-- Cardio, or a timed exercise with nothing left -->
+  <div class="scr" if="{{s_card}}">
+    <div class="barS">
+      <input type="button" class="menuS" value="{{menuLabel}}" onclick="menu" />
+      <text class="topR">{{top}}</text>
+    </div>
+    <text class="mid">{{name}}</text>
+    <text class="wrap">{{body}}</text>
+    <input type="button" class="wide" style="background-color: {{accent}}; color: {{ink}};" value="{{nextLabel}}" onclick="nextEx" />
+  </div>
+
+</div>
