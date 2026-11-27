@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
-import { logoutOwed, trackCookieCleanup } from '../lib/cookie-cleanup.js'
+import { logoutDebt, logoutOwed, trackCookieCleanup } from '../lib/cookie-cleanup.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
@@ -2322,7 +2322,8 @@ export const useStore = create((set, get) => {
       // A sign-out that could not reach the server: finish it first. Still unanswered, the
       // browser stays signed out rather than adopt the session it left behind.
       if (logoutOwed()) {
-        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false) } catch { /* owed until it is answered */ }
+        const debt = logoutDebt()
+        try { await api('/api/logout', bootOpts({ method: 'POST', body: '{}' })); logoutOwed(false, debt) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
       // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a

@@ -2391,7 +2391,7 @@ const trainerApi = trainerRoutes({
 });
 // OIDC (#130): its own burst budget per address, and wrong states, tokens or codes count
 // toward the same address pause the other sign-in routes use.
-const OIDC_BURST = createWindow({ max: 30, windowMs: 60000 });
+const OIDC_BURST = createWindow({ max: Math.max(1, +(process.env.OIDC_BURST_PER_MIN || 30) || 30), windowMs: 60000 });
 setInterval(() => OIDC_BURST.sweep(), 60000).unref();
 if (OIDC.enabled) {
   oidcApi = oidcRoutes({
