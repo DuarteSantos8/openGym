@@ -336,9 +336,6 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     if (version === 'legacy') {
       document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0'
       sessionStorage.setItem(key, '1')
-    } else {
-      const deny = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
-      try { logoutOwed(true) } finally { deny.mockRestore() }
     }
     const firstTab = sessionStorage.getItem(key)
     sessionStorage.removeItem(key)
@@ -347,7 +344,13 @@ describe('guest training after import — owner contract 2026-11-27', () => {
       if (path === '/api/config') return { signed_in: signedIn, allow_guest: true, coach: null }
       if (path === '/api/logout') { signedIn = false; return {} }
       if (path === '/api/me') {
-        if (signedIn) return { user: { id: 'acct-a', name: 'A' } }
+        if (signedIn) {
+          if (version === 'current') {
+            const deny = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError') })
+            try { logoutOwed(true) } finally { deny.mockRestore() }
+          }
+          return { user: { id: 'acct-a', name: 'A' } }
+        }
         throw Object.assign(new Error('signed out'), { status: 401 })
       }
       return { state: null, rev: 0 }
@@ -355,6 +358,7 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     try {
       await reload()
       await useStore.getState().boot()
+      expect(useStore.getState().user?.id).toBe('acct-a')
       if (firstTab) sessionStorage.setItem(key, firstTab)
       await reload()
       await useStore.getState().boot()

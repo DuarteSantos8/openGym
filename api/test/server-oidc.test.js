@@ -180,6 +180,7 @@ test('a first sign-in from the allowed group makes the profile, FIRST_USER_ADMIN
   assert.equal(r.status, 302);
   assert.equal(landed(r).get('oidc'), 'signed-in');
   assert.ok(r.session, 'a session cookie is set');
+  assert.equal(cookieNamed(r.cb, 'gym_logout_owed'), 'gym_logout_owed=0', 'the verified callback supersedes earlier logout debt');
   const me = await (await h.get('/api/me', { cookie: r.session })).json();
   assert.equal(me.user.name, 'Ana');
   assert.equal(me.user.admin, true);

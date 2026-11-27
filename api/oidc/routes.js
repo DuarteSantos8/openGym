@@ -301,7 +301,9 @@ export function oidcRoutes(d) {
         handoffs.put(hcode, { uid: user.id, challenge: flow.app.challenge, at }, HANDOFF_TTL_MS, now());
         return redirect(res, `${flow.app.ret}?code=${hcode}&astate=${encodeURIComponent(flow.app.astate)}`, [clearFlowCookie]);
       }
-      redirect(res, webLanding(flow, 'oidc=signed-in'), [clearFlowCookie, ...d.sessionCookie(user, at)]);
+      // A different tab may have queued a logout during the trip. The new cookie supersedes it.
+      const settledLogout = 'gym_logout_owed=0; Path=/; SameSite=Strict' + (d.secure ? '; Secure' : '');
+      redirect(res, webLanding(flow, 'oidc=signed-in'), [clearFlowCookie, settledLogout, ...d.sessionCookie(user, at)]);
     },
 
     // The phone trades its one-time code and its verifier for the same token a pairing gives.
