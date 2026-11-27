@@ -245,11 +245,19 @@ describe('the avatar syncs as a hash', () => {
   it('a provider picture removed on one device stays removed, and a later pick of one\'s own wins', () => {
     const T1 = '2026-11-27T09:00:00.000Z'
     const base = { _ts: 1, unit: 'kg', workouts: [], routines: [] }
-    const phone = stampEdits(base, { ...base, _ts: 10, avatar: { m: ref(H('d')), oidc: T1 } }, 100)
-    const laptop = stampEdits(phone, { ...phone, _ts: 20, avatar: { oidc: T1 } }, 200)
-    expect(mergeStates(phone, laptop).avatar).toEqual({ oidc: T1 })
-    expect(mergeStates(laptop, phone).avatar).toEqual({ oidc: T1 })
-    const own = stampEdits(laptop, { ...laptop, _ts: 30, avatar: { preset: 'crown' } }, 300)
+    const taken = { ...base, _ts: 10 }
+    setAvatarFromProvider(taken, ref(H('d')), T1)
+    const phone = stampEdits(base, taken, 100)
+    const removed = { ...structuredClone(phone), _ts: 20 }
+    clearAvatar(removed, T1)
+    const laptop = stampEdits(phone, removed, 200)
+    for (const merged of [mergeStates(phone, laptop), mergeStates(laptop, phone)]) {
+      expect('avatar' in merged).toBe(false)
+      expect(merged.avatarOidc).toEqual({ at: T1, hash: H('d') })
+    }
+    const mine = { ...structuredClone(laptop), _ts: 30 }
+    setAvatarPreset(mine, 'crown')
+    const own = stampEdits(laptop, mine, 300)
     expect(mergeStates(phone, own).avatar).toEqual({ preset: 'crown' })
     expect([...referencedHashes(laptop)]).toEqual([])
   })
@@ -299,6 +307,16 @@ describe('the avatar in a backup', () => {
     expect(sanitizeAvatar({ avatarOidc: { at: T1, hash: 'nope' } })).toEqual({ avatarOidc: { at: T1 } })
     expect(sanitizeAvatar({ avatarOidc: { at: { evil: 1 } } })).toEqual({})
     expect(sanitizeAvatar({ avatar: { m: ref(), oidc: T1 } })).toEqual({ avatar: { m: ref() } })
+  })
+
+  it('a backup\'s mark days ahead of this device\'s clock comes in as now, still naming the provider\'s picture', () => {
+    const ahead = new Date(Date.now() + 3 * 864e5).toISOString()
+    const soon = new Date(Date.now() + 36e5).toISOString()
+    const { avatarOidc } = sanitizeAvatar({ avatar: { m: ref() }, avatarOidc: { at: ahead, hash: H('a') } })
+    expect(avatarOidc.hash).toBe(H('a'))
+    expect(Date.parse(avatarOidc.at) <= Date.now(), avatarOidc.at).toBe(true)
+    expect(providerMarkOf({ avatarOidc })).toEqual(avatarOidc)
+    expect(sanitizeAvatar({ avatarOidc: { at: soon } })).toEqual({ avatarOidc: { at: soon } })
   })
 
   it('a sound of one\'s own comes back from the zip too (it was exported, then skipped on import)', async () => {

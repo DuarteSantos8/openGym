@@ -822,12 +822,12 @@ paths:
             image/gif: { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { description: Sent from another site (`origin-mismatch`). }
-        '404': { description: No picture from the last provider sign-in (`no-picture`), or uploads are off. }
+        '404': { description: 'No picture from the last provider sign-in (`no-picture`), or uploads are off.' }
         '409': { description: Signed in as another account than `X-OpenGym-Account` names (`account-mismatch`). }
         '413': { description: Larger than `MEDIA_IMAGE_MAX_MB` (`media-too-large`). }
-        '415': { description: Not a JPEG, PNG, WebP or GIF (`media-type`). }
+        '415': { description: 'Not a JPEG, PNG, WebP or GIF (`media-type`).' }
         '422': { description: 'The address is refused and will stay so until the next sign-in: not https or a private address off the issuer''s origin, a redirect, or a 4xx from its host (`picture-refused`).' }
-        '429': { description: Over the hourly budget (`locked`, with `Retry-After`). }
+        '429': { description: 'Over the hourly budget (`locked`, with `Retry-After`).' }
         '502': { description: 'The address could not be fetched this time: a timeout, no connection, or a 5xx, 408 or 429 from its host (`picture-unavailable`).' }
 
   /api/logout/all:

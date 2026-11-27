@@ -76,9 +76,10 @@ function passedOver (S, seen, config) {
  *  last sync reached the server, so the profile in hand is the server's. */
 export function startProviderPicture (store, deps) {
   let timer = null
+  const shut = s => !s.ready || !s.user || s.sync?.held || s.sync?.offline || s.sync?.lastError
   const check = () => {
     const s = store.getState()
-    if (timer || !s.ready || !s.user || s.sync?.held || s.sync?.offline || s.sync?.lastError) return
+    if (timer || shut(s)) return
     const seen = s.user.oidcPicture
     if (passedOver(s.S, seen, s.config)) {
       const key = s.user.id + '|' + seen
@@ -92,7 +93,7 @@ export function startProviderPicture (store, deps) {
       return
     }
     if (!providerPictureDue(s.S, seen, s.config)) return
-    timer = setTimeout(() => { timer = null; takeProviderPicture(store, deps).catch(() => {}) }, 2000)
+    timer = setTimeout(() => { timer = null; if (!shut(store.getState())) takeProviderPicture(store, deps).catch(() => {}) }, 2000)
   }
   const unsub = store.subscribe(check)
   check()

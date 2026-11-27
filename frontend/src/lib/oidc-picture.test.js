@@ -163,6 +163,25 @@ describe('taking the provider\'s picture', () => {
     } finally { vi.useRealTimers() }
   })
 
+  it('a sign-in question or a failed sync that comes up while it waits holds the fetch too', async () => {
+    vi.useFakeTimers()
+    try {
+      for (const [blocked, open] of [[{ sync: { held: true } }, { sync: {} }], [{ sync: { lastError: { status: 503, code: 'http' } } }, { sync: { lastError: null } }]]) {
+        const store = fakeStore({ user: user(), S: {} })
+        const d = deps()
+        const stop = startProviderPicture(store, d)
+        await vi.advanceTimersByTimeAsync(1000)
+        store.set(blocked)
+        await vi.advanceTimersByTimeAsync(2500)
+        expect(d.apiBlob, JSON.stringify(blocked)).not.toHaveBeenCalled()
+        store.set(open)
+        await vi.advanceTimersByTimeAsync(2500)
+        expect(d.apiBlob, JSON.stringify(blocked)).toHaveBeenCalledTimes(1)
+        stop()
+      }
+    } finally { vi.useRealTimers() }
+  })
+
   it('waits for boot, for an open sign-in question and for a sync that reached the server', async () => {
     vi.useFakeTimers()
     try {

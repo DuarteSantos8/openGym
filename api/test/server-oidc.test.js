@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import http from 'node:http';
 import { boundPort, softPasskey } from './helpers.mjs';
 import { startMockOidc } from './mock-oidc.mjs';
@@ -23,21 +23,25 @@ const ORIGIN = 'http://localhost:8080';
 const b64u = b => Buffer.from(b).toString('base64url');
 const s256 = v => crypto.createHash('sha256').update(v).digest('base64url');
 
-async function setup(t, { env = {}, users = [], creds = [], mock: mockOpts = {} } = {}) {
+async function setup(t, { env = {}, users = [], creds = [], mock: mockOpts = {}, clock = false } = {}) {
   const mock = await startMockOidc(mockOpts);
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-oidc-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: typeof users === 'function' ? users(mock) : users, creds, subs: [], invites: [] }));
+  const clockFile = path.join(dataDir, 'clock');
+  if (clock) fs.writeFileSync(clockFile, '0');
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN, RP_ID: 'localhost', AUDIT_LOG: '1', TRUST_PROXY: '1',
       INVITE_ONLY: '', ADMIN_UIDS: '', FIRST_USER_ADMIN: '', PASSWORD_LOGIN: '',
       OIDC_ISSUER: mock.issuer, OIDC_CLIENT_ID: mock.clientId, OIDC_CLIENT_SECRET: mock.clientSecret,
-      OIDC_LABEL: 'VoidAuth', ...env
+      OIDC_LABEL: 'VoidAuth',
+      ...(clock ? { NODE_OPTIONS: '--import=' + pathToFileURL(path.join(API, 'test', 'clock-offset.mjs')), TEST_CLOCK_FILE: clockFile } : {}),
+      ...env
     }
   });
-  const h = { log: '', dataDir, mock };
+  const h = { log: '', dataDir, mock, setClock: ms => fs.writeFileSync(clockFile, String(ms)) };
   child.stdout.on('data', d => h.log += d);
   child.stderr.on('data', d => h.log += d);
   t.after(async () => { child.kill('SIGKILL'); await mock.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
@@ -576,6 +580,25 @@ test('PUT /api/data keeps the provider-picture mark when a write lacks it, carri
   assert.deepEqual(await mark(), { at: soon }, 'an hour ahead');
 });
 
+test('PUT /api/data: an older app\'s copy that loses the picture to a newer one leaves the mark with the picture kept', async t => {
+  const h = await setup(t);
+  const s = (await roundTrip(h)).session;
+  const T = d => `2026-10-${d}T09:00:00.000Z`;
+  const pic = c => ({ m: { kind: 'image', hash: c.repeat(64), mime: 'image/webp', size: 9000, width: 256, height: 256, at: 1 } });
+  const put = async body => (await fetch(h.api + '/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', Cookie: s }, body: JSON.stringify(body) })).status;
+  const data = async () => (await (await h.get('/api/data', { cookie: s })).json());
+  const write = async (state, from, stamped = false) => { await new Promise(r => setTimeout(r, 5)); return put({ state: { ...from.state, ...state }, baseRev: (await data()).rev, stamped }); };
+  assert.equal(await put({ state: { workouts: [], routines: [], _ts: 100, avatar: pic('c'), avatarOidc: { at: T(10), hash: 'c'.repeat(64) } } }), 200);
+  assert.equal(await write({ _ts: 200, avatar: pic('a'), avatarOidc: { at: T(11), hash: 'a'.repeat(64) } }, await data()), 200);
+  const read = await data();
+  const at = Date.now();
+  assert.equal(await write({ _ts: 300, avatar: pic('b'), avatarOidc: { at: T(12), hash: 'b'.repeat(64) }, edited: { ...read.state.edited, avatar: at, avatarOidc: at } }, read, true), 200);
+  assert.equal(await write({ _ts: 400 }, read), 200);
+  const { state } = await data();
+  assert.equal(state.avatar.m.hash, 'b'.repeat(64));
+  assert.deepEqual(state.avatarOidc, { at: T(12), hash: 'b'.repeat(64) });
+});
+
 test('PUT /api/data takes the mark of the account\'s last provider sign-in even ahead of the clock, and no later time', async t => {
   const ana = softPasskey(ORIGIN);
   const ahead = days => new Date(Date.now() + days * 864e5).toISOString();
@@ -627,6 +650,28 @@ test('a sign-in after the server clock was set back still comes after the last o
   await roundTrip(h);
   h.mock.next = { ...plain, picture: h.mock.issuer + '/c.png' };
   assert.ok((await meOf(h, (await roundTrip(h)).session)).oidcPicture > second, 'a sign-in without a picture in between');
+});
+
+test('a link from Settings that finds its profile linked meanwhile keeps the last sign-in\'s time, after the clock was set back too', async t => {
+  const key = softPasskey(ORIGIN);
+  const users = [{ id: 'u_bo', name: 'Bo', created: new Date().toISOString(), email: 'bo@example.com' }];
+  const h = await setup(t, { env: { OIDC_EMAIL_LINKING: '1' }, users, creds: [key.row('u_bo')], clock: true });
+  h.setClock(3 * 864e5);
+  const opts = await h.post('/api/login/options', {});
+  const bo = (await h.post('/api/login/verify', { cid: opts.body.cid, credential: key.assertion(opts.body.options.challenge) })).cookie;
+  const step = await h.post('/api/login/options', {});
+  const link = await h.post('/api/oidc/link', { cid: step.body.cid, credential: key.assertion(step.body.options.challenge) }, { cookie: bo });
+  assert.equal(link.status, 200);
+  h.mock.next = { sub: 'bo-at-idp', name: 'Bo', email: 'bo@example.com', email_verified: true, groups: ['opengym'], picture: h.mock.issuer + '/a.png' };
+  const ahead = Math.floor(Date.now() / 1000) + 3 * 86400;
+  h.mock.tamper = { claims: { iat: ahead, auth_time: ahead, exp: ahead + 300 } };
+  assert.ok((await roundTrip(h)).session, 'linked by e-mail in another tab');
+  const first = h.db().users[0].oidc.pictureAt;
+  h.mock.tamper = {};
+  h.setClock(0);
+  const r = await roundTrip(h, { query: link.body.url.slice('/api/oidc/start'.length), cookie: bo });
+  assert.equal(landed(r).get('oidc'), 'linked');
+  assert.ok(h.db().users[0].oidc.pictureAt > first, h.db().users[0].oidc.pictureAt);
 });
 
 test('confirming it is you at the provider leaves the picture as the last sign-in left it', async t => {

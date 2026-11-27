@@ -243,7 +243,7 @@ export function oidcRoutes(d) {
         const { roles, allowed } = accessOf(claims, cfg);
         if (!allowed) { audit(req, 'auth.oidc.denied', { ok: false, user, msg: 'group' }); return finishError(res, flow, 'group'); }
         // Confirming it is you is no sign-in: the picture stays as the last sign-in left it.
-        if (flow.mode === 'link') { user.oidc = identity(claims); notePicture(user, claims); audit(req, 'auth.oidc.link', { user }); }
+        if (flow.mode === 'link') { user.oidc = { ...identity(claims), ...(user.oidc?.pictureAt ? { pictureAt: user.oidc.pictureAt } : {}) }; notePicture(user, claims); audit(req, 'auth.oidc.link', { user }); }
         else audit(req, 'auth.oidc.reauth', { user });
         applyRoles(user, roles);
         saveDb();

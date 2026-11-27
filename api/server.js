@@ -565,9 +565,12 @@ function commitState(uid, cur, state, { overRead = false, stamped = false } = {}
   // undone by the next device that merges (sync-stamps.js).
   // A document nested too deep to compare is the bad request the stringify below refuses too.
   const report = {};
-  if (keepAvatarMark(cur, state, db.users.find(u => u.id === uid)?.oidc?.pictureAt)) report.changed = true;
+  const signedIn = db.users.find(u => u.id === uid)?.oidc?.pictureAt;
+  if (keepAvatarMark(cur, state, signedIn)) report.changed = true;
   try { stampPut(cur, state, { overRead, stamped, report }); }
   catch (e) { if (e instanceof RangeError) return { status: 400, body: { error: 'invalid state' } }; throw e; }
+  // stampPut can put the stored picture back over an older app's; the mark then follows it.
+  if (keepAvatarMark(cur, state, signedIn)) report.changed = true;
   state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
   // A writer that does not stamp (an older app) takes the revision it is told for the document it
   // sent, and only reads the profile again once the revision moves. When the server put back

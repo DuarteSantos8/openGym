@@ -111,8 +111,11 @@ export function sanitizeAvatar (state) {
   }
   if ('avatarOidc' in state) {
     const mark = providerMarkOf(state)
+    // A time days ahead (an edited file, a server whose clock ran ahead) would hold off every later
+    // sign-in here, and the server drops it, so the device would keep it alone.
+    const at = mark && Date.parse(mark.at) > Date.now() + 864e5 ? new Date().toISOString() : mark?.at
     if (!mark) delete state.avatarOidc
-    else state.avatarOidc = mark.hash ? mark : { at: mark.at }
+    else state.avatarOidc = mark.hash ? { at, hash: mark.hash } : { at }
   }
   return state
 }
