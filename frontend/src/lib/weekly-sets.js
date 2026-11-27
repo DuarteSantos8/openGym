@@ -1,5 +1,6 @@
 import { DEFAULT_TARGETS, personalTargetOf, roundSets, statusOf } from './muscle-targets.js'
 import { circuitOf } from './circuit.js'
+import { exerciseOf, isCardio } from './exercises.js'
 import { modeOf, supersetUnits } from './history.js'
 import { loadOf, loadOfWeeklyPlan, MUSCLES } from './muscles.js'
 
@@ -15,12 +16,14 @@ function strengthLoadOfRoutine(routine, exercises) {
   const slots = routine.ex || []
   return loadOf(supersetUnits(slots).flatMap(unit => {
     const circuit = circuitOf(slots, unit)
-    return unit.map((index, station) => {
+    return unit.flatMap((index, station) => {
       const slot = slots[index]
+      const ex = exercises[slot.id] || slot
+      if (isCardio(exercises[slot.id] || exerciseOf(slot.id) || slot) || modeOf(slot) === 'cardio') return []
       // The saved EMOM row count is capacity. The player visits each station once per
       // rotation in order, stopping at the minute limit even partway through a rotation.
       const sets = circuit?.mode === 'emom' ? Math.ceil((circuit.count - station) / unit.length) : (slot.sets || 1)
-      return { id: slot.id, ex: exercises[slot.id] || slot, sets: modeOf(slot) === 'cardio' ? 0 : sets }
+      return [{ id: slot.id, ex, sets }]
     })
   }))
 }

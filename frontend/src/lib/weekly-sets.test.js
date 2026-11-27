@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defaultCircuit, roundsPerStation, setCircuit, stationsOf, stepAt, stepCount } from './circuit.js'
+import { isCardio } from './exercises.js'
 import { modeOf } from './history.js'
 import { loadOfWeeklyPlan } from './muscles.js'
 import { buildSessionEntries } from './session-start.js'
@@ -53,11 +54,17 @@ describe('routine builder weekly sets', () => {
     expect(counts(state)).toEqual(expected)
   })
 
-  it('keeps cardio in EMOM rotation order without crediting it, and counts timed strength work', () => {
+  it.each(['time', 'reps'])('excludes catalogue and custom cardio configured as %s without shifting EMOM stations', mode => {
+    const customBike = { id: 'bike', custom: true, bp: 'cardio', primaries: ['quadriceps'] }
     const routine = timedRoutine([
-      { id: '0685' }, { id: 'press', mode: 'time', sec: 20 }, { id: 'curl', reps: 8 },
-    ], { mode: 'emom', every: 60, count: 2 })
-    expect(counts(scheduled(routine))).toEqual({ chest: 1, triceps: 0.4 })
+      { id: '0685', mode }, { id: customBike.id, mode }, { id: 'fly', mode: 'cardio' },
+      { id: 'press', mode: 'time', sec: 20 }, { id: 'curl', reps: 8 },
+    ], { mode: 'emom', every: 60, count: 4 })
+    const state = scheduled(routine)
+    state.customEx = [...state.customEx, customBike]
+    expect(isCardio('0685')).toBe(true)
+    expect(isCardio(customBike)).toBe(true)
+    expect(counts(state)).toEqual({ chest: 1, triceps: 0.4 })
   })
 
   it('counts the three-day recurring plan, excludes warm-ups and dated overrides, and leaves the plan unchanged', () => {
