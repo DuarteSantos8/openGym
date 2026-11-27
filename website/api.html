@@ -636,7 +636,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Sign out (this device)</span>
   </summary>
   <div class="ep-body">
-<p>Clears the session cookie. Always succeeds: an invalid or missing session is a no-op. The token itself stays cryptographically valid until it expires; use /api/logout/all to revoke tokens.</p>
+<p>Revokes the browser session presented in the request. An invalid or missing session is a no-op. Other browser and mobile sessions stay signed in. Use /api/logout/all to revoke every session for the account.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 
@@ -644,7 +644,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Cookie cleared.<span class="r-sig">{ ok: boolean, provider_logout: string <span class="p-hint">(uri)</span> } &middot; sets <code>Set-Cookie</code></span></span>
+    <span class="p-desc">Signed out.<span class="r-sig">{ ok: boolean, provider_logout: string <span class="p-hint">(uri)</span> }</span></span>
   </div>
     </div>
   </div>

@@ -766,17 +766,13 @@ paths:
       operationId: logout
       summary: Sign out (this device)
       description: >-
-        Clears the session cookie. Always succeeds: an invalid or missing session is
-        a no-op. The token itself stays cryptographically valid until it expires; use
-        /api/logout/all to revoke tokens.
+        Revokes the browser session presented in the request. An invalid or missing
+        session is a no-op. Other browser and mobile sessions stay signed in.
+        Use /api/logout/all to revoke every session for the account.
       security: []
       responses:
         '200':
-          description: Cookie cleared.
-          headers:
-            Set-Cookie:
-              description: Expires the session cookie(s).
-              schema: { type: string }
+          description: Signed out.
           content:
             application/json:
               schema:

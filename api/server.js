@@ -739,8 +739,11 @@ const sessionVersion = user => user.sv || 0;
 // sign-in there a few minutes ago counts as proof for a change to a way in (proveOwner).
 function makeSession(user, kind = 'b', at = null) {
   const exp = Date.now() + SESSION_DAYS * 86400000;
-  return sign(user.id + ':' + exp + ':' + sessionVersion(user) + ':' + kind + (at ? ':' + Math.floor(at).toString(36) : ''));
+  const proof = at ? Math.floor(at).toString(36) : '';
+  const extra = kind === 'c' ? [proof, crypto.randomBytes(16).toString('hex')] : (at ? [proof] : []);
+  return sign([user.id, exp, sessionVersion(user), kind, ...extra].join(':'));
 }
+const sessionDigest = token => crypto.createHash('sha256').update(token).digest('hex');
 // With the __Host- prefix the *browser* guarantees the cookie is host-only (no Domain attribute
 // is even allowed) — which is what stops a sibling subdomain, e.g. anything-else.example.com
 // against gym.example.com, from planting a second session cookie for the shared parent domain
@@ -800,6 +803,7 @@ function sessionUser(tok) {
   // payload (it still had to pass the HMAC, so this is belt-and-braces) and is refused outright.
   const claimed = ver === undefined ? 0 : Number(ver);
   if (!Number.isInteger(claimed) || claimed !== sessionVersion(user)) return null;
+  if (user.endedSessions?.[sessionDigest(tok)]) return null;
   return { user, exp: +exp, kind: kind || null, at: at ? parseInt(at, 36) || null : null };
 }
 function readSession(req) {
@@ -2801,14 +2805,23 @@ const routes = {
     json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
-  // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
-  // A logout with no valid cookie is a no-op and isn't worth an entry.
+  // An expired Set-Cookie could arrive after another tab signs in. Revoke only the browser
+  // credential this request carried, durably, without overwriting a newer cookie.
   'POST /api/logout': async (req, res) => {
-    const user = readSession(req);
+    const session = sessionOf(req);
+    const user = session?.user;
+    if (session && !session.bearer) {
+      const now = Date.now();
+      const ended = Object.fromEntries(Object.entries(user.endedSessions || {}).filter(([, exp]) => exp >= now));
+      ended[sessionDigest(cookieToken(req))] = session.exp;
+      const previous = user.endedSessions;
+      user.endedSessions = ended;
+      try { saveDb(); } catch (error) { user.endedSessions = previous; throw error; }
+    }
     if (user) audit(req, 'auth.logout', { user });
     // OIDC_LOGOUT: where the browser goes next to end the provider's session too.
     const out = user && oidcApi ? oidcApi.logoutUrl(user) : null;
-    json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) }, { 'Set-Cookie': clearCookie });
+    json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) });
   },
 
   // "Sign out everywhere" — bumps this user's session version, which invalidates every cookie

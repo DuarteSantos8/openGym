@@ -12,6 +12,7 @@ const { toast, stopRest, abandonWork } = vi.hoisted(() => ({ toast: vi.fn(), sto
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast, stopRest, abandonWork }) } }))
 
 import { api } from '../lib/api.js'
+import { logoutOwed } from '../lib/cookie-cleanup.js'
 import { DEF, useStore } from './useStore.js'
 
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -383,7 +384,8 @@ describe('a sign-out the server did not answer', () => {
     api.mockRejectedValue(netError())
     expect(await useStore.getState().signOut()).toEqual({ owed: false })
     expect(useStore.getState().user).toBeNull()
-    expect(localStorage.getItem('gym_logout_owed')).toBe('1')
+    document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0' // browser restart
+    expect(logoutOwed()).toBe(true)
 
     // Still unreachable: the old session is not even asked about.
     api.mockReset()
@@ -398,7 +400,7 @@ describe('a sign-out the server did not answer', () => {
     expect(paths()).toEqual(['GET /api/config', 'POST /api/logout'])
     expect(useStore.getState().user).toBeNull()
     expect(useStore.getState().ready).toBe(true)
-    expect(localStorage.getItem('gym_logout_owed')).toBe('1')
+    expect(logoutOwed()).toBe(true)
 
     // The server answers again: the logout goes first, and /api/me finds nobody.
     api.mockReset()
@@ -412,16 +414,18 @@ describe('a sign-out the server did not answer', () => {
     await useStore.getState().boot()
     expect(paths()).toEqual(['GET /api/config', 'POST /api/logout', 'GET /api/me'])
     expect(useStore.getState().user).toBeNull()
-    expect(localStorage.getItem('gym_logout_owed')).toBeNull()
+    document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0'
+    expect(logoutOwed()).toBe(false)
   })
 
   it('signing in again replaces the cookie a failed sign-out left behind, so the next boot asks /api/me as usual', async () => {
     await inStep()
     api.mockRejectedValue(netError())
     await useStore.getState().signOut()
-    expect(localStorage.getItem('gym_logout_owed')).toBe('1')
+    expect(logoutOwed()).toBe(true)
     useStore.getState().setUser(USER)   // a passkey or password sign-in
-    expect(localStorage.getItem('gym_logout_owed')).toBeNull()
+    document.cookie = 'gym_logout_owed=; Path=/; Max-Age=0'
+    expect(logoutOwed()).toBe(false)
   })
 })
 

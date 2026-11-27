@@ -72,6 +72,35 @@ async function roundTrip(h, { query = '', cookie, ip, edit, flowCookie } = {}) {
 }
 const landed = r => new URL(r.location, 'http://x').searchParams;
 
+test('ordinary logout ends only its incoming session and cannot expire a later browser login', async t => {
+  const h = await setup(t);
+  const first = await roundTrip(h);
+  const second = await roundTrip(h);
+  const me = cookie => h.get('/api/me', { cookie }).then(r => r.status);
+  const logout = cookie => fetch(h.api + '/api/logout', { method: 'POST', headers: { Cookie: cookie, Origin: ORIGIN } });
+  const response = await logout(first.session);
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.headers.getSetCookie(), [], 'a delayed response must leave the browser cookie alone');
+  assert.equal(await me(first.session), 401);
+  assert.equal(await me(second.session), 200);
+  assert.deepEqual((await logout(first.session)).headers.getSetCookie(), [], 'a retry must also leave the new cookie alone');
+  const token = first.session.slice(first.session.indexOf('=') + 1);
+  assert.equal((await fetch(h.api + '/api/me', { headers: { Authorization: 'Bearer ' + token } })).status, 401);
+
+  // The random generation makes even same-clock sign-ins distinct; normalization here
+  // removes time, user and auth_time so the assertion cannot pass just because time advanced.
+  const generation = cookie => cookie.split('.')[0].split(':')[5];
+  assert.ok(generation(first.session));
+  assert.notEqual(generation(first.session), generation(second.session));
+  const uid = h.db().users[0].id;
+  const legacyPayload = uid + ':' + (Date.now() + 3600000) + ':0';
+  const legacy = 'gymsid=' + legacyPayload + '.' + crypto.createHmac('sha256', SECRET).update(legacyPayload).digest('base64url');
+  assert.equal(await me(legacy), 200);
+  assert.equal((await logout(legacy)).status, 200);
+  assert.equal(await me(legacy), 401);
+  assert.equal(await me(second.session), 200);
+});
+
 test('config: the provider button is public, and so is OIDC_ONLY', async t => {
   const h = await setup(t, { env: { OIDC_ONLY: '1' } });
   const cfg = await (await h.get('/api/config')).json();
@@ -341,6 +370,8 @@ test('phone app: exact return address, and the code is worth nothing without the
   assert.equal(ok.cookie, null);
   const me = await fetch(h.api + '/api/me', { headers: { Authorization: 'Bearer ' + ok.body.token } });
   assert.equal((await me.json()).user.name, 'Ana');
+  const proof = await h.post('/api/pair/create', { provider: true }, { headers: { Authorization: 'Bearer ' + ok.body.token } });
+  assert.equal(proof.status, 200, 'a fresh provider sign-in proves ownership on the phone');
 });
 
 test('phone app: a refusal goes back to the app with its reason and the app state', async t => {
