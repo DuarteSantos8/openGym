@@ -101,6 +101,15 @@ describe('updateRoutine', () => {
     expect(again.created).toEqual([])
     expect(S.customEx).toHaveLength(1)
   })
+  test('a name longer than the 80 characters kept is still one exercise, in one call and the next', () => {
+    const S = base()
+    const long = 'Tindeq ' + 'x'.repeat(100)
+    const r = updateRoutine(S, 'r1', { add_exercises: [{ exercise: long, create_custom: true, body_part: 'lower arms' }, { exercise: long, create_custom: true }] })
+    expect(r.created).toHaveLength(1)
+    expect(updateRoutine(S, 'r1', { add_exercises: [{ exercise: long, create_custom: true }] }).created).toEqual([])
+    expect(S.customEx).toHaveLength(1)
+    expect(S.routines[0].ex.slice(-3).map(e => e.id)).toEqual(Array(3).fill(S.customEx[0].id))
+  })
 })
 
 describe('removeRoutine', () => {

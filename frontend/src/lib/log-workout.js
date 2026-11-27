@@ -56,7 +56,8 @@ export function resolveExercise(S, ref) {
   // Own keys only: `constructor` or `__proto__` is on every object and names no exercise.
   const canon = canonicalExId(text)
   if (Object.hasOwn(EXIDX, text) && Object.hasOwn(EXIDX, canon)) return { id: canon, name: EXIDX[canon].n }
-  const named = customs.filter(c => nameKey(c.n) === nameKey(text))
+  // Compared as stored: a made exercise keeps the first 80 characters of its name.
+  const named = customs.filter(c => nameKey(c.n) === nameKey(text.slice(0, 80)))
   if (named.length === 1) return { id: named[0].id, name: named[0].n, custom: true }
   if (named.length > 1) {
     return { problem: 'several of your own exercises have this name; pass one id', candidates: named.map(c => ({ id: c.id, name: c.n })) }
