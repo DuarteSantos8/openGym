@@ -6,6 +6,7 @@ D3 status: the short Beginner Settings root and reversible full-list preference 
 ## Status on November 26, 2026
 
 A4 is prepared as a [domain cutover checklist](CLOUD-SERVER.md#production-address-cutover-a4). The owner has not selected or activated a production address.
+Nutrition account isolation is prepared. Shared-device tests cover expired sessions, profile switches and delayed pairing. Hosted checks remain open.
 
 A5 sign-in retry (#133) passed the local two-tab delayed logout check against the real API and a test issuer. Owner verification on phone and desktop is pending.
 
@@ -161,7 +162,7 @@ The repo's own: one branch `next/<EPxx-Tyy-slug>` from `origin/main`, tests firs
 
 | ID | Task | Status |
 |---|---|---|
-| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | E5a (rig and squat) merged in #130. E5b (eight original family examples; [matrix and evidence](evidence/EP26-T01/patterns.md)) is prepared locally. Independent code, named movement and native-language review remain open |
+| EP26-T01 | 3D mannequin demos per movement pattern (own work, licence-clean: also the answer to ADR 0009) | E5a (rig and squat) merged in #130. E5b (eight original family examples; [matrix and evidence](evidence/EP26-T01/patterns.md)) merged in #136. Phone framing and offline playback have follow-up coverage. Named movement and native-language review remain open |
 | EP26-T02 | "Mistake and fix" ghost overlay on the mannequin | open |
 | EP26-T03 | Guided workout: one card at a time, spoken cues, “Too hard” swaps to the easier version | prepared in English; session layout works offline with the existing form guides. Device speech and native-language review remain open |
 | EP26-T04 | Ladder skill tree | Prepared for review: Learn opens existing ladders as an ordered, read-only history view. Highest logged step and all earlier steps are marked reached. [Local evidence](evidence/EP26-T04/README.md); independent and native-language review pending. |
@@ -234,3 +235,7 @@ Self-grading cannot reach 10. A 10 needs people: five first-time lifters complet
 | UI/UX and fun | 5 | Consistent with the app and accessible, but none of Phase 4 exists: no mannequin, no Coach Mode, no skill tree |
 | Feature completeness (all in one) | 5 | 26 of 53 tasks done (5 of those are decisions), 8 in part. Open: warm-up sessions, guidance beyond the starter plans, all of Phase 4, sign-in and the paywall |
 | Technical quality and backend | 7 | A real project runs the schema, row level security, sign-in, export and deletion, and the app's client is tested against it. Still missing: email that reaches real people, the OIDC hand-off to the API, payments, and a deployed cloud build |
+
+### EP27-T01 Cloud ladder coverage (11.02h)
+
+The ten-workout Cloud account journey in `frontend/e2e/cloud/account.e2e.mjs` checks the push-up ladder on the original guest device, after linking and reloading, and on a second linked browser. After sign-out, the second browser returns to its empty device ladder and the API refuses the old session. This uses a local linked API and a simulated issuer. The device-only offline and accessibility checks remain in `frontend/e2e/learn-ladders.e2e.mjs`.
