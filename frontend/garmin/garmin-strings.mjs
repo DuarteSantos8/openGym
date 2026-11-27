@@ -27,7 +27,7 @@ const LANGS = {
   ita: ['values-it', 'it'], por: ['values-pt', 'pt'], pol: ['values-pl', 'pl'], hun: ['values-hu', 'hu'],
   tur: ['values-tr', 'tr'], rus: ['values-ru', 'ru'], ukr: ['values-uk', 'uk'], ara: ['values-ar', 'ar'],
   tha: ['values-th', 'th'], kor: ['values-ko', 'ko'], swe: ['values-sv', 'sv'], zhs: ['values-zh', 'zh'],
-  zht: ['values-zh-rTW', 'zh-TW'], ces: ['values-cs', 'cs'], ind: ['values-id', 'id'], lit: ['values-lt', 'lt'], dan: ['values-da', 'da'],
+  zht: ['values-zh-rTW', 'zh-TW'], ces: ['values-cs', 'cs'], ind: ['values-id', 'id'], lit: ['values-lt', 'lt'], dan: ['values-da', 'da'], fin: ['values-fi', 'fi'],
   vie: ['values-vi', 'vi'],
 }
 
@@ -128,6 +128,9 @@ const OWN = {
 
 // Danish (#1039).
 for (const [k, v] of Object.entries({"metrics": "Målinger", "next_on_phone": "Næste øvelse er på vej fra telefonen.", "waiting_phone": "Venter på telefonen. Åbn openGym der, hvis det tager lidt tid.", "record_gc": "Gem også i Garmin Connect"})) OWN[k].dan = v
+
+// Finnish: the lines only this watch says (translated with Gemini, reviewed by a native speaker).
+for (const [k, v] of Object.entries({"app_name":"openGym","metrics":"Mittarit","open_phone_once":"Avaa puhelimen openGymissä Asetukset ja Garmin.","next_on_phone":"Seuraava liike on tulossa puhelimesta.","waiting_phone":"Odotetaan puhelinta. Avaa openGym siellä, jos kestää.","record_gc":"Tallenna myös Garmin Connectiin"})) OWN[k].fin = v
 
 /* ---------- reading the sources ---------- */
 

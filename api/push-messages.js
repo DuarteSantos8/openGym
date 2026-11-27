@@ -34,6 +34,14 @@ const COPY = {
     dayRoutineSuffix: 'dnes',
     dayBody: 'Je to v plánu. Jdeme na to 💪',
   },
+  fi: {
+    restTitle: 'Tauko ohi 💪',
+    restBody: 'Seuraavan sarjan aika.',
+    testBody: 'Testi-ilmoitus ✅ Tältä ilmoitukset näyttävät.',
+    dayFallbackTitle: 'Treeni suunnitelmassa tänään',
+    dayRoutineSuffix: 'tänään',
+    dayBody: 'Se on suunnitelmassasi. Mennään 💪',
+  },
 };
 
 const copyFor = lang => COPY[lang] || COPY.en;

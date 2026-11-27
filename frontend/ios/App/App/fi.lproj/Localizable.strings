@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Aloita treeni";
+"Starts today’s planned workout, or opens the one already running." = "Aloittaa tämän päivän suunnitellun treenin tai avaa jo käynnissä olevan.";
+"Log weight" = "Kirjaa paino";
+"Logs your body weight without opening openGym." = "Kirjaa kehonpainosi avaamatta openGymiä.";
+"Weight" = "Paino";
+"What’s your weight?" = "Paljonko painat?";
+"Today’s workout" = "Päivän treeni";
+"Tells you what’s planned for today." = "Kertoo, mitä tälle päivälle on suunniteltu.";
+"Week streak" = "Viikkoputki";
+"Tells you how many weeks in a row you trained." = "Kertoo, montako viikkoa peräkkäin olet treenannut.";
+"Open openGym once, then ask me again." = "Avaa openGym kerran ja kysy sitten uudelleen.";
+"You’re in the middle of %@." = "Treeni %@ on kesken.";
+"You’re in the middle of a workout." = "Sinulla on treeni kesken.";
+"Your workout" = "Treenisi";
+"%@ is done for today. Nice work." = "%@ on tältä päivältä tehty. Hyvää työtä.";
+"Today: %@." = "Tänään: %@.";
+"Rest day today. Next up: %@ on %@." = "Tänään on lepopäivä. Seuraavaksi: %@ (%@).";
+"Nothing planned today." = "Tälle päivälle ei ole suunniteltu mitään.";
+"No streak yet. One workout this week starts one." = "Putkea ei vielä ole. Yksi treeni tällä viikolla aloittaa sen.";
+"Week streak: %d. This week already counts." = "Viikkoputki: %d. Tämä viikko on jo laskettu mukaan.";
+"Week streak: %d. One workout this week keeps it going." = "Viikkoputki: %d. Yksi treeni tällä viikolla pitää sen käynnissä.";
+"That doesn’t sound like a weight. Try again?" = "Tuo ei kuulosta painolta. Yritetäänkö uudelleen?";
+"Logged %@." = "Kirjattu: %@.";

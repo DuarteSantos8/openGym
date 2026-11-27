@@ -33,6 +33,10 @@ export const WRAPPED_COPY = {
     "title": "{0} شما در openGym آماده است 🎉",
     "body": "تمرینات، رکوردها و یک تست شخصیت خیلی صادقانه. بزنید تا سالتان را ببینید."
   },
+  "fi": {
+    "title": "openGym-vuosikatsauksesi {0} on valmis 🎉",
+    "body": "Treenit, ennätykset ja yksi hyvin rehellinen persoonallisuustesti. Napauta ja katso vuotesi."
+  },
   "fr": {
     "title": "Ton année {0} sur openGym est prête 🎉",
     "body": "Séances, records et un test de personnalité très honnête. Touche pour voir ton année."

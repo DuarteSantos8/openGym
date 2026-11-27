@@ -59,7 +59,7 @@ describe('the sentences the names are built from', () => {
     'Decrease', 'Increase', 'Done', 'Remove', 'Delete', 'Copy set', 'Details', 'Edit', 'More', 'Plan', 'Unpair', 'Superset {0} / {1}', 'Body part', 'Exercise type', 'Weight stack', 'Estimated 1RM']
   const real = Object.keys(LANGS).filter(c => c !== 'en' && !DERIVED_LOCALES[c])
   it('are in every language pack, placeholders intact', () => {
-    expect(real).toHaveLength(25)
+    expect(real).toHaveLength(26)
     const marks = s => [...String(s).matchAll(/\{\d+\}/g)].map(m => m[0]).sort().join(' ')
     for (const code of real) {
       for (const key of KEYS) {

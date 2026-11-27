@@ -15,8 +15,8 @@ export const GOALS = ['strength', 'muscle', 'general', 'fatloss', 'endurance']
 export const LEVELS = ['beginner', 'intermediate', 'advanced']
 export const SPLITS = ['full-body', 'upper-lower', 'ppl', 'push-pull', 'bro-split', 'other']
 export const LICENSES = ['CC-BY-4.0', 'CC-BY-SA-4.0', 'CC0-1.0']
-export const LANGS = ['en', 'ar', 'bn', 'cs', 'de', 'es', 'fa', 'fr', 'hi', 'hu', 'it', 'ko', 'pl', 'pt', 'pt-BR', 'ru', 'sv', 'th', 'tr', 'uk', 'zh', 'zh-TW']
-export const LANG_NAMES = { en: 'English', ar: 'العربية', bn: 'বাংলা', cs: 'Čeština', de: 'Deutsch', es: 'Español', fa: 'فارسی', fr: 'Français', hi: 'हिन्दी', hu: 'Magyar', it: 'Italiano', ko: '한국어', pl: 'Polski', pt: 'Português', 'pt-BR': 'Português (Brasil)', ru: 'Русский', sv: 'Svenska', th: 'ไทย', tr: 'Türkçe', uk: 'Українська', zh: '中文', 'zh-TW': '中文（台灣）' }
+export const LANGS = ['en', 'ar', 'bn', 'cs', 'de', 'es', 'fa', 'fi', 'fr', 'hi', 'hu', 'it', 'ko', 'pl', 'pt', 'pt-BR', 'ru', 'sv', 'th', 'tr', 'uk', 'zh', 'zh-TW']
+export const LANG_NAMES = { en: 'English', ar: 'العربية', bn: 'বাংলা', cs: 'Čeština', de: 'Deutsch', es: 'Español', fa: 'فارسی', fi: 'Suomi', fr: 'Français', hi: 'हिन्दी', hu: 'Magyar', it: 'Italiano', ko: '한국어', pl: 'Polski', pt: 'Português', 'pt-BR': 'Português (Brasil)', ru: 'Русский', sv: 'Svenska', th: 'ไทย', tr: 'Türkçe', uk: 'Українська', zh: '中文', 'zh-TW': '中文（台灣）' }
 export const LIMITS = {
   title: 80, author: 60, description: 400, about: 1500, sessionName: 40, sessionNote: 200, exNote: 160,
   tags: 8, tag: 24, sessions: 7, exercises: 20, setsPerSession: 40,

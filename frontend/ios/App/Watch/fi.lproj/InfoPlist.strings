@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, fi: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "openGym näyttää sykkeesi treenin aikana ja sarjojen vieressä sekä määrittää sykealueesi syntymäaikasi avulla.";
+"NSHealthUpdateUsageDescription" = "openGym tallentaa treenisi Apple Terveyteen, kun otat sen käyttöön.";

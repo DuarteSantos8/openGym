@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const out = join(dirname(fileURLToPath(import.meta.url)), '..', 'App', 'OpenGymWidgets')
-const LPROJ = ['de', 'fr', 'es', 'it', 'pt-PT', 'pt-BR', 'pl', 'hu', 'tr', 'ru', 'uk', 'ar', 'hi', 'bn', 'th', 'ko', 'zh-Hans', 'zh-Hant']
+const LPROJ = ['de', 'fr', 'es', 'it', 'pt-PT', 'pt-BR', 'pl', 'hu', 'tr', 'ru', 'uk', 'ar', 'hi', 'bn', 'th', 'ko', 'zh-Hans', 'zh-Hant', 'fi']
 
 // The Swift source's key → its words per .lproj.
 export const STRINGS = {
@@ -277,6 +277,9 @@ export const STRINGS = {
     'zh-Hant': "挑戰",
   },
 }
+
+// Finnish: the lines only this widget says (translated with Gemini, reviewed by a native speaker).
+for (const [k, v] of Object.entries({"Today’s workout":"Päivän treeni","Your plan for today, the week ahead and your streak.":"Tämän päivän ja tulevan viikon suunnitelma sekä treeniputkesi.","Streak":"Putki","Open openGym once to see your plan here.":"Avaa openGym kerran, niin näet suunnitelmasi tässä.","What to show":"Mitä näytetään","And beside it":"Ja sen vieressä","Week streak":"Viikkoputki","Weight goal":"Painotavoite","This week":"Tämä viikko","Next workout":"Seuraava treeni","Records":"Ennätykset","Volume":"Volyymi","Your streak, weight goal, week, next workout, records or volume. You pick.":"Putkesi, painotavoite, viikko, seuraava treeni, ennätykset tai volyymi. Sinä valitset.","Pick what the widget shows.":"Valitse, mitä widget näyttää.","Challenges":"Haasteet","Weeks in a row with a workout.":"Peräkkäisiä treeniviikkoja."})) STRINGS[k].fi = v
 
 const esc = s => s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

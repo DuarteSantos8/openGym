@@ -233,6 +233,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "fi": {
+    "friendly": {
+      "title": "Kaikki hyvin?",
+      "lines": [
+        "{0} odottaa yhä. Mikä meininki?",
+        "Jäikö {0} tänään väliin? Lyhytkin treenikerta huomenna lasketaan.",
+        "Rankka päivä? {0} kyllä odottaa. Huomenna on uusi alku.",
+        "Hei, {0} jäi tänään tekemättä. Kaikki ok?"
+      ]
+    },
+    "guilt": {
+      "title": "Ikävä sinua",
+      "lines": [
+        "{0} odotti ovella koko illan. Juuri sinua.",
+        "Levytanko kyseli tänään perääsi. En tiennyt mitä sanoa.",
+        "Sanoinko jotain väärin? {0} kaipaa sinua.",
+        "Varasin sinulle paikan penkiltä. Se on yhä tyhjä."
+      ]
+    },
+    "drill": {
+      "title": "Huomio, alokas!",
+      "lines": [
+        "Tuloksesi pakkaavat jo laukkujaan. Huomenna {0}, ei tekosyitä!",
+        "{0} ei tee itseään, alokas. Liikettä niveliin!",
+        "Tekosyyt eivät rautaa nosta. Ilmoittaudu huomenna: {0}!",
+        "Lihaksesi tekivät sinusta katoamisilmoituksen. Ilmesty paikalle: {0}!"
+      ]
+    }
+  },
   "fr": {
     "friendly": {
       "title": "Tout va bien ?",

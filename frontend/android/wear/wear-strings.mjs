@@ -30,6 +30,7 @@ const LANGS = {
   cs: [['values-cs'], 'cs'], fa: [['values-fa'], 'fa'], id: [['values-in', 'values-id'], 'id'],
   lt: [['values-lt'], 'lt'], vi: [['values-vi'], 'vi'],
   da: [['values-da'], 'da'],
+  fi: [['values-fi'], 'fi'],
 }
 
 // resource name → the app's key, for words the app already has.
@@ -254,6 +255,9 @@ for (const [k, v] of Object.entries({"open_phone_once": "Åbn openGym på telefo
 // Localizable.strings having them (#1100).
 OWN.max = {"en": "max", "de": "max", "fr": "max", "es": "máx.", "it": "max", "pt": "máx.", "pt-BR": "máx.", "pl": "maks.", "hu": "max.", "tr": "maks.", "ru": "макс.", "uk": "макс.", "ar": "الأقصى", "hi": "अधिकतम", "bn": "সর্বোচ্চ", "th": "สูงสุด", "ko": "최대", "sv": "max", "zh": "最高", "zh-TW": "最高", "cs": "max", "fa": "بیشینه", "id": "maks", "lt": "maks.", "vi": "tối đa", "da": "maks."}
 OWN.min = {"en": "min", "de": "min", "fr": "min", "es": "mín.", "it": "min", "pt": "mín.", "pt-BR": "mín.", "pl": "min.", "hu": "min.", "tr": "min.", "ru": "мин.", "uk": "мін.", "ar": "الأدنى", "hi": "न्यूनतम", "bn": "সর্বনিম্ন", "th": "ต่ำสุด", "ko": "최소", "sv": "min", "zh": "最低", "zh-TW": "最低", "cs": "min", "fa": "کمینه", "id": "min", "lt": "min.", "vi": "tối thiểu", "da": "min."}
+
+// Finnish: the lines only this watch says (translated with Gemini, reviewed by a native speaker).
+for (const [k, v] of Object.entries({"tile_desc":"Putkesi ja päivän suunnitelma.","complication_desc":"Tähänastiset sarjasi tai putkesi.","notif_running":"Treeni käynnissä. Jatka napauttamalla.","hr_why":"Salli syke, niin näet sen joka sarjalla.","phone_away":"Puhelin ei ulottuvilla. Sarjasi odottavat tässä.","phone_out_of_reach":"Puhelin ei ulottuvilla","media_title":"Musiikki","media_prev":"Edellinen kappale","media_play":"Toista tai keskeytä","media_next":"Seuraava kappale","media_quieter":"Hiljemmalle","media_now_playing":"Nyt soi","media_on_watch":"Soi kellossa","media_phone_hint":"Musiikki puhelimessa? Löytyy Mediasäätimistä.","media_open":"Avaa Mediasäätimet","zones":"Alueet","no_age_set":"Ikää ei asetettu","add_birth_year":"Lisää syntymävuotesi puhelimessa","zone_n":"Alue %1$d","band_to":"%1$d–%2$d","band_under":"alle %1$d","band_over":"vähintään %1$d","zone_current":"nykyinen","no_sets_yet":"Ei vielä sarjoja","n_more":"+%1$d lisää","n_sets":"%1$s sarjaa","max":"max","min":"min","open_phone_once":"Avaa openGym puhelimella kerran, niin ohjelmasi näkyvät täällä.","start_on_phone":"Aloita puhelimella, niin se näkyy täällä.","ended_on_phone":"Lopetettu puhelimella","log_on_phone":"Kirjaa tämä puhelimella.","crown_hint":"Muuta kääntämällä kruunua.","quick_start":"Pika-aloitus","rest_day":"Ei suunnitelmaa. Sinä päätät.","media_louder":"Kovemmalle"})) OWN[k].fi = v
 
 /* ---------- reading the sources ---------- */
 

@@ -1,0 +1,3 @@
+openGym on nyt F-Droidissa! Se on koottu samasta lähdekoodista kuin APK ja Play-sovellus, mutta ilman Googlen osia: salikortin skanneri käyttää kameraa suoraan sovelluksessa, ja Wear OS -kellot, jotka tarvitsevat Google Play -palvelut, on jätetty pois. Amazfit-kellot toimivat oman palvelimesi kautta.
+
+Uutta versiossa 1.4.4: Amazfit-kellot (Zepp OS), kauttaaltaan uudistettu ulkoasu, jokaisen sarjan vertailu edelliseen kertaan ja paljon korjauksia. Bugit ja ideat GitHubiin tai Discordiin.
