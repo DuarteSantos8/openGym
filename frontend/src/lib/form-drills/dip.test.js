@@ -156,6 +156,27 @@ describe('the dip, whatever the angle', () => {
     expect(run(frames, ANY).res).toMatchObject({ count: 4, missed: 0 })
   })
 
+  it('side-on: a guessed frame at the bottom, the upper arm twice its length, neither ends the rep nor makes another', () => {
+    const clean = dipSet(same(3, LEVEL), { yaw: 0 })
+    const lowest = (from, to) => {
+      let k = from
+      for (let i = from; i < to; i++) if (clean[i].joints.leftShoulder[1] > clean[k].joints.leftShoulder[1]) k = i
+      return k
+    }
+    const per = Math.floor(clean.length / 3)
+    const bottoms = [lowest(0, per), lowest(per, 2 * per), lowest(2 * per, clean.length)]
+    const frames = clean.map((f, i) => {
+      if (!bottoms.includes(i)) return f
+      // A few joints on one side only, as Vision guessed them on a 320x240 bench dip: the
+      // shoulder far above the elbow, the wrist below, the arm longer than it stood.
+      const j = f.joints
+      const sh = j.leftShoulder, el = j.leftElbow, wr = j.leftWrist
+      const up = el[1] - sh[1] + 0.1
+      return { ...f, joints: { leftShoulder: [sh[0], el[1] - 2.5 * Math.abs(up), 0.4], leftElbow: [el[0], el[1], 0.4], leftWrist: [wr[0], wr[1] + 0.02, 0.4] } }
+    })
+    expect(run(frames).res).toMatchObject({ count: 3, missed: 0 })
+  })
+
   it('side-on: the bottom elbow angle, its spread across the set, and the note', () => {
     const { res } = run(dipSet([{ min: 80, down: 1.5, up: 1 }, { min: 90, down: 1.5, up: 1 }, { min: 85, down: 1.5, up: 1 }]))
     // Read through Vision's shoulder, SHOULDER_MARK above the joint, an 80 degree elbow reads a little more open.

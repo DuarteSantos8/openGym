@@ -111,6 +111,7 @@ export const DROP_LEVEL_ROLL = 12     // degrees the arms at the top may lean in
 export const FAST_DOWN_SEC = 1        // an average way down under this: "slow the way down"
 export const FADE_S = 0.17            // the last reps' drop this much under the first ones'
 export const DROP_PHASES = { stand: 0.08, descent: 0.14, minRep: 0.35, bottomEps: 0.04, ascentRise: 0.15, topBand: 0.015 }
+export const DROP_UPPER_MAX = 1.5     // an upper arm over this many standing upper arms (image-vertical): not a body, not read
 
 export const DROP_STANDARDS = [
   { id: 'level', label: 'Shoulders to elbow height' },
@@ -193,10 +194,15 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
     return seen(joints, (l >= r ? 'left' : 'right') + part)
   }
 
+  // A frame whose upper arm reads far longer than it stood (DROP_UPPER_MAX) is Vision guessing a
+  // body it barely sees: a 320x240 bench dip lost the body for a few frames, and the frames between
+  // put a few joints on one side, the upper arm twice its length, the shoulder far above the wrist.
+  // Read as the top, one ended a rep at its bottom and the way up counted as another rep.
   function figure(joints) {
     const sh = mid(joints, 'Shoulder'), el = mid(joints, 'Elbow'), wr = mid(joints, 'Wrist')
     if (!sh || !el || !wr) return null
     const upper = el[1] - sh[1], fore = wr[1] - el[1]
+    if (upperRef > 0 && upper > DROP_UPPER_MAX * upperRef) return null
     const ash = armPart(joints, 'Shoulder'), awr = armPart(joints, 'Wrist')
     const arm = ash && awr ? awr[1] - ash[1] : wr[1] - sh[1]
     if (!(fore > 0) || !(arm > 0)) return null
