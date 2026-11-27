@@ -3877,6 +3877,7 @@ export default {
   "Rest is over": "休息结束",
   "Spoken cues": "语音提示",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "仅在应用显示在屏幕上时。音乐只会暂时调低，绝不会停。",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "仅在应用显示在屏幕上时。iPhone 锁屏时也会说出休息结束，静音模式下除外。音乐只会暂时调低，绝不会停。",
   "This browser can’t speak. Try another one.": "这个浏览器不会说话，换一个试试。",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "会报出下一组、“还有 10 秒”和“休息结束”，并为静力动作倒数。",
   "Speaking rate": "语速",

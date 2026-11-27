@@ -3932,6 +3932,7 @@ export default {
   "Rest is over": "انتهت الراحة",
   "Spoken cues": "تنبيهات صوتية",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "فقط والتطبيق ظاهر على الشاشة. تنخفض الموسيقى للحظة ولا تتوقف أبدًا.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "فقط والتطبيق ظاهر على الشاشة. حتى مع قفل الآيفون، تُقال نهاية الراحة، إلا إذا كان على الوضع الصامت. تنخفض الموسيقى للحظة ولا تتوقف أبدًا.",
   "This browser can’t speak. Try another one.": "هذا المتصفح لا يستطيع النطق. جرّب متصفحًا آخر.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "يقول مجموعتك التالية و«10 ثوانٍ» و«انتهت الراحة»، ويعدّ التمارين الثابتة تنازليًا.",
   "Speaking rate": "سرعة النطق",

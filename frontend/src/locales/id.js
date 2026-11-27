@@ -3833,6 +3833,7 @@ export default {
   "Rest is over": "Istirahat selesai",
   "Spoken cues": "Panduan suara",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Hanya saat aplikasi tampil di layar. Musik mengecil sesaat, tidak pernah berhenti.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Hanya saat aplikasi tampil di layar. Saat iPhone terkunci, akhir istirahat tetap diucapkan, kecuali iPhone dalam mode senyap. Musik mengecil sesaat, tidak pernah berhenti.",
   "This browser can’t speak. Try another one.": "Browser ini tidak mendukung suara. Coba browser lain.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Menyebutkan set berikutnya, “10 detik”, dan “Istirahat selesai”, serta menghitung mundur waktu tahan.",
   "Speaking rate": "Kecepatan suara",

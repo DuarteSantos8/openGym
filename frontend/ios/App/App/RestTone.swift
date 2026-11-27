@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 
 /**
@@ -114,6 +115,42 @@ enum RestTone {
 
     static func withTail(_ tone: [Int16]) -> [Int16] {
         tone + [Int16](repeating: 0, count: Int(tailSec * Double(rate)))
+    }
+
+    /// Any PCM (a speech buffer, a sound file) as 22050 Hz mono Int16, the form the sound files here
+    /// are written in. Nil when it cannot be converted. Reads and converts only: no sound, no session.
+    static func samples(_ buffers: [AVAudioPCMBuffer]) -> [Int16]? {
+        guard let first = buffers.first(where: { $0.frameLength > 0 }),
+              let target = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: Double(rate), channels: 1, interleaved: true),
+              let converter = AVAudioConverter(from: first.format, to: target),
+              let out = AVAudioPCMBuffer(pcmFormat: target, frameCapacity: 4096) else { return nil }
+        var next = 0
+        var result: [Int16] = []
+        while true {
+            var failure: NSError?
+            let status = converter.convert(to: out, error: &failure) { _, inputStatus in
+                while next < buffers.count, buffers[next].frameLength == 0 || buffers[next].format != first.format { next += 1 }
+                guard next < buffers.count else {
+                    inputStatus.pointee = .endOfStream
+                    return nil
+                }
+                next += 1
+                inputStatus.pointee = .haveData
+                return buffers[next - 1]
+            }
+            if failure != nil || status == .error { return nil }
+            if let data = out.int16ChannelData { result.append(contentsOf: UnsafeBufferPointer(start: data[0], count: Int(out.frameLength))) }
+            if status != .haveData || out.frameLength == 0 { break }
+        }
+        return result.isEmpty ? nil : result
+    }
+
+    /// A WAV file (a clip of one's own, a tone file) as 22050 Hz mono Int16. Nil if unreadable.
+    static func samples(contentsOf url: URL) -> [Int16]? {
+        guard let file = try? AVAudioFile(forReading: url), file.length > 0, file.length < Int64(file.processingFormat.sampleRate * 31),
+              let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)),
+              (try? file.read(into: buffer)) != nil else { return nil }
+        return samples([buffer])
     }
 
     static func wav(_ samples: [Int16]) -> Data {

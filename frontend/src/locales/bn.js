@@ -3956,6 +3956,7 @@ export default {
   "Rest is over": "বিশ্রাম শেষ",
   "Spoken cues": "ভয়েস সংকেত",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "শুধু অ্যাপ স্ক্রিনে খোলা থাকলে। গানের আওয়াজ একটু কমে, কখনো থামে না।",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "শুধু অ্যাপ স্ক্রিনে খোলা থাকলে। iPhone লক থাকলেও বিশ্রামের শেষ বলা হয়, তবে সাইলেন্টে থাকলে নয়। গানের আওয়াজ একটু কমে, কখনো থামে না।",
   "This browser can’t speak. Try another one.": "এই ব্রাউজার কথা বলতে পারে না। অন্য একটি ব্রাউজারে চেষ্টা করুন।",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "পরের সেট, “১০ সেকেন্ড” আর “বিশ্রাম শেষ” বলে দেয়, আর হোল্ডের সময় উল্টো দিকে গোনে।",
   "Speaking rate": "বলার গতি",

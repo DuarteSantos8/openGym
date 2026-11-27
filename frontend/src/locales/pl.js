@@ -3877,6 +3877,7 @@ export default {
   "Rest is over": "Koniec przerwy",
   "Spoken cues": "Komunikaty głosowe",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Tylko gdy aplikacja jest na ekranie. Muzyka na chwilę cichnie, nigdy się nie zatrzymuje.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Tylko gdy aplikacja jest na ekranie. Przy zablokowanym iPhonie koniec odpoczynku nadal jest wypowiadany, chyba że telefon jest w trybie cichym. Muzyka na chwilę cichnie, nigdy się nie zatrzymuje.",
   "This browser can’t speak. Try another one.": "Ta przeglądarka nie umie mówić. Spróbuj innej.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Mówi następną serię, „10 sekund” i „Koniec przerwy”, i odlicza utrzymania.",
   "Speaking rate": "Tempo mowy",

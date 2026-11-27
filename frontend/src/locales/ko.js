@@ -3877,6 +3877,7 @@ export default {
   "Rest is over": "휴식 끝",
   "Spoken cues": "음성 안내",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "앱이 화면에 있을 때만. 음악은 잠깐 작아질 뿐 멈추지 않아요.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "앱이 화면에 있을 때만. iPhone이 잠겨 있어도 휴식 종료를 말해 줍니다. 단, 무음 모드일 때는 제외입니다. 음악은 잠깐 작아질 뿐 멈추지 않아요.",
   "This browser can’t speak. Try another one.": "이 브라우저는 말을 못 해요. 다른 브라우저를 써 보세요.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "다음 세트, “10초”, “휴식 끝”을 말해 주고 버티기는 카운트다운해요.",
   "Speaking rate": "말하기 속도",

@@ -3877,6 +3877,7 @@ export default {
   "Rest is over": "Le repos est terminé",
   "Spoken cues": "Annonces vocales",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Seulement quand l’app est à l’écran. La musique baisse un instant, elle ne s’arrête jamais.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Seulement quand l’app est à l’écran. Avec l’iPhone verrouillé, la fin du repos est quand même annoncée, sauf s’il est en silencieux. La musique baisse un instant, elle ne s’arrête jamais.",
   "This browser can’t speak. Try another one.": "Ce navigateur ne sait pas parler. Essaie-en un autre.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Annonce ta prochaine série, « 10 secondes » et « Le repos est terminé », et décompte les gainages.",
   "Speaking rate": "Débit de la voix",

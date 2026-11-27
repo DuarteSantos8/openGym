@@ -12,6 +12,12 @@ describe('buildRestAlert', () => {
     expect(buildRestAlert({ at: now + 1000, cues: Array.from({ length: 40 }, (_, i) => ({ dt: i, title: 'x' })), now }).cues).toHaveLength(16)
   })
 
+  it('carries the rest-over line as given, or null', () => {
+    const line = { text: 'Rest is over', lang: 'en-GB', rate: 1, pitch: 1, voice: '' }
+    expect(buildRestAlert({ at: now + 1000, line, now }).line).toBe(line)
+    expect(buildRestAlert({ at: now + 1000, now }).line).toBe(null)
+  })
+
   it('schedules a public notification', () => {
     const alert = buildRestAlert({ at: now + 90_000, title: 'Rest’s over. Next set!', sound: true, now })
     expect(alert).toMatchObject({

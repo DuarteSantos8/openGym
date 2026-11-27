@@ -3845,6 +3845,7 @@ export default {
   'Rest is over': 'استراحت تمام شد',
   'Spoken cues': 'راهنمای صوتی',
   'Only while the app is on screen. Music turns down for a moment, it never stops.': 'فقط وقتی برنامه روی صفحه است. صدای موسیقی برای لحظه‌ای کم می‌شود، هیچ‌وقت قطع نمی‌شود.',
+  'Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.': 'فقط وقتی برنامه روی صفحه است. وقتی آیفون قفل است هم پایان استراحت گفته می‌شود، مگر اینکه روی بی‌صدا باشد. صدای موسیقی برای لحظه‌ای کم می‌شود، هیچ‌وقت قطع نمی‌شود.',
   'This browser can’t speak. Try another one.': 'این مرورگر نمی‌تواند حرف بزند. مرورگر دیگری را امتحان کنید.',
   'Says your next set, “10 seconds” and “Rest is over”, and counts holds down.': 'ست بعدی شما، «۱۰ ثانیه» و «استراحت تمام شد» را می‌گوید و نگه‌داشتن‌ها را معکوس می‌شمارد.',
   'Speaking rate': 'سرعت گفتار',

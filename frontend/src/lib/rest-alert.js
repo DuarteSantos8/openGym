@@ -48,7 +48,7 @@ export function buildCues(cues) {
     .map(c => ({ dt: Math.round(c.dt), title: c.title }))
 }
 
-export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, lightScreen = true, cues = null, countdown = true, now = Date.now() } = {}) {
+export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, lightScreen = true, cues = null, countdown = true, line = null, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
   // Settings → Sound (#306): one of lib/sound.js REST_SOUNDS; without one, `classic` decides, as before.
   // 'u:<hash>': a sound of one's own (lib/user-sounds.js), which the native side plays from its file.
@@ -87,6 +87,8 @@ export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, so
     importance: 'high',
     cues: buildCues(cues),
     countdown: countdown !== false,
+    // The rest-over line for a locked iPhone (spoken-cues.js restOverCue), or null.
+    line,
   }
 }
 
@@ -118,7 +120,7 @@ const restPlugin = () => pluginP || (pluginP = (async () => {
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
-  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz, lightScreen: opts.lightScreen !== false, cues: opts.cues, countdown: opts.countdown !== false })
+  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz, lightScreen: opts.lightScreen !== false, cues: opts.cues, countdown: opts.countdown !== false, line: opts.line })
   if (!alert) return Promise.resolve(false)
   // Outside the chain and never awaited: the alarm, its tone and the alarm buzz do not need the
   // notification permission, and a dialog left open while the phone is put away must not hold
@@ -311,6 +313,7 @@ async function deliver(alert) {
     ink: alert.ink,
     cues: alert.cues,
     countdown: alert.countdown,
+    line: alert.line,
   })
   return 'native'
 }

@@ -3870,6 +3870,7 @@ export default {
   "Rest is over": "Poilsio laikas baigtas",
   "Spoken cues": "Balso nurodymai",
   "Only while the app is on screen. Music turns down for a moment, it never stops.": "Veikia tik kai programėlė rodoma ekrane. Muzika akimirkai pritildoma, bet nenustoja groti.",
+  "Only while the app is on screen. With the iPhone locked, the end of a rest is still said, unless it is on silent. Music turns down for a moment, it never stops.": "Veikia tik kai programėlė rodoma ekrane. Kai „iPhone“ užrakintas, poilsio pabaiga vis tiek ištariama, nebent jis nutildytas. Muzika akimirkai pritildoma, bet nenustoja groti.",
   "This browser can’t speak. Try another one.": "Ši naršyklė negali kalbėti. Bandykite kitą.",
   "Says your next set, “10 seconds” and “Rest is over”, and counts holds down.": "Taria jūsų kitą seriją, „10 sekundžių“ ir „Poilsio laikas baigtas“, bei skaičiuoja laikymo laiką.",
   "Speaking rate": "Kalbėjimo greitis",
