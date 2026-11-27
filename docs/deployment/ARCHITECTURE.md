@@ -33,7 +33,7 @@ before the `/api/:path*` rule, each with `x-vercel-enable-rewrite-caching: 0`. L
 Evidence and constraints:
 
 - Vercel reserves only `/.well-known/acme-challenge`; other `/.well-known` paths can be rewritten.
-  `docs/MCP_REMOTE.md:362-363` says otherwise and needs correcting.
+  `docs/MCP_REMOTE.md` said otherwise; corrected in #157.
 - External rewrites time out at 120 s, equal to nginx's `/mcp` limit and the MCP `requestTimeout`.
   The transport is stateless JSON (`mcp/src/http.js:159`), so SSE through Vercel is not needed.
 - Neither API nor MCP reads `Host`/`X-Forwarded-Host`; the issuer comes from `ORIGIN`.
@@ -50,6 +50,28 @@ and are not cached; unauthenticated `POST /mcp` → 401 with the right `resource
 scoped read and write flow, write refused on a read-only grant, refresh, revoke; a real Claude and
 ChatGPT connector; a near-1 MB `/mcp` body passes and an oversized one gets the MCP's own 413; web
 sign-in and a near-5 MB sync on the same domain; a rollback rehearsal to `ironvane-web`.
+
+## Integrations that can write configuration
+
+Observed 2026-11-27, not changed by this work:
+
+- A Supabase-side Vercel integration with access to **all** Vercel projects of the team wrote 18
+  Production variables into `opengym` at 16:21, including the service-role key, secret key, JWT
+  secret and Postgres password. They were removed (`ROLLBACK.md`). The frontend needs none of them:
+  there are no Vercel Functions and Vite bundles only `VITE_*`.
+- At the same time Supabase **branching** was enabled on the auth project, with its default branch
+  tied to git `main` (status `MIGRATIONS_FAILED`). The repository's migration files carry different
+  version numbers from the four already applied in production, so the run failed before changing
+  anything: auth users, profiles, OAuth consents, the OAuth client, the migration history and the
+  two edge functions were all unchanged afterwards. While it stays connected, every push to `main`
+  can run migrations against the production auth project and re-sync variables into Vercel.
+- Render's API and MCP belong to a Render Blueprint (`render.yaml`, Auto Sync on `main`): a merge
+  touching `render.yaml` re-applies it. `CUTOVER.md` G9 turns that off before the window.
+- Prevention (owner, dashboard): limit the integration's Vercel project access so it excludes
+  `opengym` (or disconnect the Vercel project in Supabase → Integrations), and disable branching
+  unless preview databases are wanted. Nothing in the app depends on either.
+- A separate Vercel Marketplace Supabase resource exists in the team (Free plan, connected to no
+  project). It is not used by IronVane.
 
 ## Preview isolation
 

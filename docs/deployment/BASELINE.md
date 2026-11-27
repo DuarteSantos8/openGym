@@ -24,14 +24,14 @@ probes. No secret values are recorded here: variables are listed by name only.
 
 | Layer | Platform | Identifier | State at audit |
 |---|---|---|---|
-| Frontend | Vercel Pro team `sorensadr-gmailcoms-projects` | project `opengym` | **Missing.** API returns `404 Project not found`; team lists zero projects. `next/cloud-preview` alias returns `DEPLOYMENT_NOT_FOUND`. |
+| Frontend | Vercel Pro team `<vercel-team>` | project `opengym` | **Missing.** API returns `404 Project not found`; team lists zero projects. `next/cloud-preview` alias returns `DEPLOYMENT_NOT_FOUND`. |
 | Frontend (stray) | Vercel scope `soren-37388cd1` | `opengym` | Deployment for `a3beaa89e` returns `410 Gone`. Not canonical (owner decision). |
-| API (live) | Render `ironvane-api` `srv-dc2dvaek1f9s73fmhfc0` | starter, virginia, 1 instance, disk `ironvane-data` 1 GB at `/data`, health `/api/health` | Healthy, `users: 3`, writable |
-| MCP (live) | Render `ironvane-mcp` `srv-dc2gncuk1f9s73fv18s0` | starter, virginia, health `/mcp/health` | Healthy, v0.2.0; rejects missing and malformed tokens with 401 |
+| API (live) | Render `ironvane-api` `<render-api-service-id>` | starter, virginia, 1 instance, disk `ironvane-data` 1 GB at `/data`, health `/api/health` | Healthy, `users: 3`, writable |
+| MCP (live) | Render `ironvane-mcp` `<render-mcp-service-id>` | starter, virginia, health `/mcp/health` | Healthy, v0.2.0; rejects missing and malformed tokens with 401 |
 | API (candidate) | Railway `renewed-freedom` / production, `ironvane-api` | volume `ironvane-api-ironvane-data` 500 MB at `/data` | Healthy, `users: 0`, volume 0 MB used |
 | MCP (candidate) | Railway `ironvane-mcp` | `OPENGYM_API_URL=http://ironvane-api.railway.internal:3000` | Healthy |
 | Web (candidate) | Railway `ironvane-web` (nginx image) | `ironvane-web-production.up.railway.app` | Failed health checks for `a3beaa89e`, `9ff0bd11b`, `14f2e67da`; repaired, see below |
-| Auth | Supabase `ironvane` `krpnvhygxvupniurqytj` (us-east-1) | 5 auth users, 5 `profiles` rows, 1 public OAuth client | Active. Only redirect URI is the missing Vercel cloud-preview alias. |
+| Auth | Supabase `ironvane` `<supabase-project-ref>` (us-east-1) | 5 auth users, 5 `profiles` rows, 1 public OAuth client | Active. Only redirect URI is the missing Vercel cloud-preview alias. |
 
 Other Render services in the workspace (`soren`, `cam-tracker`) are unrelated and untouched.
 

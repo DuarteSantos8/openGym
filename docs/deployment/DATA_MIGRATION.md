@@ -32,7 +32,7 @@ confirmed against the backup's `db.json` link count before cutover.
    in the 0700 backup directory with the archive and quote only counts and `equal`. Exit codes:
    0 equal, 1 differ, 2 could not tell.
 2. **Archive** — `tar -C /data -czf - .` streamed over `render ssh` to the VPS backup directory
-   (`/root/backups/ironvane/<UTC timestamp>/`, mode 0700, root only, never committed).
+   (a private backup directory on the operator VPS, mode 0700, root only, never committed).
 3. **Consistency** — every API write is temp-file + fsync + rename (`api/durable.js`), so each file
    in the archive is whole. Cross-file consistency: take a second manifest after the archive; if
    both manifests are equal, no write happened during the copy. If not, repeat (3 users, low rate).
@@ -62,9 +62,12 @@ running and untouched as the rollback target (`ROLLBACK.md`).
 | 5 Restore test (local) | DONE | API started on a scratch copy, loopback only: `/api/health` `{"ok":true,"users":3,"writable":true}`; copy unchanged afterwards (`--compare` equal); scratch removed |
 | Reconciliation | DONE | all 3 API profiles carry an `oidc` link with one issuer; their 3 `sub`s are 3 Supabase accounts, each with a profile row and a live OAuth consent. The other 2 accounts never signed in to this API. No orphan state or upload files |
 | 6 Railway restore (rehearsal) | DONE 2026-11-27 15:48Z | Railway's empty-instance `secret`/`vapid.json` archived to the VPS first; archive streamed in over `railway ssh`; Railway `/data` manifest == Render manifest; after `railway restart` `/api/health` users 0 → 3 |
-| 7 Persistence | DONE 2026-11-27 15:52Z | `railway redeploy` (deployment `cd5fcc9e`, SUCCESS): manifest still equal, `/api/health` users 3. Render unchanged: users 3 |
+| 7 Persistence | DONE 2026-11-27 15:52Z | `railway redeploy` (deployment `<railway-deploy-id>`, SUCCESS): manifest still equal, `/api/health` users 3. Render unchanged: users 3 |
 | Render origin switch | DONE 2026-11-27 16:00Z | Render `/data` manifest equal to the 15:42 backup before and after the redeploy; `/api/health` users 3 |
+| Railway test-data change | 2026-11-27 19:55Z | MCP acceptance probe: one dynamic client registration (`hermes-acceptance-probe`, redirect `https://claude.ai/api/mcp/auth_callback`) through `ironvane-web`. Railway `db.json`/`db.json.bak` now differ from the Render copy; nothing else does. Render still equal to the 15:42 backup. The cutover sync replaces Railway `/data` whole, so the probe client does not survive it |
 
 Railway is now a point-in-time copy. Render keeps taking writes, so the copy goes stale; the
-cutover sync above repeats steps 1–7 under a write freeze. Until then nobody can sign in to
-Railway (its OIDC settings are unset), so the copy cannot diverge by use.
+cutover sync (`CUTOVER.md`) repeats steps 1–7 under Render maintenance mode, with Railway closed
+to traffic during the copy. Railway's OIDC settings are set (16:20) but Supabase does not yet
+list its callback, so sign-in there still fails; the only change since the restore is the
+recorded probe client.

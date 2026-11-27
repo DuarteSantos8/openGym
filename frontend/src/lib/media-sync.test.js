@@ -12,6 +12,7 @@ const MB = 1024 * 1024
 // A real Blob that reports `n` bytes without holding them. The cache cap is about sizes, and
 // allocating the bytes (200 MB, 400 MB, copied again into the Blob) made these cases take a second
 // alone and time out under a parallel run, where several workers zero-fill and copy at once.
+// Only for memoryBackend: the IDB and file backends read the bytes and would see 0 of them.
 class SizedBlob extends Blob {
   #n
   constructor(n) { super([]); this.#n = n }
