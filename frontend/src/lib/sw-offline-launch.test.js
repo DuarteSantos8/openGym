@@ -62,6 +62,7 @@ function loadServiceWorker({ fetchImpl, abortSignal = true }) {
     fetch: fetchImpl,
     location: { origin: 'https://gym.example' },
     URL,
+    Response,
     setTimeout: clock.setTimeout,
     clearTimeout: clock.clearTimeout,
     console
@@ -171,6 +172,13 @@ describe('service worker offline cold-launch (issue #274)', () => {
     const e = makeFetchEvent('https://gym.example/')
     listeners.fetch(e)
     expect(await (await e.response).text()).toBe('cached-shell')
+  })
+
+  it('returns 503 for an uncached resource after the network fails', async () => {
+    const { listeners } = loadServiceWorker({ fetchImpl: () => Promise.reject(new TypeError('offline')) })
+    const e = makeFetchEvent('https://gym.example/exercise-demos/index.json', 'cors')
+    listeners.fetch(e)
+    expect((await e.response)?.status).toBe(503)
   })
 
   it('works where AbortSignal.timeout does not exist (iOS before 16)', async () => {

@@ -19,6 +19,8 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/store/useStore.mobile-remote.test.jsx` | `next/EP19-guest-privacy-followup` | Pairing | Cover refused guest storage and the next successful pairing. |
 | `frontend/src/lib/api.js`, `frontend/src/lib/oidc.js` | `next/EP19-guest-privacy-followup` | Sign-in | Wait for a failed adoption's cookie cleanup before the next sign-in. |
 | `frontend/src/views/Login.jsx` | `next/EP19-guest-privacy-followup` | Sign-in | Restore the provider sign-in button when cookie cleanup cannot reach the server. |
+| `frontend/public/sw.js`, `frontend/src/lib/sw-offline-launch.test.js` | `next/EP26-mannequin-framing` | Offline exercise sheet | Answer uncached offline resource requests with HTTP 503. |
+| `frontend/src/components/mannequin/`, `frontend/e2e/mannequin-demo.e2e.mjs` | `next/EP26-mannequin-framing` | Exercise demo | Fit the rig in narrow panels, follow the nearest pose caption and exercise playback from an offline reload. |
 | `frontend/public/sw.js`, `frontend/src/lib/sw-media.test.js` | `next/EP26-mannequin-patterns` | Offline exercise sheets | Return a non-cacheable HTTP failure when uncached media cannot be fetched offline. |
 | `frontend/src/components/ExerciseGuide.test.jsx` | `next/EP26-mannequin-patterns` | Guide integration | Cover switching from the squat to a newly supported pull demo. |
 | `frontend/src/components/mannequin/` | `next/EP26-mannequin-patterns` | Demo | Complete the nine-family pose table; keep the existing lazy loader and match the still caption after WebGL loss. |
