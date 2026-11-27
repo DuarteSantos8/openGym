@@ -1,0 +1,24 @@
+{
+  "id": "90014",
+  "name": "jump start",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "lats",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A jump from the floor to catch a small hold or campus rung and hold it still. It trains the fingers to grip hard the instant they touch a hold.",
+  "instructions": [
+    "Pick a small target hold or rung that you can only just reach with a jump.",
+    "Stand below it with your feet on the floor, holding a start hold with one hand if you like.",
+    "Bend your knees and jump, catching the target with your free hand or with both hands.",
+    "Hold the catch still for 2 to 3 seconds with your shoulders engaged.",
+    "Let go and land on a padded floor with bent knees.",
+    "Rest fully between attempts and stop when your catches get weaker."
+  ],
+  "textSource": "opengym"
+}

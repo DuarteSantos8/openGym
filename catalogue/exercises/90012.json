@@ -1,0 +1,25 @@
+{
+  "id": "90012",
+  "name": "campus board ladder",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "grip muscles",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "Moving up a campus board hand over hand without your feet, grabbing each rung while the elbow is still bent. It builds explosive pulling power and the finger strength to latch small holds.",
+  "instructions": [
+    "Campus only when you are an experienced climber, fresh and fully warmed up with easier climbing and hangs.",
+    "Hang from the lowest rung with both hands in a half crimp and your feet off the wall.",
+    "Pull hard and reach one hand up to a higher rung, for example rung 3.",
+    "Grab the rung with your elbow still bent and keep the grip firm.",
+    "Pull again and send the other hand past it to a higher rung, for example rung 5, and continue to the top.",
+    "Let go in control and land on your feet on a padded floor.",
+    "Make it easier with your feet on footholds or shorter gaps, and harder with bigger gaps such as 1-4-7."
+  ],
+  "textSource": "opengym"
+}

@@ -58248,5 +58248,71 @@
       "Nahoře se na chvíli zastav a pak levou patu pomalu spusť zpět do výchozí polohy.",
       "Proveď požadovaný počet opakování a pak přejdi na pravou nohu."
     ]
+  },
+  "90001": {
+    "name": "Vis na tréninkové desce v plně zavřeném úchopu"
+  },
+  "90002": {
+    "name": "Vis na tréninkové desce třemi prsty v otevřeném úchopu"
+  },
+  "90003": {
+    "name": "Vis na tréninkové desce ve dvouprstové díře"
+  },
+  "90004": {
+    "name": "Vis jednoruč na tréninkové desce"
+  },
+  "90005": {
+    "name": "Vis na tréninkové desce ve špetkovém úchopu"
+  },
+  "90006": {
+    "name": "Zvedání bloku špetkovým úchopem"
+  },
+  "90007": {
+    "name": "Zvedání závaží za lištu"
+  },
+  "90008": {
+    "name": "Výdrž v zamčení na jedné ruce"
+  },
+  "90009": {
+    "name": "Shyb frenchie"
+  },
+  "90010": {
+    "name": "Výdrž v přední váze na jednu nohu ve visu"
+  },
+  "90011": {
+    "name": "Shyb na tréninkové desce"
+  },
+  "90012": {
+    "name": "Žebřík na campus boardu"
+  },
+  "90013": {
+    "name": "Dvojitý dyno na campus boardu"
+  },
+  "90014": {
+    "name": "Start skokem na chyt"
+  },
+  "90015": {
+    "name": "Bouldering"
+  },
+  "90016": {
+    "name": "Lezení na systémové stěně"
+  },
+  "90017": {
+    "name": "Bouldering 4x4"
+  },
+  "90018": {
+    "name": "Nepřetržité lezení"
+  },
+  "90019": {
+    "name": "Lezení cest"
+  },
+  "90020": {
+    "name": "Lezení bez nohou"
+  },
+  "90021": {
+    "name": "Klouzání šlach prstů"
+  },
+  "90022": {
+    "name": "Stlačování míčku mezi prsty nůžkami"
   }
 }

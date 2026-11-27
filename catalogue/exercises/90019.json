@@ -1,0 +1,25 @@
+{
+  "id": "90019",
+  "name": "route climbing",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "biceps",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Climbing routes on a rope, either leading or on top rope. Done as laps or sets of routes, it builds the endurance to keep moving efficiently over many moves.",
+  "instructions": [
+    "Check your knots, harness and belay setup with your partner before every climb.",
+    "Choose a route that matches the goal of the session.",
+    "Climb at a steady pace, clip calmly and shake out on good holds.",
+    "Lower off and rest, or climb the route again straight away for another lap.",
+    "Repeat for the planned number of routes or sets.",
+    "Note the grade and how pumped you got."
+  ],
+  "textSource": "opengym"
+}

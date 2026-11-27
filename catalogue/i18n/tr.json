@@ -26641,5 +26641,71 @@
       "Tepe noktasında bir an duraklayın, ardından sol topuğunuzu yavaşça başlangıç ​​pozisyonuna indirin.",
       "İstenilen tekrar sayısı kadar tekrarlayın, ardından sağ bacağa geçin."
     ]
+  },
+  "90001": {
+    "name": "handboard full crimp"
+  },
+  "90002": {
+    "name": "handboard üç parmak drag"
+  },
+  "90003": {
+    "name": "handboard iki parmak cep"
+  },
+  "90004": {
+    "name": "handboard tek kolla asılma"
+  },
+  "90005": {
+    "name": "handboard pinch"
+  },
+  "90006": {
+    "name": "pinch blok kaldırma"
+  },
+  "90007": {
+    "name": "kenar blok kaldırma"
+  },
+  "90008": {
+    "name": "tek kol kilitleme"
+  },
+  "90009": {
+    "name": "frenchie barfiks"
+  },
+  "90010": {
+    "name": "asılı tek bacak front lever tutuş"
+  },
+  "90011": {
+    "name": "handboard barfiks"
+  },
+  "90012": {
+    "name": "campus board merdiven"
+  },
+  "90013": {
+    "name": "campus board çift dyno"
+  },
+  "90014": {
+    "name": "sıçramalı başlangıç"
+  },
+  "90015": {
+    "name": "bouldering"
+  },
+  "90016": {
+    "name": "board tırmanışı"
+  },
+  "90017": {
+    "name": "4x4 bouldering"
+  },
+  "90018": {
+    "name": "kesintisiz tırmanış"
+  },
+  "90019": {
+    "name": "rota tırmanışı"
+  },
+  "90020": {
+    "name": "ayaksız tırmanış"
+  },
+  "90021": {
+    "name": "parmak tendon kaydırma"
+  },
+  "90022": {
+    "name": "parmaklarla makas top sıkma"
   }
 }

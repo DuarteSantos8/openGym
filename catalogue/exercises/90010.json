@@ -1,0 +1,24 @@
+{
+  "id": "90010",
+  "name": "hanging one leg front lever hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "core",
+    "front delts"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "A front lever hold below the bar with one leg straight and the other knee tucked. It sits between the advanced tuck and the full front lever and trains the lats and core.",
+  "instructions": [
+    "Hang from a pull-up bar with straight arms and a shoulder-width overhand grip.",
+    "Pull your shoulder blades down and lift your body to horizontal in a tucked position.",
+    "Straighten one leg in line with your body and keep the other knee tucked.",
+    "Keep your hips at the same height as your shoulders and your back flat.",
+    "Hold for 5-10 seconds.",
+    "Lower down slowly and use the other leg on the next set."
+  ],
+  "textSource": "opengym"
+}

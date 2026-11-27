@@ -1,0 +1,22 @@
+{
+  "id": "90022",
+  "name": "finger scissor ball squeeze",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "You trap a small soft ball between two neighbouring fingers and pinch it by pulling the fingers sideways toward each other. It builds the small muscles between the fingers that help keep the hand stable on holds.",
+  "instructions": [
+    "Place a soft ball, such as a foam or sponge ball, between two neighbouring fingers.",
+    "Keep both fingers straight and the wrist relaxed.",
+    "Pull the fingers sideways toward each other to pinch the ball, like closing scissors.",
+    "Hold the pinch for a second, then relax without letting the ball fall.",
+    "Do 15-20 reps, then move the ball to the next pair of fingers.",
+    "Switch hands, and pick a firmer ball once the reps feel easy."
+  ],
+  "textSource": "opengym"
+}

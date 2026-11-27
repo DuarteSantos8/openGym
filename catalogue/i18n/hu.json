@@ -26641,5 +26641,71 @@
       "Tarts egy rövid szünetet a mozdulat tetején, majd lassan engedd vissza a bal sarkadat a kiindulási helyzetbe.",
       "Ismételd a kívánt ismétlésszámban, majd válts a jobb lábra."
     ]
+  },
+  "90001": {
+    "name": "kéztartó deszkán zárt fogású függés"
+  },
+  "90002": {
+    "name": "kéztartó deszkán háromujjas nyitott függés"
+  },
+  "90003": {
+    "name": "kéztartó deszkán kétujjas lyukban függés"
+  },
+  "90004": {
+    "name": "kéztartó deszkán egykaros függés"
+  },
+  "90005": {
+    "name": "kéztartó deszkán csíptető fogású függés"
+  },
+  "90006": {
+    "name": "csíptető blokk emelés"
+  },
+  "90007": {
+    "name": "peremes blokk emelés"
+  },
+  "90008": {
+    "name": "egykaros lock-off tartás"
+  },
+  "90009": {
+    "name": "frenchie húzódzkodás"
+  },
+  "90010": {
+    "name": "függő egylábas front lever tartás"
+  },
+  "90011": {
+    "name": "húzódzkodás kéztartó deszkán"
+  },
+  "90012": {
+    "name": "létra campus boardon"
+  },
+  "90013": {
+    "name": "dupla dyno campus boardon"
+  },
+  "90014": {
+    "name": "felugrásos indítás"
+  },
+  "90015": {
+    "name": "boulderezés"
+  },
+  "90016": {
+    "name": "boardmászás"
+  },
+  "90017": {
+    "name": "4x4 boulderezés"
+  },
+  "90018": {
+    "name": "folyamatos mászás"
+  },
+  "90019": {
+    "name": "útmászás"
+  },
+  "90020": {
+    "name": "mászás láb nélkül"
+  },
+  "90021": {
+    "name": "ujjak ínainak csúsztatása"
+  },
+  "90022": {
+    "name": "ollózó labdaszorítás az ujjak között"
   }
 }

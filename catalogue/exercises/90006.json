@@ -1,0 +1,23 @@
+{
+  "id": "90006",
+  "name": "weighted pinch block lift",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "wrist flexors"
+  ],
+  "category": "strength",
+  "description": "Pick up a loaded pinch block with one hand, squeezing it between thumb and fingers. It trains pinch strength with a load that is simple to track and increase.",
+  "instructions": [
+    "Choose a block width that suits the pinch you want to train, and load it.",
+    "Set it on the floor or a low box beside you.",
+    "Bend your knees and hips, keep your back flat and grip the block with your thumb on one side and your fingers on the other.",
+    "Stand up with a straight arm, lifting slowly so the block stays level.",
+    "Pause briefly at the top.",
+    "Lower it slowly under control, then switch hands after the set."
+  ],
+  "textSource": "opengym"
+}

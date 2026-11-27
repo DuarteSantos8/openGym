@@ -1,0 +1,24 @@
+{
+  "id": "90003",
+  "name": "handboard two finger pocket",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "front delts"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "A hang with two fingers in a hangboard pocket. It builds strength for pocket holds and loads each finger hard, so increase it very gradually.",
+  "instructions": [
+    "Start with a deep pocket and a lighter load than you use on four fingers.",
+    "Put two fingers, usually index and middle or middle and ring, into the pocket.",
+    "Take weight off with your feet or a pulley until the hang feels controlled.",
+    "Hang with straight arms and engaged shoulders for 5-10 seconds.",
+    "Stop at once if you feel a sharp pain in a finger.",
+    "Rest fully, then repeat or switch to the other finger pair."
+  ],
+  "textSource": "opengym"
+}

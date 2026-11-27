@@ -1,0 +1,23 @@
+{
+  "id": "90005",
+  "name": "handboard pinch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "wrist flexors"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "A hang from a pinch hold on a hangboard, gripped between the thumb and fingers. It builds pinch and thumb strength for climbing.",
+  "instructions": [
+    "Choose a pinch hold on the board with vertical sides.",
+    "Put your thumb on one side and your fingers on the other, then squeeze.",
+    "Step off and hang with straight arms and your shoulders engaged.",
+    "Hold for 5-10 seconds without letting your thumb slip.",
+    "Step down and rest fully between hangs."
+  ],
+  "textSource": "opengym"
+}

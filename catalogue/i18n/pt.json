@@ -16894,5 +16894,71 @@
   },
   "9999": {
     "name": "prancha com toque no joelho"
+  },
+  "90001": {
+    "name": "suspensão no handboard em full crimp"
+  },
+  "90002": {
+    "name": "suspensão no handboard em drag de três dedos"
+  },
+  "90003": {
+    "name": "suspensão no handboard em buraco de dois dedos"
+  },
+  "90004": {
+    "name": "suspensão no handboard a um braço"
+  },
+  "90005": {
+    "name": "suspensão no handboard em pinça"
+  },
+  "90006": {
+    "name": "levantamento de bloco em pinça"
+  },
+  "90007": {
+    "name": "levantamento em regleta"
+  },
+  "90008": {
+    "name": "bloqueio a um braço"
+  },
+  "90009": {
+    "name": "elevação frenchie"
+  },
+  "90010": {
+    "name": "front lever a uma perna isométrico em suspensão"
+  },
+  "90011": {
+    "name": "elevação no handboard"
+  },
+  "90012": {
+    "name": "escada no campus board"
+  },
+  "90013": {
+    "name": "duplo lançamento no campus board"
+  },
+  "90014": {
+    "name": "partida com salto"
+  },
+  "90015": {
+    "name": "bouldering"
+  },
+  "90016": {
+    "name": "escalada em board"
+  },
+  "90017": {
+    "name": "boulder 4x4"
+  },
+  "90018": {
+    "name": "escalada contínua"
+  },
+  "90019": {
+    "name": "escalada de vias"
+  },
+  "90020": {
+    "name": "escalada sem pés"
+  },
+  "90021": {
+    "name": "deslizamento dos tendões dos dedos"
+  },
+  "90022": {
+    "name": "aperto de bola em tesoura entre os dedos"
   }
 }

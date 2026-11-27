@@ -26646,5 +26646,71 @@
       "Halte oben kurz inne und senk die linke Ferse dann langsam wieder in die Ausgangsposition ab.",
       "Mach so viele Wiederholungen wie gewünscht und wechsle dann zum rechten Bein."
     ]
+  },
+  "90001": {
+    "name": "Hang am Handboard mit Vollcrimp"
+  },
+  "90002": {
+    "name": "Hang am Handboard mit Dreifinger-Drag"
+  },
+  "90003": {
+    "name": "Hang am Handboard im Zweifingerloch"
+  },
+  "90004": {
+    "name": "Einarmiger Hang am Handboard"
+  },
+  "90005": {
+    "name": "Hang am Handboard mit Pinch"
+  },
+  "90006": {
+    "name": "Pinch-Block heben"
+  },
+  "90007": {
+    "name": "Leistenblock heben"
+  },
+  "90008": {
+    "name": "Einarmiger Lock-off"
+  },
+  "90009": {
+    "name": "Frenchie-Klimmzug"
+  },
+  "90010": {
+    "name": "Einbeiniger Front Lever halten im Hang"
+  },
+  "90011": {
+    "name": "Klimmzug am Handboard"
+  },
+  "90012": {
+    "name": "Campusboard-Leiter"
+  },
+  "90013": {
+    "name": "Doppel-Dyno am Campusboard"
+  },
+  "90014": {
+    "name": "Sprungstart"
+  },
+  "90015": {
+    "name": "Bouldern"
+  },
+  "90016": {
+    "name": "Boardklettern"
+  },
+  "90017": {
+    "name": "4x4-Bouldern"
+  },
+  "90018": {
+    "name": "Kontinuierliches Klettern"
+  },
+  "90019": {
+    "name": "Routenklettern"
+  },
+  "90020": {
+    "name": "Klettern ohne Füße"
+  },
+  "90021": {
+    "name": "Sehnengleiten der Finger"
+  },
+  "90022": {
+    "name": "Scherengriff mit Ball zwischen den Fingern"
   }
 }

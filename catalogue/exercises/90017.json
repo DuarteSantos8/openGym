@@ -1,0 +1,24 @@
+{
+  "id": "90017",
+  "name": "4x4 bouldering",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "biceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A power endurance block on the bouldering wall: four problems, each climbed four times in a row with almost no rest between laps. It trains you to keep pulling hard while your forearms are pumped.",
+  "instructions": [
+    "Warm up fully, then choose four problems of 8 to 12 moves that are well within your ability and have no hard crux.",
+    "Climb the first problem, step down and get straight back on it.",
+    "Do four laps of that problem back to back. That is one set.",
+    "Rest about 3 minutes, then do the same with the next problem.",
+    "Finish once all four problems have had their four laps.",
+    "Stop a set early if your technique breaks down, and pick easier problems next time."
+  ],
+  "textSource": "opengym"
+}

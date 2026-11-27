@@ -16894,5 +16894,71 @@
   },
   "9999": {
     "name": "planka med knätouch"
+  },
+  "90001": {
+    "name": "fingerbräda, full crimp"
+  },
+  "90002": {
+    "name": "fingerbräda, tre fingrar drag"
+  },
+  "90003": {
+    "name": "fingerbräda, tvåfingershål"
+  },
+  "90004": {
+    "name": "enarmshäng i fingerbräda"
+  },
+  "90005": {
+    "name": "fingerbräda, nypgrepp"
+  },
+  "90006": {
+    "name": "lyft med nypblock"
+  },
+  "90007": {
+    "name": "lyft med list"
+  },
+  "90008": {
+    "name": "enarms lock-off"
+  },
+  "90009": {
+    "name": "frenchie pull-up"
+  },
+  "90010": {
+    "name": "hängande enbens front lever-hållning"
+  },
+  "90011": {
+    "name": "pull-up i fingerbräda"
+  },
+  "90012": {
+    "name": "campusbräda, stege"
+  },
+  "90013": {
+    "name": "campusbräda, dubbel dyno"
+  },
+  "90014": {
+    "name": "hoppstart"
+  },
+  "90015": {
+    "name": "bouldering"
+  },
+  "90016": {
+    "name": "boardklättring"
+  },
+  "90017": {
+    "name": "4x4-bouldering"
+  },
+  "90018": {
+    "name": "kontinuerlig klättring"
+  },
+  "90019": {
+    "name": "klättring på leder"
+  },
+  "90020": {
+    "name": "klättring utan fötter"
+  },
+  "90021": {
+    "name": "senglidning för fingrarna"
+  },
+  "90022": {
+    "name": "saxgrepp med boll mellan fingrarna"
   }
 }

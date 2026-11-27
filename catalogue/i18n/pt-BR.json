@@ -27166,5 +27166,71 @@
       "Faça uma breve pausa no alto e depois abaixe lentamente o calcanhar esquerdo até a posição inicial.",
       "Repita pelo número desejado de repetições e depois troque para a perna direita."
     ]
+  },
+  "90001": {
+    "name": "suspensão em handboard crimpada completa"
+  },
+  "90002": {
+    "name": "suspensão em handboard com três dedos estendidos"
+  },
+  "90003": {
+    "name": "suspensão em handboard em buraco de dois dedos"
+  },
+  "90004": {
+    "name": "suspensão em handboard com um braço"
+  },
+  "90005": {
+    "name": "suspensão em handboard com pinça"
+  },
+  "90006": {
+    "name": "levantamento de bloco com pinça"
+  },
+  "90007": {
+    "name": "levantamento com bloco de agarra"
+  },
+  "90008": {
+    "name": "bloqueio com um braço"
+  },
+  "90009": {
+    "name": "barra fixa frenchie"
+  },
+  "90010": {
+    "name": "isometria de front lever com uma perna suspenso"
+  },
+  "90011": {
+    "name": "barra fixa em handboard"
+  },
+  "90012": {
+    "name": "escada no campus board"
+  },
+  "90013": {
+    "name": "dyno duplo no campus board"
+  },
+  "90014": {
+    "name": "saída com salto"
+  },
+  "90015": {
+    "name": "boulder"
+  },
+  "90016": {
+    "name": "escalada em board"
+  },
+  "90017": {
+    "name": "boulder 4x4"
+  },
+  "90018": {
+    "name": "escalada contínua"
+  },
+  "90019": {
+    "name": "escalada de vias"
+  },
+  "90020": {
+    "name": "escalada sem pés"
+  },
+  "90021": {
+    "name": "deslizamento dos tendões dos dedos"
+  },
+  "90022": {
+    "name": "aperto de bola em tesoura entre os dedos"
   }
 }

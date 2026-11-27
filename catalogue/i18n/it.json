@@ -64404,5 +64404,269 @@
       "Ripeti per il numero di ripetizioni desiderato, quindi passa alla gamba destra."
     ],
     "description": "Un sollevamento del polpaccio su una gamba con fascia elastica attorno al piede. Allena i polpacci."
+  },
+  "90001": {
+    "name": "sospensione su handboard a chiusura completa",
+    "description": "Una sospensione sulla tavola in chiusura completa, con le nocche centrali delle dita molto piegate e il pollice premuto sopra l'indice. Allena la presa più forte sulle tacche piccole, che è anche quella che carica di più le dita, quindi va costruita nell'arco di diverse settimane.",
+    "instructions": [
+      "Scegli un bordo solido, dritto o leggermente positivo, che riesci a tenere bene.",
+      "Appoggia i polpastrelli sul bordo, piega le nocche centrali verso l'alto e premi il pollice sopra l'indice.",
+      "Se la presa è nuova per te, tieni i piedi a terra o usa una carrucola per scaricare parte del peso.",
+      "Stacca i piedi e resta sospeso con le braccia distese e le spalle attive per 5-10 secondi.",
+      "Interrompi la sospensione appena le dita iniziano ad aprirsi.",
+      "Riposa completamente tra una sospensione e l'altra."
+    ]
+  },
+  "90002": {
+    "name": "sospensione su handboard a tre dita distese",
+    "description": "Una sospensione sulla tavola con tre dita in posizione aperta e distesa, appoggiate sopra il bordo invece che chiuse in tacca. Sviluppa la presa passiva usata sugli svasi e sulle prese arrotondate.",
+    "instructions": [
+      "Appoggia indice, medio e anulare sul bordo e lascia libero il mignolo.",
+      "Tieni basse le nocche centrali e lascia i polpastrelli adagiati sul bordo invece di chiuderli in tacca.",
+      "Stacca i piedi e resta sospeso con le braccia distese e le spalle attive.",
+      "Mantieni la posizione per 5-10 secondi senza far chiudere le dita.",
+      "Scendi con controllo e riposa completamente prima della sospensione successiva."
+    ]
+  },
+  "90003": {
+    "name": "sospensione su handboard in buco a due dita",
+    "description": "Una sospensione con due dita in un buco della tavola. Sviluppa la forza per i buchi e carica molto ogni singolo dito, quindi va aumentata molto gradualmente.",
+    "instructions": [
+      "Inizia con un buco profondo e un carico più leggero di quello che usi a quattro dita.",
+      "Inserisci due dita nel buco, di solito indice e medio oppure medio e anulare.",
+      "Scarica parte del peso con i piedi o una carrucola finché la sospensione è controllata.",
+      "Resta sospeso con le braccia distese e le spalle attive per 5-10 secondi.",
+      "Fermati subito se senti un dolore acuto a un dito.",
+      "Riposa completamente, poi ripeti o cambia coppia di dita."
+    ]
+  },
+  "90004": {
+    "name": "sospensione su handboard a un braccio",
+    "description": "Una sospensione da un bordo della tavola con una mano sola, che allena la forza delle dita un lato alla volta. È un'opzione avanzata, adatta a chi riesce già a tenere un blocco a un braccio su una presa grande per tutta la durata della sospensione.",
+    "instructions": [
+      "Afferra il bordo con una mano usando la presa che vuoi allenare.",
+      "Se serve, scarica parte del peso con l'altra mano su un anello di fettuccia o con una carrucola.",
+      "Solleva i piedi e resta sospeso con il gomito leggermente piegato e la spalla abbassata e attiva.",
+      "Tieni ferme le anche e non lasciare che il corpo ruoti.",
+      "Mantieni la posizione per 5-10 secondi, poi scendi con controllo.",
+      "Cambia mano e riposa più a lungo che dopo una sospensione a due braccia."
+    ]
+  },
+  "90005": {
+    "name": "sospensione su handboard a pinza",
+    "description": "Una sospensione da una presa a pinza sulla tavola, stretta tra pollice e dita. Sviluppa la forza della pinza e del pollice per l'arrampicata.",
+    "instructions": [
+      "Scegli una presa a pinza sulla tavola con i lati verticali.",
+      "Metti il pollice su un lato e le dita sull'altro, poi stringi.",
+      "Stacca i piedi e resta sospeso con le braccia distese e le spalle attive.",
+      "Mantieni per 5-10 secondi senza far scivolare il pollice.",
+      "Torna a terra e riposa completamente tra una sospensione e l'altra."
+    ]
+  },
+  "90006": {
+    "name": "sollevamento con blocco a pinza",
+    "description": "Sollevi con una mano un blocco carico, stringendolo tra pollice e dita. Allena la forza della pinza con un carico semplice da seguire e da aumentare.",
+    "instructions": [
+      "Scegli una larghezza del blocco adatta alla pinza che vuoi allenare e caricalo.",
+      "Appoggialo a terra o su un rialzo basso accanto a te.",
+      "Piega ginocchia e anche, tieni la schiena dritta e afferra il blocco con il pollice su un lato e le dita sull'altro.",
+      "Alzati con il braccio disteso, sollevando lentamente in modo che il blocco resti in piano.",
+      "Fai una breve pausa in alto.",
+      "Riabbassalo lentamente con controllo, poi cambia mano dopo la serie."
+    ]
+  },
+  "90007": {
+    "name": "sollevamento con blocco a tacca",
+    "description": "Sollevi da terra un peso con una mano su un piccolo blocco a tacca, invece di appenderti a una tavola. Sviluppa la forza delle dita con un carico che puoi regolare a piccoli passi.",
+    "instructions": [
+      "Aggancia un peso a un blocco con una tacca di 15-20 mm.",
+      "Piega ginocchia e anche, tieni la schiena dritta e appoggia le dita sulla tacca, di solito a mezza chiusura.",
+      "Tieni il braccio disteso e la spalla abbassata.",
+      "Alzati per sollevare il peso appena da terra.",
+      "Mantieni per il tempo stabilito, poi riabbassalo con controllo.",
+      "Riposa, poi ripeti con l'altra mano."
+    ]
+  },
+  "90008": {
+    "name": "blocco a un braccio",
+    "description": "Una tenuta a un braccio alla sbarra con il gomito fermo a un angolo scelto, per esempio tutto piegato, a 90 gradi o a 120 gradi. Sviluppa la forza di trazione a un braccio che serve per restare in posizione mentre l'altra mano si allunga.",
+    "instructions": [
+      "Afferra la sbarra con entrambe le mani, usando un elastico o una carrucola per alleggerirti se serve.",
+      "Tira finché il gomito del braccio che lavora arriva all'angolo che vuoi.",
+      "Lascia la presa con l'altra mano e tieni la spalla che lavora abbassata.",
+      "Resta fermo per il tempo stabilito senza far ruotare il corpo.",
+      "Rimetti la mano libera sulla sbarra e scendi con controllo.",
+      "Riposa, poi cambia braccio."
+    ]
+  },
+  "90009": {
+    "name": "trazioni frenchie",
+    "description": "Una serie di trazioni con una pausa a tre angoli del gomito, un angolo per ripetizione. Sviluppa la forza per tenere il braccio piegato in ogni punto della trazione, utile in arrampicata per bloccare e allungarsi.",
+    "instructions": [
+      "Appenditi alla sbarra per trazioni con le mani a circa la larghezza delle spalle e le braccia distese.",
+      "Tirati su finché il mento supera la sbarra e mantieni la posizione in alto per 3-5 secondi, poi scendi a braccia distese.",
+      "Tirati su di nuovo, scendi finché i gomiti sono piegati a 90 gradi e mantieni per 3-5 secondi, poi scendi a braccia distese.",
+      "Tirati su di nuovo, scendi finché i gomiti sono solo in parte piegati, a circa 120 gradi, e mantieni per 3-5 secondi.",
+      "Scendi con controllo fino a braccia distese. Queste tre trazioni formano un ciclo.",
+      "Tieni le spalle basse ed evita di dondolare tra una tenuta e l'altra."
+    ]
+  },
+  "90010": {
+    "name": "tenuta del front lever a una gamba da appeso",
+    "description": "Una tenuta del front lever sotto la sbarra con una gamba distesa e l'altro ginocchio raccolto. Si colloca tra il raccolto avanzato e il front lever completo e allena dorsali e muscoli del tronco.",
+    "instructions": [
+      "Appenditi alla sbarra per trazioni con le braccia distese e una presa prona alla larghezza delle spalle.",
+      "Abbassa le scapole e solleva il corpo fino all'orizzontale in posizione raccolta.",
+      "Distendi una gamba in linea con il corpo e tieni l'altro ginocchio raccolto.",
+      "Tieni le anche alla stessa altezza delle spalle e la schiena piatta.",
+      "Mantieni la posizione per 5-10 secondi.",
+      "Abbassati lentamente e usa l'altra gamba nella serie successiva."
+    ]
+  },
+  "90011": {
+    "name": "trazioni su handboard",
+    "description": "Una trazione eseguita dalle prese di un hangboard invece che da una sbarra. Allena le dita e i muscoli della trazione a lavorare insieme, come succede in parete.",
+    "instructions": [
+      "Scegli prese da cui riesci ad appenderti comodamente, come tacche grandi o maniglie per iniziare.",
+      "Afferra le prese con entrambe le mani nella presa che vuoi allenare, come mano aperta o mezza chiusura.",
+      "Appenditi con le braccia distese e le spalle attive.",
+      "Tirati su finché il mento arriva al bordo inferiore della tavola, mantenendo la presa stabile.",
+      "Scendi con controllo fino a braccia distese.",
+      "Termina la serie se la presa scivola o cambia forma.",
+      "Passa a prese più piccole o a una presa più difficile solo quando le ripetizioni diventano facili."
+    ]
+  },
+  "90012": {
+    "name": "scala al campus board",
+    "description": "Salire su un campus board alternando le mani senza i piedi, afferrando ogni listello quando il gomito è ancora piegato. Sviluppa la potenza esplosiva nella trazione e la forza delle dita per agganciare prese piccole.",
+    "instructions": [
+      "Fai campus solo se sei uno scalatore esperto, riposato e ben riscaldato con arrampicata facile e sospensioni.",
+      "Appenditi al listello più basso con entrambe le mani a mezza chiusura e i piedi staccati dalla parete.",
+      "Tira con decisione e porta una mano a un listello più alto, per esempio il 3.",
+      "Afferra il listello con il gomito ancora piegato e tieni la presa salda.",
+      "Tira di nuovo e porta l'altra mano oltre, a un listello più alto, per esempio il 5, e continua fino in cima.",
+      "Lasciati andare con controllo e atterra in piedi su un pavimento imbottito.",
+      "Rendilo più facile con i piedi sugli appoggi o con distanze più corte, e più difficile con distanze più grandi come 1-4-7."
+    ]
+  },
+  "90013": {
+    "name": "doppio lancio al campus board",
+    "description": "Un movimento al campus board in cui entrambe le mani lasciano un listello insieme e afferrano un altro listello nello stesso momento. È un lavoro avanzato per la potenza esplosiva di trazione e per stringere con forza il listello nel momento in cui lo afferri.",
+    "instructions": [
+      "Appenditi a un listello basso con entrambe le mani nella stessa presa e le braccia leggermente piegate.",
+      "Scendi un poco per caricare le braccia, poi tira con forza e lascia la presa con entrambe le mani insieme.",
+      "Afferra il listello successivo con entrambe le mani nello stesso momento.",
+      "Assorbi la presa con le braccia piegate e le spalle attive.",
+      "Sali o scendi di un listello alla volta, controllando ogni presa.",
+      "Chiudi la serie quando una presa diventa imprecisa e riposa completamente tra le serie."
+    ]
+  },
+  "90014": {
+    "name": "partenza saltata",
+    "description": "Un salto da terra per afferrare una presa piccola o un listello del campus e tenerla ferma. Allena le dita a stringere con forza nell'istante in cui toccano la presa.",
+    "instructions": [
+      "Scegli una presa piccola o un listello che raggiungi appena con un salto.",
+      "Mettiti sotto con i piedi a terra, tenendo se vuoi una presa di partenza con una mano.",
+      "Piega le ginocchia e salta, afferrando la presa con la mano libera o con entrambe le mani.",
+      "Tieni la presa ferma per 2-3 secondi con le spalle attive.",
+      "Lascia la presa e atterra su un pavimento imbottito con le ginocchia piegate.",
+      "Riposa completamente tra i tentativi e fermati quando le prese diventano più deboli."
+    ]
+  },
+  "90015": {
+    "name": "boulder",
+    "description": "Arrampicata su passaggi brevi vicino al suolo, sopra i crash pad e senza corda. Allena la forza delle dita, la potenza e la tecnica di movimento, dai tentativi al limite alle sessioni di volume.",
+    "instructions": [
+      "Riscaldati su passaggi facili e aumenta la difficoltà gradualmente.",
+      "Scegli passaggi adatti all'obiettivo della sessione, come tentativi duri, volume o un tema tecnico.",
+      "Appoggia i piedi con precisione e tieni le braccia il più distese possibile.",
+      "Scendi arrampicando o lasciati cadere sui materassi, atterrando sui piedi con le ginocchia piegate.",
+      "Riposa abbastanza tra i tentativi duri per affrontarli ogni volta freschi.",
+      "Fermati prima che la stanchezza renda i tuoi movimenti imprecisi."
+    ]
+  },
+  "90016": {
+    "name": "arrampicata sulla board",
+    "description": "Boulder su una board di allenamento strapiombante e standardizzata, con una disposizione fissa delle prese e passaggi definiti. Sviluppa la forza delle dita, la tensione del corpo e la potenza sui movimenti duri.",
+    "instructions": [
+      "Riscaldati bene su terreno più facile prima di salire sulla board.",
+      "Inizia con alcuni passaggi facili sulla board per abituarti all'inclinazione.",
+      "Scegli passaggi adatti all'obiettivo della sessione, dai singoli movimenti duri ai circuiti concatenati.",
+      "Spingi i piedi sugli appoggi per mantenere la tensione del corpo.",
+      "Riposa completamente tra i tentativi duri.",
+      "Chiudi la sessione quando la forza delle dita o di trazione cala chiaramente."
+    ]
+  },
+  "90017": {
+    "name": "boulder 4x4",
+    "description": "Un blocco di resistenza alla potenza sul muro boulder: quattro blocchi, ciascuno salito quattro volte di fila quasi senza pausa tra un giro e l'altro. Allena a continuare a tirare forte anche con gli avambracci gonfi.",
+    "instructions": [
+      "Scaldati bene, poi scegli quattro blocchi di 8-12 movimenti, ben alla tua portata e senza un passaggio chiave duro.",
+      "Sali il primo blocco, scendi e riparti subito.",
+      "Fai quattro giri di quel blocco di fila. Questa è una serie.",
+      "Riposa circa 3 minuti, poi fai lo stesso con il blocco successivo.",
+      "Termina quando tutti e quattro i blocchi hanno avuto i loro quattro giri.",
+      "Interrompi prima la serie se la tecnica cede e scegli blocchi più facili la volta successiva."
+    ]
+  },
+  "90018": {
+    "name": "arrampicata continua",
+    "description": "Arrampicata o traverso facile senza fermarsi per 10-20 minuti o più. Sviluppa la resistenza aerobica degli avambracci e offre molta pratica di movimento rilassato.",
+    "instructions": [
+      "Scegli un terreno ben al di sotto del tuo limite, come un lungo traverso o vie facili.",
+      "Inizia ad arrampicare e continua a muoverti senza scendere dalla parete.",
+      "Mantieni uno sforzo abbastanza basso da poter parlare mentre arrampichi, con solo una leggera ghisa.",
+      "Scuoti le braccia sulle prese buone e respira con regolarità.",
+      "Continua per 10-20 minuti o più.",
+      "Rallenta o passa a prese più grandi se la ghisa inizia a salire."
+    ]
+  },
+  "90019": {
+    "name": "arrampicata su via",
+    "description": "Arrampicata su vie con la corda, da primo o in moulinette. Fatta a giri o a serie di vie, sviluppa la resistenza per muoversi in modo efficiente per molti movimenti.",
+    "instructions": [
+      "Controlla nodi, imbrago e assicurazione con il tuo compagno prima di ogni salita.",
+      "Scegli una via adatta all'obiettivo della seduta.",
+      "Arrampica con un ritmo costante, rinvia con calma e scuoti le braccia sulle prese buone.",
+      "Fatti calare e riposa, oppure risali subito la via per un altro giro.",
+      "Ripeti per il numero di vie o serie previsto.",
+      "Annota il grado e quanto ti si sono gonfiati gli avambracci."
+    ]
+  },
+  "90020": {
+    "name": "arrampicata senza piedi",
+    "description": "Brevi blocchi su una parete strapiombante usando solo le mani. Sviluppa la potenza di trazione della parte superiore del corpo, la forza nel bloccaggio e la tensione del core per l'arrampicata in strapiombo.",
+    "instructions": [
+      "Scaldati completamente e riserva questo esercizio a quando riesci a fare circa 10 trazioni.",
+      "Usa una parete strapiombante di almeno 20 gradi e scegli prese grandi.",
+      "Parti appeso con le braccia piegate e tieni il core contratto per controllare l'oscillazione.",
+      "Inizia con blocchi di 3 o 4 movimenti di mano e allungali gradualmente nel corso di qualche settimana, fino a circa 8.",
+      "Raggiungi ogni nuova presa con il gomito già piegato, così da non cadere mai a braccia tese oscillando.",
+      "Recupera completamente tra un blocco e l'altro e smetti quando i movimenti sono ancora precisi."
+    ]
+  },
+  "90021": {
+    "name": "scivolamento dei tendini delle dita",
+    "description": "Un esercizio lento per la mano che porta le dita da distese a uncino, a pugno chiuso e a tavolo piatto. Mantiene i tendini delle dita scorrevoli ed è adatto a chi arrampica come routine leggera quotidiana o nei giorni di riposo.",
+    "instructions": [
+      "Tieni una mano davanti a te con le dita distese e unite.",
+      "Piega solo le articolazioni centrali e quelle delle punte formando un uncino, con le nocche alla base delle dita dritte.",
+      "Continua a chiudere fino a un pugno completo, con il pollice appoggiato all'esterno.",
+      "Torna a dita distese, poi piega solo le nocche alla base così che le dita restino piatte come un tavolo.",
+      "Torna a dita distese e ripeti la sequenza 5-10 volte.",
+      "Muoviti lentamente, resta in un'ampiezza comoda, poi cambia mano."
+    ]
+  },
+  "90022": {
+    "name": "stretta a forbice della pallina tra le dita",
+    "description": "Metti una pallina morbida tra due dita vicine e la stringi avvicinando le dita lateralmente. Rinforza i piccoli muscoli tra le dita che aiutano a tenere la mano stabile sulle prese.",
+    "instructions": [
+      "Metti una pallina morbida, di gommapiuma o spugna, tra due dita vicine.",
+      "Tieni entrambe le dita distese e il polso rilassato.",
+      "Avvicina le dita lateralmente per stringere la pallina, come una forbice che si chiude.",
+      "Mantieni la stretta per un secondo, poi rilassa senza far cadere la pallina.",
+      "Esegui 15-20 ripetizioni, poi sposta la pallina sulla coppia di dita successiva.",
+      "Cambia mano e scegli una pallina più dura quando le ripetizioni diventano facili."
+    ]
   }
 }

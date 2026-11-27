@@ -1,0 +1,25 @@
+{
+  "id": "90013",
+  "name": "campus board double dyno",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "biceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A campus board move where both hands leave a rung together and catch another rung at the same time. It is advanced work for explosive pulling power and for gripping a rung hard the moment you land on it.",
+  "instructions": [
+    "Hang from a low rung with both hands in the same grip and your arms slightly bent.",
+    "Drop a little to load your arms, then pull hard and let go with both hands at once.",
+    "Catch the next rung up with both hands at the same time.",
+    "Absorb the catch with bent arms and engaged shoulders.",
+    "Move up or down one rung at a time, keeping every catch controlled.",
+    "End the set when a catch gets sloppy and rest fully between sets."
+  ],
+  "textSource": "opengym"
+}

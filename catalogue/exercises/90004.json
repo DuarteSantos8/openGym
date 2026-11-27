@@ -1,0 +1,25 @@
+{
+  "id": "90004",
+  "name": "handboard one arm hang",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "lats",
+    "rear delts"
+  ],
+  "category": "isometric",
+  "hold": true,
+  "description": "A hang from a hangboard edge with one hand, training finger strength one side at a time. It is an advanced option, best kept for climbers who can already hold a one-arm lock-off on a big hold for the full length of the hang.",
+  "instructions": [
+    "Grip the edge with one hand in the grip you want to train.",
+    "Take weight off with your other hand on a sling or with a pulley if you need to.",
+    "Lift your feet and hang with the elbow slightly bent and the shoulder pulled down and engaged.",
+    "Keep your hips still and stop your body from twisting.",
+    "Hold for 5-10 seconds, then step down under control.",
+    "Switch hands and rest longer than you would after a two-arm hang."
+  ],
+  "textSource": "opengym"
+}

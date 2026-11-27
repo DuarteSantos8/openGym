@@ -26970,5 +26970,71 @@
       "Marque une pause en haut, puis abaisse lentement ton talon gauche pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité, puis passe à la jambe droite."
     ]
+  },
+  "90001": {
+    "name": "suspension sur planche crimp complet"
+  },
+  "90002": {
+    "name": "suspension sur planche trois doigts tendus"
+  },
+  "90003": {
+    "name": "suspension sur planche en bidoigt"
+  },
+  "90004": {
+    "name": "suspension à un bras sur planche"
+  },
+  "90005": {
+    "name": "suspension sur planche en pince"
+  },
+  "90006": {
+    "name": "soulevé de bloc en pince"
+  },
+  "90007": {
+    "name": "soulevé sur réglette"
+  },
+  "90008": {
+    "name": "blocage à un bras"
+  },
+  "90009": {
+    "name": "traction frenchie"
+  },
+  "90010": {
+    "name": "maintien du front lever une jambe suspendu"
+  },
+  "90011": {
+    "name": "traction sur planche"
+  },
+  "90012": {
+    "name": "échelle sur campus board"
+  },
+  "90013": {
+    "name": "double jeté sur campus board"
+  },
+  "90014": {
+    "name": "départ sauté"
+  },
+  "90015": {
+    "name": "bloc"
+  },
+  "90016": {
+    "name": "escalade sur pan d'entraînement"
+  },
+  "90017": {
+    "name": "bloc 4x4"
+  },
+  "90018": {
+    "name": "escalade continue"
+  },
+  "90019": {
+    "name": "escalade en voie"
+  },
+  "90020": {
+    "name": "escalade sans pieds"
+  },
+  "90021": {
+    "name": "glissement tendineux des doigts"
+  },
+  "90022": {
+    "name": "pression de balle en ciseau entre les doigts"
   }
 }

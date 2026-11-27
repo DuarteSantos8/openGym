@@ -1,0 +1,25 @@
+{
+  "id": "90016",
+  "name": "board climbing",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "lats",
+    "biceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Bouldering on a steep standardised training board with a fixed layout of holds and set problems. It builds finger strength, body tension and power on hard moves.",
+  "instructions": [
+    "Warm up thoroughly on easier terrain before you get on the board.",
+    "Start with a few easy board problems to get used to the angle.",
+    "Choose problems that fit the session goal, from hard single moves to linked circuits.",
+    "Press your feet into the footholds to keep body tension.",
+    "Rest fully between hard attempts.",
+    "End the session when your finger or pulling strength clearly drops."
+  ],
+  "textSource": "opengym"
+}
