@@ -418,8 +418,10 @@ describe('a save this device refuses', () => {
       useStore.getState().update(s => { s.restSec = 80 }, false)
       await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(3))
       expect(toast.mock.calls[2][0]).toMatch(/out of storage/)
-    } finally { undo2() }
-    useStore.getState().update(s => { s.restSec = 70 }, false) // reset the module's warning streak for the next test
+    } finally {
+      undo2()
+      useStore.getState().update(s => { s.restSec = 70 }, false) // reset the module's warning streak for the next test
+    }
   })
 
   it('keeps the change, marks it owed to the server, and says so once', async () => {
