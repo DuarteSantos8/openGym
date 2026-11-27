@@ -43,10 +43,14 @@ export default function OntImport({ owner }) {
     if (!preview || !sameDiary(owner)) return
     let counts
     try {
-      useStore.getState().update(state => { counts = preview.mergeOntRows(state, preview.rows) })
+      useStore.getState().update(state => { counts = preview.mergeOntRows(state, preview.rows) }, true, { checkSyncLimit: true })
       setStatus('')
       useUI.getState().toast(t('Added: {0}. Updated: {1}. Unchanged: {2}.', counts.added, counts.updated, counts.unchanged))
-    } catch { setStatus(t('Could not read this OpenNutriTracker export.')) }
+    } catch (err) {
+      setStatus(err?.message === 'sync-too-large'
+        ? t('This import would exceed the account sync limit. Try a smaller export.')
+        : t('Could not read this OpenNutriTracker export.'))
+    }
     setPreview(null)
   }
 

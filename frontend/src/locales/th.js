@@ -6543,6 +6543,8 @@ export default {
   "Import into the diary on this device?": "นำเข้าไปยังบันทึกประจำวันบนอุปกรณ์นี้หรือไม่",
   "Import into your synced account diary?": "นำเข้าไปยังบันทึกประจำวันของบัญชีที่ซิงค์ไว้หรือไม่",
   "{0} entries ready. {1} skipped.": "พร้อมนำเข้า {0} รายการ ข้าม {1} รายการ",
+  "This import would exceed the account sync limit. Try a smaller export.": "การนำเข้านี้จะเกินขีดจำกัดการซิงค์ของบัญชี ลองใช้ไฟล์ส่งออกที่เล็กลง",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "ข้อมูลของคุณเกินขีดจำกัดการซิงค์ของบัญชี การเปลี่ยนแปลงจึงอยู่บนอุปกรณ์นี้จนกว่าข้อมูลจะเล็กลง",
   "Could not read this OpenNutriTracker export.": "ไม่สามารถอ่านไฟล์นี้ที่ส่งออกจาก OpenNutriTracker ได้",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "เพิ่มแล้ว {0} รายการ อัปเดตแล้ว {1} รายการ ไม่เปลี่ยนแปลง {2} รายการ",
 }

@@ -6472,6 +6472,8 @@ export default {
   "Import into the diary on this device?": "Importér til dagbogen på denne enhed?",
   "Import into your synced account diary?": "Importér til din kontos synkroniserede dagbog?",
   "{0} entries ready. {1} skipped.": "Poster klar: {0}. Sprunget over: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Denne import ville overskride kontoens synkroniseringsgrænse. Prøv en mindre eksportfil.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "Dine data overskrider kontoens synkroniseringsgrænse, så ændringerne bliver på denne enhed, indtil de er mindre.",
   "Could not read this OpenNutriTracker export.": "Denne eksport fra OpenNutriTracker kunne ikke læses.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Tilføjet: {0}. Opdateret: {1}. Uændret: {2}.",
 }
