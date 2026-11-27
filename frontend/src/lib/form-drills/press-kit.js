@@ -155,6 +155,8 @@ export function dropDepthShare(reps, standard) {
  * The arm-drop tracker. `drill` is the drill definition (views); `spec` holds what differs:
  *   framing(frame) -> reason | null, viewDetector() -> { push(frame, atTop), view }
  *   startHint(), readyHint(): translated status lines; notes: { side, diagonal, front } -> string
+ *   shoulderMark: optional, how far Vision's shoulder sits above the joint at the bottom, in upper
+ *         arms (0 when not given): added to the shoulder's depth before it is judged and reported
  *   side: optional { track(acc, frame, sidePick), finish(acc, measures), summary(m) -> {}, cues: [[id, (summary, n) => bool, () => text]],
  *         tile(summary) -> tile | null, rows(measures) -> rows }   (side-on extras)
  */
@@ -252,7 +254,7 @@ export function createArmDropTracker(drill, spec, { standard, view: fixedView } 
     const phase0 = machine.phase
     if (f && f.straight && (phase0 === 'waiting' || phase0 === 'standing') && (lastS == null || lastS < DROP_TOP_S)) readTop(fr, f)
     let s = f && armRef ? (armRef - f.arm) / armRef / DROP_FULL : null
-    if (f && upperRef > 0) f.hd = (f.sh[1] - f.el[1]) / upperRef
+    if (f && upperRef > 0) f.hd = (f.sh[1] - f.el[1]) / upperRef + (spec.shoulderMark || 0)
     if (s != null) lastS = s
     if (!supported(viewNow())) s = null
     const ev = machine.push(at, s, { canStart: !!f && f.straight && supported(viewNow()) })

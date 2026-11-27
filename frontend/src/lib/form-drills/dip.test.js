@@ -2,7 +2,7 @@
 // elbows' height at the top as the setup asks outside a side view), filmed from side-on to facing
 // the camera: counting, depth and the standards, tempo, the elbow angle, cues, matches.
 import { describe, expect, it } from 'vitest'
-import dip from './dip.js'
+import dip, { SHOULDER_MARK } from './dip.js'
 import { checkDrill } from './index.js'
 import { LEVEL_BAND } from './press-kit.js'
 import { CAMERA, ease, film, project, same, YAWS } from './test-kit.js'
@@ -15,7 +15,8 @@ const ELBOW_TOP = 1.27     // the elbows' height at the top: where the phone goe
  * A dip in body coordinates (u forward, v up, w left) from the elbow angle (180 straight). The
  * hands stay on bars 1 m high with the forearms upright; the upper arm turns back, so the
  * shoulder is at elbow height at 90. The torso leans forward a little more the deeper the dip;
- * the knees are bent, the feet behind.
+ * the knees are bent, the feet behind. The shoulders are drawn where Vision puts them, SHOULDER_MARK
+ * upper arms above the joint.
  */
 export function dipPose(elbow) {
   const thDeg = 180 - elbow, th = rad(thDeg)
@@ -33,7 +34,7 @@ export function dipPose(elbow) {
   }
   pair('Wrist', wr, 0.25)
   pair('Elbow', el, 0.24)
-  pair('Shoulder', S, 0.19)
+  pair('Shoulder', [S[0], S[1] + SHOULDER_MARK * 0.3], 0.19)
   pair('Hip', hip, 0.1)
   pair('Knee', knee, 0.08)
   pair('Ankle', ankle, 0.06)
@@ -77,7 +78,7 @@ function elbowForDepth(d, yaw) {
   const cam = { yaw, height: ELBOW_TOP }
   const top = project(dipPose(175), cam)
   const upper = y(top, 'Elbow') - y(top, 'Shoulder')
-  const at = e => { const j = project(dipPose(e), cam); return (y(j, 'Shoulder') - y(j, 'Elbow')) / upper }
+  const at = e => { const j = project(dipPose(e), cam); return (y(j, 'Shoulder') - y(j, 'Elbow')) / upper + SHOULDER_MARK }
   let lo = 40, hi = 150
   for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (at(m) > d) lo = m; else hi = m }
   return (lo + hi) / 2
@@ -157,7 +158,9 @@ describe('the dip, whatever the angle', () => {
 
   it('side-on: the bottom elbow angle, its spread across the set, and the note', () => {
     const { res } = run(dipSet([{ min: 80, down: 1.5, up: 1 }, { min: 90, down: 1.5, up: 1 }, { min: 85, down: 1.5, up: 1 }]))
-    expect(res.reps[0].measures.minElbow).toBeCloseTo(80, -1)
+    // Read through Vision's shoulder, SHOULDER_MARK above the joint, an 80 degree elbow reads a little more open.
+    expect(res.reps[0].measures.minElbow).toBeGreaterThan(80)
+    expect(res.reps[0].measures.minElbow).toBeLessThan(95)
     expect(res.summary.consistency).toBeGreaterThan(6)
     expect(res.summary.consistency).toBeLessThan(14)
     expect(res.details[0].map(d => d.label)).toEqual(['Depth', 'Tempo', 'Elbow angle'])

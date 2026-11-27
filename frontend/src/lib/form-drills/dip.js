@@ -19,7 +19,16 @@ const IDS = new Set([
 ])
 const DIP = /^\s*(weighted |ring |chest |triceps? |bench |parallel bar |straight bar )*dips?\s*$/i
 
+// Vision's shoulder sits at the base of the neck, in front of and above the joint the upper arm
+// turns about (form lab overlays, three side-on dippers). Side-on, dips whose upper arms reach
+// level or lower by eye read the shoulder 0.16 above the elbow to 0.37 below it (upper arms), a
+// dip stopped well short with the knees bent 0.58 above; on the near arm alone, chair dips that
+// look level read 0.2 to 0.3 above. SHOULDER_MARK comes off before depth is judged (the squat's
+// HIP_MARK, for the hip); the push-up, with no shallow clip to place it, keeps 0.
+export const SHOULDER_MARK = 0.15
+
 const SPEC = {
+  shoulderMark: SHOULDER_MARK,
   framing: frame => framing(frame, ARM),
   viewDetector: createViewDetector,
   startHint: () => t('Arms straight to start'),
