@@ -2,6 +2,11 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Stima del programma ricorrente. Sono escluse le serie di riscaldamento e le modifiche per singole date.",
+  "No working sets in the recurring plan.": "Il programma ricorrente non contiene serie di lavoro.",
+  "below range": "sotto l’intervallo",
+  "Personal target": "Obiettivo personale",
+  "Default ranges adapted from RP Strength volume landmarks.": "Gli intervalli predefiniti sono adattati dai riferimenti di RP Strength sul volume di allenamento.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Afferra la barra con i palmi in avanti e le mani poco più larghe delle spalle.",
   "Hang with straight arms, then pull yourself up.": "Appenditi a braccia tese, poi solleva il corpo.",
   "Pull your elbows down toward your ribs.": "Porta i gomiti in basso verso le costole.",

@@ -1,5 +1,10 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "A rendszeres terv becslése. A bemelegítő sorozatok és az egyes napokra megadott módosítások nem számítanak bele.",
+  "No working sets in the recurring plan.": "A rendszeres tervben nincs munkasorozat.",
+  "below range": "a tartomány alatt",
+  "Personal target": "Személyes cél",
+  "Default ranges adapted from RP Strength volume landmarks.": "Az alapértelmezett tartományok az RP Strength edzésmennyiségi irányértékein alapulnak.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Fogd meg a rudat a válladnál kissé szélesebben, előrenéző tenyérrel.",
   "Hang with straight arms, then pull yourself up.": "Lógj nyújtott karral, majd húzd fel magad.",
   "Pull your elbows down toward your ribs.": "Húzd a könyöködet lefelé, a bordáid felé.",

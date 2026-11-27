@@ -1,5 +1,10 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Estimation du programme récurrent. Les séries d’échauffement et les changements ponctuels sont exclus.",
+  "No working sets in the recurring plan.": "Le programme récurrent ne contient aucune série de travail.",
+  "below range": "sous la plage",
+  "Personal target": "Objectif personnel",
+  "Default ranges adapted from RP Strength volume landmarks.": "Les plages par défaut sont adaptées des repères de volume de RP Strength.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Saisissez la barre un peu plus large que les épaules, paumes vers l’avant.",
   "Hang with straight arms, then pull yourself up.": "Suspendez-vous bras tendus, puis hissez-vous.",
   "Pull your elbows down toward your ribs.": "Ramenez les coudes vers le bas, près des côtes.",

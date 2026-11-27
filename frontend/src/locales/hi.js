@@ -1,5 +1,10 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "आवर्ती योजना का अनुमान। वॉर्म-अप सेट और किसी खास तारीख के बदलाव इसमें शामिल नहीं हैं।",
+  "No working sets in the recurring plan.": "आवर्ती योजना में कोई वर्किंग सेट नहीं है।",
+  "below range": "सीमा से कम",
+  "Personal target": "व्यक्तिगत लक्ष्य",
+  "Default ranges adapted from RP Strength volume landmarks.": "डिफ़ॉल्ट सीमाएँ RP Strength के प्रशिक्षण वॉल्यूम के मानकों से अनुकूलित हैं।",
   "Grip the bar just wider than your shoulders, palms facing away.": "हथेलियाँ सामने रखते हुए बार को कंधों से थोड़ी ज़्यादा चौड़ाई पर पकड़ें।",
   "Hang with straight arms, then pull yourself up.": "सीधी बाँहों से लटकें, फिर शरीर को ऊपर खींचें।",
   "Pull your elbows down toward your ribs.": "कोहनियों को पसलियों की ओर नीचे खींचें।",

@@ -1,5 +1,10 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Perkiraan jadwal berulang. Set pemanasan dan perubahan pada tanggal tertentu tidak dihitung.",
+  "No working sets in the recurring plan.": "Tidak ada set kerja dalam jadwal berulang.",
+  "below range": "di bawah rentang",
+  "Personal target": "Target pribadi",
+  "Default ranges adapted from RP Strength volume landmarks.": "Rentang bawaan diadaptasi dari panduan volume latihan RP Strength.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Genggam palang sedikit lebih lebar dari bahu dengan telapak tangan menghadap ke depan.",
   "Hang with straight arms, then pull yourself up.": "Bergantunglah dengan lengan lurus, lalu tarik tubuh ke atas.",
   "Pull your elbows down toward your ribs.": "Tarik siku ke bawah menuju tulang rusuk.",

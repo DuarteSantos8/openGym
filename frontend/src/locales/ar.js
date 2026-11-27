@@ -1,5 +1,10 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "تقدير للخطة المتكررة. لا يشمل الإحماء والتعديلات الخاصة بتواريخ محددة.",
+  "No working sets in the recurring plan.": "لا توجد مجموعات عمل في الخطة المتكررة.",
+  "below range": "أقل من النطاق",
+  "Personal target": "الهدف الشخصي",
+  "Default ranges adapted from RP Strength volume landmarks.": "النطاقات الافتراضية مستوحاة من مؤشرات حجم التدريب لدى RP Strength.",
   "Grip the bar just wider than your shoulders, palms facing away.": "أمسك البار بقبضة أوسع قليلًا من كتفيك وراحتا يديك إلى الأمام.",
   "Hang with straight arms, then pull yourself up.": "تعلق بذراعين مستقيمتين ثم اسحب جسمك إلى أعلى.",
   "Pull your elbows down toward your ribs.": "اسحب مرفقيك إلى أسفل باتجاه أضلاعك.",

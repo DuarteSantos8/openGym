@@ -4,6 +4,11 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Estimativa do plano recorrente. Séries de aquecimento e alterações em datas específicas ficam de fora.",
+  "No working sets in the recurring plan.": "Não há séries de trabalho no plano recorrente.",
+  "below range": "abaixo da faixa",
+  "Personal target": "Meta pessoal",
+  "Default ranges adapted from RP Strength volume landmarks.": "As faixas padrão foram adaptadas das referências de volume de treino da RP Strength.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Segure a barra um pouco além da largura dos ombros, com as palmas viradas para a frente.",
   "Hang with straight arms, then pull yourself up.": "Pendure-se com os braços estendidos e puxe o corpo para cima.",
   "Pull your elbows down toward your ribs.": "Puxe os cotovelos para baixo, na direção das costelas.",

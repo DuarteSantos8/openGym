@@ -1,5 +1,10 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Tekrarlanan planın tahmini. Isınma setleri ve belirli tarihlere ait değişiklikler dahil edilmez.",
+  "No working sets in the recurring plan.": "Tekrarlanan planda çalışma seti yok.",
+  "below range": "aralığın altında",
+  "Personal target": "Kişisel hedef",
+  "Default ranges adapted from RP Strength volume landmarks.": "Varsayılan aralıklar, RP Strength’in antrenman hacmi ölçütlerinden uyarlanmıştır.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Barı omuz genişliğinden biraz daha açık, avuçların ileri bakacak şekilde tut.",
   "Hang with straight arms, then pull yourself up.": "Kolların düzken sark, ardından kendini yukarı çek.",
   "Pull your elbows down toward your ribs.": "Dirseklerini aşağı, kaburgalarına doğru çek.",

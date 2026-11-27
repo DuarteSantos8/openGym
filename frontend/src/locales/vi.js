@@ -1,5 +1,10 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Ước tính cho lịch tập lặp lại. Không tính hiệp khởi động và thay đổi vào ngày cụ thể.",
+  "No working sets in the recurring plan.": "Lịch tập lặp lại không có hiệp tập chính.",
+  "below range": "dưới khoảng",
+  "Personal target": "Mục tiêu cá nhân",
+  "Default ranges adapted from RP Strength volume landmarks.": "Các khoảng mặc định được điều chỉnh theo mốc khối lượng tập của RP Strength.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Nắm xà rộng hơn vai một chút, lòng bàn tay hướng ra trước.",
   "Hang with straight arms, then pull yourself up.": "Treo người với tay duỗi thẳng rồi kéo người lên.",
   "Pull your elbows down toward your ribs.": "Kéo khuỷu tay xuống về phía xương sườn.",

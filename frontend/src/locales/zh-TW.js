@@ -1,4 +1,9 @@
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "依重複排程估算，不計入熱身組與個別日期的調整。",
+  "No working sets in the recurring plan.": "重複排程中沒有正式訓練組。",
+  "below range": "低於範圍",
+  "Personal target": "個人目標",
+  "Default ranges adapted from RP Strength volume landmarks.": "預設範圍改編自 RP Strength 的訓練量指標。",
   "Grip the bar just wider than your shoulders, palms facing away.": "雙手比肩稍寬握槓，掌心朝前。",
   "Hang with straight arms, then pull yourself up.": "雙臂伸直懸垂，然後向上拉起身體。",
   "Pull your elbows down toward your ribs.": "將肘部向下拉向肋骨。",

@@ -1,5 +1,10 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Recurring plan estimate. Warm-ups and date overrides are excluded.": "Оценка по повторяющемуся плану. Разминочные подходы и изменения на отдельные даты не учитываются.",
+  "No working sets in the recurring plan.": "В повторяющемся плане нет рабочих подходов.",
+  "below range": "ниже диапазона",
+  "Personal target": "Личная цель",
+  "Default ranges adapted from RP Strength volume landmarks.": "Диапазоны по умолчанию адаптированы из рекомендаций RP Strength по объёму тренировок.",
   "Grip the bar just wider than your shoulders, palms facing away.": "Возьмитесь за перекладину чуть шире плеч ладонями от себя.",
   "Hang with straight arms, then pull yourself up.": "Повисните на прямых руках и подтянитесь.",
   "Pull your elbows down toward your ribs.": "Тяните локти вниз к рёбрам.",
