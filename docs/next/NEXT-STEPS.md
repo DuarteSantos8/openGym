@@ -4,6 +4,8 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Guest sign-in retry (#133, prepared).** Verify the original workouts and photo survive offline on phone and desktop, and account-only workouts stay private. Local HTTPS Chrome verified the ten guest workouts after sign-out and offline reload.
+
 - **Guest workout ownership follow-up (A5, prepared).** Verify signed-out History and guest attachments on the deployed build. The store regression suite covers account reset, profile creation, refused storage writes and a second guest tab.
 
 - **Guided workout (E1, prepared).** During a workout, open Workout options > Layout > Guided workout. Read one exercise’s form cues at a time, or enable Spoken cues to hear them. Too hard switches this session to the guide’s easier exercise. [English phone view](evidence/EP26-T03/guided-workout-390-dark.png).

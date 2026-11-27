@@ -346,7 +346,10 @@ describe('guest training after import — owner contract 2026-11-27', () => {
     api.mockImplementation(async path => {
       if (path === '/api/config') return { signed_in: signedIn, allow_guest: true, coach: null }
       if (path === '/api/logout') { signedIn = false; return {} }
-      if (path === '/api/me' && signedIn) return { user: { id: 'acct-a', name: 'A' } }
+      if (path === '/api/me') {
+        if (signedIn) return { user: { id: 'acct-a', name: 'A' } }
+        throw Object.assign(new Error('signed out'), { status: 401 })
+      }
       return { state: null, rev: 0 }
     })
     try {
