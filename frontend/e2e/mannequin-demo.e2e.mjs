@@ -3,6 +3,7 @@
 // asked for no motion, and the rig freed when the sheet closes. Scanned with axe; the fixture
 // fails on any request that leaves this machine.
 import AxeBuilder from '@axe-core/playwright'
+import { readFileSync } from 'node:fs'
 import { test, expect, click, enterAsGuest, openRoute } from './fixtures.mjs'
 
 /** Count the frames the rig actually draws, so "it is animating" is measured, not assumed. */
@@ -160,6 +161,20 @@ test('the movement demo works offline, once the app has been opened with a netwo
   await page.reload()
   await openSquatSheet(page)
   await expect(page.locator('.mm-demo')).toBeVisible({ timeout: 10_000 })
+
+  // The exercise's own clip and still go into the worker's media cache, where the app's
+  // prefetcher puts them for the exercises in a plan. Without them a sheet opened offline asks
+  // for media that is not there, and WebKit reports that failed load as an error in the page;
+  // it says nothing about the demo, which is what this test is about.
+  const media = {
+    clip: [...readFileSync(new URL('../../catalogue/media/clip/1760.mp4', import.meta.url))],
+    still: [...readFileSync(new URL('../../catalogue/media/still/1760.webp', import.meta.url))],
+  }
+  await page.evaluate(async ({ clip, still }) => {
+    const cache = await caches.open('opengym-media-v1')
+    await cache.put('exercise-media/clip/1760.mp4', new Response(new Uint8Array(clip), { headers: { 'content-type': 'video/mp4' } }))
+    await cache.put('exercise-media/still/1760.webp', new Response(new Uint8Array(still), { headers: { 'content-type': 'image/webp' } }))
+  }, media)
 
   await context.setOffline(true)
   await page.keyboard.press('Escape')
