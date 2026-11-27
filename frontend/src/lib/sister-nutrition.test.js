@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 // openNutrition → openGym (gm-hooks): linking against a stand-in openNutrition, and where its numbers show.
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   cleanUrl, guessUrl, cleanDay, cleanSummary, cleanFasting, link, refresh, loadLink, unlink, daysIn, nutritionSummary,
   fastingNow, setShown, NUTRITION_KEY, LinkError,
@@ -77,10 +77,26 @@ describe('sister-nutrition: linking', () => {
     expect(m.asked[0].url).toBe('https://nutrition.example.com/api/v1/integration/pair/redeem')
     expect(JSON.parse(m.asked[0].init.body)).toEqual({ code: 'GYM12345', app: 'opengym', scopes: ['summary:read'] })
     expect(m.asked[1].url).toBe('https://nutrition.example.com/api/v1/integration/summary?from=2026-10-22&to=2026-11-04')
-    expect(localStorage.getItem(NUTRITION_KEY)).not.toContain(m.token)
+    const cache = localStorage.getItem(NUTRITION_KEY + '.guest')
+    expect(JSON.parse(cache).url).toBe(l.url)
+    expect(cache.includes(m.token)).toBe(false)
+    expect(loadLink().pairId).toBeTruthy()
     expect(loadLink().hint).toBe(m.token.slice(-4))
     expect(Object.keys(loadLink().days)).toEqual(['2026-11-02', '2026-11-03'])
   })
+  it('refuses to link when the attempt cannot be saved, before submitting the code', async () => {
+    const m = mockNutrition()
+    vi.stubGlobal('localStorage', {
+      getItem: () => null,
+      setItem: () => { throw new Error('storage refused') },
+    })
+    try {
+      await expect(link('nutrition.example.com', 'gym1-2345', { fetchFn: m.fetchFn, now: NOW })).rejects.toMatchObject({ code: 'failed' })
+      expect(m.asked).toHaveLength(0)
+      expect(loadLink()).toBeNull()
+    } finally { vi.unstubAllGlobals() }
+  })
+
   it('takes a pasted token as it is (an openNutrition from before the code)', async () => {
     const m = mockNutrition()
     await link('https://nutrition.example.com', m.token, { fetchFn: m.fetchFn, now: NOW })

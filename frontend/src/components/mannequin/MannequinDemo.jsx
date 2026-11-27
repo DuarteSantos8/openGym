@@ -45,7 +45,7 @@ function MannequinStill({ pattern }) {
     'shoulderL', 'elbowL', 'wristL', 'shoulderR', 'elbowR', 'wristR', 'pelvis', 'chest', 'head']
   const xs = used.map(n => p[n][0])
   const ys = used.map(n => p[n][1])
-  const pad = 0.10
+  const pad = RIG.headR + 0.015 // Bounds use joint centers; leave room for the whole head.
   const left = Math.min(...xs) - pad
   const top = Math.min(...ys) - pad
   const width = Math.max(...xs) - Math.min(...xs) + pad * 2
