@@ -27,6 +27,7 @@ const api = spawn(process.execPath, ['server.js'], {
     ...process.env, PORT: port, DATA_DIR: mkdtempSync(join(tmpdir(), 'og-e2e-linked-')), ORIGIN: origin, RP_ID: 'localhost',
     INVITE_ONLY: '', ADMIN_UIDS: '', FIRST_USER_ADMIN: '', PASSWORD_LOGIN: '',
     OIDC_ISSUER: idp.issuer, OIDC_CLIENT_ID: idp.clientId, OIDC_CLIENT_SECRET: idp.clientSecret, OIDC_LABEL: 'Ironvane', OIDC_ONLY: '1',
+    OIDC_BURST_PER_MIN: '300',
   },
 })
 const stop = () => { api.kill(); idp.close().finally(() => process.exit(0)) }
