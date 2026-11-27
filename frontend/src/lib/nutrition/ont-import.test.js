@@ -52,6 +52,15 @@ test('two independent diary copies converge through the actual sync merge', asyn
   first.nutritionEntries[0]._ts = 12
   expect(mergeOntRows(first, (await parse([base])).rows).unchanged).toBe(1)
 })
+test('a legacy entry without createdAt stays readable after a refresh and retry', async () => {
+  const state = {}
+  mergeOntRows(state, (await parse([base])).rows)
+  delete state.nutritionEntries[0].createdAt
+  const refreshed = (await parse([{ ...base, amount: 90 }])).rows
+  expect(mergeOntRows(state, refreshed).updated).toBe(1)
+  expect(state.nutritionEntries[0]).not.toHaveProperty('createdAt')
+  expect(mergeOntRows(state, refreshed).unchanged).toBe(1)
+})
 test('first intake wins for legacy repeated IDs, blank IDs are counted as skipped', async () => {
   const result = await parse([base, { ...base, amount: 90 }, { ...base, id:' ' }])
   expect(result.rows).toHaveLength(1)

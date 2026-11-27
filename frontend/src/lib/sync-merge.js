@@ -746,6 +746,7 @@ const amountNumber = v => typeof v === 'number' && Number.isFinite(v) && v >= 0 
 // Only rows with one coherent amount dimension may have that dimension repaired. Other opaque
 // records keep the ordinary field merge, even when they already contain both dimensions.
 function amountDimension(x) {
+  if (x.schemaVersion !== 1) return null
   const g = Object.hasOwn(x, 'amountG'), m = Object.hasOwn(x, 'amountMl')
   if (g === m) return null
   const key = g ? 'amountG' : 'amountMl'
@@ -767,11 +768,11 @@ function amountGroup(x, key) {
 }
 function settleAmountGroup(a, b, out) {
   const ka = amountDimension(a), kb = amountDimension(b)
-  if (!ka || !kb || !Object.hasOwn(out, 'amountG') || !Object.hasOwn(out, 'amountMl')) return
-  // An absent opposite dimension is old merge evidence, not part of this side's current group.
-  // A serving stamp still counts when serving is absent: removal is an atomic group edit too.
-  const ta = Math.max(optionalTime(a._f?.[ka]), optionalTime(a._f?.serving))
-  const tb = Math.max(optionalTime(b._f?.[kb]), optionalTime(b._f?.serving))
+  if (!ka || !kb) return
+  // A change or removal of any member dates the whole portion, including after
+  // earlier merges. Keeping the maximum makes this choice independent of grouping.
+  const clock = row => Math.max(...amountFields.map(key => optionalTime(row._f?.[key])))
+  const ta = clock(a), tb = clock(b)
   const ga = amountGroup(a, ka), gb = amountGroup(b, kb)
   const take = ta > tb ? ga : tb > ta ? gb : optionalJSON(ga) >= optionalJSON(gb) ? ga : gb
   for (const key of amountFields) delete out[key]
@@ -779,7 +780,7 @@ function settleAmountGroup(a, b, out) {
 }
 
 /** Deterministic id union using the existing per-field stamp map. Missing wins a tie. */
-export function mergeOptionalEntries(a, b) {
+export function mergeOptionalEntries(a, b, key = 'nutritionEntries') {
   const byId = new Map()
   for (const raw of [...optionalRows(a), ...optionalRows(b)]) {
     const x = optionalRecord(raw), old = byId.get(x.id)
@@ -796,7 +797,7 @@ export function mergeOptionalEntries(a, b) {
     }
     out._ts = Math.max(old._ts, x._ts)
     if (Object.keys(f).length) out._f = f
-    settleAmountGroup(old, x, out)
+    if (key === 'nutritionEntries') settleAmountGroup(old, x, out)
     byId.set(x.id, out)
   }
   return [...byId.values()].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
@@ -830,7 +831,7 @@ export function mergeOptionalCollections(a, b, out, { prefer } = {}) {
       for (const id of ids) if (typeof id === 'string' && optionalKey(id) && !(preferred && reset !== preferred && owned.has(id)) && Math.abs(Number(gone[id]) || 0) < at) gone[id] = at
     }
     if (has) {
-      let rows = mergeOptionalEntries(a?.[key], b?.[key])
+      let rows = mergeOptionalEntries(a?.[key], b?.[key], key)
       if (prefer) {
         const preferred = new Map(optionalRows((prefer === 'a' ? a : b)?.[key]).map(x => [x.id, optionalRecord(x)]))
         rows = rows.map(x => preferred.get(x.id) || x)
@@ -1225,7 +1226,7 @@ export function stampRestore(next, others = [], now = Date.now()) {
   for (const key of OPTIONAL_COLLECTIONS) {
     const live = new Set(optionalLive[key])
     for (const x of optionalRows(next[key])) if (live.has(x.id)) {
-      const old = mergeOptionalEntries(others.flatMap(o => optionalRows(o?.[key])), []).find(o => o.id === x.id)
+      const old = mergeOptionalEntries(others.flatMap(o => optionalRows(o?.[key])), [], key).find(o => o.id === x.id)
       stampEntry(old || x, x, now)
       x._f = Object.fromEntries([...new Set([...Object.keys(x), ...Object.keys(old || {}), ...Object.keys(x._f || {})])].filter(k => !ENTRY_META.has(k)).map(k => [k, now]))
       if (Number(del[key]?.[x.id]) > 0) del[key] = { ...del[key], [x.id]: -now }
@@ -1258,7 +1259,7 @@ export function stampReplace(next, others = [], now = Date.now()) {
   if (!next || typeof next !== 'object') return next
   const known = {}
   for (const f of Object.keys(DEL_LISTS)) known[f] = others.flatMap(o => list(o?.[f])).filter(x => x != null)
-  for (const key of OPTIONAL_COLLECTIONS) if (others.some(o => Object.hasOwn(o || {}, key))) known[key] = mergeOptionalEntries(others.flatMap(o => optionalRows(o?.[key])), [])
+  for (const key of OPTIONAL_COLLECTIONS) if (others.some(o => Object.hasOwn(o || {}, key))) known[key] = mergeOptionalEntries(others.flatMap(o => optionalRows(o?.[key])), [], key)
   stampOptionalCollections(known, next, now)
   stampDeletions(known, next, now)
   for (const f of ['workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', ...OPTIONAL_COLLECTIONS]) {

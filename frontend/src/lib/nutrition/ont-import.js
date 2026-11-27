@@ -156,9 +156,9 @@ export function mergeOntRows(state, rows) {
     }
     const old = entries[index]
     if (state.deleted?.nutritionEntries?.[old.id] > 0 || !normalizeEntry(old).supported) { counts.unchanged++; continue }
-    const updated = { ...old, ...imported, id: old.id, createdAt: old.createdAt, timeZone: old.timeZone }
+    const updated = { ...old, ...imported, id: old.id, timeZone: old.timeZone }
     for (const key of importerFields) if (!Object.hasOwn(imported, key)) delete updated[key]
-    for (const key of ['_f', '_ts', '_u']) {
+    for (const key of ['createdAt', '_f', '_ts', '_u']) {
       if (Object.hasOwn(old, key)) updated[key] = old[key]
       else delete updated[key]
     }

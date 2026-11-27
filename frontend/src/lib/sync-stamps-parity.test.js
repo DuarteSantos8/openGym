@@ -238,4 +238,36 @@ describe('nutrition amount groups merge atomically on client and API', () => {
       expect(row.amountMl).toBe(250)
     }
   })
+
+  it('converges after independent edits to a common amount, serving and dimension', () => {
+    const base = { nutritionEntries: [food({ amountG: 50, customField: 'kept' })] }
+    stampOptionalCollections({}, base, 1)
+    const edit = (fields, time) => {
+      const copy = clone(base)
+      delete copy.nutritionEntries[0].amountG
+      Object.assign(copy.nutritionEntries[0], fields)
+      stampOptionalCollections(base, copy, time)
+      return copy.nutritionEntries
+    }
+    const portion = { label: 'bowl', count: 1, size: 50, unit: 'g' }
+    const a = edit({ amountG: 50, serving: portion }, 3)
+    const b = edit({ amountG: 75 }, 2)
+    const c = edit({ amountMl: 100 }, 4)
+    for (const merge of [mergeOptionalEntries, S.mergeOptionalEntries]) {
+      expect(merge(a, b, 'importedActivities')[0]).toMatchObject({ amountG: 75, serving: portion })
+      expect(merge([{ ...a[0], schemaVersion: 2 }], [{ ...b[0], schemaVersion: 2 }])[0])
+        .toMatchObject({ amountG: 75, serving: portion })
+      expect(merge(a, b)[0]).toMatchObject({ amountG: 50, serving: portion })
+      let reference
+      for (const [x, y, z] of [[a,b,c],[a,c,b],[b,a,c],[b,c,a],[c,a,b],[c,b,a]]) {
+        const result = merge(merge(x, y), z)
+        expect(result).toEqual(merge(x, merge(y, z)))
+        expect(merge(merge(merge(result, z), x), y)).toEqual(result)
+        expect(result[0]).toMatchObject({ amountMl: 100, customField: 'kept' })
+        expect(normalizeEntry(result[0]).supported).toBe(true)
+        reference ??= result
+        expect(result).toEqual(reference)
+      }
+    }
+  })
 })
