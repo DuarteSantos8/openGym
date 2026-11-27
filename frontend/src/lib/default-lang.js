@@ -51,6 +51,18 @@ function cachedDefaultLang() {
   try { return localStorage.getItem(CACHE_KEY) } catch { return null }
 }
 
+// The language picked on the very first screen (#1037: the welcome screen of the phone apps, the
+// sign-in screen on the web), before there is a profile to put it in. It belongs to this device,
+// like the browser's languages, and outranks them and the instance default for a copy that never
+// picked one in Settings. Never synced; Settings → Language still wins once used.
+const PICK_KEY = 'gym_lang_pick'
+export function rememberLangPick(l) {
+  try { if (matchLocale(l)) localStorage.setItem(PICK_KEY, l); else localStorage.removeItem(PICK_KEY) } catch { /* ignore */ }
+}
+export function langPick() {
+  try { return matchLocale(localStorage.getItem(PICK_KEY)) } catch { return null }
+}
+
 /**
  * The language to show this copy in, on this device: its own `lang`, or for a copy that never
  * picked one, what autoLang says. Before the config is in, the default this device last saw
@@ -59,6 +71,8 @@ function cachedDefaultLang() {
 export function effectiveLang(S, config, navLangs = browserLangs()) {
   const own = (S && typeof S.lang === 'string' && S.lang) || 'en'
   if (!S || S.langAuto !== true) return own
+  const pick = langPick()
+  if (pick) return pick
   let cfg = config
   if (!cfg) {
     const seen = cachedDefaultLang()

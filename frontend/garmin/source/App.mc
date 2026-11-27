@@ -32,6 +32,9 @@ module G {
     //! A hold running: [System.getTimer() at its start, seconds to hold]; its 3-2-1 began at hcd.
     var hold = null;
     var hcd = null;
+    //! The set the hold (or its 3-2-1) is for, Core.holdFor's [key, side]: its end logs that set,
+    //! and the phone logging it first ends the hold here unlogged (#1403).
+    var hfor = null;
     //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
     var cd = null;
     //! "Still training?": up, because the phone left the gym (askLeft), and when the lifter last
@@ -152,7 +155,11 @@ class OpenGymApp extends Application.AppBase {
 
     //! A message from the phone: the snapshot (lib/garmin-snapshot.js), as a dictionary.
     function onPhone(msg as Communications.PhoneAppMessage) as Void {
-        var data = msg.data;
+        took(msg.data);
+    }
+
+    //! The snapshot itself (the simulator build's phone, sim/source/Sim.mc, hands its own here).
+    function took(data) as Void {
         if (!(data instanceof Lang.Dictionary)) {
             return;
         }
@@ -227,6 +234,8 @@ module Link {
     //! none sent, HARD is the end (Core.room).
     const MAX = 60;
     const HARD = 90;
+    //! How soon the phone is asked again while the lifter waits for it (ms, Core.needsPhone).
+    const NEED = 10000;
 
     //! Whether there is a phone link at all. The simulator build has none: without an Android
     //! phone on ADB, the Linux simulator's first transmit puts up a dialog and then crashes, so
@@ -292,6 +301,10 @@ module Link {
     //! 45 s, or nothing would ever be sent again; and the phone is asked for its latest once a
     //! minute until it has answered once (the first hello can get lost like any message). Both
     //! that and the resend of what is unconfirmed wait longer each time the phone stays silent.
+    //! While the lifter stands waiting for the next part of the workout (Core.needsPhone), all of
+    //! that runs on 10 s instead (still doubling while the phone is silent), and the phone is
+    //! asked for its latest even after it answered once: a set or a snapshot lost on the way
+    //! used to keep "Next exercise is on its way from your phone" up for minutes (#1295).
     function retry() {
         var now = System.getTimer();
         if (busy && now - began > 45000) {
@@ -301,8 +314,9 @@ module Link {
         if (busy) {
             return;
         }
-        var wait = 60000 << (quiet > 4 ? 4 : quiet);
-        if (ask && now - began > wait && hello()) {
+        var need = Core.needsPhone(G.state);
+        var wait = (need ? NEED : 60000) << (quiet > 4 ? 4 : quiet);
+        if ((ask || (need && G.state["ob"].size() == 0)) && now - began > wait && hello()) {
             quiet += 1;
             return;
         }
@@ -310,7 +324,10 @@ module Link {
             return;
         }
         var since = now - lastTry;
-        if (Core.unsent(G.state) > 0 && since > 30000) {
+        if (Core.unsent(G.state) > 0 && since > (need ? wait : 30000)) {
+            if (need) {
+                quiet += 1;
+            }
             flush();
         } else if (Core.unsent(G.state) == 0 && since > wait) {
             G.state["obn"] = 0;

@@ -11,7 +11,7 @@ import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, tn, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
 import { Arranged, CustomizeLink } from '../components/PageLayout.jsx'
-import { groupHidden } from '../lib/page-layout.js'
+import { groupHidden, linkShown } from '../lib/page-layout.js'
 import { nameIn } from '../lib/a11y-name.js'
 import { lifetimeTotals, likenessOf } from '../lib/lifetime.js'
 import { LB_KG } from '../lib/units.js'
@@ -47,7 +47,7 @@ import { perSetSessions, perSetLines, dropOffSet } from '../lib/per-set.js'
 import { relativeSeries } from '../lib/relative-strength.js'
 import {
   hasEffort, hasEstimableEffort, displayScale, scaleName, toScale, avgRir, effortSummary, effortWeeks,
-  effortHistogram, isHardSet, HARD_RIR, rirOf
+  effortHistogram, isHardSet, HARD_RIR, rirOf, readsRatingsOnly
 } from '../lib/effort.js'
 import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.jsx'
@@ -442,10 +442,14 @@ function EffortCard({ S }) {
       return r
     }
   }, [anchors, opts])
-  const sum = effortSummary(S, win, resolve)
-  const weeks = effortWeeks(S, win, resolve)
-  const hist = effortHistogram(S, win, resolve)
-  const estimated = sum.est > 0
+  // With enough real ratings in the period the card is those ratings alone; the estimate only
+  // stands in for a history with too few, and says what it is (lib/effort.js readsRatingsOnly).
+  const enoughRated = readsRatingsOnly(S, win)
+  const read = enoughRated ? rirOf : resolve
+  const sum = effortSummary(S, win, read)
+  const weeks = effortWeeks(S, win, read)
+  const hist = effortHistogram(S, win, read)
+  const estimated = !enoughRated && sum.est > 0
   // The week's set count rides along in the tooltip, because the pair is the reading:
   // volume up with effort up is fatigue piling up, volume up with effort flat is adaptation.
   const pts = weeks.map(w => ({ t: w.t, y: toScale(kind, w.rir), note: t('{0} sets', w.sets) }))
@@ -472,6 +476,9 @@ function EffortCard({ S }) {
           ? t('{0} rated · {1} estimated of {2} sets', sum.rated, sum.est, sum.done)
           : t('{0} of {1} finished sets rated', sum.rated, sum.done)}</span>
       </div>
+      {estimated && <div className="small dim effort-est" data-effort-estimated>
+        {t('Estimated from your weights, taking your best set of the last 90 days as all-out. Rate a few sets and this turns into the real thing.')}
+      </div>}
       {effortOf(S) === 'none' && <div className="small effort-off">
         {t('Effort per set is off. Turn it on in Settings → Workout to keep rating.')}
       </div>}
@@ -581,7 +588,12 @@ export function StatsIndex({ sections }) {
 export default function Stats() {
   const nav = useNavigate()
   // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
-  const S = countedS(useStore(s => s.S))
+  // What only says you trained that day, the Activity heatmap by time and Recent workouts, reads
+  // the log as it is, like History and the calendar: a workout kept out of progression was still
+  // a workout (Discord 2026-11-22: it vanished from both).
+  const logS = useStore(s => s.S)
+  const S = countedS(logS)
+  const logged = logS.workouts || []
   const photoUser = useStore(s => s.user)
   const photoConfig = useStore(s => s.config)
   const [range, setRange] = useState(90)
@@ -620,7 +632,7 @@ export default function Stats() {
   const totals = useMemo(() => lifetimeTotals(S), [S.workouts]) // eslint-disable-line react-hooks/exhaustive-deps
   const likeness = likenessOf(S.unit === 'lb' ? lifetime * LB_KG : lifetime)
   // The streak with its best run, freezes and badges (lib/streak.js).
-  const streak = streakInfo(S)
+  const streak = streakInfo(logS)
 
   // Dumbbell weights are read in each exercise's current meaning (lib/dumbbells.js), so the
   // chart and its best compare like with like across a switch between per bell and total.
@@ -735,7 +747,7 @@ export default function Stats() {
           ? (repsOnly ? Math.max(0, ...doneSets.map(completedRepsOf)) : data.best)
           : Math.max(0, ...doneSets.map(metric))
         if (mx > 0) {
-          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: representative?.target })
+          exPts.push({ t: workoutAt(w), y: mx, d: w.d, sets: doneSets, target: representative?.target })
           // Weighted work on an assistance machine reads the other way: the smallest load is the
           // best (issue #232). Reps, duration and speed are always "more is better".
           const better = curMode === 'reps' && !repsOnly ? betterWeight(curEx, exBest || mx, mx) : Math.max(exBest, mx)
@@ -886,12 +898,12 @@ export default function Stats() {
   const hasEffortSect = (effortCard || (effortOn && timeCard)) && !gone('effort')
   const sections = [
     ...(gone('overview') ? [] : [{ value: 'overview', label: t('Overview') }]),
-    ...(bodyOn ? [{ value: 'body', label: t('Body') }] : []),
+    ...(bodyOn && !gone('body') ? [{ value: 'body', label: t('Body') }] : []),
     { value: 'lifts', label: t('Lifts') },
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
   ]
-  const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
-  const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
+  const recent = [...logged].reverse().slice(0, RECENT_ROWS)
+  const wrapped = motivationOn ? wrappedYears(S) : []
   // Your month (v1.4.5): last month's story once it is over, this month's so far before that.
   const storyMonth = motivationOn ? offeredMonth(S, todayISO()) : null
   const thisYear = new Date().getFullYear()
@@ -899,26 +911,28 @@ export default function Stats() {
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
   // paragraph and an Open button each, dressed as content. Under Body, where two of them live;
   // with the Body module off, at the end of Lifts, without the two that are Body's.
+  // Each row can be switched off in Customize, and the whole list hidden there (lib/page-layout.js).
+  const keep = id => linkShown(S, id)
   const linkRows = [
-    bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
+    keep('measurements') && bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
     // Also before the first workout wherever a photo can be filed under a day: else the gallery,
     // and its camera, could not be reached to add the very first one.
-    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
-    workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
+    keep('photos') && bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
+    keep('balance') && workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
     // Every note in one feed (views/Journal.jsx): workouts, sets, exercises, check-ins, days off.
-    <Row key="j" title={t('Journal')} subtitle={t('Every note you wrote, in one place.')} accessory="chevron" className="stats-link" onClick={() => nav('/journal')} />,
-    <Row key="t" title={t('Tools')} subtitle={t('1RM table, RPE load, DOTS, BMI, body fat, pace.')} accessory="chevron" className="stats-link" onClick={() => nav('/tools')} />,
-    storyMonth && <Row key="month" title={t('Your month')} value={storyMonth === todayISO().slice(0, 7) ? t('So far') : monthLabel(storyMonth)} accessory="chevron"
+    keep('journal') && <Row key="j" title={t('Journal')} subtitle={t('Every note you wrote, in one place.')} accessory="chevron" className="stats-link" onClick={() => nav('/journal')} />,
+    keep('tools') && <Row key="t" title={t('Tools')} subtitle={t('1RM table, RPE load, DOTS, BMI, body fat, pace.')} accessory="chevron" className="stats-link" onClick={() => nav('/tools')} />,
+    keep('month') && storyMonth && <Row key="month" title={t('Your month')} value={storyMonth === todayISO().slice(0, 7) ? t('So far') : monthLabel(storyMonth)} accessory="chevron"
       className="stats-link month-story" onClick={() => openMonthStory(storyMonth)} />,
-    ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
+    ...(keep('year') ? wrapped : []).map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
       className="stats-link" onClick={() => openWrapped(y)} />),
   ].filter(Boolean)
-  const statsLinks = linkRows.length > 0 && <>
+  const statsLinks = linkRows.length > 0 && <div>
     <h4 className="sec">{t('More')}</h4>
     <div className="sect-b stats-links" data-stats-links>{linkRows}</div>
-  </>
+  </div>
 
   return <>
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
@@ -951,7 +965,7 @@ export default function Stats() {
         {likeness && <div className="small lifetime-like">{likeness}</div>}
       </div>}
     </div> },
-      { id: 'streak', node: workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} /> },
+      { id: 'streak', node: logged.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} /> },
       // The month's challenges and the trophy shelf (lib/challenges.js), folded to one line.
       { id: 'challenges', node: workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} /> },
       // Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say.
@@ -962,16 +976,16 @@ export default function Stats() {
       <SeasonDeco spot="stats-heatmap" />
       <h2>{t('Activity (last 12 months)')}</h2>
       <Heatmap
-        S={S}
+        S={S.heatmapMetric === 'vol' ? S : logS}
         metric={S.heatmapMetric === 'vol' ? 'vol' : 'time'}
         onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
-        onDay={iso => { const ws = workouts.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso); else dayOverrideSheet(iso) }}
+        onDay={iso => { const ws = logged.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso); else dayOverrideSheet(iso) }}
       />
     </div> },
-      { id: 'recent', node: workouts.length > 0 && <div>
+      { id: 'recent', node: logged.length > 0 && <div>
       <div className="row between stats-list-h">
         <h4 className="sec" style={{ margin: 0 }}>{t('Recent workouts')}</h4>
-        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {workouts.length}</Button>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {logged.length}</Button>
       </div>
       <div className="list">{recent.map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
     </div> },
@@ -979,7 +993,7 @@ export default function Stats() {
 
     </section>}
 
-    {bodyOn && <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
+    {bodyOn && !gone('body') && <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
       <h2 className="stats-sect-h" id="stats-h-body">{t('Body')}</h2>
     <Arranged page="stats" S={S} items={[{ id: 'bodyweight', node: <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 8 }}>
@@ -999,8 +1013,8 @@ export default function Stats() {
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </div>}
       <SeasonDeco spot="stats-web" />
-    </div> }]} />
-      {statsLinks}
+    </div> },
+      { id: 'links', node: statsLinks }]} />
     </section>}
 
     <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
@@ -1076,8 +1090,8 @@ export default function Stats() {
       // Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in.
       { id: 'strength', node: workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} /> },
       { id: 'time', node: !effortOn && timeCard && <ExerciseTimeCard S={S} /> },
+      { id: 'links', node: !bodyOn && statsLinks },
     ]} />
-    {!bodyOn && statsLinks}
     </section>
 
     {hasEffortSect && <section className="stats-sect" id="stats-effort" data-stats-sect="effort" aria-labelledby="stats-h-effort">

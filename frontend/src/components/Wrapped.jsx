@@ -214,7 +214,12 @@ export default function Wrapped() {
       name={`opengym-${month || year}-${c.id}.png`} shareTitle={t('Your {0} in openGym', month ? monthLabel(month) : String(year))}
       render={pref => wrappedCardImage(c, { ...pref, year: label, body })} />)
   }
-  const hideBody = () => update(s => { s.wrappedBody = false })
+  // Left out for good, but never one way: Undo here, and Settings → Notifications has the switch
+  // back (Discord 2026-11-21: nothing could bring the card back).
+  const hideBody = () => {
+    update(s => { s.wrappedBody = false })
+    useUI.getState().toast(t('Body weight is out of your year.'), { action: t('Undo'), onAction: () => useStore.getState().update(s => { s.wrappedBody = true }) })
+  }
   const last = idx === cards.length - 1
   return <div className={'wrapped' + (still ? ' still' : '') + (covered ? ' covered' : '')} ref={root} role="dialog" aria-modal="true" aria-label={t('Your {0} in openGym', label)}>
     <div className="wr-glow" aria-hidden="true"><i /><i /><i /></div>

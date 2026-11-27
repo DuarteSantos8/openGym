@@ -22,6 +22,26 @@ final class PlanTests: XCTestCase {
         XCTAssertEqual(size.sets, 5)
     }
 
+    func session(_ folder: String?) -> ReadySession {
+        ReadySession(routineIds: ["r"], name: "R", entries: [], folder: folder)
+    }
+
+    func testAHeaderWhereTheFolderChanges() {
+        let o = [session(nil), session("Legs"), session("Legs"), session("Push")]
+        XCTAssertEqual((0..<4).map { Plan.folderHeader(at: $0, in: o) }, [nil, "Legs", nil, "Push"])
+    }
+
+    func testNoFoldersMeansNoHeaders() {
+        let o = [session(nil), session(nil)]
+        XCTAssertEqual((0..<2).map { Plan.folderHeader(at: $0, in: o) }, [nil, nil])
+    }
+
+    func testABlankFolderIsNoHeaderAndAFirstFolderGetsOne() {
+        XCTAssertNil(Plan.folderHeader(at: 0, in: [session("  ")]))
+        XCTAssertEqual(Plan.folderHeader(at: 0, in: [session("Legs")]), "Legs")
+        XCTAssertNil(Plan.folderHeader(at: 5, in: [session("Legs")]))
+    }
+
     func testNothingPlannedIsZero() {
         XCTAssertEqual(Plan.size([]).exercises, 0)
         XCTAssertEqual(Plan.size([]).sets, 0)

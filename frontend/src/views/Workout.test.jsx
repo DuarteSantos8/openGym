@@ -66,6 +66,7 @@ const mocks = vi.hoisted(() => {
     addRest: state.addRest,
     startWork: state.startWork,
     toast: state.toast,
+    sheets: [],
   })
   return state
 })
@@ -1393,6 +1394,35 @@ describe('saving progression settings unchanged', () => {
   })
 })
 
+// Settings → Workout → Rate warm-ups too (#1374, thanks @lodepav for the idea in #1374).
+describe('rate warm-ups too, switched off', () => {
+  const ramped = () => exercise('plain-bench', [false, false], {
+    sets: [{ w: 30, r: 5, done: false, phase: 'warmup', rir: 2 }, { w: 60, r: 5, done: false }],
+  })
+  const shownEffort = () => [...container.querySelectorAll('.setrow .effcell:not(.effgap), .setrow .effcell-stp')]
+
+  it('rates warm-ups like any set by default', async () => {
+    await mount([ramped()], 0, { effort: 'rir' })
+    expect(shownEffort()).toHaveLength(2)
+  })
+
+  for (const view of ['cards', 'list', 'compact']) {
+    it(`${view}: the warm-up keeps a hidden slot, the work set its cell, the logged rating its value`, async () => {
+      await mount([ramped()], 0, { effort: 'rir', warmupEffort: false, active: { workoutView: view } })
+      const rows = [...container.querySelectorAll('.setrow')]
+      expect(rows[0].querySelector('.effgap[aria-hidden="true"]')).toBeTruthy()
+      expect(rows[0].querySelector('.effcell:not(.effgap), .effcell-stp')).toBeNull()
+      expect(rows[1].querySelector('.effcell')).toBeTruthy()
+      expect(mocks.S.active.entries[0].sets[0].rir).toBe(2)
+    })
+  }
+
+  it('Focus shows no effort button on the warm-up', async () => {
+    await mount([ramped()], 0, { effort: 'rir', warmupEffort: false, active: { workoutView: 'focus' } })
+    expect(container.querySelector('.focus-effort')).toBeNull()
+  })
+})
+
 describe('effort cell (colour-coded RIR/RPE quick picker)', () => {
   // A rep exercise whose sets can carry an effort rating. `rir` per set is optional — an
   // unrated set simply omits the key, which is what the empty cell has to represent.
@@ -1666,6 +1696,32 @@ describe('active workout whole-unit move controls', () => {
 
     expect(action('Move up')?.disabled).toBe(true)
     expect(action('Move down')?.disabled).toBe(true)
+  })
+})
+
+describe('moving an exercise in the list by hold-and-drag (Discord 2026-11-21)', () => {
+  const grips = () => [...container.querySelectorAll('.wl-unit [data-reorder-handle]')]
+  const key = async (el, k) => {
+    const e = new dom.Event('keydown', { bubbles: true })
+    Object.defineProperty(e, 'key', { value: k })
+    await act(async () => { el.dispatchEvent(e) })
+  }
+  it('every unit in the list is a reorder row with a grip named for it, and its arrow keys move it', async () => {
+    await mount([exercise('first', [true]), exercise('second', [false]), exercise('third', [false])], 1, { active: { workoutView: 'list' } })
+    const rows = [...container.querySelectorAll('.workout-list > [data-reorder-row]')]
+    expect(rows.length).toBe(3)
+    expect(grips().length).toBe(3)
+    expect(grips()[0].getAttribute('aria-label')).toMatch(/^Move /)
+    await key(grips()[0], 'ArrowDown')
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual(['second', 'first', 'third'])
+    // the marker stays on the exercise it was on
+    expect(mocks.S.active.entries[mocks.S.active.cur].id).toBe('second')
+    expect(mocks.stopWork).toHaveBeenCalled()
+  })
+  it('no grip while a timed set runs, since it writes by index', async () => {
+    mocks.work = { left: 5, total: 5, endsAt: Date.now() + 5000 }
+    await mount([exercise('first', [false]), exercise('second', [false])], 0, { active: { workoutView: 'list' } })
+    expect(grips()).toEqual([])
   })
 })
 
@@ -2506,11 +2562,11 @@ describe('workout view header menu', () => {
     expect(menu.sections.map(g => g.more ? 'more' : g.items.filter(Boolean).map(it => it.label))).toEqual([
       ['Workout settings'], ['Pause workout', 'Add exercise', 'Add session note', 'Layout'], 'more',
     ])
-    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Don’t count for progression'])
+    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Mark all sets done', 'Don’t count for progression'])
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Don’t count for progression',
+      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Mark all sets done', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')
@@ -3658,8 +3714,29 @@ describe('mark all sets done while logging a past workout', () => {
     expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
   })
 
-  it('is only there for a past workout', async () => {
-    await mount([exercise('plain-bench', [false])], 0, { active: { routineIds: [] } })
+  it('sits under More in a live workout, asks first and starts no rest', async () => {
+    await mount([exercise('plain-bench', [false, true]), exercise('plain-row', [false])], 0, { active: { routineIds: [] } })
+    const menu = await openMenu()
+    // Not among the rows on show: one stray tap there would tick a whole session.
+    expect(menu.sections[1].items.filter(Boolean).map(it => it.label)).not.toContain('Mark all sets done')
+    const item = menuItemsOf(menu).find(it => it.label === 'Mark all sets done')
+    expect(item).toBeTruthy()
+    await act(async () => { item.onClick() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(false)
+    const ask = mocks.confirmSheet.mock.calls.at(-1)[0]
+    expect(ask.message).toContain('2 sets')
+    await act(async () => { ask.onConfirm() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(true)
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
+    // The toast puts the sets back the way they were.
+    const [, opts] = mocks.toast.mock.calls.at(-1)
+    await act(async () => { opts.onAction() })
+    expect(mocks.S.active.entries.map(e => e.sets.map(s => s.done))).toEqual([[false, true], [false]])
+  })
+
+  it('is not offered once every set is ticked', async () => {
+    await mount([exercise('plain-bench', [true])], 0, { active: { routineIds: [] } })
     expect(labels(await openMenu())).not.toContain('Mark all sets done')
   })
 })
@@ -4015,3 +4092,35 @@ describe('a set\'s own form video (v1.4.4)', () => {
   })
 })
 
+
+// #1347: the Start screen's other routines sit under their folders, as on Plan.
+describe('Start workout: other routines by folder', () => {
+  const start = async routines => {
+    mocks.S = { ...workout([], 0, { routines }), active: null, week: {}, dayPlan: {} }
+    installDom()
+    await act(async () => { root.render(React.createElement(Workout)) })
+  }
+  const r = (id, name, folder) => ({ id, name, ex: [], ...(folder ? { folder } : {}) })
+
+  it('lists loose routines first, then each folder with its own header', async () => {
+    try { localStorage.clear() } catch (e) { /* none in this env */ }
+    await start([r('a', 'Leg Day', 'Block 1'), r('b', 'Cardio'), r('c', 'Leg Day', 'Block 2'), r('d', 'Old', 'Archive')])
+    const heads = [...container.querySelectorAll('.plan-folder')].map(b => b.querySelector('.grow').textContent)
+    expect(heads).toEqual(['Block 1', 'Block 2', 'Archive'])
+    const names = sel => [...container.querySelectorAll(sel + ' .tt')].map(x => x.textContent)
+    expect(names('[data-folder="Block 1"]')).toEqual(['Leg Day'])
+    expect(names('[data-folder="Block 2"]')).toEqual(['Leg Day'])
+    // The archive starts folded, the way Plan shows it.
+    expect(names('[data-folder="Archive"]')).toEqual([])
+    expect(container.querySelector('.list .tt').textContent).toBe('Cardio')
+    const blk = container.querySelector('[data-folder="Block 1"] .plan-folder')
+    await act(async () => { blk.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(names('[data-folder="Block 1"]')).toEqual([])
+  })
+
+  it('shows no folder headers when no routine has a folder', async () => {
+    await start([r('a', 'Push'), r('b', 'Pull')])
+    expect(container.querySelectorAll('.plan-folder').length).toBe(0)
+    expect([...container.querySelectorAll('.list .tt')].map(x => x.textContent)).toEqual(['Push', 'Pull'])
+  })
+})

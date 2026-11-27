@@ -206,6 +206,9 @@ class WatchLogicTest {
         assertEquals("1234", reps.press("x").text)
         assertNull(Keypad(1).value)
         assertFalse("nothing typed is nothing to save", Keypad(1).fits(0.0..10.0))
+        assertTrue("✓ with nothing typed keeps the number shown", Keypad(1).confirms(0.0..10.0))
+        assertTrue(k.confirms(0.0..700.0))
+        assertFalse("out of range: ✓ waits for a number that fits", k.confirms(0.0..50.0))
         assertEquals("0.5", Keypad(1).press(".").press("5").text)
     }
 
@@ -243,19 +246,12 @@ class WatchLogicTest {
         assertEquals("a backwards rest is over", 0f, RestMath.left(end, start, now), 0f)
     }
 
-    @Test fun restPillAddsQuickTapsAndIgnoresJumps() {
-        assertEquals(15, RestMath.pillSum(0, 60_000, 75_000))
-        assertEquals(30, RestMath.pillSum(15, 75_000, 90_000))
-        assertEquals(0, RestMath.pillSum(15, 90_000, 75_000))
-        assertEquals("a clamp shows the real change", 12, RestMath.pillSum(0, 60_000, 72_000))
-        assertEquals("a jump over 120 s is ignored", 15, RestMath.pillSum(15, 75_000, 300_000))
-        assertEquals(15, RestMath.pillSum(15, 75_000, 75_000))
-    }
-
-    @Test fun restPillText() {
-        assertEquals("+30 s", RestMath.pillText(30))
-        assertEquals("−15 s", RestMath.pillText(-15))
-        assertNull(RestMath.pillText(0))
+    @Test fun restShiftChipText() {
+        assertEquals("+30", RestMath.shiftText(30))
+        assertEquals("−15", RestMath.shiftText(-15))
+        assertEquals("seconds all the way: a circle has no room for a clock", "+105", RestMath.shiftText(105))
+        assertEquals("−60", RestMath.shiftText(-60))
+        assertNull("back to zero: no chip", RestMath.shiftText(0))
     }
 
     @Test fun restWarnsInTheLastThreeSeconds() {
@@ -483,12 +479,6 @@ class WatchLogicTest {
         val st = WireJson.decodeFromString(WatchSettings.serializer(), """{"forgotten":{"askMin":30,"graceMin":2,"leaveGym":true}}""")
         assertEquals(ForgottenSettings(30.0, 2.0, true), st.forgotten)
         assertNull(WireJson.decodeFromString(WatchSettings.serializer(), "{}").forgotten)
-    }
-
-    @Test fun theSummarysHeartRateSplitsIntoTwoLines() {
-        assertEquals("128 avg" to "164 max", ch.duartesantos.opengym.wear.ui.splitStat("128 avg · 164 max"))
-        assertEquals("Ø 128" to "max. 164", ch.duartesantos.opengym.wear.ui.splitStat("Ø 128 · max. 164"))
-        assertEquals("128" to null, ch.duartesantos.opengym.wear.ui.splitStat("128"))
     }
 
     // #1182: the long-text slot shows the whole line, no title; the watch face must be told it may ask
@@ -736,5 +726,102 @@ class WatchLogicTest {
         k.total(260.0); assertEquals(60.0, k.value!!, 0.0)
         // The sensor rests and comes back in B: B's count goes on.
         k.start("b"); k.total(10.0); assertEquals(70.0, k.value!!, 0.0)
+    }
+
+    /* ---------- a hold the phone logged first (Discord Mircuz, Garmin #1403) ---------- */
+
+    @Test fun aHoldIsOverOnceThePhoneLoggedItsSet() {
+        val hold = HoldSet(0, 0, null, null)
+        assertTrue(hold.openIn(state(entry("plank", listOf(row(), row()), mode = "time"))))
+        val phoneLogged = state(entry("plank", listOf(row(done = true, at = 1.0), row()), mode = "time"))
+        assertFalse("a hold ending now would log set 2", hold.openIn(phoneLogged))
+        assertFalse("no workout, nothing to log", hold.openIn(SessionState()))
+    }
+
+    @Test fun aHoldOnOneSideIsOverWhenThePhoneLoggedThatSide() {
+        val both = Sides(SideRow(20.0, 10.0), SideRow(20.0, 10.0))
+        val hold = HoldSet(0, 0, "L", null)
+        assertTrue(hold.openIn(state(entry("sp", listOf(row(sides = both)), mode = "time"))))
+        val lDone = both.with("L", SideRow(20.0, 10.0, done = true))
+        val s = state(entry("sp", listOf(row(sides = lDone)), mode = "time"))
+        assertFalse(hold.openIn(s))
+        assertTrue("the other side's hold is a new one", HoldSet(0, 0, "R", null).openIn(s))
+    }
+
+    @Test fun aHoldFindsItsSetByIdAfterTheOnesBeforeItMove() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val hold = HoldSet(0, 1, null, "b")
+        assertTrue(hold.openIn(state(entry("plank", listOf(a, b), mode = "time"))))
+        assertTrue("still open, now at place 0", hold.openIn(state(entry("plank", listOf(b), mode = "time"))))
+        assertFalse(hold.openIn(state(entry("plank", listOf(b.copy(done = true, at = 3.0)), mode = "time"))))
+        assertFalse("its set was removed", hold.openIn(state(entry("plank", listOf(a), mode = "time"))))
+    }
+
+    @Test fun anEmptySetIdFindsTheSetByPlace() {
+        val hold = HoldSet(0, 1, null, "")
+        val s = state(entry("plank", listOf(row(done = true, at = 1.0).copy(sid = ""), row().copy(sid = "")), mode = "time"))
+        assertEquals(0 to 1, hold.placeIn(s))
+    }
+
+    // The 3-2-1 before a hold remembers its set as the hold does: if the phone logs it meanwhile, the set up
+    // next is another one, and a count-in running out must not start a hold for that one.
+    @Test fun aCountInForASetThePhoneLoggedMeanwhileIsOver() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val s = state(entry("plank", listOf(a, b), mode = "time"))
+        val counted = SessionCore.setIndex(s, 0)!!
+        val hold = HoldSet(0, counted, null, a.sid)
+        assertTrue(hold.openIn(s))
+        val phoneLogged = state(entry("plank", listOf(a.copy(done = true, at = 1.0), b), mode = "time"))
+        assertEquals("what a count-in ending now would hold for", 1, SessionCore.setIndex(phoneLogged, 0))
+        assertFalse(hold.openIn(phoneLogged))
+    }
+
+    // A hold ending logs the set it began on, found again: the phone removing an earlier set moves the selection, not the hold.
+    @Test fun aHoldLogsItsOwnSetNotTheOneNowSelected() {
+        val a = row().copy(sid = "a")
+        val b = row().copy(sid = "b")
+        val c = row().copy(sid = "c")
+        val hold = HoldSet(0, 1, null, "b")
+        assertEquals(0 to 1, hold.placeIn(state(entry("plank", listOf(a, b, c), mode = "time"))))
+        val removed = state(entry("plank", listOf(b, c), mode = "time"))
+        assertEquals("b is now first, not the c a plain pick would give", 0 to 0, hold.placeIn(removed))
+        assertEquals("the pick the hold began on (place 1) is c now", 1, SessionCore.setIndex(removed, 0, picked = 1))
+        val (ei, si) = hold.placeIn(removed)!!
+        val logged = SessionCore.tick(removed, ei, si, null, null, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
+        assertTrue("b is logged", logged.first { it.sid == "b" }.done)
+        assertFalse("c is still to do", logged.first { it.sid == "c" }.done)
+        assertNull(hold.placeIn(state(entry("plank", listOf(a, c), mode = "time"))))
+        assertEquals("no id: by place", 0 to 1, HoldSet(0, 1, null, null).placeIn(state(entry("plank", listOf(a, b), mode = "time"))))
+    }
+
+    // A weighted hold keeps the weight it began with: the screen's numbers may have moved on to the set now picked.
+    @Test fun aWeightedHoldLogsTheWeightItBeganWith() {
+        val b = row(w = 10.0).copy(sid = "b")
+        val c = row(w = 30.0).copy(sid = "c")
+        val hold = HoldSet(0, 1, null, "b", w = 10.0)
+        val removed = state(entry("plank", listOf(b, c), mode = "time"))
+        val (ei, si) = hold.placeIn(removed)!!
+        val logged = SessionCore.tick(removed, ei, si, null, hold.w, null, 30.0, 1_000.0, "t1").first.workout!!.entries[0].sets
+        assertEquals(10.0, logged.first { it.sid == "b" }.w!!, 0.0)
+    }
+
+    private fun routine(folder: String?) = ReadySession(routineIds = listOf("r"), name = "R", folder = folder)
+
+    @Test fun aHeaderWhereTheFolderChanges() {
+        val o = listOf(routine(null), routine("Legs"), routine("Legs"), routine("Push"))
+        assertEquals(listOf(null, "Legs", null, "Push"), o.indices.map { Plan.folderHeader(it, o) })
+    }
+
+    @Test fun noFoldersMeansNoHeaders() {
+        val o = listOf(routine(null), routine(null))
+        assertEquals(listOf(null, null), o.indices.map { Plan.folderHeader(it, o) })
+    }
+
+    @Test fun aBlankFolderIsNoHeaderAndAFirstFolderGetsOne() {
+        assertNull(Plan.folderHeader(0, listOf(routine("  "))))
+        assertEquals("Legs", Plan.folderHeader(0, listOf(routine("Legs"))))
+        assertNull(Plan.folderHeader(5, listOf(routine("Legs"))))
     }
 }

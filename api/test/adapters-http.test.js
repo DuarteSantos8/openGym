@@ -928,3 +928,24 @@ test('key shapes point at their provider, and model names get a rough price tier
   assert.equal(priceTier('x', { prompt: 0, completion: 0 }), 'free');
   assert.equal(priceTier('x', { prompt: 0.00001, completion: 0.00003 }), 'high');
 });
+
+// Discord (Gemini on an iPhone): iOS drops a reused connection with "The network connection was
+// lost" before any answer. That is asked again on a fresh one; a refused connection is not.
+test('a connection dropped before any answer is asked again; a setup error is not', async () => {
+  const lost = Object.assign(new Error('The network connection was lost.'), { name: 'TypeError' })
+  const g = fakeFetch([lost, ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, fetch: g, retryDelayMs: 0 });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(g.calls.length, 2);
+
+  const reset = Object.assign(new Error('fetch failed'), { name: 'TypeError', cause: { code: 'ECONNRESET' } });
+  const always = fakeFetch(() => reset);
+  const ra = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: always, retryDelayMs: 0 });
+  assert.equal(ra.code, 1);
+  assert.equal(always.calls.length, 3, 'two more tries, then it says so');
+  assert.match(ra.stderr, /could not reach ollama\.lan:11434/);
+
+  const refused = fakeFetch(() => Object.assign(new Error('ECONNREFUSED'), { name: 'TypeError' }));
+  await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: refused, retryDelayMs: 0 });
+  assert.equal(refused.calls.length, 1);
+});

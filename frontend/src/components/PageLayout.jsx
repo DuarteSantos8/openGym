@@ -17,8 +17,8 @@ import { isOn } from '../lib/modules.js'
 import { useListReorder } from '../lib/use-list-reorder.js'
 import { reportCard, cardLive, liveVersion, subscribeLive } from '../lib/card-live.js'
 import Icon from './Icon.jsx'
-import { Button, Segmented } from './ui.jsx'
-import { PAGES, GROUP_LABELS, arrange, cardState, orderedCards, setCardState, moveCard, placeCard, resetLayout, isCustom } from '../lib/page-layout.js'
+import { Button, Segmented, Switch } from './ui.jsx'
+import { PAGES, GROUP_LABELS, STATS_LINKS, groupOf, linkShown, setLinkShown, arrange, cardState, orderedCards, setCardState, moveCard, placeCard, resetLayout, isCustom, dismissedNote } from '../lib/page-layout.js'
 
 const labelOf = (page, id) => t(PAGES[page].find(c => c.id === id).label)
 
@@ -82,7 +82,9 @@ function LayoutGroup({ page, group, cards, S, update }) {
     {group && <h4 className="sec">{t(GROUP_LABELS[group])}</h4>}
     <div className="sect-b lay-list" ref={r.listRef}>
       {cards.map((c, i) => {
-        const name = t(c.label), state = cardState(S, page, c.id)
+        // A card put away with its own × reads as hidden, with until when; Show brings it back.
+        const note = dismissedNote(S, page, c.id)
+        const name = t(c.label), state = note ? 'hidden' : cardState(S, page, c.id)
         const empty = state !== 'hidden' && cardLive(page, c.id) === false
         return <div key={c.id} data-reorder-row data-reorder-key={c.id} data-lay={c.id} style={r.rowStyle(i)} {...r.press(i)}
           className={'lay-row' + (state === 'hidden' ? ' off' : '') + (r.held(i) ? ' held' : '')}>
@@ -90,7 +92,7 @@ function LayoutGroup({ page, group, cards, S, update }) {
             {cards.length > 1 && <button type="button" className="lay-grip" aria-label={t('Move {0}', name)} title={t('Drag to reorder')} {...r.handle(i)}>
               <Icon name="grip" />
             </button>}
-            <span className="lay-name">{name}{empty && <span className="lay-hint">{t('Shows up when there is something to show')}</span>}</span>
+            <span className="lay-name">{name}{empty && <span className="lay-hint">{t('Shows up when there is something to show')}</span>}{note && <span className="lay-hint" data-dismissed>{t(note)}</span>}</span>
             <span className="lay-move">
               <button type="button" className="vh" aria-label={t('Move {0} up', name)} disabled={i === 0}
                 onClick={() => update(s => { moveCard(s, page, c.id, -1) })}><Icon name="chevronUp" /></button>
@@ -99,9 +101,21 @@ function LayoutGroup({ page, group, cards, S, update }) {
             </span>
           </div>
           <Segmented of={name} value={state} options={STATES()} onChange={v => update(s => { setCardState(s, page, c.id, v) })} />
+          {page === 'stats' && c.id === 'links' && state !== 'hidden' && <LinkSwitches S={S} update={update} />}
         </div>
       })}
     </div>
+  </div>
+}
+
+/** The rows of Stats' More list, each with its own switch (owner 2026-11-24). */
+function LinkSwitches({ S, update }) {
+  const rows = STATS_LINKS.filter(l => !l.needs || isOn(S, l.needs))
+  return <div className="lay-subs" data-lay-links>
+    {rows.map(l => <label key={l.id} className="lay-sub" data-lay-link={l.id}>
+      <span>{t(l.label)}</span>
+      <Switch checked={linkShown(S, l.id)} aria-label={t(l.label)} onChange={v => update(s => { setLinkShown(s, l.id, v) })} />
+    </label>)}
   </div>
 }
 
@@ -111,13 +125,13 @@ function LayoutSheet({ page, close }) {
   // Which cards to offer is decided once, as the sheet opens: what the page drew, plus the hidden
   // ones. A card turned on here that has nothing yet stays in the list, with a word on when.
   const [offered] = useState(() => new Set(orderedCards(S, page)
-    .filter(c => cardState(S, page, c.id) === 'hidden' || cardLive(page, c.id) !== false).map(c => c.id)))
+    .filter(c => cardState(S, page, c.id) === 'hidden' || dismissedNote(S, page, c.id) || cardLive(page, c.id) !== false).map(c => c.id)))
   const cards = orderedCards(S, page).filter(c => (!c.needs || isOn(S, c.needs)) && offered.has(c.id))
-  const groups = [...new Set(cards.map(c => c.group))]
+  const groups = [...new Set(cards.map(c => groupOf(c, S)))]
   return <>
     <h3>{t('Customize')} · {t(page === 'home' ? 'Home' : 'Stats')}</h3>
     <div className="muted small">{t('Show what you use, collapse what you rarely open and hide the rest. Hold a card to move it.')}</div>
-    {groups.map(g => <LayoutGroup key={g || 'all'} page={page} group={g} cards={cards.filter(c => c.group === g)} S={S} update={update} />)}
+    {groups.map(g => <LayoutGroup key={g || 'all'} page={page} group={g} cards={cards.filter(c => groupOf(c, S) === g)} S={S} update={update} />)}
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
     {isCustom(S, page) && <><div style={{ height: 8 }} /><Button onClick={() => update(s => { resetLayout(s, page) })}>{t('Reset')}</Button></>}

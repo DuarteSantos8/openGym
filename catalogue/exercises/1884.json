@@ -9,6 +9,7 @@
     "hip flexors"
   ],
   "category": "stretching",
+  "hold": true,
   "needs": [
     "bench"
   ],

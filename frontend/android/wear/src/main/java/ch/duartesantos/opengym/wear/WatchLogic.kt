@@ -21,6 +21,24 @@ object Plan {
         val real = entries.filter { it.sets.isNotEmpty() }
         return real.size to real.sumOf { e -> e.sets.count { !it.warmup } }
     }
+
+    /** What is ready, with every routine when the file on the watch is the one the snapshot names; else the snapshot's own list (an older phone, a first launch before the file arrives, an out-of-date file). */
+    fun merged(ready: Ready?, hash: String?, file: RoutinesFile?): Ready? =
+        if (ready == null || hash == null || file == null || file.h != hash) ready else ready.copy(others = file.others)
+
+    /** What the watch tells the phone about its routines: the hash of the file it shows ("" for the snapshot's own list) and how many it lists, today's included. */
+    fun routinesReport(ready: Ready?, hash: String?, file: RoutinesFile?): Pair<String, Int> {
+        val shown = merged(ready, hash, file)
+        val used = hash != null && file?.h == hash && ready != null
+        return (if (used) hash!! else "") to ((shown?.today?.routineIds?.size ?: 0) + (shown?.others?.size ?: 0))
+    }
+
+    /** The folder name to draw above the routine at `index`: where it differs from the one before (the phone sends them grouped), else null. */
+    fun folderHeader(index: Int, others: List<ReadySession>): String? {
+        val f = others.getOrNull(index)?.folder?.trim()
+        if (f.isNullOrEmpty()) return null
+        return if (index > 0 && others[index - 1].folder == others[index].folder) null else f
+    }
 }
 
 /** "#30d158" as an ARGB int, or null for anything that is not a #rrggbb colour. */
@@ -205,6 +223,9 @@ data class Keypad(val decimals: Int, val text: String = "") {
 
     fun fits(range: ClosedFloatingPointRange<Double>) = value?.let { it in range } ?: false
 
+    /** Whether ✓ answers: nothing typed (it keeps the number shown and closes) or a number that fits. */
+    fun confirms(range: ClosedFloatingPointRange<Double>) = text.isEmpty() || fits(range)
+
     companion object { const val MAX_WHOLE = 4 }
 }
 
@@ -243,13 +264,11 @@ object RestMath {
         return ((end - now).toFloat() / total).coerceIn(0f, 1f)
     }
 
-    /** The ±15 pill's running total: a change of the end adds up, a jump of over 2 minutes (a resync, a new rest) is not a tap. */
-    fun pillSum(sum: Int, oldEnd: Long, newEnd: Long): Int {
-        val d = Math.round((newEnd - oldEnd) / 1000.0).toInt()
-        return if (d == 0 || kotlin.math.abs(d) > 120) sum else sum + d
+    /** The rest's net change made with −15 and +15, as the circle reads it: signed seconds, "+30", "−15", "+105"; null at 0 (no circle). */
+    fun shiftText(net: Int): String? {
+        if (net == 0) return null
+        return (if (net > 0) "+" else "−") + kotlin.math.abs(net)
     }
-
-    fun pillText(sum: Int): String? = if (sum == 0) null else (if (sum > 0) "+" else "−") + kotlin.math.abs(sum) + " s"
 
     /** The last three seconds, as shown (the clock rounds up). */
     fun warn(leftSec: Double): Boolean = kotlin.math.ceil(leftSec) in 1.0..3.0
@@ -438,6 +457,27 @@ fun OutboxCore.eventType(item: OutItem): String? = try {
     WireJson.parseToJsonElement(item.json).jsonObject["type"]?.jsonPrimitive?.content
 } catch (_: Exception) { null }
 
+/**
+ * The set a running hold will log when it ends (the Apple Watch's holdFor). With "Timed holds start by
+ * themselves" the phone runs the hold too and logs it first; this one is then over, unlogged, or it
+ * would log the set after it. The set is found by its id when it has one (a set added or removed on the
+ * phone moves the places), else by place. `w` is the weight on the screen when the hold began: a weighted
+ * hold logs that, not the numbers of whatever set is picked by the time it ends.
+ */
+data class HoldSet(val entry: Int, val set: Int, val side: String?, val sid: String?, val w: Double? = null) {
+    /** Where that set (and side, on a per-side set) is now in `s` as (entry, place), if it is still there and still to log. */
+    fun placeIn(s: SessionState): Pair<Int, Int>? {
+        val w = s.workout ?: return null
+        val at = (if (!sid.isNullOrEmpty()) w.entries.indices.firstNotNullOfOrNull { ei ->
+            w.entries[ei].sets.indexOfFirst { it.sid == sid }.takeIf { it >= 0 }?.let { ei to it }
+        } else entry to set) ?: return null
+        val row = w.entries.getOrNull(at.first)?.sets?.getOrNull(at.second) ?: return null
+        return at.takeIf { !row.done && row.sideUp == side }
+    }
+
+    fun openIn(s: SessionState): Boolean = placeIn(s) != null
+}
+
 /* ---------- the 3-2-1, the touch lock, the weigh-in, a workout left running ---------- */
 
 object Countdown {
@@ -487,6 +527,32 @@ object WeighIn {
         if (w <= 0 || w >= 700) return null
         return buildJsonObject {
             put("id", id); put("type", "weighIn"); put("w", Math.round(w * 10) / 10.0); put("at", at.toLong())
+        }
+    }
+}
+
+/**
+ * The daily check-in before a workout started here (#1535, WatchCore DailyForm.swift), the phone's
+ * lib/daily-form.js in short: sleep, energy and soreness, each 1 to 5. Asked once a day: not when the
+ * phone says today is answered, not when this watch asked today (answered or skipped).
+ */
+object DailyForm {
+    val keys = listOf("sleep", "energy", "sore")
+
+    /** The day as the phone writes it, YYYY-MM-DD in the watch's own time zone (ISO calendar). */
+    fun day(epochMs: Long, zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): String =
+        java.time.Instant.ofEpochMilli(epochMs).atZone(zone).toLocalDate().toString()
+
+    fun due(on: Boolean?, answeredDay: String?, askedDay: String?, today: String): Boolean =
+        on == true && answeredDay != today && askedDay != today
+
+    /** The event with the answers given (each 1 to 5, the rest left out), null with none. */
+    fun event(answers: Map<String, Int>, at: Double, id: String): Event? {
+        val given = keys.mapNotNull { k -> answers[k]?.takeIf { it in 1..5 }?.let { k to it } }
+        if (given.isEmpty()) return null
+        return buildJsonObject {
+            put("id", id); put("type", "dailyForm"); put("at", at.toLong())
+            for ((k, v) in given) put(k, v)
         }
     }
 }
@@ -679,8 +745,10 @@ object CheckIn {
     fun due(lastAt: Long, lastVersion: String?, version: String, now: Long) =
         lastVersion != version || now - lastAt >= EVERY_MS || now < lastAt
 
-    fun event(version: String, at: Long, id: String): Event = buildJsonObject {
+    /** `routines`: the report of Plan.routinesReport; an older watch app sends none. */
+    fun event(version: String, at: Long, id: String, routines: Pair<String, Int>? = null): Event = buildJsonObject {
         put("id", id); put("type", "watchStatus"); put("version", version); put("platform", "wear"); put("at", at)
+        routines?.let { put("routinesHash", it.first); put("routinesCount", it.second) }
     }
 }
 

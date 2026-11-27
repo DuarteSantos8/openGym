@@ -3,7 +3,7 @@
 // (rememberDefaultLang) that stands in for /api/config until it answers, so a boot does not flash
 // the browser's language first.
 import { beforeEach, describe, expect, it } from 'vitest'
-import { effectiveLang, rememberDefaultLang, browserLangs } from './default-lang.js'
+import { effectiveLang, rememberDefaultLang, browserLangs, rememberLangPick, langPick } from './default-lang.js'
 
 const auto = { lang: 'en', langAuto: true }
 
@@ -34,6 +34,25 @@ describe('effectiveLang', () => {
   })
   it('with nothing seen yet, shows the stored language unchanged until the config answers', () => {
     expect(effectiveLang({ lang: 'pt', langAuto: true }, null, ['it'])).toBe('pt')
+  })
+})
+
+describe('the first screen\'s pick (#1037)', () => {
+  it('outranks the instance default and the browser for a copy that never picked', () => {
+    rememberLangPick('pt-BR')
+    expect(langPick()).toBe('pt-BR')
+    expect(effectiveLang(auto, { default_lang: 'fr' }, ['it'])).toBe('pt-BR')
+    expect(effectiveLang(auto, null, ['it'])).toBe('pt-BR')
+  })
+  it('never beats a language picked in Settings (a signed-in account keeps its own)', () => {
+    rememberLangPick('de')
+    expect(effectiveLang({ lang: 'fr' }, null, [])).toBe('fr')
+  })
+  it('forgets junk', () => {
+    rememberLangPick('xx')
+    expect(langPick()).toBeNull()
+    localStorage.setItem('gym_lang_pick', 'nope')
+    expect(effectiveLang(auto, { default_lang: 'fr' }, [])).toBe('fr')
   })
 })
 

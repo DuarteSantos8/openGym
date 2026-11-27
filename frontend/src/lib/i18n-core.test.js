@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES,
-  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseOwnNameClass, exerciseAsTypedClass, bindOwnExercise, exerciseNameFor, CASED_NAME_LANGS, RTL_LANGS
+  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseOwnNameClass, exerciseAsTypedClass, bindOwnExercise, exerciseNameFor, CASED_NAME_LANGS, SENTENCE_CASE_LANGS, ownCasedNameLang, RTL_LANGS
 } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
 import de from '../locales/de.js'
@@ -180,7 +180,7 @@ describe('title-casing per exercise-name pack', () => {
   })
 
   for (const lang of [...EXERCISE_NAME_LANGS, 'de-CH']) {
-    const cased = CASED_NAME_LANGS.includes(baseLang(lang))
+    const cased = ownCasedNameLang(lang)
     it(`${lang}: a translated name is ${cased ? 'left in its own casing' : 'title-cased like English'}`, () => {
       const names = packFor(baseLang(lang))
       const translated = EXDB.filter(e => names[e.id])
@@ -197,6 +197,26 @@ describe('title-casing per exercise-name pack', () => {
 // The two per-language switches in Settings (the English name in parentheses, English names
 // only) came with the Italian and French packs, but they have to hold for every pack the app
 // ships — German too, which covers only part of the catalogue.
+describe('sentence case for Russian and Ukrainian (#1247)', () => {
+  const ex = { id: 'x1', n: 'kettlebell calf raise front squat' }
+  afterEach(() => _setLangState('en', {}, null, null))
+
+  it('capitalises only the first letter, and leaves the rest to the pack', () => {
+    _setLangState('ru', {}, null, { x1: 'подъём на носки и фронтальное приседание с гирей' }, false)
+    expect(exerciseNameFor(ex)).toBe('Подъём на носки и фронтальное приседание с гирей')
+    expect(exerciseNameClass(ex)).toBe('')
+    _setLangState('uk', {}, null, { x1: 'присід з гирею' }, false)
+    expect(exerciseNameFor(ex)).toBe('Присід з гирею')
+    expect(exerciseNameClass(ex)).toBe('')
+  })
+
+  it('leaves other lower-case packs title-cased by CSS', () => {
+    _setLangState('pl', {}, null, { x1: 'przysiad z kettlebell' }, false)
+    expect(exerciseNameFor(ex)).toBe('przysiad z kettlebell')
+    expect(exerciseNameClass(ex)).toBe('capitalize')
+  })
+})
+
 describe('English-name switches with every exercise-name pack', () => {
   const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
   const packFor = lang => packs[`../exercise-names/${lang}.js`]
@@ -212,13 +232,14 @@ describe('English-name switches with every exercise-name pack', () => {
       expect(ex, lang).toBeTruthy()
       _setLangState(lang, {}, null, names)
       // German keeps its own casing; a lower-case pack is title-cased like English.
-      const translatedClass = CASED_NAME_LANGS.includes(lang) ? '' : 'capitalize'
+      const translatedClass = ownCasedNameLang(lang) ? '' : 'capitalize'
+      const own = SENTENCE_CASE_LANGS.includes(lang) ? names[ex.id][0].toLocaleUpperCase(lang) + names[ex.id].slice(1) : names[ex.id]
       // A right-to-left language isolates the English part, brackets included (exerciseNameFor).
       const english = RTL_LANGS.has(lang) ? `\u2068(${ex.n})\u2069` : `(${ex.n})`
-      expect(exerciseNameFor(ex)).toBe(`${names[ex.id]} ${english}`)
+      expect(exerciseNameFor(ex)).toBe(`${own} ${english}`)
       expect(exerciseNameClass(ex)).toBe(translatedClass)
       _setLangState(lang, {}, null, names, false)
-      expect(exerciseNameFor(ex)).toBe(names[ex.id])
+      expect(exerciseNameFor(ex)).toBe(own)
       expect(exerciseNameClass(ex)).toBe(translatedClass)
       _setLangState(lang, {}, null, names, true, true)
       expect(exerciseNameFor(ex)).toBe(ex.n)

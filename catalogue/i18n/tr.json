@@ -21657,16 +21657,7 @@
     ]
   },
   "0316": {
-    "name": "dambıl eğimli breeding",
-    "instructions": [
-      "45 derecelik bir açıyla eğimli bir tezgah kurun.",
-      "Sırtınız yastığa dayalı ve ayaklarınız yere düz basacak şekilde bankta oturun.",
-      "Her iki elinizde de birer dambıl tutun ve avuç içleriniz öne bakacak şekilde üstten tutun.",
-      "Kollarınız tamamen uzatılmış, yere dik olarak başlayın.",
-      "Dirseklerinizi 90 derecelik bir açıda tutarak dambılları yavaşça göğsünüzün yanlarına doğru indirin.",
-      "Altta bir an duraklayın, ardından dambılları başlangıç ​​pozisyonuna geri itin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dambıl eğimli fly (avuçlar öne)"
   },
   "0317": {
     "name": "dambıl eğimli curl v. 2",
@@ -23918,7 +23909,7 @@
     ]
   },
   "0576": {
-    "name": "makine göğüs press",
+    "name": "makine göğüs press (plakalı)",
     "instructions": [
       "Koltuk yüksekliğini ayarlayın ve sırtınız yastığa yaslanacak şekilde kendinizi makinenin üzerine konumlandırın.",
       "Tutma yerlerini üstten kavrayın ve dirseklerinizi 90 derecelik bir açıyla konumlandırın.",

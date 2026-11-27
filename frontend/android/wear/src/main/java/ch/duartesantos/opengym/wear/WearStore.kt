@@ -22,7 +22,9 @@ import kotlin.math.roundToInt
  * A rest running on the watch: until `endsAt` (ms), out of `total` seconds, started at `startedAt`.
  * `pausedLeft` (ms): paused on the phone (protocol 2), the countdown stands there, no alarm.
  */
-data class Rest(val endsAt: Long, val total: Int, val startedAt: Long = endsAt - total * 1000L, val pausedLeft: Long? = null) {
+data class Rest(val endsAt: Long, val total: Int, val startedAt: Long = endsAt - total * 1000L, val pausedLeft: Long? = null,
+    /** The net seconds −15 and +15 moved this rest by (the chip after "Rest"); a rest from the phone starts at 0. */
+    val shift: Int = 0) {
     /** What is left at `now` (ms), the pause's own while paused. */
     fun leftMs(now: Long): Long = pausedLeft ?: (endsAt - now)
 }
@@ -86,8 +88,14 @@ object WearStore {
     val lastRated = MutableStateFlow<Double?>(null)
     /** Which way the set page last moved (‹ -1, › and Done +1): the set's lines come in from there. */
     val lastStep = MutableStateFlow(1)
+    /** The daily check-in before a workout started here (#1535): the question up (DailyForm.keys) and the answers so far. */
+    val checkinFor = MutableStateFlow<ReadySession?>(null)
+    val checkinStep = MutableStateFlow(0)
+    private val checkinAnswers = mutableMapOf<String, Int>()
     /** The weigh-in before a workout started here, and the body weight on its crown. */
     val weighInFor = MutableStateFlow<ReadySession?>(null)
+    /** Every routine the phone sent as a file (kept in filesDir/routines.json across launches). */
+    val routines = MutableStateFlow<RoutinesFile?>(null)
     val bodyWeight = MutableStateFlow(70.0)
     /** "Still training?": no set for a while (forgotten workouts, WatchLogic Idle). */
     val askDone = MutableStateFlow(false)
@@ -127,6 +135,8 @@ object WearStore {
     private val homeLock = TouchLock()
     private var restJob: Job? = null
     private var holdJob: Job? = null
+    /** The set the running hold (or its 3-2-1) logs: if the phone logged it first, that is over (HoldSet). */
+    private var holdFor: HoldSet? = null
     private var countJob: Job? = null
     private var idleJob: Job? = null
     private var refreshJob: Job? = null
@@ -138,6 +148,7 @@ object WearStore {
         prefs.getString("state", null)?.let { json ->
             try { _state.value = WireJson.decodeFromString(SessionState.serializer(), json) } catch (_: Exception) {}
         }
+        routinesFile().takeIf { it.exists() }?.let { f -> try { routines.value = WireJson.decodeFromString(RoutinesFile.serializer(), f.readText()) } catch (_: Exception) {} }
         kcal.lose(_state.value.workout?.id)
         // Events still waiting from the last run (sent then, never applied on the phone): out again.
         PhoneLink.flush(app)
@@ -179,7 +190,18 @@ object WearStore {
         val at = now()
         if (!CheckIn.due(prefs.getLong("checkInAt", 0), prefs.getString("checkInVersion", null), version, at)) return
         prefs.edit().putLong("checkInAt", at).putString("checkInVersion", version).apply()
-        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString()))
+        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString(), routinesReport()))
+        reportedRoutines = routinesReport()
+    }
+
+    private var reportedRoutines: Pair<String, Int>? = null
+    private fun routinesReport() = Plan.routinesReport(_state.value.ready, _state.value.routinesHash, routines.value)
+
+    /** A new routines file, or a snapshot that makes the file count: the phone's settings are told now, not at the next launch. */
+    fun reportRoutines() {
+        if (!::app.isInitialized || demoOn || routinesReport() == reportedRoutines) return
+        reportedRoutines = routinesReport()
+        PhoneLink.send(app, CheckIn.event(prefs.getString("checkInVersion", "") ?: "", now(), UUID.randomUUID().toString(), reportedRoutines))
     }
 
     /** Android's "Remove animations": only short fades then (ui/Motion.kt). */
@@ -275,7 +297,8 @@ object WearStore {
                 if (follow.endsAt <= now() + 500) { if (_rest.value != null) endRestFromPhone() }
                 else if (follow.restart) {
                     val total = follow.total ?: _rest.value?.total ?: ((follow.endsAt - now()) / 1000).toInt().coerceAtLeast(1)
-                    armRest(Rest(follow.endsAt, total))
+                    // The same rest moved or resumed on the phone keeps its ±15; one after a set logged there starts at 0 (Apple Watch alike).
+                    armRest(Rest(follow.endsAt, total, shift = if (ticks.isEmpty()) _rest.value?.shift ?: 0 else 0))
                 }
             }
             is RestFollow.Pause -> { noteRestAt(follow.restAt, after.workout?.id); pauseRest(follow.leftMs) }
@@ -284,6 +307,10 @@ object WearStore {
             RestFollow.Legacy -> legacyRest(snap, after, phoneRest, echo)
         }
         commit(after)
+        // The phone logged the set a hold (or its 3-2-1) here runs for: this one ends with it, unlogged.
+        // Then the next timed set may be due its own 3-2-1, which the rest's end could not start before this.
+        if (holdFor?.openIn(after) == false) { stopHold(); stopHoldCount(); autoHoldIfDue() }
+        reportRoutines()
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
         // A set logged on the phone ends a removal's Undo too (after commit: the release is on this state).
@@ -478,13 +505,15 @@ object WearStore {
     }
 
     /** The set up next, done: the numbers on the screen (a hold's seconds as it lasted). */
-    fun completeSet(heldFor: Double? = null) {
+    fun completeSet(heldFor: Double? = null, held: Pair<Int, Int>? = null, heldW: Double? = null) {
         // A set logged ends a removal's Undo: Undo would put back the pointers from before this set.
         flushRemoval()
         val s0 = _state.value
         val w = s0.workout ?: return
-        val e = entry() ?: return
-        val si = setIndex() ?: return
+        // A hold logs the set it started for, where it is now (the phone may have removed an earlier one).
+        val ei = held?.first ?: entryIndex
+        val e = w.entries.getOrNull(ei) ?: return
+        val si = held?.second ?: setIndex(ei) ?: return
         val at = now()
         // A double tap on Done (a sweaty finger) is one set, not this one and the next; in a
         // superset the page flips to the partner, so a slower second tap waits too.
@@ -497,9 +526,8 @@ object WearStore {
         var tw: Double? = null; var tr: Double? = null; var tsec: Double? = null
         if (e.isTimed) {
             tsec = heldFor ?: d.sec
-            if ((e.sets[si].w ?: 0.0) > 0) tw = d.w        // a weighted hold keeps its weight
+            if ((e.sets[si].w ?: 0.0) > 0) tw = heldW ?: d.w        // a weighted hold keeps its weight
         } else if (!e.isCardio) { tw = d.w; tr = d.r }
-        val ei = entryIndex
         val (s1, event0) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from))
         event0 ?: return
         val (nextEi, rest) = SessionCore.next(s1, ei, si)
@@ -693,9 +721,42 @@ object WearStore {
 
     /* ---------- starting: the weigh-in, the 3-2-1, Go! ---------- */
 
-    /** A routine started here: first the weigh-in, as on the phone, unless it is off there. */
+    /** A routine started here: first the daily check-in and the weigh-in, as on the phone, unless they are off there. */
     fun start(session: ReadySession) {
         if (!homeLock.allows(now())) return
+        val st = _state.value.settings
+        if (DailyForm.due(st.checkin, st.checkinDay, prefs.getString("checkinAsked", null), DailyForm.day(now()))) {
+            checkinAnswers.clear()
+            checkinStep.value = 0
+            checkinFor.value = session
+            return
+        }
+        weighInOrCountIn(session)
+    }
+
+    /** One question answered (1 to 5) or passed over (null): the next one, and after the last the weigh-in or the 3-2-1. */
+    fun answerCheckin(value: Int?) {
+        if (checkinFor.value == null) return
+        val keys = DailyForm.keys
+        val i = checkinStep.value
+        if (i < keys.size && value != null) checkinAnswers[keys[i]] = value
+        if (i + 1 < keys.size) checkinStep.value = i + 1 else finishCheckin(false)
+    }
+
+    /** The check-in done (its answers go to the phone) or skipped for today; the workout starts either way. */
+    fun finishCheckin(skip: Boolean) {
+        val session = checkinFor.value ?: return
+        checkinFor.value = null
+        prefs.edit().putString("checkinAsked", DailyForm.day(now())).apply()
+        if (!skip) DailyForm.event(checkinAnswers.toMap(), now().toDouble(), UUID.randomUUID().toString())?.let { PhoneLink.send(app, it) }
+        checkinAnswers.clear()
+        weighInOrCountIn(session)
+    }
+
+    /** Cancel: nothing starts, and the check-in is asked again next time. */
+    fun cancelCheckin() { checkinFor.value = null; checkinAnswers.clear() }
+
+    private fun weighInOrCountIn(session: ReadySession) {
         val st = _state.value.settings
         if (st.weighIn != false) {
             bodyWeight.value = st.lastBw ?: if (_state.value.unit == "lb") 160.0 else 70.0
@@ -778,12 +839,14 @@ object WearStore {
         val before = _state.value
         val w = before.workout ?: return
         closeRest(minOf(at, now()))
-        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
+        // An idle end is saved at the last set plus rest, but the count runs to now: none sent, the phone estimates.
+        val kcal = if (idle) null else _calories.value
+        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left, kcal = kcal)
         event?.let { PhoneLink.send(app, it) }
-        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = _calories.value)
+        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = kcal)
         endAll()
         commit(s1)
-        Haptics.finished(app)
+        // No finish taps here: the summary's medal plays its own when it is seen (Medal.beats).
     }
 
     fun discard() {
@@ -817,7 +880,7 @@ object WearStore {
         if (!touchAllowed()) return
         val r = _rest.value?.takeIf { it.pausedLeft == null } ?: return
         val to = r.copy(endsAt = (r.endsAt + seconds * 1000L).coerceAtLeast(now() + 1000), total = (r.total + seconds).coerceAtLeast(1))
-        armRest(to)
+        armRest(to.copy(shift = r.shift + Math.round((to.endsAt - r.endsAt) / 1000.0).toInt()))
         sendRestChange(to.endsAt)
     }
 
@@ -827,7 +890,7 @@ object WearStore {
         val r = _rest.value?.takeIf { it.pausedLeft == null } ?: return
         val to = RestMath.minus(r.endsAt, now())
         if (to == null) { skipRest(); return }
-        armRest(r.copy(endsAt = to))
+        armRest(r.copy(endsAt = to, shift = r.shift + Math.round((to - r.endsAt) / 1000.0).toInt()))
         sendRestChange(to)
     }
 
@@ -856,7 +919,7 @@ object WearStore {
         ackRestOver()
         Awake.release(REST)
         val total = _rest.value?.total ?: (leftMs / 1000).toInt().coerceAtLeast(1)
-        val r = Rest(now() + leftMs, total, startedAt = _rest.value?.startedAt ?: (now() + leftMs - total * 1000L), pausedLeft = leftMs)
+        val r = Rest(now() + leftMs, total, startedAt = _rest.value?.startedAt ?: (now() + leftMs - total * 1000L), pausedLeft = leftMs, shift = _rest.value?.shift ?: 0)
         _rest.value = r
         prefs.edit().remove("restEndsAt").putLong("restPausedLeft", leftMs.coerceAtLeast(1)).putInt("restTotal", total).apply()
     }
@@ -872,6 +935,11 @@ object WearStore {
         restJob = scope.launch {
             val soon = r.endsAt - 10_000 - now()
             if (soon > 0 && r.total >= 30) { delay(soon); if (buzz()) Haptics.restSoon(app) }
+            // The last three seconds, one tap each, as a timed hold's: the wrist knows without a look.
+            for (left in listOf(3, 2, 1)) {
+                val at = r.endsAt - left * 1000L
+                if (r.total > left + 1 && at > now()) { delay(at - now()); if (buzz()) Haptics.restCount(app) }
+            }
             delay((r.endsAt - now()).coerceAtLeast(0))
             if (buzz()) {
                 Haptics.restOver(app)
@@ -908,13 +976,15 @@ object WearStore {
         if (!auto && !touchAllowed()) return
         val e = entry() ?: return
         val seconds = draft.value.sec
-        if (!e.isTimed || setIndex() == null || seconds <= 0) return
+        val si = setIndex()
+        if (!e.isTimed || si == null || seconds <= 0) return
         stopHoldCount()
         stopRest()
         noteActivity()
         val start = now()
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
+        holdFor = HoldSet(entryIndex, si, e.sets[si].sideUp, e.sets[si].sid, draft.value.w)
         Awake.until(app, HOLD, end)
         Haptics.start(app)
         holdJob?.cancel()
@@ -933,11 +1003,14 @@ object WearStore {
     fun endHold(early: Boolean) {
         val h = _hold.value ?: return
         val lasted = Math.round(((if (early) now() else h.endsAt) - h.startedAt) / 1000.0).toDouble()
+        val held = holdFor?.placeIn(_state.value)
+        val gone = holdFor != null && held == null
+        val heldW = holdFor?.w
         stopHold()
-        if (lasted >= 1) completeSet(heldFor = lasted)
+        if (lasted >= 1 && !gone) completeSet(heldFor = lasted, held = held, heldW = heldW)
     }
 
-    fun stopHold() { holdJob?.cancel(); _hold.value = null; if (::app.isInitialized) Awake.release(HOLD) }
+    fun stopHold() { holdJob?.cancel(); _hold.value = null; holdFor = null; if (::app.isInitialized) Awake.release(HOLD) }
 
     private const val REST = "rest"
     private const val REST_AGAIN = "restAgain"
@@ -946,10 +1019,12 @@ object WearStore {
     /** With the phone's "timed holds start by themselves" on and a hold up next: 3-2-1, then the hold. */
     fun autoHoldIfDue() {
         val s = _state.value
-        if (s.settings.autoHolds != true || s.workout == null || entry()?.isTimed != true || setIndex() == null) return
+        val si = setIndex()
+        if (s.settings.autoHolds != true || s.workout == null || entry()?.isTimed != true || si == null) return
         if (_hold.value != null || _rest.value != null || _holdCountIn.value != null || draft.value.sec <= 0) return
         val from = now()
         _holdCountIn.value = from
+        holdFor = HoldSet(entryIndex, si, entry()?.sets?.get(si)?.sideUp, entry()?.sets?.get(si)?.sid)
         Haptics.count(app)
         countJob?.cancel()
         countJob = scope.launch {
@@ -967,7 +1042,7 @@ object WearStore {
     }
 
     fun stopHoldCount() {
-        if (_holdCountIn.value != null) countJob?.cancel()
+        if (_holdCountIn.value != null) { countJob?.cancel(); holdFor = null }
         _holdCountIn.value = null
     }
 
@@ -1037,6 +1112,14 @@ object WearStore {
         if (askDone.value) IdleNotice.cancel(app)
         askDone.value = false
         idleLeft.value = false
+    }
+
+    /** The note typed or dictated on the Overview (empty clears it). Nothing changed sends nothing. */
+    fun saveNote(text: String) {
+        val (next, event) = SessionCore.workoutNote(_state.value, text, now().toDouble(), UUID.randomUUID().toString()) ?: return
+        PhoneLink.send(app, event)
+        commit(next)
+        Haptics.tick(app)
     }
 
     /** "Keep going" on "Still training?": idle counts from now, here and on the phone. */
@@ -1170,6 +1253,29 @@ object WearStore {
         } catch (_: Exception) {}
     }
 
+    private fun routinesFile() = java.io.File(app.filesDir, "routines.json")
+
+    // The listener (its own thread) and PhoneLink.pull (main) both save: one at a time, as they share the .tmp file.
+    private val routinesLock = Any()
+    private var routinesSaves = 0
+    /** How many routines files were kept so far: a pull hands it back, so a newer file that landed meanwhile stays. */
+    fun routinesSaved() = synchronized(routinesLock) { routinesSaves }
+
+    /** The phone's routines file, kept in place of the one before (one file, so nothing piles up). One that cannot be read leaves the old. */
+    fun saveRoutines(bytes: ByteArray, ifSaved: Int? = null) {
+        if (!::app.isInitialized) return
+        synchronized(routinesLock) {
+            if (ifSaved != null && ifSaved != routinesSaves) return
+            try {
+                val text = bytes.toString(Charsets.UTF_8)
+                val f = WireJson.decodeFromString(RoutinesFile.serializer(), text)
+                val tmp = java.io.File(routinesFile().path + ".tmp")
+                tmp.writeText(text)
+                if (tmp.renameTo(routinesFile())) { routinesSaves++; routines.value = f; reportRoutines() }
+            } catch (_: Exception) {}
+        }
+    }
+
     /** Another workout runs, or none: the stills of every other go. */
     private fun dropStaleStills(running: String?) {
         if (!::app.isInitialized) return
@@ -1199,16 +1305,27 @@ object WearStore {
     /* ---------- the screenshot rig (debug builds only: adb ... --es demo <screen>) ---------- */
 
     /** Puts the store on one of the screens the docs and the store listing show. Debug builds only. */
+    /** The demo screen on show (debug builds): the summary opens at its back or its end for the shots. */
+    var demoScreen: String? = null
+
     fun demo(screen: String, snapshot: String) {
         if (!BuildConfig.DEBUG) return
         demoOn = true
-        _summary.value = null; stopRest(); stopHold(); closeFix(); weighInFor.value = null; cancelCountIn()
+        demoScreen = screen
+        _summary.value = null; stopRest(); stopHold(); closeFix(); weighInFor.value = null; checkinFor.value = null; cancelCountIn()
         askDone.value = false; idleLeft.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
         applySnapshotJson(snapshot)
         when (screen) {
-            "start" -> commit(_state.value.copy(workout = null))
+            // Pinned, so the start screen's 30 s link check keeps the chosen state on an unpaired emulator.
+            "start" -> { commit(_state.value.copy(workout = null)); PhoneLink.nearForTest = true; phoneNear.value = true }
+            "start-away" -> { commit(_state.value.copy(workout = null)); PhoneLink.nearForTest = false; phoneNear.value = false }
             "rest" -> { completeSet(); if (_rest.value == null) startRest(75) }
-            "overview" -> page.value = Page.OVERVIEW
+            "overview" -> { commit(_state.value.copy(settings = _state.value.settings.copy(workoutNote = true))); page.value = Page.OVERVIEW }
+            "overview-note" -> {
+                val st = _state.value
+                commit(st.copy(settings = st.settings.copy(workoutNote = true), workout = st.workout?.copy(note = "Left shoulder felt tight, grip slipped on the last rep")))
+                page.value = Page.OVERVIEW
+            }
             "metrics" -> {
                 page.value = Page.METRICS
                 // The emulator has no heart rate: fake readings (min 96, max 171, average about 138) so the Pulse page has numbers.
@@ -1226,14 +1343,19 @@ object WearStore {
             "fix" -> { completeSet(); stopRest(); fixLast() }
             "menu" -> menuOpen.value = true
             "hold" -> { _state.value.workout?.entries?.indexOfFirst { it.isTimed }?.takeIf { it >= 0 }?.let { jump(it) }; startHold(auto = true) }
-            "summary" -> {
+            // summary: a records day (gold); summary-steel: none; -back, -records and -end open it at the back, at the first records and at Done.
+            "summary", "summary-steel", "summary-back", "summary-records", "summary-end" -> {
                 val w = _state.value.workout
                 if (w != null) {
-                    _summary.value = SessionCore.summary(w, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164, kcal = 312.0)
+                    // Every working set done, and bests just under the loads, so the records show: bench, incline press, pushdown.
+                    val bests = if (screen == "summary-steel") emptyMap() else mapOf("d1" to BestSet(60.0, 8.0), "d2" to BestSet(20.0, 10.0), "d4" to BestSet(27.5, 12.0))
+                    val done = w.copy(entries = w.entries.map { e -> e.copy(best = bests[e.id], sets = e.sets.map { if (it.warmup) it else it.copy(done = true) }) })
+                    _summary.value = SessionCore.summary(done, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164, kcal = 312.0)
                     commit(_state.value.copy(workout = null))
                 }
             }
             "weighin" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); weighInFor.value = it; bodyWeight.value = 78.4 }
+            "checkin" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); checkinStep.value = 0; checkinFor.value = it }
             "countdown" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); _countIn.value = CountIn(now() - 1200, it) }
             "go" -> goAt.value = now() + 600_000
             "idle" -> { askDone.value = true; idleMinutes.value = 47; idleEndsAt.value = now() + 180_000 }

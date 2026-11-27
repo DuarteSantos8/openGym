@@ -21986,15 +21986,14 @@
     ]
   },
   "0316": {
-    "name": "curl incliné aux haltères",
+    "name": "écarté incliné aux haltères (paumes vers l’avant)",
+    "description": "Un écarté aux haltères sur banc incliné, paumes vers l’avant. Les bras s’ouvrent largement, presque tendus, puis se rejoignent au-dessus de la poitrine pour travailler le haut des pectoraux.",
     "instructions": [
-      "Installe un banc incliné à un angle de 45 degrés.",
-      "Assieds-toi sur le banc, le dos contre le coussin et les pieds à plat sur le sol.",
-      "Tiens un haltère dans chaque main avec une prise en pronation, les paumes tournées vers l'avant.",
-      "Commence avec les bras complètement tendus, perpendiculaires au sol.",
-      "Abaisse lentement les haltères sur les côtés de ta poitrine, en gardant tes coudes à un angle de 90 degrés.",
-      "Marque une pause en bas, puis pousse les haltères vers le haut jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
+      "Règle un banc incliné à environ 45 degrés et adosse-toi avec un haltère dans chaque main.",
+      "Pousse les haltères au-dessus du haut de la poitrine, paumes vers l’avant, bras presque tendus.",
+      "Garde les coudes légèrement fléchis et ouvre les bras sur les côtés en un large arc jusqu’à sentir l’étirement des pectoraux.",
+      "Contracte les pectoraux pour ramener les haltères en arc jusqu’à ce qu’ils se rejoignent au-dessus de la poitrine, paumes toujours vers l’avant.",
+      "Répète pour le nombre de répétitions voulu."
     ]
   },
   "0317": {
@@ -24247,7 +24246,7 @@
     ]
   },
   "0576": {
-    "name": "développé poitrine à la machine",
+    "name": "développé poitrine à la machine (à disques)",
     "instructions": [
       "Règle la hauteur du siège et installe-toi sur la machine, le dos bien à plat contre le coussin.",
       "Saisis les poignées avec une prise en pronation et place tes coudes à un angle de 90 degrés.",

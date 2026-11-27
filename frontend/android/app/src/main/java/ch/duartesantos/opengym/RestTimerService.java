@@ -138,6 +138,8 @@ public class RestTimerService extends Service {
         }
         long nextEnd = intent == null ? 0 : intent.getLongExtra("endsAt", 0);
         if (nextEnd <= System.currentTimeMillis()) {
+            // startForegroundService promised a foreground service: stopping without one crashes the app.
+            show();
             stopForegroundCompat();
             stopSelf();
             return START_NOT_STICKY;
@@ -156,9 +158,10 @@ public class RestTimerService extends Service {
         if (intent != null && intent.hasExtra("accent")) accent = intent.getIntExtra("accent", accent);
         if (intent != null && intent.hasExtra("ink")) ink = intent.getIntExtra("ink", ink);
         handler.removeCallbacks(tick);
+        // A foreground service must post its card now, whether or not the screen is on, and before
+        // the first tick: one that finds the end already past stops without showing it.
+        show();
         tick.run();
-        // A foreground service must post its card now, whether or not the screen is on.
-        if (running && !interactive()) show();
         return START_NOT_STICKY;
     }
 

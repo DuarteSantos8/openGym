@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, normalizeStr, byCategory } from './exercises.js'
+import { matchExercise, normalizeStr, byCategory, byCategories, byEquipment, togglePick } from './exercises.js'
 import { _setLangState } from './i18n-core.js'
 
 describe('normalizeStr', () => {
@@ -155,6 +155,26 @@ describe('byCategory', () => {
   it('ignores a type the list has none of instead of showing nothing', () => {
     expect(byCategory(list, 'yoga')).toEqual({ opts: ['strength', 'stretching'], on: '', list })
   })
+})
+
+// Several picks per row (Discord "Pick more than one equipment and type"): any of them passes.
+describe('byCategories and byEquipment', () => {
+  const list = [{ id: 'a', cat: 'stretching', eq: 'cable' }, { id: 'b', cat: 'strength', eq: 'dumbbell' }, { id: 'c', cat: 'strength', eq: 'barbell' }]
+  it('keeps what matches any pick', () => {
+    expect(byEquipment(list, ['cable', 'dumbbell']).list.map(e => e.id)).toEqual(['a', 'b'])
+    expect(byCategories(list, ['strength', 'stretching']).list).toEqual(list)
+    expect(byCategories(list, ['strength']).list.map(e => e.id)).toEqual(['b', 'c'])
+  })
+  it('ignores picks the list has none of, and no picks means everything', () => {
+    expect(byEquipment(list, ['kettlebell', 'barbell'])).toEqual({ opts: equipmentOrder(list), on: ['barbell'], list: [list[2]] })
+    expect(byEquipment(list, ['kettlebell']).list).toEqual(list)
+    expect(byCategories(list, []).on).toEqual([])
+  })
+  it('togglePick adds and removes', () => {
+    expect(togglePick([], 'cable')).toEqual(['cable'])
+    expect(togglePick(['cable', 'band'], 'cable')).toEqual(['band'])
+  })
+  function equipmentOrder(l) { return [...new Set(l.map(e => e.eq))].sort() }
 })
 
 // European Portuguese and Swedish names (v1.4.4): what a lifter in Lisbon or Gothenburg types

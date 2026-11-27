@@ -97,6 +97,24 @@ describe('routine order', () => {
     expect(rows()[0].style.transform).toBe('')
   })
 
+  // The live workout's list (1.4.6) has rows of every height: a passed row makes room for the
+  // held one, its height plus the gap, not for the first row's.
+  it('a row the held one passes slides by the held row\'s height', () => {
+    mount()
+    edit()
+    const tops = [0, 128, 196]
+    rows().forEach((row, i) => {
+      const h = i === 0 ? 120 : 60
+      row.getBoundingClientRect = () => ({ top: tops[i], bottom: tops[i] + h, height: h, left: 0, right: 300, width: 300 })
+    })
+    const h = handles()[1]
+    pointer(h, 'pointerdown', 150)
+    pointer(h, 'pointermove', 40)
+    expect(rows()[0].style.transform).toBe('translateY(68px)')
+    pointer(h, 'pointerup', 40)
+    expect(stored()).toEqual(['Pull A', 'Push A', 'Legs A'])
+  })
+
   it('a drag that ends where it started changes nothing, and a cancelled one neither', () => {
     mount()
     edit()

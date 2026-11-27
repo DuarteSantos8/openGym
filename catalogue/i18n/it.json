@@ -57278,17 +57278,15 @@
     "description": "Una flessione dei bicipiti eseguita su una panca inclinata. La posizione iniziale allungata mette alla prova i bicipiti."
   },
   "0316": {
-    "name": "curl su panca inclinata con manubri",
+    "name": "croci su panca inclinata con manubri (palmi in avanti)",
+    "description": "Croci con manubri su panca inclinata con i palmi rivolti in avanti. Le braccia si aprono larghe e quasi tese, poi tornano insieme sopra il petto per lavorare la parte alta del petto.",
     "instructions": [
-      "Installa una panca inclinata con un angolo di 45 gradi.",
-      "Siediti sulla panca con la schiena appoggiata al pad e i piedi piatti a terra.",
-      "Tieni un manubrio in ciascuna mano con una presa prona, palmi rivolti in avanti.",
-      "Inizia con le braccia completamente distese, perpendicolari al suolo.",
-      "Abbassa lentamente i manubri ai lati del petto, mantenendo i gomiti a 90 gradi.",
-      "Fermati un attimo in fondo, poi spingi di nuovo i manubri fino alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni."
-    ],
-    "description": "Un movimento con manubri su panca inclinata in cui abbassi i pesi ai lati del petto e poi li spingi verso l'alto. Fa lavorare la parte superiore del petto."
+      "Regola una panca inclinata a circa 45 gradi e appoggiati allo schienale con un manubrio in ogni mano.",
+      "Spingi i manubri sopra la parte alta del petto, palmi in avanti, braccia quasi tese.",
+      "Tieni i gomiti leggermente piegati e apri le braccia di lato con un ampio arco finché senti l’allungamento del petto.",
+      "Contrai il petto per riportare i manubri in arco finché si incontrano sopra il petto, palmi sempre in avanti.",
+      "Ripeti per il numero di ripetizioni desiderato."
+    ]
   },
   "0317": {
     "name": "curl su panca inclinata con manubri v. 2",
@@ -60083,7 +60081,7 @@
     "description": "Da seduto alla macchina a leva, fletti le maniglie verso l'alto con una presa supina. Isola i bicipiti lungo una traiettoria controllata."
   },
   "0576": {
-    "name": "distensione pettorali alla macchina",
+    "name": "distensione pettorali alla macchina (a dischi)",
     "instructions": [
       "Regola l'altezza del sedile e posizionati sulla macchina con la schiena appoggiata al cuscino.",
       "Afferra le maniglie con una presa prona e posiziona i gomiti con un angolo di 90 gradi.",

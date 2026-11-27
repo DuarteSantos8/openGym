@@ -3,12 +3,12 @@
 // answered, Keep going, a gym leave from the native side and its notification's answer.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const ln = vi.hoisted(() => ({ scheduled: [], cancelled: 0, listeners: {}, granted: true, types: null }))
+const ln = vi.hoisted(() => ({ scheduled: [], pending: [], cancelled: 0, listeners: {}, granted: true, types: null }))
 vi.mock('./mobile.js', () => ({ MOBILE: true }))
 const fakeNotifications = {
     checkPermissions: async () => ({ display: ln.granted ? 'granted' : 'denied' }),
-    schedule: async ({ notifications }) => { ln.scheduled.push(...notifications) },
-    cancel: async () => { ln.cancelled++ },
+    schedule: async ({ notifications }) => { ln.scheduled.push(...notifications); ln.pending = [...notifications] },
+    cancel: async () => { ln.cancelled++; ln.pending = [] },
     registerActionTypes: async ({ types }) => { ln.types = types },
     addListener: async (name, fn) => { ln.listeners[name] = fn; return { remove () {} } },
 }
@@ -29,7 +29,13 @@ function makeStores (active) {
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
     set (next) { const prev = { S }; S = next; for (const f of subs) f({ S }, prev) },
   }
-  const useUI = { getState: () => ({ timer: null, work: null }) }
+  let ui = { timer: null, work: null }
+  const uiSubs = new Set()
+  const useUI = {
+    getState: () => ui,
+    subscribe: fn => { uiSubs.add(fn); return () => uiSubs.delete(fn) },
+    setState (patch) { const prev = ui; ui = { ...ui, ...patch }; for (const f of uiSubs) f(ui, prev) },
+  }
   return { useStore, useUI }
 }
 const workout = () => ({ id: 'w1', start: T0, entries: [{ id: 'bench', target: { restSec: 120 }, sets: [
@@ -37,12 +43,12 @@ const workout = () => ({ id: 'w1', start: T0, entries: [{ id: 'bench', target: {
 ] }] })
 
 let stop = () => {}
-beforeEach(() => { localStorage.clear(); ln.scheduled = []; ln.cancelled = 0; ln.listeners = {}; ln.granted = true; vi.useFakeTimers({ toFake: ['Date'] }) })
+beforeEach(() => { localStorage.clear(); ln.scheduled = []; ln.pending = []; ln.cancelled = 0; ln.listeners = {}; ln.granted = true; vi.useFakeTimers({ toFake: ['Date'] }) })
 afterEach(() => { stop(); _resetForgottenPhone(); vi.useRealTimers() })
 
 function start (A = workout()) {
   const st = makeStores(A)
-  const calls = { finish: [], prompts: [], closed: 0, discard: 0, used: [] }
+  const calls = { finish: [], prompts: [], closed: 0, discard: 0, used: [], deadlines: [] }
   stop = startForgotten({
     ...st,
     finish: o => { calls.finish.push(o); st.useStore.set({ ...st.useStore.getState().S, active: null }) },
@@ -53,6 +59,7 @@ function start (A = workout()) {
     readLeft: async () => null,
     onLeft: () => () => {},
     notifications: fakeNotifications,
+    sessionDeadline: d => calls.deadlines.push(d),
   })
   return { st, calls }
 }
@@ -68,6 +75,128 @@ describe('forgotten workouts on the phone', () => {
     expect(readForgottenState('w1').notifyAt).toBe(last + 45 * MIN)
     // Android 14 without "Alarms & reminders": inexact, so the plugin opens no settings screen (QA66).
     expect(ln.scheduled[0].isExactNotification).toBe(false)
+  })
+
+  it('hands the phone session a deadline: the grace after the planned question, ending at the last set plus its rest', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{ wid: 'w1', endBy: last + 51 * MIN, at: last + 120e3, title: undefined }]))
+    // A set logged moves the question, so the deadline.
+    const A = { ...workout(), name: 'Push' }; A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+    st.useStore.set({ ...st.useStore.getState().S, active: A })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({ wid: 'w1', endBy: last + 56 * MIN, at: last + 5 * MIN + 120e3, title: 'Push' }))
+    // The workout over: no deadline left.
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+  })
+
+  it('an older plan that ends late leaves the newer plan its deadline', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.wid).toBe('w1'))
+    const cancel = fakeNotifications.cancel
+    let release = null
+    fakeNotifications.cancel = () => new Promise(r => { release = r })
+    try {
+      st.useStore.set({ ...st.useStore.getState().S, active: null })   // its plan waits on the cancel
+      await vi.waitFor(() => expect(release).not.toBeNull())
+      fakeNotifications.cancel = cancel
+      st.useStore.set({ ...st.useStore.getState().S, active: { ...workout(), id: 'w2' } })
+      // Plans run one at a time, in order: the newer one waits for the older, then has the last word.
+      for (let i = 0; i < 10; i++) await flush()
+      expect(calls.deadlines.at(-1)?.wid).toBe('w1')
+      release()
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.wid).toBe('w2'))
+      for (let i = 0; i < 10; i++) await flush()
+      expect(calls.deadlines.at(-1)?.wid).toBe('w2')
+    } finally { fakeNotifications.cancel = cancel }
+  })
+
+  it('a long hold pushes the question and the deadline past its end; the hold over, they come back to the last set', async () => {
+    vi.setSystemTime(last + 40 * MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+    const endsAt = last + 55 * MIN   // a 15-minute hold, 40 minutes after the last set
+    st.useUI.setState({ work: { left: 900, total: 900, endsAt } })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(endsAt + 51 * MIN))
+    expect(ln.scheduled.at(-1).schedule.at.getTime()).toBe(endsAt + 45 * MIN)
+    // Its every tick changes nothing.
+    const n = calls.deadlines.length
+    st.useUI.setState({ work: { left: 899, total: 900, endsAt } })
+    await flush()
+    expect(calls.deadlines.length).toBe(n)
+    st.useUI.setState({ work: null })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+  })
+
+  it('a hold past its end (overtime) is still going on: no question, no deadline', async () => {
+    vi.setSystemTime(last + 40 * MIN)
+    const { st, calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+    st.useUI.setState({ work: { left: -60, total: 60, endsAt: last + 39 * MIN, overtime: true } })
+    await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+  })
+
+  it('an older plan that finishes late does not put back its older deadline', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.schedule
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    fakeNotifications.schedule = async o => { if (first) { first = false; await gate } return real(o) }
+    try {
+      const { st, calls } = start()
+      await vi.waitFor(() => expect(first).toBe(false))
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      release()
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 56 * MIN))
+      for (let i = 0; i < 10; i++) await flush()
+      expect(calls.deadlines.at(-1)?.endBy).toBe(last + 56 * MIN)
+      expect(readForgottenState('w1').notifyAt).toBe(last + 50 * MIN)
+    } finally { fakeNotifications.schedule = real }
+  })
+
+  // Both plans use the one notification id: an older plan that schedules last would put back its earlier time.
+  it('an older plan that waits on the permission check is followed by the newer one, which stays', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.checkPermissions
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    fakeNotifications.checkPermissions = async () => { if (first) { first = false; await gate } return real() }
+    try {
+      const { st } = start()
+      await vi.waitFor(() => expect(first).toBe(false))
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      release()
+      // In order: the older time first, then the newer one replaces it (one id, so one is pending).
+      await vi.waitFor(() => expect(ln.scheduled).toHaveLength(2))
+      for (let i = 0; i < 10; i++) await flush()
+      expect(ln.scheduled.map(n => n.schedule.at.getTime())).toEqual([last + 45 * MIN, last + 50 * MIN])
+      expect(ln.pending.map(n => n.schedule.at.getTime())).toEqual([last + 50 * MIN])
+    } finally { fakeNotifications.checkPermissions = real }
+  })
+
+  it('a plan that fails after the old notification was cancelled takes the old deadline away too', async () => {
+    vi.setSystemTime(last + MIN)
+    const real = fakeNotifications.schedule
+    try {
+      const { st, calls } = start()
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)?.endBy).toBe(last + 51 * MIN))
+      fakeNotifications.schedule = async () => { throw new Error('refused') }
+      const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + 5 * MIN }
+      st.useStore.set({ ...st.useStore.getState().S, active: A })
+      await vi.waitFor(() => expect(calls.deadlines.at(-1)).toEqual({}))
+    } finally { fakeNotifications.schedule = real }
+  })
+
+  it('no notification planned (no permission): no deadline, a workout nobody was asked about is not ended', async () => {
+    vi.setSystemTime(last + MIN)
+    ln.granted = false
+    const { calls } = start()
+    await vi.waitFor(() => expect(calls.deadlines).toEqual([{}]))
   })
 
   it('asks on screen, then ends at the last set plus its rest when nobody answers', () => {
@@ -157,5 +286,49 @@ describe('forgotten workouts on the phone', () => {
     expect(c.askBody).toContain('60')
     expect(c.askBody).toContain('10')
     expect(c.leftBody).toContain('10')
+  })
+
+  // The watch's last set and its Finish land back to back: the notification is not left planned
+  // for a workout already saved (the 45-minute "Still training?" after a finish).
+  it('a set and the finish right after it leave no notification planned', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st } = start()
+    await vi.waitFor(() => expect(ln.pending).toHaveLength(1))
+    const A = workout(); A.entries[0].sets[2] = { w: 60, r: 8, done: true, at: last + MIN }
+    st.useStore.set({ ...st.useStore.getState().S, active: A })
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    for (let i = 0; i < 20; i++) await flush()
+    expect(ln.pending).toEqual([])
+  })
+
+  // Reported 2026-11-16 (#1280): started on the watch, finished on the watch with the phone open,
+  // and "Still training?" still came. A finish that lands before the workout's own plan has run
+  // must not leave that plan to schedule a question for a workout already saved.
+  it('a workout finished before its plan ran leaves no notification planned', async () => {
+    vi.setSystemTime(last + MIN)
+    const { st } = start(null)
+    await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+    st.useStore.set({ ...st.useStore.getState().S, active: workout() })
+    st.useStore.set({ ...st.useStore.getState().S, active: null })
+    for (let i = 0; i < 20; i++) await flush()
+    expect(ln.pending).toEqual([])
+  })
+
+  it('no workout at launch: a notification the last run left planned is taken back', async () => {
+    start(null)
+    await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+  })
+
+  it('a cancel that fails is tried again on the next look', async () => {
+    const cancel = fakeNotifications.cancel
+    fakeNotifications.cancel = async () => { ln.cancelled++; throw new Error('busy') }
+    try {
+      start(null)
+      await vi.waitFor(() => expect(ln.cancelled).toBe(1))
+      fakeNotifications.cancel = cancel
+      for (let i = 0; i < 5; i++) await flush()
+      checkForgotten()
+      await vi.waitFor(() => expect(ln.cancelled).toBe(2))
+    } finally { fakeNotifications.cancel = cancel }
   })
 })

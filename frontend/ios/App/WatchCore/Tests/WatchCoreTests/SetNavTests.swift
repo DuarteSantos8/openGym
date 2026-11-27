@@ -135,6 +135,9 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(reps.text, "1234")
         XCTAssertNil(Keypad(decimals: 1).value)
         XCTAssertFalse(Keypad(decimals: 1).fits(0...10), "nothing typed is nothing to save")
+        XCTAssertTrue(Keypad(decimals: 1).confirms(0...10), "✓ with nothing typed keeps the number shown")
+        XCTAssertTrue(k.confirms(0...700))
+        XCTAssertFalse(k.confirms(0...50), "out of range: ✓ waits for a number that fits")
 
         var lead = Keypad(decimals: 1)
         lead.press(".")

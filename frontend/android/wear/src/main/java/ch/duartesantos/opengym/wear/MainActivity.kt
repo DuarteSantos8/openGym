@@ -37,6 +37,8 @@ import kotlinx.coroutines.launch
  */
 class MainActivity : ComponentActivity() {
     private var askedHr = false
+    /** Not a watch (#1359): the "this is the watch app" screen, and nothing else of the app runs. */
+    private val onPhone by lazy { !packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH) }
     private var demoShown = false
     private val reduceMotion = mutableStateOf(false)
 
@@ -60,6 +62,31 @@ class MainActivity : ComponentActivity() {
         override fun onUpdateAmbient() { if (burnIn) minute.intValue++ }
     })
 
+    /** The screen on a phone: plain views, nothing of the watch app runs. */
+    private fun notAWatch(): android.view.View {
+        val pad = (24 * resources.displayMetrics.density).toInt()
+        val col = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(pad, pad * 2, pad, pad)
+        }
+        col.addView(android.widget.TextView(this).apply {
+            text = getString(R.string.not_a_watch_title)
+            textSize = 24f
+            setTextColor(android.graphics.Color.WHITE)
+        })
+        col.addView(android.widget.TextView(this).apply {
+            text = getString(R.string.not_a_watch_body)
+            textSize = 16f
+            setTextColor(android.graphics.Color.LTGRAY)
+            setPadding(0, pad / 2, 0, 0)
+            android.text.util.Linkify.addLinks(this, android.text.util.Linkify.WEB_URLS)
+        })
+        return android.widget.ScrollView(this).apply {
+            setBackgroundColor(android.graphics.Color.BLACK)
+            addView(col)
+        }
+    }
+
     override fun attachBaseContext(base: Context) {
         WearStore.init(base)
         super.attachBaseContext(Lang.wrap(base, WearStore.lang))
@@ -67,6 +94,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Installed on a phone (#1359): the APK has the phone app's id, so it replaced the phone app
+        // there. No watch app on a phone, only what happened and why not to uninstall it.
+        if (onPhone) {
+            setContentView(notAWatch())
+            return
+        }
         lifecycle.addObserver(ambient)
         // The app's language changed on the phone: drawn again in it.
         lifecycleScope.launch {
@@ -96,6 +129,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (onPhone) return
         demo(intent)
         openPage(intent)
     }
@@ -110,6 +144,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (onPhone) return
         reduceMotion.value = WearStore.reduceMotion(this)
         if (!demoShown) { PhoneLink.pull(this); WearStore.checkIn(BuildConfig.VERSION_NAME) }
         WorkoutService.sync(this)

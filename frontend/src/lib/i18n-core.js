@@ -230,6 +230,7 @@ export const exerciseOwnName = ex => {
   if (enOnly) return ex?.n || ''
   const translated = exerciseNames && ex && exerciseNames[ex.id]
   if (!translated) return ex?.n || ''
+  const own = sentenceCase(translated)
   // Some names (Burpee, Pilates, brand/model terms) are the established term in the target
   // language too. Repeating an identical loanword in parentheses adds noise rather than
   // context. Compared in the active language's own casing rules, not hardcoded to one —
@@ -237,8 +238,8 @@ export const exerciseOwnName = ex => {
   // (e.g. Turkish dotless i), which does not include any language shipped here today.
   return translated.toLocaleLowerCase(lang) === ex.n.toLocaleLowerCase('en')
       || !enParens
-    ? translated
-    : `${translated} ${englishInParens(ex.n)}`
+    ? own
+    : `${own} ${englishInParens(ex.n)}`
 }
 
 // In a right-to-left language the English title in brackets is a left-to-right run inside
@@ -255,6 +256,15 @@ const englishInParens = n => (RTL_LANGS.has(baseLang(lang)) ? `\u2068(${n})\u206
 // read all lower-case in every list, card and history row. A new pack goes here only when it
 // carries real casing; i18n-core.test.js checks this list against the packs themselves.
 export const CASED_NAME_LANGS = ['de', 'cs']
+// Lower-case packs for languages that never title-case (#1247): "Подъём На Носки И Приседание С
+// Гирей" reads like a bumpy road to a Russian speaker. Their names get a capital first letter
+// only, here in the text rather than with CSS, so the watch, widgets and Apple Health get it too,
+// and no capitalize class goes on top.
+export const SENTENCE_CASE_LANGS = ['ru', 'uk']
+const sentenceCase = n => (SENTENCE_CASE_LANGS.includes(baseLang(lang)) && n
+  ? n[0].toLocaleUpperCase(baseLang(lang)) + n.slice(1) : n)
+/** True where a translated catalogue name is shown in its own casing, without capitalize. */
+export const ownCasedNameLang = l => CASED_NAME_LANGS.includes(baseLang(l)) || SENTENCE_CASE_LANGS.includes(baseLang(l))
 
 // EXDB stores English names lower-case and the UI title-cases them with CSS. A pack in
 // CASED_NAME_LANGS carries its own casing and must not be cased again on top, so the class that
@@ -272,7 +282,7 @@ export const exerciseNameClass = ex => (shownNameOf(ex) ? '' : exerciseOwnNameCl
 // catalogue's rule (#290), for names stored lower-case. A name with no exercise behind it (an id
 // this build does not know) keeps the catalogue's rule: it is most likely a catalogue name.
 export const exerciseOwnNameClass = ex => (isOwnExercise(ex) ? '' : !enOnly && exerciseNames && ex && exerciseNames[ex.id]
-  && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
+  && ownCasedNameLang(lang) ? '' : 'capitalize')
 // lib/exercises.js knows which exercises are your own (isCustomEx, by where they live) and says
 // so here once it has loaded; this module stays free of the catalogue. Until then the flag decides.
 let isOwnExercise = ex => ex?.custom === true

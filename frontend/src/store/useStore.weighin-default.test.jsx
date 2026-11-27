@@ -14,6 +14,11 @@ describe('weigh-in default', () => {
     expect(freshState().weighIn).toBe(false)
   })
 
+  it('a fresh profile asks for a workout layout once, an existing one never (LayoutPick)', () => {
+    expect(freshState().layoutAsk).toBe(true)
+    expect(DEF.layoutAsk).toBeUndefined()
+  })
+
   it('DEF keeps it on, so an existing profile without the key is not changed under it', () => {
     expect(DEF.weighIn).toBe(true)
     const old = { workouts: [{ id: 'w1' }], routines: [] }         // written before the setting existed

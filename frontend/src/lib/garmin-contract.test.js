@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, PLACES, emptyState } from '../../garmin/test/watch-model.mjs'
+import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, NEED_MS, PLACES, emptyState } from '../../garmin/test/watch-model.mjs'
 import { garminSnapshot, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { GARMIN_STORE_ID } from './garmin-view.js'
 
@@ -51,12 +51,16 @@ describe('the watch model is the Monkey C', () => {
     expect(has(app, new RegExp(`const MAX = ${MAX};`))).toBe(true)
     expect(has(app, new RegExp(`const HARD = ${HARD};`))).toBe(true)
     expect(has(app, new RegExp(`ob\\.size\\(\\) - from > ${BATCH} \\? ${BATCH} :`))).toBe(true)
-    expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) > 0 && since > ${RETRY_UNSENT_MS}`))).toBe(true)
-    // the waits double while the phone stays silent: 60 s << quiet, up to << 4
+    expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) > 0 && since > \\(need \\? wait : ${RETRY_UNSENT_MS}\\)\\) \\{\\s*if \\(need\\) \\{\\s*quiet \\+= 1;`))).toBe(true)
+    // the waits double while the phone stays silent: 60 s << quiet, up to << 4; 10 s << quiet
+    // while the lifter waits for the next part of the workout (#1295)
     expect(HELLO_EVERY_MS).toBe(RETRY_UNACKED_MS)
-    expect(has(app, new RegExp(`var wait = ${RETRY_UNACKED_MS} << \\(quiet > ${QUIET_MAX} \\? ${QUIET_MAX} : quiet\\);`))).toBe(true)
+    expect(has(app, new RegExp(`const NEED = ${NEED_MS};`))).toBe(true)
+    expect(has(app, new RegExp(`var wait = \\(need \\? NEED : ${RETRY_UNACKED_MS}\\) << \\(quiet > ${QUIET_MAX} \\? ${QUIET_MAX} : quiet\\);`))).toBe(true)
+    expect(has(app, /var need = Core\.needsPhone\(G\.state\);/)).toBe(true)
+    expect(has(core, /return n == 0 \|\| \(toI\(s\["pos"\], 0\) >= n && hasMore\(s\)\);/)).toBe(true)
     expect(has(app, /Core\.unsent\(G\.state\) == 0 && since > wait/)).toBe(true)
-    expect(has(app, /ask && now - began > wait && hello\(\)/)).toBe(true)
+    expect(has(app, /\(ask \|\| \(need && G\.state\["ob"\]\.size\(\) == 0\)\) && now - began > wait && hello\(\)/)).toBe(true)
     expect(has(app, new RegExp(`busy && now - began > ${GIVE_UP_MS}`))).toBe(true)
     // a snapshot is the phone speaking: what it did not name and was sent a while ago goes again
     expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) == 0 && System\\.getTimer\\(\\) - lastTry > ${HEARD_RESEND_MS}`))).toBe(true)
@@ -153,6 +157,18 @@ describe('phone → watch: the snapshot', () => {
 
 describe('protocol 2 (docs/WATCH_SYNC.md): the clocks, one rest, set ids', () => {
   const actions = mc('Actions.mc')
+  it('a hold keeps its set, logs that one, and ends unlogged when the phone logged it first (#1403), as the model does', () => {
+    // the 3-2-1 (and a hold begun without one) remembers the set up then
+    expect(has(actions, /G\.hcd = System\.getTimer\(\);\s*G\.hold = null;\s*G\.hfor = holdUp\(\);/)).toBe(true)
+    expect(has(actions, /if \(G\.hfor == null\) \{\s*G\.hfor = holdUp\(\);\s*\}\s*var sec = Ed\.target\(\);/)).toBe(true)
+    // every snapshot: a hold or its 3-2-1 whose set is done or gone is cancelled, before the phone's tick is followed
+    expect(has(actions, /if \(\(G\.hold != null \|\| G\.hcd != null\) && G\.hfor != null && Core\.holdAt\(s, G\.hfor\) == null\) \{\s*holdCancel\(\);/)).toBe(true)
+    // its end logs its own set, by the key the model uses (the set's id, else its place)
+    expect(has(actions, /var at = Core\.holdAt\(G\.state, h\);\s*return at == null \? null : \[at\[0\], at\[1\], h\[1\]\];/)).toBe(true)
+    expect(has(core, /return \(e == null \|\| si == null\) \? null : \[pkey\(e, pos, si, side\), side\];/)).toBe(true)
+    expect(has(core, /!key\.equals\(pkey\(e, pos, si, side\)\) && !key\.equals\(placeKey\(e, pos, si, side\)\)/)).toBe(true)
+  })
+
   it('the clock offset is the model\'s: 8 samples, the last five minutes, the smallest', async () => {
     const { CLOCK_SAMPLES, CLOCK_WINDOW_MS, REST_SLACK_MS } = await import('../../garmin/test/watch-model.mjs')
     expect(has(core, new RegExp(`ck\\.size\\(\\) > ${CLOCK_SAMPLES}\\) \\{ ck = ck\\.slice\\(ck\\.size\\(\\) - ${CLOCK_SAMPLES}, null\\)`))).toBe(true)
@@ -223,8 +239,11 @@ describe('the watch rests when there is no workout', () => {
   const body = (src, name) => src.match(new RegExp(`function ${name}\\([^)]*\\)[^{]*\\{([\\s\\S]*?)\\n    \\}`))[1]
 
   it('a workout discarded on the phone stops the recording and the sensor', () => {
-    // the branch of onPhone with no workout left and no summary: it ends what the watch had running
-    expect(has(body(app, 'onPhone'), /else if \(G\.state\["w"\] == null\) \{\s*if \(had != null\) \{\s*Workout\.end\(false\);\s*Workout\.hrTotals\(\);\s*\}\s*Actions\.reset\(\);/)).toBe(true)
+    // a name with no letters (a routine or workout without one) is set as it is: lines() has no
+    // line for it, and reaching for its last line crashed the summary and the start screen (#1294)
+    expect(has(mc('Ui.mc'), /function title\(dc, s, fonts, y, maxLines\) \{\s*if \(s\.length\(\) == 0\) \{\s*return \[fonts\[0\], \[s\]\];/)).toBe(true)
+    // the branch of onPhone (took) with no workout left and no summary: it ends what the watch had running
+    expect(has(body(app, 'took'), /else if \(G\.state\["w"\] == null\) \{\s*if \(had != null\) \{\s*Workout\.end\(false\);\s*Workout\.hrTotals\(\);\s*\}\s*Actions\.reset\(\);/)).toBe(true)
     // Workout.end turns the sensor off when no workout is left
     expect(has(body(app, 'end'), /G\.state\["w"\] == null && \(Sensor has :setEnabledSensors\)\) \{\s*Sensor\.setEnabledSensors\(\[\]\)/)).toBe(true)
   })
