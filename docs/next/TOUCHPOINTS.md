@@ -9,6 +9,7 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | File | PR / branch | Lines | Why |
 |---|---|---|---|
 | `web/Dockerfile` | `next/EP19-nginx-optional-railway-env` | Startup | Preserve ordinary Docker startup when the optional Railway marker is unset. |
+| `frontend/src/components/TabBar.jsx`, `frontend/src/components/RestTimer.jsx`, `frontend/src/index.css` | `next/EP27-accessible-layout-review` | Layout | Keep the raised Start control, timer and return-to-top button clear as their sizes change. |
 | `mcp/test/http.e2e.test.js` | next/EP27-mcp-plans-readonly | Scoped HTTP tools | Check a plans-only grant against both workout histories, then revoke it. |
 | `api/server.js`, `api/openapi.yaml`, `api/test/server-token-refresh.test.js` | #133 | Browser logout | End the presented session while leaving a later browser sign-in and other devices signed in. |
 | `api/oidc/routes.js`, `api/test/server-oidc.test.js` | #133 | Verified provider callback | Clear the pending logout fallback when issuing the replacement browser session. |
@@ -187,7 +188,6 @@ Started 2026-11-20 with the body picker; earlier PRs (#18–#51) did not keep th
 | `frontend/src/components/ExerciseGuide.jsx`, `frontend/src/lib/i18n{,-core}.js` | `next/EP23-routine-guide-batch-1` | UI | Show the English notice only when a guide actually falls back to English. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP23-routine-guide-batch-1` | Copy | Translate the cues, mistake and correction pairs, muscle descriptions and breathing for ten routine exercises. |
 | `frontend/src/store/useStore.js` | `next/EP19-guest-import-ownership` | +32 −3 | **Store (Tier A area):** the device's own guest profile is snapshotted into `gym_guest_state` when a sign-in adopts the device data, and `clearLocalSession` (every sign-out) puts it back instead of a blank profile — **Add them** copies a guest's workouts into the account, it never consumes them (owner decision 2026-11-27, `DECISION-01.01.md`). Account workouts never reach the guest slot. Just over the 30-line guide; the owner decision is the design note. |
-
 | `frontend/src/views/Nutrition.jsx`, `frontend/src/views/Nutrition.test.jsx` | `next/EP06-opennutritracker-import` | UI | Open a local food export and confirm its diary destination. |
 | `frontend/src/lib/zip.js` | `next/EP06-opennutritracker-import` | ZIP reader | Select bounded entries for a local import. Backup imports retain their store-only format. |
 | `frontend/src/locales/*.js` (25 packs) | `next/EP06-opennutritracker-import` | UI | Localize the file picker, destination, preview, result and error. |
