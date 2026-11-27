@@ -4,6 +4,7 @@ Read this first when you resume. Before it: `AGENTS.md` (first-session checklist
 
 ## 1. State
 
+- **Nutrition sync and import (09.01a).** Serving and amount fields move together when offline edits merge. Browser and API tests check every ordering of three copies, repeated sync and a legacy import with no creation timestamp. Merging restarts the API.
 - **Guest workout adoption (A5, prepared).** The local Cloud journey covers saving the tenth workout and attaching its photo from another tab, carrying both into the account, and decoding the photo from signed-out History after an offline reload. Hosted desktop and physical phone evidence is recorded separately.
 
 - **OpenNutriTracker manual file import (09.01a, prepared).** Export a JSON or CSV ZIP in [OpenNutriTracker v2.7](https://github.com/simonoppowa/OpenNutriTracker/blob/5048a9b57f4ab08b17699af556c280f7f058e07c/docs/export-format.md), open Nutrition diary, select the file, review the destination and confirm. A second export refreshes matching intake IDs. The guest diary stays on this device. A signed-in diary uses its normal account sync. Only selected nutrition fields are saved. Photos, links, account settings, weight and raw exports are excluded. Blank IDs, unknown units and rows without enough information are counted as skipped. Native-language review of the import strings is pending.

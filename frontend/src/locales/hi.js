@@ -6532,6 +6532,8 @@ export default {
   "Import into the diary on this device?": "इस डिवाइस की डायरी में आयात करें?",
   "Import into your synced account diary?": "अपने खाते की सिंक की गई डायरी में आयात करें?",
   "{0} entries ready. {1} skipped.": "तैयार प्रविष्टियाँ: {0}। छोड़ी गईं: {1}।",
+  "This import would exceed the account sync limit. Try a smaller export.": "इसे इंपोर्ट करने से खाते की सिंक सीमा पार हो जाएगी। छोटी एक्सपोर्ट फ़ाइल आज़माएँ।",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "आपका डेटा खाते की सिंक सीमा से अधिक है, इसलिए छोटा होने तक बदलाव इसी डिवाइस पर रहेंगे।",
   "Could not read this OpenNutriTracker export.": "OpenNutriTracker से निर्यात की गई यह फ़ाइल पढ़ी नहीं जा सकी।",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "जोड़ी गईं: {0}। अपडेट की गईं: {1}। अपरिवर्तित: {2}।",
 }

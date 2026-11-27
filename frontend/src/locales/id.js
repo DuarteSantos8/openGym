@@ -6497,6 +6497,8 @@ export default {
   "Import into the diary on this device?": "Impor ke jurnal di perangkat ini?",
   "Import into your synced account diary?": "Impor ke jurnal akun Anda yang tersinkronisasi?",
   "{0} entries ready. {1} skipped.": "Entri siap: {0}. Dilewati: {1}.",
+  "This import would exceed the account sync limit. Try a smaller export.": "Impor ini akan melampaui batas sinkronisasi akun. Coba file ekspor yang lebih kecil.",
+  "Your data is over the account sync limit, so changes stay on this device until it is smaller.": "Data Anda melebihi batas sinkronisasi akun, jadi perubahan tetap di perangkat ini sampai ukurannya lebih kecil.",
   "Could not read this OpenNutriTracker export.": "Hasil ekspor OpenNutriTracker ini tidak dapat dibaca.",
   "Added: {0}. Updated: {1}. Unchanged: {2}.": "Ditambahkan: {0}. Diperbarui: {1}. Tidak berubah: {2}.",
 };
