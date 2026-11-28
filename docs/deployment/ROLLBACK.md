@@ -21,6 +21,10 @@ plan deletes Render, its disk, the Supabase project, auth users or the OAuth cli
 | 2026-11-27 15:58 | Render `ironvane-api` (owner-chosen sign-in origin): `ORIGIN` the old team-scoped branch alias → `https://ironvane-cloud-preview.vercel.app`; `RP_ID` same host change; redeployed the already-live commit `da96e4002` (deploy `<render-deploy-id>`, live 16:00), no new code. `/data` manifest equal before and after | Set both back in Render → Environment, then Manual Deploy → the same commit. No passkeys or connector tokens existed on the old host (`creds 0`, `apiTokens 0`) |
 | 2026-11-27 16:20 | Railway `ironvane-api`: set `OIDC_ISSUER` (the existing Supabase project), `OIDC_CLIENT_ID` (the existing public client), `ADMIN_UIDS` (same account id as Render). Deployment `<railway-deploy-id>` SUCCESS; `/data` manifest still equal to the Render backup. Sign-in needs the owner to add `https://ironvane-web-production.up.railway.app/api/oidc/callback` to the client | `railway variables -s ironvane-api` → delete the three (with `OIDC_ONLY=1` still set, nobody can sign in again) |
 | 2026-11-27 ~17:00–17:28 | Vercel `opengym`: removed the 18 Production variables the Supabase integration (`<supabase-integration>`, all projects) added at 16:21 (`POSTGRES_*`, `SUPABASE_*` incl. service-role, secret and JWT secret, `NEXT_PUBLIC_SUPABASE_*`). The project has no functions and Vite bundles only `VITE_*`; the two production builds made while they existed (`54e966c17`, `44b70444a`) were checked: no secret-shaped value in their build logs or served JS. The three `VITE_*` Preview variables for `next/cloud-preview` are kept | Re-sync from the Supabase integration (Vercel → Integrations → Supabase → project access). Values are not lost: they live in Supabase |
+| 2026-11-27 21:23 → ~23:02 | Production Vercel: #159 (cutover routing, do-not-merge) was merged; production sent `/api` and MCP to the Railway candidate. Rolled back with `vercel rollback` to the last pre-#159 production deployment; `/api` answered from Render again. No data diverged (Railway logged no request in the window). #160 reverted #159 on `main` | Already reverted. Re-apply only as cutover step G5 |
+| 2026-11-27 23:4x | Vercel: promoted the `main` build after #160 (same files as the rolled-back-to deployment, `/api` → Render). An instant rollback pauses automatic production promotion; a promote resumes it | Promote the previous production deployment again |
+| 2026-11-27 23:41 | Render `ironvane-mcp`: `OPENGYM_API_URL` set to the API's private address (`http://<render-api-service>:10000`). It was unset, so the image default `http://api:3000` (a Compose name) applied and every authenticated MCP call answered 502. Redeployed the already-live commit, no new code; the API was not restarted | Delete `OPENGYM_API_URL` on the MCP service, then Manual Deploy → the same commit |
+| 2026-11-27 23:52–00:00 | Railway `ironvane-api` `/data`: fresh consistent Render backup (manifest before = after = archive) extracted over it, API restarted; manifest equal to the backup. Railway is still only a candidate | Stream the pre-restore Railway archive (private backup directory) back, restart |
 
 The two 14:52–14:54 rows affect only the Railway candidate stack, which serves no real users. The
 Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch production.
@@ -48,3 +52,16 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 - Supabase redirect URIs are only ever added during migration; old ones are removed after the
   replacement is verified. Rolling back is re-adding the previous URI to the OAuth client and the
   Auth → URL configuration allow-list.
+
+## Known hazards found in hosted QA
+
+- **The Supabase–Vercel integration rewrites the Supabase Site URL** on production deployments of
+  a project it covers (seen after the 21:23 and 23:35 deployments). The OAuth consent step is only
+  accepted from the Site URL's origin (`400 validation_failed: unauthorized request origin`), so a
+  rewritten Site URL breaks every hosted sign-in, on Render and Railway alike. Remove the app's
+  Vercel project from the integration's project access, then set the Site URL back.
+- **Vercel instant rollback pauses automatic promotion.** New `main` builds stay unpromoted until a
+  deployment is promoted by hand; check Project → Deployments after any rollback.
+- **The MCP service needs `OPENGYM_API_URL`.** Without it the container talks to `http://api:3000`.
+  Check with a well-formed fake `ogt_` token: 401 "did not accept this token" means the API was
+  reached; 502 "could not be reached" means it was not.
