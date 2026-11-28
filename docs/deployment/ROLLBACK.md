@@ -25,6 +25,7 @@ plan deletes Render, its disk, the Supabase project, auth users or the OAuth cli
 | 2026-11-27 23:4x | Vercel: promoted the `main` build after #160 (same files as the rolled-back-to deployment, `/api` → Render). An instant rollback pauses automatic production promotion; a promote resumes it | Promote the previous production deployment again |
 | 2026-11-27 23:41 | Render `ironvane-mcp`: `OPENGYM_API_URL` set to the API's private address (`http://<render-api-service>:10000`). It was unset, so the image default `http://api:3000` (a Compose name) applied and every authenticated MCP call answered 502. Redeployed the already-live commit, no new code; the API was not restarted | Delete `OPENGYM_API_URL` on the MCP service, then Manual Deploy → the same commit |
 | 2026-11-27 23:52–00:00 | Railway `ironvane-api` `/data`: fresh consistent Render backup (manifest before = after = archive) extracted over it, API restarted; manifest equal to the backup. Railway is still only a candidate | Stream the pre-restore Railway archive (private backup directory) back, restart |
+| 2026-11-28 02:50 → 03:33 | Production incident: #164 (cutover routing, do-not-merge) was merged by an automated agent on the owner's account, and #167 and #168 followed; automatic domain assignment was on (the 27 Nov promote had resumed it), so production sent `/api`, MCP and discovery to the Railway candidate. Railway took only test writes, no user writes. Railway frozen (deploy triggers removed, public domains pointed at a closed port; nothing deleted); `vercel rollback` to the last Render-routed production deployment (3 s), which also turned automatic domain assignment off. #169 reverted #164 on `main` (04:43); its build was not promoted. `main` branch protection added | Already reverted. Railway reopens only in cutover step 4; the cutover now moves traffic only by `vercel promote` (`CUTOVER.md`, promotion model) |
 
 The two 14:52–14:54 rows affect only the Railway candidate stack, which serves no real users. The
 Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch production.
@@ -33,8 +34,11 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 
 - Repository change: revert the PR that touched `frontend/vercel.json`. The `/api` rewrite still
   targets `ironvane-api.onrender.com`, so the frontend keeps using Render.
-- Vercel: promote the previous production deployment (`vercel promote <deployment-url>` or
-  Dashboard → Deployments → Promote). Every deployment stays addressable by its own URL.
+- Vercel: `vercel rollback <deployment>` returns the domains to a deployment that was production
+  before (instant, and it turns automatic domain assignment off). A deployment that was never
+  production is moved with `vercel promote <deployment>` instead; a deployment can be promoted
+  only once. After either, read back the project's `autoAssignCustomDomains` and set it to `false`
+  (`CUTOVER.md`, settings check P0). Every deployment stays addressable by its own URL.
 
 ## API data (when a cutover has happened)
 
