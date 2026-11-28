@@ -48,17 +48,20 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 
 1. Freeze writes on the side being abandoned. While its `/data` still has to be copied, keep the
    Railway API running (SSH needs a running deployment) and cut every path to it: point the public
-   domain of `ironvane-api` at a closed port (`ironvane-web`'s has stayed there since step 4) and stop `ironvane-mcp`
+   domain of `ironvane-api` at a closed port (`ironvane-web`'s has stayed there since CUTOVER step 3) and stop `ironvane-mcp`
    (`CUTOVER.md`, rollback table). Nothing weaker freezes it:
    `INVITE_ONLY=1` only gates new sign-ups, and the MCP service reaches the API over the private
    network (`ironvane-api.railway.internal`) whatever the frontend rewrite says.
-   Then drain: requests accepted before the domains closed can still write, so wait until the API
-   has no open client connections, or for its `requestTimeout` (30 min).
+   Then drain: requests accepted before the domains closed can still write (an OIDC callback waits
+   up to 10 s on the provider), so wait until `netstat -tn` in the container shows no established
+   client connection on the API port, then 30 s more. Background jobs write without a client, so
+   the final manifest in step 2 is the proof.
 2. With Render still in maintenance mode, archive Railway `/data` the same way as the Render
    backup and diff it against the cutover manifest. Anything newer than the cutover is user data
    created on Railway: reconcile it into Render. Never overwrite the newer file with the older one.
-   Manifest Railway `/data` once more: it must still equal the archive (otherwise drain and repeat).
-   Only then may Render take writes again; stop the Railway API after the traffic switch.
+   Right before the switch, manifest Railway `/data` once more: it must still equal the archive
+   (otherwise drain and repeat). Only then may Render take writes again; stop the Railway API
+   right after the switch.
 3. Move traffic with `vercel promote <rollback target>` or `vercel rollback <deployment>` (Frontend,
    above; a redeploy alone moves no domain). Read back the production deployment and
    `autoAssignCustomDomains`, check that `/api/health` on both domains shows the **Render** headers,
