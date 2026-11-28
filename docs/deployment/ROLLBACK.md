@@ -52,9 +52,9 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
    (`CUTOVER.md`, rollback table). Nothing weaker freezes it:
    `INVITE_ONLY=1` only gates new sign-ups, and the MCP service reaches the API over the private
    network (`ironvane-api.railway.internal`) whatever the frontend rewrite says.
-   Then drain: requests accepted before the domains closed can still write (an OIDC callback waits
-   up to 10 s on the provider), so wait until `netstat -tn` in the container shows no established
-   client connection on the API port, then 30 s more. Background jobs write without a client, so
+   Then drain: requests accepted before the domains closed can still write (an OIDC callback makes
+   up to four provider calls, each up to 10 s), so wait until `netstat -tn` in the container shows
+   no established client connection on the API port, then 60 s more. Background jobs write without a client, so
    the final manifest in step 2 is the proof.
 2. With Render still in maintenance mode, archive Railway `/data` the same way as the Render
    backup and diff it against the cutover manifest. Anything newer than the cutover is user data
