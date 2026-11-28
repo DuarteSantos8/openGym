@@ -32,13 +32,16 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 
 ## Frontend
 
+- After a cutover, first freeze Railway and reconcile its data into Render (API data, steps 1-2),
+  then move traffic: otherwise users can write to both sides or see stale data.
 - Traffic moves only on Vercel (below), never by a merge: production domains are not
   auto-assigned. Afterwards, revert the PR that touched `frontend/vercel.json` under review so
   `main` matches production again.
 - Vercel: `vercel rollback <deployment>` returns the domains to a deployment that was production
   before (instant, and it turns automatic domain assignment off). A deployment that was never
   production is moved with `vercel promote <deployment>` instead; a deployment can be promoted
-  only once. After either, read back the project's `autoAssignCustomDomains` and set it to `false`
+  only once. Before either, cancel any queued or building production build (a promote turns
+  auto-assignment on, and that build would take the domains when it finishes). After either, read back the project's `autoAssignCustomDomains` and set it to `false`
   (`CUTOVER.md`, settings check P0). Every deployment stays addressable by its own URL.
 
 ## API data (when a cutover has happened)
@@ -52,6 +55,8 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 2. Archive Railway `/data` the same way as the Render backup and diff it against the cutover
    manifest. Anything newer than the cutover is user data created on Railway: reconcile it into
    Render before Render takes writes again. Never overwrite the newer file with the older one.
+   After the API stops, manifest `/data` again and compare it with that archive: a request accepted
+   before the domains closed may have written after it. Reconcile any difference the same way.
 3. Move traffic with `vercel promote <rollback target>` or `vercel rollback <deployment>` (Frontend,
    above; a redeploy alone moves no domain). Read back the production deployment and
    `autoAssignCustomDomains`, check that `/api/health` on both domains shows the **Render** headers,
