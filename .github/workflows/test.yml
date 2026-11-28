@@ -66,6 +66,9 @@ jobs:
               - 'frontend/public/**'
               - 'frontend/scripts/**'
               - 'frontend/index.html'
+              # Test-only changes must run the tests they change.
+              - 'frontend/e2e/**'
+              - 'frontend/playwright.config.*'
               - 'frontend/vite.config.js'
               - 'frontend/package*.json'
               # The phone build and the Coach import the api's shared core.

@@ -7,6 +7,9 @@ for (const [screen, terms] of [
   ['stats', ['PR', 'Volume', '1RM', 'Estimated 1RM']],
 ]) {
   test(`keyboard opens each ${screen} glossary definition`, async ({ page }) => {
+    // Reduced motion, as the other axe scans do: axe measured mid view-fade (App.jsx .vfade)
+    // reads the faded colours and reports contrast failures that no settled screen has.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await enterAsGuest(page)
     await openRoute(page, '/' + screen)
     const glossary = page.locator('.iv-screen-glossary')
@@ -23,6 +26,7 @@ for (const [screen, terms] of [
       await card.getByRole('button', { name: 'Got it' }).press('Enter')
       await expect(card).toHaveCount(0)
     }
+    await page.waitForFunction(() => document.getAnimations().every(a => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity), null, { timeout: 5000 }).catch(() => {})
     const { violations } = await new AxeBuilder({ page }).analyze()
     expect(violations.filter(({ impact }) => impact === 'serious' || impact === 'critical')).toEqual([])
   })
