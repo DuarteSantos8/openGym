@@ -68,7 +68,7 @@ the server's stderr.
 
 ## Tools
 
-Eleven read-only tools, and four that write:
+Twelve read-only tools, and four that write:
 
 | Tool | What it answers |
 |---|---|
@@ -80,12 +80,13 @@ Eleven read-only tools, and four that write:
 | `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. `form_videos` says how many sets were filmed; the videos themselves never leave the app. A set with a note of its own (set menu → Note) carries it as `sets[].note`. |
 | `get_bodyweight` | Weigh-ins, one value per day (the profile's "Daily weigh-in value": morning, average or last), each day's readings with their times, the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
-| `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
+| `get_measurements` | Body measurements from the Measurements screen, one entry per day with the day's note, each field's change over the window and its unit (stored cm, kg, %, mmHg, bpm). Pick fields by key or name. |
+| `muscle_balance` | Which muscles I've trained this week/month/all-time, or between any two dates (`from`/`to`), ranked + which I've neglected. |
 | `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
 | `search_exercises` | Which exercise ids match "romanian deadlift" or "rear delt, dumbbell"? The library (built in plus your own) with body part, target and equipment, so a routine the assistant writes uses the exact exercise. |
 | `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Cardio too: "20 min treadmill at 3.5 mph, incline 7". Needs pairing or a token: [Logging workouts](#logging-workouts). |
-| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. |
-| `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention. `expected_revision` makes it all-or-nothing against what you saw. |
+| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. Also a progression rule (`policy`, for the routine or one exercise), a rep range (`reps_min` to `reps`), supersets (the same `superset` label on neighbouring exercises) and the bands a band exercise starts with (`bands`, by your band names; a weight there is refused, since it would stop the bands from moving up). |
+| `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention (its superset too). The same `policy`, `reps_min`, `superset` and `bands` as `create_routine`. `expected_revision` makes it all-or-nothing against what you saw. |
 | `delete_routine` | *Writes.* Only with `confirm: true` and the `expected_revision` from `get_routine`. |
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
@@ -117,7 +118,7 @@ device shows it within half a minute. Asking for the same thing twice logs it on
 Exercise names are matched the way a CSV import matches them. A common name resolves to the
 library's default variant ("shoulder press" is the barbell one, "leg press" the 45° sled), and the
 reply shows what it was matched to so the LLM can check with you. What it will not do is pick
-between two entries: "lever chest press" is two in the library, and a name like that, or one that
+between two entries: "ez barbell spider curl" is two in the library, and a name like that, or one that
 matches nothing, comes back as a question with candidates. It only creates one of your own
 exercises when you confirm the library has none.
 

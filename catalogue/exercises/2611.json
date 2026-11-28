@@ -7,8 +7,7 @@
   "target": "quads",
   "secondaryMuscles": [
     "glutes",
-    "hamstrings",
-    "calves"
+    "hamstrings"
   ],
   "category": "strength",
   "description": "A horizontal machine leg press done one leg at a time. Builds the glutes and quads.",

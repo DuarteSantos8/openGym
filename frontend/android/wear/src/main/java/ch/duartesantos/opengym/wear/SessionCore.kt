@@ -34,6 +34,8 @@ data class PendingTick(val w: Double? = null, val r: Double? = null, val at: Dou
 data class SessionState(
     val workout: ActiveWorkout? = null,
     val ready: Ready? = null,
+    /** The hash of the routines file the newest snapshot goes with. */
+    val routinesHash: String? = null,
     val settings: WatchSettings = WatchSettings(),
     val unit: String = "kg",
     val restSec: Double = 90.0,
@@ -54,7 +56,13 @@ data class SessionState(
     val synced: Boolean = false,
     /** Today's effort ratings made here, by SessionCore.effortKey (the Apple Watch's efforts, for the Effort page). */
     val efforts: Map<String, Double>? = null,
+    /** The workout's note edited here, until the phone acks it (its snapshot cannot flash it away). */
+    val noteDraft: NoteDraft? = null,
 )
+
+/** A note edited on the Overview: its event's id, the workout it is for and its text. */
+@Serializable
+data class NoteDraft(val id: String, val wid: String, val text: String)
 
 /** The end of a workout, on one screen. */
 @Serializable
@@ -71,7 +79,21 @@ data class WorkoutSummary(
     val endedOnPhone: Boolean = false,
     /** The workout's calories (Health Services' total), rounded; none without a measurement. */
     val kcal: Int? = null,
+    /** Each record with the best it beat, for the medal's bars (`prs` are its names). A summary from an older build has none. */
+    val records: List<RecordLine> = emptyList(),
+    /** When it ended (ms since 1970), for the date on the medal's back. */
+    val endedAt: Double? = null,
 )
+
+/** A personal record set in this workout: the exercise, and the best before it and the new one. */
+@Serializable
+data class RecordLine(val name: String, val kind: Kind, val old: Double, val new: Double, val unit: String) {
+    @Serializable enum class Kind { weight, reps, hold }
+
+    /** The two bests as the record bar shows them: "100" and "105", "8" and "10", "1:00" and "1:15". */
+    fun texts(locale: java.util.Locale): Pair<String, String> =
+        if (kind == Kind.hold) Medal.clock(old) to Medal.clock(new) else Medal.number(old, locale) to Medal.number(new, locale)
+}
 
 typealias Event = JsonObject
 
@@ -112,7 +134,7 @@ object SessionCore {
 
     /** A snapshot from the phone, over what the watch has. */
     fun applySnapshot(s0: SessionState, snap: Snapshot, off: Long = 0): SessionState {
-        var s = s0.copy(ready = snap.ready, synced = true)
+        var s = s0.copy(ready = snap.ready, routinesHash = snap.routinesHash, synced = true)
         snap.unit?.let { s = s.copy(unit = it) }
         snap.restSec?.let { if (it > 0) s = s.copy(restSec = it) }
         snap.settings?.let {
@@ -125,6 +147,7 @@ object SessionCore {
         snap.streak?.let { s = s.copy(streak = it) }
 
         val acked = snap.acked?.toSet() ?: emptySet()
+        if (s.noteDraft != null && s.noteDraft!!.id in acked) s = s.copy(noteDraft = null)
         // The phone applied the start: it had this workout, whatever its snapshot shows now.
         if (s.startedHere != null && s.startId != null && s.startId in acked) s = s.copy(startedHere = null, startId = null)
         // Ticks the phone applied: its copy of those sets is the one that counts from now on.
@@ -137,13 +160,13 @@ object SessionCore {
         if (next0 == null || (next0.id != null && s.finishedHere.contains(next0.id))) {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed) return s
-            return s.copy(workout = null, pending = emptyMap(), efforts = null)
+            return s.copy(workout = null, pending = emptyMap(), efforts = null, noteDraft = null)
         }
         val same = next0.id != null && next0.id == wid
         if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null, startId = null)
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
-        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = next0.cur)
+        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = next0.cur, noteDraft = null)
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         val was = s0.workout?.cur
@@ -358,7 +381,8 @@ object SessionCore {
     }
 
     /** The session finished here, or discarded here (the phone drops it unsaved). */
-    fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false): Pair<SessionState, Event?> {
+    fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false,
+               kcal: Double? = null): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
             workout = null, pending = emptyMap(), skipped = emptyList(), efforts = null, startedHere = null, startId = null,
@@ -370,8 +394,35 @@ object SessionCore {
             // (lib/watch-sync.js staleWatchFinish) and saves it ending at `at` (the last set + rest).
             if (idle && !discard) put("idle", true)
             if (idle && left && !discard) put("left", true)
+            // The calories Health Services measured: the phone writes them to Health Connect instead of its estimate (#724).
+            kcal?.takeIf { !discard && it.isFinite() && it > 0 }?.let { put("kcal", Math.round(it)) }
         }
         return s to event
+    }
+
+    /** The most of the workout's note the watch carries (the phone's own limit is higher). */
+    const val NOTE_MAX = 280
+
+    /** The Overview offers "Add session note": a workout is on, and the phone says it applies workoutNote. */
+    fun canNote(s: SessionState) = s.workout?.id != null && s.settings.workoutNote == true
+
+    /** The note the Overview shows: this watch's own edit until the phone acks it, else the phone's. */
+    fun shownNote(s: SessionState): String = s.noteDraft?.takeIf { it.wid == s.workout?.id }?.text ?: s.workout?.note ?: ""
+
+    /**
+     * The Overview's note edited: control characters out, trimmed, cut. `was` is what the phone has (or will have
+     * once an earlier edit is applied), so it can keep its own text when it changed meanwhile. null: no button
+     * here, or nothing changed.
+     */
+    fun workoutNote(s: SessionState, text: String, at: Double, id: String): Pair<SessionState, Event>? {
+        if (!canNote(s)) return null
+        val wid = s.workout?.id ?: return null
+        val clean = text.map { if (it.code < 32 || it.code == 127) ' ' else it }.joinToString("").trim().take(NOTE_MAX)
+        val was = shownNote(s)
+        if (clean == was) return null
+        return s.copy(noteDraft = NoteDraft(id, wid, clean)) to buildJsonObject {
+            put("id", id); put("type", "workoutNote"); put("wid", wid); put("note", clean); put("was", was); put("at", at.toLong())
+        }
     }
 
     /** "Keep going" on "Still training?": the phone stops asking too (lib/watch-sync.js stillHere). */
@@ -391,6 +442,7 @@ object SessionCore {
         var sets = 0
         var volume = 0.0
         val prs = mutableListOf<String>()
+        val records = mutableListOf<RecordLine>()
         for (e in w.entries) {
             val work = e.sets.filter { !it.warmup }
             val f = e.factor(w.unit)
@@ -405,10 +457,27 @@ object SessionCore {
                 }
             }
             val best = e.best
-            if (best != null && beatsBest(e, work.filter { it.done }, best)) prs += e.name
+            val record = best?.let { record(e, work.filter { it.done }, it, w.unit) }
+            if (record != null) { prs += e.name; records += record }
         }
         return WorkoutSummary(w.name, w.unit, w.start?.let { max(0.0, (end - it) / 1000) }, sets, volume, prs,
-            hr?.first, hr?.second, endedOnPhone, kcal?.takeIf { it.isFinite() && it >= 0 }?.let { Math.round(it).toInt() })
+            hr?.first, hr?.second, endedOnPhone, kcal?.takeIf { it.isFinite() && it >= 0 }?.let { Math.round(it).toInt() }, records, end)
+    }
+
+    /**
+     * The record these done sets set, with the best they beat (beatsBest): the heaviest weight past
+     * it (the lightest when assisted), else the most reps at the best weight, or the longest hold.
+     */
+    fun record(e: Entry, done: List<SetRow>, best: BestSet, unit: String): RecordLine? {
+        if (!beatsBest(e, done, best)) return null
+        val u = e.weightUnit(unit)
+        if (e.isTimed) return RecordLine(e.name, RecordLine.Kind.hold, best.sec ?: 0.0, done.mapNotNull { it.sec }.maxOrNull() ?: 0.0, u)
+        val bw = best.w ?: 0.0; val br = best.r ?: 0.0
+        val assisted = e.assisted == true
+        val past = done.mapNotNull { it.w }.filter { it > 0 && (if (assisted) it < bw else it > bw) }
+        (if (assisted) past.minOrNull() else past.maxOrNull())?.let { return RecordLine(e.name, RecordLine.Kind.weight, bw, it, u) }
+        val reps = done.filter { (it.w ?: 0.0) == bw }.mapNotNull { it.r }.maxOrNull() ?: br
+        return RecordLine(e.name, RecordLine.Kind.reps, br, reps, u)
     }
 
     /** A heavier weight (lighter when assisted), or more reps at the same; a longer hold. */

@@ -63,6 +63,7 @@ describe('PhotoCamera', () => {
     expect(host.querySelector('.pc-shutter').disabled).toBe(true)     // until the video plays
     await flush()
     expect(gum.mock.calls[0][0].video.facingMode).toEqual({ ideal: 'user' })
+    expect(gum.mock.calls[0][0].video.width.ideal).not.toBe(gum.mock.calls[0][0].video.height.ideal)   // not a square (#1315)
     expect(host.querySelector('video').className).toContain('mirror')
     await act(async () => { host.querySelector('[aria-label="Switch camera"]').click() })
     await flush()

@@ -15,13 +15,15 @@ import { copyText } from '../lib/clipboard.js'
 import { useUI } from '../store/useUI.js'
 import { activeGym, gymLabel, switchGym } from '../lib/gym-inventory.js'
 import { startTour, TUTORIALS, TUTORIAL_COPY, tutorialDone } from '../lib/tour.js'
-import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
+import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, SATURDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { activeProfile as activeEquipment, benchKindOf, withBench, profileEquipment, ACC_V } from '../lib/equipment.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, warmupEffortOn } from '../lib/history.js'
 import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.jsx'
+import WarmupRampSheet, { rampLine } from '../components/WarmupRampSheet.jsx'
+import { languageOptions } from '../components/LanguageChip.jsx'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
@@ -49,7 +51,7 @@ import { aboutYouSheet } from '../components/StrengthLevel.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
-import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
+import { t, tn, LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
@@ -65,8 +67,12 @@ import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } f
 import { layoutSheet } from '../components/PageLayout.jsx'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
+import { APP_ICON_VARIANTS } from '../lib/app-icon-variants.js'
+import { hasPrize } from '../lib/prizes.js'
+import { openWhatsNew } from '../components/WhatsNew.jsx'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
+import { bugReportUrl, environmentOf } from '../lib/bug-report.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
@@ -109,6 +115,7 @@ import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
 import { THEMES, shownThemes, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
+import { hasMotion, askMotion } from '../lib/shake.js'
 import { adventOf, adventOpenable } from '../lib/advent.js'
 import { openSeasonal } from '../components/Seasonal.jsx'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
@@ -477,7 +484,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const ctx = {
     user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
-    recordHints: recordHintsOn(S),
+    recordHints: recordHintsOn(S), effortScale: effortOf(S) !== 'none',
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     nfc: nfcOK, gymReminder,
@@ -502,7 +509,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     workout: () => (S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer')) + ' · ' + layoutLabel,
     alerts: () => [S.sound ? t('Sound') : null, canVibrate && S.vibrate !== false ? t('Vibrate') : null, S.timerFlash ? t('Flash') : null].filter(Boolean).join(' · ') || t('Silent'),
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
-    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
+    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S)),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
@@ -634,6 +641,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
             value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
         </Row>}
+        {/* Off: warm-up rows lose their effort cell, in every layout and Focus (#1374). */}
+        {effortOf(S) !== 'none' && <Row icon="sunrise" iconTint="var(--orange)" title={t('Rate warm-ups too')}
+          subtitle={t('Off keeps RIR or RPE for the sets that count.')}>
+          <Switch aria-label={t('Rate warm-ups too')} checked={warmupEffortOn(S)} onChange={v => update(s => { s.warmupEffort = v })} />
+        </Row>}
         {/* The line under each exercise that the rows are held against (#173). Tapping the line in
             a workout switches it too; this is where the choice can be found without knowing that. */}
         <SelectRow icon="history" iconTint="var(--blue)" title={t('Shown under each exercise')}
@@ -665,6 +677,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* QOL Q10: 2 × 8 instead of 3 × 10 for everything you add (lib/history.js newExDefaultsOf). */}
         <Row icon="plus" iconTint="var(--green)" title={t('New exercises start with')} value={newExLine(S)} accessory="chevron"
           onClick={() => useUI.getState().openSheet(close => <NewExDefaultsSheet close={close} />)} />
+        {/* #1423: one warm-up ramp of your own instead of the built-in one (lib/warmup-ramp.js rampOf). */}
+        {on('plates') && <Row icon="sunrise" iconTint="var(--orange)" title={t('Your warm-up ramp')} value={rampLine(S)} accessory="chevron"
+          onClick={() => useUI.getState().openSheet(close => <WarmupRampSheet close={close} />)} />}
         {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
             scrollable list, or that list stripped to just names and set rows (compact). Legacy or
             unknown values read as cards. The workout's ⋯ menu can override it for one session. */}
@@ -722,6 +737,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {on('health') && <Row icon="moon" iconTint="var(--indigo)" title={t('Daily check-in')}
           subtitle={t('Sleep, energy, soreness and stress in four taps before you train. On a rough day it offers to go lighter.')}>
           <Switch aria-label={t('Daily check-in')} checked={S.dailyForm === true} onChange={v => update(s => { s.dailyForm = v })} />
+        </Row>}
+        {/* #1535: a workout started on the Apple Watch or Wear OS watch asks a short check-in first.
+            On by default once the check-in is (lib/daily-form.js watchCheckinOn). */}
+        {on('health') && MOBILE && S.dailyForm === true && <Row icon="watch" iconTint="var(--indigo)" title={t('Ask on the watch too')}
+          subtitle={t('Starting from your wrist? Three quick taps there first, once a day.')}>
+          <Switch aria-label={t('Ask on the watch too')} checked={S.dailyFormWatch !== false}
+            onChange={v => update(s => { if (v) delete s.dailyFormWatch; else s.dailyFormWatch = false })} />
         </Row>}
         {(wakeOK || !MOBILE) && (
           <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Keep screen awake')}
@@ -890,6 +912,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="sun" iconTint="var(--yellow)" title={t('Flash the screen')}>
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
+          {/* Android app (#1475): the end of a rest wakes a locked phone. On, as it always was;
+              off for a phone in a pocket that should stay dark through a long workout. */}
+          {MOBILE && android && <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Light up the screen at rest end')}
+            subtitle={t('Off keeps a locked phone dark. The buzz and the sound still come.')}>
+            <Switch aria-label={t('Light up the screen at rest end')} checked={S.restLightScreen !== false} onChange={v => update(s => { s.restLightScreen = v })} />
+          </Row>}
         </Section>
         {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, the first set when a
             workout begins and each superset member the focus moves to without a rest (#1210),
@@ -939,11 +967,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           value={weekTargetOf(S) || 0} onChange={v => update(s => { s.weekTarget = v || null })}
           options={[{ value: 0, label: t('Off'), subtitle: t('No weekly countdown on Home.') },
             ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ value: n, label: String(n) }))]} />}
-        {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
+        {/* Monday, Sunday or Saturday (#1216): the Plan list, the Home strip, the calendar grid and every "this
             week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>
           <Segmented className="seg-inline"
-            options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }]}
+            options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }, { value: SATURDAY, label: t('Saturday') }]}
             value={weekStartOf(S)} onChange={v => update(s => { s.weekStart = v })} />
         </Row>
       </Section>
@@ -959,10 +987,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <SelectRow
           icon="globe" iconTint="var(--blue)" title={t('Language')}
           value={lang} onChange={v => update(s => { s.lang = v; s.langAuto = false })}
-          options={Object.entries(LANGS).map(([k, name]) => ({
-            value: k, label: name,
-            subtitle: INSTR_LANGS.includes(k) ? null : t("Exercise instructions aren't translated into this language yet, so they stay in English."),
-          }))}
+          options={languageOptions()}
         />
         {ctx.nameLang && <>
           <Row icon="globe" iconTint="var(--purple)" title={t('English exercise names')}
@@ -1120,7 +1145,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
         <DisplayRows />
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
-        {MOBILE && platformNow() && <AppIconRow />}
+        {MOBILE && platformNow() && <AppIconRow prizes={S.prizes} />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
@@ -1175,8 +1200,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Monday's Your week and the 1st's Your month (lib/recap.js). On unless switched off. */}
         {on('motivation') && <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
           subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
-          <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
+          <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v; if (v) s.recapSeen = null })} />
         </Row>}
+        <WrappedBodyRow S={S} update={update} />
         {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Weekly sets on Home')}
           subtitle={t('The muscle with the most room left this week, under your streak.')}>
@@ -1184,7 +1210,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
         {on('motivation') && <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
-          <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />
+          <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v; if (v) s.challengesHidden = null })} />
         </Row>}
         {/* The bar at the top that says the app is offline, kept local, or not synced (#369, #330).
             Here and not under Server & sync, which a phone kept local never shows. Switching it on
@@ -1224,6 +1250,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           {th.workoutTitle && <Row icon="play" iconTint="var(--green)" title={t(th.workoutTitle)} subtitle={t(th.workoutNote)}>
             <Switch aria-label={t(th.workoutTitle)} checked={S.seasonal?.[th.id + 'Workout'] !== false}
               onChange={v => set(th.id + 'Workout', v)} />
+          </Row>}
+          {/* The snow globe (lib/shake.js): only where there is a motion sensor to shake. iOS asks for
+              it from this tap; in the iPhone app that is granted without a prompt. */}
+          {th.shakeTitle && hasMotion() && <Row icon="snowflake" iconTint="var(--blue)" title={t(th.shakeTitle)} subtitle={t(th.shakeNote)}>
+            <Switch aria-label={t(th.shakeTitle)} checked={S.seasonal?.[th.id + 'Shake'] !== false}
+              onChange={v => { if (v) askMotion(); set(th.id + 'Shake', v) }} />
           </Row>}
         </Section>
       })}
@@ -1301,6 +1333,20 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           : <Row icon="download" iconTint="var(--green)" title={t('Get the Android app')}
               subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
               onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
+      </Section>
+      {/* The notes the app showed once after this update (components/WhatsNew.jsx), to read again. */}
+      <Section>
+        <Row icon="sparkles" iconTint="var(--orange)" title={t('What’s new in this version')} accessory="chevron"
+          onClick={() => openWhatsNew()} />
+      </Section>
+      {/* Report a problem (#1482): GitHub's bug form with the version and the device filled in
+          (lib/bug-report.js). Only a link: the app sends nothing, and nothing from the profile. */}
+      <Section footer={t('Opens the bug form on GitHub with your app version and device filled in. The app sends nothing itself.')}>
+        <Row icon="flag" iconTint="var(--red)" title={t('Report a problem')} accessory="chevron"
+          onClick={() => window.open(bugReportUrl({
+            version: __APP_VERSION__ + (MOBILE ? (ios ? ' (iPhone app)' : play ? ' (Google Play)' : fdroid ? ' (F-Droid)' : selfUpdate ? ' (APK)' : ' (Android app)') : ' (web app)'),
+            environment: environmentOf(typeof navigator !== 'undefined' ? navigator.userAgent : '', { app: MOBILE }),
+          }), '_blank', 'noopener')} />
       </Section>
       {/* The F-Droid build has no Wear OS link (it would need Google Play services, which F-Droid
           leaves out): said here rather than having a watch that silently never connects. */}
@@ -1744,6 +1790,15 @@ function WrappedNotifyRow({ S, update }) {
   </Row>
 }
 
+// The body-weight card of Your year (lib/wrapped.js bodyChange). "Leave body weight out of my year"
+// on that card switches it off; this is the way back (Discord 2026-11-21).
+function WrappedBodyRow({ S, update }) {
+  if (!isOn(S, 'motivation') || !isOn(S, 'body')) return null
+  return <Row icon="scale" iconTint="var(--acc)" title={t('Body weight in my year')} subtitle={t('Your first and last weigh-in of the year, on a card of its own.')}>
+    <Switch checked={S.wrappedBody !== false} onChange={v => update(s => { s.wrappedBody = !!v })} aria-label={t('Body weight in my year')} />
+  </Row>
+}
+
 // The missed-workout nudge (lib/nudge.js): a switch and its tone, under the reminder they ride
 // on — the server sends it with the same push (or the phone schedules it beside the reminder).
 function NudgeRows({ S, setReminder }) {
@@ -1849,10 +1904,13 @@ function activeSeasonTitle(S) {
   return th ? t(th.title) : null
 }
 
-// The showing theme, when it has a home-screen icon of its own to suggest.
+// The showing theme, when it has a home-screen icon of its own to suggest. An icon that is a
+// present (Christmas 2026, lib/app-icon-variants.js `prize`) only to whoever was given it.
 function seasonWithIcon(S) {
   const th = THEMES.find(x => x.id === activeSeason(S))
-  return th?.appIcon ? th : null
+  if (!th?.appIcon) return null
+  const prize = APP_ICON_VARIANTS.find(v => v.id === th.appIcon)?.prize
+  return prize && !hasPrize(S, prize) ? null : th
 }
 
 function accentLabel(S) {

@@ -130,4 +130,9 @@ struct Keypad: Equatable {
     func fits(_ range: ClosedRange<Double>) -> Bool {
         value.map { range.contains($0) } ?? false
     }
+
+    /// Whether ✓ answers: nothing typed (it keeps the number shown and closes) or a number that fits.
+    func confirms(_ range: ClosedRange<Double>) -> Bool {
+        text.isEmpty || fits(range)
+    }
 }

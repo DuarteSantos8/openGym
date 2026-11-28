@@ -16,6 +16,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { t } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
 import { containRect, captureSize, overlayOpacity, captureName } from '../lib/camera-frame.js'
+import { cameraConstraints } from '../lib/camera-capture.js'
 import { CustomThumb, useMediaUrl } from './CustomMedia.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -60,7 +61,7 @@ export default function PhotoCamera({ photos = [], onUse, close }) {
       const md = globalThis.navigator?.mediaDevices
       if (!md || typeof md.getUserMedia !== 'function') { setStatus('unavailable'); return }
       try {
-        stream = await md.getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1920 } }, audio: false })
+        stream = await md.getUserMedia(cameraConstraints(facing))   // not a square (#1315)
       } catch (e) { if (!done) setStatus(cameraError(e)); return }
       if (done) { stream.getTracks().forEach(tr => tr.stop()); return }
       const v = videoRef.current

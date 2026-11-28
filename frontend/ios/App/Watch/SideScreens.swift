@@ -532,6 +532,126 @@ struct IdlePrompt: View {
     }
 }
 
+/* ---------- the daily check-in ---------- */
+
+/// The daily check-in before a workout started here (#1535), the phone's in short: sleep, energy
+/// and soreness, one page each. A tap on 1 to 5 answers and goes on; the crown picks one too, and
+/// Continue takes it. "Skip for today" starts the workout as planned, Cancel starts nothing.
+struct CheckinView: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.onAccent) private var onAccent
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @FocusState private var crownOn: Bool
+    @State private var crown: Double = 3
+    @State private var turned = false
+    /// The crown put back in the middle for the next question: that change is no answer.
+    @State private var resetting = false
+
+    /// Each question's icon, its words and the words at both ends of its scale (components/DailyCheckin.jsx).
+    private struct Question {
+        let icon: String
+        let label: LocalizedStringKey
+        let lo: LocalizedStringKey
+        let hi: LocalizedStringKey
+    }
+
+    private func question(_ key: String) -> Question {
+        switch key {
+        case "sleep": return Question(icon: "moon.zzz.fill", label: LocalizedStringKey("Sleep"), lo: LocalizedStringKey("Barely slept"), hi: LocalizedStringKey("Slept like a log"))
+        case "energy": return Question(icon: "bolt.fill", label: LocalizedStringKey("Energy"), lo: LocalizedStringKey("Running on fumes"), hi: LocalizedStringKey("Full of beans"))
+        default: return Question(icon: "figure.strengthtraining.traditional", label: LocalizedStringKey("Soreness"), lo: LocalizedStringKey("Nothing aches"), hi: LocalizedStringKey("Everything aches"))
+        }
+    }
+
+    /// What VoiceOver says for a number: its end of the scale with it at 1 and 5.
+    private func said(_ n: Int, _ q: Question) -> Text {
+        if n == 1 { return Text(verbatim: "1, ") + Text(q.lo) }
+        if n == 5 { return Text(verbatim: "5, ") + Text(q.hi) }
+        return Text(verbatim: String(n))
+    }
+
+    var body: some View {
+        let keys = DailyForm.keys
+        let step = min(max(store.checkinStep, 0), keys.count - 1)
+        let q = question(keys[step])
+        let picked: Int? = turned ? Int(crown.rounded()) : nil
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 6) {
+                    HStack(spacing: 6) {
+                        Image(systemName: q.icon).foregroundStyle(accent)
+                        Text(q.label)
+                        Spacer(minLength: 0)
+                        Text(verbatim: "\(step + 1)/\(keys.count)").monospacedDigit().foregroundStyle(Theme.label2)
+                    }
+                    .font(.system(.headline, design: .rounded))
+                    .padding(.horizontal, 4)
+                    .accessibilityElement(children: .combine)
+                    HStack(spacing: 4) {
+                        ForEach(1...5, id: \.self) { n in
+                            // Tapped, not a Button: inside the crown's focusable row, as the weigh-in's digits.
+                            Text(verbatim: "\(n)")
+                                .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
+                                .foregroundStyle(picked == n && !dimmed ? onAccent : Color.white)
+                                .frame(maxWidth: .infinity, minHeight: 38, maxHeight: 38)
+                                .background(Capsule().fill(picked == n && !dimmed ? accent : Color.clear))
+                                .overlay(Capsule().strokeBorder(accent, lineWidth: 1.5))
+                                .contentShape(Capsule())
+                                .onTapGesture { store.answerCheckin(n) }
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel(said(n, q))
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityAction { store.answerCheckin(n) }
+                        }
+                    }
+                    .focusable()
+                    .focused($crownOn)
+                    .digitalCrownRotation($crown, from: 1, through: 5, by: 1, sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+                    .onChange(of: crown) { _ in
+                        if resetting { resetting = false } else { turned = true }
+                    }
+                    HStack(alignment: .top) {
+                        Text(q.lo).multilineTextAlignment(.leading)
+                        Spacer(minLength: 6)
+                        Text(q.hi).multilineTextAlignment(.trailing)
+                    }
+                    .font(.system(.caption2, design: .rounded))
+                    .foregroundStyle(Theme.label2)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .padding(.horizontal, 4)
+                    .accessibilityHidden(true)
+                    if let v = picked {
+                        Button { store.answerCheckin(v) } label: { Text("Continue") }
+                            .buttonStyle(PrimaryButtonStyle())
+                    }
+                    Button { store.finishCheckin(skip: true) } label: {
+                        Text("Skip for today").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(RowButtonStyle())
+                    Button(role: .cancel) { store.cancelCheckin() } label: {
+                        Text("Cancel").font(.footnote).frame(maxWidth: .infinity, minHeight: 32)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Theme.label2)
+                }
+                .padding(.horizontal, 2)
+            }
+            .navigationTitle(Text("How are you today?"))
+        }
+        .onAppear { crownOn = true }
+        // The next question starts untouched, the crown back in the middle.
+        .onChange(of: store.checkinStep) { _ in
+            turned = false
+            if crown != 3 {
+                resetting = true
+                crown = 3
+            }
+        }
+    }
+}
+
 /* ---------- the weigh-in ---------- */
 
 /// The weigh-in before a workout started here, as the phone asks for it: the body weight in one
@@ -615,113 +735,5 @@ struct WeighInView: View {
             .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
                                   sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
             .onTapGesture { part = which }
-    }
-}
-
-/* ---------- the end of a workout ---------- */
-
-/// "Workout saved", the time big, sets and volume, the records, then heart rate and calories,
-/// which Apple Health fills in a moment later (last, so nothing above moves when they come).
-/// Done ignores taps for its first second: the thumb on Finish is still on the glass.
-struct SummaryView: View {
-    @EnvironmentObject var store: SessionStore
-    @Environment(\.locale) private var locale
-    @Environment(\.accent) private var accent
-    @State private var shownAt = Date()
-    let summary: WorkoutSummary
-
-    var body: some View {
-        ScrollViewReader { reader in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 6) {
-                        Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                            .foregroundStyle(accent)
-                            .accessibilityHidden(true)
-                        Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                            .font(.system(.headline, design: .rounded))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Text(verbatim: summary.name).font(.footnote).foregroundStyle(Theme.label2)
-                    if let d = summary.duration {
-                        VStack(alignment: .leading, spacing: -2) {
-                            Text("Time").font(.caption2).foregroundStyle(Theme.label2)
-                            Text(verbatim: SummaryView.duration(d, locale: locale))
-                                .font(.system(size: 32, weight: .semibold, design: .rounded).monospacedDigit())
-                                .foregroundStyle(Theme.yellow)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.6)
-                        }
-                        .accessibilityElement(children: .combine)
-                    }
-                    HStack(alignment: .top, spacing: 12) {
-                        stat(Text("Sets"), Text(verbatim: "\(summary.sets)"))
-                        if summary.volume > 0 {
-                            stat(Text("Volume"), Text(verbatim: "\(summary.volume.formatted(.number.precision(.fractionLength(0)).locale(locale))) \(summary.unit)"))
-                        }
-                    }
-                    if !summary.prs.isEmpty {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(Theme.yellow) }
-                                .font(.caption.weight(.semibold))
-                            ForEach(summary.prs, id: \.self) { name in
-                                Text(verbatim: name).font(.footnote)
-                            }
-                        }
-                        .accessibilityElement(children: .combine)
-                        .padding(.top, 2)
-                    }
-                    if let avg = summary.hrAvg, let top = summary.hrMax {
-                        stat(Text("Heart rate"), Text("\(SafeNum.int(avg)) avg · \(SafeNum.int(top)) max"), color: Theme.red)
-                    }
-                    if let kcal = summary.calories {
-                        stat(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),
-                                                    format: .measurement(width: .abbreviated, usage: .asProvided,
-                                                                         numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
-                    }
-                    if store.asksEffort {
-                        EffortRating(value: Binding(get: { store.summary?.effort }, set: { store.rateEffort($0) }),
-                                     preset: summary.effortPreset,
-                                     editing: ProcessInfo.processInfo.arguments.contains("-OpenGymWatchEffortEdit"))
-                    }
-                    SyncLine().padding(.top, 2)
-                    Button {
-                        guard Date().timeIntervalSince(shownAt) >= 1 else { return }
-                        store.closeSummary()
-                    } label: { Text("Done") }
-                        .buttonStyle(PrimaryButtonStyle())
-                        .padding(.top, 4)
-                        .id("done")
-                }
-                .padding(.horizontal, 4)
-                // The title starts under the clock, not beside it (it ran into the time on 41 mm).
-                .padding(.top, 14)
-            }
-            // CI: the end of the summary too (heart rate, calories, records).
-            .onAppear {
-                shownAt = Date()
-                if SessionStore.demoScreen == "summary-end" { reader.scrollTo("done", anchor: .bottom) }
-            }
-        }
-    }
-
-    private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(Theme.label2)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    /// "52 min", "1 h 5 min", in the app's language.
-    static func duration(_ seconds: Double, locale: Locale = .current) -> String {
-        let f = DateComponentsFormatter()
-        var calendar = Calendar.current
-        calendar.locale = locale
-        f.calendar = calendar
-        f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
-        f.unitsStyle = .short
-        return f.string(from: max(60, seconds)) ?? ""
     }
 }

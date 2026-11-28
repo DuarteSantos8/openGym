@@ -199,9 +199,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private(set) var paused = false
 
     func pause() {
-        guard let s = session, !paused, s.state == .running else { return }
+        guard let s = session, !paused else { return }
         paused = true
-        s.pause()
+        // Still starting (just made): it pauses once it runs (workoutSession(_:didChangeTo:)).
+        if s.state == .running { s.pause() }
     }
 
     func resume() {
@@ -218,7 +219,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// dead, the snapshot applied before the session came back) is ended at once: taken up, it
     /// had nobody to end it, kept the sensor at workout rate for hours, and became the session of
     /// the next workout, started long before that one began.
-    func recover(workoutId wid: String?, stillRuns: @escaping () -> Bool = { true }) {
+    /// `pausedNow` (asked on main too): whether the workout is paused on the phone; a session that comes back running then rests.
+    func recover(workoutId wid: String?, stillRuns: @escaping () -> Bool = { true }, pausedNow: @escaping () -> Bool = { false }) {
         guard HKHealthStore.isHealthDataAvailable() else { return }
         store.recoverActiveWorkoutSession { recovered, _ in
             DispatchQueue.main.async {
@@ -255,6 +257,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
                 if let q = self.query { self.store.stop(q) }
                 self.startQuery(from: s.startDate ?? Date())
                 self.running = true
+                if pausedNow() { self.pause() }
             }
         }
     }
@@ -469,6 +472,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /* ---------- delegates ---------- */
 
     func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        if toState == .running {
+            // A pause asked while it was starting (a workout picked up already paused on the phone).
+            DispatchQueue.main.async { if self.paused, self.session === workoutSession { workoutSession.pause() } }
+            return
+        }
         guard toState == .ended || toState == .stopped else { return }
         DispatchQueue.main.async { self.lost(workoutSession) }
     }

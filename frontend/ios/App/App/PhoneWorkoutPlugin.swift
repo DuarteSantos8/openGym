@@ -1,3 +1,4 @@
+import AVFoundation
 import Capacitor
 import Foundation
 import HealthKit
@@ -23,6 +24,7 @@ import HealthKit
  *   await PhoneWorkout.recover()    // { wid, start } of a session iOS kept, or {}
  *   await PhoneWorkout.samples({ since })         // { samples: [[ms, bpm]] }
  *   await PhoneWorkout.end({ wid, save, at, title, discarded })   // discarded: the workout is gone, never saved
+ *   await PhoneWorkout.deadline({ wid, endBy, at, title })        // saves and ends it by itself at endBy; none: cancelled
  *   PhoneWorkout.addListener('heartRate', ({ bpm, at }) => ...)   // at most every few seconds
  *
  * Below iOS 26 status says { supported: false } and every other call does nothing.
@@ -37,14 +39,28 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "recover", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "samples", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "end", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deadline", returnType: CAPPluginReturnPromise),
     ]
 
     override public func load() {
         if #available(iOS 26.0, *) {
             PhoneWorkoutSession.shared.onReading = { [weak self] bpm, at in
-                self?.notifyListeners("heartRate", data: ["bpm": bpm, "at": at])
+                var data: [String: Any] = ["bpm": bpm, "at": at]
+                // The device that measured it ("AirPods Pro"), when iOS names one: the page draws earbuds.
+                // AirPods Pro 3 samples come with no device, so the earbuds playing the phone's audio
+                // stand in: on an iPhone only AirPods and Beats feed a phone session's heart rate.
+                if let name = PhoneWorkoutSession.shared.deviceName ?? Self.earbudsOnRoute() { data["device"] = name }
+                self?.notifyListeners("heartRate", data: data)
             }
         }
+    }
+
+    /// The AirPods or Beats the phone's audio goes to right now, by the name the user gave them.
+    private static func earbudsOnRoute() -> String? {
+        let bt: [AVAudioSession.Port] = [.bluetoothA2DP, .bluetoothHFP, .bluetoothLE]
+        return AVAudioSession.sharedInstance().currentRoute.outputs.first {
+            bt.contains($0.portType) && $0.portName.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil
+        }?.portName
     }
 
     @objc func status(_ call: CAPPluginCall) {
@@ -104,6 +120,20 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         let discarded = call.getBool("discarded") ?? false
         DispatchQueue.main.async {
             PhoneWorkoutSession.shared.end(workoutId: wid, save: save && !discarded, at: at, title: title, discarded: discarded)
+            call.resolve()
+        }
+    }
+
+    /// The page's "Still training?" grace (lib/forgotten-phone.js): a workout nobody finishes ends
+    /// here, since the page sleeps with the phone locked. No `endBy`: no deadline.
+    @objc func deadline(_ call: CAPPluginCall) {
+        guard #available(iOS 26.0, *) else { call.resolve(); return }
+        let wid = call.getString("wid")
+        let endBy = call.getDouble("endBy").map { Date(timeIntervalSince1970: $0 / 1000) }
+        let at = call.getDouble("at").map { Date(timeIntervalSince1970: $0 / 1000) }
+        let title = call.getString("title")
+        DispatchQueue.main.async {
+            PhoneWorkoutSession.shared.setDeadline(workoutId: wid, endBy: endBy, at: at, title: title)
             call.resolve()
         }
     }
@@ -171,6 +201,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
     var running: Bool { session != nil }
     /// Told about a new reading, at most every few seconds (the page's small live readout).
     var onReading: ((Double, Double) -> Void)?
+    /// The name of the device behind the latest heart-rate sample from the query, if iOS gives one.
+    private(set) var deviceName: String?
     private var toldAt = Date.distantPast
     private var toldBpm: Double?
     /// A recovery asked for at launch, before anyone was listening: its answer, for the page.
@@ -198,6 +230,7 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         builder = b
         readings = []
         toldBpm = nil
+        deviceName = nil
         workoutId = wid
         let now = Date()
         startedAt = now
@@ -209,6 +242,22 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         }
         startQuery(from: now)
         return true
+    }
+
+    /// The session's own deadline: a workout left running with the phone locked is saved and ended
+    /// here as it ended at `at`, since the page that would end it sleeps. A wall-clock timer, so
+    /// time asleep counts. Replaced by the next call; gone when the session ends. `endBy` nil: none.
+    private var deadlineTimer: DispatchSourceTimer?
+
+    func setDeadline(workoutId wid: String?, endBy: Date?, at: Date?, title: String?) {
+        deadlineTimer?.cancel()
+        deadlineTimer = nil
+        guard let wid = wid, let endBy = endBy else { return }
+        let t = DispatchSource.makeTimerSource(queue: .main)
+        t.schedule(wallDeadline: .now() + max(0, endBy.timeIntervalSinceNow))
+        t.setEventHandler { [weak self] in self?.end(workoutId: wid, save: true, at: at, title: title) }
+        deadlineTimer = t
+        t.resume()
     }
 
     /// The app was killed (or crashed) with a session running: iOS kept it and hands it back, with
@@ -280,6 +329,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
     func end(workoutId wid: String?, save: Bool, at: Date?, title: String?, discarded: Bool = false) {
         guard let s = session, let b = builder else { return }
         if let wid = wid, wid != workoutId { return }
+        deadlineTimer?.cancel()
+        deadlineTimer = nil
         let sid = workoutId.map(Self.syncId)
         if let q = query { store.stop(q); query = nil }
         // Never before its own start and never ahead of now (a stale or NaN `at` from the page):
@@ -291,6 +342,7 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         startedAt = nil
         readings = []
         toldBpm = nil
+        deviceName = nil
         if !save {
             // Discarded while the builder still collects, the session ended after: ended first,
             // HealthKit can take the discard for a finish and save the workout (TestFlight 1.4.4).
@@ -352,9 +404,23 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         let predicate = HKQuery.predicateForSamples(withStart: start, end: nil, options: .strictStartDate)
         let handler: (HKAnchoredObjectQuery, [HKSample]?, [HKDeletedObject]?, HKQueryAnchor?, Error?) -> Void = { [weak self] _, added, _, _, _ in
             guard let self = self else { return }
-            let fresh = (added as? [HKQuantitySample] ?? []).map { ($0.endDate, $0.quantity.doubleValue(for: self.bpm)) }
+            let samples = added as? [HKQuantitySample] ?? []
+            let fresh = samples.map { ($0.endDate, $0.quantity.doubleValue(for: self.bpm)) }
             guard !fresh.isEmpty else { return }
-            DispatchQueue.main.async { self.add(fresh) }
+            // AirPods readings name the earbuds ("Adrián's AirPods Pro", model "AirPods Pro"); a renamed
+            // pair is still told apart by its model, which the page's earbuds check reads then.
+            let device = samples.max(by: { $0.endDate < $1.endDate })?.device
+            let earbuds = { (s: String?) in s?.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil }
+            let name = earbuds(device?.model) && !earbuds(device?.name) ? device?.model : device?.name ?? device?.model
+            let newest = samples.map(\.endDate).max() ?? .distantPast
+            DispatchQueue.main.async {
+                // an unnamed source after a named one must not keep the old name; a late batch of older
+                // readings (another device's sync) must not rename the newer reading the page shows
+                // (0.5 s: the builder's copy of the same reading, as add() counts it)
+                let shown = self.readings.last?.0 ?? .distantPast
+                if newest > shown.addingTimeInterval(-0.5) { self.deviceName = (name?.isEmpty ?? true) ? nil : name }
+                self.add(fresh)
+            }
         }
         let q = HKAnchoredObjectQuery(type: type, predicate: predicate, anchor: nil, limit: HKObjectQueryNoLimit, resultsHandler: handler)
         q.updateHandler = handler
@@ -395,6 +461,8 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
             guard self.session === workoutSession else { return }
             if let q = self.query { self.store.stop(q); self.query = nil }
             if let wid = self.workoutId { PhoneWorkoutLedger.mark(Self.syncId(wid), nil) }
+            self.deadlineTimer?.cancel()
+            self.deadlineTimer = nil
             self.builder?.discardWorkout()
             self.session = nil
             self.builder = nil

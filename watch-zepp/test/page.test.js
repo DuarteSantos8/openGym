@@ -187,3 +187,21 @@ for (const device of [{ width: 480, height: 480 }, { width: 360, height: 360 }, 
     })
   }
 }
+
+// Review 1.4.6: with the routines in pages, "phone out of reach" shows in the streak's caption.
+test('phone out of reach shows while the routines are paged', async () => {
+  fresh({ width: 390, height: 450 })
+  const p = await load('page/index.js')
+  const many = JSON.parse(JSON.stringify(snapshot))
+  many.ready.others = Array.from({ length: 9 }, (_, i) => ({ name: `Routine ${i + 1}`, entries: snapshot.ready.today.entries }))
+  Z().request = async ({ params }) => ({ accepted: params.events.map(e => e.id), json: JSON.stringify(many) })
+  p.onInit(); p.build(); await settle()
+  assert.ok(buttonOf('›'), 'paged')
+  const caption = texts().find(x => /streak/i.test(x || ''))
+  assert.ok(caption, 'the caption is the streak while the phone answers')
+  p.store.setLink({ away: true })
+  p.go('start')
+  assert.ok(!texts().some(x => /streak/i.test(x || '')), 'the caption gave way')
+  assert.ok(texts().some(x => /reach/i.test(x || '')), 'phone out of reach is said')
+  p.onDestroy()
+})

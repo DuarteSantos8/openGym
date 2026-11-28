@@ -21,7 +21,11 @@ const HEX = /^[0-9a-f]{64}$/
 const kindOf = (name) => (/(^|[-_.])hd([-_.]|$)/i.test(name) ? 'hd' : /(^|[-_.])plus([-_.]|$)/i.test(name) ? 'plus' : 'standard')
 // The kinds a phone can be on that update themselves (frontend/src/lib/update.js, pickApk). The
 // other APKs (Offline, FDroid, Wear) are not picked by the updater's Standard rule.
-const OTHER = /(^|[-_.])(offline|fdroid|wear)([-_.]|$)/i
+export const OTHER = /(^|[-_.])(offline|fdroid|wear|wearos)([-_.]|$)/i
+// Files renamed on purpose: a release with the new name is not missing the old one. The Wear OS APK
+// says it is for the watch only since 1.4.6 (#1359: installed on a phone it replaced the phone app).
+const RENAMED = [[/^openGym-Wear-(.+)\.apk(\.sha256)?$/, 'openGym-WearOS-watch-only-$1.apk$2']]
+const renamed = (name) => RENAMED.reduce((n, [from, to]) => n.replace(from, to), name)
 
 /**
  * The problems of a release as a list of sentences; empty means fine. `texts` maps an asset name
@@ -64,7 +68,8 @@ export function problems(release, texts, previous = null) {
   if (previous) {
     const before = String(previous.tag_name || '').replace(/^v/, '')
     for (const a of previous.assets) {
-      const expected = a.name.split(before).join(version)
+      const same = a.name.split(before).join(version)
+      const expected = names.includes(same) ? same : renamed(same)
       if (!names.includes(expected)) out.push(`${expected} is missing (${previous.tag_name} had ${a.name})`)
     }
   }

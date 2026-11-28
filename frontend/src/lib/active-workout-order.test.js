@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from './active-workout-order.js'
+import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry, moveActiveWorkoutUnitTo } from './active-workout-order.js'
 import { supersetFlowStep } from './supersetFlow.js'
 import { supersetUnits } from './history.js'
 import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
@@ -191,5 +191,28 @@ describe('active workout move locale coverage', () => {
     }
     expect(Object.hasOwn(PT_BR_OVERRIDES, 'Move up')).toBe(true)
     expect(Object.hasOwn(PT_BR_OVERRIDES, 'Move down')).toBe(true)
+  })
+})
+
+describe('moveActiveWorkoutUnitTo (hold and drag in the live list)', () => {
+  it('carries a lone exercise past several units, and the marker stays on its exercise', () => {
+    const active = { cur: 1, entries: [entry('a'), entry('b'), entry('c', { sg: 's' }), entry('d', { sg: 's' }), entry('e')] }
+    const moved = moveActiveWorkoutUnitTo(active, 0, 3)
+    expect(active.entries.map(e => e.id)).toEqual(['b', 'c', 'd', 'e', 'a'])
+    expect(moved.indices).toEqual([1, 2, 3, 4, 0])
+    expect(active.entries[active.cur].id).toBe('b')
+  })
+  it('moves a superset whole, members in order, sg kept', () => {
+    const active = { cur: 3, entries: [entry('a'), entry('b'), entry('c', { sg: 's' }), entry('d', { sg: 's' })] }
+    moveActiveWorkoutUnitTo(active, 3, 0)
+    expect(active.entries.map(e => e.id + (e.sg || ''))).toEqual(['cs', 'ds', 'a', 'b'])
+    expect(active.entries[active.cur].id).toBe('d')
+  })
+  it('refuses a move to its own place or off the list', () => {
+    const active = { cur: 0, entries: [entry('a'), entry('b')] }
+    expect(moveActiveWorkoutUnitTo(active, 0, 0)).toBe(null)
+    expect(moveActiveWorkoutUnitTo(active, 0, 2)).toBe(null)
+    expect(moveActiveWorkoutUnitTo(active, 5, 0)).toBe(null)
+    expect(active.entries.map(e => e.id)).toEqual(['a', 'b'])
   })
 })

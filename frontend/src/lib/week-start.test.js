@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { MONDAY, SUNDAY, weekStartOf, weekOrder, weekDayOffset, startOfWeek, weekKey, isoOf } from './format.js'
+import { MONDAY, SUNDAY, SATURDAY, weekStartOf, weekOrder, weekDayOffset, startOfWeek, weekKey, isoOf } from './format.js'
 import { streakWeeks } from './history.js'
 import { muscleBalanceWindow } from './muscles.js'
 import { effortWeeks } from './effort.js'
@@ -16,8 +16,10 @@ describe('weekStartOf', () => {
     expect(weekStartOf({ weekStart: undefined })).toBe(MONDAY)
   })
 
-  it('only 0 means Sunday — a junk value is not a third week shape', () => {
+  it('0 is Sunday and 6 Saturday (#1216); a junk value is not a fourth week shape', () => {
     expect(weekStartOf({ weekStart: SUNDAY })).toBe(SUNDAY)
+    expect(weekStartOf({ weekStart: SATURDAY })).toBe(SATURDAY)
+    expect(startOfWeek('2026-09-10', SATURDAY).getDate()).toBe(5)
     expect(weekStartOf({ weekStart: 3 })).toBe(MONDAY)
     expect(weekStartOf({ weekStart: null })).toBe(MONDAY)
   })

@@ -35,6 +35,10 @@ describe('autoplayClip', () => {
     expect(el.pause).toHaveBeenCalledTimes(1)
     report([{ target: el, isIntersecting: true }])
     expect(el.play).toHaveBeenCalledTimes(2)
+    el.dataset = { paused: '1' }
+    report([{ target: el, isIntersecting: false }])
+    report([{ target: el, isIntersecting: true }])
+    expect(el.play).toHaveBeenCalledTimes(2)
     stop()
     expect(seen.has(el)).toBe(false)
     vi.unstubAllGlobals()

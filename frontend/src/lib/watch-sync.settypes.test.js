@@ -60,12 +60,14 @@ describe('the snapshot carries every kind of set', () => {
     expect(bench.assisted).toBeUndefined()
   })
   it('no best for an exercise never done before', () => { expect(curl.best).toBeUndefined() })
-  it('the weight step each exercise moves in, as on the phone (its own, else the default)', () => {
-    expect(bench.step).toBeGreaterThan(0)
-    expect(plank.step).toBeUndefined()
+  it('the weight step each exercise moves in: 1.25 kg at most, a finer one of its own kept', () => {
+    expect(bench.step).toBe(1.25)
+    expect(plank.step).toBe(1.25) // a hold can carry weight (a weighted plank): its wheel is capped too
     const S2 = S()
-    S2.active.entries[0].target.inc = 1.25
+    S2.active.entries[0].target.inc = 5
     expect(buildSnapshot(S2).active.entries[0].step).toBe(1.25)
+    S2.active.entries[0].target.inc = 0.5
+    expect(buildSnapshot(S2).active.entries[0].step).toBe(0.5)
   })
 })
 
@@ -124,6 +126,29 @@ describe('a snapshot too big for the application context', () => {
     expect(snap.ready.others).toHaveLength(8)   // the original is not touched
   })
 
+  it('keeps as many of the other routines as fit, cutting from the end', async () => {
+    const { fitSnapshot } = await import('./watch-sync.js')
+    const snap = big()
+    snap.ready.others.forEach((o, i) => { o.name = 'R' + i })
+    const lean = JSON.parse(JSON.stringify(snap))
+    for (const o of lean.ready.others) for (const e of o.entries) { delete e.last; delete e.best }
+    const max = size({ ...lean, ready: { ...lean.ready, others: lean.ready.others.slice(0, 5) } }) + 10
+    expect(fitSnapshot(snap, max).ready.others.map(o => o.name)).toEqual(['R0', 'R1', 'R2', 'R3', 'R4'])
+  })
+
+  it('cuts the others to the byte, one by one: none more than needed', async () => {
+    const { fitSnapshot } = await import('./watch-sync.js')
+    const snap = big()
+    snap.ready.others.forEach((o, i) => { o.name = 'R' + i })
+    const lean = JSON.parse(JSON.stringify(snap))
+    for (const o of lean.ready.others) for (const e of o.entries) { delete e.last; delete e.best }
+    const at = n => size({ ...lean, ready: { ...lean.ready, others: lean.ready.others.slice(0, n) } })
+    expect(fitSnapshot(snap, at(5)).ready.others).toHaveLength(5)
+    expect(fitSnapshot(snap, at(5) - 1).ready.others).toHaveLength(4)
+    expect(fitSnapshot(snap, at(1)).ready.others).toHaveLength(1)
+    expect(fitSnapshot(snap, at(0)).ready.others).toHaveLength(0)
+  })
+
   it('keeps today\'s routine when cutting the others is enough', async () => {
     const { fitSnapshot } = await import('./watch-sync.js')
     const snap = big()
@@ -164,8 +189,8 @@ describe('the weigh-in from the watch', () => {
   it('the watch is told the app\'s language, whether to ask, and the last weight', async () => {
     const { watchExtras } = await import('./watch-sync.js')
     expect(watchExtras({ weighIn: false, bodyweight: [{ d: '2026-10-01', w: 80 }, { d: '2026-10-10', w: 79.5 }] }))
-      .toEqual({ lang: 'en', weighIn: false, lastBw: 79.5, accent: '#30d158', onAccent: '#000000', workoutEffort: 'ask' })
-    expect(watchExtras({})).toEqual({ lang: 'en', weighIn: true, accent: '#30d158', onAccent: '#000000', workoutEffort: 'ask' })
+      .toEqual({ lang: 'en', weighIn: false, workoutNote: true, lastBw: 79.5, accent: '#30d158', onAccent: '#000000', workoutEffort: 'ask' })
+    expect(watchExtras({})).toEqual({ lang: 'en', weighIn: true, workoutNote: true, accent: '#30d158', onAccent: '#000000', workoutEffort: 'ask' })
   })
 })
 

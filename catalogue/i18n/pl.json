@@ -21657,16 +21657,7 @@
     ]
   },
   "0316": {
-    "name": "rozpiętki z hantlami na ławce skośnej (breeding)",
-    "instructions": [
-      "Ustaw ławkę skośną pod kątem 45 stopni.",
-      "Usiądź na ławce, plecy oparte o zagłówek, stopy płasko na podłodze.",
-      "Chwyć hantle w obie ręce chwytem nachwytem, dłonie skierowane do przodu.",
-      "Zacznij z ramionami w pełni wyprostowanymi, prostopadle do podłogi.",
-      "Powoli opuść hantle po bokach klatki piersiowej, utrzymując łokcie pod kątem 90 stopni.",
-      "Zatrzymaj się na chwilę w najniższym punkcie, a następnie wypchnij hantle z powrotem do pozycji wyjściowej.",
-      "Powtórz zalecaną liczbę powtórzeń."
-    ]
+    "name": "rozpiętki z hantlami na ławce skośnej (dłonie do przodu)"
   },
   "0317": {
     "name": "uginanie ramion z hantlami na ławce skośnej wer. 3",
@@ -23918,7 +23909,7 @@
     ]
   },
   "0576": {
-    "name": "wyciskanie klatki na maszynie wer. 2",
+    "name": "wyciskanie klatki na maszynie (z talerzami)",
     "instructions": [
       "Wyreguluj wysokość siedziska i usiądź na maszynie, opierając plecy płasko o poduszkę.",
       "Chwyć uchwyty nachwytem i ustaw łokcie pod kątem 90 stopni.",

@@ -51905,16 +51905,7 @@
     ]
   },
   "0316": {
-    "name": "Tlak s jednoručkami na šikmé lavici",
-    "instructions": [
-      "Nastav šikmou lavici pod úhlem 45°.",
-      "Sedni si na lavici, záda opři o opěrku a chodidla celou plochou o zem.",
-      "V každé ruce drž jednoručku nadhmatem, dlaně směřují dopředu.",
-      "Začni s úplně propnutými pažemi kolmo k zemi.",
-      "Pomalu spouštěj jednoručky po stranách hrudníku, lokty drž v úhlu 90°.",
-      "Dole se na chvíli zastav a pak jednoručky vytlač zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Rozpažování s jednoručkami na šikmé lavici (dlaně vpřed)"
   },
   "0317": {
     "name": "Bicepsový zdvih s jednoručkami na šikmé lavici v. 2",
@@ -54398,7 +54389,7 @@
     ]
   },
   "0576": {
-    "name": "Tlak na prsa na stroji",
+    "name": "Tlak na prsa na stroji (na kotouče)",
     "instructions": [
       "Nastav výšku sedáku a usaď se do stroje, záda opři celou plochou o opěrku.",
       "Uchop madla nadhmatem a lokty pokrč do úhlu 90°.",
@@ -54408,7 +54399,7 @@
     ]
   },
   "0577": {
-    "name": "Tlak na prsa na stroji v. 3",
+    "name": "Tlak na prsa na stroji",
     "instructions": [
       "Nastav výšku sedáku a usaď se do stroje, záda opři celou plochou o opěrku.",
       "Uchop madla nadhmatem a lokty pokrč do úhlu 90°.",

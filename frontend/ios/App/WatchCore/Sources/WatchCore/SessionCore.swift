@@ -55,6 +55,8 @@ struct PendingTick: Codable, Equatable {
 struct SessionState: Codable, Equatable {
     var workout: ActiveWorkout?
     var ready: Ready?
+    /// The hash of the routines file the newest snapshot goes with.
+    var routinesHash: String?
     var settings = WatchSettings()
     var unit = "kg"
     var restSec: Double = 90
@@ -69,10 +71,10 @@ struct SessionState: Codable, Equatable {
     var pending: [String: PendingTick] = [:]
     /// The exercise on screen.
     var entryIndex = 0
-    /// Sets passed over here ("exerciseId#setIndex"), not done: the next one comes up instead.
+    /// Sets passed over here ("n<copy>:exerciseId#setIndex", SessionCore.placeKey), not done: the next one comes up instead.
     /// Optional, like every field added later, so a state saved by an older build still loads.
     var skipped: [String]?
-    /// The effort rated here per set ("exerciseId#setIndex"), kept for the Effort page: the phone's
+    /// The effort rated here per set ("n<copy>:exerciseId#setIndex"), kept for the Effort page: the phone's
     /// snapshot does not carry it back. In the profile's scale (`settings.effort`).
     var efforts: [String: Double]?
     /// The newest change to the rest this watch knows of, its own or the phone's (ms, the phone's
@@ -82,14 +84,41 @@ struct SessionState: Codable, Equatable {
     /// picks the countdown up instead of losing it (a snapshot does not bring back an older rest).
     var restEnd: Double?
     var restFrom: Double?
+    /// The workout's note edited here, until the phone acks it (its snapshot cannot flash it away).
+    var noteDraft: NoteDraft?
+}
+
+/// A note edited on the Overview: its event's id, the workout it is for and its text.
+struct NoteDraft: Codable, Equatable {
+    var id: String
+    var wid: String
+    var text: String
 }
 
 typealias Event = [String: Any]
 
 enum SessionCore {
-    /// The skipped sets' and the efforts' key: the exercise and the set's place in it.
+    /// The exercise and the set's place in it: the key a 1.4.4 build saved a pending tick under.
     static func key(_ exId: String, _ si: Int, _ side: String? = nil) -> String {
         side.map { "\(exId)#\(si)#\($0)" } ?? "\(exId)#\(si)"
+    }
+
+    /// A skipped set's and a rating's key: which copy of its exercise the entry is (0: the first) and
+    /// the set ("n1:bench#2"), so the same lift twice keeps its own (#1455), and an exercise the phone
+    /// moves or takes out does not carry one off (Wear's placeKey). From cubetes' #1139.
+    static func placeKey(_ w: ActiveWorkout, entry ei: Int, set si: Int) -> String {
+        let id = w.entries[ei].id
+        return "n\(w.entries[..<ei].filter { $0.id == id }.count):\(id)#\(si)"
+    }
+
+    /// A state saved by 1.4.5, whose skips and ratings were keyed "exerciseId#setIndex": those go to
+    /// the exercise's first copy. Safe to run more than once.
+    static func upgraded(_ s0: SessionState) -> SessionState {
+        func up(_ k: String) -> String { k.range(of: #"^n\d+:"#, options: .regularExpression) == nil ? "n0:" + k : k }
+        var s = s0
+        s.skipped = s0.skipped.map { $0.map(up).sorted() }
+        s.efforts = s0.efforts.map { Dictionary($0.map { (up($0.key), $0.value) }) { a, _ in a } }
+        return s
     }
 
     /// A pending tick's key (protocol 2, rule 5): "s:<sid>" for a set the phone named, else its place
@@ -113,11 +142,13 @@ enum SessionCore {
     static func applySnapshot(_ s0: SessionState, _ snap: Snapshot) -> SessionState {
         var s = s0
         s.ready = snap.ready
+        s.routinesHash = snap.routinesHash
         if let u = snap.unit { s.unit = u }
         if let r = snap.restSec, r > 0 { s.restSec = r }
         if let st = snap.settings { s.settings = st }
 
         let acked = Set(snap.acked ?? [])
+        if let d = s.noteDraft, acked.contains(d.id) { s.noteDraft = nil }
         // The phone applied the start: it had this workout, whatever its snapshot shows now.
         if s.startedHere != nil, let sid = s.startId, acked.contains(sid) { s.startedHere = nil; s.startId = nil }
         // Ticks the phone applied: its copy of those sets is the one that counts from now on.
@@ -136,6 +167,7 @@ enum SessionCore {
         guard var next = snap.active, !(next.id.map { s.finishedHere.contains($0) } ?? false) else {
             // No workout on the phone, or one the watch has finished already.
             if unconfirmed { return s }
+            s.noteDraft = nil
             s.workout = nil
             s.pending = [:]
             s.restAt = nil
@@ -152,6 +184,7 @@ enum SessionCore {
         }
         if !same {
             // Another workout (or the first one this watch sees): its own position, no old ticks.
+            s.noteDraft = nil
             s.pending = [:]
             s.skipped = nil
             s.efforts = nil
@@ -259,7 +292,7 @@ enum SessionCore {
         // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
         if let r = effort, Effort.notches(r.kind) != nil {
             event[r.kind] = r.value
-            s.efforts = (s.efforts ?? [:]).merging([key(e.id, si): r.value]) { $1 }
+            s.efforts = (s.efforts ?? [:]).merging([placeKey(workout, entry: ei, set: si): r.value]) { $1 }
         }
         return (s, event)
     }
@@ -281,13 +314,14 @@ enum SessionCore {
     static func skip(_ s0: SessionState, entry ei: Int, set si: Int) -> SessionState {
         guard let w = s0.workout, w.entries.indices.contains(ei), w.entries[ei].sets.indices.contains(si) else { return s0 }
         var s = s0
-        let k = key(w.entries[ei].id, si)
+        let k = placeKey(w, entry: ei, set: si)
         s.skipped = Array(Set((s.skipped ?? []) + [k])).sorted()
         return s
     }
 
-    static func isSkipped(_ s: SessionState, _ exId: String, _ si: Int) -> Bool {
-        s.skipped?.contains(key(exId, si)) ?? false
+    static func isSkipped(_ s: SessionState, entry ei: Int, _ si: Int) -> Bool {
+        guard let w = s.workout, w.entries.indices.contains(ei) else { return false }
+        return s.skipped?.contains(placeKey(w, entry: ei, set: si)) ?? false
     }
 
     /// A set the phone ticked (#1101, the Apple twin of #1165): the exercise the watch goes to, when
@@ -297,6 +331,30 @@ enum SessionCore {
         guard let count = s.workout?.entries.count else { return nil }
         let to = next(after: s, entry: ei, set: si).entry
         return to < count && to != s.entryIndex ? to : nil
+    }
+
+    /// Whether a hold started for set `si` (and `side`, on a per-side set) of exercise `ei` still has its
+    /// set to log. The phone logs a hold of its own first with "Timed holds start by themselves", and a
+    /// hold ending here then would log the set after it, so the hold is over when this is false.
+    /// The set is found by its id when it has one (a set added or removed on the phone moves the places),
+    /// else by place.
+    static func holdOpen(_ s: SessionState, entry ei: Int, set si: Int, side: String?, sid: String? = nil) -> Bool {
+        guard let w = s.workout, let p = holdPlace(s, entry: ei, set: si, sid: sid) else { return false }
+        let row = w.entries[p.entry].sets[p.set]
+        return !row.done && row.sideUp == side
+    }
+
+    /// Where a hold's own set is now: by its id (a set added or removed on the phone moves the places),
+    /// else by the place it had. nil when it is gone.
+    static func holdPlace(_ s: SessionState, entry ei: Int, set si: Int, sid: String? = nil) -> (entry: Int, set: Int)? {
+        guard let w = s.workout else { return nil }
+        if let sid {
+            for (e, entry) in w.entries.enumerated() {
+                if let i = entry.sets.firstIndex(where: { $0.sid == sid }) { return (e, i) }
+            }
+            return nil
+        }
+        return w.entries.indices.contains(ei) && w.entries[ei].sets.indices.contains(si) ? (ei, si) : nil
     }
 
     /// Where to go after a set of exercise `ei` (set `si`) was done, and whether a rest comes first.
@@ -434,6 +492,32 @@ enum SessionCore {
         return (s, event)
     }
 
+    /// The most of the workout's note the watch carries (the phone's own limit is higher).
+    static let noteMax = 280
+
+    /// The Overview offers "Add note": a workout is on, and the phone says it applies workoutNote.
+    static func canNote(_ s: SessionState) -> Bool { s.workout?.id != nil && s.settings.workoutNote == true }
+
+    /// The note the Overview shows: this watch's own edit until the phone acks it, else the phone's.
+    static func shownNote(_ s: SessionState) -> String {
+        if let d = s.noteDraft, d.wid == s.workout?.id { return d.text }
+        return s.workout?.note ?? ""
+    }
+
+    /// The Overview's note edited: control characters out, trimmed, cut. `was` is what the phone has (or will
+    /// have once an earlier edit is applied), so it can keep its own text when it changed meanwhile.
+    /// nil: no button here, or nothing changed.
+    static func workoutNote(_ s0: SessionState, _ text: String, at: Double, id: String) -> (SessionState, Event)? {
+        guard canNote(s0), let wid = s0.workout?.id else { return nil }
+        let clean = String(String(String.UnicodeScalarView(text.unicodeScalars.map { $0.value < 32 || $0.value == 127 ? " " : $0 }))
+            .trimmingCharacters(in: .whitespacesAndNewlines).prefix(noteMax))
+        let was = shownNote(s0)
+        if clean == was { return nil }
+        var s = s0
+        s.noteDraft = NoteDraft(id: id, wid: wid, text: clean)
+        return (s, ["id": id, "type": "workoutNote", "wid": wid, "note": clean, "was": was, "at": at])
+    }
+
     /// "Keep going" on "Still training?": the phone stops asking too (lib/watch-sync.js stillHere).
     static func stillHere(_ s: SessionState, at: Double, id: String) -> Event? {
         guard let w = s.workout else { return nil }
@@ -445,8 +529,7 @@ enum SessionCore {
         guard let w = s.workout, w.entries.indices.contains(ei) else { return nil }
         let sets = w.entries[ei].sets
         if let p = picked, sets.indices.contains(p), !sets[p].done { return p }
-        let exId = w.entries[ei].id
-        return sets.indices.first { !sets[$0].done && !isSkipped(s, exId, $0) }
+        return sets.indices.first { !sets[$0].done && !isSkipped(s, entry: ei, $0) }
     }
 
     /// Sets done and sets in all, for the complication's ring.
@@ -460,6 +543,7 @@ enum SessionCore {
     static func summary(_ w: ActiveWorkout, end: Double, startedAt: Double? = nil, endedOnPhone: Bool = false) -> WorkoutSummary {
         var sets = 0, volume = 0.0
         var prs: [String] = []
+        var records: [RecordLine] = []
         for e in w.entries {
             let work = e.sets.filter { !$0.warmup }
             // An exercise in a unit of its own (#657) counts in the workout's unit.
@@ -473,11 +557,33 @@ enum SessionCore {
                     if !e.isTimed && !e.isCardio { volume += (row.w ?? 0) * (row.r ?? 0) * f }
                 }
             }
-            if let best = e.best, beatsBest(e, work.filter { $0.done }, best) { prs.append(e.name) }
+            if let best = e.best, let record = record(e, work.filter { $0.done }, best, unit: w.unit) {
+                prs.append(e.name)
+                records.append(record)
+            }
         }
         let from = w.start ?? startedAt
         return WorkoutSummary(name: w.name, unit: w.unit, duration: from.map { max(0, (end - $0) / 1000) },
-                              sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone, workoutId: w.id)
+                              sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone,
+                              records: records, endedAt: end, workoutId: w.id)
+    }
+
+    /// The record these done sets set, with the best they beat (beatsBest): the heaviest weight past
+    /// it (the lightest when assisted), else the most reps at the best weight, or the longest hold.
+    static func record(_ e: Entry, _ done: [SetRow], _ best: BestSet, unit: String) -> RecordLine? {
+        guard beatsBest(e, done, best) else { return nil }
+        let u = e.weightUnit(unit)
+        if e.isTimed {
+            return RecordLine(name: e.name, kind: .hold, old: best.sec ?? 0, new: done.compactMap { $0.sec }.max() ?? 0, unit: u)
+        }
+        let bw = best.w ?? 0, br = best.r ?? 0
+        let assisted = e.assisted == true
+        let past = done.compactMap { $0.w }.filter { $0 > 0 && (assisted ? $0 < bw : $0 > bw) }
+        if let w = assisted ? past.min() : past.max() {
+            return RecordLine(name: e.name, kind: .weight, old: bw, new: w, unit: u)
+        }
+        let reps = done.filter { ($0.w ?? 0) == bw }.compactMap { $0.r }.max() ?? br
+        return RecordLine(name: e.name, kind: .reps, old: br, new: reps, unit: u)
     }
 
     /// Whether one of these done sets beats the best before this workout: a heavier weight (a
@@ -514,6 +620,10 @@ struct WorkoutSummary: Codable, Equatable {
     var calories: Double?
     /// The phone ended it (finished or discarded there) while the watch had it running.
     var endedOnPhone: Bool
+    /// Each record with the best it beat (the medal's record bars), in the order of `prs`.
+    var records: [RecordLine] = []
+    /// When it ended, ms since 1970 (the date on the medal's back).
+    var endedAt: Double? = nil
     /// The workout's id, which the effort rating goes back to the phone with.
     var workoutId: String? = nil
     /// The whole workout's effort, 1 to 10, once rated here.
@@ -575,6 +685,45 @@ enum WorkoutEffort {
     /// Whether the summary asks: the phone says so, and the workout has an id to send it back with.
     static func asks(_ settings: WatchSettings, _ summary: WorkoutSummary) -> Bool {
         settings.workoutEffort == "ask" && summary.workoutId != nil
+    }
+}
+
+extension WorkoutSummary {
+    /// A summary written by an older build has no records or end: they read as none.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        unit = try c.decode(String.self, forKey: .unit)
+        duration = try c.decodeIfPresent(Double.self, forKey: .duration)
+        sets = try c.decode(Int.self, forKey: .sets)
+        volume = try c.decode(Double.self, forKey: .volume)
+        prs = try c.decode([String].self, forKey: .prs)
+        hrAvg = try c.decodeIfPresent(Double.self, forKey: .hrAvg)
+        hrMax = try c.decodeIfPresent(Double.self, forKey: .hrMax)
+        calories = try c.decodeIfPresent(Double.self, forKey: .calories)
+        endedOnPhone = try c.decode(Bool.self, forKey: .endedOnPhone)
+        records = try c.decodeIfPresent([RecordLine].self, forKey: .records) ?? []
+        endedAt = try c.decodeIfPresent(Double.self, forKey: .endedAt)
+        workoutId = try c.decodeIfPresent(String.self, forKey: .workoutId)
+        effort = try c.decodeIfPresent(Int.self, forKey: .effort)
+        effortPreset = try c.decodeIfPresent(Int.self, forKey: .effortPreset)
+    }
+}
+
+/// A record on the summary: the exercise, its best before this workout and the one that beat it.
+struct RecordLine: Codable, Equatable {
+    enum Kind: String, Codable { case weight, reps, hold }
+    var name: String
+    var kind: Kind
+    /// A weight (in `unit`), a number of reps, or a hold's seconds.
+    var old: Double
+    var new: Double
+    /// The exercise's weight unit, kg or lb.
+    var unit: String
+
+    /// The two bests as the record bar shows them, "100" and "105", "8" and "10", "1:00" and "1:15".
+    func texts(locale: Locale) -> (old: String, new: String) {
+        kind == .hold ? (Medal.clock(old), Medal.clock(new)) : (Medal.number(old, locale: locale), Medal.number(new, locale: locale))
     }
 }
 
@@ -649,9 +798,14 @@ enum Idle: Equatable {
         [lastSet, seen ?? 0, activity ?? 0, snooze ?? 0].max() ?? lastSet
     }
 
+    /// Paused on the phone on purpose (#976): the lifter is away by choice, so never forgotten.
+    static func isPaused(_ w: ActiveWorkout) -> Bool { (w.pausedAt ?? 0) > 0 }
+
     /// `since`: the last thing that counts (the last set, or a "keep going" answered since).
     /// `leftAt`: the phone left the gym then (asked at once if after `since`).
-    static func state(since: Double, now: Double, rules: Rules = .older, leftAt: Double? = nil) -> Idle {
+    /// `paused`: the workout is paused (`isPaused`): nothing to ask or end, as on the phone and on Wear OS.
+    static func state(since: Double, now: Double, rules: Rules = .older, leftAt: Double? = nil, paused: Bool = false) -> Idle {
+        if paused { return .active }
         if rules.leaveGym, let left = leftAt, left > since {
             return now >= left + rules.grace ? .end : .left
         }
@@ -685,8 +839,8 @@ enum Idle: Equatable {
     /// The Apple Health session rests (SensorPlan's pause, early) once the workout is past ending as
     /// forgotten but the phone could not be asked: `verdict` only asks then, so the sensor would
     /// stay at workout rate until SensorPlan's three hours. Not an end: the next activity resumes it.
-    static func sensorRests(since: Double, now: Double, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil) -> Bool {
-        reply == nil && state(since: since, now: now, rules: rules, leftAt: leftAt) == .end
+    static func sensorRests(since: Double, now: Double, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil, paused: Bool = false) -> Bool {
+        reply == nil && state(since: since, now: now, rules: rules, leftAt: leftAt, paused: paused) == .end
     }
 
     /// The watch's copy can be stale: in #904 no snapshot had reached it for 45 minutes while sets
@@ -695,14 +849,14 @@ enum Idle: Equatable {
     ///   no answer (out of reach, no reply)       ask, never end: the lifter decides
     ///   the phone runs another workout, or none  end: nothing of this one goes on there
     ///   the phone used it since                  counted from then, like a set logged here
-    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil) -> Idle {
-        let alone = state(since: since, now: now, rules: rules, leftAt: leftAt)
+    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil, paused: Bool = false) -> Idle {
+        let alone = state(since: since, now: now, rules: rules, leftAt: leftAt, paused: paused)
         guard alone == .end else { return alone }
         let asking: Idle = (rules.leaveGym && (leftAt ?? 0) > since) ? .left : .ask
         guard let r = reply else { return asking }
         guard r.wid != nil, r.wid == wid else { return .end }
         let later = max(since, r.activeAt ?? 0)
-        return state(since: later, now: now, rules: rules, leftAt: leftAt)
+        return state(since: later, now: now, rules: rules, leftAt: leftAt, paused: paused)
     }
 }
 

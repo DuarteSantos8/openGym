@@ -12,6 +12,16 @@ final class RestMathTests: XCTestCase {
         XCTAssertNotNil(RestMath.minus(end: now.addingTimeInterval(16), now: now))
     }
 
+    func testTheShiftChipReadsTheNetChange() {
+        XCTAssertEqual(RestMath.shift(30), "+30")
+        XCTAssertEqual(RestMath.shift(-15), "−15", "a real minus sign")
+        XCTAssertEqual(RestMath.shift(105), "+105", "seconds all the way: a circle has no room for a clock")
+        XCTAssertEqual(RestMath.shift(-60), "−60")
+        XCTAssertEqual(RestMath.shift(14.6), "+15", "rounded")
+        XCTAssertNil(RestMath.shift(0), "back to zero: no chip")
+        XCTAssertNil(RestMath.shift(.nan))
+    }
+
     func testFollowsOnlyARestEndThePhoneHasNotSentBefore() {
         XCTAssertTrue(RestMath.follows(5000, last: nil))
         XCTAssertFalse(RestMath.follows(5000, last: 5000), "the same end again leaves a ±15 alone")

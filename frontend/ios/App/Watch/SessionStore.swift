@@ -38,7 +38,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     var workout: ActiveWorkout? { state.workout }
-    var ready: Ready? { state.ready }
+    /// Every routine the phone sent as a file (lib/watch-routines-file.js), kept across launches.
+    @Published private(set) var routines: RoutinesFile? = nil
+    var ready: Ready? { Plan.merged(state.ready, hash: state.routinesHash, file: routines) }
     var entryIndex: Int { state.entryIndex }
     var unit: String { workout?.unit ?? state.unit }
     var weightStep: Double { unit == "lb" ? 5 : 2.5 }
@@ -66,11 +68,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// A string in the app's language, for what is not a view (the rest notification).
     func L(_ key: String) -> String {
-        guard let name = SessionStore.lproj(for: state.settings.lang),
-              let path = Bundle.main.path(forResource: name, ofType: "lproj"),
-              let bundle = Bundle(path: path) else {
-            return state.settings.lang == nil ? NSLocalizedString(key, comment: "") : key
-        }
+        guard let lang = state.settings.lang else { return NSLocalizedString(key, comment: "") }
+        // English, and a language with no pack here, read en.lproj, as `locale` falls back to "en":
+        // some keys are not their English words ("min (minutes)" is "min").
+        guard let path = Bundle.main.path(forResource: SessionStore.lproj(for: lang) ?? "en", ofType: "lproj"),
+              let bundle = Bundle(path: path) else { return key }
         return bundle.localizedString(forKey: key, value: key, table: nil)
     }
     var crownStartsOnWeight: Bool { state.settings.crown == "weight" }
@@ -95,11 +97,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
+    /// The set a hold (or its 3-2-1) runs for: if the phone logs it first, that is over (SessionCore.holdOpen).
+    private var holdFor: (entry: Int, set: Int, side: String?, sid: String?)?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
     @Published private(set) var summary: WorkoutSummary? {
-        // A rating not sent yet goes when its summary does, whatever closed it (Done, the next
-        // workout, the phone): never only on Done.
-        didSet { if let p = effortToSend, summary?.workoutId != p.wid { sendEffort() } }
+        didSet {
+            if summary == nil { Haptics.cancelFinished() }   // the medal's taps stop with its screen
+            // A rating not sent yet goes when its summary does, whatever closed it (Done, the next
+            // workout, the phone): never only on Done.
+            if let p = effortToSend, summary?.workoutId != p.wid { sendEffort() }
+        }
     }
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
@@ -112,6 +119,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private static let heardKey = "heardFromPhone"
     @Published private(set) var restEndsAt: Date?
     @Published private(set) var restStartedAt: Date?
+    /// The net seconds this rest was moved by −15 and +15 here (the chip after "Rest"); a new rest starts at 0.
+    @Published private(set) var restShift: TimeInterval = 0
     /// The phone paused its rest (protocol 2, `restPaused`): the countdown stands from then.
     @Published private(set) var restPausedAt: Date?
     /// How far this watch's clock is off the phone's (WatchCore ClockOffset), from snapshots that
@@ -152,6 +161,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest running after a set, for that rest's heart rate once it is over.
     private var restAfter: (exId: String, entryIdx: Int, setIdx: Int, wid: String, from: Date, sid: String?)?
     private var restTimer: Timer?
+    /// Counts each arming of a rest: the 3-2-1 taps of one armed before stay quiet, even at the same end (+15 then −15).
+    private var restArm = 0
     private var holdTimer: Timer?
     /// The rest-over taps again once if nobody reacts to the first ones within a few seconds.
     private var restOverRepeat: DispatchWorkItem?
@@ -161,6 +172,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("clips")
     }
 
+    private static var routinesURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("routines.json")
+    }
     static let demoArgument = "-OpenGymWatchDemo"
     /// CI screenshots: "-OpenGymWatchScreen rest" opens the demo on that screen.
     static var demoScreen: String? { argument("-OpenGymWatchScreen") }
@@ -175,12 +189,13 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     override init() {
         super.init()
+        if !isDemo, let d = try? Data(contentsOf: SessionStore.routinesURL) { routines = try? JSONDecoder().decode(RoutinesFile.self, from: d) }
         if isDemo {
             startDemo()
         } else if let data = UserDefaults.standard.data(forKey: SessionStore.stateKey),
                   let saved = try? JSONDecoder().decode(SessionState.self, from: data) {
             // Relaunched (mid-workout or not): the session as it was, then the latest from the phone.
-            state = saved
+            state = SessionCore.upgraded(saved)   // 1.4.5 keyed skips and ratings by exercise only (#1455)
             loadTargets()
             // A rest that was running: its countdown goes on (a snapshot no longer brings back a rest
             // this watch already knows of, protocol 2).
@@ -202,6 +217,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     guard let self = self, self.state.workout?.id == w.id else { return }
                     if !SensorPlan.idle(w, seen: nil, now: Date().timeIntervalSince1970 * 1000, busy: false) {
                         self.health.start(workoutId: w.id, type: w.healthType)
+                        // Paused on the phone (#976): the new session rests too.
+                        if self.workoutPausedAt != nil { self.health.pause() }
                     }
                     self.armIdleCheck()
                     // `state = saved` above ran in init, where its didSet does not: the forgotten-
@@ -303,7 +320,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the sets logged here have reached the iPhone (WatchCore SyncState).
     var sync: SyncState { SyncState.of(waiting: unsentSets, reachable: reachable) }
 
-    func isSkipped(_ exId: String, _ si: Int) -> Bool { SessionCore.isSkipped(state, exId, si) }
+    func isSkipped(entry ei: Int, _ si: Int) -> Bool { SessionCore.isSkipped(state, entry: ei, si) }
 
     /// The side of a per-side set that is up ("L" or "R"), or nil.
     var sideUp: String? {
@@ -588,6 +605,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
+            self.reportRoutines()
             // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
             // when the phone already runs the next workout (no snapshot without one in between):
             // the session ends unsaved instead of carrying on as the next one. Remembered as run
@@ -628,11 +646,21 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.summary = nil
                 self.health.start(workoutId: next.workout?.id, type: next.workout?.healthType)
             }
-            if next.workout != nil && next.workout != before.workout { self.noteActivity() }
+            if next.workout != nil && next.workout != before.workout {
+                // Paused on the phone (#976): the sensor rests too, as in Apple's own Workout. Not
+                // noteActivity, which would resume it first. The snapshot that resumes the workout
+                // changes it again, and noteActivity picks the session up.
+                if self.workoutPausedAt != nil { self.health.pause() } else { self.noteActivity() }
+            }
             // Sets ticked on the phone: their heart rate from this watch's readings (Discord fuckdv).
             let ticks = SessionCore.phoneTicks(before.workout, next.workout)
             for tick in ticks {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
+            }
+            // The phone logged the set this hold runs for (its own hold ended first): this one ends with
+            // it, unlogged, instead of logging the set after it.
+            if let h = self.holdFor, !SessionCore.holdOpen(self.state, entry: h.entry, set: h.set, side: h.side, sid: h.sid) {
+                self.stopHold()
             }
             // The newest of them takes the watch to the set after it, on whichever exercise (#1101,
             // the twin of Wear's #1165): not while a set is open to be fixed or a hold runs here.
@@ -652,7 +680,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 // snapshot or a relaunch no longer restarts the rest here).
                 self.state.restAt = f.restAt
                 self.echoOf = nil
-                self.followPhoneRest(f.action)
+                self.followPhoneRest(f.action, newRest: !ticks.isEmpty)
             } else {
                 // An older phone (no `restAt`): only a rest end the phone has not sent before: the same
                 // one again (with some other change) would undo a ±15 here, or bring back a rest skipped
@@ -813,10 +841,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest is over (or a hold ended with none after it): with the phone's "Timed holds start
     /// by themselves" on and a timed set up next, a 3-2-1 with a tap each second, then the hold.
     func autoHoldIfDue() {
-        guard state.settings.autoHolds == true, workout != nil, entry?.isTimed == true, setIndex != nil,
+        guard state.settings.autoHolds == true, workout != nil, entry?.isTimed == true, let si = setIndex,
               holdEndsAt == nil, restEndsAt == nil, holdCountFrom == nil, seconds > 0 else { return }
         let from = Date()
         holdCountFrom = from
+        holdFor = (entryIndex, si, entry?.sets[si].sideUp, entry?.sets[si].sid)
         Haptics.count()
         holdCountTimer?.invalidate()
         holdCountTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -838,6 +867,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         holdCountTimer?.invalidate()
         holdCountTimer = nil
         holdCountFrom = nil
+        holdFor = nil
     }
 
     /// Skip on the rest: the rest ends, and a hold that starts by itself counts in.
@@ -856,9 +886,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard touchAllowed, let end = restEndsAt, restPausedAt == nil else { return }
         ackRestOver()
         guard let to = RestMath.minus(end: end, now: Date()) else { skipRestAndGo(); return }
-        let start = restStartedAt
+        let start = restStartedAt, shift = restShift
         startRest(until: to, notify: true)
         restStartedAt = start
+        restShift = shift + to.timeIntervalSince(end) // what it really moved: a short rest can't lose a full 15 s
         sendRest(to)
     }
 
@@ -874,14 +905,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     /// What the phone did to the rest, newer than the watch's own last change (RestMath.follow).
-    private func followPhoneRest(_ action: RestMath.Follow) {
+    /// `newRest`: the same snapshot ticked a set there, so a running rest here is not moved, it is over.
+    private func followPhoneRest(_ action: RestMath.Follow, newRest: Bool) {
         switch action {
         case .ignore, .keep:
             break
         case .run(let endMs):
             let end = Date(timeIntervalSince1970: endMs / 1000)
-            let start = restEndsAt != nil ? restStartedAt : nil
+            let start = restEndsAt != nil && !newRest ? restStartedAt : nil, shift = restShift
             startRest(until: end, notify: true)
+            if start != nil { restShift = shift } // the same rest, moved or resumed on the phone
             // Moved there (±15 on the phone): the bar keeps its start; a new rest starts now.
             if let start = start { restStartedAt = start; state.restFrom = start.timeIntervalSince1970 * 1000 }
         case .pause(let left):
@@ -921,6 +954,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let end = now.addingTimeInterval(seconds)
         holdStartedAt = now
         holdEndsAt = end
+        if let si = setIndex { holdFor = (entryIndex, si, entry?.sets[si].sideUp, entry?.sets[si].sid) }
         Haptics.start()
         holdTimer?.invalidate()
         holdTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
@@ -941,18 +975,30 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func endHold(early: Bool) {
         guard let from = holdStartedAt, let end = holdEndsAt else { return }
         let lasted = early ? Date().timeIntervalSince(from).rounded() : end.timeIntervalSince(from).rounded()
+        // The set the hold began for, as the phone has it now: a set it added before this one, or its Next
+        // to another exercise meanwhile, must not take the log.
+        let own = holdFor.flatMap { SessionCore.holdPlace(state, entry: $0.entry, set: $0.set, sid: $0.sid) }
         stopHold()
-        if lasted >= 1 { completeSet(sec: lasted) }
+        if lasted >= 1 {
+            if let own = own, own.entry != entryIndex || own.set != setIndex {
+                state.entryIndex = own.entry
+                picked[own.entry] = own.set
+                loadTargets()   // the numbers on screen were the other set's (a weighted hold logs its weight)
+            }
+            completeSet(sec: lasted)
+        }
     }
 
     /// The hold ends without a set (the workout ended meanwhile).
     func stopHold() {
+        stopHoldCount()     // a 3-2-1 still running would start a hold on the next workout's set
         holdTimer?.invalidate()
         holdTimer = nil
         holdTicks.forEach { $0.cancel() }
         holdTicks = []
         holdEndsAt = nil
         holdStartedAt = nil
+        holdFor = nil
     }
 
     /* ---------- the summary ---------- */
@@ -1050,10 +1096,57 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// is still on the glass, right where Start comes up. The complication's Start is never held back.
     private var homeLock = TouchLock()
 
-    /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
-    /// unless it is switched off there (Settings → During a workout).
+    /// The daily check-in before a workout started here (#1535), when the phone asks for it: the
+    /// question up (an index into DailyForm.keys) and the answers so far.
+    @Published private(set) var checkinFor: ReadySession?
+    @Published private(set) var checkinStep = 0
+    @Published private(set) var checkinAnswers: [String: Int] = [:]
+    /// The day this watch last asked (answered or skipped): never twice a day.
+    private static let checkinAskedKey = "checkinAsked"
+
+    /// Starts a ready session here, the phone asleep or not: first the daily check-in and the
+    /// weigh-in, as on the phone, unless they are switched off there (Settings → Workout).
     func start(_ session: ReadySession, fromLink: Bool = false) {
         guard fromLink || homeLock.allows(at: Date()) else { return }
+        let today = DailyForm.day(Date())
+        if !isDemo && DailyForm.due(on: state.settings.checkin, answeredDay: state.settings.checkinDay,
+                                    askedDay: UserDefaults.standard.string(forKey: SessionStore.checkinAskedKey), today: today) {
+            checkinAnswers = [:]
+            checkinStep = 0
+            checkinFor = session
+            return
+        }
+        weighInOrCountIn(session)
+    }
+
+    /// One question of the check-in answered (1 to 5) or passed over (nil): the next one comes up,
+    /// and after the last the workout goes on to the weigh-in or the 3-2-1.
+    func answerCheckin(_ value: Int?) {
+        guard checkinFor != nil else { return }
+        let keys = DailyForm.keys
+        if checkinStep < keys.count, let v = value { checkinAnswers[keys[checkinStep]] = v }
+        if checkinStep + 1 < keys.count { checkinStep += 1 } else { finishCheckin(skip: false) }
+    }
+
+    /// The check-in done (its answers go to the phone) or skipped for today; the workout starts either way.
+    func finishCheckin(skip: Bool) {
+        guard let session = checkinFor else { return }
+        checkinFor = nil
+        UserDefaults.standard.set(DailyForm.day(Date()), forKey: SessionStore.checkinAskedKey)
+        if !skip, let ev = DailyForm.event(checkinAnswers, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString) {
+            send(event: ev)
+        }
+        checkinAnswers = [:]
+        weighInOrCountIn(session)
+    }
+
+    /// Cancel: nothing starts, and the check-in is asked again next time.
+    func cancelCheckin() {
+        checkinFor = nil
+        checkinAnswers = [:]
+    }
+
+    private func weighInOrCountIn(_ session: ReadySession) {
         if state.settings.weighIn != false && !isDemo {
             bodyWeight = state.settings.lastBw ?? (unit == "lb" ? 160 : 70)
             weighInFor = session
@@ -1189,7 +1282,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
         idleMinutes = max(0, SafeNum.int((now - since) / 60000))
         let rules = idleRules
-        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt) {
+        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) {
         case .active:
             // Something happened since (a set on the phone): the card goes away by itself.
             if askDone { askDone = false }
@@ -1257,8 +1350,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let now = Date().timeIntervalSince1970 * 1000
         let rules = idleRules
         // Past ending but the phone could not be asked: the workout stays, the sensor rests until the next activity.
-        if Idle.sensorRests(since: since, now: now, reply: reply, rules: rules, leftAt: w.leftGymAt) { health.pause() }
-        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt) {
+        if Idle.sensorRests(since: since, now: now, reply: reply, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) { health.pause() }
+        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt, paused: Idle.isPaused(w)) {
         case .active:
             askDone = false
         case .ask:
@@ -1271,6 +1364,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let left = rules.leaveGym && (w.leftGymAt ?? 0) > since
             finish(at: Date(timeIntervalSince1970: Idle.endAt(w, now: now) / 1000), idle: true, left: left)
         }
+    }
+
+    /// The Overview's note button: shown when the phone applies a workout's note.
+    var canNote: Bool { SessionCore.canNote(state) }
+    var noteShown: String { SessionCore.shownNote(state) }
+
+    /// The note typed or dictated on the Overview (empty clears it). Nothing changed sends nothing.
+    func saveNote(_ text: String) {
+        guard let (s, ev) = SessionCore.workoutNote(state, text, at: SessionStore.nowMs(), id: UUID().uuidString) else { return }
+        state = s
+        send(event: ev)
+        WKInterfaceDevice.current().play(.success)
     }
 
     /// "Keep going" on "Still training?" (or on "Looks like you left the gym"): idle counts from
@@ -1307,7 +1412,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         closeFix()
         send(event: ev)
         state = next
-        Haptics.finished()
+        Haptics.finished(records: summary?.prs.count ?? 0)
     }
 
     /// Discards the session: nothing saved here or in Apple Health, and the phone drops it too.
@@ -1336,6 +1441,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         restEndsAt = nil
         restStartedAt = nil
         restPausedAt = nil
+        restShift = 0
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
     }
@@ -1354,6 +1460,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         closeRest(at: end)
         restEndsAt = nil
         restStartedAt = nil
+        restShift = 0
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
         if onTime { autoHoldIfDue() }
     }
@@ -1361,10 +1468,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func addRest(_ seconds: TimeInterval) {
         guard touchAllowed, let end = restEndsAt, restPausedAt == nil else { return }
         ackRestOver()
-        let start = restStartedAt
+        let start = restStartedAt, shift = restShift
         let to = end.addingTimeInterval(seconds)
         startRest(until: to, notify: true)
         restStartedAt = start
+        restShift = shift + seconds
         if let start = start { state.restFrom = start.timeIntervalSince1970 * 1000 }
         sendRest(to)
     }
@@ -1377,6 +1485,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [SessionStore.restNotificationId])
         restPausedAt = nil
+        restShift = 0
         guard end > Date() else {
             restEndsAt = nil; restStartedAt = nil
             if state.restEnd != nil { state.restEnd = nil; state.restFrom = nil }
@@ -1390,6 +1499,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         restTimer = Timer.scheduledTimer(withTimeInterval: end.timeIntervalSinceNow, repeats: false) { [weak self] _ in
             // The set page comes back under the finger: a tap meant for the rest is not a Done.
             DispatchQueue.main.async { self?.restRanOutIfDue() }
+        }
+        // The last three seconds, one tap each, as a timed hold's: the wrist knows without a look
+        // (the workout session keeps the app running with the wrist down). Each tap is for this
+        // rest only: one paused, skipped or moved since stays quiet.
+        let left = end.timeIntervalSinceNow
+        restArm += 1
+        let arm = restArm
+        for s in [3.0, 2.0, 1.0] where left > s + 1 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + left - s) { [weak self] in
+                guard let self = self, self.restArm == arm, self.restEndsAt == end, self.restPausedAt == nil, self.restHaptics, !self.isDemo, Date() < end else { return }   // late (app held back): the rest-over alarm speaks now
+                Haptics.restCount()
+            }
         }
         guard notify, !isDemo else { return }
         let content = UNMutableNotificationContent()
@@ -1573,12 +1694,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private func updateLink() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
-        let r = session.activationState == .activated && session.isReachable
         let o = box
         let q = OutboxCore.waiting(o)
         let sets = OutboxCore.waitingSets(o)
         DispatchQueue.main.async {
-            if self.reachable != r { self.reachable = r }
+            // Read here, not before the hop: updates queued out of order must not leave an old state on screen.
+            let r = session.activationState == .activated && session.isReachable
+            // The demo screens set reachability by hand (idle-away); a live link must not undo it.
+            if !self.isDemo, self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
             if self.unsentSets != sets { self.unsentSets = sets }
         }
@@ -1622,7 +1745,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        // The file is gone once this returns: moved into the cache now.
+        // The file is gone once this returns: read now.
+        if file.metadata?["kind"] as? String == "routines" { keepRoutines(file.fileURL); return }
         guard let exId = file.metadata?["exId"] as? String else { log("file without an exercise"); return }
         let dir = SessionStore.clipDir
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -1643,6 +1767,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
+    /// The phone's routines file: kept in place of the one before (one file, so nothing piles up). A
+    /// file that cannot be read leaves the old one, and the snapshot's own list covers the gap.
+    private func keepRoutines(_ url: URL) {
+        guard let data = try? Data(contentsOf: url), let f = try? JSONDecoder().decode(RoutinesFile.self, from: data) else { log("routines file could not be read"); return }
+        let dest = SessionStore.routinesURL
+        try? FileManager.default.createDirectory(at: dest.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // Not kept, not reported: the phone sees the old hash and the pill says so, instead of a list lost at the next launch.
+        guard (try? data.write(to: dest, options: .atomic)) != nil else { log("routines file could not be kept"); return }
+        DispatchQueue.main.async { self.routines = f; self.reportRoutines() }
+        log("routines file: \(f.others.count) routines")
+    }
+
     /* ---------- WCSessionDelegate ---------- */
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
@@ -1653,11 +1789,23 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         updateLink()
     }
 
+    /// The routines last told to the phone (hash and count): told again when they change.
+    private var reportedRoutines = ""
+
+    /// A new routines file, or a snapshot that makes the file count: the phone's Settings → Apple Watch is told now.
+    private func reportRoutines() {
+        let r = Plan.routinesReport(state.ready, hash: state.routinesHash, file: routines)
+        if r.hash + "#\(r.count)" != reportedRoutines { sendStatus() }
+    }
+
     /// What the phone's Settings → Apple Watch shows about this watch.
     func sendStatus() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        let r = Plan.routinesReport(state.ready, hash: state.routinesHash, file: routines)
+        reportedRoutines = r.hash + "#\(r.count)"
         send(event: ["id": UUID().uuidString, "type": "watchStatus", "health": health.status, "version": version,
-                     "effort": health.canRateEffort, "at": Date().timeIntervalSince1970 * 1000])
+                     "routinesHash": r.hash, "routinesCount": r.count, "effort": health.canRateEffort,
+                     "at": Date().timeIntervalSince1970 * 1000])
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
@@ -1689,6 +1837,13 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
+    /// The phone's link check ("ping") is answered; a snapshot sent with a reply handler is applied.
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
+        if message["ping"] != nil { replyHandler(["pong": 1]); return }
+        receive(message)
+        replyHandler([:])
+    }
+
     /* ---------- the demo the CI screenshots show (text only; a synthetic clip at most) ---------- */
 
     /// CI: the screens at an accessibility text size (OpenGymWatchApp reads it too).
@@ -1710,7 +1865,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "countdown" ? SessionStore.demoReadyJSON : SessionStore.demoJSON)) }
+        if screen != "empty" { apply(json: SessionStore.demoLong(screen == "idle" || screen == "idle-away" || screen == "countdown" ? SessionStore.demoReadyJSON : screen == "folders" ? SessionStore.demoFoldersJSON : SessionStore.demoJSON)) }
         // The 3-2-1 as it runs before a workout started here (without Apple Health, which the demo has not).
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
@@ -1751,7 +1906,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
                     self.state.settings.effort = "rir"
-                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.key($0.id, 0), $1) })
+                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries.indices, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.placeKey(w, entry: $0, set: 0), $1) })
                 }
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true
@@ -1767,10 +1922,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "finish", "overview": self.picked[0] = 2; self.tab = .overview
+            case "finish", "overview": self.state.settings.workoutNote = true; self.picked[0] = 2; self.tab = .overview
+            case "overview-note":
+                self.state.settings.workoutNote = true
+                self.state.workout?.note = "Left shoulder felt tight, grip slipped on the last rep"
+                self.picked[0] = 2; self.tab = .overview
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
+            case "checkin":
+                self.checkinFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
             default: break
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
@@ -1782,7 +1943,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // CI: "-OpenGymWatchRestSeconds 6" is a rest that ends within a test's wait.
+            let restSeconds = SessionStore.argument("-OpenGymWatchRestSeconds").flatMap(Double.init) ?? 83
+            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(restSeconds), notify: false) }
             // CI: the rest as it stands while the phone has it paused (protocol 2, restPaused).
             if screen == "rest", ProcessInfo.processInfo.arguments.contains("-OpenGymWatchRestPaused") {
                 self.pauseRest(left: 47)
@@ -1799,11 +1962,21 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
+            if screen == "idle-away" { self.reachable = false }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
-            if screen == "summary" || screen == "summary-end" || screen == "ended" {
-                self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
-                                              prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
-                                              endedOnPhone: screen == "ended")
+            // The medal: a records day (gold), its back, its end with Done, a day without records (steel).
+            if screen.hasPrefix("summary") || screen == "ended" {
+                let now = Date().timeIntervalSince1970 * 1000
+                let long = ProcessInfo.processInfo.arguments.contains("-OpenGymWatchLong")
+                self.summary = screen == "summary-steel"
+                    ? WorkoutSummary(name: long ? "Upper body hypertrophy A" : "Pull day", unit: "kg", duration: 48 * 60 + 5, sets: 16, volume: 5180,
+                                     prs: [], hrAvg: 128, hrMax: 155, calories: 286, endedOnPhone: false, endedAt: now)
+                    : WorkoutSummary(name: long ? "Upper body hypertrophy A" : "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 18, volume: 6240,
+                                     prs: ["Bench Press", "Incline Dumbbell Press"], hrAvg: 132, hrMax: 162, calories: 312,
+                                     endedOnPhone: screen == "ended",
+                                     records: [RecordLine(name: "Bench Press", kind: .weight, old: 100, new: 105, unit: "kg"),
+                                               RecordLine(name: "Incline Dumbbell Press", kind: .weight, old: 32, new: 34, unit: "kg")],
+                                     endedAt: now)
                 // CI: "-OpenGymWatchEffort 7" shows the effort rating at 7 ("-" unrated); with
                 // -OpenGymWatchEffortPreset 6 it starts there, and -OpenGymWatchEffortEdit opens it on the Crown.
                 if let e = SessionStore.argument("-OpenGymWatchEffort") { self.summary?.effort = Int(e) }
@@ -1831,6 +2004,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     "others":[{"routineIds":["r2"],"name":"Pull day","entries":[]},{"routineIds":["r3"],"name":"Legs","entries":[]}]}}
     """
 
+    /// CI (-OpenGymWatchScreen folders): the start screen with its routines under the phone's folders.
+    static let demoFoldersJSON = """
+    {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
+    {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
+    "others":[{"routineIds":["r2"],"name":"Pull day","folder":"Upper","entries":[
+    {"id":"row","name":"Barbell Row","mode":"reps","restSec":90,"last":null,"sets":[{"w":50,"r":8,"sec":null,"done":false,"warmup":false}]}]},
+    {"routineIds":["r3"],"name":"Legs","folder":"Lower","entries":[]}]}}
+    """
+
     static let demoJSON = """
     {"v":1,"unit":"kg","restSec":90,"ready":null,"active":{"id":"demo","name":"Push day","unit":"kg","cur":0,"restSec":90,"rest":null,"start":0,"entries":[
     {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":"60 kg × 8, 60 kg × 8, 60 kg × 7","best":{"w":62.5,"r":8},"step":2.5,"sets":[
@@ -1855,26 +2037,42 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   side       a light click (one side of a per-side set: the other one now)
  *   restOver   an alarm: two strong taps and a rising one (again after 5 s if not noticed)
  *   start      the system's start
- *   finished   stop, then two successes: the workout is saved
+ *   finished   on the summary medal's beats (Medal.beats): stop as it is struck, then a success
+ *              once it rests, or a rising tap per record's diamond (3 at most)
  *   skip       a soft one going down
  *   count      a click each second of the 3-2-1 before a workout
+ *   restCount  a firm tap at 3, 2 and 1 seconds of rest left
  *   ask        two taps: "All done?", nothing logged for 20 minutes
  *   discarded  stop alone: the workout is gone, nothing saved
  */
 enum Haptics {
     private static var device: WKInterfaceDevice { WKInterfaceDevice.current() }
-    private static func play(_ steps: [(Double, WKHapticType)]) {
+    private static var finishedTaps: [DispatchWorkItem] = []
+    @discardableResult
+    private static func play(_ steps: [(Double, WKHapticType)]) -> [DispatchWorkItem] {
+        var later: [DispatchWorkItem] = []
         for (delay, type) in steps {
-            if delay == 0 { device.play(type) } else { DispatchQueue.main.asyncAfter(deadline: .now() + delay) { device.play(type) } }
+            if delay == 0 { device.play(type); continue }
+            let item = DispatchWorkItem { device.play(type) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+            later.append(item)
         }
+        return later
     }
+    static func cancelFinished() { finishedTaps.forEach { $0.cancel() }; finishedTaps = [] }
     static func done() { play([(0, .success)]) }
     static func side() { play([(0, .click)]) }
     static func restOver() { play([(0, .notification), (0.45, .notification), (0.9, .directionUp)]) }
     static func start() { play([(0, .start)]) }
-    static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
+    static func finished(records: Int) {
+        finishedTaps = play(Medal.beats(records: records).map { b -> (Double, WKHapticType) in
+            (b.at, b.beat == .strike ? .stop : b.beat == .settled ? .success : .directionUp)
+        })
+    }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
+    // A click is lost with the wrist down: the rest's last seconds take the firm tap.
+    static func restCount() { play([(0, .notification)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
 }

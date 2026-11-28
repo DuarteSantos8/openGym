@@ -162,6 +162,10 @@ jobs:
           --reporter=junit --outputFile.junit=junit.xml
           --coverage --coverage.provider=v8 --coverage.include='src/**'
           --coverage.reporter=json-summary --coverage.reporter=text-summary
+      # TypeScript, step by step (docs/dev/TYPESCRIPT.md): every .ts/.tsx file checked strictly.
+      - name: Type check
+        run: npm run typecheck
+        working-directory: frontend
       # A broken import or bad JSX fails the build long before any test covers it.
       - name: Web build
         run: npm run build

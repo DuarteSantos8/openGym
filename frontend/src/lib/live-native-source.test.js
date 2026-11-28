@@ -189,7 +189,7 @@ describe('the timing log of the Live Activity buttons (iOS)', () => {
   const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
   const log = between(activity, 'enum LiveLog', '/**\n * The Live Activity\'s Done.')
   it('every button times itself, and says so when it finds no activity', () => {
-    const fns = ['tick', 'nextExercise', 'skipRest', 'stopAuto', 'adjust', 'addRest', 'queueOnly']
+    const fns = ['tick', 'nextExercise', 'skipRest', 'stopAuto', 'adjust', 'addRest', 'followWatchRest', 'queueOnly']
     for (const fn of fns) {
       const body = between(tick, 'static func ' + fn + '(', '\n    }\n')
       expect(body, fn).toMatch(/let tap = LiveTap\(/)

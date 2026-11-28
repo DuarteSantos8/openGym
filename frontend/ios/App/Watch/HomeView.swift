@@ -14,6 +14,7 @@ struct HomeView: View {
         NavigationStack {
             content
                 .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "")) // the logo says openGym, centred with the rest
+                .toolbar { ToolbarItem(placement: .topBarLeading) { PhoneMark().environmentObject(store) } }
         }
         // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
         .onLongPressGesture(minimumDuration: 2) { debug = true }
@@ -28,6 +29,15 @@ struct HomeView: View {
                     if !ready.others.isEmpty {
                         VStack(spacing: 4) {
                             ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
+                                if let h = Plan.folderHeader(at: pair.offset, in: ready.others) {
+                                    Text(verbatim: h)
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(Theme.label2)
+                                        .lineLimit(1)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.top, 6)
+                                        .accessibilityAddTraits(.isHeader)
+                                }
                                 Button { store.start(pair.element) } label: {
                                     HStack(spacing: 6) {
                                         Text(verbatim: pair.element.name).lineLimit(2).minimumScaleFactor(0.8)
@@ -40,6 +50,11 @@ struct HomeView: View {
                         }
                         .padding(.top, ready.today == nil ? 0 : 6)
                     }
+                    Text("Archived routines stay on your iPhone.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.label2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
                     // A workout finished here with the phone away: its sets are still on their way.
                     SyncLine(showSynced: false).padding(.top, 4)
                     VersionLine()
@@ -61,11 +76,39 @@ struct HomeView: View {
                         .font(.footnote)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
+                    // Every routine archived: say where they went.
+                    if !fresh {
+                        Text("Archived routines stay on your iPhone.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.label2)
+                            .multilineTextAlignment(.center)
+                    }
                     VersionLine()
                 }
                 .padding(.horizontal, 6)
             }
         }
+    }
+}
+
+/// The phone, beside the clock on the start screen, always: a green iPhone while it is in reach (grey
+/// would read as off),
+/// an amber crossed-out one and "Phone away" when not (shape and words, never colour alone). Nothing
+/// moves, so the watch still sleeps here. "In reach" is WatchConnectivity's isReachable: it is also false
+/// while a nearby iPhone is locked or its app is not running, and that is when sets wait, so "Phone away"
+/// stays the short word for "the watch cannot reach the phone now". The workout's own sign is SyncPill, shown only when sets wait.
+struct PhoneMark: View {
+    @EnvironmentObject var store: SessionStore
+
+    var body: some View {
+        let away = !store.reachable
+        HStack(spacing: 3) {
+            Image(systemName: away ? "iphone.slash" : "iphone").font(.system(size: 13, weight: .semibold))
+            if away { Text("Phone away").font(.system(.caption2, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8) }
+        }
+        .foregroundStyle(away ? Theme.orange : Theme.green)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(away ? Text("iPhone out of reach") : Text("iPhone in reach"))
     }
 }
 

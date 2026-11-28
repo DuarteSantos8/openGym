@@ -45,6 +45,7 @@ const local = async () => {
       // (api/coach/cadence.js): a skip, a failure or "nothing to change" nobody asked for is noise.
       if (ev.scheduled) { if (ev.kind === 'ready') announceProposal(ev.pending); return }
       if (ev.kind === 'failed') toast(jobErrorText(ev.errorClass, ev.detail))
+      else if (ev.kind === 'resumed') toast(t('The connection dropped while openGym was in the background. The Coach picked up where it left off.'))
       else if (ev.kind === 'nochange') toast(t('Nothing to change right now: {0}', String(ev.reading || '').slice(0, 140)))
     })
   }
@@ -104,6 +105,23 @@ export async function recheckCadence() {
     return
   }
   update(s => { s.coach.cadenceFor = key })
+}
+
+/** On start: automatic reviews switched on before 1.4.6 kept no target, so the server holds them
+ *  back (api/coach/cadence.js) until someone opens the Coach, which a person who set them up to
+ *  run by themselves never has a reason to do. When this device already said yes to the server's
+ *  provider and host, that yes is the one they run on: kept, without asking anything. Without one
+ *  it waits for the Coach to be opened (recheckCadence), as before. */
+export async function adoptCadence() {
+  const cadence = S()?.coach?.cadence
+  if (DEMO || LOCAL() || !cadence || cadence === 'off' || S().coach.cadenceFor) return false
+  const { consentTarget, hasAiConsent } = await import('./coach-consent.js')
+  const info = await disclosure()
+  const target = consentTarget(info, coachVia())
+  if (!target || (!target.local && !await hasAiConsent(target))) return false
+  if (S()?.coach?.cadenceFor) return false
+  useStore.getState().update(s => { s.coach.cadenceFor = cadenceKey(info) })
+  return true
 }
 
 export const coachStatus = async () => DEMO ? (await demo()).demoStatus() : LOCAL() ? (await local()).localStatus() : api('/api/coach/status')

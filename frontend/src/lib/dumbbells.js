@@ -279,6 +279,18 @@ export function stackFromStep(first, step, count) {
 }
 
 /**
+ * How many weights an even run from `first` (or `step` when 0) by `step` takes to reach `top` (#1163):
+ * reading a stack's lightest plate, its heaviest and the gap is easier than counting its plates.
+ * 0 when the numbers cannot make a run; a top that falls between two plates stops below it.
+ */
+export function stackCountTo(first, step, top) {
+  const a = Number(first) || 0, d = Number(step) || 0, z = Number(top) || 0
+  const start = a > 0 ? a : d
+  if (!(d > 0) || !(z >= start)) return 0
+  return Math.min(100, Math.floor((z - start) / d + 1e-6) + 1)
+}
+
+/**
  * Several weights typed or pasted at once (#926): one per line, or separated by commas, semicolons
  * or spaces ("5, 11.3, 18.1" or a column copied from a sheet). `decimalComma` is whether this
  * language writes 2,5 for two and a half; then a comma between two digits is that decimal comma
@@ -338,4 +350,25 @@ export function ownedAround(ideal, ws, max, strict) {
   const low = ok.filter(x => x <= ideal + EPS).pop()
   const high = ok.find(x => x >= ideal - EPS)
   return [...new Set([low, high].filter(x => x != null))].sort((a, b) => a - b)
+}
+
+/**
+ * A freshly built exercise's open work rows put on what the gym holds: each weight the heaviest
+ * owned load at or under it, the rule a gym switch mid-workout uses (gym-inventory.js
+ * reRoundOpenSets). Without it a start seeded from the confirmed working weight or last time
+ * could open at 30 kg total on a rack of 14s and 16s, and only a gym switch fixed it (Discord).
+ * `owned` is ownedWeightsFor's list; null leaves the rows as they are. Warm-ups, done rows and
+ * rows without a load stay untouched; a per-side row moves both sides.
+ */
+export function rowsOnOwned(rows, owned) {
+  if (!Array.isArray(owned) || !owned.length || !Array.isArray(rows)) return rows
+  const snap = w => (Number(w) > 0 ? ownedFloor(owned, Number(w)) : w)
+  const warm = s => s?.phase === 'warmup' || (s?.phase == null && s?.warmup === true)
+  return rows.map(s => {
+    if (!s || typeof s !== 'object' || s.done || warm(s)) return s
+    const sides = s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R
+      ? { ...s.sides, L: { ...s.sides.L, w: snap(s.sides.L.w) }, R: { ...s.sides.R, w: snap(s.sides.R.w) } }
+      : null
+    return { ...s, w: snap(s.w), ...(sides ? { sides } : {}) }
+  })
 }

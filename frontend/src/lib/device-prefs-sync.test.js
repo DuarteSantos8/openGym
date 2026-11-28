@@ -27,11 +27,11 @@ describe('device prefs in the profile', () => {
     setPickedVoice('Anna')
     const { S, update } = store({})
     expect(syncPrefs(S, update)).toBe('pushed')
-    expect(prefsOf(S)).toEqual({ display: { motion: 'less', text: 'large' }, voice: 'Anna' })
+    expect(prefsOf(S)).toEqual({ display: { motion: 'less', text: 'large' }, voice: { web: 'Anna' } })
   })
 
   it('prefs from another device are applied and cached here', () => {
-    const { S, update } = store({ prefs: { display: { motion: 'less', text: 'larger' }, voice: 'Daniel' } })
+    const { S, update } = store({ prefs: { display: { motion: 'less', text: 'larger' }, voice: { web: 'Daniel', ios: 'com.apple.voice.Siri' } } })
     expect(syncPrefs(S, update)).toBe('applied')
     expect(readDisplay()).toEqual({ motion: 'less', text: 'larger' })
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(true)
@@ -44,9 +44,30 @@ describe('device prefs in the profile', () => {
     const { S, update } = store({})
     applyDisplay({ motion: 'system', text: 'small' }, { save: true })
     savePrefs(update)
-    expect(S.prefs).toEqual({ display: { motion: 'system', text: 'small' }, voice: '' })
+    expect(S.prefs).toEqual({ display: { motion: 'system', text: 'small' }, voice: {} })
     S.prefs = { display: { motion: 'wild', text: 'huge' }, voice: 7 }
     syncPrefs(S, update)
     expect(readDisplay()).toEqual({ motion: 'system', text: 'small' })
+  })
+})
+
+describe('the voice, per platform', () => {
+  it("a pick here never changes another platform's, and theirs never blanks ours", () => {
+    const { S, update } = store({ prefs: { display: { motion: 'system', text: 'default' }, voice: { ios: 'Siri Voice 2' } } })
+    expect(syncPrefs(S, update)).toBe('same')
+    expect(pickedVoice()).toBe('')
+    setPickedVoice('Google Deutsch')
+    savePrefs(update)
+    expect(S.prefs.voice).toEqual({ ios: 'Siri Voice 2', web: 'Google Deutsch' })
+    setPickedVoice('')
+    savePrefs(update)
+    expect(S.prefs.voice).toEqual({ ios: 'Siri Voice 2' })
+  })
+
+  it('a voice picked here before the profile had one for this platform goes up', () => {
+    setPickedVoice('Anna')
+    const { S, update } = store({ prefs: { display: { motion: 'system', text: 'default' }, voice: { android: 'x' } } })
+    expect(syncPrefs(S, update)).toBe('pushed')
+    expect(S.prefs.voice).toEqual({ android: 'x', web: 'Anna' })
   })
 })

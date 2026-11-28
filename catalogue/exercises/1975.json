@@ -10,6 +10,7 @@
     "chest"
   ],
   "category": "stretching",
+  "hold": true,
   "description": "A seated stretch that lengthens the shoulder and chest by pressing the arms back and down.",
   "instructions": [
     "Sit tall on a chair or bench.",

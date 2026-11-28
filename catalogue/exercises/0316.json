@@ -1,23 +1,20 @@
 {
   "id": "0316",
-  "name": "dumbbell incline breeding",
+  "name": "dumbbell incline fly (palms forward)",
   "bodyPart": "chest",
   "equipment": "dumbbell",
   "target": "pectorals",
   "secondaryMuscles": [
-    "front delts",
-    "triceps"
+    "front delts"
   ],
   "category": "strength",
-  "description": "An incline dumbbell move that lowers the weights to the chest sides and presses up. It targets the upper chest.",
+  "description": "An incline dumbbell fly with the palms facing forward. The arms open wide and nearly straight, then sweep back together over the chest to work the upper chest.",
   "instructions": [
-    "Set up an incline bench at a 45-degree angle.",
-    "Sit on the bench with your back against the pad and feet flat on the ground.",
-    "Hold a dumbbell in each hand with an overhand grip, palms facing forward.",
-    "Start with your arms fully extended, perpendicular to the ground.",
-    "Lower the dumbbells slowly to the sides of your chest, keeping your elbows at a 90-degree angle.",
-    "Pause for a moment at the bottom, then push the dumbbells back up to the starting position.",
+    "Set an incline bench to about 45 degrees and sit back against it with a dumbbell in each hand.",
+    "Press the dumbbells up over your upper chest, palms facing forward, arms nearly straight.",
+    "Keep a slight bend in your elbows and open your arms out to the sides in a wide arc until you feel a stretch across your chest.",
+    "Squeeze your chest to sweep the dumbbells back up until they meet over your chest, palms still facing forward.",
     "Repeat for the desired number of repetitions."
   ],
-  "textSource": "exercisedb"
+  "textSource": "opengym"
 }

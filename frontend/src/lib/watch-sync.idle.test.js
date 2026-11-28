@@ -50,6 +50,14 @@ describe('a finish from the watch', () => {
     expect(finish).toHaveBeenCalledTimes(1)
   })
 
+  it('an idle finish of a workout paused on the phone is refused, also when the watch never heard of the pause', () => {
+    const A = workout([T + 2 * min], { pausedAt: T + 3 * min })
+    expect(staleWatchFinish(A, { type: 'finish', wid: 'w-904', at: T + 2 * min, idle: true }, T + 3 * 60 * min)).toBe(true)
+    expect(staleWatchFinish(A, { type: 'finish', wid: 'w-904', at: T + 2 * min, idle: true, left: true }, T + 3 * 60 * min)).toBe(true)
+    // Finish tapped at the wrist still finishes it
+    expect(staleWatchFinish(A, { type: 'finish', wid: 'w-904', at: T + 60 * min }, T + 60 * min)).toBe(false)
+  })
+
   it('a Finish tapped on the watch after the last set on the phone finishes, also when the phone hears of it later', () => {
     const A = ticked()
     expect(staleWatchFinish(A, { type: 'finish', wid: 'w-904', at: phoneLast + 2 * min }, phoneLast + 60 * min)).toBe(false)

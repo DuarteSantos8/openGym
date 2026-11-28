@@ -21,7 +21,9 @@
 //
 // When the workout is finished, the session saves it to Apple Health (once: AppleHealthPlugin skips
 // its own post-hoc write for it); discarded, it is dropped (also a session iOS handed back after a
-// crash, whose workout is gone by then). AirPods taken out only pause readings.
+// crash, whose workout is gone by then). AirPods taken out only pause readings. A workout nobody
+// finishes: forgotten-phone.js hands the session a deadline (the end of the "Still training?" grace),
+// so it ends by itself even while the page sleeps.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { sanitizeHr, cleanSamples } from './heart-rate.js'
 import { isSideSet } from './workout-model.js'
@@ -184,12 +186,21 @@ const phonePlugin = () => pluginP || (pluginP = (async () => {
   return { PW: registerPlugin('PhoneWorkout') }
 })().catch(() => null))
 
+/**
+ * A deadline for the native session: it saves and ends itself at `endBy` (ms) as the workout
+ * ended at `at`, with `title`, unless a new deadline or `{}` (none) replaces it first. The page
+ * sleeps with the phone locked, so this is what ends a workout nobody came back to.
+ */
+export async function setSessionDeadline (d) {
+  try { await (await phonePlugin())?.PW.deadline({ wid: d.wid, endBy: d.endBy, at: d.at, title: d.title }) } catch { /* an older shell: the page ends it when it wakes */ }
+}
+
 /** Whether this phone can run its own workout session (the iPhone app on iOS 26 or later). */
 export async function phoneSessionSupported () {
   try { const p = await phonePlugin(); return !!(p && (await p.PW.status())?.supported) } catch { return false }
 }
 
-// The last reading, for the workout screen's small live readout: { bpm, at } or null.
+// The last reading, for the workout screen's small live readout: { bpm, at, device? } or null.
 let latest = null
 const liveListeners = new Set()
 const tellLive = () => { for (const fn of liveListeners) { try { fn(latest) } catch { /* a closed screen */ } } }
@@ -337,7 +348,9 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
   const sub = await Promise.resolve(p.PW.addListener('heartRate', e => {
     const bpm = Math.round(Number(e?.bpm)), at = Number(e?.at) || Date.now()
     if (!running || !(bpm >= 25 && bpm <= 250)) return
-    latest = { bpm, at }
+    // the device that measured it, when iOS names one ("AirPods Pro"): the device button draws earbuds
+    const device = typeof e?.device === 'string' ? e.device.trim().slice(0, 60) : ''
+    latest = device ? { bpm, at, device } : { bpm, at }
     tellLive()
   })).catch(() => null)
   const onVisible = () => { if (document.visibilityState === 'visible') { evaluate(); settle() } }

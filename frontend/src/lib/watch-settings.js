@@ -19,6 +19,9 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
+// Set once a status has found the watch app installed: from then on the Devices sheet names a watch
+// that goes missing ("Not found"), where a phone that never had one shows no watch row.
+export const WATCH_SEEN_KEY = 'gym_watch_seen_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, zones: true, rest: 'ring' })
 export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
 
@@ -57,6 +60,11 @@ export function writeWatchPrefs(patch, storage = globalThis.localStorage) {
   return next
 }
 
+export const readWatchSeen = (storage = globalThis.localStorage) => read(WATCH_SEEN_KEY, storage) === true
+export function markWatchSeen(storage = globalThis.localStorage) {
+  try { storage?.setItem(WATCH_SEEN_KEY, 'true') } catch { /* seen again next time */ }
+}
+
 /** Whether a Garmin with the openGym app was there the last time the link looked. */
 export function readGarminLink(storage = globalThis.localStorage) {
   return read(GARMIN_LINK_KEY, storage) === true
@@ -80,6 +88,9 @@ export function writeWatchStatus(ev, storage = globalThis.localStorage) {
   const next = { health, version: typeof ev?.version === 'string' ? ev.version.slice(0, 20) : null, at: Number(ev?.at) || Date.now(),
     // watchOS 11 with its Apple Health on: its summary asks for the workout's effort (lib/workout-effort.js).
     ...(ev?.effort === true ? { effort: true } : {}) }
+  // The routines the watch shows (hash of its file, '' for the snapshot's own list; and how many): an older watch app says neither.
+  if (typeof ev?.routinesHash === 'string') next.routinesHash = ev.routinesHash.slice(0, 40)
+  if (Number.isFinite(ev?.routinesCount)) next.routinesCount = Math.max(0, Math.floor(ev.routinesCount))
   try { storage?.setItem(WATCH_STATUS_KEY, JSON.stringify(next)) } catch { /* shown again next time */ }
   emit()
   return next
@@ -127,4 +138,44 @@ export function watchLinkState (link, status = null) {
   if (!link.installed) return 'missing'
   if (link.reachable) return 'live'
   return Number(status?.at) > 0 ? 'away' : 'silent'
+}
+
+// What the phone last sent the watch as its routines (lib/watch-sync.js): the file's hash and how
+// many routines it lists. In memory: the next snapshot sets it again after a launch. No emit():
+// the link sends again on onWatchPrefs, so each send would set off the next; the Settings pages
+// read it again with every look at the watch (every few seconds).
+let routinesSent = null
+export const noteRoutinesSent = v => { routinesSent = v }
+export const readRoutinesSent = () => routinesSent
+
+/**
+ * Whether the watch has the phone's routines, for Settings → Apple Watch. `phone` is what the
+ * phone sent (readRoutinesSent), `status` what the watch reported (readWatchStatus).
+ *
+ *   off      nothing to say: the watch is off, not paired, without the app, or there is nothing to send
+ *   unknown  a watch app that does not report its routines (an older one)
+ *   synced   it shows the file the phone sent, with all of its routines
+ *   sending  anything else: the file is on its way, or the watch has not checked in yet
+ */
+export function routinesSync ({ link, phone, status, enabled = true }) {
+  if (!enabled || !link?.paired || !link.installed || !phone?.hash) return 'off'
+  if (status && status.routinesHash === undefined) return 'unknown'
+  return status && status.routinesHash === phone.hash && status.routinesCount === phone.count ? 'synced' : 'sending'
+}
+
+const CHIP = { synced: 'ok', sending: 'sync', unknown: 'warn', off: 'idle' }
+/**
+ * The status pill on top of Settings → Apple Watch and → Wear OS watch (components/WatchPill.jsx),
+ * from the page's link state (watchLinkState's words) and routinesSync's answer: its tone ('ok',
+ * 'busy', 'warn', 'idle'), its one word, and three marks: paired, openGym on the watch, the routines.
+ */
+export function watchPill (link, routines) {
+  const r = CHIP[routines] || 'idle'
+  if (link === 'unpaired') return { tone: 'warn', word: 'setup', chips: ['warn', 'idle', 'idle'] }
+  if (link === 'missing') return { tone: 'warn', word: 'setup', chips: ['ok', 'warn', 'idle'] }
+  if (link === 'away' || link === 'silent') return { tone: 'warn', word: 'away', chips: ['ok', 'ok', r] }
+  if (link !== 'live') return { tone: 'idle', word: 'checking', chips: ['idle', 'idle', 'idle'] }
+  if (routines === 'unknown') return { tone: 'warn', word: 'update', chips: ['ok', 'ok', 'warn'] }
+  if (routines === 'sending') return { tone: 'busy', word: 'syncing', chips: ['ok', 'ok', 'sync'] }
+  return { tone: 'ok', word: 'connected', chips: ['ok', 'ok', r] }
 }

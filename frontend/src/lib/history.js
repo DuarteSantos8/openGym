@@ -145,6 +145,9 @@ export const effortOf = S => {
   const e = S && S.effort
   return e === 'none' || EFFORT[e] ? e : (S && S.showRir ? 'rir' : 'none')
 }
+// Settings → Workout → Rate warm-ups too (#1374). On unless switched off: off leaves warm-up rows
+// without an effort cell, so the column asks only about the sets that count.
+export const warmupEffortOn = S => S?.warmupEffort !== false
 // The "(RIR 2)" / "(RPE 8)" tail on a set summary, empty when nothing was logged.
 const effortTail = s => {
   const k = s.rir != null ? 'rir' : s.rpe != null ? 'rpe' : null
@@ -217,7 +220,9 @@ function setLabelText(id, s, cfg, speedUnit, wUnit) {
     const reps = side.r || 0
     const bursts = clustersOf(side).map(b => Number(b?.r) || 0).filter(r => r > 0)
     const sum = bursts.reduce((a, b) => a + b, 0)
-    if (!bursts.length || sum > reps || (planned && sum !== reps)) return reps
+    // A row planned since 1.4.6 carries its activation set in `r` (`act`, #1252), so what the
+    // bursts leave over is that set, however it was edited.
+    if (!bursts.length || sum > reps || (planned && side.act !== true && sum !== reps)) return reps
     return (reps > sum ? [reps - sum, ...bursts] : bursts).join('+')
   }
   // One side's "weight×reps" (or bodyweight "reps" / "+belt × reps"), the same shape a whole
@@ -916,25 +921,44 @@ function shapeRows(sets, cfg, grid) {
   // the bursts are the full breakdown of that same total, down to the last one. See
   // extraVolumeOf/setTonnage: a rest-pause row's `clusters` are read-only display of how `r`
   // breaks down, not extra volume on top of it, precisely so this doesn't double-count.
+  //
+  // #1252 (rebuilt from @jclainezr's #1253): the activation set used to be a row of its own,
+  // marked as a warm-up at the full working weight, so it left volume, records and progression,
+  // and read "Warm-up". It is the start of the one work row now: `r` is the activation set plus
+  // the bursts, `clusters` the bursts alone, and `act` says the leftover in front of the bursts
+  // is that activation set (the label reads "60×8+4+2+1+1"). That is the shape bursts added live
+  // already have. Warm-ups the plan asks for stay in front of it.
   const restSec = Math.max(5, cfg.intensifier.restSec || 15)
-  const totalReps = Math.max(1, Math.round(cfg.intensifier.totalReps) || 1)
-  const w = (sets.find(s => !isWarmupRow(s)) || sets[0] || {}).w || 0
-  const warmup = { w, r: Math.max(1, Math.round(cfg.reps) || 1), done: false, phase: 'warmup' }
-  const work = { w, r: totalReps, done: false, type: 'restpause', clusters: splitBurstReps(totalReps).map(r => ({ r, restSec })) }
+  const burstReps = Math.max(1, Math.round(cfg.intensifier.totalReps) || 1)
+  const activation = Math.max(1, Math.round(cfg.reps) || 1)
+  const warm = sets.filter(isWarmupRow)
+  const source = sets.find(s => !isWarmupRow(s))
+  const w = (source || sets[0] || {}).w || 0
+  const rowOf = (weight, a, b) => ({ w: weight, r: a + b, done: false, type: 'restpause', act: true, clusters: splitBurstReps(b).map(r => ({ r, restSec })) })
   if (isPerSide(cfg)) {
-    const source = sets.find(s => !isWarmupRow(s))
-    // The configured total covers both limbs; preserve it even for an odd total.
-    const side = (key, reps) => ({
-      w: source?.sides?.[key]?.w ?? w, r: reps, done: false, type: 'restpause',
-      clusters: splitBurstReps(reps).map(r => ({ r, restSec })),
-    })
-    // The warm-up is per side too (issue #60): makeSideSet splits its combined reps the same
-    // way the work set's are, each side its own reps/weight/effort and done tick.
-    return [makeSideSet(warmup), syncSideAggregate({ ...work, sides: {
-      L: side('L', Math.ceil(totalReps / 2)), R: side('R', Math.floor(totalReps / 2)),
+    // Both numbers cover both limbs (issue #60), split the way makeSideSet splits a row's reps.
+    const sideW = key => source?.sides?.[key]?.w ?? w
+    const row = rowOf(w, activation, burstReps)
+    return [...warm, syncSideAggregate({ ...row, sides: {
+      L: rowOf(sideW('L'), Math.ceil(activation / 2), Math.ceil(burstReps / 2)),
+      R: rowOf(sideW('R'), Math.floor(activation / 2), Math.floor(burstReps / 2)),
     } })]
   }
-  return [warmup, work]
+  return [...warm, rowOf(w, activation, burstReps)]
+}
+
+/**
+ * The reps a rest-pause row asks for (#1252): its activation set and its bursts. A row planned
+ * since 1.4.6 carries both in `r` (`act`); an older one was the bursts alone, behind a warm-up.
+ */
+export function restPauseGoal(target, row) {
+  const bursts = Math.max(1, Math.round(target?.intensifier?.totalReps) || 1)
+  const activation = Math.max(1, Math.round(target?.reps) || 1)
+  if (isSideSet(row)) {
+    const act = row.sides?.L?.act === true || row.act === true
+    return (act ? activation : 0) + bursts
+  }
+  return (row?.act === true ? activation : 0) + bursts
 }
 export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
   let v = 0
@@ -1144,13 +1168,21 @@ export { streakWeeks } from './streak.js'
  * `backoffStep` (an entry built with back-off sets, lib/backoff.js): each later work row lands
  * one more step below the edited one rather than at the same load, so 26 → 27.5 on the top set
  * makes the back-off sets 25.5 and 23.5, not 27.5 three times.
+ *
+ * `opts.prev` (#1166): the edited row's weight before the edit. With it, only a later row that
+ * still holds that same weight is inherited and follows; a row with a load of its own (a pyramid's
+ * 70/85/100/110, or each set's weight carried from last time) keeps it. Without it, every later
+ * undone row follows, as before. Back-off rows always follow, since they hang off the edited one.
  */
-export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
+export function cascadeWeight(rows, from, value, side, backoffStep = 0, opts = {}) {
   const source = rows[from]
   if (!source || isWarmupRow(source)) return rows.slice()
   const sides = isSideSet(source) ? (side ? [side] : ['L', 'R']) : null
   const next = rows.slice()
   const stepDown = backoffStep > 0 && value != null
+  const byPrev = !stepDown && opts != null && Object.prototype.hasOwnProperty.call(opts, 'prev')
+  const sameW = (a, b) => (a == null || a === '' ? b == null || b === '' : Number(a) === Number(b))
+  const inherits = w => !byPrev || sameW(w, opts.prev)
   let k = 0
   const setWeight = row => {
     const out = { ...row }
@@ -1160,7 +1192,7 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
   }
   const setSideWeight = (row, key) => {
     const current = row.sides?.[key]
-    if (!current || current.done === true || current.weightOrigin === WEIGHT_ORIGIN_MANUAL) return row
+    if (!current || current.done === true || current.weightOrigin === WEIGHT_ORIGIN_MANUAL || !inherits(current.w)) return row
     const nextSide = setWeight(current)
     return syncSideAggregate({ ...row, sides: { ...row.sides, [key]: nextSide } })
   }
@@ -1175,7 +1207,7 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
       let out = row
       for (const key of sides) out = setSideWeight(out, key)
       next[j] = out
-    } else if (!isSideSet(row) && !row.done && row.weightOrigin !== WEIGHT_ORIGIN_MANUAL) {
+    } else if (!isSideSet(row) && !row.done && row.weightOrigin !== WEIGHT_ORIGIN_MANUAL && inherits(row.w)) {
       next[j] = setWeight(row)
     }
   }

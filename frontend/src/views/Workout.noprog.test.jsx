@@ -16,7 +16,7 @@ import { buildSessionEntries } from '../lib/session-start.js'
 import { swapActiveWorkoutExercise } from '../sheets.jsx'
 import { EXDB } from '../lib/exercises.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ prepareAudio: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -182,7 +182,7 @@ describe('don’t count this session for progression', () => {
       const settings = menuItem(openMenu(), 'Exercise settings')
       act(() => settings.click())
       const sheet = renderTopSheet()
-      const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
+      const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Done')   // the live sheet's button (#1079)
       act(() => save.click())
 
       const [bench] = active().entries
@@ -224,7 +224,7 @@ describe('don’t count this session for progression', () => {
     renderWorkout([{ ...entry(ROW, 'deload', 40, { noProg: true }), target: { sets: 1, reps: 8, weight: 40 }, sets: [{ w: 40, r: 8, done: false }] }], { withHistory: [...history, rowInMain] })
     const settings = menuItem(openMenu(), 'Exercise settings')
     act(() => settings.click())
-    const save = [...renderTopSheet().querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
+    const save = [...renderTopSheet().querySelectorAll('button')].find(b => b.textContent.trim() === 'Done')
     act(() => save.click())
     const [row] = active().entries
     expect(row.noProg).toBe(true)

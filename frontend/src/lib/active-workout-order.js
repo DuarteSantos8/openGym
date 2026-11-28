@@ -79,3 +79,25 @@ export function moveActiveWorkoutEntry(active, index, direction) {
   active.entries.splice(0, active.entries.length, ...reorderedEntries)
   return { indices }
 }
+
+// A hold-and-drag in the live workout's list (Discord 2026-11-21: reordering mid-workout was
+// still Move up and Move down, unlike every other list since 1.4.6). The unit holding `index`
+// (a lone exercise or a whole superset) goes to unit position `toUnit`, the way splice reads
+// it, so the drag can carry it past several others at once. Members keep their order and their
+// sg, so a superset stays one block. The marker stays on the exercise it was on. Returns the
+// same { indices } permutation (new position -> old index) as the moves above, or null.
+export function moveActiveWorkoutUnitTo(active, index, toUnit) {
+  if (!active || !Array.isArray(active.entries)) return null
+  const units = supersetUnits(active.entries)
+  const from = units.findIndex(unit => unit.includes(index))
+  if (from < 0 || !Number.isInteger(toUnit) || toUnit < 0 || toUnit >= units.length || toUnit === from) return null
+  const current = active.entries[active.cur]
+  const order = [...units]
+  const [unit] = order.splice(from, 1)
+  order.splice(toUnit, 0, unit)
+  const indices = order.flat()
+  const reorderedEntries = indices.map(entryIndex => active.entries[entryIndex])
+  active.entries.splice(0, active.entries.length, ...reorderedEntries)
+  if (current) active.cur = active.entries.indexOf(current)
+  return { indices }
+}

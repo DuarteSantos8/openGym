@@ -1219,4 +1219,116 @@ module CoreTest {
         Test.assertEqual(coreSetsOut(s), 2);
         return true;
     }
+
+    /* ---------- 1.4.6: no crash, the lean snapshot, waiting for the phone, a hold's own set ---------- */
+
+    //! The effort for the set just done (#1294): the phone took a set out of that exercise since
+    //! (or the window holds another of the same exercise with fewer sets): no effort offered, and
+    //! no crash reaching past the end of its sets.
+    (:test, :big)
+    function effortAfterTheSetIsGone(logger as Test.Logger) as Boolean {
+        var keep = G.state;
+        var last = G.last;
+        G.state = Core.emptyState();
+        var sn = coreSnap();
+        sn["settings"]["effort"] = "rir";
+        Core.applySnapshot(G.state, sn);
+        G.last = ["0025", 1, null];
+        Test.assert(Actions.canRate());
+        G.last = ["0025", 5, null];
+        var ok = !Actions.canRate();
+        G.state = keep;
+        G.last = last;
+        Test.assert(ok);
+        return true;
+    }
+
+    //! The snapshot as the phone sends it since #1471: rows without done: false, warmup: false and
+    //! sec: null, exercises without mode "reps", their default step and their nulls. It reads as
+    //! the full one did.
+    (:test)
+    function leanSnapshotReadsTheSame(logger as Test.Logger) as Boolean {
+        var sn = coreSnap();
+        var es = sn["active"]["entries"];
+        es[0] = { "id" => "0025", "name" => "Barbell Bench Press", "restSec" => 120, "last" => "55×8, 57.5×6", "i" => 0,
+            "sets" => [{ "w" => 60, "r" => 8, "done" => true, "at" => 1761742900000l }, { "w" => 60, "r" => 8 }] };
+        es[1] = { "id" => "0001", "name" => "3/4 Sit-Up", "bodyweight" => true, "i" => 1,
+            "sets" => [{ "w" => 20, "r" => 10, "warmup" => true }, { "w" => 30, "r" => 10 }] };
+        var s = Core.emptyState();
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(Core.setIndex(s, 0), 1);
+        Test.assert(!Core.isTimed(Core.entryAt(s, 0)) && !Core.isCardio(Core.entryAt(s, 0)));
+        Test.assertEqual(Core.stepOf(s, Core.entryAt(s, 0)), 2.5);
+        Test.assertEqual(Core.place(Core.entryAt(s, 1), 0)[1], 1);
+        Test.assertEqual(Core.place(Core.entryAt(s, 1), 1)[1], 1);
+        Test.assertEqual(Core.progress(s)[0], 1);
+        var ev = Core.tick(s, 1, 0, null, 20.0, 10.0, null, null);
+        Test.assert(Core.same(ev["exId"], "0001"));
+        Test.assert(Core.isTrue(coreRow(s, 1, 0)["done"]));
+        return true;
+    }
+
+    //! "Next exercise is on its way from your phone": the watch knows it waits for the phone, and
+    //! asks sooner then (Link.retry, #1295).
+    (:test)
+    function knowsWhenItWaitsForThePhone(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Test.assert(!Core.needsPhone(s));
+        var sn = coreSnap();
+        sn["active"]["count"] = 4;
+        Core.applySnapshot(s, sn);
+        Test.assert(!Core.needsPhone(s));
+        s["pos"] = 2;
+        Test.assert(Core.needsPhone(s));
+        // the whole workout here: the end page is the workout's end, nothing to wait for
+        s["w"]["count"] = 2;
+        Test.assert(!Core.needsPhone(s));
+        // started here by name: its exercises come from the phone
+        Core.start(s, { "name" => "Pull", "routineIds" => ["r2"], "entries" => [] });
+        Test.assert(Core.needsPhone(s));
+        return true;
+    }
+
+    //! A hold keeps the set it is for (#1403): by the set's id, so a set added before it on the
+    //! phone does not change which one it logs, and the phone logging it (its own hold ended
+    //! first) or removing it ends the hold here unlogged.
+    (:test, :big)
+    function holdKeepsItsSet(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["mode"] = "time";
+        sn["active"]["entries"][0]["sets"][0]["sid"] = "a0";
+        sn["active"]["entries"][0]["sets"][1]["sid"] = "a1";
+        Core.applySnapshot(s, sn);
+        var h = Core.holdFor(s, 0, 1, null);
+        Test.assert(Core.same(h[0], "s:a1"));
+        Test.assertEqual(Core.holdAt(s, h)[1], 1);
+        // a warm-up added in front on the phone: still that set, now the third row
+        var sn2 = coreSnap();
+        var rows = sn2["active"]["entries"][0]["sets"];
+        rows[0]["sid"] = "a0";
+        rows[1]["sid"] = "a1";
+        sn2["active"]["entries"][0]["sets"] = [{ "w" => 20, "r" => 5, "warmup" => true, "sid" => "w0" }, rows[0], rows[1]];
+        Core.applySnapshot(s, sn2);
+        Test.assertEqual(Core.holdAt(s, h)[1], 2);
+        // the phone logged it: over here, unlogged
+        rows[1]["done"] = true;
+        rows[1]["at"] = Core.nowMs();
+        Core.applySnapshot(s, sn2);
+        Test.assert(Core.holdAt(s, h) == null);
+        // removed on the phone: over too
+        var sn3 = coreSnap();
+        sn3["active"]["entries"][0]["sets"][0]["sid"] = "a0";
+        sn3["active"]["entries"][0]["sets"] = [sn3["active"]["entries"][0]["sets"][0]];
+        Core.applySnapshot(s, sn3);
+        Test.assert(Core.holdAt(s, h) == null);
+        // a hold begun before the phone gave its sets ids (kept by place) finds its set by id later
+        var t = Core.emptyState();
+        Core.applySnapshot(t, coreSnap());
+        var hp = Core.holdFor(t, 0, 1, null);
+        Test.assert(Core.same(hp[0], "e0:0025#1"));
+        Core.applySnapshot(t, sn);
+        Test.assertEqual(Core.holdAt(t, hp)[1], 1);
+        return true;
+    }
 }

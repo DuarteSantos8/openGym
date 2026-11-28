@@ -14,36 +14,15 @@ import { onLifter } from './structuralBalance.js'
 import { isSideSet } from './workout-model.js'
 import { estimate1RM, formulaOf } from './onerm.js'
 import { currentDbLoad, workoutAs, isBellEx } from './dumbbells.js'
+import { bodyweightAt as bwAt } from './bodyweight.js'
 
 const DAY = 86400000
 // A weigh-in further than this from a workout says nothing about that day.
 export const BW_MAX_GAP_DAYS = 30
 
-const timeOf = b => Number(b?.t) || new Date(b?.d).getTime()
-
-/** Body weight at time `t`, from the weigh-in log: interpolated between the two weigh-ins around
- *  it, or the nearest one when `t` is outside the log. Null when the nearest weigh-in is more
- *  than `maxGapDays` away, or there is none. */
-export function bodyweightAt(log, t, maxGapDays = BW_MAX_GAP_DAYS) {
-  const pts = (log || [])
-    .map(b => ({ t: timeOf(b), w: Number(b?.w) }))
-    .filter(b => Number.isFinite(b.t) && Number.isFinite(b.w) && b.w > 0)
-    .sort((a, b) => a.t - b.t)
-  if (!pts.length || !Number.isFinite(t)) return null
-  let before = null, after = null
-  for (const p of pts) {
-    if (p.t <= t) before = p
-    else { after = p; break }
-  }
-  const gap = p => (p ? Math.abs(p.t - t) : Infinity)
-  const limit = maxGapDays * DAY
-  if (before && after) {
-    if (Math.min(gap(before), gap(after)) > limit) return null
-    return before.w + (after.w - before.w) * ((t - before.t) / (after.t - before.t))
-  }
-  const near = before || after
-  return gap(near) <= limit ? near.w : null
-}
+/** Body weight at time `t`, from the weigh-in log (lib/bodyweight.js has the rule): between two
+ *  weigh-ins, the line between them; else the nearest; null when none is within `maxGapDays`. */
+export const bodyweightAt = (log, t, maxGapDays = BW_MAX_GAP_DAYS) => bwAt(log, t, maxGapDays)
 
 /** The weight actually moved by one set, or 0 when it cannot be told (assistance above body weight). */
 export function effectiveLoad({ assisted, bodyweight }, w, bw) {

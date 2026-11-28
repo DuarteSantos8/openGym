@@ -190,6 +190,19 @@ export function chime(enabled, kind) {
 
 // Call from inside a tap. Gets the context created and running while the browser still counts
 // this as a user gesture; it goes back to sleep on its own. Nothing audible.
+/**
+ * Makes the audio context ahead of the first tone, while the phone is idle (review 1.4.6: the
+ * first set ticked in a session took a quarter second longer on a slow phone, most of it the
+ * context being made inside the tap). It starts suspended, as any context made outside a tap
+ * does; unlock() on the first tap resumes it as before. Nothing plays and nothing is asked of
+ * the phone's audio session until then.
+ */
+export function prepareAudio(enabled) {
+  if (!enabled || typeof window === 'undefined' || !(window.AudioContext || window.webkitAudioContext)) return
+  const idle = window.requestIdleCallback || (fn => setTimeout(fn, 200))
+  idle(() => { try { if (!audioCtx || audioCtx.state === 'closed') ctxFor() } catch (e) { /* */ } })
+}
+
 export function unlock(enabled) {
   if (!enabled) return
   try { wake(); sleepAfter(0) } catch (e) { /* */ }
