@@ -28,6 +28,11 @@
 "Effort" = "强度";
 "Muscles" = "肌肉";
 "None" = "无";
+"How hard was it?" = "这次有多累？";
+"Easy" = "轻松";
+"Moderate" = "适中";
+"Hard effort" = "吃力";
+"All out" = "全力";
 "Exercises" = "动作库";
 "Save" = "保存";
 "Previous set" = "上一组";

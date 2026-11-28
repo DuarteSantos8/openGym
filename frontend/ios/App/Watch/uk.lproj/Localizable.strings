@@ -28,6 +28,11 @@
 "Effort" = "Зусилля";
 "Muscles" = "М’язи";
 "None" = "Немає";
+"How hard was it?" = "Наскільки було важко?";
+"Easy" = "Легко";
+"Moderate" = "Помірно";
+"Hard effort" = "Важко";
+"All out" = "На межі";
 "Exercises" = "Вправи";
 "Save" = "Зберегти";
 "Previous set" = "Попередній підхід";

@@ -305,6 +305,9 @@ jobs:
             shot "ax-long-de-set" set -OpenGymWatchAX -OpenGymWatchLong -OpenGymWatchLang de
             shot "rest-paused-de" rest -OpenGymWatchRestPaused -OpenGymWatchLang de
             shot "show-all" set -OpenGymWatchShow all
+            # The workout's effort on the summary (Settings → Apple Health → Effort after a workout).
+            shot "effort-unrated" summary -OpenGymWatchEffort -
+            shot "effort-rated" summary -OpenGymWatchEffort 7
             shot "rest-plain" rest -OpenGymWatchShow plain
             shot "rest-paused" rest -OpenGymWatchRestPaused
             shot "effort-plain" effort -OpenGymWatchShow plain

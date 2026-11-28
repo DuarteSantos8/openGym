@@ -28,6 +28,11 @@
 "Effort" = "Indsats";
 "Muscles" = "Muskler";
 "None" = "Ingen";
+"How hard was it?" = "Hvor hårdt var det?";
+"Easy" = "Let";
+"Moderate" = "Moderat";
+"Hard effort" = "Hårdt";
+"All out" = "Alt givet";
 "Exercises" = "Øvelser";
 "Save" = "Gem";
 "Previous set" = "Forrige sæt";

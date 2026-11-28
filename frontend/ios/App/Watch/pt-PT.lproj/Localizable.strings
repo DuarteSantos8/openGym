@@ -28,6 +28,11 @@
 "Effort" = "Esforço";
 "Muscles" = "Músculos";
 "None" = "Nenhum";
+"How hard was it?" = "Quão difícil foi?";
+"Easy" = "Fácil";
+"Moderate" = "Moderado";
+"Hard effort" = "Difícil";
+"All out" = "No máximo";
 "Exercises" = "Exercícios";
 "Save" = "Guardar";
 "Previous set" = "Série anterior";

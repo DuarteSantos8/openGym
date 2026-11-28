@@ -28,6 +28,11 @@
 "Effort" = "Megerőltetés";
 "Muscles" = "Izmok";
 "None" = "Nincs";
+"How hard was it?" = "Mennyire volt nehéz?";
+"Easy" = "Könnyű";
+"Moderate" = "Mérsékelt";
+"Hard effort" = "Nehéz";
+"All out" = "Maximális";
 "Exercises" = "Gyakorlatok";
 "Save" = "Mentés";
 "Previous set" = "Előző sorozat";

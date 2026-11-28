@@ -28,6 +28,7 @@ import WidgetKit
 @main
 struct OpenGymWatchApp: App {
     @WKApplicationDelegateAdaptor private var delegate: WatchAppDelegate
+    @Environment(\.scenePhase) private var phase
 
     var body: some Scene {
         WindowGroup {
@@ -36,6 +37,8 @@ struct OpenGymWatchApp: App {
                 .background(Color.black)
                 .modifier(DemoEnvironment())
         }
+        // A workout's effort still waiting to go is sent before the app is put away.
+        .onChange(of: phase) { _, now in if now != .active { delegate.store.sendEffort() } }
     }
 }
 

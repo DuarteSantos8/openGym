@@ -10,6 +10,7 @@ import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf, weightDecimals } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
+import { cleanEffort } from './workout-effort.js'
 import { activeKcal, bodyKgFor } from './active-energy.js'
 import { workoutSegments } from './health-segments.js'
 import { getVersion } from './i18n-core.js'
@@ -147,6 +148,10 @@ export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null, segments 
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
+    // The workout's effort, 1 to 10 (lib/workout-effort.js): Apple Health links it to the workout
+    // (iOS 18); Health Connect has no such field and leaves it. Only there when rated, so a workout
+    // without one keeps the fingerprint it was written with. The watch links its own rating.
+    ...effortOf(w),
   }
   // The active calories, only when the hub lets openGym write them: `kg` is then the body weight.
   // A Wear OS watch's (`w.kcal`, #724) are Health Services' total, so the resting burn comes off
@@ -162,6 +167,12 @@ export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null, segments 
     if (seg.length) rec.segments = seg
   }
   return rec
+}
+
+function effortOf(w) {
+  const n = cleanEffort(w?.effort)
+  if (n == null) return {}
+  return w.effortBy === 'watch' ? { effort: n, effortWatch: true } : { effort: n }
 }
 
 /**

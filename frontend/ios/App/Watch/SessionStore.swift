@@ -101,7 +101,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var holdFor: (entry: Int, set: Int, side: String?, sid: String?)?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
     @Published private(set) var summary: WorkoutSummary? {
-        didSet { if summary == nil { Haptics.cancelFinished() } }   // the medal's taps stop with its screen
+        didSet {
+            if summary == nil { Haptics.cancelFinished() }   // the medal's taps stop with its screen
+            // A rating not sent yet goes when its summary does, whatever closed it (Done, the next
+            // workout, the phone): never only on Done.
+            if let p = effortToSend, summary?.workoutId != p.wid { sendEffort() }
+        }
     }
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
@@ -618,6 +623,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     if !self.isDemo {
                         self.summary = SessionCore.summary(ended, end: Date().timeIntervalSince1970 * 1000,
                                                            startedAt: self.workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }, endedOnPhone: true)
+                        self.summary?.effortPreset = WorkoutEffort.preset(ended, efforts: before.efforts, kind: self.effortKind)
                     }
                     self.ran(ended.id)
                     self.health.end(save: true) { totals in self.addTotals(totals) }
@@ -1011,6 +1017,45 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         homeLock.lock(at: Date())
     }
 
+    /// Whether the summary asks how hard the workout was: the phone asks for it (Settings → Apple
+    /// Health), and this watch can give it to Apple Health (watchOS 11).
+    var asksEffort: Bool {
+        if isDemo { return summary != nil && SessionStore.argument("-OpenGymWatchEffort") != nil }
+        guard let s = summary, health.canRateEffort else { return false }
+        return WorkoutEffort.asks(state.settings, s)
+    }
+
+    /// A rating waiting to go: sent a moment after the last press of − or +, or with the summary.
+    private var effortToSend: (wid: String, v: Int?)?
+    private var effortTimer: Timer?
+
+    /// The whole workout's effort, 1 to 10 (nil takes it back), as − and + change it. It goes out
+    /// shortly after the last press, so a few presses make one rating, not one each.
+    func rateEffort(_ v: Int?) {
+        guard var s = summary else { return }
+        s.effort = v
+        summary = s
+        guard let wid = s.workoutId, !isDemo else { return }
+        effortToSend = (wid, v)
+        effortTimer?.invalidate()
+        effortTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+            DispatchQueue.main.async { self?.sendEffort() }
+        }
+    }
+
+    /// Links the rating to the workout this watch saved and sends it to the phone, for the saved
+    /// workout there (lib/workout-effort.js). Also when the app goes to the background.
+    func sendEffort() {
+        effortTimer?.invalidate()
+        effortTimer = nil
+        guard let p = effortToSend else { return }
+        effortToSend = nil
+        if isDemo { return }
+        health.setEffort(p.v, workoutId: p.wid)
+        send(event: ["id": UUID().uuidString, "type": "workoutEffort", "wid": p.wid, "v": p.v.map { $0 as Any } ?? NSNull(),
+                     "at": Date().timeIntervalSince1970 * 1000])
+    }
+
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
 
     private static let healthDeletedKey = "healthDeleted"
@@ -1354,7 +1399,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let ended = workout
         let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle, left: left)
         guard let ev = event else { return }
-        if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
+        if let w = ended {
+            summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 })
+            summary?.effortPreset = WorkoutEffort.preset(w, efforts: state.efforts, kind: effortKind)
+        }
         ran(ended?.id)
         health.end(save: true, at: end) { [weak self] totals in self?.addTotals(totals) }
         stopHoldCount()
@@ -1756,7 +1804,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let r = Plan.routinesReport(state.ready, hash: state.routinesHash, file: routines)
         reportedRoutines = r.hash + "#\(r.count)"
         send(event: ["id": UUID().uuidString, "type": "watchStatus", "health": health.status, "version": version,
-                     "routinesHash": r.hash, "routinesCount": r.count,
+                     "routinesHash": r.hash, "routinesCount": r.count, "effort": health.canRateEffort,
                      "at": Date().timeIntervalSince1970 * 1000])
     }
 
@@ -1929,6 +1977,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                                      records: [RecordLine(name: "Bench Press", kind: .weight, old: 100, new: 105, unit: "kg"),
                                                RecordLine(name: "Incline Dumbbell Press", kind: .weight, old: 32, new: 34, unit: "kg")],
                                      endedAt: now)
+                // CI: "-OpenGymWatchEffort 7" shows the effort rating at 7 ("-" unrated); with
+                // -OpenGymWatchEffortPreset 6 it starts there, and -OpenGymWatchEffortEdit opens it on the Crown.
+                if let e = SessionStore.argument("-OpenGymWatchEffort") { self.summary?.effort = Int(e) }
+                if let p = SessionStore.argument("-OpenGymWatchEffortPreset") { self.summary?.effortPreset = Int(p) }
             }
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames

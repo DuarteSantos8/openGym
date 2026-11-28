@@ -4469,6 +4469,10 @@ export const PT_BR_OVERRIDES = {
   "{0} line still needs a look.": "{0} linha ainda precisa de uma olhada.",
   "{0} lines still need a look.": "{0} linhas ainda precisam de uma olhada.",
   "Save workout": "Salvar treino",
+  "{0}, set from your sets. Tap to change it.": "{0}, a partir das suas séries. Toque para mudar.",
+  "Ask me": "Me pergunte",
+  "The summary and your Apple Watch ask for it.": "O resumo e o seu Apple Watch perguntam.",
+  "Worked out from the effort of each set, logged or estimated. Nothing to tap.": "Calculado a partir do esforço de cada série, registrado ou estimado. Nada para tocar.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

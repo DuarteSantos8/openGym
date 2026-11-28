@@ -42,6 +42,7 @@ import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange, t } from './i18n.js'
 import { loadOf, MUSCLES, MUSCLE_NAME } from './muscles.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
+import { effortModeOf, cleanEffort } from './workout-effort.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
 import { weightIncrement } from './progression.js'
@@ -712,6 +713,12 @@ const claimedByWatch = new Set()
 const claimListeners = new Set()
 /** Whether the watch runs this workout's session (as far as its events tell). */
 export const watchClaimed = wid => !!wid && (claimedByWatch.has(wid) || (startedOnWatch.has(wid) && readWatchStatus()?.health === 'on'))
+/**
+ * Whether the Apple Watch asks for this workout's effort on its own summary: it ran the workout's
+ * session and can link a score (watchOS 11, Apple Health on). The phone's summary then leaves the
+ * question to the watch, so one workout never gets two scores from two apps in Apple Health.
+ */
+export const watchAsksEffort = wid => watchClaimed(wid) && readWatchStatus()?.effort === true
 export function onWatchClaim (fn) { claimListeners.add(fn); return () => claimListeners.delete(fn) }
 function claim (ev) {
   const wid = typeof ev.wid === 'string' && ev.wid ? ev.wid : null
@@ -738,6 +745,7 @@ function claim (ev) {
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   stillHere { wid, at }            "Keep going" on the watch's "Still training?" (1.4.5)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
+ *   workoutEffort { wid, v }         the whole workout's effort, 1 to 10, from the watch's summary
  *   workoutNote { wid, note, was, at }   the running workout's note from the watch's Overview (setWatchNote)
  *
  * A tick for a workout already saved (finished on the phone while the watch was away) is written
@@ -784,6 +792,11 @@ function applyEach (events, getState, now = Date.now()) {
     // with it however old it is, a heart rate without a time of its own too.
     if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && WORKOUT_EVENTS.includes(ev.type) &&
         !seen.includes(wid) && !discardedFor(now).includes(wid) && (startWaits.has(wid) || (num(ev.at) && now - num(ev.at) < DEFER_MAX_MS))) { waited.add(wid); continue }
+    // The whole workout's effort goes onto the saved workout: one not saved here yet (still running,
+    // or a watch workout waiting behind one on the phone) keeps it waiting in the queue, like its
+    // sets, until it is. Not for a discarded one, nor after two days.
+    if (ev.type === 'workoutEffort' && wid && !(Array.isArray(S?.workouts) && S.workouts.some(w => w && w.id === wid)) &&
+        !discardedFor(now).includes(wid) && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) { waited.add(wid); continue }
     // A copy of a start for a workout this phone already had (saved, discarded, or running) is
     // not a new workout: nothing starts again (no zombie session after a resend).
     const had = ev.type === 'start' && wid && (seen.includes(wid) || saved || discardedFor(now).includes(wid))
@@ -870,6 +883,15 @@ function applyEach (events, getState, now = Date.now()) {
         // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
         // (which kept retrying the ones it could not delete) runs again and now finds them gone.
         if (appHandlers?.healthDeleted) appHandlers.healthDeleted(Array.isArray(ev.ids) ? ev.ids.filter(x => typeof x === 'string') : [])
+      } else if (ev.type === 'workoutEffort') {
+        // The whole workout's effort, from the watch's summary (lib/workout-effort.js). The watch
+        // linked it to its own Apple Health workout already; this puts it on the saved workout. A
+        // workout not saved here (discarded, or never seen) has nothing to put it on.
+        const v = cleanEffort(ev.v)
+        if (wid && (v != null || ev.v === null)) {
+          if (!appHandlers?.workoutEffort) break
+          appHandlers.workoutEffort({ wid, v })
+        }
       } else if (ev.type === 'stillHere' && ours) {
         // "Keep going" on the watch's "Still training?" (forgotten workouts): the phone stops asking too.
         appHandlers?.stillHere?.(num(ev.at) || now)
@@ -1188,6 +1210,9 @@ export function watchExtras (S, show = {}) {
     ...(show?.zones !== false && ageOk(S?.birthYear) ? { birthYear: Math.round(Number(S.birthYear)) } : {}),
     // The accent the app wears, as the dark theme draws it, and the ink on it: the watch wears it too.
     ...watchAccent(S),
+    // Settings → Apple Health → Effort after a workout: 'ask' puts "How hard was it?" on the
+    // watch's summary (watchOS 11). Not sent otherwise, and an older phone sends none either.
+    ...(effortModeOf(S) === 'ask' ? { workoutEffort: 'ask' } : {}),
   }
 }
 

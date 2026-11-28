@@ -28,6 +28,11 @@
 "Effort" = "Zorluk";
 "Muscles" = "Kaslar";
 "None" = "Yok";
+"How hard was it?" = "Ne kadar zordu?";
+"Easy" = "Kolay";
+"Moderate" = "Orta";
+"Hard effort" = "Zor";
+"All out" = "Tüm gücüyle";
 "Exercises" = "Egzersizler";
 "Save" = "Kaydet";
 "Previous set" = "Önceki set";

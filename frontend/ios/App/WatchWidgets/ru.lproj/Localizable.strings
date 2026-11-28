@@ -28,6 +28,11 @@
 "Effort" = "Усилие";
 "Muscles" = "Мышцы";
 "None" = "Нет";
+"How hard was it?" = "Насколько было тяжело?";
+"Easy" = "Легко";
+"Moderate" = "Умеренно";
+"Hard effort" = "Тяжело";
+"All out" = "На пределе";
 "Exercises" = "Упражнения";
 "Save" = "Сохранить";
 "Previous set" = "Предыдущий подход";

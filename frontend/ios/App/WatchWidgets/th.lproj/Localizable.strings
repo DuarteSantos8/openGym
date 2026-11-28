@@ -28,6 +28,11 @@
 "Effort" = "ความหนัก";
 "Muscles" = "กล้ามเนื้อ";
 "None" = "ไม่มี";
+"How hard was it?" = "หนักแค่ไหน?";
+"Easy" = "เบา";
+"Moderate" = "ปานกลาง";
+"Hard effort" = "หนัก";
+"All out" = "สุดแรง";
 "Exercises" = "ท่าออกกำลังกาย";
 "Save" = "บันทึก";
 "Previous set" = "เซ็ตก่อนหน้า";

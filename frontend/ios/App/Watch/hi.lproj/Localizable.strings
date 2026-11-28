@@ -28,6 +28,11 @@
 "Effort" = "मेहनत";
 "Muscles" = "मांसपेशियाँ";
 "None" = "कोई नहीं";
+"How hard was it?" = "कितना कठिन था?";
+"Easy" = "आसान";
+"Moderate" = "मध्यम";
+"Hard effort" = "कठिन";
+"All out" = "पूरी ताकत";
 "Exercises" = "व्यायाम";
 "Save" = "सहेजें";
 "Previous set" = "पिछला सेट";

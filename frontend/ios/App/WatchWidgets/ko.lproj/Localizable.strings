@@ -28,6 +28,11 @@
 "Effort" = "강도";
 "Muscles" = "근육";
 "None" = "없음";
+"How hard was it?" = "얼마나 힘들었나요?";
+"Easy" = "쉬움";
+"Moderate" = "보통";
+"Hard effort" = "힘듦";
+"All out" = "최대";
 "Exercises" = "운동";
 "Save" = "저장";
 "Previous set" = "이전 세트";

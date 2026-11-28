@@ -169,6 +169,11 @@ async function syncOnce(S, h) {
       if (refused.length) out.refused = [...new Set([...(Array.isArray(h.refused) ? h.refused : []), ...refused])].slice(-REFUSED_MAX)
       // Written but not yet removed: kept as written, so a failed remove is tried again.
       const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
+      // In Apple Health, but its effort could not be linked (AppleHealthPlugin effortFailed): kept
+      // as written, so a deletion still takes it out, but without its fingerprint, so the next sync
+      // writes it again and the score gets another try.
+      const retry = (Array.isArray(res?.effortFailed) ? res.effortFailed : []).filter(id => typeof id === 'string' && plan.written[id])
+      for (const id of retry) plan.written[id] = { ...plan.written[id], h: null }
       out.written = { ...kept, ...plan.written }
     }
     let written = plan.written
@@ -206,6 +211,48 @@ export async function enableHealth(S) {
   await mirrorOn(true)
   const after = await syncHealth(S)
   return { ok: !after?.error, reason: after?.error || null, health: after }
+}
+
+/**
+ * Whether this phone can give a workout its effort in Apple Health (iOS 18 and later) and is
+ * writing there now: what decides whether openGym asks for it (lib/workout-effort.js).
+ * { supported, on, granted }.
+ */
+export async function effortSupport() {
+  const none = { supported: false, on: false, granted: false }
+  if (!MOBILE) return none
+  try {
+    const p = await plugin()
+    if (!p || p.platform !== 'ios') return none
+    const [st, h] = await Promise.all([p.HC.status(), loadHealth()])
+    return { supported: st?.status === 'available' && !!st.effort, on: !!h.on, granted: !!st.effortGranted }
+  } catch { return none }
+}
+
+/**
+ * Asks Apple Health for the workout effort permission, once: a phone that turned Apple Health on
+ * before openGym wrote effort was never asked. Granted now, the workouts that already carry an
+ * effort are written again, since their first write could not link it. Resolves with whether it is
+ * allowed.
+ */
+export async function askEffort(getState) {
+  const sup = await effortSupport()
+  if (!sup.supported) return false
+  if (sup.granted) return true
+  const p = await plugin()
+  const r = await p.HC.requestPermissions({ effort: true }).catch(() => ({ granted: false }))
+  if (!r?.granted) return false
+  const S = getState?.()
+  const rated = new Set((S?.workouts || []).filter(w => w?.id && w.effort != null).map(w => 'opengym-w-' + w.id))
+  if (rated.size) {
+    if (running) await running.catch(() => {})
+    const h = await loadHealth()
+    const written = Object.fromEntries(Object.entries(h.written).filter(([id]) => !rated.has(id)))
+    await saveHealth({ ...h, written })
+    // Read again here, after the waits: a workout deleted meanwhile must not be written back.
+    await syncHealth(getState?.() || S)
+  }
+  return true
 }
 
 /**

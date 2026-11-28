@@ -85,7 +85,9 @@ export function readWatchStatus(storage = globalThis.localStorage) {
 
 export function writeWatchStatus(ev, storage = globalThis.localStorage) {
   const health = ['on', 'off', 'denied'].includes(ev?.health) ? ev.health : null
-  const next = { health, version: typeof ev?.version === 'string' ? ev.version.slice(0, 20) : null, at: Number(ev?.at) || Date.now() }
+  const next = { health, version: typeof ev?.version === 'string' ? ev.version.slice(0, 20) : null, at: Number(ev?.at) || Date.now(),
+    // watchOS 11 with its Apple Health on: its summary asks for the workout's effort (lib/workout-effort.js).
+    ...(ev?.effort === true ? { effort: true } : {}) }
   // The routines the watch shows (hash of its file, '' for the snapshot's own list; and how many): an older watch app says neither.
   if (typeof ev?.routinesHash === 'string') next.routinesHash = ev.routinesHash.slice(0, 40)
   if (Number.isFinite(ev?.routinesCount)) next.routinesCount = Math.max(0, Math.floor(ev.routinesCount))

@@ -28,6 +28,11 @@
 "Effort" = "الجهد";
 "Muscles" = "العضلات";
 "None" = "بدون";
+"How hard was it?" = "ما مدى صعوبة التمرين؟";
+"Easy" = "سهل";
+"Moderate" = "متوسط";
+"Hard effort" = "صعب";
+"All out" = "أقصى جهد";
 "Exercises" = "التمارين";
 "Save" = "حفظ";
 "Previous set" = "المجموعة السابقة";

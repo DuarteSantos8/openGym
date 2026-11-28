@@ -28,6 +28,11 @@
 "Effort" = "Pastangos";
 "Muscles" = "Raumenys";
 "None" = "Nėra";
+"How hard was it?" = "Kiek sunku buvo?";
+"Easy" = "Lengva";
+"Moderate" = "Vidutiniška";
+"Hard effort" = "Sunku";
+"All out" = "Iš visų jėgų";
 "Exercises" = "Pratimai";
 "Save" = "Išsaugoti";
 "Previous set" = "Ankstesnė serija";

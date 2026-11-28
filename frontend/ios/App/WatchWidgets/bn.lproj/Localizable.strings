@@ -28,6 +28,11 @@
 "Effort" = "পরিশ্রম";
 "Muscles" = "পেশি";
 "None" = "কিছু না";
+"How hard was it?" = "কতটা কঠিন ছিল?";
+"Easy" = "সহজ";
+"Moderate" = "মাঝারি";
+"Hard effort" = "কঠিন";
+"All out" = "সর্বোচ্চ";
 "Exercises" = "ব্যায়াম";
 "Save" = "সেভ করুন";
 "Previous set" = "আগের সেট";

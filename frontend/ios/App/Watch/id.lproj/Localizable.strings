@@ -28,6 +28,11 @@
 "Effort" = "Tingkat usaha";
 "Muscles" = "Otot";
 "None" = "Tidak ada";
+"How hard was it?" = "Seberapa berat tadi?";
+"Easy" = "Ringan";
+"Moderate" = "Sedang";
+"Hard effort" = "Berat";
+"All out" = "Habis-habisan";
 "Exercises" = "Daftar Latihan";
 "Save" = "Simpan";
 "Previous set" = "Set sebelumnya";

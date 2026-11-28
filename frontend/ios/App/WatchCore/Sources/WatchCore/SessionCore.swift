@@ -565,7 +565,7 @@ enum SessionCore {
         let from = w.start ?? startedAt
         return WorkoutSummary(name: w.name, unit: w.unit, duration: from.map { max(0, (end - $0) / 1000) },
                               sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone,
-                              records: records, endedAt: end)
+                              records: records, endedAt: end, workoutId: w.id)
     }
 
     /// The record these done sets set, with the best they beat (beatsBest): the heaviest weight past
@@ -624,6 +624,68 @@ struct WorkoutSummary: Codable, Equatable {
     var records: [RecordLine] = []
     /// When it ended, ms since 1970 (the date on the medal's back).
     var endedAt: Double? = nil
+    /// The workout's id, which the effort rating goes back to the phone with.
+    var workoutId: String? = nil
+    /// The whole workout's effort, 1 to 10, once rated here.
+    var effort: Int? = nil
+    /// Where the rating starts: worked out from the sets rated during the workout
+    /// (WorkoutEffort.preset), nil with too few to go by.
+    var effortPreset: Int? = nil
+}
+
+/// The whole workout's effort, as Apple Fitness asks for it after a workout (the phone's
+/// lib/workout-effort.js): 1 to 10 in four bands.
+enum WorkoutEffort {
+    static let range = 1...10
+
+    /// The band's word: Easy (1-3), Moderate (4-6), Hard (7-8), All out (9-10).
+    static func word(_ v: Int) -> String {
+        switch v {
+        case ...3: return "Easy"
+        case 4...6: return "Moderate"
+        case 7...8: return "Hard effort"
+        default: return "All out"
+        }
+    }
+
+    /// One step of the crown or a button, kept inside 1...10. Nothing rated yet starts in the middle.
+    static func step(_ v: Int?, by d: Int) -> Int {
+        guard let v = v else { return 5 }
+        return min(range.upperBound, max(range.lowerBound, v + d))
+    }
+
+    /// How much lower people rate a whole lifting session than the mean of its sets (the phone's
+    /// SESSION_OFFSET in lib/workout-effort.js): taken off strength sets, not cardio.
+    static let sessionOffset = 1.5
+    /// Below this many rated sets the mean is a guess (the phone's AUTO_MIN_SETS).
+    static let minSets = 3
+
+    /// Where the summary's rating starts, as the phone's "Set automatically" works it out: each work
+    /// set rated during the workout on the RPE scale (RIR 2 is RPE 8), less sessionOffset for
+    /// strength sets, averaged, halves rounded up. nil with fewer than minSets rated sets.
+    static func preset(_ w: ActiveWorkout, efforts: [String: Double]?, kind: String?) -> Int? {
+        guard let efforts = efforts, let kind = kind else { return nil }
+        var sum = 0.0, n = 0
+        // A rating is kept by exercise and set place (SessionCore.key): the same exercise twice in a
+        // workout shares its keys, and one rating must not count as several rated sets.
+        var seen: Set<String> = []
+        for e in w.entries {
+            for (i, row) in e.sets.enumerated() where !row.warmup {
+                let k = SessionCore.key(e.id, i)
+                guard let v = efforts[k], seen.insert(k).inserted else { continue }
+                let rpe = kind == "rpe" ? v : 10 - max(0, v)
+                sum += rpe - (e.isCardio ? 0 : sessionOffset)
+                n += 1
+            }
+        }
+        guard n >= minSets else { return nil }
+        return min(range.upperBound, max(range.lowerBound, Int((sum / Double(n) + 0.5).rounded(.down))))
+    }
+
+    /// Whether the summary asks: the phone says so, and the workout has an id to send it back with.
+    static func asks(_ settings: WatchSettings, _ summary: WorkoutSummary) -> Bool {
+        settings.workoutEffort == "ask" && summary.workoutId != nil
+    }
 }
 
 extension WorkoutSummary {
@@ -642,6 +704,9 @@ extension WorkoutSummary {
         endedOnPhone = try c.decode(Bool.self, forKey: .endedOnPhone)
         records = try c.decodeIfPresent([RecordLine].self, forKey: .records) ?? []
         endedAt = try c.decodeIfPresent(Double.self, forKey: .endedAt)
+        workoutId = try c.decodeIfPresent(String.self, forKey: .workoutId)
+        effort = try c.decodeIfPresent(Int.self, forKey: .effort)
+        effortPreset = try c.decodeIfPresent(Int.self, forKey: .effortPreset)
     }
 }
 

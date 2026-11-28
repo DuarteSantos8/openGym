@@ -28,6 +28,11 @@
 "Effort" = "Náročnost";
 "Muscles" = "Svaly";
 "None" = "Žádná";
+"How hard was it?" = "Jak náročné to bylo?";
+"Easy" = "Lehké";
+"Moderate" = "Střední";
+"Hard effort" = "Náročné";
+"All out" = "Na maximum";
 "Exercises" = "Cviky";
 "Save" = "Uložit";
 "Previous set" = "Předchozí série";

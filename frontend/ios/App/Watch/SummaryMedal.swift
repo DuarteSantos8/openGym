@@ -319,6 +319,7 @@ private let wobble: [Double] = {
 private let thickness = 14.0
 
 private struct MedalStage: View, Animatable {
+    @EnvironmentObject var store: SessionStore
     var c: Double
     let t: Double
     let lay: MedalLayout
@@ -585,6 +586,13 @@ private struct MedalStage: View, Animatable {
         VStack(spacing: 0) {
             ForEach(Array(plates.enumerated()), id: \.offset) { _, plate in
                 RecordPlate(name: plate.name, line: plate.line, reps: words.reps, metal: .gold).padding(.bottom, 6)
+            }
+            // How hard the whole workout was (Settings → Apple Health → Effort after a workout).
+            if store.asksEffort {
+                EffortRating(value: Binding(get: { store.summary?.effort }, set: { store.rateEffort($0) }),
+                             preset: summary.effortPreset,
+                             editing: ProcessInfo.processInfo.arguments.contains("-OpenGymWatchEffortEdit"))
+                    .padding(.top, 4)
             }
             SyncLine().frame(maxWidth: .infinity).padding(.top, 4).padding(.bottom, 8)
             Button(action: onDone) { Text("Done") }
