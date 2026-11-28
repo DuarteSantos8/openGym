@@ -144,7 +144,12 @@ test('a spent plan or balance is never told to wait a few minutes (402, MiniMax 
   assert.equal(userMessageFor(a.errorClass, a.detail), USER_MESSAGE.quota);
   // The same words on a 429 are still a spent plan, not a speed limit.
   const b = await attemptOnce({ adapter: openai, cfg: {}, kind: 'review', payload, invokeOpts: { env, fetch: fakeFetch([err(429, spent), err(429, spent), err(429, spent)]), retryDelayMs: 0 } }, null);
+  assert.equal(b.errorClass, 'quota');
   assert.equal(userMessageFor(b.errorClass, b.detail), USER_MESSAGE.quota);
+  // The provider's error type on its own, without a 402 to lean on.
+  assert.equal(userMessageFor('quota', '429 insufficient_balance_error'), USER_MESSAGE.quota);
+  // A 400 carrying the same words is a spent plan, not a request-format problem.
+  assert.equal(classifyFailure({ text: '400 The Token Plan usage limit has been reached. Please buy credits.' }), 'quota');
   // Any 402 is Payment Required, whatever the words.
   assert.equal(userMessageFor('quota', '402 something went wrong'), USER_MESSAGE.quota);
   assert.equal(userMessageFor('quota', '402: insufficient_balance_error'), USER_MESSAGE.quota);

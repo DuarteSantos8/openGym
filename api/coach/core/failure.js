@@ -52,8 +52,9 @@ const AUTH_WORDS = /(?:^|[^a-z0-9])(?:api[-_ ]?key|credential|unauthori[sz]ed|un
 /* Out of quota, as opposed to merely going too fast. Both are 429s; this only chooses which of
  * the two lines the person reads. */
 // MiniMax answers a used-up Token Plan with `insufficient_balance_error` and "usage limit has
-// been reached … buy credits" (code 2067), none of the words above.
-const QUOTA_EXHAUSTED = /\b(insufficient_quota|insufficient_balance|exceeded your current quota|credit balance|out of credit|buy credits|usage limit has been reached|billing|payment required|spend limit)\b/i;
+// been reached … buy credits" (code 2067), none of the words above. `\w*` because `_error` would
+// otherwise defeat the closing `\b`.
+const QUOTA_EXHAUSTED = /\b(insufficient_quota|insufficient_balance\w*|exceeded your current quota|credit balance|out of credit|buy credits|usage limit has been reached|billing|payment required|spend limit)\b/i;
 const QUOTA_WORDS = /\b(quota|resource_exhausted|rate limit|too many requests|billing)\b/i;
 /* The shapes a schema-constrained request is refused with. `response_format` and `json_schema`
  * are ours; `additionalProperties` and `schema` are the validator's; `grammar` is a local
