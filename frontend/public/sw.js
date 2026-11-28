@@ -256,8 +256,12 @@ const API = (() => { try { return new URL('api/', location.href).pathname } catc
 // Other server answers the host can proxy beside the app (frontend/vercel.json): the MCP service
 // and the OAuth discovery documents. A cached copy replayed offline or after NET_WAIT_MS would
 // name a stale issuer or report a dead service as up.
-const MCP = (() => { try { return new URL('mcp', location.href).pathname } catch { return '/mcp' } })()
-const isServerPath = p => p.startsWith('/.well-known/') || p === MCP || p.startsWith(MCP + '/') || p === '/mcp' || p.startsWith('/mcp/')
+// The root /mcp counts only outside the app's own folder: an app mounted at /mcp/ keeps its shell.
+const BASE = (() => { try { return new URL('./', location.href).pathname } catch { return '/' } })()
+const MCP = BASE + 'mcp'
+const inApp = p => p.startsWith(BASE) || p + '/' === BASE
+const isServerPath = p => p.startsWith('/.well-known/') || p === MCP || p.startsWith(MCP + '/') ||
+  (!inApp(p) && (p === '/mcp' || p.startsWith('/mcp/')))
 
 // How long a request for the app itself waits on the network before a cached copy answers it.
 const NET_WAIT_MS = 3000

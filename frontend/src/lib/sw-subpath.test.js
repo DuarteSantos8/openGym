@@ -72,6 +72,17 @@ describe('the service worker and the API', () => {
     expect((await env.get('https://gym.example.com/mcpx.json')).intercepted).toBe(true)
   })
 
+  it('an app mounted at /mcp/ still opens offline from its cache', async () => {
+    const env = worker('https://example.com/mcp/sw.js')
+    env.net.body = { app: true }
+    for (const p of ['/mcp/', '/mcp/index.html', '/mcp/assets/index-AbCdEf12.js']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
+    }
+    expect((await env.get('https://example.com/mcp/mcp/health')).intercepted).toBe(false)
+    env.net.up = false
+    expect((await env.get('https://example.com/mcp/index.html')).res.status).toBe(200)
+  })
+
   it('still serves the app itself from the cache under that subpath', async () => {
     const env = worker('https://example.com/myGym/sw.js')
     env.net.body = { app: true }
