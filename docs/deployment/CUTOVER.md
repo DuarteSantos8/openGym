@@ -35,6 +35,8 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
 | G10 | Supabase cannot act on pushes to `main`: branching is disabled on the auth project and the Supabase–Vercel integration no longer has access to `opengym` (`ARCHITECTURE.md`, integrations section) | Supabase shows no branches; after the next deploy Vercel env holds only the three `VITE_*` Preview variables |
 | G11 | Render's rollback configuration is staged: Render `ORIGIN=https://<domain>`, `RP_ID=<domain host>` are set while Render is in maintenance mode (step 1), followed by a Manual Deploy of the live commit. Without this, a rollback would send `<domain>` users to a Render that signs them in on the preview host and refuses their writes as cross-origin | `ironvane-api.onrender.com/api/config` over SSH or the private network shows `webOrigin` `https://<domain>` |
 | G8 | Fresh backups: Render `/data` and Railway `/data` archived to the private backup directory | manifests saved beside the archives |
+| G12 | The Coach's provider has quota for the window and after it. The provider's own usage endpoint shows interval **and** weekly allowance remaining, and one real Coach question is answered on the preview. The Coach's credential is not shared with operator or agent tooling: a shared Token Plan is spent by whichever uses it first | provider usage read-back; one answered question |
+| G13 | `<domain>` is held for the long term: registrar auto-renew on, expiry well past the rollback window. When its DNS is on Cloudflare, the Vercel record is **DNS only** (not proxied), so Vercel can issue the certificate and no second CDN caches `/api` or `/mcp` | registrar read-back; `dig` shows Vercel's address, not Cloudflare's |
 
 ## Window (about 20 minutes; the app keeps working offline and retries its pushes)
 
@@ -51,12 +53,16 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
    and the MCP service reaches it privately. So first close every way in: remove the public domains
    of `ironvane-api` and `ironvane-web` (record them to restore), and stop `ironvane-mcp` (remove
    its active deployment). Check the old domains no longer answer. Then archive Railway's current
-   `/data` (rehearsal and probe data only), empty it except `lost+found`, stream the Render archive
-   in, and `railway redeploy -s ironvane-api`: one deploy applies the staged G6 variables and loads
+   `/data` (rehearsal and probe data only), stream the Render archive in over it (`tar xzf -`), and
+   `railway redeploy -s ironvane-api`: one deploy applies the staged G6 variables and loads
    the data. Manifest Railway `/data` and `--compare` with the final Render manifest. Exit 0 is
    required; any changed file means something wrote during the copy: find what, close it, repeat
    this step. (No file is rewritten by the API at start: the persistence rehearsal compared equal
    after a restart and a redeploy.)
+   The `--compare` must also list **no extra files**: extracting over `/data` keeps files the archive
+   does not have. Remove each extra one by name and compare again. The Railway CLI's `restart` and
+   `redeploy` can hang after the platform has already acted; judge by the API process's age inside
+   the container (younger than the restore), not by the CLI's exit status.
 4. **Reopen Railway.** Give `ironvane-api` its public domain back if the Vercel rewrite targets it
    (or attach a new one), and redeploy `ironvane-mcp` so it starts with its `ORIGIN`.
    `ironvane-web` stays without a domain: nothing should reach the API through it any more.
@@ -79,6 +85,15 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
    auto-deploy off (G9): it is the rollback copy and must never take writes again while Railway is
    live (no dual writer). Manifest Render once more: it must still equal the final backup, the
    proof that Render took no write after the freeze.
+
+## Rehearsal record
+
+The data steps were rehearsed against the Railway candidate without freezing production: a Render
+backup with equal manifests before and after the copy (about 25 s for a 20-file `/data`), the Railway
+archive and restore (a few seconds), and an API restart (about a minute), then `--compare` equal
+with no extra, changed or missing files. Hosted sign-in, saving, isolation, MCP tools and token
+revocation were verified on Railway with a standard test account (readiness report, private).
+Allow about 20 minutes for the window; most of it is the verification in step 6.
 
 ## Monitoring after cutover
 
