@@ -80,6 +80,10 @@ describe('the service worker and the API', () => {
       expect((await env.get('https://example.com' + p)).intercepted, p).toBe(false)
     }
     expect(env.store.size).toBe(0)
+    // Where nginx's discovery route ends, the bypass ends too.
+    for (const p of ['/gym/.well-known/openid-configuration/extra', '/.well-known/oauth-authorization-server/other']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
+    }
   })
 
   it('an app installed under /.well-known/ still opens offline', async () => {

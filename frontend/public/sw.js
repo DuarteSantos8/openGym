@@ -260,10 +260,12 @@ const API = (() => { try { return new URL('api/', location.href).pathname } catc
 const BASE = (() => { try { return new URL('./', location.href).pathname } catch { return '/' } })()
 const MCP = BASE + 'mcp'
 const inApp = p => p.startsWith(BASE) || p + '/' === BASE
-// Exactly the discovery documents web/nginx.conf.template proxies: at the host's root, below the
-// app's folder (/gym/.well-known/...) or with the folder after the name (.../oauth-authorization-server/gym).
-const DISCOVERY = /\/\.well-known\/(oauth-authorization-server|oauth-protected-resource|openid-configuration)(\/|$)/
-const isDiscovery = p => (p.startsWith('/.well-known/') || p.startsWith(BASE + '.well-known/')) && DISCOVERY.test(p)
+// Exactly the discovery documents web/nginx.conf.template proxies, with the same pattern: at the
+// host's root, below the app's folder (/gym/.well-known/...) or with the folder after the name
+// (.../oauth-authorization-server/gym), optionally followed by /mcp. Nothing else under them.
+const PREFIX = BASE.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const DISCOVERY = new RegExp(`^(?:${PREFIX})?/\\.well-known/(?:oauth-authorization-server|oauth-protected-resource|openid-configuration)(?:${PREFIX})?(?:/mcp)?$`)
+const isDiscovery = p => DISCOVERY.test(p)
 const isServerPath = p => isDiscovery(p) || p === MCP || p.startsWith(MCP + '/') ||
   (!inApp(p) && (p === '/mcp' || p.startsWith('/mcp/')))
 
