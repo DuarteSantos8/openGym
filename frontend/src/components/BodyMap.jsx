@@ -32,7 +32,7 @@ const isSel = (selected, slug) => (Array.isArray(selected) ? selected.includes(s
 // A muscle is drawn as several shapes (two forearms, six serratus slips, and again on the back):
 // every one takes a tap, but only one of them is the button a keyboard and a screen reader meet,
 // so the map has one "Forearms" and not fourteen (P4). `silent`: muscles the other view names.
-function View({ view, levels, onMuscle, selected, silent }) {
+function View({ view, levels, onMuscle, selected, silent, decorative }) {
   const heard = (slug, i) => !!onMuscle && i === 0 && !silent?.(slug)
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
@@ -40,7 +40,8 @@ function View({ view, levels, onMuscle, selected, silent }) {
     onMuscle(slug)
   }
   return (
-    <svg className="bm-v" viewBox={view.vb} role={onMuscle ? 'group' : 'img'}>
+    <svg className="bm-v" viewBox={view.vb} role={decorative ? undefined : onMuscle ? 'group' : 'img'}
+      aria-hidden={decorative ? 'true' : undefined}>
       {INERT.map(slug => (view.p[slug] || []).map((d, i) =>
         <path key={slug + i} className="bm-sil" d={d} />))}
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
@@ -69,16 +70,18 @@ function View({ view, levels, onMuscle, selected, silent }) {
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior. `levels`
  * hands over ready-made steps instead (the live session map, lib/muscles.js sessionLevels).
+ * `decorative`: the map sits inside a labelled control or beside a list that says the same, so
+ * a screen reader skips the picture rather than meeting an unnamed image.
  */
-export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, levels: given, body = 'male', onMuscle, selected, className = '', decorative = false }) {
   const paths = useBodyPaths()
   const levels = given || levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} silent={slug => !!g.front.p[slug]?.length} />
+        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} decorative={decorative} />
+        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} silent={slug => !!g.front.p[slug]?.length} decorative={decorative} />
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

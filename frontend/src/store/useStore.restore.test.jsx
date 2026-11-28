@@ -364,19 +364,65 @@ describe('a save this device refuses', () => {
   // localStorage throwing (a device genuinely full, a private window with next to no quota) used
   // to take the change with it: persist wrote before it told the store, so Finish just did
   // nothing at all and said nothing either.
-  const refusingStorage = () => {
+  const refusingStorage = (name = 'QuotaExceededError') => {
     const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
     const store = globalThis.localStorage
     const guard = new Proxy(store, {
       get(target, prop) {
         const value = Reflect.get(target, prop)
-        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1') throw new DOMException('quota', 'QuotaExceededError'); return store.setItem(key, v) }
+        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1') throw new DOMException('write refused', name); return store.setItem(key, v) }
         return typeof value === 'function' ? value.bind(target) : value
       }
     })
     Object.defineProperty(globalThis, 'localStorage', { value: guard, configurable: true })
     return () => Object.defineProperty(globalThis, 'localStorage', real)
   }
+
+  it('reports a refused save without claiming the storage is full', async () => {
+    toast.mockClear()
+    useStore.setState({ S: clone(DEF), user: null, ready: true })
+    const undo = refusingStorage('SecurityError')
+    try {
+      useStore.getState().update(s => { s.restSec = 150 }, false)
+      expect(useStore.getState().S.restSec).toBe(150)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledWith('Could not save'))
+    } finally {
+      undo()
+      useStore.getState().update(s => { s.restSec = 90 }, false)
+    }
+  })
+  it('reports a changed refusal reason, and starts a fresh streak after a save', async () => {
+    toast.mockClear()
+    useStore.setState({ S: clone(DEF), user: null, ready: true })
+    let undo = refusingStorage('SecurityError')
+    try {
+      useStore.getState().update(s => { s.restSec = 150 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(1))
+      expect(toast.mock.calls[0][0]).toBe('Could not save')
+
+      undo()
+      undo = refusingStorage('QuotaExceededError')
+      useStore.getState().update(s => { s.restSec = 120 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(2))
+      expect(toast.mock.calls[1][0]).toMatch(/out of storage/)
+
+      useStore.getState().update(s => { s.restSec = 110 }, false)
+      await new Promise(r => setTimeout(r, 0))
+      expect(toast).toHaveBeenCalledTimes(2)
+    } finally { undo() }
+
+    useStore.getState().update(s => { s.restSec = 90 }, false)
+    expect(JSON.parse(localStorage.getItem('gym_state_v1')).restSec).toBe(90)
+    const undo2 = refusingStorage('QuotaExceededError')
+    try {
+      useStore.getState().update(s => { s.restSec = 80 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(3))
+      expect(toast.mock.calls[2][0]).toMatch(/out of storage/)
+    } finally {
+      undo2()
+      useStore.getState().update(s => { s.restSec = 70 }, false) // reset the module's warning streak for the next test
+    }
+  })
 
   it('keeps the change, marks it owed to the server, and says so once', async () => {
     toast.mockClear()

@@ -186,7 +186,11 @@ function media(e) {
       return range ? slice(hit, range) : hit
     }
     // The whole file for a range request: the one answer that can be kept.
-    return fetch(range ? e.request.url : e.request).then(res => {
+    return fetch(range ? e.request.url : e.request).catch(() => {
+      // An uncached image or clip is unavailable offline. Return an HTTP failure
+      // so WebKit can show the media fallback without an uncaught worker error.
+      return new Response(null, { status: 503 })
+    }).then(res => {
       const whole = range ? res.status === 200 : true
       if (whole && realMedia(res)) {
         touched.add(e.request.url)
@@ -249,6 +253,21 @@ self.addEventListener('pushsubscriptionchange', e => {
 // once the network was gone — the page then took it for the server's word. The Cache API ignores
 // the API's own `Cache-Control: no-store`, so the worker has to know to stay out of the way.
 const API = (() => { try { return new URL('api/', location.href).pathname } catch { return '/api/' } })()
+// Other server answers the host can proxy beside the app (frontend/vercel.json): the MCP service
+// and the OAuth discovery documents. A cached copy replayed offline or after NET_WAIT_MS would
+// name a stale issuer or report a dead service as up.
+// The root /mcp counts only outside the app's own folder: an app mounted at /mcp/ keeps its shell.
+const BASE = (() => { try { return new URL('./', location.href).pathname } catch { return '/' } })()
+const MCP = BASE + 'mcp'
+const inApp = p => p.startsWith(BASE) || p + '/' === BASE
+// Exactly the discovery documents web/nginx.conf.template proxies, with the same pattern: at the
+// host's root, below the app's folder (/gym/.well-known/...) or with the folder after the name
+// (.../oauth-authorization-server/gym), optionally followed by /mcp. Nothing else under them.
+const PREFIX = BASE.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const DISCOVERY = new RegExp(`^(?:${PREFIX})?/\\.well-known/(?:oauth-authorization-server|oauth-protected-resource|openid-configuration)(?:${PREFIX})?(?:/mcp)?$`)
+const isDiscovery = p => DISCOVERY.test(p)
+const isServerPath = p => isDiscovery(p) || p === MCP || p.startsWith(MCP + '/') ||
+  (!inApp(p) && (p === '/mcp' || p.startsWith('/mcp/')))
 
 // How long a request for the app itself waits on the network before a cached copy answers it.
 const NET_WAIT_MS = 3000
@@ -257,7 +276,17 @@ const NET_WAIT_MS = 3000
 // the content does, so a copy in this build's cache is the file, and a start serves them from
 // here instead of asking the network about each of them again (40-odd round trips before Home).
 const isHashedAsset = p => /\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/.test(p)
-const cacheFirst = e => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
+// The install request has no Origin, while a module import can send one. Retry this
+// same-origin content-hashed asset without that header, preserving every other Vary key.
+async function cachedAsset(request) {
+  const match = item => caches.match(item, { ignoreSearch: true })
+  const hit = await match(request)
+  if (hit || !request.headers?.has('origin')) return hit
+  const headers = new Headers(request.headers)
+  headers.delete('origin')
+  return match(new Request(request.url, { headers }))
+}
+const cacheFirst = e => cachedAsset(e.request).then(hit => hit || fetch(e.request).then(res => {
   // Only a real answer is kept: an auth proxy's login page would otherwise stand in for the chunk
   // for the rest of this build.
   if (res.ok && !res.redirected) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}) }
@@ -268,6 +297,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   if (e.request.method !== 'GET' || url.origin !== location.origin) return
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith(API)) return    // never cache auth/data
+  if (isServerPath(url.pathname)) return
 
   if (isMediaPath(url.pathname)) {
     e.respondWith(media(e))
@@ -300,7 +330,7 @@ self.addEventListener('fetch', e => {
       resolve(res)
     }, () => {
       clearTimeout(slow)
-      resolve(fromCache())
+      resolve(fromCache().then(hit => hit || new Response(null, { status: 503 })))
     })
   }))
 })

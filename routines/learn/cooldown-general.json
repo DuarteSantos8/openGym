@@ -1,0 +1,27 @@
+{
+  "author": {
+    "name": "openGym"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-25",
+  "language": "en",
+  "title": "Whole-body cool-down",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 10,
+  "description": "Draft. Slow down gradually and release each stretch when comfortable. Source: MedlinePlus, How to avoid exercise injuries; NHS, How to stretch after exercising.",
+  "sessions": [
+    {
+      "name": "Whole-body cool-down",
+      "exercises": [
+        { "id": "4420", "sets": 5, "sec": 30 },
+        { "id": "1053", "sets": 5, "sec": 30 },
+        { "id": "0789", "sets": 5, "sec": 30 },
+        { "id": "1782", "sets": 5, "sec": 30 }
+      ],
+      "note": "Slow down gradually and release each stretch when comfortable."
+    }
+  ],
+  "about": "MedlinePlus, How to avoid exercise injuries; NHS, How to stretch after exercising"
+}

@@ -1,0 +1,15 @@
+/* The Cloud edition's first screen (views/Login.jsx, where no server of the app's own answers).
+   Type-led and set to the left: the three-sentence statement is the screen, one sentence a line.
+   One soft light behind it, nothing that moves. Each color-mix() has a plain stand-in before it
+   for Safari before 16.2. */
+.iv-first{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:center;min-height:82vh;width:100%;max-width:460px;margin-inline:auto;text-align:start}
+.iv-first::before{content:"";position:absolute;z-index:-1;pointer-events:none;inset:6% auto auto -30%;width:120%;height:46%;
+  background:radial-gradient(50% 60% at 30% 40%,rgba(255,255,255,.06),transparent 70%);
+  background:radial-gradient(50% 60% at 30% 40%,color-mix(in srgb,var(--acc) 16%,transparent),transparent 70%)}
+.iv-first-mark{display:flex;margin-bottom:26px}
+.iv-first-say{margin:0;font-size:clamp(2.5rem,11.5vw,3.5rem);line-height:1.02;letter-spacing:-.035em;font-weight:800}
+.iv-first-say>span{display:block}
+.iv-first-lead{margin:18px 0 0;max-width:34ch;font-size:var(--fs-body);line-height:var(--lh-small);color:var(--label-2)}
+.iv-first-do{display:flex;flex-direction:column;gap:10px;margin-top:30px}
+.iv-first-do .btn{width:100%;justify-content:center}
+.iv-first-note{margin:22px 0 0;max-width:40ch;font-size:var(--fs-footnote);line-height:1.5;color:var(--label-dim)}

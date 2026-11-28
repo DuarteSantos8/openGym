@@ -71,6 +71,14 @@ export const ROOT_GROUPS = [
   { ids: ['data', 'about'] },
 ]
 
+// Account, App help and the full-list control sit alongside these five page rows.
+export const BEGINNER_ROOT = ['workout', 'plan', 'units', 'equipment', 'look']
+
+export function rootPagesFor(level, showAll, ctx) {
+  const ids = level === 'beginner' && !showAll ? BEGINNER_ROOT : ROOT_GROUPS.flatMap(group => group.ids)
+  return ids.filter(id => onRoot(id, ctx))
+}
+
 export const WATCH_PAGES = ['watch', 'wear', 'garmin', 'zepp']
 
 /** Whether a page has its own row on the root: Zepp sits inside Watches wherever Watches is. */
@@ -134,7 +142,9 @@ const MODULE_KW = {
   videos: 'form video film record camera technique set',
   watch: 'watch apple watch wear os zepp amazfit garmin wrist',
   checkin: 'check in check-in qr code membership card barcode nfc sticker gym',
+  bodyfocus: 'body picker photo picture tap body map muscle muscles area areas pick choose exercises today home',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
+  nutrition: 'nutrition food diary meals servings calories protein carbohydrate fat',
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
   coach: 'ai coach llm assistant review suggestions',
@@ -241,6 +251,9 @@ export const SEARCH = [
   { page: 'plan', title: 'Week starts on', icon: 'calendar', tint: 'var(--orange)', kw: 'monday sunday first day week', opts: ['Monday', 'Sunday'], tkw: () => t('week start') },
   { page: 'plan', title: 'Weekly sets per muscle', icon: 'slider', tint: 'var(--teal)', kw: 'volume sets per week muscle target range mev mrv hypertrophy landmarks' },
   { page: 'plan', title: 'Load starter plan', icon: 'clipboard', tint: 'var(--green)', kw: 'starter template beginner program routine' },
+  { page: 'plan', title: 'Find my plan', icon: 'sparkles', tint: 'var(--green)', kw: 'quiz questions onboarding beginner start goal recommend plan new' },
+  { page: 'plan', title: 'Experience level', icon: 'stairs', tint: 'var(--indigo)', kw: 'beginner intermediate advanced experienced level simple mode novice', opts: ['Beginner', 'Intermediate', 'Experienced'] },
+  { page: 'plan', title: 'Learn', icon: 'lightbulb', tint: 'var(--yellow)', kw: 'glossary guide help basics how to terms words meaning rir rpe set rep warm-up nutrition safety' },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
   { page: 'units', title: 'English exercise names', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },
@@ -264,6 +277,7 @@ export const SEARCH = [
   { page: 'equipment', title: 'Active gym', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym switch plates dumbbells bars per gym location', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },
   // Look & Home
+  { page: 'look', title: 'Look', icon: 'sparkles', tint: 'var(--acc)', kw: 'look style bold refined corners font ironvane', opts: ['Bold', 'Refined'] },
   { page: 'look', title: 'Theme', icon: 'moon', tint: 'var(--indigo)', kw: 'dark mode light mode theme appearance night', opts: ['Dark', 'Light', 'System'] },
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },
@@ -403,9 +417,9 @@ export function pageTrail(page, tr = t) {
  * that starts with the query ranks first, then a title containing it, then the rest. Pages
  * themselves are hits too ("units" finds Units & language).
  */
-export function searchSettings(query, ctx, tr = t) {
+export function searchSettings(query, ctx, tr = t, { includeAll = false } = {}) {
   const words = fold(query).trim().split(/\s+/).filter(Boolean)
-  if (!words.length) return []
+  if (!words.length && !includeAll) return []
   const q = words.join(' ')
   const hits = []
   const consider = (entry, isPage) => {

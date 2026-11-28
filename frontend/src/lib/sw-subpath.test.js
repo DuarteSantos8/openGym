@@ -32,9 +32,9 @@ function worker(scriptUrl) {
     return new Response(JSON.stringify(env.net.body), { status: 200, headers: { 'content-type': 'application/json' } })
   }
   new Function('self', 'caches', 'fetch', 'location', SW)(env.self, env.caches, env.fetch, env.location)
-  env.get = async url => {
+  env.get = async (url, mode = 'cors') => {
     let responded = null
-    handlers.fetch({ request: { url, method: 'GET', mode: 'cors' }, respondWith: p => { responded = p } })
+    handlers.fetch({ request: { url, method: 'GET', mode }, respondWith: p => { responded = p } })
     if (!responded) return { intercepted: false }
     const res = await responded
     await new Promise(r => setTimeout(r, 5))   // the cache.put runs after the response is handed over
@@ -56,6 +56,71 @@ describe('the service worker and the API', () => {
     expect((await env.get('https://example.com/myGym/api/data')).intercepted).toBe(false)
     expect((await env.get('https://example.com/myGym/api/data/rev')).intercepted).toBe(false)
     expect(env.store.size).toBe(0)
+  })
+
+  it('leaves the proxied MCP service and OAuth discovery documents alone', async () => {
+    const env = worker('https://gym.example.com/sw.js')
+    env.net.body = { issuer: 'https://old.example.com' }
+    for (const p of ['/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource/mcp',
+      '/.well-known/openid-configuration', '/mcp', '/mcp/health']) {
+      expect((await env.get('https://gym.example.com' + p)).intercepted, p).toBe(false)
+    }
+    const sub = worker('https://example.com/myGym/sw.js')
+    expect((await sub.get('https://example.com/myGym/mcp/health')).intercepted).toBe(false)
+    expect(env.store.size + sub.store.size).toBe(0)
+    // An app route that only starts with the same letters is still the app's.
+    expect((await env.get('https://gym.example.com/mcpx.json')).intercepted).toBe(true)
+  })
+
+  it('leaves discovery alone under a subpath, in both places nginx serves it', async () => {
+    const env = worker('https://example.com/gym/sw.js')
+    env.net.body = { issuer: 'https://old.example.com' }
+    for (const p of ['/gym/.well-known/openid-configuration', '/gym/.well-known/oauth-protected-resource/mcp',
+      '/.well-known/oauth-authorization-server/gym', '/.well-known/oauth-protected-resource/gym/mcp']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(false)
+    }
+    expect(env.store.size).toBe(0)
+    // Where nginx's discovery route ends, the bypass ends too.
+    for (const p of ['/gym/.well-known/openid-configuration/extra', '/.well-known/oauth-authorization-server/other']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
+    }
+  })
+
+  it('matches the app folder literally, even when its name has pattern characters', async () => {
+    const env = worker('https://example.com/gy.m+/sw.js')
+    env.net.body = { issuer: 'https://old.example.com' }
+    for (const p of ['/gy.m+/.well-known/openid-configuration', '/.well-known/oauth-authorization-server/gy.m+']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(false)
+    }
+    // As a pattern, /gy.m+ would also match these folders; they are not the app's.
+    for (const p of ['/gyXm/.well-known/openid-configuration', '/.well-known/oauth-authorization-server/gyXmmm']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
+    }
+  })
+
+  it('an app installed under /.well-known/ still opens offline', async () => {
+    const env = worker('https://example.com/.well-known/gym/sw.js')
+    env.net.body = { app: true }
+    expect((await env.get('https://example.com/.well-known/gym/index.html')).intercepted).toBe(true)
+    env.net.up = false
+    expect((await env.get('https://example.com/.well-known/gym/index.html')).res.status).toBe(200)
+    expect((await env.get('https://example.com/.well-known/openid-configuration')).intercepted).toBe(false)
+  })
+
+  it('an app mounted at /mcp/ still opens offline from its cache', async () => {
+    const env = worker('https://example.com/mcp/sw.js')
+    env.net.body = { app: true }
+    for (const p of ['/mcp/', '/mcp/index.html', '/mcp/assets/index-AbCdEf12.js']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
+    }
+    expect((await env.get('https://example.com/mcp/mcp/health')).intercepted).toBe(false)
+    env.net.up = false
+    expect((await env.get('https://example.com/mcp/index.html')).res.status).toBe(200)
+    // Opening a page of the app that was never cached falls back to the shell.
+    env.store.set('index.html', new Response('<!doctype html>', { status: 200 }))
+    const nav = await env.get('https://example.com/mcp/history', 'navigate')
+    expect(nav.intercepted).toBe(true)
+    expect(await nav.res.text()).toBe('<!doctype html>')
   })
 
   it('still serves the app itself from the cache under that subpath', async () => {

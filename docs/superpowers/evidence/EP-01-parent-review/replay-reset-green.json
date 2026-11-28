@@ -1,0 +1,29 @@
+{
+  "node": "v22.23.5",
+  "observations": {
+    "resetPutVisible": [],
+    "resetMergeVisible": [],
+    "firstFieldClock": 286,
+    "replayFieldClock": 286,
+    "thirdAfterFirst": 9,
+    "thirdAfterReplay": 9
+  },
+  "checks": [
+    {
+      "name": "reset PUT hides newly learned ids",
+      "pass": true
+    },
+    {
+      "name": "reset client merge hides newly learned ids",
+      "pass": true
+    },
+    {
+      "name": "identical replay preserves field clock",
+      "pass": true
+    },
+    {
+      "name": "third replica result survives replay",
+      "pass": true
+    }
+  ]
+}

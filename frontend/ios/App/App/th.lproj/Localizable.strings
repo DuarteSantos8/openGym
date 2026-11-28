@@ -2,14 +2,14 @@
 "Start workout" = "เริ่มการฝึก";
 "Starts today’s planned workout, or opens the one already running." = "เริ่มการฝึกที่วางแผนไว้วันนี้ หรือเปิดการฝึกที่กำลังทำอยู่";
 "Log weight" = "บันทึกน้ำหนัก";
-"Logs your body weight without opening openGym." = "บันทึกน้ำหนักตัวโดยไม่ต้องเปิด openGym";
+"Logs your body weight without opening Ironvane." = "บันทึกน้ำหนักตัวโดยไม่ต้องเปิด Ironvane";
 "Weight" = "น้ำหนัก";
 "What’s your weight?" = "คุณหนักเท่าไร";
 "Today’s workout" = "การฝึกวันนี้";
 "Tells you what’s planned for today." = "บอกว่าวันนี้มีแผนอะไร";
 "Week streak" = "สัปดาห์ต่อเนื่อง";
 "Tells you how many weeks in a row you trained." = "บอกว่าคุณฝึกติดต่อกันมากี่สัปดาห์";
-"Open openGym once, then ask me again." = "เปิด openGym สักครั้ง แล้วถามฉันอีกครั้ง";
+"Open Ironvane once, then ask me again." = "เปิด Ironvane สักครั้ง แล้วถามฉันอีกครั้ง";
 "You’re in the middle of %@." = "คุณกำลังฝึก %@ อยู่";
 "You’re in the middle of a workout." = "คุณกำลังฝึกอยู่";
 "Your workout" = "การฝึกของคุณ";

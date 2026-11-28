@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { appBase } from '../lib/api.js'
 import { fmtAgo } from '../lib/format.js'
-import { loadLink, onNutritionChange, link, unlink, refresh, setShown, guessUrl, cleanUrl, fastingNow } from '../lib/sister-nutrition.js'
+import { loadLink, onNutritionChange, nutritionProfileKey, link, unlink, refresh, setShown, guessUrl, cleanUrl, fastingNow } from '../lib/sister-nutrition.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from './Icon.jsx'
 import { Section, Row, Switch, Button, TextField } from './ui.jsx'
@@ -19,7 +19,11 @@ export const SISTER_DOCS = 'https://github.com/DuarteSantos8/openGym/blob/main/d
 /** This device's openNutrition link, kept up to date; with `range`, the days of it are fetched too. */
 export function useNutritionLink(range = null) {
   const [l, setL] = useState(() => loadLink())
-  useEffect(() => onNutritionChange(setL), [])
+  useEffect(() => {
+    const stop = onNutritionChange(setL)
+    setL(loadLink())
+    return stop
+  }, [])
   const from = range?.from, to = range?.to
   useEffect(() => { if (loadLink()) refresh(from && to ? { from, to } : {}) }, [from, to])
   return l
@@ -82,13 +86,14 @@ function LinkManage({ l, close }) {
     setBusy(true)
     const r = await refresh({ force: true })
     setBusy(false)
-    useUI.getState().toast(r?.error ? linkErrorText(r.error) : t('Up to date'))
+    if (!r) return
+    useUI.getState().toast(r.error ? linkErrorText(r.error) : t('Up to date'))
   }
   const off = () => confirmSheet({
     title: t('Unlink openNutrition?'),
     message: t('This device forgets the link and the numbers it read. Nothing changes in openNutrition; revoke the token there too if you like.'),
     confirmText: t('Unlink'), danger: true,
-    onConfirm: async () => { await unlink(); close(); useUI.getState().toast(t('Unlinked')) },
+    onConfirm: async () => { if (await unlink(l.pairId)) { close(); useUI.getState().toast(t('Unlinked')) } },
   })
   return <>
     <Head status={l.error ? 'attention' : 'connected'} />
@@ -121,7 +126,8 @@ function LinkManage({ l, close }) {
 
 function NutritionSheet({ close }) {
   const l = useNutritionLink()
-  return l ? <LinkManage l={l} close={close} /> : <LinkSetup close={close} />
+  const profile = useSyncExternalStore(onNutritionChange, nutritionProfileKey, () => null)
+  return l ? <LinkManage key={l.pairId} l={l} close={close} /> : <LinkSetup key={profile} close={close} />
 }
 
 export const nutritionSheet = () => useUI.getState().openSheet(close => <NutritionSheet close={close} />)

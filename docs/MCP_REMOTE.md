@@ -146,12 +146,38 @@ comes back as a conflict to read again, never a retry against data nobody looked
 - The connector sign-in's two open doors, registering a client and starting a sign-in, take 30
   requests a minute per address on the api (`OAUTH_ANON_PER_MIN`), then 429.
 
+## Hosted preview on Render and Vercel
+
+The optional Ironvane Blueprint service runs the same MCP image in Virginia on port 3100.
+It has its own Starter instance and no disk. Keep the Blueprint change in draft until
+the owner approves that additional service. Merging into the synced branch can provision it.
+
+After approval and provisioning, set OPENGYM_API_URL to the API service's internal HTTP
+address, including its port. Keep ORIGIN set to the web app on both services. If the connector
+has its own address, set MCP_PUBLIC_ORIGIN on both to the same public HTTPS origin, without
+credentials, a path, query or fragment. Both services append BASE_PATH when configured.
+Check GET /mcp/health on the connector origin for HTTP 200.
+
+Connector OAuth requires one reachable HTTPS origin serving MCP transport, /.well-known
+discovery and /api/oauth. Vercel reserves only /.well-known/acme-challenge, so external
+rewrites can serve the other /.well-known discovery paths (vercel.com/docs/routing/rewrites);
+external rewrites time out at 120 s, and preview deployment protection can block connectors. Choose and verify a suitable HTTPS origin and
+route /mcp and /mcp/health to MCP, and the discovery and /api/oauth/* paths to the same API
+that serves the web app. For a base path, the API accepts the advertised prefixed OAuth endpoints directly, but only when MCP_PUBLIC_ORIGIN is set; without it, strip the prefix before /api/oauth as the bundled nginx proxy does. Strip the prefix for the MCP transport;
+forward the root /.well-known discovery paths to the API intact. The web app still proxies /api/* to that API, so the consent screen
+uses the existing signed-in session. With MCP enabled, verify that discovery advertises the
+connector as issuer and its /mcp as resource. The authorize redirect must open the web app at
+/#/connect/<id>, with any configured base path before the hash. Then verify a
+bearer challenge, a scoped read and write, and refusal of a write with a read-only token.
+To roll back, turn off MCP on the API and suspend the MCP service.
+
 ## Settings of the container
 
 | Variable | Default | |
 |---|---|---|
 | `MCP_PORT` | 3100 | port inside the container |
 | `OPENGYM_API_URL` | `http://api:3000` | the api inside the compose network |
+| `MCP_PUBLIC_ORIGIN` | `ORIGIN` | optional public connector origin for discovery and the address shown in Settings; configure on both API and MCP |
 | `MCP_PATH` | `/mcp` | path it answers on |
 | `MCP_ALLOWED_ORIGINS` | `ORIGIN` | browser origins allowed, comma separated |
 | `BASE_PATH` | empty | the subpath prefix, for the sign-in pointer of the 401 |

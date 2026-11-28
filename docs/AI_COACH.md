@@ -9,6 +9,12 @@ running on your own server under your own provider account, off until an admin t
 
 ---
 
+## Find something in the app
+
+Open **App help** from Settings or Coach and enter a question such as “Where is the rest timer?” Tap a result to open the Settings row, Learn guide or tour destination. Searching runs on the device and works offline. Settings results follow the current profile and device's availability rules.
+
+After signing in and accepting the configured server Coach’s intake consent, **Ask Coach to pick a result** chooses among the visible matches. This optional call sends the typed question and up to three directions after provider consent. The app resolves the destination locally. If the provider cannot pick a result, the original links stay available. The call uses the server's normal Coach limits. Local searches use no provider quota.
+
 ## Two kinds of provider
 
 The Coach can be driven by two kinds of thing, and which kind you pick decides how much of the

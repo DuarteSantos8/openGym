@@ -38,16 +38,13 @@ const KEY = 'gym_tour_v1'
    `when(profile)`: a stop that only makes sense for some profiles, decided once at the start.
    `optional`: a stop whose element may not be there (no rest timer after a Next instead of a
      tick, a row this device does not have) is passed over rather than shown pointing at nothing. */
-export const STEPS = [
+const STANDARD = [
   { id: 'today', route: '/home', anchor: 'today' },
   { id: 'go-plan', route: '/home', anchor: 'tab-plan', go: '/plan' },
-  { id: 'plan-mode', route: '/plan', anchor: 'plan-mode' },
   { id: 'plan-views', route: '/plan', anchor: 'plan-views' },
   { id: 'plan-body', route: '/plan', anchor: 'plan-body', when: c => c.plannedDays, optional: true },
-  { id: 'plan-menu', route: '/plan', anchor: 'plan-menu' },
   { id: 'go-library', route: '/plan', anchor: 'tab-library', go: '/library' },
   { id: 'lib-search', route: '/library', anchor: 'lib-search' },
-  { id: 'lib-filters', route: '/library', anchor: 'lib-filters' },
   { id: 'start', route: '/library', anchor: 'start', intercept: true },
   { id: 'set', route: '/workout', anchor: 'set', sandbox: 'practice' },
   { id: 'tick', route: '/workout', anchor: 'tick', sandbox: 'practice', tap: true },
@@ -57,16 +54,31 @@ export const STEPS = [
   { id: 'finish', route: '/workout', anchor: 'finish', sandbox: 'practice' },
   { id: 'go-stats', route: '/home', anchor: 'tab-stats', go: '/stats' },
   { id: 'stats', route: '/stats', anchor: 'stats-tiles' },
-  { id: 'stats-body', route: '/stats', anchor: 'stats-body', when: c => c.balance, optional: true },
-  { id: 'stats-records', route: '/stats', anchor: 'stats-records', when: c => c.workouts, optional: true },
   { id: 'go-home', route: '/stats', anchor: 'tab-home', go: '/home' },
   { id: 'go-settings', route: '/home', anchor: 'settings-gear', go: '/settings' },
-  // Top to bottom, as the Settings screen lists them (#1105).
-  { id: 'units', route: '/settings', anchor: 'settings-units' },
+  // One Settings stop: the look (text size, theme), the thing a new person most needs to find.
+  // The release pass cut the tour from 22 stops to the ones a first workout needs; units, data,
+  // the plan's mode and menu, the Library filters and the Stats detail are found where they live.
   { id: 'look', route: '/settings', anchor: 'settings-look' },
-  { id: 'data', route: '/settings', anchor: 'settings-data' },
   { id: 'done', route: null, anchor: null },
 ]
+
+// The shorter tour reuses the practice workout and real navigation controls.
+const START_HOME = { id: 'start-home', route: '/home', anchor: 'start', intercept: true }
+const SWAP = { id: 'swap', route: '/workout', anchor: 'exercise-options', sandbox: 'practice' }
+const LEARN = { id: 'learn', route: '/settings/plan', anchor: 'settings-learn', go: '/learn' }
+export const STEPS = [...STANDARD, START_HOME, SWAP, LEARN]
+const BEGINNER = ['start-home', 'tick', 'rest', 'swap', 'finish', 'go-plan', 'learn', 'go-settings']
+  .map(id => STEPS.find(step => step.id === id))
+
+// Shared with the app-help index; the tour remains the source of its directions.
+export const NAVIGATION_COPY = {
+  'go-plan': () => [t('Off to Plan'), t('Your routines live behind this tab. Tap Plan.')],
+  'go-library': () => [t('The exercise library'), t('Every exercise is one tap away. Tap Library.')],
+  'go-stats': () => [t('Your progress'), t('Practice over. Progress is where the gains pile up. Tap it.')],
+  'go-home': () => [t('Settings are on Today'), t('Head back to Today first. Tap it.')],
+  'go-settings': () => [t('The gear'), t('Everything you can tweak hides behind this little gear. Tap it.')],
+}
 
 const routineOf = c => c.S?.routines?.find(r => r.id === c.made)
 const inSettings = c => /^\/settings(\/|$)/.test(c.path || '')
@@ -153,7 +165,7 @@ const BACKUP = [
 ]
 
 /** Every flow by name: the tour, then the tutorials in the order Settings lists them. */
-export const FLOWS = { tour: STEPS, plan: PLAN, custom: CUSTOM, edit: EDIT, backup: BACKUP }
+export const FLOWS = { tour: STANDARD, plan: PLAN, custom: CUSTOM, edit: EDIT, backup: BACKUP }
 export const TUTORIALS = ['plan', 'custom', 'edit', 'backup']
 // What the closing card and Settings call each tutorial (literal t() calls for check-source-strings).
 export const TUTORIAL_COPY = {
@@ -166,7 +178,8 @@ export const TUTORIAL_COPY = {
 
 /** The stops of `flow` for this profile, in order. `ctx`: { plannedDays, rest, swipe, balance, workouts }. */
 export function tourSteps(ctx = {}, flow = 'tour') {
-  return (FLOWS[flow] || STEPS).filter(s => !s.when || s.when(ctx))
+  const steps = flow === 'tour' && ctx.level === 'beginner' ? BEGINNER : FLOWS[flow] || STANDARD
+  return steps.filter(s => !s.when || s.when(ctx))
 }
 
 /** Where to go from `i` in direction `dir` (+1 / -1): the index, or -1 past either end. */

@@ -43,9 +43,11 @@ vi.mock('../sheets.jsx', () => ({
 }))
 
 import Settings from './Settings.jsx'
+import { CONSENT_VERSION } from '../lib/coach.js'
 import { FLOWS } from '../lib/tour.js'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
+import { brandText } from '../lib/brand.js'
 
 globalThis.__APP_VERSION__ ??= 'test'
 
@@ -96,13 +98,29 @@ const guestWeb = {
 }
 
 describe('the root', () => {
+  it('keeps app help local until the signed-in user has completed Coach consent', () => {
+    mocks.user = { id: 'tester' }
+    mocks.config = { coach: { enabled: true } }
+    const render = () => act(() => root.render(<Settings appHelp />))
+    render()
+    const input = host.querySelector('input[type=search]')
+    act(() => {
+      Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set.call(input, 'rest timer')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(rowTitled('Rest timer')).toBeTruthy()
+    expect(host.textContent).not.toContain('Ask Coach to pick a result')
+    mocks.S.coach = { consent: { agreedAt: '2026-01-01', version: CONSENT_VERSION } }
+    render()
+    expect(host.textContent).toContain('Ask Coach to pick a result')
+  })
   it('is an account card and one row per page, in the four groups, with value previews', () => {
     mount()
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
     // #1105: what you change each week, then what you set once, then connections (option C)
-    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates', 'App help'])
     expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
@@ -123,7 +141,7 @@ describe('the root', () => {
     expect(rule).toMatch(/line-clamp:3/)
     expect(rule).toMatch(/min-width:min-content/)
     // P10 (redesign 1.4.5): on every phone width the preview is the row's subtitle, under the title
-    const phone = css.match(/@media \(max-width:430px\)\{\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
+    const phone = css.match(/@media \(max-width:430px\)\{\r?\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
     expect(phone).toMatch(/display:grid/)
     expect(css).toMatch(/\.lrow\.sp-root-row \.lrow-v\{grid-column:2;grid-row:2;[^}]*text-align:start/)
     // the sub-page title takes a second line rather than an ellipsis ("Alertas do temporizador")
@@ -286,12 +304,13 @@ describe('the search lands on a row', () => {
       mount(page)
       await settle()
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
-      for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
+      for (const title of want) expect(have, `${page}: ${title}`).toContain(brandText(title))
     }
   })
 
   // Rows that are not settings, so the search leaves them out (#1105). One line each, with why.
   const NOT_SEARCHABLE = new Set([
+    'integrations: Ironvane Lab',   // opens the Lab page (views/Addons.jsx), not a setting
     'account: All data stays on this phone', 'account: All synced', // the sync status line
     'account: gym.example', // the server's address, as the person typed it
     'account: Passkeys not supported in this browser.', 'reminders: Not supported in this browser.', // a note, not a row to change
@@ -315,7 +334,7 @@ describe('the search lands on a row', () => {
     for (const page of PAGE_IDS) {
       // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
       if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
-      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)])
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)].map(brandText))
       mount(page)
       await settle()
       for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
@@ -447,7 +466,7 @@ describe('the pages', () => {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
-      for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
+      for (const title of want) expect(have, `${page}: ${title}`).toContain(brandText(title))
     }
   })
 
@@ -698,4 +717,15 @@ describe('the equipment page with two gyms', () => {
     expect(mocks.toast).toHaveBeenCalledWith('Using Big gym equipment')
     act(() => r.unmount()); h.remove()
   })
+})
+
+it('returns the ordered beginner subset while other profiles retain the visible root', async () => {
+  const { rootPagesFor, BEGINNER_ROOT } = await import('./settings-pages.js')
+  expect(BEGINNER_ROOT.length).toBeLessThanOrEqual(8)
+  expect(BEGINNER_ROOT.every(id => PAGE_IDS.includes(id))).toBe(true)
+  const ctx = { mobile: false, offline: true }
+  const all = ROOT_GROUPS.flatMap(group => group.ids).filter(id => onRoot(id, ctx))
+  expect(rootPagesFor('beginner', false, ctx)).toEqual(BEGINNER_ROOT.filter(id => onRoot(id, ctx)))
+  for (const level of ['intermediate', 'advanced', null]) expect(rootPagesFor(level, false, ctx)).toEqual(all)
+  expect(rootPagesFor('beginner', true, ctx)).toEqual(all)
 })

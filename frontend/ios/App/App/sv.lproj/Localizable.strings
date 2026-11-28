@@ -2,14 +2,14 @@
 "Start workout" = "Starta passet";
 "Starts today’s planned workout, or opens the one already running." = "Startar dagens planerade pass, eller öppnar det som redan pågår.";
 "Log weight" = "Logga vikt";
-"Logs your body weight without opening openGym." = "Loggar din kroppsvikt utan att öppna openGym.";
+"Logs your body weight without opening Ironvane." = "Loggar din kroppsvikt utan att öppna Ironvane.";
 "Weight" = "Vikt";
 "What’s your weight?" = "Hur mycket väger du?";
 "Today’s workout" = "Dagens pass";
 "Tells you what’s planned for today." = "Berättar vad som är planerat i dag.";
 "Week streak" = "Veckosvit";
 "Tells you how many weeks in a row you trained." = "Berättar hur många veckor i rad du har tränat.";
-"Open openGym once, then ask me again." = "Öppna openGym en gång och fråga mig sedan igen.";
+"Open Ironvane once, then ask me again." = "Öppna Ironvane en gång och fråga mig sedan igen.";
 "You’re in the middle of %@." = "Du är mitt i %@.";
 "You’re in the middle of a workout." = "Du är mitt i ett pass.";
 "Your workout" = "Ditt pass";

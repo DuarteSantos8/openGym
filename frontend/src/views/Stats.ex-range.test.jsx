@@ -13,7 +13,7 @@ vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: moc
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {}, exerciseHistorySheet: () => {},
-  WorkoutRow: () => null, bwDeltaColor: () => 'inherit',
+  WorkoutRow: () => null, bwDeltaColor: () => 'inherit', weighInsSheet: () => {},
 }))
 vi.mock('../components/LineChart.jsx', () => ({ default: props => { mocks.charts.push(props); return null } }))
 vi.mock('../components/Heatmap.jsx', () => ({ default: () => null }))
@@ -46,9 +46,22 @@ const exCard = () => [...host.querySelectorAll('.card')].find(c => c.querySelect
 const press = (scope, label) => act(() => [...scope.querySelectorAll('.seg button')].find(b => b.textContent === label).click())
 
 describe('Stats: exercise progress date range', () => {
+  it('offers 1W on exercise and body charts without changing either default', () => {
+    mount([session(60, 70), session(5, 75), session(3, 80)])
+    const bwCard = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Body weight')
+    mocks.S.bodyweight = [session(60, 70), session(5, 75), session(3, 80)].map(w => ({ d: w.d, w: 80 }))
+    press(exCard(), '1W')
+    // Est. 1RM is the default chart since the redesign: 75 × 5 → 87.5, 80 × 5 → 93.3.
+    expect(exChart().points.map(p => p.y)).toEqual([87.5, 93.3])
+    expect(bwCard.querySelector('.seg button.on').textContent).toBe('3M')
+    press(bwCard, '1W')
+    expect(mocks.charts.filter(c => c.h === 160).at(-1).points).toHaveLength(2)
+  })
+
   it('starts on All and cuts the top-set line to the picked range, Best staying all-time', () => {
     mount([session(400, 100), session(200, 90), session(60, 70), session(10, 75), session(3, 80)])
     const card = exCard()
+    pickFrom(card, 'Chart', 'Top set')
     expect([...card.querySelectorAll('.seg button.on')].map(b => b.textContent)).toEqual(['All'])
     expect([...card.querySelectorAll('.lrow-v')].map(v => v.textContent)).toContain('Top set')
     expect(exChart().points.map(p => p.y)).toEqual([100, 90, 70, 75, 80])
@@ -77,6 +90,7 @@ describe('Stats: exercise progress date range', () => {
   it('shows a hint instead of the chart when the range holds fewer than two workouts', () => {
     mount([session(400, 100), session(200, 90), session(5, 80)])
     const card = exCard()
+    pickFrom(card, 'Chart', 'Top set')
     press(card, '1M')
     expect(card.textContent).toContain('Fewer than two workouts in this period. Pick a longer one.')
     mocks.charts = []

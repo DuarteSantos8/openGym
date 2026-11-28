@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
@@ -99,13 +99,27 @@ export default function RestTimer() {
   const autoSay = useUI(s => s.autoSay)
   const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork, goNow, stopAuto } = useUI()
   const on = countIn || work || timer
+  const bar = useRef(null)
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
   // The page keeps room at its bottom for the bar (index.css body.resting), so the last set and
   // the Finish button can scroll clear of it.
-  useEffect(() => {
-    document.body.classList.toggle('resting', !!on)
-    return () => document.body.classList.remove('resting')
+  useLayoutEffect(() => {
+    const el = bar.current
+    if (!el) return
+    const root = document.documentElement
+    const measure = () => root.style.setProperty('--rest-bar-height', el.getBoundingClientRect().height + 'px')
+    measure()
+    document.body.classList.add('resting')
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
+    observer?.observe(el, { box: 'border-box' })
+    window.addEventListener('resize', measure)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', measure)
+      document.body.classList.remove('resting')
+      root.style.removeProperty('--rest-bar-height')
+    }
   }, [!!on])
   // The count-in's "3", "2", "1", "Go!", read out politely. Always in the page, in the same place,
   // so it is not a new region each time the bar changes from count-in to hold (a screen reader
@@ -118,7 +132,7 @@ export default function RestTimer() {
     const n = countIn.left ?? countIn.total
     const name = countIn.owner?.label || ''
     return <>{say}
-      <div id="timer" className={'countin auto' + (countIn.paused ? ' paused' : '')}>
+      <div ref={bar} id="timer" className={'countin auto' + (countIn.paused ? ' paused' : '')}>
         <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
         <div className="tclock">
           <span className="t" key={n} aria-hidden="true">{n}</span>
@@ -136,7 +150,7 @@ export default function RestTimer() {
 
   // A hold that runs itself trades Cancel for the chain's row: Restart and Stop auto cover it.
   if (work) return <>{say}
-    <div id="timer" className={'working' + (work.auto ? ' auto' : '') + (work.paused ? ' paused' : '')}>
+    <div ref={bar} id="timer" className={'working' + (work.auto ? ' auto' : '') + (work.paused ? ' paused' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <div className="tclock">
         <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
@@ -161,7 +175,7 @@ export default function RestTimer() {
   // rest's own buttons (which keep their places: Pause, +15 s and Skip are the chain's for a rest).
   const autoNext = !timer.ready && timer.autoNext
   return <>{say}
-    <div id="timer" data-tour="rest" style={{ '--rest-p': pct / 100 }} className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
+    <div ref={bar} id="timer" data-tour="rest" style={{ '--rest-p': pct / 100 }} className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <SeasonDeco spot="rest-timer" workout />
       <button type="button" className="tclock" onClick={adjustRestSheet}

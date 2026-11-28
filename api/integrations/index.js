@@ -26,6 +26,7 @@ import { createOutbox, createBuckets } from './outbox.js';
 import { deriveKey, newId } from './crypto.js';
 import { detectEvents, eventData, envelope, testData, EVENTS } from './events.js';
 import { webhookProvider } from './providers/webhook.js';
+import { nutritraceProvider } from './providers/nutritrace.js';
 import { stravaProvider } from './providers/strava.js';
 
 const on = v => /^(1|true|yes|on)$/i.test(String(v || ''));
@@ -43,9 +44,14 @@ export function enabledIds(env, known) {
 
 export const OAUTH_STATE_MS = 10 * 60_000;
 
-export function createIntegrations({ dataDir, secret, env = process.env, now = Date.now, transport = null, fetchFn = globalThis.fetch, version = 'dev' }) {
+export function createIntegrations({ dataDir, secret, env = process.env, now = Date.now, transport = null, getJson = null, fetchFn = globalThis.fetch, version = 'dev' }) {
   const allowLan = on(env.INTEGRATIONS_ALLOW_LAN);
-  const all = { webhook: webhookProvider({ allowLan, transport, version }), strava: stravaProvider({ env, fetchFn, now }) };
+  const all = {
+    webhook: webhookProvider({ allowLan, transport, version }),
+    strava: stravaProvider({ env, fetchFn, now }),
+    // A reader, not a sender (Extension Lab food diary): its `query` serves hub.query below.
+    nutritrace: nutritraceProvider({ allowLan, get: getJson, version }),
+  };
   const ids = enabledIds(env, Object.keys(all)).filter(id => {
     if (all[id].configured(env)) return true;
     console.warn(`INTEGRATIONS: ${id} needs ${all[id].env.join(', ')}; left off`);
@@ -105,7 +111,8 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
   // What a person may do per minute: connect, change and test.
   const userActs = createBuckets({ now });
   const userLimit = (uid, what) => {
-    const wait = userActs.take(what + ':' + uid, what === 'test' ? { capacity: 6, refillMs: 10_000 } : { capacity: 20, refillMs: 3000 });
+    const bucket = what === 'test' ? { capacity: 6, refillMs: 10_000 } : what === 'query' ? { capacity: 30, refillMs: 2000 } : { capacity: 20, refillMs: 3000 };
+    const wait = userActs.take(what + ':' + uid, bucket);
     if (wait) throw Object.assign(new Error('slow down a little'), { status: 429, code: 'rate', retryAfter: Math.ceil(wait / 1000) });
   };
 
@@ -244,6 +251,26 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
       store.update(uid, id, r => { if (r.status === 'attention') { r.status = 'ok'; r.failures = 0; } });
       await outbox.run();
       return { requeued: n, connection: view(uid, store.get(uid, id)) };
+    },
+
+    /** A read from a provider that has one (NutriTrace's food library), through the profile's own
+     *  connection: nothing is queued, the answer comes back now. A refused token marks the
+     *  connection for attention, as a failed delivery does. */
+    async query(uid, providerId, op, params) {
+      if (!active) off();
+      const p = providers[providerId];
+      if (!p || typeof p.query !== 'function') fail(404, 'no such integration', 'missing');
+      const rec = store.list(uid).find(r => r.provider === p.id);
+      if (!rec) fail(404, 'not connected', 'missing');
+      if (rec.paused) fail(409, 'this connection is paused', 'paused');
+      userLimit(uid, 'query');
+      const out = await p.query(op, params || {}, name => store.reveal(uid, rec, name));
+      if (out?.error) {
+        const e = out.error;
+        if (e.code === 'auth' || e.code === 'scope' || e.code === 'sealed') settle(uid, rec.id, 'query', e, true);
+        throw Object.assign(new Error(e.msg), { status: e.code === 'rate' ? 429 : 502, code: e.code, ...(e.retryAfter ? { retryAfter: e.retryAfter } : {}) });
+      }
+      return out;
     },
 
     log(uid, id) {

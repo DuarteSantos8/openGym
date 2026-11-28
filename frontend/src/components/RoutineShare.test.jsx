@@ -68,7 +68,7 @@ describe('Share with a friend', () => {
     // runner: wait for the share sheet. A late one would land in the next test's share mock.
     await vi.waitFor(() => expect(share).toHaveBeenCalledTimes(1), { timeout: 5000 })
     const { url, text } = share.mock.calls[0][0]
-    expect(text).toBe('Here’s my Push Day on openGym 💪')
+    expect(text).toBe('Here’s my Push Day on Ironvane 💪')
     expect(url.startsWith('https://opengym.ch/r#1.')).toBe(true)
     const data = await decodePayload(routinePayloadFromUrl(url))
     expect(data.routines[0].ex[0].weight).toBeUndefined()
@@ -138,7 +138,7 @@ describe('an incoming routine link', () => {
     expect(await openRoutinePayload('1.j.bm9wZQ')).toBe(false)
     expect(m.toasts.at(-1)).toBe('This routine link is broken or cut off.')
     expect(await openRoutinePayload('9.d.abc')).toBe(false)
-    expect(m.toasts.at(-1)).toMatch(/newer openGym/)
+    expect(m.toasts.at(-1)).toMatch(/newer Ironvane/)
     expect(m.sheets).toHaveLength(0)
   })
 })

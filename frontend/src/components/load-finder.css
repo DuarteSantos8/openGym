@@ -1,0 +1,9 @@
+/* The first-session load finder (components/LoadFinder.jsx). */
+.iv-lf-try{margin:10px 0 8px;font-weight:600}
+.iv-lf-rest{margin:8px 0 0;color:var(--label-2)}
+.iv-lf-answers{display:flex;flex-direction:column;gap:6px;margin:12px 0 8px}
+.iv-lf-answers .item{width:100%;text-align:start}
+.iv-lf-found{margin:14px 0 6px;font-size:var(--fs-title3,1.25rem);font-weight:700}
+.iv-lf-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.iv-lf-floor{margin:14px 0 6px;font-weight:600}
+.iv-lf-foot{margin:12px 0 0}

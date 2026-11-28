@@ -260,6 +260,13 @@ ${bodyHtml}
 // A schema has no summary of its own, so the collapsed row borrows the first
 // sentence of its description, and the body then starts at the second, rather
 // than repeating what the reader just read on the way in.
+// A schema without properties is free-form only when it is an object; a string or number
+// schema says what it is (a connector address is a URI, not an object).
+function scalarLabel (s) {
+  if (!s.type || s.type === 'object') return 'Free-form object.'
+  return 'A ' + esc(s.type) + (s.format ? ' (' + esc(s.format) + ')' : '') + '.'
+}
+
 function schemaCard (name, s) {
   const desc = (s.description || '').trim()
   const flat = desc.replace(/\s*\n\s*/g, ' ')
@@ -276,7 +283,7 @@ function schemaCard (name, s) {
   </summary>
   <div class="ep-body">
 ${rest ? mdBlock(rest) : ''}
-${rows.length ? ptab(rows) : '<p class="p-desc">Free-form object.</p>'}
+${rows.length ? ptab(rows) : `<p class="p-desc">${scalarLabel(s)}</p>`}
   </div>
 </details>`
 }

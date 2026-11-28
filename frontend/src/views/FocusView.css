@@ -69,3 +69,12 @@
   .focus-extra{grid-template-columns:1fr 1fr}
   .focus-extra>span:first-child{grid-column:1/-1}
 }
+
+.guided-card{display:grid;gap:10px;margin-top:12px;padding:14px;border-radius:var(--r);background:var(--surface-2);color:var(--label)}
+.guided-heading,.guided-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.guided-heading strong{font-size:var(--fs-body)}
+.guided-heading span,.guided-source{font-size:var(--fs-caption);line-height:1.45;color:var(--label-2)}
+.guided-card ul{display:grid;gap:6px;padding-inline-start:1.2em;margin:0;list-style:disc;text-align:start;line-height:1.45}
+.guided-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:0 14px;border:1px solid var(--sep);border-radius:var(--r);font-weight:600}
+.guided-actions button:last-child{margin-inline-start:auto;background:var(--acc-soft);color:var(--acc-ink)}
+.guided-actions button:disabled{opacity:.45}

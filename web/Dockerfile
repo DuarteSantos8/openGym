@@ -19,6 +19,7 @@ COPY frontend/package.json frontend/package-lock.json* ./
 # tool is now run with npx, docs/MOBILE.md, and not installed here).
 RUN npm ci --ignore-scripts
 COPY api/coach/core/ /app/api/coach/core/
+COPY routines/learn/ /app/routines/learn/
 COPY frontend/ ./
 # Which build this is, shown in the app as "1.3.8+<build>" next to the version. Without it every
 # image built between two releases calls itself the same thing, and "which build are you running?"
@@ -84,6 +85,11 @@ COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
 # catalogue/media/NOTICE.md. They ship inside the image; nothing is downloaded at start-up.
 COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
+# Start/end drawings by Greg Priday (Everkinetic), CC BY-SA 4.0: see catalogue/photos/NOTICE.md.
+COPY catalogue/photos/ /usr/share/nginx/html/exercise-photos/
+# Demonstration videos (Wikimedia Commons, CC BY / CC BY-SA) and step-by-step photos (U.S. Army
+# ATP 7-22.02, public domain): see catalogue/demos/NOTICE.md.
+COPY catalogue/demos/ /usr/share/nginx/html/exercise-demos/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
@@ -94,6 +100,12 @@ ENV PORT=3000
 # resolver makes every /api request hang rather than fail, so any other runtime has to say
 # what its DNS is: on Kubernetes, the kube-dns/CoreDNS service address (commonly 10.96.0.10).
 ENV RESOLVER=127.0.0.11
+# Railway uses runtime DNS, not Docker Compose's embedded resolver.
+# Source this before nginx's 20-envsubst-on-templates.sh; keep explicit overrides.
+USER root
+RUN printf '%s\n' '#!/bin/sh' 'if [ -n "${RAILWAY_ENVIRONMENT_ID:-}" ] && [ "$RESOLVER" = "127.0.0.11" ]; then' '  RESOLVER=$(awk '\''$1 == "nameserver" {print $2; exit}'\'' /etc/resolv.conf)' '  [ -n "$RESOLVER" ] || { echo "Railway DNS resolver missing" >&2; exit 1; }' '  case "$RESOLVER" in *:*) RESOLVER="[$RESOLVER]";; esac' '  export RESOLVER' 'fi' > /docker-entrypoint.d/19-railway-resolver.envsh \
+ && chmod 755 /docker-entrypoint.d/19-railway-resolver.envsh
+USER 101
 # Empty = the CF-Connecting-IP header is dropped before it reaches the API, so it cannot be
 # forged by a direct client. Set to $http_cf_connecting_ip only when Cloudflare is really in
 # front. Defined here too, not just in compose, so the template always renders for anyone
@@ -118,7 +130,7 @@ ENV MCP_PORT=3100
 # device talks to the provider the person chose, an Ollama on their LAN included, and the update
 # check asks GitHub. Behind a proxy that injects a script of its own (analytics), set this to a
 # policy that allows it, or to "frame-ancestors 'none'" for the old header.
-ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-G6hveK3W3qL6wotsg9mMbpCvPnzXurSHhi8Jb3TS2Vc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-OUK6dHvh5Q1gdM6i79uVScdmnlIShIbs7qM60Q5tsxc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as

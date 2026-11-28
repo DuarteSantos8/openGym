@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { webauthnOK, bio, BIO, passkeyError, api } from './api.js'
 import de from '../locales/de.js'
 import { _setLangState } from './i18n-core.js'
+import { brandText } from './brand.js'
 
 const originalPublicKeyCredential = window.PublicKeyCredential
 const originalCredentials = navigator.credentials
@@ -214,11 +215,11 @@ describe('a write refused for the wrong address', () => {
     answer(403, { error: 'cross-origin request refused', code: 'origin-mismatch', expected: 'http://localhost:8080' })
     const e = await api('/api/data', { method: 'PUT', body: '{}' }).catch(x => x)
     expect(e.status).toBe(403)
-    expect(e.message).toBe(de[KEY].replace('{0}', 'http://localhost:8080'))
+    expect(e.message).toBe(brandText(de[KEY].replace('{0}', 'http://localhost:8080')))
   })
   it('a passkey refused for the same reason says the same', () => {
     const e = Object.assign(new Error('Unexpected authentication response origin ...'), { status: 400, data: { code: 'origin-mismatch', expected: 'https://gym.example.com' } })
-    expect(passkeyError(e, 'x')).toBe(KEY.replace('{0}', 'https://gym.example.com'))
+    expect(passkeyError(e, 'x')).toBe(brandText(KEY.replace('{0}', 'https://gym.example.com')))
   })
   it('any other refusal keeps the server\'s words', async () => {
     answer(403, { error: 'forbidden' })

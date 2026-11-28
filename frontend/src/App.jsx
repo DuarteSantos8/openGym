@@ -75,6 +75,8 @@ import Home from './views/Home.jsx'
 import { tintCss } from './lib/streak-icons.js'
 import Plan from './views/Plan.jsx'
 import Workout from './views/Workout.jsx'
+import { lookOf } from './lib/look.js'
+import { oidcArrival, clearOidcArrival, oidcLabel } from './lib/oidc.js'
 
 // Screens most sessions never open (the Coach, the admin dashboard, photos, measurements, the
 // balance check) are their own chunks rather than part of the code every start parses: ~200 KB
@@ -95,11 +97,20 @@ const Admin = lazyView(() => import('./views/Admin.jsx'))
 const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
 const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
+const Nutrition = lazyView(() => import('./views/Nutrition.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const Assistants = lazyView(() => import('./views/Assistants.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
 const Tools = lazyView(() => import('./views/Tools.jsx'))
+// Find my plan and Learn (EP22, EP24): the beginner's way in. Fetched like every other screen past Home.
+const Onboarding = lazyView(() => import('./views/Onboarding.jsx'))
+const Learn = lazyView(() => import('./views/Learn.jsx'))
+// The Cloud edition's account screen (ADR 0008, 0013). The comparison is with the build's own
+// constant, written out here, so a default build drops this import and never has the file:
+// scripts/check-bundle-budget.mjs holds it to that.
+const CLOUD = import.meta.env.VITE_EDITION === 'cloud'
+const CloudAccount = CLOUD ? lazyView(() => import('./views/cloud/Account.jsx')) : null
 const Journal = lazyView(() => import('./views/Journal.jsx'))
 const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 // The trainer dashboard (docs/TRAINERS.md): only for sessions that train someone or lead a gym.
@@ -117,6 +128,8 @@ const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
 const Community = lazyView(() => import('./views/Community.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
+// Large optional add-on libraries are not prefetched with the core application.
+const Addons = lazy(() => import('./views/Addons.jsx'))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
 const loadTour = () => import('./components/Tour.jsx')
 const Tour = lazy(loadTour)
@@ -155,6 +168,17 @@ function Shell() {
   const { S, user, ready } = useStore()
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
+  // Cloud edition: the app hears who is signed in to the hosted account, so that no screen calls
+  // them a guest (lib/account-badge.js). Nothing of this is in a default build.
+  useEffect(() => {
+    if (!CLOUD) return
+    let stop = null, stopLink = null, gone = false
+    import('./lib/cloud/account-watch.js').then(m => { if (!gone) stop = m.watchAccount() }, () => {})
+    // A profile open on the app's own server ends with the account it was opened through
+    // (lib/cloud/link-watch.js).
+    import('./lib/cloud/link-watch.js').then(m => { if (!gone) stopLink = m.watchLink({ store: useStore }) }, () => {})
+    return () => { gone = true; stop?.(); stopLink?.() }
+  }, [])
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
   // The band names the set lines read (lib/bands.js), in step before this render's set lines.
   setKnownBands(S.bands)
@@ -217,6 +241,8 @@ function Shell() {
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
   useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
+  // Settings → Look: Bold (the default) or Refined (lib/look.js, index.css [data-look]).
+  useEffect(() => { document.documentElement.dataset.look = lookOf(S) }, [S.look])
   // Settings → Icons → your own streak flame and freeze: the tints around them come from their
   // colour (lib/streak-icons.js tintCss), one <style> per page, emptied on Reset to default.
   const ownTints = tintCss({ flameIcon: S.flameIcon, freezeIcon: S.freezeIcon })
@@ -394,7 +420,10 @@ function Shell() {
     </div>
   )
 
-  const view = l => (!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
+  // In the Cloud edition the account screen is reachable before this app has a session of its
+  // own: it is where a link in an email lands, and where the hosted sign-in server sends someone
+  // to approve signing in here (ADR 0013), which by definition happens before they are in.
+  const view = l => (CloudAccount && l.pathname === '/account' ? <CloudAccount /> : !authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
     <Routes location={l}>
       <Route path="/home" element={<Home />} />
       {/* A module switched off (Settings → Modules, lib/modules.js) takes its screens with it: the
@@ -412,20 +441,25 @@ function Shell() {
       {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
       <Route path="/structural-balance" element={<StructuralBalance />} />
       <Route path="/tools" element={<Tools />} />
+      <Route path="/start" element={<Onboarding />} />
+      <Route path="/learn" element={<Learn />} />
       <Route path="/journal" element={<Journal />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {isOn(S, 'nutrition') && <Route path="/nutrition" element={<Nutrition />} />}
+      <Route path="/addons" element={<Suspense fallback={null}><Addons /></Suspense>} />
       {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
       <Route path="/connect/:id" element={<Connect />} />
       {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}
       <Route path="/assistants" element={<Assistants />} />
       <Route path="/settings" element={<SettingsRoute />} />
+      <Route path="/app-help" element={<SettingsRoute appHelp />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
           AI Coach module is on, so a deep link from a notification lands somewhere sane rather
           than on the catch-all. With the module off, Home is the sane place. */}
-      {isOn(S, 'coach') && <Route path="/coach" element={<CoachChat />} />}
-      {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake />} />}
+      {isOn(S, 'coach') && <Route path="/coach" element={<CoachChat starter={l.state?.coachStarter} />} />}
+      {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake starter={l.state?.coachStarter} />} />}
       {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
       {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
       {/* Until boot has asked /api/me, the cached user may be from before an admin grant (or there is
@@ -504,6 +538,16 @@ export default function App() {
   const boot = useStore(s => s.boot)
   const ready = useStore(s => s.ready)
   useEffect(() => { boot() }, [boot])
+  // Cloud edition: back from the server's sign-in with a refusal, as someone who stays in the
+  // app on this device's profile. The sign-in screen that says why is not shown to them, so it
+  // is said here (lib/cloud/link-watch.js).
+  useEffect(() => {
+    if (!CLOUD || !ready) return
+    import('./lib/cloud/link-watch.js').then(m => {
+      const st = useStore.getState()
+      m.tellLinkFailure({ arrival: oidcArrival(), guest: st.isGuest(), label: oidcLabel(st.config), toast: msg => useUI.getState().toast(msg), clear: clearOidcArrival })
+    }, () => {})
+  }, [ready])
   useEffect(() => { prefetchViews() }, [])
   // Android system back — sheet, then page, then press-again-to-exit (see lib/back.js)
   useEffect(() => {

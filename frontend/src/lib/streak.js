@@ -7,13 +7,14 @@
 //
 // THE FREEZE RULE. Walk the weeks from the first one with a workout up to this one:
 //   - a week with a workout adds one to the streak; every 4th of them in the run earns a freeze,
-//     and at most 2 are kept (an earned one past that is simply not added);
+//     two completed rest-day mobility sessions in a week can earn one more, within the same cap;
+//     only workouts saved with their rest-day date qualify, even if the plan changes later;
 //   - a week gone by without one uses a freeze when there is one: the streak carries on (the week
 //     itself adds nothing) and the week is shown with a snowflake. Without a freeze the streak and
 //     the freezes start over at 0;
 //   - this week, still without a workout, is open: it neither counts nor breaks anything yet.
 // So a holiday or a cold is covered without anyone having to remember a switch first: train 4
-// weeks, and the next missed one is forgiven. Two missed weeks need two freezes, i.e. 8 weeks.
+// weeks, and the next missed one is forgiven. Two missed weeks need two banked freezes.
 //
 // How many freezes are kept is the profile's own pick since 1.4.5 (lib/streak-rule.js): none,
 // one or two (the numbers above are `generous`, the rule of every profile that never picked).
@@ -39,7 +40,8 @@ export { FREEZE_EVERY, FREEZE_MAX, STREAK_BADGES } from '../../../api/coach/core
  * weekKey: { s, run, bank, earned } where s is 'on' (trained), 'frozen' (a freeze covered it),
  * 'broke' (missed with no freeze left: the run started over), 'missed' (missed with no run to
  * break) or 'open' (this week, no workout yet); run and bank are the streak and the freezes
- * after that week, earned whether it earned a freeze. Only a record of the walk: the calendar
+ * after that week, earned whether it earned a freeze. A mobility award also records whether a
+ * fourth trained week earned another freeze at the same time. Only a record of the walk: the calendar
  * (components/StreakCalendar.jsx) reads it to say why a week counted, nothing here depends on it.
  *
  * The walk itself is api/coach/core/streak.js, shared with the server so a trainer's member list

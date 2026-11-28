@@ -1,0 +1,29 @@
+{
+  "node": "v22.23.5",
+  "gzipLevel": 9,
+  "baseline": "docs/product/BASELINE_REPORT.md",
+  "chunks": {
+    "index-": {
+      "file": "index-evM1tYe6.js",
+      "raw": 587157,
+      "gzip": 183582,
+      "baseline": {
+        "raw": 586454,
+        "gzip": 183316
+      },
+      "deltaRaw": 703,
+      "deltaGzip": 266
+    },
+    "Stats-": {
+      "file": "Stats-DmzlU7tC.js",
+      "raw": 46111,
+      "gzip": 15493,
+      "baseline": {
+        "raw": 42946,
+        "gzip": 14439
+      },
+      "deltaRaw": 3165,
+      "deltaGzip": 1054
+    }
+  }
+}

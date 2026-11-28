@@ -14,6 +14,7 @@
    Env: MCP_PORT (3100), OPENGYM_API_URL (http://api:3000, the api inside the compose network),
    MCP_PATH (/mcp), MCP_ALLOWED_ORIGINS (browser Origins allowed besides none; default ORIGIN). */
 import http from 'node:http'
+import { connectorOrigin } from '../../api/connector-origin.js'
 import crypto from 'node:crypto'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { buildServer, VERSION } from './server.js'
@@ -48,10 +49,16 @@ export function createMcpHandler({
   now = Date.now,
   // The app's public address, for the OAuth discovery pointer on a 401 (api/oauth.js): Claude
   // and ChatGPT start their sign-in from it. Without one the 401 says only how to make a token.
-  publicOrigin = (process.env.ORIGIN || '').replace(/\/+$/, ''),
+  configuredOrigin = connectorOrigin(process.env.MCP_PUBLIC_ORIGIN),
+  publicOrigin = configuredOrigin || (process.env.ORIGIN || '').replace(/\/+$/, ''),
   // Under a subpath deployment the documents live below the prefix too (BASE_PATH, docs/MCP_REMOTE.md).
   basePath = String(process.env.BASE_PATH || '').replace(/\/+$/, ''),
 } = {}) {
+  // A separate connector sends discovery straight to the API using the path-insertion form.
+  // Single-origin proxies already route the prefix-first address.
+  const metadataPath = configuredOrigin
+    ? `/.well-known/oauth-protected-resource${basePath}/mcp`
+    : `${basePath}/.well-known/oauth-protected-resource/mcp`
   const base = String(apiUrl).replace(/\/+$/, '')
   // One cached profile per token (by its hash), so a conversation of tool calls reads the
   // document once and then only the revision. Dropped after ten idle minutes.
@@ -70,7 +77,7 @@ export function createMcpHandler({
   // requires the 401 (it ignores the header on any other status).
   const unauthorized = (res, why) => rpcError(res, 401, why, {
     'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="sign in with openGym, or make a token in Settings, API tokens"'
-      + (publicOrigin ? `, resource_metadata="${publicOrigin}${basePath}/.well-known/oauth-protected-resource/mcp", scope="${DEFAULT_SCOPE}"` : ''),
+      + (publicOrigin ? `, resource_metadata="${publicOrigin}${metadataPath}", scope="${DEFAULT_SCOPE}"` : ''),
   })
 
   function profileFor(token) {

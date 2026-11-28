@@ -49,6 +49,9 @@ test('payloads: per type, no catalogue ids, refs collected, prototype keys gone'
   assert.equal(plan.bundle.routines[0].x, undefined);
   assert.throws(() => cleanPayload('equipment', { profile: { m } }), LibraryError, 'a gym profile carries no files');
   assert.deepEqual(cleanPayload('look', { flame: { v: '🔥', c: '#FF0000' }, freeze: { v: '<img>' } }), { flame: { v: '🔥', c: '#ff0000' } });
+  assert.deepEqual(cleanPayload('look', { accent: '#ff6b2c', preset: 'ironvane', look: 'refined' }), { accent: '#ff6b2c', preset: 'ironvane', look: 'refined' });
+  assert.deepEqual(cleanPayload('look', { accent: '#123456', preset: 'Iron vane!', look: 'neon' }), { accent: '#123456' });
+  assert.deepEqual(cleanPayload('look', { flame: { v: '🔥' }, preset: 'ironvane' }), { flame: { v: '🔥' } });
   assert.equal(cleanPayload('measures', { fields: Array.from({ length: 30 }, (_, i) => ({ name: 'F' + i, unit: 'cm' })) }).fields.length, 20);
 });
 

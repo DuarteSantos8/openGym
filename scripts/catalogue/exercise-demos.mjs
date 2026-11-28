@@ -1,0 +1,226 @@
+#!/usr/bin/env node
+// Builds catalogue/demos/: demonstration videos and step-by-step photo sequences for catalogue
+// exercises, from two free sources, every match checked by hand (same movement and equipment):
+//
+//   - Wikimedia Commons videos under CC BY / CC BY-SA, transcoded to H.264 MP4 (plays everywhere,
+//     Safari included), muted, at most 1280 px on the long side, with a WebP poster frame.
+//   - Photo sequences from U.S. Army ATP 7-22.02 "Holistic Health and Fitness Drills and Exercises"
+//     (approved for public release, distribution unlimited; photos made by the U.S. Army Center for
+//     Initial Military Training), so public domain as works of the U.S. Government.
+//
+//   node scripts/catalogue/exercise-demos.mjs
+//
+// Maintainer tool, run by hand: it downloads from commons.wikimedia.org and armypubs.army.mil into
+// ~/.cache/opengym-demos. The app never contacts either; it serves the files it ships. Needs ffmpeg
+// (FFMPEG=... or on PATH), python3 with pymupdf, and sharp (npm i --no-save sharp).
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
+const OUT = path.join(ROOT, 'catalogue/demos')
+const CACHE = path.join(os.homedir(), '.cache/opengym-demos')
+const UA = 'openGymCatalogueBot/0.1 (https://github.com/sorensadrgit-art/openGym; catalogue media)'
+
+export const ATP = {
+  title: 'ATP 7-22.02, Holistic Health and Fitness Drills and Exercises (2020, incl. Change 1, 2022)',
+  url: 'https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45013-ATP_7-22.02-001-WEB-4.pdf',
+  author: 'U.S. Army (ATP 7-22.02)',
+  license: 'PD-USGov',
+}
+
+/** Commons clips: file name on Commons, catalogue id, the licence it must still carry, optional cut. */
+export const VIDEOS = [
+  { id: '0043', file: 'Barbell back squat exercise demonstration.webm', license: 'CC-BY-SA-4.0' },
+  { id: '0025', file: 'Barbell bench press exercise demonstration.webm', license: 'CC-BY-SA-4.0' },
+  { id: '1204', file: 'Lat pulldown exercise demonstration.webm', license: 'CC-BY-SA-4.0' },
+  { id: '1873', file: 'Leg extension exercise demonstration.webm', license: 'CC-BY-SA-4.0' },
+  { id: '1160', file: 'CrossFit Burpee.webm', license: 'CC-BY-SA-4.0' },
+  { id: '5099', file: 'Kettlebell Farmer Walks.webm', license: 'CC-BY-SA-4.0' },
+  // Commons licence review passed (YouTube import). Cut to four clean repetitions between title cards.
+  { id: '0739', file: 'Hip Sled - How to perform a 45 degree leg press.webm', license: 'CC-BY-3.0', start: 51, duration: 4 },
+  // FitnessScape's short demonstrations (CC BY 3.0 as published on YouTube, imported to Commons
+  // without a licence review; the owner accepted them, 18 Nov 2026). Each was checked by eye
+  // against its exercise; the clip's own title card stays in. Their bench press and squat are
+  // left out, since 0025 and 0043 already have a clip.
+  { id: '0032', file: 'Deadlift - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '1162', file: 'Shoulder press - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0047', file: 'Incline press - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0027', file: 'Bent-over row - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0652', file: 'Pull-ups - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '9819', file: 'Hanging crunches - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+  { id: '0472', file: 'Leg raises - exercise demonstration video.webm', license: 'CC-BY-3.0' },
+]
+
+/** ATP 7-22.02 figure number -> catalogue ids it shows (checked by eye against the figure). */
+export const ATP_FIGURES = {
+  '3-2': ['1581'], '3-10': ['0612'], '3-13': ['0662'],
+  '4-7': ['3225'], '4-8': ['5822'], '4-11': ['11648'],
+  '5-1': ['0514'], '5-2': ['3622'], '5-3': ['0630'], '5-12': ['6211'], '5-20': ['1570'],
+  '6-3': ['0652'],
+  '10-1': ['1128'], '10-4': ['1143'], '10-5': ['6232'], '10-8': ['1080'], '10-9': ['1083'],
+  '11-1': ['4113'], '11-3': ['3919'],
+  '13-9': ['0528'],
+  '14-2': ['0043'], '14-3': ['0032'], '14-5': ['0116'], '14-6': ['0025'], '14-10': ['0047'],
+  '14-13': ['0027'], '14-14': ['2393'], '14-16': ['4408'], '14-18': ['5631'], '14-21': ['0375'],
+  '15-3': ['0586'], '15-4': ['1590'], '15-7': ['0603'], '15-8': ['0590'], '15-11': ['1350'], '15-14': ['0607'],
+  // Release pass: more of the manual's single-exercise figures, each checked by eye (same movement
+  // and equipment). Figures that mix two tools in one sequence (barbell and kettlebell) stay out.
+  '4-1': ['4051'], '5-17': ['3928'], '9-4': ['1354'],
+  '13-1': ['4089'], '13-2': ['3733'], '13-4': ['0801'], '13-8': ['6156'],
+  '14-7': ['0289'], '14-9': ['0033'], '14-15': ['0120'], '14-17': ['1200'], '14-23': ['0294'],
+  '15-1': ['2267'], '15-5': ['0584'], '15-9': ['0198'], '15-16': ['0576', '0577'],
+  '16-7': ['1398'], '16-8': ['1511'],
+}
+
+const LICENSES = { 'CC BY-SA 4.0': 'CC-BY-SA-4.0', 'CC BY-SA 3.0': 'CC-BY-SA-3.0', 'CC BY 3.0': 'CC-BY-3.0', 'CC BY 4.0': 'CC-BY-4.0', CC0: 'CC0-1.0' }
+const LICENSE_NAMES = { 'CC-BY-SA-4.0': 'CC BY-SA 4.0', 'CC-BY-SA-3.0': 'CC BY-SA 3.0', 'CC-BY-3.0': 'CC BY 3.0', 'CC-BY-4.0': 'CC BY 4.0', 'CC0-1.0': 'CC0 1.0', 'PD-USGov': 'Public domain (U.S. Government work)' }
+export const commonsPage = file => 'https://commons.wikimedia.org/wiki/File:' + encodeURI(file.replace(/ /g, '_'))
+
+/** NOTICE.md: sources, licences, the changes made, and one line per file. */
+export function notice(index, cat) {
+  const rows = Object.entries(index).sort(([a], [b]) => a.localeCompare(b)).flatMap(([id, ps]) => ps.flatMap(p => [p.f, p.poster].filter(Boolean).map(f =>
+    `| ${id} ${cat[id]?.name || ''} | \`${f}\` | ${p.author} | ${LICENSE_NAMES[p.license]} | ${p.source} |`)))
+  return `# Exercise demonstrations (videos and step-by-step photos)
+
+Generated by \`scripts/catalogue/exercise-demos.mjs\`. Each file was matched to a catalogue exercise by
+hand (same movement and equipment). These files are **not** covered by openGym's AGPL, and not by the Gym
+visual licence of \`catalogue/media/\`; each keeps its own licence, listed below and shown in the app.
+
+**Videos** come from Wikimedia Commons, under the Creative Commons licence named per file (CC BY-SA
+4.0: https://creativecommons.org/licenses/by-sa/4.0/, CC BY 3.0: https://creativecommons.org/licenses/by/3.0/).
+**Changes:** re-encoded as H.264 MP4 without sound, scaled to at most 1280 px on the long side; one clip
+was cut to a few seconds (\`start\`/\`duration\` in the script). A poster frame was taken from each and
+saved as WebP. These changed versions are shared under the same licence as the original.
+
+**Photos** are figures from ${ATP.title}, ${ATP.url}: approved for public release, distribution
+unlimited; photos developed by the U.S. Army Center for Initial Military Training. As works of the U.S.
+Government they are in the public domain in the United States. **Changes:** scaled to at most 1200 px
+wide and re-encoded as WebP. The U.S. Army does not endorse openGym.
+
+FitnessScape's clips are YouTube imports marked CC BY 3.0 whose Commons licence review is still open; they
+were accepted on that marking and are removed if the review finds otherwise.
+
+Left out on purpose: other unreviewed Commons YouTube imports, the National
+Institute on Aging's "Get Fit for Life" (its photos carry no credits, so their origin cannot be
+established), and Pexels/Pixabay-style stock libraries (their licences forbid redistributing the files
+as part of a collection like this one).
+
+| Catalogue exercise | File | Author | Licence | Source |
+|---|---|---|---|---|
+${rows.join('\n')}
+`
+}
+
+const strip = s => String(s?.value || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+async function commonsInfo(files) {
+  const u = 'https://commons.wikimedia.org/w/api.php?' + new URLSearchParams({ action: 'query', format: 'json', formatversion: '2', prop: 'imageinfo', iiprop: 'url|size|extmetadata', iiextmetadatafilter: 'LicenseShortName|Artist', titles: files.map(f => 'File:' + f).join('|') })
+  const r = await (await fetch(u, { headers: { 'User-Agent': UA } })).json()
+  return Object.fromEntries(r.query.pages.map(p => [p.title.replace(/^File:/, ''), { url: p.imageinfo[0].url, lic: strip(p.imageinfo[0].extmetadata.LicenseShortName), artist: strip(p.imageinfo[0].extmetadata.Artist) }]))
+}
+const get = (url, dest) => { if (!fs.existsSync(dest)) execFileSync('curl', ['-fsSL', '--retry', '4', '-A', UA, '-o', dest, url]); return dest }
+
+const PY = String.raw`
+import sys, json, re, pymupdf
+d = pymupdf.open(sys.argv[1]); out = sys.argv[2]; want = set(sys.argv[3:]); found = {}
+for i, p in enumerate(d):
+    imgs = [(x[0], r) for x in p.get_images() for r in p.get_image_rects(x[0]) if x[2] * x[3] >= 200 * 120]
+    for b in p.get_text('blocks'):
+        m = re.match(r'Figure (\d+-\d+)\.\s*(.+)', b[4].strip().replace('\n', ' '))
+        if not m or m.group(1) not in want or m.group(1) in found: continue
+        above = [(xr, r) for xr, r in imgs if r.y1 <= b[1] + 4]
+        if not above: continue
+        xr = max(above, key=lambda t: t[1].y1)[0]
+        pix = pymupdf.Pixmap(d, xr)
+        if pix.alpha or pix.n > 3: pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+        f = f'{out}/atp-{m.group(1)}.png'; pix.save(f)
+        found[m.group(1)] = {'png': f, 'label': m.group(2).strip(), 'page': i + 1}
+# A figure drawn as several tiles (or as vector art) has no single picture above its caption:
+# render the page between the text above it and the caption instead.
+for i, p in enumerate(d):
+    blocks = p.get_text('blocks')
+    caps = sorted((b[1], b[3], m.group(1), m.group(2).strip()) for b in blocks for m in [re.match(r'Figure (\d+-\d+)\.\s*(.+)', b[4].strip().replace('\n', ' '))] if m)
+    prev = p.rect.y0 + 40
+    for y0, y1, fig, label in caps:
+        if fig in want and fig not in found and not label.endswith('..'):
+            # The figure's own frame when it has one, else the space between the text and the caption.
+            frames = [dr['rect'] for dr in p.get_drawings() if dr['rect'].width > 150 and dr['rect'].height > 60 and dr['rect'].y0 >= prev - 2 and dr['rect'].y1 <= y1 + 2]
+            if frames:
+                clip = max(frames, key=lambda r: r.y1) + (-2, -2, 2, 2)
+            else:
+                text = [b[3] for b in blocks if b[3] <= y0 - 2 and b[1] >= prev - 1 and len(b[4]) > 60]
+                top = max(text + [prev, p.rect.y0 + 60])
+                clip = pymupdf.Rect(p.rect.x0 + 30, top + 2, p.rect.x1 - 30, y0 - 1)
+            if clip.height >= 60:
+                f = f'{out}/atp-{fig}.png'; p.get_pixmap(clip=clip, dpi=150).save(f)
+                found[fig] = {'png': f, 'label': label, 'page': i + 1}
+        prev = y1
+print(json.dumps(found))
+`
+
+async function main() {
+  const sharp = (await import('sharp')).default
+  const ffmpeg = process.env.FFMPEG || 'ffmpeg'
+  fs.mkdirSync(CACHE, { recursive: true })
+  const catDir = path.join(ROOT, 'catalogue/exercises')
+  const cat = Object.fromEntries(fs.readdirSync(catDir).filter(f => f.endsWith('.json')).map(f => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(catDir, f), 'utf8'))]))
+  for (const id of [...VIDEOS.map(v => v.id), ...Object.values(ATP_FIGURES).flat()]) if (!cat[id]) throw new Error('not in the catalogue: ' + id)
+  // DEMOS_REUSE_VIDEOS=1 keeps the videos already built (Commons rate-limits a full refetch) and
+  // redoes only the photos.
+  const reuse = process.env.DEMOS_REUSE_VIDEOS === '1'
+  const old = reuse ? JSON.parse(fs.readFileSync(path.join(OUT, 'index.json'), 'utf8')) : null
+  const keep = path.join(CACHE, 'kept-videos')
+  if (reuse) {
+    fs.rmSync(keep, { recursive: true, force: true }); fs.mkdirSync(keep, { recursive: true })
+    for (const f of fs.readdirSync(path.join(OUT, 'files')).filter(f => f.startsWith('video-'))) fs.copyFileSync(path.join(OUT, 'files', f), path.join(keep, f))
+  }
+  fs.rmSync(OUT, { recursive: true, force: true })
+  fs.mkdirSync(path.join(OUT, 'files'), { recursive: true })
+  const index = {}
+  const add = (id, e) => { (index[id] ||= []).push(e) }
+
+  if (reuse) {
+    for (const [id, list] of Object.entries(old)) for (const e of list) if (e.kind === 'video') {
+      for (const f of [e.f, e.poster]) fs.copyFileSync(path.join(keep, path.basename(f)), path.join(OUT, f))
+      add(id, e)
+    }
+  }
+  // Reusing: only clips not built yet are fetched.
+  const todo = reuse ? VIDEOS.filter(v => !(old[v.id] || []).some(e => e.kind === 'video')) : VIDEOS
+  const info = todo.length ? await commonsInfo(todo.map(v => v.file)) : {}
+  for (const v of todo) {
+    const m = info[v.file]
+    if (!m || LICENSES[m.lic] !== v.license) throw new Error(`${v.file}: licence is now "${m?.lic}", expected ${v.license}`)
+    const src = get(m.url, path.join(CACHE, v.id + path.extname(new URL(m.url).pathname)))  // the url carries a query
+    const f = `files/video-${v.id}.mp4`, poster = `files/video-${v.id}.webp`
+    const cut = v.start != null ? ['-ss', String(v.start), '-t', String(v.duration)] : []
+    execFileSync(ffmpeg, ['-y', '-loglevel', 'error', ...cut, '-i', src, '-an', '-vf', "scale='min(iw,1280)':'min(ih,1280)':force_original_aspect_ratio=decrease:force_divisible_by=2,fps=30",
+      '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '27', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-level', '4.0', '-movflags', '+faststart', path.join(OUT, f)])
+    const png = path.join(CACHE, `poster-${v.id}.png`)
+    execFileSync(ffmpeg, ['-y', '-loglevel', 'error', '-ss', '1', '-i', path.join(OUT, f), '-frames:v', '1', png])
+    await sharp(png).resize(720, 720, { fit: 'inside' }).webp({ quality: 72 }).toFile(path.join(OUT, poster))
+    const meta = JSON.parse(execFileSync(ffmpeg.replace(/ffmpeg$/, 'ffprobe'), ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height:format=duration', '-of', 'json', path.join(OUT, f)]))
+    add(v.id, { kind: 'video', f, poster, w: meta.streams[0].width, h: meta.streams[0].height, license: v.license, author: m.artist, source: commonsPage(v.file) })
+    console.log('video', v.id, cat[v.id].name, meta.streams[0].width + 'x' + meta.streams[0].height, Math.round(fs.statSync(path.join(OUT, f)).size / 1024) + ' KB')
+  }
+
+  const pdf = get(ATP.url, path.join(CACHE, 'atp-7-22-02.pdf'))
+  const figs = JSON.parse(execFileSync('python3', ['-c', PY, pdf, CACHE, ...Object.keys(ATP_FIGURES)], { maxBuffer: 1 << 24 }))
+  for (const [fig, ids] of Object.entries(ATP_FIGURES)) {
+    const x = figs[fig]
+    if (!x) throw new Error('ATP figure not found: ' + fig)
+    const f = `files/atp-${fig}.webp`
+    if (!fs.existsSync(path.join(OUT, f))) await sharp(x.png).resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 74 }).toFile(path.join(OUT, f))
+    for (const id of ids) add(id, { kind: 'image', pose: 'sequence', f, caption: `Figure ${fig}. ${x.label}`, license: ATP.license, author: ATP.author, source: `${ATP.url}#page=${x.page}` })
+    console.log('photo', fig, x.label, '->', ids.map(id => id + ' ' + cat[id].name).join(', '), Math.round(fs.statSync(path.join(OUT, f)).size / 1024) + ' KB')
+  }
+
+  const sorted = Object.fromEntries(Object.keys(index).sort().map(k => [k, index[k]]))
+  fs.writeFileSync(path.join(OUT, 'index.json'), JSON.stringify(sorted, null, 1) + '\n')
+  fs.writeFileSync(path.join(OUT, 'NOTICE.md'), notice(sorted, cat))
+  console.log(`demos: ${Object.keys(sorted).length} exercises, ${fs.readdirSync(path.join(OUT, 'files')).length} files`)
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch(e => { console.error(e); process.exit(1) })

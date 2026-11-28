@@ -1,0 +1,13 @@
+{
+  "ownedPidsStopped": [
+    58440,
+    58441,
+    58442
+  ],
+  "browserCommandCompletedBeforeCleanup": true,
+  "ownedTabClosed": true,
+  "namedDaemon": "mvp-final-fix",
+  "daemonStoppedVia": "BU_NAME=mvp-final-fix BU_CDP_URL=http://127.0.0.1:9327 browser-harness --reload",
+  "throwawayDirectoryRemoved": ".mvp-final-runtime",
+  "otherProcessesStopped": false
+}

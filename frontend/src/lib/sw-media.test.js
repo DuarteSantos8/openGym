@@ -78,6 +78,14 @@ describe('sw.js exercise media', () => {
     expect(await again.text()).toBe('GIF89a' + ORIGIN + '/gif/0001.gif')
   })
 
+  it('returns an uncached media failure offline without caching it', async () => {
+    const w = worker()
+    w.net.up = false
+    expect((await w.get('/exercise-media/still/0001.webp')).status).toBe(503)
+    expect((await w.get('/exercise-media/clip/0001.mp4', { range: 'bytes=0-' })).status).toBe(503)
+    expect(w.media().urls()).toEqual([])
+  })
+
   it('survives an update: activate sweeps old builds, never the media, and adopts what an old build had cached', async () => {
     const w = worker()
     await w.get('/img/0002.jpg')

@@ -226,7 +226,7 @@ describe('CheckIn — the rail reopens where you left it', () => {
 
   it('the back button goes home', async () => {
     mount()
-    await tap(byLabel(host, 'Home')[0])
+    await tap(byLabel(host, 'Today')[0])
     expect(mocks.nav).toHaveBeenCalledWith('/home')
   })
 })

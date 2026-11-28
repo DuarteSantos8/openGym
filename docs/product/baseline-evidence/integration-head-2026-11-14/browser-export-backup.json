@@ -1,0 +1,329 @@
+{
+  "unit": "kg",
+  "restSec": 90,
+  "restPauseSec": 15,
+  "sound": true,
+  "soundOnSilent": false,
+  "vibrateOnSilent": false,
+  "timerFlash": false,
+  "timedSetOvertime": false,
+  "keepAwake": true,
+  "lang": "en",
+  "theme": "dark",
+  "accent": "lime",
+  "body": "male",
+  "targetW": null,
+  "rateGoal": null,
+  "bodyweight": [],
+  "routines": [
+    {
+      "id": "mwghubk16yuqx",
+      "name": "Full Body A",
+      "emoji": "figureStrength",
+      "ex": [
+        {
+          "id": "0043",
+          "sets": 3,
+          "reps": 8,
+          "weight": 0
+        },
+        {
+          "id": "0025",
+          "sets": 3,
+          "reps": 8,
+          "weight": 0
+        },
+        {
+          "id": "2330",
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "0586",
+          "sets": 3,
+          "reps": 12,
+          "weight": 0
+        },
+        {
+          "id": "0334",
+          "sets": 2,
+          "reps": 12,
+          "weight": 0
+        },
+        {
+          "id": "0031",
+          "sets": 2,
+          "reps": 12,
+          "weight": 0
+        }
+      ],
+      "_ts": 1794666071809
+    },
+    {
+      "id": "mwghubk1xf2w0",
+      "name": "Full Body B",
+      "emoji": "figureStrength",
+      "ex": [
+        {
+          "id": "0085",
+          "sets": 3,
+          "reps": 8,
+          "weight": 0
+        },
+        {
+          "id": "0047",
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "1323",
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "0585",
+          "sets": 3,
+          "reps": 12,
+          "weight": 0
+        },
+        {
+          "id": "0334",
+          "sets": 2,
+          "reps": 12,
+          "weight": 0
+        },
+        {
+          "id": "0241",
+          "sets": 2,
+          "reps": 12,
+          "weight": 0
+        }
+      ],
+      "_ts": 1794666071809
+    },
+    {
+      "id": "mwghubk1ed8at",
+      "name": "Full Body C",
+      "emoji": "figureStrength",
+      "ex": [
+        {
+          "id": "0739",
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "0025",
+          "sets": 2,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "0027",
+          "sets": 3,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "0426",
+          "sets": 2,
+          "reps": 10,
+          "weight": 0
+        },
+        {
+          "id": "0586",
+          "sets": 3,
+          "reps": 12,
+          "weight": 0
+        },
+        {
+          "id": "0605",
+          "sets": 3,
+          "reps": 15,
+          "weight": 0
+        }
+      ],
+      "_ts": 1794666071809
+    }
+  ],
+  "week": {
+    "1": [
+      "mwghubk16yuqx"
+    ],
+    "3": [
+      "mwghubk1xf2w0"
+    ],
+    "5": [
+      "mwghubk1ed8at"
+    ]
+  },
+  "dayPlan": {
+    "2026-11-14": "mwghubk16yuqx"
+  },
+  "dayNotes": {},
+  "measurements": [],
+  "measurementEnabled": null,
+  "customMeasurements": [],
+  "queue": null,
+  "rotation": null,
+  "scheduleMode": null,
+  "programmes": {},
+  "programme": null,
+  "exWeights": {
+    "0043": {
+      "w": 40,
+      "d": "2026-11-14"
+    }
+  },
+  "workouts": [
+    {
+      "id": "mwghv7ktm11jq",
+      "d": "2026-11-14",
+      "start": 1794666113309,
+      "end": 1794666181377,
+      "routineIds": [
+        "mwghubk16yuqx"
+      ],
+      "routineId": "mwghubk16yuqx",
+      "name": "Full Body A",
+      "bw": null,
+      "entries": [
+        {
+          "id": "0043",
+          "sets": [
+            {
+              "w": 40,
+              "r": 10,
+              "done": true,
+              "at": 1794666139136
+            },
+            {
+              "w": 40,
+              "r": 10,
+              "done": true,
+              "at": 1794666151904
+            },
+            {
+              "w": 40,
+              "r": 8,
+              "done": false
+            }
+          ],
+          "topW": 40,
+          "target": {
+            "id": "0043",
+            "sets": 3,
+            "reps": 8,
+            "weight": 0
+          },
+          "rid": "mwghubk16yuqx",
+          "planned": {
+            "sets": 3,
+            "reps": 8,
+            "weight": 0
+          }
+        }
+      ],
+      "prs": [
+        "0043"
+      ],
+      "vol": 800
+    }
+  ],
+  "active": null,
+  "customEx": [],
+  "gifSize": "mini",
+  "heatmapMetric": "time",
+  "volumeWarmups": false,
+  "volumeBodyweight": false,
+  "workoutView": "cards",
+  "collapseCompleted": false,
+  "exerciseView": "list",
+  "wc": {
+    "steppers": true,
+    "setShortcuts": false,
+    "pairButtons": false,
+    "exerciseButtons": false,
+    "exerciseChips": true,
+    "muscleMap": true,
+    "swipeSets": true
+  },
+  "hints": {
+    "swipeSets": true
+  },
+  "reminder": {
+    "on": false,
+    "time": "08:00",
+    "tz": null,
+    "nudge": false,
+    "tone": "friendly"
+  },
+  "effort": null,
+  "autoBackup": false,
+  "equipProfiles": [],
+  "activeEquipId": null,
+  "equipFilterOn": false,
+  "exNotes": {},
+  "exAliases": {},
+  "favEx": [],
+  "weekStart": 1,
+  "wdec": 1,
+  "speedUnit": null,
+  "barWeights": {},
+  "plates": {},
+  "loadKind": {},
+  "dbLoad": {},
+  "dumbbells": {},
+  "stackWeights": {},
+  "exUnit": {},
+  "gymCards": [],
+  "lastGymCardId": null,
+  "checkIn": true,
+  "showWeightCard": true,
+  "weighIn": false,
+  "connStatus": true,
+  "shareMap": true,
+  "connLocal": true,
+  "startFrom": "plan",
+  "warmupAuto": "off",
+  "lastFrom": "routine",
+  "progDefault": "linear",
+  "enParens": {},
+  "enOnly": {},
+  "logRef": "last",
+  "balanceTemplate": "poliquin",
+  "balanceOverrides": {},
+  "langAuto": true,
+  "edited": {
+    "week.1": 1794666071809,
+    "week.3": 1794666071809,
+    "week.5": 1794666071809,
+    "dayPlan.2026-11-14": 1794666102670,
+    "hints": 1794666115586,
+    "challenges": 1794666181404
+  },
+  "_ts": 1794666181405,
+  "challenges": {
+    "2026-11": {
+      "picked": [
+        {
+          "id": "workouts",
+          "n": 4
+        },
+        {
+          "id": "newex",
+          "n": 3
+        },
+        {
+          "id": "weeks",
+          "n": 4
+        }
+      ],
+      "done": [],
+      "at": 1794666181404
+    }
+  }
+}

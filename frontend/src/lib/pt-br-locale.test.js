@@ -17,7 +17,10 @@ describe('Brazilian Portuguese locale', () => {
   test('matches the source key set and preserves interpolation placeholders', () => {
     expect(Object.keys(ptBR).sort()).toEqual(Object.keys(pt).sort())
     for (const [source, translated] of Object.entries(ptBR)) {
-      expect(placeholders(translated), source).toEqual(placeholders(source))
+      // A plural entry is an object of forms; each form keeps the source's placeholders.
+      for (const form of (translated && typeof translated === 'object' ? Object.values(translated) : [translated])) {
+        expect(placeholders(form), source).toEqual(placeholders(source))
+      }
     }
   })
 
@@ -41,7 +44,7 @@ describe('Brazilian Portuguese locale', () => {
     // has to be taught is a number nobody reads. What the numbers stood for is asserted above.
     // If the hash fails, review the changed keys and wording before accepting a new one. From
     // frontend/: node scripts/pt-br-inheritance-fingerprint.mjs --list
-    expect(fingerprint, 'pt-PT inheritance changed; review the inherited pt-BR wording').toBe('5268d3a4b81d4296f467918e24899038aee7b81a024949535f9ecdbcd3d68202')
+    expect(fingerprint, 'pt-PT inheritance changed; review the inherited pt-BR wording').toBe('5d570788bf674db9befca6bab0bf1a0b2c4f88c8fad81e17ef40ff3590a359e1')
   })
 
   // pt-PT labelled Unpair 'Desfazer': Undo, in Portuguese (it is pt-BR's Undo), on the button that

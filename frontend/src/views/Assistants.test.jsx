@@ -71,6 +71,12 @@ describe('lib/assistants', () => {
 })
 
 describe('Use your subscription', () => {
+  it('shows the configured connector address when the app is on another origin', async () => {
+    mocks.config.mcpAddress = 'https://connector.example/mcp'
+    await render(<Assistants />)
+    expect(host.querySelector('.as-addr code').textContent).toBe(mocks.config.mcpAddress)
+  })
+
   it('shows the address, three assistants and the steps of the one picked', async () => {
     await render(<Assistants />)
     expect(host.querySelector('.as-addr code').textContent).toBe(location.origin + '/mcp')

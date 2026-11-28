@@ -9,6 +9,15 @@ import { installedApp, prefetchAllowed } from './media-prefetch.js'
 import { _setLangState } from './i18n-core.js'
 
 const MB = 1024 * 1024
+// A real Blob that reports `n` bytes without holding them. The cache cap is about sizes, and
+// allocating the bytes (200 MB, 400 MB, copied again into the Blob) made these cases take a second
+// alone and time out under a parallel run, where several workers zero-fill and copy at once.
+// Only for memoryBackend: the IDB and file backends read the bytes and would see 0 of them.
+class SizedBlob extends Blob {
+  #n
+  constructor(n) { super([]); this.#n = n }
+  get size() { return this.#n }
+}
 const hex = c => c.repeat(64)
 const refOf = (hash, poster, over = {}) => ({ kind: 'image', hash, mime: 'image/webp', size: 1000, width: 800, height: 600, ...(poster ? { poster: { hash: poster, mime: 'image/webp', size: 100, width: 480, height: 360 } } : {}), at: 1, ...over })
 
@@ -322,18 +331,19 @@ describe('localMediaGc', () => {
     expect(await media.has(hex('a'))).toBe(true)
   })
 
-  it('signed in, evicts synced main files over the cap — never a pending one or a poster the state shows', async () => {
+  it('signed in, evicts synced main files over the cap while preserving guest originals, pending files and posters', async () => {
     const S = { customEx: [
       { id: 'x', media: refOf(hex('a'), hex('b'), { size: 200 * MB }) },
       { id: 'y', media: refOf(hex('c'), hex('d'), { size: 150 * MB }) }
     ] }
-    await media.put(hex('a'), new Blob([new Uint8Array(200 * MB)]), { mime: 'image/webp', pending: false })
-    await media.put(hex('b'), new Blob([new Uint8Array(1 * MB)]), { mime: 'image/webp', pending: false })
-    await media.put(hex('c'), new Blob([new Uint8Array(150 * MB)]), { mime: 'image/webp', pending: true })
-    await media.put(hex('d'), new Blob([new Uint8Array(1 * MB)]), { mime: 'image/webp', pending: false })
+    await media.put(hex('a'), new SizedBlob(200 * MB), { mime: 'image/webp', pending: false })
+    await media.put(hex('b'), new SizedBlob(1 * MB), { mime: 'image/webp', pending: false })
+    await media.put(hex('c'), new SizedBlob(150 * MB), { mime: 'image/webp', pending: true })
+    await media.put(hex('d'), new SizedBlob(1 * MB), { mime: 'image/webp', pending: false })
+    await media.put(hex('e'), new Blob(['guest photo']), { mime: 'image/webp', pending: false })
     clock += 2 * 3600000
-    await make(appStore({ S })).localMediaGc()
-    expect((await media.list()).map(r => r.hash).sort()).toEqual([hex('b'), hex('c'), hex('d')])
+    await make(appStore({ S, stashedMediaHashes: async () => new Set([hex('e')]) })).localMediaGc()
+    expect((await media.list()).map(r => r.hash).sort()).toEqual([hex('b'), hex('c'), hex('d'), hex('e')])
   })
 
   it('waits for boot: before `ready` nothing is removed, and the clean-up runs once it flips', async () => {
@@ -391,7 +401,7 @@ describe('localMediaGc', () => {
 
   it('a guest never loses a referenced file to the cap', async () => {
     const S = { customEx: [{ id: 'x', media: refOf(hex('a'), null, { size: 400 * MB }) }] }
-    await media.put(hex('a'), new Blob([new Uint8Array(400 * MB)]), { mime: 'image/webp', pending: false })
+    await media.put(hex('a'), new SizedBlob(400 * MB), { mime: 'image/webp', pending: false })
     clock += 2 * 3600000
     await make(appStore({ S, user: null })).localMediaGc()
     expect(await media.has(hex('a'))).toBe(true)
