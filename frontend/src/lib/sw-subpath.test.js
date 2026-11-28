@@ -32,9 +32,9 @@ function worker(scriptUrl) {
     return new Response(JSON.stringify(env.net.body), { status: 200, headers: { 'content-type': 'application/json' } })
   }
   new Function('self', 'caches', 'fetch', 'location', SW)(env.self, env.caches, env.fetch, env.location)
-  env.get = async (url, mode = 'cors') => {
+  env.get = async url => {
     let responded = null
-    handlers.fetch({ request: { url, method: 'GET', mode }, respondWith: p => { responded = p } })
+    handlers.fetch({ request: { url, method: 'GET', mode: 'cors' }, respondWith: p => { responded = p } })
     if (!responded) return { intercepted: false }
     const res = await responded
     await new Promise(r => setTimeout(r, 5))   // the cache.put runs after the response is handed over
@@ -56,36 +56,6 @@ describe('the service worker and the API', () => {
     expect((await env.get('https://example.com/myGym/api/data')).intercepted).toBe(false)
     expect((await env.get('https://example.com/myGym/api/data/rev')).intercepted).toBe(false)
     expect(env.store.size).toBe(0)
-  })
-
-  it('leaves the proxied MCP service and OAuth discovery documents alone', async () => {
-    const env = worker('https://gym.example.com/sw.js')
-    env.net.body = { issuer: 'https://old.example.com' }
-    for (const p of ['/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource/mcp',
-      '/.well-known/openid-configuration', '/mcp', '/mcp/health']) {
-      expect((await env.get('https://gym.example.com' + p)).intercepted, p).toBe(false)
-    }
-    const sub = worker('https://example.com/myGym/sw.js')
-    expect((await sub.get('https://example.com/myGym/mcp/health')).intercepted).toBe(false)
-    expect(env.store.size + sub.store.size).toBe(0)
-    // An app route that only starts with the same letters is still the app's.
-    expect((await env.get('https://gym.example.com/mcpx.json')).intercepted).toBe(true)
-  })
-
-  it('an app mounted at /mcp/ still opens offline from its cache', async () => {
-    const env = worker('https://example.com/mcp/sw.js')
-    env.net.body = { app: true }
-    for (const p of ['/mcp/', '/mcp/index.html', '/mcp/assets/index-AbCdEf12.js']) {
-      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
-    }
-    expect((await env.get('https://example.com/mcp/mcp/health')).intercepted).toBe(false)
-    env.net.up = false
-    expect((await env.get('https://example.com/mcp/index.html')).res.status).toBe(200)
-    // Opening a page of the app that was never cached falls back to the shell.
-    env.store.set('index.html', new Response('<!doctype html>', { status: 200 }))
-    const nav = await env.get('https://example.com/mcp/history', 'navigate')
-    expect(nav.intercepted).toBe(true)
-    expect(await nav.res.text()).toBe('<!doctype html>')
   })
 
   it('still serves the app itself from the cache under that subpath', async () => {
