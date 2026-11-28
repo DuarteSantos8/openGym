@@ -20,6 +20,27 @@ One public origin, one API process: `/api/*`, the discovery documents and the MC
 `OPENGYM_API_URL` all reach the same Railway API, because pending connector sign-ins and
 authorization codes live in that process's memory (`ARCHITECTURE.md`).
 
+## Promotion model — a merge never moves traffic
+
+Traffic moves only when an approved operator promotes one named deployment. A merge to `main`
+builds artifacts and changes nothing users see:
+
+- Vercel: **Auto-assign Custom Production Domains is off**. A push to `main` builds a production
+  deployment without domains. The domains move only through `vercel promote <deployment>` (cutover) or
+  `vercel rollback <deployment>` (rollback). Both are instant and rebuild nothing.
+- Railway: **no deploy triggers** on any service. A service deploys only when an operator deploys
+  a named commit.
+- Render: Blueprint Auto Sync off and auto-deploy off (G9).
+- `main` is protected: a passing `tests-ok`, an approving review by someone other than the author
+  (admins included), no force-push, no auto-merge.
+- The approval to cut over names the **deployment id** to promote, the **commit SHA** it was built
+  from, and the **production deployment id it replaces**. A merged PR, a green check or a READY build is
+  not that approval.
+
+Between the G5 merge and the promotion, `main` holds routing that production does not. That is
+intended. Nobody promotes a newer `main` build without a new approval. A watch alerts if the
+production deployment id is not the approved one.
+
 ## Gates — all must be true before the window
 
 | # | Gate | Evidence required |
@@ -28,20 +49,21 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
 | G2 | Permanent domain `<domain>` chosen, added to the Vercel project, DNS and HTTPS verified | Vercel domain `verified: true`; `https://<domain>/` 200 |
 | G3 | Supabase OAuth app (Authentication → OAuth Apps) lists `https://<domain>/api/oidc/callback`; Redirect URLs include `https://<domain>/**`; functions `APP_ORIGIN=https://<domain>`. Keep only callbacks on hosts the owner controls: **remove the old team-scoped branch alias** (another Vercel account now holds that host, so a code sent there could be captured by it) | authorize probe with the new `redirect_uri` → 302, with the old alias → 400. The **Site URL** (where Supabase shows the consent page) moves to `https://<domain>` in step 5, once the production build serves the account page (G14); until then it stays on the protected preview |
 | G4 | Hosted sign-in proven on Railway before cutover (Railway domain callback): sign-in, consent, callback, session restore, sign-out, user isolation | test record in the readiness report |
-| G5 | Cutover PR ready and reviewed, **not merged**: `frontend/vercel.json` `/api/*` → Railway API; `/mcp`, `/mcp/health`, the four discovery paths with `x-vercel-enable-rewrite-caching: 0`, ordered before `/api/:path*`; contract test in `frontend/scripts/vercel.test.mjs` | CI green on the PR |
-| G6 | Railway variables staged with `--skip-deploys` **immediately before the window** (an unrelated merge to `main` would apply them early): API `ORIGIN=https://<domain>`, `RP_ID=<domain host>`, `MCP=on`; MCP `ORIGIN=https://<domain>`; `MCP_PUBLIC_ORIGIN` unset | `railway variables --json` (names and non-secret values) |
-| G7 | No merge to `main` during the window except the G5 PR. Railway redeploys all three services on every push to `main` (no watch paths are configured), so the G5 merge triggers a Railway deploy too: wait for it before verifying (step 5). Optional: Railway watch paths mirroring Render's build filter | announced freeze on merges |
+| G5 | Cutover PR reviewed and approved under branch protection, then merged (traffic does not move: see the promotion model). Its production build is the **candidate**: record its deployment id and commit SHA. Before the window, check it through the protection bypass: `/api/*`, `/mcp` and discovery are answered by Railway, and the cloud sign-in renders (G14). The routing in the PR: `frontend/vercel.json` `/api/*` → Railway API; `/mcp`, `/mcp/health`, the four discovery paths with `x-vercel-enable-rewrite-caching: 0`, ordered before `/api/:path*`; contract test in `frontend/scripts/vercel.test.mjs` | CI green on the PR |
+| G6 | Railway variables staged with `--skip-deploys` before the window (with no deploy triggers they apply only at the explicit deploy in step 4): API `ORIGIN=https://<domain>`, `RP_ID=<domain host>`, `MCP=on`; MCP `ORIGIN=https://<domain>`; `MCP_PUBLIC_ORIGIN` unset | `railway variables --json` (names and non-secret values) |
+| G7 | No merge to `main` during the window. Railway has no deploy triggers and Vercel does not assign domains, so a stray merge cannot move traffic. The freeze keeps the candidate and the recorded ids unambiguous | Railway services list no triggers; Vercel `autoAssignCustomDomains` is `false` |
 | G9 | Render can no longer change by itself. The Render Blueprint `ironvane` (`render.yaml`, Auto Sync on `main`, covering `ironvane-api` and `ironvane-mcp`) is set to Auto Sync **No**, and auto-deploy is **off** on both services. Otherwise a merge touching `render.yaml` re-applies Blueprint defaults (it has no `maintenanceMode`) and can switch maintenance mode off while Railway is live, and a merge touching `api/**` redeploys Render | Render dashboard screenshots or API read-back: Blueprint `autoSync: false`, both services `autoDeploy: no` |
 | G10 | Supabase cannot act on pushes to `main`: branching is disabled on the auth project and the Supabase–Vercel integration no longer has access to `opengym` (`ARCHITECTURE.md`, integrations section) | Supabase shows no branches; after the next deploy Vercel env holds only the three `VITE_*` Preview variables (branch `next/cloud-preview`) and, once G14 is staged, the same three on Production: nothing the integration added |
 | G11 | Render's rollback configuration is staged: Render `ORIGIN=https://<domain>`, `RP_ID=<domain host>` are set while Render is in maintenance mode (step 1), followed by a Manual Deploy of the live commit. Without this, a rollback would send `<domain>` users to a Render that signs them in on the preview host and refuses their writes as cross-origin | `ironvane-api.onrender.com/api/config` over SSH or the private network shows `webOrigin` `https://<domain>` |
 | G8 | Fresh backups: Render `/data` and Railway `/data` archived to the private backup directory | manifests saved beside the archives |
 | G12 | The Coach's provider has quota for the window and after it. The provider's own usage endpoint shows interval **and** weekly allowance remaining, and one real Coach question is answered on the preview. The Coach's credential is not shared with operator or agent tooling: a shared Token Plan is spent by whichever uses it first | provider usage read-back; one answered question |
 | G13 | `<domain>` is held for the long term: registrar auto-renew on, expiry well past the rollback window. When its DNS is on Cloudflare, the Vercel record is **DNS only** (not proxied), so Vercel can issue the certificate and no second CDN caches `/api` or `/mcp` | registrar read-back; `dig` shows Vercel's address, not Cloudflare's |
-| G14 | The production build is the cloud edition, so `<domain>` can show Supabase's consent page and the cloud sign-in. Vercel env on the **Production** target: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (the publishable key, never a secret key). Staged **immediately before the window**, like G6: the next production build applies them, so an unrelated merge would turn the current production app into the cloud edition early. Vercel Deployment Protection stays "all except custom domains": `<domain>` is public, the preview alias keeps its Vercel login | `vercel env ls` shows the three on Production; after step 5, the production bundle contains the Supabase project address and `https://<domain>/#/account` shows the sign-in form with no Vercel login, while the preview alias still redirects to Vercel's login |
+| G14 | The production build is the cloud edition, so `<domain>` can show Supabase's consent page and the cloud sign-in. Vercel env on the **Production** target: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (the publishable key, never a secret key). Staged **before the G5 merge**, so the candidate build carries them. With domains not auto-assigned, a build that has them does not reach users until it is promoted. Vercel Deployment Protection stays "all except custom domains": `<domain>` is public, the preview alias keeps its Vercel login | `vercel env ls` shows the three on Production; after step 5, the production bundle contains the Supabase project address and `https://<domain>/#/account` shows the sign-in form with no Vercel login, while the preview alias still redirects to Vercel's login |
 
 ## Window (about 20 minutes; the app keeps working offline and retries its pushes)
 
 0. **Record the previous values** before staging G6, G11 or G14 (private record, not the repo):
+   the current Vercel production deployment id (the rollback target);
    the non-secret Railway variables of `ironvane-api` and `ironvane-mcp` (`ORIGIN`, `RP_ID`, `MCP`,
    `OPENGYM_API_URL`, `MCP_PUBLIC_ORIGIN`, noting which are unset), Render `ironvane-api` `ORIGIN`
    and `RP_ID` with the live commit, the Vercel variables per target, and the Supabase Site URL
@@ -70,13 +92,14 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
    does not have. Remove each extra one by name and compare again. The Railway CLI's `restart` and
    `redeploy` can hang after the platform has already acted; judge by the API process's age inside
    the container (younger than the restore), not by the CLI's exit status.
-4. **Reopen Railway.** Give `ironvane-api` its public domain back if the Vercel rewrite targets it
-   (or attach a new one), and redeploy `ironvane-mcp` so it starts with its `ORIGIN`.
+4. **Reopen Railway.** Deploy the candidate's commit SHA explicitly to `ironvane-api` and
+   `ironvane-mcp` (one deploy applies the staged G6 variables). Give `ironvane-api` its public
+   domain back if the Vercel rewrite targets it. Re-run the step 3 `--compare`: still exit 0.
    `ironvane-web` stays without a domain: nothing should reach the API through it any more.
-5. **Switch traffic.** Merge the G5 PR. Wait for the Vercel production deployment to be READY on
-   `<domain>`, and for the Railway deployments the same push triggers (G7) to be SUCCESS. Record
-   the deployment ids and the commit SHA. Re-run the step 3 `--compare` after the Railway deploy:
-   still exit 0. Check G14 on the new build, then set the Supabase **Site URL** to
+5. **Switch traffic.** With the owner's approval naming the candidate deployment id and the
+   production deployment id it replaces, run `vercel promote <candidate>`. Read back the
+   project's production target (the candidate) and both domains (`/api/health` answered by
+   Railway). Check G14 on the promoted build, then set the Supabase **Site URL** to
    `https://<domain>` (G3) and repeat the authorize probe: the consent page is now on `<domain>`.
 6. **Verify** (each with recorded output):
    - `https://<domain>/api/health` → 200, `writable: true`, `users` equal to the Render count, and
@@ -127,12 +150,13 @@ Allow about 20 minutes for the window; most of it is the verification in step 6.
 | Situation | Steps | Data impact |
 |---|---|---|
 | Before step 5 (traffic not switched) | Revert nothing in git. Restore the step 0 values (otherwise the next merge applies the staged ones): set each G6 Railway variable back to its recorded value with `--skip-deploys` and unset only those recorded as unset; remove the G14 Production variables only if none existed before. If G11 was applied, set Render `ORIGIN`/`RP_ID` back to the recorded values (the frontend users sign in on today), Manual Deploy the recorded live commit while still in maintenance mode, and check `/api/config` shows the recorded `webOrigin` and the manifest is unchanged. Then turn Render maintenance mode off and run one sign-in on that frontend | none: Railway took no user writes |
-| After step 5, problem found before users wrote to Railway | Revert the G5 PR (Vercel redeploys `/api` → Render); Render maintenance mode off; restore the G6 Railway variables to their step 0 values. Keep G14 and the Site URL on `<domain>`: Render already serves `<domain>` (G11), so the cloud build keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
+| After step 5, problem found before users wrote to Railway | `vercel rollback <step 0 production deployment id>` (instant, no build; `/api` → Render), then read back the production target and both domains. Revert the G5 PR afterwards under review, so `main` matches production; Render maintenance mode off; restore the G6 Railway variables to their step 0 values. Keep G14 and the Site URL on `<domain>`: Render already serves `<domain>` (G11), so the cloud build keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
 | After users wrote to Railway | Freeze Railway without stopping the API (SSH needs a running deployment): remove the public domains of `ironvane-api` and `ironvane-web` and stop `ironvane-mcp`. Back up Railway `/data` with two manifests (equal = nothing wrote during the copy). Copy it to Render `/data` over SSH while Render is still in maintenance mode, Manual Deploy (G11 already points Render at `<domain>`), `--compare` Render against the Railway manifest. Then stop the Railway API, revert the G5 PR and turn Render maintenance mode off | none if the compare is equal; otherwise stop and keep both copies |
 | Auth broken on `<domain>` | Check Supabase lists `https://<domain>/api/oidc/callback` and Railway `ORIGIN` is exactly `https://<domain>` (no trailing slash); fix and redeploy, or roll back as above | none |
 
-Rollback is rehearsed on the preview before the window: revert the vercel.json change on a branch
-and confirm `/api/health` shows the Render headers again.
+Rollback is `vercel rollback` to the recorded deployment, not a revert merge. It was used for real
+on 28 Nov (incident record): 3 s, both domains back on Render, no data copied. Rehearse it before the
+window by checking the recorded deployment through the bypass: `/api/health` shows the Render headers.
 
 ## After the rollback window (owner decisions, not part of the cutover)
 
