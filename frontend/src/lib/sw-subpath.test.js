@@ -86,6 +86,18 @@ describe('the service worker and the API', () => {
     }
   })
 
+  it('matches the app folder literally, even when its name has pattern characters', async () => {
+    const env = worker('https://example.com/gy.m+/sw.js')
+    env.net.body = { issuer: 'https://old.example.com' }
+    for (const p of ['/gy.m+/.well-known/openid-configuration', '/.well-known/oauth-authorization-server/gy.m+']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(false)
+    }
+    // As a pattern, /gy.m+ would also match these folders; they are not the app's.
+    for (const p of ['/gyXm/.well-known/openid-configuration', '/.well-known/oauth-authorization-server/gyXmmm']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(true)
+    }
+  })
+
   it('an app installed under /.well-known/ still opens offline', async () => {
     const env = worker('https://example.com/.well-known/gym/sw.js')
     env.net.body = { app: true }
