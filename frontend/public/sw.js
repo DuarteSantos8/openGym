@@ -253,6 +253,11 @@ self.addEventListener('pushsubscriptionchange', e => {
 // once the network was gone — the page then took it for the server's word. The Cache API ignores
 // the API's own `Cache-Control: no-store`, so the worker has to know to stay out of the way.
 const API = (() => { try { return new URL('api/', location.href).pathname } catch { return '/api/' } })()
+// Other server answers the host can proxy beside the app (frontend/vercel.json): the MCP service
+// and the OAuth discovery documents. A cached copy replayed offline or after NET_WAIT_MS would
+// name a stale issuer or report a dead service as up.
+const MCP = (() => { try { return new URL('mcp', location.href).pathname } catch { return '/mcp' } })()
+const isServerPath = p => p.startsWith('/.well-known/') || p === MCP || p.startsWith(MCP + '/') || p === '/mcp' || p.startsWith('/mcp/')
 
 // How long a request for the app itself waits on the network before a cached copy answers it.
 const NET_WAIT_MS = 3000
@@ -282,6 +287,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   if (e.request.method !== 'GET' || url.origin !== location.origin) return
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith(API)) return    // never cache auth/data
+  if (isServerPath(url.pathname)) return
 
   if (isMediaPath(url.pathname)) {
     e.respondWith(media(e))
