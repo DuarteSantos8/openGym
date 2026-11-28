@@ -41,6 +41,12 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
 
 ## Window (about 20 minutes; the app keeps working offline and retries its pushes)
 
+0. **Record the previous values** before staging G6, G11 or G14 (private record, not the repo):
+   the non-secret Railway variables of `ironvane-api` and `ironvane-mcp` (`ORIGIN`, `RP_ID`, `MCP`,
+   `OPENGYM_API_URL`, `MCP_PUBLIC_ORIGIN`, noting which are unset), Render `ironvane-api` `ORIGIN`
+   and `RP_ID` with the live commit, the Vercel variables per target, and the Supabase Site URL
+   (the authorize probe's consent destination). Every rollback below restores these values; it
+   does not delete what it staged.
 1. **Freeze Render writes.** Render → `ironvane-api` → Settings → Maintenance Mode → on, and the
    same for `ironvane-mcp` (it reaches the API over Render's private network). Check:
    `https://ironvane-api.onrender.com/api/health` → 503 and the production app's `/api/health` →
@@ -120,8 +126,8 @@ Allow about 20 minutes for the window; most of it is the verification in step 6.
 
 | Situation | Steps | Data impact |
 |---|---|---|
-| Before step 5 (traffic not switched) | Revert nothing in git. Remove the staged G14 Production variables and the G6 Railway variables (otherwise the next merge applies them); turn Render maintenance mode off | none: Railway took no user writes |
-| After step 5, problem found before users wrote to Railway | Revert the G5 PR (Vercel redeploys `/api` → Render); Render maintenance mode off. Keep G14 and the Site URL on `<domain>`: Render already serves `<domain>` (G11), so the cloud build keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
+| Before step 5 (traffic not switched) | Revert nothing in git. Restore the step 0 values (otherwise the next merge applies the staged ones): set each G6 Railway variable back to its recorded value with `--skip-deploys` and unset only those recorded as unset; remove the G14 Production variables only if none existed before. If G11 was applied, set Render `ORIGIN`/`RP_ID` back to the recorded values (the frontend users sign in on today), Manual Deploy the recorded live commit while still in maintenance mode, and check `/api/config` shows the recorded `webOrigin` and the manifest is unchanged. Then turn Render maintenance mode off and run one sign-in on that frontend | none: Railway took no user writes |
+| After step 5, problem found before users wrote to Railway | Revert the G5 PR (Vercel redeploys `/api` → Render); Render maintenance mode off; restore the G6 Railway variables to their step 0 values. Keep G14 and the Site URL on `<domain>`: Render already serves `<domain>` (G11), so the cloud build keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
 | After users wrote to Railway | Freeze Railway without stopping the API (SSH needs a running deployment): remove the public domains of `ironvane-api` and `ironvane-web` and stop `ironvane-mcp`. Back up Railway `/data` with two manifests (equal = nothing wrote during the copy). Copy it to Render `/data` over SSH while Render is still in maintenance mode, Manual Deploy (G11 already points Render at `<domain>`), `--compare` Render against the Railway manifest. Then stop the Railway API, revert the G5 PR and turn Render maintenance mode off | none if the compare is equal; otherwise stop and keep both copies |
 | Auth broken on `<domain>` | Check Supabase lists `https://<domain>/api/oidc/callback` and Railway `ORIGIN` is exactly `https://<domain>` (no trailing slash); fix and redeploy, or roll back as above | none |
 
