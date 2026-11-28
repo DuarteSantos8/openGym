@@ -48,7 +48,7 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 
 1. Freeze writes on the side being abandoned. While its `/data` still has to be copied, keep the
    Railway API running (SSH needs a running deployment) and cut every path to it: point the public
-   domains of `ironvane-api` and `ironvane-web` at a closed port and stop `ironvane-mcp`
+   domain of `ironvane-api` at a closed port (`ironvane-web`'s has stayed there since step 4) and stop `ironvane-mcp`
    (`CUTOVER.md`, rollback table). Nothing weaker freezes it:
    `INVITE_ONLY=1` only gates new sign-ups, and the MCP service reaches the API over the private
    network (`ironvane-api.railway.internal`) whatever the frontend rewrite says.
