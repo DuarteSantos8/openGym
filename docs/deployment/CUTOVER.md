@@ -27,7 +27,9 @@ builds artifacts and changes nothing users see:
 
 - Vercel: **Auto-assign Custom Production Domains is off**. A push to `main` builds a production
   deployment without domains. The domains move only through `vercel promote <deployment>` (cutover) or
-  `vercel rollback <deployment>` (rollback). Both are instant and rebuild nothing.
+  `vercel promote <rollback target>` (rollback; `vercel rollback` only accepts a deployment that
+  has been production before, and the rollback target has not). Both are instant and rebuild
+  nothing. After either, read back `autoAssignCustomDomains` (step 5).
 - Railway: **no deploy triggers** on any service. A service deploys only when an operator deploys
   a named commit.
 - Render: Blueprint Auto Sync off and auto-deploy off (G9).
@@ -63,8 +65,9 @@ production deployment id is not the approved one.
 ## Window (about 20 minutes; the app keeps working offline and retries its pushes)
 
 0. **Record the previous values** before staging G6, G11 or G14 (private record, not the repo):
-   the current Vercel production deployment id, and the **rollback target**: a Render-routed
-   production build that already carries the G14 variables (G14 evidence). Before G14 the current
+   the current Vercel production deployment id. The **rollback target** (a Render-routed
+   production build that already carries the G14 variables) is built and recorded under G14,
+   after its variables are staged; add its id to this record then. Before G14 the current
    production build is not a cloud build, so rolling back to it would leave the Site URL on
    `<domain>` with no account page there;
    the non-secret Railway variables of `ironvane-api` and `ironvane-mcp` (`ORIGIN`, `RP_ID`, `MCP`,
@@ -158,12 +161,13 @@ Allow about 20 minutes for the window; most of it is the verification in step 6.
 | Situation | Steps | Data impact |
 |---|---|---|
 | Before step 5 (traffic not switched) | Revert nothing in git. Restore the step 0 values (otherwise the next merge applies the staged ones): set each G6 Railway variable back to its recorded value with `--skip-deploys` and unset only those recorded as unset; remove the G14 Production variables only if none existed before. If G11 was applied, set Render `ORIGIN`/`RP_ID` back to the recorded values (the frontend users sign in on today), Manual Deploy the recorded live commit while still in maintenance mode, and check `/api/config` shows the recorded `webOrigin` and the manifest is unchanged. Then turn Render maintenance mode off and run one sign-in on that frontend | none: Railway took no user writes |
-| After step 5, problem found before users wrote to Railway | First freeze Railway writes as in the next row (remove the public domains of `ironvane-api` and `ironvane-web`, stop `ironvane-mcp`): requests fail briefly instead of a write landing only on Railway. Manifest Railway `/data` and `--compare` it with the step 3 manifest; any difference means users did write, so use the next row instead. Then `vercel rollback <step 0 rollback target>` (the Render-routed cloud build) (instant, no build; `/api` → Render), then read back the production target and both domains. Revert the G5 PR afterwards under review, so `main` matches production; Render maintenance mode off; restore the G6 Railway variables to their step 0 values. Keep the Site URL on `<domain>` only because the rollback target is itself a cloud build, verified through the bypass before the window (G14), and Render already serves `<domain>` (G11), so it keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
-| After users wrote to Railway | Freeze Railway without stopping the API (SSH needs a running deployment): remove the public domains of `ironvane-api` and `ironvane-web` and stop `ironvane-mcp`. Back up Railway `/data` with two manifests (equal = nothing wrote during the copy). Copy it to Render `/data` over SSH while Render is still in maintenance mode, Manual Deploy (G11 already points Render at `<domain>`), `--compare` Render against the Railway manifest. Only when it is equal: turn Render maintenance mode off, then **switch traffic** with `vercel rollback <step 0 rollback target>` (merges do not move traffic), and read back the production target and both domains: `/api/health` shows the Render headers and the `users` count. Then stop the Railway API, restore the G6 Railway variables to their step 0 values, and revert the G5 PR under review so `main` matches production | none if the compare is equal; otherwise stop and keep both copies |
+| After step 5, problem found before users wrote to Railway | First freeze Railway writes as in the next row (remove the public domains of `ironvane-api` and `ironvane-web`, stop `ironvane-mcp`): requests fail briefly instead of a write landing only on Railway. Manifest Railway `/data` and `--compare` it with the step 3 manifest; any difference means users did write, so use the next row instead. Then `vercel promote <rollback target>` (the Render-routed cloud build) (instant, no build; `/api` → Render), then read back the production target, both domains and `autoAssignCustomDomains` (set it back to `false` if the promote turned it on). Revert the G5 PR afterwards under review, so `main` matches production; Render maintenance mode off; restore the G6 Railway variables to their step 0 values. Keep the Site URL on `<domain>` only because the rollback target is itself a cloud build, verified through the bypass before the window (G14), and Render already serves `<domain>` (G11), so it keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
+| After users wrote to Railway | Freeze Railway without stopping the API (SSH needs a running deployment): remove the public domains of `ironvane-api` and `ironvane-web` and stop `ironvane-mcp`. Back up Railway `/data` with two manifests (equal = nothing wrote during the copy). Copy it to Render `/data` over SSH while Render is still in maintenance mode, Manual Deploy (G11 already points Render at `<domain>`), `--compare` Render against the Railway manifest. Only when it is equal: turn Render maintenance mode off, then **switch traffic** with `vercel promote <rollback target>` (merges do not move traffic), and read back the production target, both domains and `autoAssignCustomDomains` (back to `false` if needed): `/api/health` shows the Render headers and the `users` count. Then stop the Railway API, restore the G6 Railway variables to their step 0 values, and revert the G5 PR under review so `main` matches production | none if the compare is equal; otherwise stop and keep both copies |
 | Auth broken on `<domain>` | Check Supabase lists `https://<domain>/api/oidc/callback` and Railway `ORIGIN` is exactly `https://<domain>` (no trailing slash); fix and redeploy, or roll back as above | none |
 
-Rollback is `vercel rollback` to the recorded deployment, not a revert merge. It was used for real
-on 28 Nov (incident record): 3 s, both domains back on Render, no data copied. Rehearse it before the
+Rollback is `vercel promote` of the recorded rollback target, not a revert merge (`vercel rollback` would refuse a build that has never had the production domains). On 28 Nov
+(incident record) a `vercel rollback` to the previous production build took 3 s, both domains back on
+Render, no data copied; that build had been production, which is why rollback accepted it. Rehearse it before the
 window by checking the recorded rollback target through the bypass: `/api/health` shows the Render
 headers **and** the cloud sign-in renders (a non-cloud target would strand the Site URL on `<domain>`).
 
