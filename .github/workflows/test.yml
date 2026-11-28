@@ -262,11 +262,17 @@ jobs:
   # on a throwaway data folder (frontend/playwright.config.mjs). Fails on any request that leaves
   # the machine, on an uncaught page error, and on a serious or critical axe (WCAG 2.1 AA)
   # violation on the main screens.
+  # Split across four runners: one worker per runner keeps the suite's shared-API assumption, and
+  # each shard starts its own servers on its own throwaway data folder. ~17 min serial -> ~5.
   e2e:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -295,12 +301,12 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
         working-directory: frontend
       - name: End-to-end and accessibility tests
-        run: npm run test:e2e
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/4
         working-directory: frontend
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: failure()
         with:
-          name: e2e-report
+          name: e2e-report-${{ matrix.shard }}
           path: |
             frontend/e2e-report
             frontend/e2e-results
