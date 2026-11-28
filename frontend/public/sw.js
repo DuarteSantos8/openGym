@@ -260,7 +260,11 @@ const API = (() => { try { return new URL('api/', location.href).pathname } catc
 const BASE = (() => { try { return new URL('./', location.href).pathname } catch { return '/' } })()
 const MCP = BASE + 'mcp'
 const inApp = p => p.startsWith(BASE) || p + '/' === BASE
-const isServerPath = p => p.startsWith('/.well-known/') || p === MCP || p.startsWith(MCP + '/') ||
+// Exactly the discovery documents web/nginx.conf.template proxies: at the host's root, below the
+// app's folder (/gym/.well-known/...) or with the folder after the name (.../oauth-authorization-server/gym).
+const DISCOVERY = /\/\.well-known\/(oauth-authorization-server|oauth-protected-resource|openid-configuration)(\/|$)/
+const isDiscovery = p => (p.startsWith('/.well-known/') || p.startsWith(BASE + '.well-known/')) && DISCOVERY.test(p)
+const isServerPath = p => isDiscovery(p) || p === MCP || p.startsWith(MCP + '/') ||
   (!inApp(p) && (p === '/mcp' || p.startsWith('/mcp/')))
 
 // How long a request for the app itself waits on the network before a cached copy answers it.

@@ -72,6 +72,25 @@ describe('the service worker and the API', () => {
     expect((await env.get('https://gym.example.com/mcpx.json')).intercepted).toBe(true)
   })
 
+  it('leaves discovery alone under a subpath, in both places nginx serves it', async () => {
+    const env = worker('https://example.com/gym/sw.js')
+    env.net.body = { issuer: 'https://old.example.com' }
+    for (const p of ['/gym/.well-known/openid-configuration', '/gym/.well-known/oauth-protected-resource/mcp',
+      '/.well-known/oauth-authorization-server/gym', '/.well-known/oauth-protected-resource/gym/mcp']) {
+      expect((await env.get('https://example.com' + p)).intercepted, p).toBe(false)
+    }
+    expect(env.store.size).toBe(0)
+  })
+
+  it('an app installed under /.well-known/ still opens offline', async () => {
+    const env = worker('https://example.com/.well-known/gym/sw.js')
+    env.net.body = { app: true }
+    expect((await env.get('https://example.com/.well-known/gym/index.html')).intercepted).toBe(true)
+    env.net.up = false
+    expect((await env.get('https://example.com/.well-known/gym/index.html')).res.status).toBe(200)
+    expect((await env.get('https://example.com/.well-known/openid-configuration')).intercepted).toBe(false)
+  })
+
   it('an app mounted at /mcp/ still opens offline from its cache', async () => {
     const env = worker('https://example.com/mcp/sw.js')
     env.net.body = { app: true }
