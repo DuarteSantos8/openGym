@@ -58,6 +58,20 @@ describe('the service worker and the API', () => {
     expect(env.store.size).toBe(0)
   })
 
+  it('leaves the proxied MCP service and OAuth discovery documents alone', async () => {
+    const env = worker('https://gym.example.com/sw.js')
+    env.net.body = { issuer: 'https://old.example.com' }
+    for (const p of ['/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource/mcp',
+      '/.well-known/openid-configuration', '/mcp', '/mcp/health']) {
+      expect((await env.get('https://gym.example.com' + p)).intercepted, p).toBe(false)
+    }
+    const sub = worker('https://example.com/myGym/sw.js')
+    expect((await sub.get('https://example.com/myGym/mcp/health')).intercepted).toBe(false)
+    expect(env.store.size + sub.store.size).toBe(0)
+    // An app route that only starts with the same letters is still the app's.
+    expect((await env.get('https://gym.example.com/mcpx.json')).intercepted).toBe(true)
+  })
+
   it('still serves the app itself from the cache under that subpath', async () => {
     const env = worker('https://example.com/myGym/sw.js')
     env.net.body = { app: true }
