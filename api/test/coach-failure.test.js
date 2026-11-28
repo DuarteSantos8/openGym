@@ -135,6 +135,28 @@ test('a 429 that is out of quota reads differently from one that is merely going
   assert.match(userMessageFor(b.errorClass, b.detail), /rate limited/i);
 });
 
+test('a spent plan or balance is never told to wait a few minutes (402, MiniMax Token Plan)', async () => {
+  // MiniMax's own answer when a Token Plan is used up (code 2067): HTTP 402, and none of the
+  // OpenAI or Anthropic billing words. It used to read "rate limited, try again in a few minutes".
+  const spent = 'The Token Plan usage limit has been reached. To avoid interruption, please upgrade your plan or buy credits and turn on auto consumption. (2067)';
+  const a = await attemptOnce({ adapter: openai, cfg: {}, kind: 'review', payload, invokeOpts: { env, fetch: fakeFetch([err(402, spent)]), retryDelayMs: 0 } }, null);
+  assert.equal(a.errorClass, 'quota');
+  assert.equal(userMessageFor(a.errorClass, a.detail), USER_MESSAGE.quota);
+  // The same words on a 429 are still a spent plan, not a speed limit.
+  const b = await attemptOnce({ adapter: openai, cfg: {}, kind: 'review', payload, invokeOpts: { env, fetch: fakeFetch([err(429, spent), err(429, spent), err(429, spent)]), retryDelayMs: 0 } }, null);
+  assert.equal(b.errorClass, 'quota');
+  assert.equal(userMessageFor(b.errorClass, b.detail), USER_MESSAGE.quota);
+  // The provider's error type on its own, without a 402 to lean on.
+  assert.equal(userMessageFor('quota', '429 insufficient_balance_error'), USER_MESSAGE.quota);
+  // A 400 carrying the same words is a spent plan, not a request-format problem.
+  assert.equal(classifyFailure({ text: '400 The Token Plan usage limit has been reached. Please buy credits.' }), 'quota');
+  // Any 402 is Payment Required, whatever the words.
+  assert.equal(userMessageFor('quota', '402 something went wrong'), USER_MESSAGE.quota);
+  assert.equal(userMessageFor('quota', '402: insufficient_balance_error'), USER_MESSAGE.quota);
+  // A plain speed limit keeps its own line.
+  assert.match(userMessageFor('quota', '429 Rate limit reached for requests per min.'), /rate limited/i);
+});
+
 test('a working call is untouched by any of this', async () => {
   const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
   const r = await attemptOnce({ adapter: openai, cfg: {}, kind: 'review', payload, invokeOpts: { env, fetch: f } }, null);
