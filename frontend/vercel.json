@@ -2,7 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build && node ../scripts/catalogue/check-media.mjs && node ../scripts/catalogue/stage-media.mjs dist && node ../scripts/catalogue/stage-photos.mjs dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://ironvane-api.onrender.com/api/:path*" }
+    { "source": "/mcp", "destination": "https://ironvane-mcp-production.up.railway.app/mcp" },
+    { "source": "/mcp/health", "destination": "https://ironvane-mcp-production.up.railway.app/mcp/health" },
+    { "source": "/.well-known/oauth-protected-resource/mcp", "destination": "https://ironvane-api-production.up.railway.app/.well-known/oauth-protected-resource/mcp" },
+    { "source": "/.well-known/oauth-protected-resource", "destination": "https://ironvane-api-production.up.railway.app/.well-known/oauth-protected-resource" },
+    { "source": "/.well-known/oauth-authorization-server", "destination": "https://ironvane-api-production.up.railway.app/.well-known/oauth-authorization-server" },
+    { "source": "/.well-known/openid-configuration", "destination": "https://ironvane-api-production.up.railway.app/.well-known/openid-configuration" },
+    { "source": "/api/:path*", "destination": "https://ironvane-api-production.up.railway.app/api/:path*" }
   ],
   "headers": [
     {
@@ -15,6 +21,42 @@
     },
     {
       "source": "/api/:path*",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/mcp",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/mcp/health",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource/mcp",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/.well-known/openid-configuration",
       "headers": [
         { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
       ]
