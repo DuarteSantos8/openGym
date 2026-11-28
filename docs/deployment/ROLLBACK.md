@@ -22,7 +22,7 @@ plan deletes Render, its disk, the Supabase project, auth users or the OAuth cli
 | 2026-11-27 16:20 | Railway `ironvane-api`: set `OIDC_ISSUER` (the existing Supabase project), `OIDC_CLIENT_ID` (the existing public client), `ADMIN_UIDS` (same account id as Render). Deployment `<railway-deploy-id>` SUCCESS; `/data` manifest still equal to the Render backup. Sign-in needs the owner to add `https://ironvane-web-production.up.railway.app/api/oidc/callback` to the client | `railway variables -s ironvane-api` → delete the three (with `OIDC_ONLY=1` still set, nobody can sign in again) |
 | 2026-11-27 ~17:00–17:28 | Vercel `opengym`: removed the 18 Production variables the Supabase integration (`<supabase-integration>`, all projects) added at 16:21 (`POSTGRES_*`, `SUPABASE_*` incl. service-role, secret and JWT secret, `NEXT_PUBLIC_SUPABASE_*`). The project has no functions and Vite bundles only `VITE_*`; the two production builds made while they existed (`54e966c17`, `44b70444a`) were checked: no secret-shaped value in their build logs or served JS. The three `VITE_*` Preview variables for `next/cloud-preview` are kept | Re-sync from the Supabase integration (Vercel → Integrations → Supabase → project access). Values are not lost: they live in Supabase |
 | 2026-11-27 21:23 → ~23:02 | Production Vercel: #159 (cutover routing, do-not-merge) was merged; production sent `/api` and MCP to the Railway candidate. Rolled back with `vercel rollback` to the last pre-#159 production deployment; `/api` answered from Render again. No data diverged (Railway logged no request in the window). #160 reverted #159 on `main` | Already reverted. Re-apply only as cutover step G5 |
-| 2026-11-27 23:4x | Vercel: promoted the `main` build after #160 (same files as the rolled-back-to deployment, `/api` → Render). An instant rollback pauses automatic production promotion; a promote resumes it | Promote the previous production deployment again |
+| 2026-11-27 23:4x | Vercel: promoted the `main` build after #160 (same files as the rolled-back-to deployment, `/api` → Render). An instant rollback pauses automatic production promotion; a promote resumes it | `vercel rollback` to the previous production deployment (it has been production, so it cannot be promoted again) |
 | 2026-11-27 23:41 | Render `ironvane-mcp`: `OPENGYM_API_URL` set to the API's private address (`http://<render-api-service>:10000`). It was unset, so the image default `http://api:3000` (a Compose name) applied and every authenticated MCP call answered 502. Redeployed the already-live commit, no new code; the API was not restarted | Delete `OPENGYM_API_URL` on the MCP service, then Manual Deploy → the same commit |
 | 2026-11-27 23:52–00:00 | Railway `ironvane-api` `/data`: fresh consistent Render backup (manifest before = after = archive) extracted over it, API restarted; manifest equal to the backup. Railway is still only a candidate | Stream the pre-restore Railway archive (private backup directory) back, restart |
 | 2026-11-28 02:50 → 03:33 | Production incident: #164 (cutover routing, do-not-merge) was merged by an automated agent on the owner's account, and #167 and #168 followed; automatic domain assignment was on (the 27 Nov promote had resumed it), so production sent `/api`, MCP and discovery to the Railway candidate. Railway took only test writes, no user writes. Railway frozen (deploy triggers removed, public domains pointed at a closed port; nothing deleted); `vercel rollback` to the last Render-routed production deployment (3 s), which also turned automatic domain assignment off. #169 reverted #164 on `main` (04:43); its build was not promoted. `main` branch protection added | Already reverted. Railway reopens only in cutover step 4; the cutover now moves traffic only by `vercel promote` (`CUTOVER.md`, promotion model) |
@@ -32,8 +32,9 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 
 ## Frontend
 
-- Repository change: revert the PR that touched `frontend/vercel.json`. The `/api` rewrite still
-  targets `ironvane-api.onrender.com`, so the frontend keeps using Render.
+- Traffic moves only on Vercel (below), never by a merge: production domains are not
+  auto-assigned. Afterwards, revert the PR that touched `frontend/vercel.json` under review so
+  `main` matches production again.
 - Vercel: `vercel rollback <deployment>` returns the domains to a deployment that was production
   before (instant, and it turns automatic domain assignment off). A deployment that was never
   production is moved with `vercel promote <deployment>` instead; a deployment can be promoted
@@ -42,14 +43,19 @@ Vercel project (15:29) and the Render `ORIGIN`/`RP_ID` change (15:58) touch prod
 
 ## API data (when a cutover has happened)
 
-1. Freeze writes on the side being abandoned by stopping its API process (Railway: scale
-   `ironvane-api` to 0 replicas, or remove its active deployment). Nothing weaker freezes it:
+1. Freeze writes on the side being abandoned. While its `/data` still has to be copied, keep the
+   Railway API running (SSH needs a running deployment) and cut every path to it: point the public
+   domains of `ironvane-api` and `ironvane-web` at a closed port and stop `ironvane-mcp`
+   (`CUTOVER.md`, rollback table). After the copy, stop the API too. Nothing weaker freezes it:
    `INVITE_ONLY=1` only gates new sign-ups, and the MCP service reaches the API over the private
    network (`ironvane-api.railway.internal`) whatever the frontend rewrite says.
 2. Archive Railway `/data` the same way as the Render backup and diff it against the cutover
    manifest. Anything newer than the cutover is user data created on Railway: reconcile it into
    Render before Render takes writes again. Never overwrite the newer file with the older one.
-3. Point `frontend/vercel.json` back at Render, redeploy, verify `/api/health` and a sign-in.
+3. Move traffic with `vercel promote <rollback target>` or `vercel rollback <deployment>` (Frontend,
+   above; a redeploy alone moves no domain). Read back the production deployment and
+   `autoAssignCustomDomains`, check that `/api/health` on both domains shows the **Render** headers,
+   then run a sign-in. Revert the routing PR under review afterwards.
 
 ## Auth
 
