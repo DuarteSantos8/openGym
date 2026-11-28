@@ -32,7 +32,7 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
 | G6 | Railway variables staged with `--skip-deploys` **immediately before the window** (an unrelated merge to `main` would apply them early): API `ORIGIN=https://<domain>`, `RP_ID=<domain host>`, `MCP=on`; MCP `ORIGIN=https://<domain>`; `MCP_PUBLIC_ORIGIN` unset | `railway variables --json` (names and non-secret values) |
 | G7 | No merge to `main` during the window except the G5 PR. Railway redeploys all three services on every push to `main` (no watch paths are configured), so the G5 merge triggers a Railway deploy too: wait for it before verifying (step 5). Optional: Railway watch paths mirroring Render's build filter | announced freeze on merges |
 | G9 | Render can no longer change by itself. The Render Blueprint `ironvane` (`render.yaml`, Auto Sync on `main`, covering `ironvane-api` and `ironvane-mcp`) is set to Auto Sync **No**, and auto-deploy is **off** on both services. Otherwise a merge touching `render.yaml` re-applies Blueprint defaults (it has no `maintenanceMode`) and can switch maintenance mode off while Railway is live, and a merge touching `api/**` redeploys Render | Render dashboard screenshots or API read-back: Blueprint `autoSync: false`, both services `autoDeploy: no` |
-| G10 | Supabase cannot act on pushes to `main`: branching is disabled on the auth project and the Supabase–Vercel integration no longer has access to `opengym` (`ARCHITECTURE.md`, integrations section) | Supabase shows no branches; after the next deploy Vercel env holds only the `VITE_*` variables this runbook sets (G14), nothing the integration added |
+| G10 | Supabase cannot act on pushes to `main`: branching is disabled on the auth project and the Supabase–Vercel integration no longer has access to `opengym` (`ARCHITECTURE.md`, integrations section) | Supabase shows no branches; after the next deploy Vercel env holds only the three `VITE_*` Preview variables (branch `next/cloud-preview`) and, once G14 is staged, the same three on Production: nothing the integration added |
 | G11 | Render's rollback configuration is staged: Render `ORIGIN=https://<domain>`, `RP_ID=<domain host>` are set while Render is in maintenance mode (step 1), followed by a Manual Deploy of the live commit. Without this, a rollback would send `<domain>` users to a Render that signs them in on the preview host and refuses their writes as cross-origin | `ironvane-api.onrender.com/api/config` over SSH or the private network shows `webOrigin` `https://<domain>` |
 | G8 | Fresh backups: Render `/data` and Railway `/data` archived to the private backup directory | manifests saved beside the archives |
 | G12 | The Coach's provider has quota for the window and after it. The provider's own usage endpoint shows interval **and** weekly allowance remaining, and one real Coach question is answered on the preview. The Coach's credential is not shared with operator or agent tooling: a shared Token Plan is spent by whichever uses it first | provider usage read-back; one answered question |
@@ -120,8 +120,8 @@ Allow about 20 minutes for the window; most of it is the verification in step 6.
 
 | Situation | Steps | Data impact |
 |---|---|---|
-| Before step 5 (traffic not switched) | Revert nothing in git; turn Render maintenance mode off | none: Railway took no user writes |
-| After step 5, problem found before users wrote to Railway | Revert the G5 PR (Vercel redeploys `/api` → Render); Render maintenance mode off | none |
+| Before step 5 (traffic not switched) | Revert nothing in git. Remove the staged G14 Production variables and the G6 Railway variables (otherwise the next merge applies them); turn Render maintenance mode off | none: Railway took no user writes |
+| After step 5, problem found before users wrote to Railway | Revert the G5 PR (Vercel redeploys `/api` → Render); Render maintenance mode off. Keep G14 and the Site URL on `<domain>`: Render already serves `<domain>` (G11), so the cloud build keeps signing in there. Only if the cloud build itself is the problem: remove the G14 Production variables, redeploy, and move the Site URL back to the preview | none |
 | After users wrote to Railway | Freeze Railway without stopping the API (SSH needs a running deployment): remove the public domains of `ironvane-api` and `ironvane-web` and stop `ironvane-mcp`. Back up Railway `/data` with two manifests (equal = nothing wrote during the copy). Copy it to Render `/data` over SSH while Render is still in maintenance mode, Manual Deploy (G11 already points Render at `<domain>`), `--compare` Render against the Railway manifest. Then stop the Railway API, revert the G5 PR and turn Render maintenance mode off | none if the compare is equal; otherwise stop and keep both copies |
 | Auth broken on `<domain>` | Check Supabase lists `https://<domain>/api/oidc/callback` and Railway `ORIGIN` is exactly `https://<domain>` (no trailing slash); fix and redeploy, or roll back as above | none |
 
@@ -131,7 +131,8 @@ and confirm `/api/health` shows the Render headers again.
 ## After the rollback window (owner decisions, not part of the cutover)
 
 - Retire Railway `ironvane-web` once the acceptance list in `ARCHITECTURE.md` passed on `<domain>`.
-- Remove the old Supabase callbacks and the temporary preview Site URL.
+- Remove the old Supabase callbacks (the preview and Railway-host ones) once `<domain>` sign-in has
+  worked for the whole rollback window.
 - Remove the migration SSH keys (Render account key, Railway key) and revoke the preview
   automation-bypass secret if previews no longer need automated tests.
 - Decide whether and when Render is suspended; it is never deleted without approval.
