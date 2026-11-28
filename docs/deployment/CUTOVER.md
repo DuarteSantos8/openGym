@@ -26,17 +26,18 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
 |---|---|---|
 | G1 | Owner approves the cutover and the window | written approval |
 | G2 | Permanent domain `<domain>` chosen, added to the Vercel project, DNS and HTTPS verified | Vercel domain `verified: true`; `https://<domain>/` 200 |
-| G3 | Supabase OAuth app (Authentication → OAuth Apps) lists `https://<domain>/api/oidc/callback`; Site URL `https://<domain>`; Redirect URLs include `https://<domain>/**`; functions `APP_ORIGIN=https://<domain>`. Keep only callbacks on hosts the owner controls: **remove the old team-scoped branch alias** (another Vercel account now holds that host, so a code sent there could be captured by it) | authorize probe with the new `redirect_uri` → 302, with the old alias → 400 |
+| G3 | Supabase OAuth app (Authentication → OAuth Apps) lists `https://<domain>/api/oidc/callback`; Redirect URLs include `https://<domain>/**`; functions `APP_ORIGIN=https://<domain>`. Keep only callbacks on hosts the owner controls: **remove the old team-scoped branch alias** (another Vercel account now holds that host, so a code sent there could be captured by it) | authorize probe with the new `redirect_uri` → 302, with the old alias → 400. The **Site URL** (where Supabase shows the consent page) moves to `https://<domain>` in step 5, once the production build serves the account page (G14); until then it stays on the protected preview |
 | G4 | Hosted sign-in proven on Railway before cutover (Railway domain callback): sign-in, consent, callback, session restore, sign-out, user isolation | test record in the readiness report |
 | G5 | Cutover PR ready and reviewed, **not merged**: `frontend/vercel.json` `/api/*` → Railway API; `/mcp`, `/mcp/health`, the four discovery paths with `x-vercel-enable-rewrite-caching: 0`, ordered before `/api/:path*`; contract test in `frontend/scripts/vercel.test.mjs` | CI green on the PR |
 | G6 | Railway variables staged with `--skip-deploys` **immediately before the window** (an unrelated merge to `main` would apply them early): API `ORIGIN=https://<domain>`, `RP_ID=<domain host>`, `MCP=on`; MCP `ORIGIN=https://<domain>`; `MCP_PUBLIC_ORIGIN` unset | `railway variables --json` (names and non-secret values) |
 | G7 | No merge to `main` during the window except the G5 PR. Railway redeploys all three services on every push to `main` (no watch paths are configured), so the G5 merge triggers a Railway deploy too: wait for it before verifying (step 5). Optional: Railway watch paths mirroring Render's build filter | announced freeze on merges |
 | G9 | Render can no longer change by itself. The Render Blueprint `ironvane` (`render.yaml`, Auto Sync on `main`, covering `ironvane-api` and `ironvane-mcp`) is set to Auto Sync **No**, and auto-deploy is **off** on both services. Otherwise a merge touching `render.yaml` re-applies Blueprint defaults (it has no `maintenanceMode`) and can switch maintenance mode off while Railway is live, and a merge touching `api/**` redeploys Render | Render dashboard screenshots or API read-back: Blueprint `autoSync: false`, both services `autoDeploy: no` |
-| G10 | Supabase cannot act on pushes to `main`: branching is disabled on the auth project and the Supabase–Vercel integration no longer has access to `opengym` (`ARCHITECTURE.md`, integrations section) | Supabase shows no branches; after the next deploy Vercel env holds only the three `VITE_*` Preview variables |
+| G10 | Supabase cannot act on pushes to `main`: branching is disabled on the auth project and the Supabase–Vercel integration no longer has access to `opengym` (`ARCHITECTURE.md`, integrations section) | Supabase shows no branches; after the next deploy Vercel env holds only the `VITE_*` variables this runbook sets (G14), nothing the integration added |
 | G11 | Render's rollback configuration is staged: Render `ORIGIN=https://<domain>`, `RP_ID=<domain host>` are set while Render is in maintenance mode (step 1), followed by a Manual Deploy of the live commit. Without this, a rollback would send `<domain>` users to a Render that signs them in on the preview host and refuses their writes as cross-origin | `ironvane-api.onrender.com/api/config` over SSH or the private network shows `webOrigin` `https://<domain>` |
 | G8 | Fresh backups: Render `/data` and Railway `/data` archived to the private backup directory | manifests saved beside the archives |
 | G12 | The Coach's provider has quota for the window and after it. The provider's own usage endpoint shows interval **and** weekly allowance remaining, and one real Coach question is answered on the preview. The Coach's credential is not shared with operator or agent tooling: a shared Token Plan is spent by whichever uses it first | provider usage read-back; one answered question |
 | G13 | `<domain>` is held for the long term: registrar auto-renew on, expiry well past the rollback window. When its DNS is on Cloudflare, the Vercel record is **DNS only** (not proxied), so Vercel can issue the certificate and no second CDN caches `/api` or `/mcp` | registrar read-back; `dig` shows Vercel's address, not Cloudflare's |
+| G14 | The production build is the cloud edition, so `<domain>` can show Supabase's consent page and the cloud sign-in. Vercel env on the **Production** target: `VITE_EDITION=cloud`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (the publishable key, never a secret key). Staged **immediately before the window**, like G6: the next production build applies them, so an unrelated merge would turn the current production app into the cloud edition early. Vercel Deployment Protection stays "all except custom domains": `<domain>` is public, the preview alias keeps its Vercel login | `vercel env ls` shows the three on Production; after step 5, the production bundle contains the Supabase project address and `https://<domain>/#/account` shows the sign-in form with no Vercel login, while the preview alias still redirects to Vercel's login |
 
 ## Window (about 20 minutes; the app keeps working offline and retries its pushes)
 
@@ -69,7 +70,8 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
 5. **Switch traffic.** Merge the G5 PR. Wait for the Vercel production deployment to be READY on
    `<domain>`, and for the Railway deployments the same push triggers (G7) to be SUCCESS. Record
    the deployment ids and the commit SHA. Re-run the step 3 `--compare` after the Railway deploy:
-   still exit 0.
+   still exit 0. Check G14 on the new build, then set the Supabase **Site URL** to
+   `https://<domain>` (G3) and repeat the authorize probe: the consent page is now on `<domain>`.
 6. **Verify** (each with recorded output):
    - `https://<domain>/api/health` → 200, `writable: true`, `users` equal to the Render count, and
      **no** `rndr-id` / `x-render-origin-server` header (the answer comes from Railway).
@@ -81,6 +83,12 @@ authorization codes live in that process's memory (`ARCHITECTURE.md`).
      saves and reappears after reload and on the second device.
    - One AI-assistant connector: connect, list tools, one read, one write; a read-only grant
      refuses the write.
+   - The Coach answers one question for the owner (G12), and the provider's usage endpoint shows
+     the request counted.
+   - The same screens at phone size (about 390 × 844) and desktop size (1440 × 900): no blank
+     page, no sideways scrolling, no errors in the console.
+   - After a Railway redeploy of `ironvane-api` (no data change), the new workout is still there
+     and `/data` compares equal to the manifest taken before the redeploy.
 7. **Lift the freeze for users only.** Render **stays in maintenance mode** with Blueprint sync and
    auto-deploy off (G9): it is the rollback copy and must never take writes again while Railway is
    live (no dual writer). Manifest Render once more: it must still equal the final backup, the
@@ -106,6 +114,7 @@ Allow about 20 minutes for the window; most of it is the verification in step 6.
 | Railway / Vercel deployment status | every deploy | SUCCESS / READY | roll back the deploy in the platform |
 | `/data` backup (manifest + archive to the private backup directory) | daily | `--compare` against the previous day lists only expected files | investigate missing or changed files |
 | Railway spend vs a soft limit | weekly | under the limit | review usage; no hard limit is set today |
+| The Coach provider's weekly allowance (provider usage endpoint) | daily | allowance left for the rest of the week | Coach answers "plan used up"; the owner adds quota or waits for the reset |
 
 ## Rollback
 
